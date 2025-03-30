@@ -132,6 +132,13 @@
                     "color": "white",
                     "result": "1/2-1/2",
                     "score": 0.5
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MERAL001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
@@ -222,8 +229,8 @@
                 }
             ],
             "opponents": [
-                "TESAL001",
-                "VALRI001"
+                "VALRI001",
+                "TESAL001"
             ],
             "white_games": 2,
             "black_games": 0,
@@ -240,7 +247,7 @@
             "first_name": "Alessia",
             "last_name": "Mereu",
             "initial_elo": 1265,
-            "points": 1.0,
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
@@ -248,11 +255,18 @@
                     "color": "black",
                     "result": "0-1",
                     "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "FORMA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "CIBSI001",
-                "FORMA001"
+                "FORMA001",
+                "CIBSI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -280,8 +294,8 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "FORMA001"
+                "FORMA001",
+                "GORSE001"
             ],
             "white_games": 0,
             "black_games": 2,
@@ -309,8 +323,8 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "LIMCA001"
+                "LIMCA001",
+                "GORSE001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -338,8 +352,8 @@
                 }
             ],
             "opponents": [
-                "CIBSI001",
-                "LIMCA001"
+                "LIMCA001",
+                "CIBSI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -452,7 +466,7 @@
                     "round": 1,
                     "white_player_id": "MERAL001",
                     "black_player_id": "FORMA001",
-                    "result": null
+                    "result": "1-0"
                 },
                 {
                     "id": 10,
