@@ -1,4 +1,4 @@
-# Tornello Pro, by Gabriele Battaglia & Gemini 2.5
+# Tornello by Gabriele Battaglia & Gemini 2.5
 # Data concepimento: 28 marzo 2025
 
 import os

@@ -1,10 +1,10 @@
-Torneo: test
+Torneo: Scacchierante prima edizione
 Turno: 1
 Periodo: 2025-03-22 - 2025-04-01
 ------------------------------------------------------------
 ID | Bianco                   [Elo] (Pt) - Nero                    [Elo] (Pt) | Risultato
 ------------------------------------------------------------
-1  | Vincenzo Di Bari         [1300] (1   ) - Luigi Ventura            [1270] (0   ) | 1-0
+1  | Vincenzo Di Bari         [1300] (0   ) - Luigi Ventura            [1270] (1   ) | 0-1
 2  | Silvia Cibin             [1295] (0   ) - Alessia Mereu            [1265] (1   ) | 0-1
 3  | Alessandra Testori       [1290] (1   ) - Serena Gori              [1260] (0   ) | 1-0
 4  | Lorenzo Ionata           [1285] (1   ) - Valeria Calzolari        [1255] (0   ) | 1-0

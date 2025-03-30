@@ -1,6 +1,6 @@
 {
     "name": "Scacchierante prima edizione",
-    "tournament_id": "test_202503291332",
+    "tournament_id": "Scacchierantep_202503291716",
     "start_date": "2025-03-22",
     "end_date": "2025-05-15",
     "total_rounds": 5,
@@ -34,28 +34,28 @@
     "players": [
         {
             "id": "BARVI001",
-            "first_name": "Vincenzo",
-            "last_name": "Di Bari",
+            "first_name": "Vincenzo Di",
+            "last_name": "Bari",
             "initial_elo": 1300,
-            "points": 1.0,
+            "points": 0.0,
             "results_history": [
                 {
                     "round": 1,
                     "opponent_id": "VENLU001",
                     "color": "white",
-                    "result": "1-0",
-                    "score": 1.0
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
                 "VENLU001",
-                "IONLO001"
+                "CALVA001"
             ],
             "white_games": 1,
             "black_games": 1,
             "last_color": "black",
             "received_bye": false,
-            "buchholz": 0.0,
+            "buchholz": 1.0,
             "performance_rating": null,
             "elo_change": null,
             "final_rank": null,
@@ -77,7 +77,7 @@
                 }
             ],
             "opponents": [
-                "CIBSI001",
+                "BARVI001",
                 "IONLO001"
             ],
             "white_games": 1,
@@ -106,8 +106,8 @@
                 }
             ],
             "opponents": [
-                "MERAL001",
-                "CALVA001"
+                "VALRI001",
+                "MERAL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -164,8 +164,8 @@
                 }
             ],
             "opponents": [
-                "TESAL001",
-                "PAGVI001"
+                "PAGVI001",
+                "TESAL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -193,12 +193,12 @@
                 }
             ],
             "opponents": [
-                "BARVI001",
+                "VENLU001",
                 "CALVA001"
             ],
-            "white_games": 2,
-            "black_games": 0,
-            "last_color": "white",
+            "white_games": 1,
+            "black_games": 1,
+            "last_color": "black",
             "received_bye": false,
             "buchholz": 0.0,
             "performance_rating": null,
@@ -222,8 +222,8 @@
                 }
             ],
             "opponents": [
-                "VALRI001",
-                "TESAL001"
+                "TESAL001",
+                "VALRI001"
             ],
             "white_games": 2,
             "black_games": 0,
@@ -280,8 +280,8 @@
                 }
             ],
             "opponents": [
-                "FORMA001",
-                "GORSE001"
+                "GORSE001",
+                "FORMA001"
             ],
             "white_games": 0,
             "black_games": 2,
@@ -309,8 +309,8 @@
                 }
             ],
             "opponents": [
-                "LIMCA001",
-                "GORSE001"
+                "GORSE001",
+                "LIMCA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -338,12 +338,12 @@
                 }
             ],
             "opponents": [
-                "VENLU001",
+                "CIBSI001",
                 "LIMCA001"
             ],
-            "white_games": 0,
-            "black_games": 2,
-            "last_color": "black",
+            "white_games": 1,
+            "black_games": 1,
+            "last_color": "white",
             "received_bye": false,
             "buchholz": 1.0,
             "performance_rating": null,
@@ -356,25 +356,25 @@
             "first_name": "Luigi",
             "last_name": "Ventura",
             "initial_elo": 1270,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
                     "opponent_id": "BARVI001",
                     "color": "black",
-                    "result": "1-0",
-                    "score": 0.0
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "VALRI001",
-                "BARVI001"
+                "BARVI001",
+                "IONLO001"
             ],
             "white_games": 1,
             "black_games": 1,
             "last_color": "white",
             "received_bye": false,
-            "buchholz": 1.0,
+            "buchholz": 0.0,
             "performance_rating": null,
             "elo_change": null,
             "final_rank": null,
@@ -391,7 +391,7 @@
                     "round": 1,
                     "white_player_id": "BARVI001",
                     "black_player_id": "VENLU001",
-                    "result": "1-0"
+                    "result": "0-1"
                 },
                 {
                     "id": 2,
@@ -436,15 +436,15 @@
                 {
                     "id": 7,
                     "round": 1,
-                    "white_player_id": "IONLO001",
-                    "black_player_id": "BARVI001",
+                    "white_player_id": "LIMCA001",
+                    "black_player_id": "TESAL001",
                     "result": null
                 },
                 {
                     "id": 8,
                     "round": 1,
-                    "white_player_id": "LIMCA001",
-                    "black_player_id": "TESAL001",
+                    "white_player_id": "VENLU001",
+                    "black_player_id": "IONLO001",
                     "result": null
                 },
                 {
@@ -465,14 +465,14 @@
                     "id": 11,
                     "round": 1,
                     "white_player_id": "CALVA001",
-                    "black_player_id": "CIBSI001",
+                    "black_player_id": "BARVI001",
                     "result": null
                 },
                 {
                     "id": 12,
                     "round": 1,
-                    "white_player_id": "VENLU001",
-                    "black_player_id": "VALRI001",
+                    "white_player_id": "VALRI001",
+                    "black_player_id": "CIBSI001",
                     "result": null
                 }
             ]
