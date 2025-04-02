@@ -91,8 +91,8 @@
                 }
             ],
             "opponents": [
-                "IONLO001",
-                "BARVI001"
+                "BARVI001",
+                "IONLO001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -109,7 +109,7 @@
             "first_name": "Silvia",
             "last_name": "Cibin",
             "initial_elo": 1295,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -117,6 +117,13 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "VALRI001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
@@ -156,8 +163,8 @@
                 }
             ],
             "opponents": [
-                "PAGVI001",
-                "MERAL001"
+                "MERAL001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -286,8 +293,8 @@
                 }
             ],
             "opponents": [
-                "FORMA001",
-                "CIBSI001"
+                "CIBSI001",
+                "FORMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -315,8 +322,8 @@
                 }
             ],
             "opponents": [
-                "FORMA001",
-                "GORSE001"
+                "GORSE001",
+                "FORMA001"
             ],
             "white_games": 0,
             "black_games": 2,
@@ -344,8 +351,8 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "LIMCA001"
+                "LIMCA001",
+                "GORSE001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -369,6 +376,13 @@
                     "opponent_id": "LIMCA001",
                     "color": "black",
                     "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "CIBSI001",
+                    "color": "white",
+                    "result": "0-1",
                     "score": 0.0
                 }
             ],
@@ -409,8 +423,8 @@
                 }
             ],
             "opponents": [
-                "IONLO001",
-                "BARVI001"
+                "BARVI001",
+                "IONLO001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -515,12 +529,12 @@
                     "round": 1,
                     "white_player_id": "VALRI001",
                     "black_player_id": "CIBSI001",
-                    "result": null
+                    "result": "0-1"
                 }
             ]
         }
     ],
     "next_match_id": 13,
     "k_factor": 20,
-    "launch_count": 1
+    "launch_count": 2
 }
