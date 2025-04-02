@@ -45,6 +45,13 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "CALVA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
@@ -66,7 +73,7 @@
             "first_name": "Valeria",
             "last_name": "Calzolari",
             "initial_elo": 1255,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -74,11 +81,18 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BARVI001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "BARVI001",
-                "IONLO001"
+                "IONLO001",
+                "BARVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -106,8 +120,8 @@
                 }
             ],
             "opponents": [
-                "VALRI001",
-                "MERAL001"
+                "MERAL001",
+                "VALRI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -171,8 +185,8 @@
                 }
             ],
             "opponents": [
-                "PAGVI001",
-                "TESAL001"
+                "TESAL001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -189,13 +203,20 @@
             "first_name": "Lorenzo",
             "last_name": "Ionata",
             "initial_elo": 1285,
-            "points": 1.0,
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
                     "opponent_id": "CALVA001",
                     "color": "white",
                     "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "VENLU001",
+                    "color": "black",
+                    "result": "0-1",
                     "score": 1.0
                 }
             ],
@@ -229,8 +250,8 @@
                 }
             ],
             "opponents": [
-                "VALRI001",
-                "TESAL001"
+                "TESAL001",
+                "VALRI001"
             ],
             "white_games": 2,
             "black_games": 0,
@@ -323,8 +344,8 @@
                 }
             ],
             "opponents": [
-                "LIMCA001",
-                "GORSE001"
+                "GORSE001",
+                "LIMCA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -352,8 +373,8 @@
                 }
             ],
             "opponents": [
-                "LIMCA001",
-                "CIBSI001"
+                "CIBSI001",
+                "LIMCA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -378,11 +399,18 @@
                     "color": "black",
                     "result": "0-1",
                     "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "IONLO001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "BARVI001",
-                "IONLO001"
+                "IONLO001",
+                "BARVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -459,7 +487,7 @@
                     "round": 1,
                     "white_player_id": "VENLU001",
                     "black_player_id": "IONLO001",
-                    "result": null
+                    "result": "0-1"
                 },
                 {
                     "id": 9,
@@ -480,7 +508,7 @@
                     "round": 1,
                     "white_player_id": "CALVA001",
                     "black_player_id": "BARVI001",
-                    "result": null
+                    "result": "1-0"
                 },
                 {
                     "id": 12,
@@ -493,5 +521,6 @@
         }
     ],
     "next_match_id": 13,
-    "k_factor": 20
+    "k_factor": 20,
+    "launch_count": 1
 }
