@@ -1,0 +1,16 @@
+﻿Nome torneo: TEST1
+Classifica Parziale - Dopo Turno 1
+Pos. Nome Cognome          [EloIni] Punti Bucch-1  Bucch   
+-------------------------------------------------------------
+1    Lorenzo I             [1285]   2      ---     2      
+2    Catia Lima            [1275]   2      ---     2      
+3    Alessia Mereu         [1265]   2      ---     1.5    
+4    Silvia Cibin          [1295]   1      ---     2.5    
+5    Sandra Testori        [1290]   1      ---     2      
+6    Luigi Ventura         [1270]   1      ---     2      
+7    Valeria Calzolari     [1255]   1      ---     2      
+8    Rita Valla            [1240]   1      ---     2      
+9    Martina Forte         [1280]   0.5    ---     2.5    
+10   Virginio Paglia       [1250]   0.5    ---     1.5    
+11   Vincenzo Bari         [1300]   0      ---     2      
+12   Serena Gori           [1260]   0      ---     2      

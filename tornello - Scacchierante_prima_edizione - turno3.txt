@@ -1,0 +1,12 @@
+﻿Torneo: Scacchierante prima edizione
+Turno: 3
+Periodo: Domenica 13 aprile 2025 - Mercoledì 23 aprile 2025
+------------------------------------------------------------
+ID | Bianco                   [Elo] (Pt) - Nero                    [Elo] (Pt) | Risultato
+------------------------------------------------------------
+	13 | Lorenzo Ionata           [1285] (2   ) - Catia Lima               [1275] (2   ) | Da programmare
+	14 | Virginio Paglia          [1250] (1.5 ) - Alessia Mereu            [1265] (2   ) | Da programmare
+	15 | Silvia Cibin             [1295] (1   ) - Luigi Ventura            [1270] (1   ) | Da programmare
+	16 | Alessandra Testori       [1290] (1   ) - Valeria Calzolari        [1255] (1   ) | Da programmare
+	17 | Martina Forte            [1280] (0.5 ) - Serena Gori              [1260] (0   ) | Da programmare
+	18 | Vincenzo Di Bari         [1300] (0   ) - Rita Valleriani          [1245] (0   ) | Da programmare

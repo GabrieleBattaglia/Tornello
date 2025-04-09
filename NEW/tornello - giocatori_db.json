@@ -1,0 +1,158 @@
+[
+    {
+        "id": "IXXLO001",
+        "first_name": "Lorenzo",
+        "last_name": "I",
+        "current_elo": 1285,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "LIMCA001",
+        "first_name": "Catia",
+        "last_name": "Lima",
+        "current_elo": 1275,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "PAGVI001",
+        "first_name": "Virginio",
+        "last_name": "Paglia",
+        "current_elo": 1250,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "MERAL001",
+        "first_name": "Alessia",
+        "last_name": "Mereu",
+        "current_elo": 1265,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "CIBSI001",
+        "first_name": "Silvia",
+        "last_name": "Cibin",
+        "current_elo": 1295,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "VENLU001",
+        "first_name": "Luigi",
+        "last_name": "Ventura",
+        "current_elo": 1270,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "TESSA001",
+        "first_name": "Sandra",
+        "last_name": "Testori",
+        "current_elo": 1290,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "CALVA001",
+        "first_name": "Valeria",
+        "last_name": "Calzolari",
+        "current_elo": 1255,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "FORMA001",
+        "first_name": "Martina",
+        "last_name": "Forte",
+        "current_elo": 1280,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "GORSE001",
+        "first_name": "Serena",
+        "last_name": "Gori",
+        "current_elo": 1260,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "BARVI001",
+        "first_name": "Vincenzo",
+        "last_name": "Bari",
+        "current_elo": 1300,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    },
+    {
+        "id": "VALRI001",
+        "first_name": "Rita",
+        "last_name": "Valla",
+        "current_elo": 1240,
+        "registration_date": "2025-04-08",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        }
+    }
+]
