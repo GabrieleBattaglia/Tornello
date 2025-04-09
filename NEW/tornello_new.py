@@ -9,7 +9,7 @@ import traceback
 from datetime import datetime, timedelta
 
 # --- Constants ---
-VERSIONE = "2.4.1 del 6 aprile 2025"
+VERSIONE = "3.0.0 del 9 aprile 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -149,7 +149,6 @@ def add_or_update_player_in_db(players_db, first_name, last_name, elo):
     norm_last = last_name.strip().title()
     existing_player = None
     for p_id, player_data in players_db.items():
-        # Indentazione corretta per if multilinea
         if player_data.get('first_name','').lower() == norm_first.lower() and \
            player_data.get('last_name','').lower() == norm_last.lower():
             existing_player = player_data
@@ -194,7 +193,7 @@ def add_or_update_player_in_db(players_db, first_name, last_name, elo):
             "current_elo": elo,
             "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
             "tournaments_played": [],
-            "medals": {"gold": 0, "silver": 0, "bronze": 0}
+            "medals": {"gold": 0, "silver": 0, "bronze": 0, "downfloat_count": 0}
         }
         players_db[new_id] = new_player
         print(f"Nuovo giocatore {norm_first} {norm_last} aggiunto al DB con ID {new_id}.")
@@ -677,231 +676,707 @@ def determine_color_assignment(player1, player2):
                 # Indentazione corretta
                 # Se nemmeno l'inversione è possibile, siamo bloccati
                 return ('Error', f"Vincoli colore assoluti impediscono {p1_id}(Elo={p1_elo}) vs {p2_id}(Elo={p2_elo}) anche con rating")
+def select_downfloater(group_to_select_from, torneo):
+    """
+    Seleziona il giocatore che diventerà downfloater da un gruppo dispari.
+    Criterio FIDE (più aderente):
+    1. Priorità a NON far scendere chi ha già avuto il BYE in questo torneo.
+    2. Priorità a NON far scendere chi è già sceso (downfloat_count > 0).
+    3. Tra quelli con pari priorità (es. tutti senza bye e mai scesi),
+       scegli quello con RANKING più basso (Elo più basso nel nostro caso)
+       per farlo scendere.
+    Restituisce il giocatore selezionato o None se il gruppo è vuoto.
+    IMPORTANTE: Questa funzione SELEZIONA soltanto. L'incremento del
+                downfloat_count avviene nella funzione chiamante (pair_score_group).
+    """
+    if not group_to_select_from:
+        return None
+    # Il gruppo arriva già ordinato per Elo DESC (dal più alto al più basso)
+    # Noi vogliamo selezionare partendo dal fondo (Elo più basso)
+    potential_floaters = list(group_to_select_from) # Lavora su copia
+    # Ordina i candidati secondo i criteri FIDE per la *selezione* del downfloater
+    # Chiave di sort: (ha_ricevuto_bye_TORNEO, downfloat_count, -initial_elo -> che diventa +initial_elo per sort ASC)
+    # Si ordina in modo che chi DEVE scendere (bye=False, float=0, elo basso) venga prima
+    def floater_priority_key(player):
+        p_data = torneo['players_dict'].get(player['id']) # Recupera dati completi aggiornati
+        if not p_data: return (True, 999, 0) # Errore, mettilo in fondo
 
-def pairing(torneo):
-    """Genera gli abbinamenti per il turno corrente seguendo regole FIDE (Swiss Dutch)."""
-    round_number = torneo["current_round"]
-    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players', [])):
-        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+        # Verifica se ha ricevuto il bye IN QUESTO TORNEO
+        # La chiave 'received_bye' viene aggiornata direttamente nel player_dict
+        has_received_bye_in_tournament = p_data.get('received_bye', False)
+        downfloat_count = p_data.get('downfloat_count', 0)
+        elo = p_data.get('initial_elo', 0)
+        # Priorità per SCENDERE:
+        # 1. Non ha avuto bye? (False viene prima di True)
+        # 2. Non ha mai floattato? (0 viene prima di 1, 2...)
+        # 3. Ha Elo basso? (Elo basso viene prima con sort ASC)
+        return (has_received_bye_in_tournament, downfloat_count, elo)
+    potential_floaters.sort(key=floater_priority_key) # Ordina per priorità a scendere
+    if not potential_floaters: # Controllo sicurezza
+         return None
+
+    # Il giocatore da far scendere è il PRIMO in questa lista ordinata
+    downfloater = potential_floaters[0]
+    print(f"DEBUG select_downfloater: Candidati ordinati per priorità a scendere: {[p['id'] for p in potential_floaters]}") # DEBUG
+    print(f"DEBUG select_downfloater: Selezionato {downfloater.get('id','?')} come downfloater (Bye: {torneo['players_dict'].get(downfloater['id'],{}).get('received_bye')}, Floats: {torneo['players_dict'].get(downfloater['id'],{}).get('downfloat_count')}, Elo: {downfloater.get('initial_elo','?')})") # DEBUG
+    return downfloater
+
+# --- Funzione per il tentativo di accoppiamento standard (Fold/Slide) ---
+def attempt_fold_pairing(top_half, bottom_half, torneo, round_number):
+    """
+    Tenta l'accoppiamento standard Top-vs-Bottom (Fold/Slide).
+    Restituisce: (lista_partite_riuscite, lista_spaiati_top, lista_spaiati_bottom)
+    """
+    print(f"DEBUG attempt_fold_pairing: Inizio tentativo Top ({len(top_half)}) vs Bottom ({len(bottom_half)})") # DEBUG
+    matches = []
+    used_player_ids = set()
+    possible_matches_info = [] # Lista per debug colori
+
+    # Prima analizza tutte le coppie potenziali per i colori (per debug)
+    for p1 in top_half:
+        for p2 in bottom_half:
+             played_before = p2['id'] in p1.get('opponents', set())
+             if not played_before:
+                 color_result = determine_color_assignment(p1, p2)
+                 possible_matches_info.append({
+                     'p1_id': p1['id'], 'p2_id': p2['id'],
+                     'color_result': color_result # ('W', W_ID, B_ID) or ('Error', reason)
+                 })
+    print(f"DEBUG attempt_fold_pairing: Analisi colori preliminare:") # DEBUG
+    for info in possible_matches_info:
+        print(f"  - {info['p1_id']} vs {info['p2_id']} -> {info['color_result']}") # DEBUG
+
+    # Ora esegui il matching greedy
+    for i in range(len(top_half)):
+        p1 = top_half[i]
+        if p1['id'] in used_player_ids: continue
+
+        found_opponent = False
+        # Cerca un avversario valido nella bottom half (partendo da quello "ideale")
+        for k in range(len(bottom_half)):
+            p2 = bottom_half[k]
+            if p2['id'] in used_player_ids: continue
+
+            # Verifica se possono giocare (non giocato + colori OK)
+            played_before = p2['id'] in p1.get('opponents', set())
+            if not played_before:
+                color_result = determine_color_assignment(p1, p2)
+                if color_result[0] == 'W':
+                    # Accoppiamento Trovato!
+                    white_id, black_id = color_result[1], color_result[2]
+                    print(f"DEBUG attempt_fold_pairing: Coppia trovata! {p1['id']} vs {p2['id']}. Colori: W={white_id}, B={black_id}") # DEBUG
+                    match = {
+                        "id": torneo["next_match_id"], "round": round_number,
+                        "white_player_id": white_id, "black_player_id": black_id,
+                        "result": None
+                    }
+                    matches.append(match)
+                    torneo["next_match_id"] += 1
+                    used_player_ids.add(p1['id'])
+                    used_player_ids.add(p2['id'])
+                    found_opponent = True
+                    break # Passa al prossimo giocatore della top_half
+
+        if not found_opponent:
+             print(f"DEBUG attempt_fold_pairing: Nessun avversario valido trovato per {p1['id']} in bottom_half.") #DEBUG
+
+    # Identifica chi è rimasto spaiato
+    unpaired_top = [p for p in top_half if p['id'] not in used_player_ids]
+    unpaired_bottom = [p for p in bottom_half if p['id'] not in used_player_ids]
+    print(f"DEBUG attempt_fold_pairing: Fine tentativo. Partite create: {len(matches)}. Spaiati Top: {len(unpaired_top)}, Spaiati Bottom: {len(unpaired_bottom)}") # DEBUG
+
+    return matches, unpaired_top, unpaired_bottom
+def check_pairing_validity(p1, p2, torneo_players_dict):
+    """
+    Verifica se p1 può essere accoppiato con p2.
+    Controlla se hanno già giocato e se l'assegnazione colori è valida.
+    Recupera i dati più aggiornati dei giocatori dal dizionario principale.
+    Restituisce: (True/False, color_result)
+    """
+    # Recupera dati aggiornati (importante se stati modificati da altre operazioni)
+    player1 = torneo_players_dict.get(p1.get('id'))
+    player2 = torneo_players_dict.get(p2.get('id'))
+
+    if not player1 or not player2:
+        print(f"DEBUG check_pairing_validity: Errore, giocatore non trovato nel dizionario ({p1.get('id')}, {p2.get('id')})") #DEBUG
+        return False, None
+
+    played_before = player2.get('id') in player1.get('opponents', set())
+    if played_before:
+        # print(f"DEBUG check_pairing_validity: {player1.get('id')} vs {player2.get('id')} hanno già giocato.") # DEBUG (Opzionale, può essere verboso)
+        return False, None
+
+    color_result = determine_color_assignment(player1, player2)
+    if color_result[0] == 'W':
+        return True, color_result
+    else:
+        # Stampa il motivo del fallimento colori solo se fallisce
+        # print(f"DEBUG check_pairing_validity: Colori falliti per {player1.get('id')} vs {player2.get('id')}: {color_result[1]}") # DEBUG (Opzionale)
+        return False, None
+
+def create_match_from_color_result(color_result, torneo, round_number):
+    """Crea un dizionario partita da un risultato valido ('W', W_ID, B_ID)."""
+    if not color_result or color_result[0] != 'W':
+        print(f"ERRORE create_match: Ricevuto risultato colore non valido: {color_result}")
+        return None # Dovrebbe ricevere solo risultati validi
+    white_id, black_id = color_result[1], color_result[2]
+    match = {
+        "id": torneo["next_match_id"],
+        "round": round_number,
+        "white_player_id": white_id,
+        "black_player_id": black_id,
+        "result": None
+    }
+    torneo["next_match_id"] += 1
+    return match
+
+# ===============================================================================
+# --- Fase 4: Funzione per Trasposizioni/Accoppiamenti Alternativi Avanzati ---
+# ===============================================================================
+
+def attempt_transpositions(unpaired_top, unpaired_bottom, matches_made_in_group, torneo, round_number):
+    """
+    Tenta di accoppiare i giocatori spaiati usando logiche di recupero FIDE-like avanzate.
+    Ordine tentativi per la coppia spaiata (h0, l0):
+    1. Diretto h0 vs l0
+    2. Alternativo h0 vs l1 (se esiste l1)
+    3. Alternativo h1 vs l0 (se esiste h1)
+    4. Trasposizione Iterativa: Scambia partner tra (h0, l0) e CIASCUNA coppia (hp, lp)
+       già formata nel fold pairing, finché non ne trova una valida.
+    Se un tentativo riesce, si accoppia e si riavvia il ciclo while con i rimanenti.
+    Se tutti falliscono per (h0, l0), il recupero per questo gruppo si interrompe.
+
+    Restituisce: (lista_nuove_partite, lista_top_rimasti, lista_bottom_rimasti, id_partita_originale_da_rimuovere | None)
+    """
+    print(f"DEBUG attempt_transpositions: Inizio recupero avanzato. Spaiati T:{len(unpaired_top)}, B:{len(unpaired_bottom)}. Partite base: {len(matches_made_in_group)}") # DEBUG
+
+    newly_made_matches = []
+    current_unpaired_top = list(unpaired_top)
+    current_unpaired_bottom = list(unpaired_bottom)
+    current_unpaired_top.sort(key=lambda x: -x.get("initial_elo", 0))
+    current_unpaired_bottom.sort(key=lambda x: -x.get("initial_elo", 0))
+
     players_dict = torneo['players_dict']
-    # Lavora su una copia dei dati per evitare modifiche parziali in caso di fallimento
+    match_id_to_remove = None # Diventa non-None solo se avviene una trasposizione T4
+
+    # Loop finché ci sono giocatori spaiati in entrambe le metà
+    while current_unpaired_top and current_unpaired_bottom:
+        paired_this_cycle = False # Flag per vedere se abbiamo accoppiato h0 in questa iterazione
+
+        h0 = current_unpaired_top[0]
+        l0 = current_unpaired_bottom[0]
+        print(f"DEBUG attempt_transpositions: Ciclo recovery, considero H0={h0['id']} L0={l0['id']}") # DEBUG
+
+        # --- Tentativo 1: Accoppiamento Diretto (H0 vs L0) ---
+        can_pair_1, color_res_1 = check_pairing_validity(h0, l0, players_dict)
+        if can_pair_1:
+            print(f"DEBUG attempt_transpositions: T1 - Diretto OK {h0['id']} vs {l0['id']}") # DEBUG
+            match = create_match_from_color_result(color_res_1, torneo, round_number)
+            if match:
+                newly_made_matches.append(match)
+                current_unpaired_top.pop(0)
+                current_unpaired_bottom.pop(0)
+                paired_this_cycle = True
+            # else: ERRORE gestito da create_match
+
+        # --- Tentativo 2: Alternativo H0 vs L1 (se T1 fallito e L1 esiste) ---
+        if not paired_this_cycle and len(current_unpaired_bottom) > 1:
+            l1 = current_unpaired_bottom[1]
+            print(f"DEBUG attempt_transpositions: T2 - Tento H0={h0['id']} vs L1={l1['id']}") # DEBUG
+            can_pair_2, color_res_2 = check_pairing_validity(h0, l1, players_dict)
+            if can_pair_2:
+                print(f"DEBUG attempt_transpositions: T2 - Alternativo OK {h0['id']} vs {l1['id']}") # DEBUG
+                match = create_match_from_color_result(color_res_2, torneo, round_number)
+                if match:
+                    newly_made_matches.append(match)
+                    current_unpaired_top.pop(0)
+                    current_unpaired_bottom.pop(1) # Rimuovi l1 (indice 1)
+                    paired_this_cycle = True
+                # else: ERRORE gestito da create_match
+
+        # --- Tentativo 3: Alternativo H1 vs L0 (se T1,T2 falliti e H1 esiste) ---
+        if not paired_this_cycle and len(current_unpaired_top) > 1:
+            h1 = current_unpaired_top[1]
+            print(f"DEBUG attempt_transpositions: T3 - Tento H1={h1['id']} vs L0={l0['id']}") # DEBUG
+            can_pair_3, color_res_3 = check_pairing_validity(h1, l0, players_dict)
+            if can_pair_3:
+                print(f"DEBUG attempt_transpositions: T3 - Alternativo OK {h1['id']} vs {l0['id']}") # DEBUG
+                match = create_match_from_color_result(color_res_3, torneo, round_number)
+                if match:
+                    newly_made_matches.append(match)
+                    current_unpaired_top.pop(1) # Rimuovi h1 (indice 1)
+                    current_unpaired_bottom.pop(0)
+                    paired_this_cycle = True
+                # else: ERRORE gestito da create_match
+
+        # --- Tentativo 4: Trasposizione Iterativa (se T1,T2,T3 falliti e ci sono coppie con cui scambiare) ---
+        if not paired_this_cycle and matches_made_in_group:
+            print(f"DEBUG attempt_transpositions: T4 - Tento trasposizione H0={h0['id']}, L0={l0['id']} iterando sulle coppie esistenti...") # DEBUG
+
+            # Itera sulle partite create nel fold pairing originale per trovare uno scambio valido
+            for original_match_data in matches_made_in_group:
+                hp_id = original_match_data.get('white_player_id') # ID Giocatore 1 della coppia esistente
+                lp_id = original_match_data.get('black_player_id') # ID Giocatore 2 della coppia esistente
+                hp = players_dict.get(hp_id)
+                lp = players_dict.get(lp_id)
+
+                if not hp or not lp:
+                     print(f"WARN attempt_transpositions: Saltato controllo swap con match {original_match_data.get('id')} - dati giocatore mancanti ({hp_id}, {lp_id})") #DEBUG
+                     continue # Salta questa coppia se i dati non sono recuperabili
+
+                # Verifica se lo scambio è valido
+                # Coppia Swap 1: h0 vs lp
+                can_swap_1, color_res_swap_1 = check_pairing_validity(h0, lp, players_dict)
+                # Coppia Swap 2: hp vs l0
+                can_swap_2, color_res_swap_2 = check_pairing_validity(hp, l0, players_dict)
+
+                # print(f"DEBUG attempt_transpositions T4 Swap Check with ({hp['id']} vs {lp['id']}): ({h0['id']} vs {lp['id']}) -> {can_swap_1}, ({hp['id']} vs {l0['id']}) -> {can_swap_2}") # DEBUG (Troppo verboso forse)
+
+                if can_swap_1 and can_swap_2:
+                    # TRASPOSIZIONE VALIDA TROVATA!
+                    print(f"DEBUG attempt_transpositions: T4 - TRASPOSIZIONE VALIDA TROVATA scambiando con ({hp['id']} vs {lp['id']})!") # DEBUG
+                    match_swap_1 = create_match_from_color_result(color_res_swap_1, torneo, round_number)
+                    match_swap_2 = create_match_from_color_result(color_res_swap_2, torneo, round_number)
+
+                    if match_swap_1 and match_swap_2:
+                        newly_made_matches.extend([match_swap_1, match_swap_2])
+                        current_unpaired_top.pop(0)
+                        current_unpaired_bottom.pop(0)
+                        match_id_to_remove = original_match_data['id'] # Segnala ID originale da rimuovere
+                        paired_this_cycle = True # Abbiamo fatto progressi
+                        print(f"DEBUG attempt_transpositions: T4 - Trasposizione OK. Creati {match_swap_1['id']}, {match_swap_2['id']}. Invalidato {match_id_to_remove}") # DEBUG
+                        # Ritorna subito dopo la prima trasposizione valida trovata
+                        return newly_made_matches, current_unpaired_top, current_unpaired_bottom, match_id_to_remove
+                    else:
+                        print(f"ERRORE attempt_transpositions: T4 - Creazione match swap fallita?") #DEBUG
+                        # Se la creazione fallisce qui, è un problema grave, ma continuiamo a cercare altre trasposizioni valide
+                        # (anche se non dovrebbe accadere se check_pairing_validity è corretto)
+                        paired_this_cycle = False # Non considerarlo un successo se il match non viene creato
+                        break # Esci dal loop for delle trasposizioni per sicurezza? O continua? Continuiamo a cercare.
+
+            # Se il loop 'for' finisce senza aver trovato (e ritornato) una trasposizione valida
+            if not paired_this_cycle:
+                 print(f"DEBUG attempt_transpositions: T4 - Nessuna trasposizione valida trovata iterando.") #DEBUG
+
+        # --- Se nessun tentativo ha funzionato per h0 in questo ciclo ---
+        if not paired_this_cycle:
+            # Nessuna delle opzioni ha funzionato per H0 con L0 o L1, né H1 con L0, né trasposizioni.
+            # Interrompiamo il recupero per questo gruppo; h0 e altri rimarranno spaiati.
+            print(f"DEBUG attempt_transpositions: Nessuna soluzione trovata per H0={h0['id']} questo ciclo. Interrompo recupero.") # DEBUG
+            break # Esce dal ciclo while principale di attempt_transpositions
+
+        # Se paired_this_cycle è True (abbiamo accoppiato tramite T1, T2 o T3),
+        # il ciclo while continua con le liste ridotte di giocatori spaiati.
+
+    # Fine del ciclo while di recupero
+    print(f"DEBUG attempt_transpositions: Fine recupero. Nuove partite: {len(newly_made_matches)}. Spaiati T: {len(current_unpaired_top)}, B: {len(current_unpaired_bottom)}") # DEBUG
+    # Ritorna le partite create in questo tentativo e i giocatori rimasti spaiati
+    # match_id_to_remove sarà None se non è avvenuta una trasposizione T4 che ha richiesto un ritorno immediato.
+    return newly_made_matches, current_unpaired_top, current_unpaired_bottom, match_id_to_remove
+
+def attempt_pair_within_halves(remaining_top, remaining_bottom, torneo, round_number):
+    """
+    Tenta di accoppiare i giocatori rimasti all'interno delle loro metà originali.
+    Questa è una procedura di ultima istanza secondo FIDE C.04.5.
+    Restituisce: (lista_partite_create_within_halves, lista_giocatori_ancora_spaiati)
+    """
+    print(f"DEBUG attempt_pair_within_halves: Inizio recupero finale. Rimasti T:{len(remaining_top)}, B:{len(remaining_bottom)}") # DEBUG
+
+    within_halves_matches = []
+    final_unpaired_players = []
+    players_dict = torneo['players_dict'] # Usiamo il dizionario principale aggiornato
+
+    # --- Accoppia all'interno di remaining_top ---
+    unpaired_in_top = list(remaining_top) # Lavora su copia
+    unpaired_in_top.sort(key=lambda x: -x.get("initial_elo", 0)) # Ordina per Elo
+    paired_ids_in_top = set()
+
+    # Itera sulla lista top a passi di 2
+    for i in range(0, len(unpaired_in_top) - 1, 2):
+        p1 = unpaired_in_top[i]
+        p2 = unpaired_in_top[i+1]
+        print(f"DEBUG attempt_pair_within_halves: Tento Top vs Top: {p1['id']} vs {p2['id']}") #DEBUG
+
+        # Usa la funzione helper check_pairing_validity
+        can_pair, color_res = check_pairing_validity(p1, p2, players_dict)
+        if can_pair:
+            match = create_match_from_color_result(color_res, torneo, round_number)
+            if match:
+                within_halves_matches.append(match)
+                paired_ids_in_top.add(p1['id'])
+                paired_ids_in_top.add(p2['id'])
+                print(f"DEBUG attempt_pair_within_halves: OK Top vs Top - Match ID {match['id']}") #DEBUG
+            else:
+                 print(f"ERRORE attempt_pair_within_halves: Fallita creazione match Top-Top?") #DEBUG
+        # else: Non possono giocare, rimarranno spaiati
+
+    # Aggiungi ai final_unpaired chi non è stato accoppiato in top
+    for p in unpaired_in_top:
+         if p['id'] not in paired_ids_in_top:
+             final_unpaired_players.append(p)
+
+    # --- Accoppia all'interno di remaining_bottom ---
+    unpaired_in_bottom = list(remaining_bottom) # Lavora su copia
+    unpaired_in_bottom.sort(key=lambda x: -x.get("initial_elo", 0)) # Ordina per Elo
+    paired_ids_in_bottom = set()
+
+    # Itera sulla lista bottom a passi di 2
+    for i in range(0, len(unpaired_in_bottom) - 1, 2):
+        p1 = unpaired_in_bottom[i]
+        p2 = unpaired_in_bottom[i+1]
+        print(f"DEBUG attempt_pair_within_halves: Tento Bottom vs Bottom: {p1['id']} vs {p2['id']}") #DEBUG
+
+        # Usa la funzione helper check_pairing_validity
+        can_pair, color_res = check_pairing_validity(p1, p2, players_dict)
+        if can_pair:
+            match = create_match_from_color_result(color_res, torneo, round_number)
+            if match:
+                within_halves_matches.append(match)
+                paired_ids_in_bottom.add(p1['id'])
+                paired_ids_in_bottom.add(p2['id'])
+                print(f"DEBUG attempt_pair_within_halves: OK Bottom vs Bottom - Match ID {match['id']}") #DEBUG
+            else:
+                 print(f"ERRORE attempt_pair_within_halves: Fallita creazione match Bottom-Bottom?") #DEBUG
+        # else: Non possono giocare, rimarranno spaiati
+
+    # Aggiungi ai final_unpaired chi non è stato accoppiato in bottom
+    for p in unpaired_in_bottom:
+         if p['id'] not in paired_ids_in_bottom:
+             final_unpaired_players.append(p)
+
+    print(f"DEBUG attempt_pair_within_halves: Fine recupero finale. Partite create: {len(within_halves_matches)}. Spaiati finali: {len(final_unpaired_players)}") # DEBUG
+    if final_unpaired_players:
+         print(f"DEBUG attempt_pair_within_halves: ATTENZIONE! Giocatori ancora spaiati: {[p['id'] for p in final_unpaired_players]}") # DEBUG
+
+    return within_halves_matches, final_unpaired_players
+
+def pair_score_group(group_players, downfloaters_in, torneo, round_number):
+    """
+    Gestisce l'accoppiamento per un singolo gruppo di punteggio, inclusi i downfloaters.
+    Chiama i vari tentativi di pairing (fold, trasposizioni semplici, within-halves).
+    Incrementa downfloat_count per il giocatore selezionato.
+    Restituisce: (lista_partite_generate_per_il_gruppo, lista_downfloaters_per_il_prossimo_gruppo)
+    """
+    print(f"\nDEBUG pair_score_group: Processo gruppo con {len(group_players)} giocatori + {len(downfloaters_in)} downfloaters.") # DEBUG
+    combined_group = downfloaters_in + group_players
+
+    # Ordina il gruppo combinato per Elo DESC (proxy per rank FIDE)
+    combined_group.sort(key=lambda x: -x.get("initial_elo", 0))
+    print(f"DEBUG pair_score_group: Gruppo combinato ordinato: {[p['id'] for p in combined_group]}") # DEBUG
+
+    matches_in_this_step = [] # Lista temporanea per le partite create in questo gruppo
+    current_downfloaters = [] # Questi saranno i downfloaters *finali* di questo gruppo
+    players_to_pair_in_group = list(combined_group) # Lavora su una copia
+
+    # Gestisci numero dispari: seleziona downfloater E INCREMENTA COUNT
+    if len(players_to_pair_in_group) % 2 != 0:
+        # Passa il torneo per accedere ai dati aggiornati (bye, float count) necessari alla selezione FIDE-like
+        floater = select_downfloater(players_to_pair_in_group, torneo)
+        if floater:
+            floater_id = floater.get('id')
+            if floater_id: # Assicurati che l'ID esista
+                # Rimuovi dalla lista da accoppiare
+                players_to_pair_in_group = [p for p in players_to_pair_in_group if p.get('id') != floater_id]
+                # Aggiungi ai downfloaters finali che verranno restituiti
+                current_downfloaters.append(floater)
+
+                # --- INCREMENTA DOWNFLOAT COUNT nel dizionario principale ---
+                # Usa il dizionario aggiornato del torneo per modificare lo stato persistente
+                floater_data_main = torneo['players_dict'].get(floater_id)
+                if floater_data_main:
+                     current_count = floater_data_main.get('downfloat_count', 0)
+                     # Aggiorna il contatore nel dizionario principale
+                     floater_data_main['downfloat_count'] = current_count + 1
+                     print(f"DEBUG pair_score_group: Incrementato downfloat_count per {floater_id} a {current_count + 1}") #DEBUG
+                else:
+                     # Questo sarebbe un errore grave di consistenza dati
+                     print(f"ERRORE CRITICO pair_score_group: Impossibile trovare i dati principali di {floater_id} per aggiornare downfloat_count!") #DEBUG
+                # --- FINE INCREMENTO ---
+
+                print(f"DEBUG pair_score_group: Gruppo reso pari. Downfloater selezionato: {floater_id}") # DEBUG
+            else:
+                print("DEBUG pair_score_group: ERRORE - Giocatore selezionato come downfloater non ha un ID?") #DEBUG
+        else:
+             print("DEBUG pair_score_group: ERRORE - select_downfloater ha restituito None?") # DEBUG
+
+    # Se rimangono meno di 2 giocatori, vanno ai downfloaters finali
+    if len(players_to_pair_in_group) < 2:
+        print(f"DEBUG pair_score_group: Meno di 2 giocatori rimasti ({len(players_to_pair_in_group)}), diventano downfloaters finali: {[p['id'] for p in players_to_pair_in_group]}") # DEBUG
+        # Aggiunge questi ai downfloaters già determinati (quello per numero dispari)
+        current_downfloaters.extend(players_to_pair_in_group)
+        # Restituisce lista vuota di partite e tutti i downfloaters accumulati
+        return [], current_downfloaters
+
+    # Dividi in metà (ora il numero è pari)
+    group_size = len(players_to_pair_in_group)
+    top_half = players_to_pair_in_group[:group_size // 2]
+    bottom_half = players_to_pair_in_group[group_size // 2:]
+    print(f"DEBUG pair_score_group: Top Half ({len(top_half)}): {[p['id'] for p in top_half]}") # DEBUG
+    print(f"DEBUG pair_score_group: Bottom Half ({len(bottom_half)}): {[p['id'] for p in bottom_half]}") # DEBUG
+
+    # --- Tentativo 1: Fold Pairing ---
+    matches_fold, unpaired_top, unpaired_bottom = attempt_fold_pairing(top_half, bottom_half, torneo, round_number)
+    # Aggiungi SUBITO le partite trovate nel fold alla lista temporanea di questo gruppo
+    matches_in_this_step.extend(matches_fold)
+
+    # --- Tentativo 2: Trasposizioni/Accoppiamenti Alternativi ---
+    remaining_top_after_rec = list(unpaired_top)  # Inizializza con gli spaiati dal fold
+    remaining_bottom_after_rec = list(unpaired_bottom)
+    match_id_to_remove_from_fold = None # ID da rimuovere se swap avviene
+
+    # Esegui solo se ci sono giocatori rimasti spaiati dal primo tentativo
+    if unpaired_top or unpaired_bottom:
+        print(f"DEBUG pair_score_group: Giocatori rimasti dopo Fold - T:{len(unpaired_top)}, B:{len(unpaired_bottom)}. Chiamo attempt_transpositions...") #DEBUG
+
+        # Passa le partite già fatte nel fold (matches_fold), gli spaiati e il torneo
+        new_matches_rec, remaining_top_after_rec, remaining_bottom_after_rec, match_id_to_remove_from_fold = attempt_transpositions(
+            unpaired_top,
+            unpaired_bottom,
+            matches_fold, # Passa SOLO le partite create nel fold pairing di questo step
+            torneo,
+            round_number
+        )
+
+        # Se la trasposizione ha avuto successo e richiede la rimozione di una partita originale:
+        if match_id_to_remove_from_fold is not None:
+             print(f"DEBUG pair_score_group: Rimuovo match originale ID {match_id_to_remove_from_fold} (causa trasposizione).") #DEBUG
+             # Rimuovi la partita originale dalla lista TEMPORANEA di questo gruppo
+             matches_in_this_step = [m for m in matches_in_this_step if m.get('id') != match_id_to_remove_from_fold]
+
+        # Aggiungi le nuove partite create dal recupero (se ce ne sono)
+        if new_matches_rec:
+             print(f"DEBUG pair_score_group: Aggiungo {len(new_matches_rec)} partite da recupero (transposizioni/alternativi).") #DEBUG
+             matches_in_this_step.extend(new_matches_rec)
+    # else: Fold pairing ha accoppiato tutti
+    # --- Tentativo 3: Pairing Within Halves (ULTIMA ISTANZA) ---
+    # Chiama questo SE E SOLO SE rimangono giocatori spaiati DOPO il tentativo di trasposizione/recupero
+    if remaining_top_after_rec or remaining_bottom_after_rec:
+        print(f"DEBUG pair_score_group: Giocatori rimasti dopo Recupero - T:{len(remaining_top_after_rec)}, B:{len(remaining_bottom_after_rec)}. Chiamo attempt_pair_within_halves...") #DEBUG
+
+        # Passa i giocatori rimasti dalla fase precedente
+        within_halves_matches, final_unpaired = attempt_pair_within_halves(remaining_top_after_rec,remaining_bottom_after_rec,torneo,round_number)
+
+        if within_halves_matches:
+             print(f"DEBUG pair_score_group: Aggiungo {len(within_halves_matches)} partite da within-halves.") #DEBUG
+             matches_in_this_step.extend(within_halves_matches)
+
+        # I giocatori ancora spaiati DOPO QUESTO ULTIMO TENTATIVO diventano downfloaters finali
+        if final_unpaired:
+             print(f"DEBUG pair_score_group: Giocatori rimasti ANCHE dopo within-halves. Diventano Downfloaters finali: {[p['id'] for p in final_unpaired]}") # DEBUG
+             # Aggiungi ai downfloaters già selezionati (quello per numero dispari)
+             current_downfloaters.extend(final_unpaired)
+    # else: Non c'erano giocatori rimasti dopo il recupero (transposizioni/alternativi)
+
+    # Ritorna le partite totali create per questo gruppo e i downfloaters finali accumulati
+    print(f"DEBUG pair_score_group: Fine processo gruppo. Partite totali create: {len(matches_in_this_step)}. Downfloaters finali generati: {[p['id'] for p in current_downfloaters]}") # DEBUG
+    return matches_in_this_step, current_downfloaters
+
+# --- Funzione Principale Orchestratrice (sostituisce la vecchia 'pairing') ---
+def generate_pairings_for_round(torneo):
+    """
+    Genera gli abbinamenti per il turno corrente usando la logica modulare FIDE.
+    """
+    round_number = torneo.get("current_round")
+    if round_number is None:
+        print("ERRORE: Numero turno corrente non definito nel torneo.")
+        return None
+    print(f"\nDEBUG: --- INIZIO GENERAZIONE PAIRING TURNO {round_number} ---") # DEBUG
+
+    # Assicura che il dizionario giocatori sia aggiornato e accessibile
+    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
+       torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    players_dict = torneo['players_dict']
+
+    # 1. Prepara lista giocatori attivi
     players_for_pairing = []
     for p_orig in torneo.get('players', []):
-        if not p_orig.get("withdrawn", False): # Considera solo i giocatori non ritirati
+        if not p_orig.get("withdrawn", False):
             p_copy = p_orig.copy()
-            # Assicurati che opponents sia un set per i controlli
+            # Assicura campi necessari (anche se già fatto altrove, è una sicurezza)
             p_copy['opponents'] = set(p_copy.get('opponents', []))
-            # Inizializza/verifica campi colore necessari
+            p_copy.setdefault('points', 0.0)
+            p_copy.setdefault('initial_elo', 1500) # Fallback
+            p_copy.setdefault('received_bye', False)
             p_copy.setdefault('white_games', 0)
             p_copy.setdefault('black_games', 0)
             p_copy.setdefault('last_color', None)
             p_copy.setdefault('consecutive_white', 0)
             p_copy.setdefault('consecutive_black', 0)
-            p_copy.setdefault('received_bye', False)
+            # TODO: Aggiungere campo 'downfloat_count' se necessario per regole FIDE più avanzate
             players_for_pairing.append(p_copy)
-    # Ordina i giocatori attivi per l'assegnazione del bye e per i gruppi
-    # Criterio FIDE: Punti (desc), Rating (desc) - usiamo initial_elo
-    players_sorted = sorted(players_for_pairing, key=lambda x: (-x.get("points", 0.0), -x.get("initial_elo", 0)))
+
+    if len(players_for_pairing) < 2:
+        print("DEBUG: Numero insufficiente di giocatori attivi (<2) per generare accoppiamenti.") # DEBUG
+        return [] # Nessuna partita possibile
+
+    # Ordina globalmente per assegnazione Bye
+    players_sorted_for_bye = sorted(players_for_pairing, key=lambda x: (x.get("points", 0.0), x.get("initial_elo", 0))) # Punti ASC, Elo ASC
+
+    all_matches = []
     paired_player_ids = set()
-    matches = []
     bye_player_id = None
-    # --- Gestione Bye ---
-    active_players_count = len(players_sorted)
+
+    # 2. Gestione Bye
+    active_players_count = len(players_for_pairing)
     if active_players_count % 2 != 0:
-        # Trova il giocatore eleggibile per il bye: non l'ha ancora ricevuto,
-        # e tra questi, quello con punti più bassi, poi Elo più basso.
-        eligible_for_bye = sorted(
-            [p for p in players_sorted if not p.get("received_bye", False)],
-            key=lambda x: (x.get("points", 0.0), x.get("initial_elo", 0)) # Punti ASC, Elo ASC
-        )
+        # Trova eleggibili (non hanno ricevuto bye)
+        eligible_for_bye = [p for p in players_sorted_for_bye if not p.get("received_bye", False)]
+
         bye_player_data = None
         if eligible_for_bye:
-            bye_player_data = eligible_for_bye[0] # Il primo è quello con punteggio/elo più basso
+            # Chi ha punteggio più basso tra gli eleggibili (già ordinati per Punti ASC, Elo ASC)
+            bye_player_data = eligible_for_bye[0]
         else:
-            # Se tutti hanno già ricevuto il bye, lo riceve il giocatore con punteggio/elo più basso in assoluto
-            print("Avviso: Tutti i giocatori attivi hanno già ricevuto il Bye. Riassegnazione al giocatore con punteggio/Elo più basso.")
-            if players_sorted: # Assicurati ci siano giocatori
-                # Indentazione corretta
-                lowest_player = sorted(players_sorted, key=lambda x: (x.get("points", 0.0), x.get("initial_elo", 0)))[0]
-                bye_player_data = lowest_player
-            else:
-                # Indentazione corretta
-                print("Errore: Nessun giocatore attivo per assegnare il Bye.")
-                 # Questo non dovrebbe accadere se active_players_count è dispari > 0
+            # Tutti hanno già ricevuto il bye, lo prende il giocatore con punteggio/elo più basso in assoluto
+            print("DEBUG: Tutti i giocatori attivi hanno già ricevuto il Bye. Riassegnazione.") # DEBUG
+            if players_sorted_for_bye:
+                bye_player_data = players_sorted_for_bye[0]
+
         if bye_player_data:
-            # Indentazione corretta
             bye_player_id = bye_player_data['id']
-            # Registra il bye nella lista principale dei giocatori del torneo
-            player_in_main_list = players_dict.get(bye_player_id)
-            if player_in_main_list:
-                # Indentazione corretta
-                player_in_main_list["received_bye"] = True
-                # Assicurati che i punti siano float prima di aggiungere
-                player_in_main_list["points"] = float(player_in_main_list.get("points", 0.0)) + 1.0
-                if "results_history" not in player_in_main_list: player_in_main_list["results_history"] = []
-                player_in_main_list["results_history"].append({
-                    "round": round_number, "opponent_id": "BYE_PLAYER_ID",
-                    "color": None, "result": "BYE", "score": 1.0
-                })
-                # Il bye non influenza le statistiche colore
-            else:
-                # Indentazione corretta
-                  print(f"ERRORE CRITICO: Impossibile trovare il giocatore {bye_player_id} nella lista principale per aggiornare dati Bye.")
-                   # Potrebbe essere necessario interrompere qui se i dati sono inconsistenti
+            paired_player_ids.add(bye_player_id) # Aggiungi ai già 'accoppiati' (col bye)
+
+            # Crea la 'partita' bye
             bye_match = {
                 "id": torneo["next_match_id"], "round": round_number,
                 "white_player_id": bye_player_id, "black_player_id": None, "result": "BYE"
             }
-            matches.append(bye_match)
-            paired_player_ids.add(bye_player_id) # Aggiungi ai già accoppiati
+            all_matches.append(bye_match)
             torneo["next_match_id"] += 1
-            print(f"Assegnato Bye a: {bye_player_data.get('first_name','')} {bye_player_data.get('last_name','')} (ID: {bye_player_id}, Punti: {bye_player_data.get('points',0)})")
-    # --- Accoppiamento giocatori rimanenti ---
-    players_to_pair = [p for p in players_sorted if p['id'] not in paired_player_ids]
-    # Raggruppa per punteggio (Score Brackets)
+            print(f"DEBUG: Assegnato Bye a: {bye_player_data.get('first_name','')} {bye_player_data.get('last_name','')} (ID: {bye_player_id})") # DEBUG
+
+            # IMPORTANTE: Aggiorna SUBITO i dati del giocatore che ha ricevuto il bye nel dizionario principale!
+            player_in_main_list = players_dict.get(bye_player_id)
+            if player_in_main_list:
+                player_in_main_list["received_bye"] = True
+                # Assicura che i punti siano float prima di aggiungere
+                player_in_main_list["points"] = float(player_in_main_list.get("points", 0.0)) + 1.0
+                if "results_history" not in player_in_main_list: player_in_main_list["results_history"] = []
+                # Aggiungi voce allo storico (ma il risultato si registra automaticamente)
+                player_in_main_list["results_history"].append({
+                    "round": round_number, "opponent_id": "BYE_PLAYER_ID",
+                    "color": None, "result": "BYE", "score": 1.0
+                })
+            else:
+                 print(f"ERRORE CRITICO: Impossibile trovare giocatore {bye_player_id} per aggiornare dati Bye.")
+                 # Potrebbe essere necessario interrompere qui o gestire l'errore
+                 return None # Segnala fallimento grave
+        else:
+            print("ERRORE: Impossibile assegnare il Bye nonostante numero dispari di giocatori.")
+            return None # Fallimento
+
+    # 3. Prepara giocatori per accoppiamento effettivo
+    players_to_pair = [p for p in players_for_pairing if p['id'] not in paired_player_ids]
+
+    if not players_to_pair and not all_matches: # Nessuno da accoppiare e nessun bye
+         print("DEBUG: Nessun giocatore da accoppiare e nessun bye assegnato.") #DEBUG
+         return []
+    elif not players_to_pair and all_matches: # Caso possibile: 1 giocatore, riceve bye
+        print("DEBUG: Un solo giocatore attivo, ha ricevuto il bye. Nessun'altra partita.") #DEBUG
+        # Non aggiorniamo colori/avversari qui, solo il bye è stato gestito
+        return all_matches # Ritorna solo la partita BYE
+
+    if len(players_to_pair) % 2 != 0:
+        print(f"ERRORE CRITICO: Numero dispari di giocatori ({len(players_to_pair)}) rimasti DOPO assegnazione bye. Qualcosa non va.")
+        return None # Fallimento logico
+
+    # 4. Raggruppa per punteggio
     score_groups = {}
     for p in players_to_pair:
         score = p.get("points", 0.0)
-        if score not in score_groups: score_groups[score] = []
-        score_groups[score].append(p)
+        # Usa una chiave che gestisca float e None/stringhe in modo sicuro
+        score_key = float(score) if isinstance(score, (int, float)) else -float('inf')
+        if score_key not in score_groups: score_groups[score_key] = []
+        score_groups[score_key].append(p)
+    print(f"DEBUG: Gruppi di punteggio creati: { {s: [p['id'] for p in g] for s, g in score_groups.items()} }") # DEBUG
+
     # Ordina i gruppi di punteggio dal più alto al più basso
     sorted_scores = sorted(score_groups.keys(), reverse=True)
-    # Lista per i giocatori che "scendono" (downfloaters)
-    downfloaters = []
-    pairing_successful = True # Flag per tracciare se tutti sono stati accoppiati
+
+    # 5. Itera sui gruppi e accoppia
+    downfloaters_from_previous = []
+    # all_matches già contiene il bye se presente
+
     for score in sorted_scores:
-        current_group_players = score_groups[score]
-        # Combina i downfloaters dal gruppo precedente con il gruppo attuale
-        group_to_process = downfloaters + current_group_players
-        # Ordina il gruppo combinato per Elo (o rank FIDE se disponibile)
-        group_to_process.sort(key=lambda x: -x.get("initial_elo", 0))
-        num_in_group = len(group_to_process)
-        paired_in_group = set()
-        current_downfloaters = [] # Downfloaters generati da questo gruppo
-        # Dividi in H1 (metà superiore) e L1 (metà inferiore)
-        # Gestisci numero dispari nel gruppo: l'ultimo giocatore diventa automaticamente downfloater
-        if num_in_group % 2 != 0:
-            current_downfloaters.append(group_to_process.pop(-1)) # Rimuovi e aggiungi ai floaters
-            num_in_group -= 1
-        if num_in_group < 2: # Se rimangono 0 o 1 giocatori dopo aver tolto il dispari
-            current_downfloaters.extend(group_to_process) # Aggiungi i rimanenti ai floaters
-            downfloaters = current_downfloaters # Prepara per il prossimo gruppo di punteggio
-            continue # Passa al prossimo gruppo di punteggio
-        # Tentativo di accoppiamento standard (Dutch Fold/Slide)
-        top_half = group_to_process[:num_in_group // 2]
-        bottom_half = group_to_process[num_in_group // 2:]
-        possible_matches = [] # Memorizza coppie valide candidate
-        # Crea tutte le possibili coppie tra top e bottom half
-        for p1 in top_half:
-            # Indentazione corretta
-            for p2 in bottom_half:
-                # Vincolo assoluto: non devono aver già giocato
-                if p2['id'] not in p1.get('opponents', set()):
-                    # Verifica se è possibile assegnare colori validi
-                    color_result = determine_color_assignment(p1, p2)
-                    if color_result[0] == 'W': # Assegnazione colori valida trovata
-                        # Indentazione corretta
-                        white_id, black_id = color_result[1], color_result[2]
-                        # Potremmo aggiungere un punteggio qui per preferire accoppiamenti specifici (non fatto ora)
-                        possible_matches.append({'p1': p1, 'p2': p2, 'white': white_id, 'black': black_id})
-        # Ora prova a selezionare gli accoppiamenti massimizzando quelli fatti (Maximum Cardinality Matching - semplificato)
-        # Approccio semplice: itera sulla top half e prendi il primo avversario valido disponibile nella bottom half
-        temp_matches_this_group = []
-        used_players = set()
-        for i in range(len(top_half)):
-            # Indentazione corretta
-            player1 = top_half[i]
-            if player1['id'] in used_players: continue
-            found_opponent = False
-            # Cerca un avversario valido nella bottom half (partendo da quello "ideale" i)
-            for k in range(len(bottom_half)):
-                player2 = bottom_half[k]
-                if player2['id'] in used_players: continue
-                # Verifica se questa coppia è tra quelle valide trovate prima
-                isValidPair = False
-                assigned_white_id, assigned_black_id = None, None
-                for pot_match in possible_matches:
-                    # Indentazione corretta per if multilinea
-                    if (pot_match['p1']['id'] == player1['id'] and pot_match['p2']['id'] == player2['id']) or \
-                       (pot_match['p1']['id'] == player2['id'] and pot_match['p2']['id'] == player1['id']):
-                        isValidPair = True
-                        assigned_white_id = pot_match['white']
-                        assigned_black_id = pot_match['black']
-                        break
-                if isValidPair:
-                    # Indentazione corretta
-                    # Accoppiamento trovato!
-                    match = {
-                        "id": torneo["next_match_id"], "round": round_number,
-                        "white_player_id": assigned_white_id, "black_player_id": assigned_black_id,
-                        "result": None
-                    }
-                    temp_matches_this_group.append(match)
-                    torneo["next_match_id"] += 1
-                    used_players.add(player1['id'])
-                    used_players.add(player2['id'])
-                    paired_player_ids.add(player1['id']) # Aggiungi ai globalmente accoppiati
-                    paired_player_ids.add(player2['id'])
-                    found_opponent = True
-                    break # Passa al prossimo giocatore della top_half
-            if not found_opponent:
-                # Indentazione corretta
-                # Se non trova avversario nella bottom half, diventa downfloater
-                current_downfloaters.append(player1)
-        # Aggiungi ai downfloaters anche i giocatori della bottom half non usati
-        for p in bottom_half:
-            # Indentazione corretta
-            if p['id'] not in used_players:
-                current_downfloaters.append(p)
-        # Aggiungi le partite trovate per questo gruppo alla lista generale
-        matches.extend(temp_matches_this_group)
-        # Aggiorna la lista dei downfloaters per il prossimo ciclo
-        downfloaters = current_downfloaters
-    # --- Fine Loop sui Gruppi di Punteggio ---
-    # Verifica se ci sono rimasti giocatori non accoppiati (dovrebbero essere solo downfloaters finali)
-    if downfloaters:
-        print("\nERRORE CRITICO DI ACCOPPIAMENTO:")
-        print("Impossibile accoppiare i seguenti giocatori rispettando tutti i vincoli:")
-        downfloaters.sort(key=lambda x: (-x.get("points", 0.0), -x.get("initial_elo", 0)))
-        for p in downfloaters:
-            print(f" - ID: {p['id']} ({p.get('first_name','')} {p.get('last_name','')}), Punti: {p.get('points', 0.0)}, Elo: {p.get('initial_elo', 0)}")
-        print("L'algoritmo attuale non può risolvere questa situazione.")
-        print("Possibili cause: Struttura del torneo complessa, pochi giocatori, vincoli colore molto stretti.")
-        print("NON verranno generati accoppiamenti forzati o errati.")
-        pairing_successful = False
-        return None # Segnala fallimento
-    # Se siamo qui, tutti sono stati accoppiati (o hanno ricevuto il bye)
-    print(f"\nAccoppiamento per il turno {round_number} generato con successo.")
-    # --- Aggiorna Dati Giocatori Post-Accoppiamento ---
-    # Solo se l'accoppiamento è riuscito, aggiorna i dati nella lista principale
-    if pairing_successful:
-        for match in matches:
-            if match.get("result") == "BYE": continue # Il bye è già gestito
-            white_player_id = match.get("white_player_id")
-            black_player_id = match.get("black_player_id")
-            if not white_player_id or not black_player_id: continue # Sicurezza
-            white_p = players_dict.get(white_player_id)
-            black_p = players_dict.get(black_player_id)
-            if not white_p or not black_p:
-                print(f"ERRORE: Giocatore non trovato per aggiornare dati partita ID {match.get('id')}")
-                continue
-            # Aggiorna lista avversari (assicurati che siano set prima di aggiungere)
-            if not isinstance(white_p.get('opponents'), set): white_p['opponents'] = set(white_p.get('opponents', []))
-            if not isinstance(black_p.get('opponents'), set): black_p['opponents'] = set(black_p.get('opponents', []))
-            white_p["opponents"].add(black_player_id)
-            black_p["opponents"].add(white_player_id)
-            # Aggiorna statistiche colore
-            white_p["white_games"] = white_p.get("white_games", 0) + 1
-            black_p["black_games"] = black_p.get("black_games", 0) + 1
-            white_p["last_color"] = "white"
-            black_p["last_color"] = "black"
-            # Aggiorna colori consecutivi
-            white_p["consecutive_white"] = white_p.get("consecutive_white", 0) + 1
-            white_p["consecutive_black"] = 0
-            black_p["consecutive_black"] = black_p.get("consecutive_black", 0) + 1
-            black_p["consecutive_white"] = 0
-    # Ritorna la lista delle partite create per il turno
-    return matches
+        print(f"\nDEBUG: Processo score group {score}...") #DEBUG
+        group_player_list = score_groups[score]
+
+        # Chiamata alla funzione che gestisce il singolo gruppo
+        matches_this_group, downfloaters_to_next = pair_score_group(
+            group_player_list,
+            downfloaters_from_previous,
+            torneo, # Passa l'oggetto torneo per accesso a dati/ID
+            round_number
+        )
+
+        if matches_this_group is None: # Se pair_score_group segnala un errore interno grave
+             print(f"ERRORE CRITICO durante l'accoppiamento del gruppo {score}.")
+             return None # Interrompi tutto
+
+        all_matches.extend(matches_this_group)
+        downfloaters_from_previous = downfloaters_to_next # Prepara per il prossimo gruppo
+
+    # 6. Verifica Finale
+    if downfloaters_from_previous:
+        print("\n--- ERRORE CRITICO DI ACCOPPIAMENTO FINALE ---") # DEBUG
+        print("Impossibile accoppiare i seguenti giocatori (rimasti come downfloaters finali):") # DEBUG
+        downfloaters_from_previous.sort(key=lambda x: (-x.get("points", 0.0), -x.get("initial_elo", 0)))
+        for p in downfloaters_from_previous:
+            opponents_str = ", ".join(list(p.get('opponents', set())))
+            color_diff = p.get("white_games", 0) - p.get("black_games", 0)
+            last_c = p.get("last_color", "N/A")
+            cons_w = p.get("consecutive_white", 0)
+            cons_b = p.get("consecutive_black", 0)
+            print(f"  - ID: {p['id']} Pts: {p.get('points', 0.0)} Elo: {p.get('initial_elo', 0)} | Opp: [{opponents_str}] | ColDiff: {color_diff} Last: {last_c} ConsW: {cons_w} ConsB: {cons_b}") # DEBUG
+        print("L'algoritmo (anche con recupero base) non è riuscito a risolvere.")
+        print("Potrebbe essere necessaria logica di trasposizione più avanzata o pairing within-halves.")
+        return None # Fallimento generazione turno
+
+    # 7. Successo: Aggiorna dati giocatori nella struttura principale del torneo
+    print(f"\nDEBUG: Accoppiamento Turno {round_number} completato con successo. {len(all_matches)} partite totali (incluso bye se presente).") #DEBUG
+    print("DEBUG: Aggiornamento dati post-accoppiamento (avversari, colori)...") #DEBUG
+    for match in all_matches:
+        # Salta il BYE, già gestito
+        if match.get("result") == "BYE" or match.get("black_player_id") is None:
+             continue
+
+        white_player_id = match.get("white_player_id")
+        black_player_id = match.get("black_player_id")
+
+        white_p = players_dict.get(white_player_id)
+        black_p = players_dict.get(black_player_id)
+
+        if not white_p or not black_p:
+            print(f"ERRORE: Giocatore non trovato nel dizionario principale per aggiornare dati partita ID {match.get('id')}")
+            continue
+
+        # Aggiorna lista avversari (assicurati che siano set)
+        if not isinstance(white_p.get('opponents'), set): white_p['opponents'] = set(white_p.get('opponents', []))
+        if not isinstance(black_p.get('opponents'), set): black_p['opponents'] = set(black_p.get('opponents', []))
+        white_p["opponents"].add(black_player_id)
+        black_p["opponents"].add(white_player_id)
+
+        # Aggiorna statistiche colore
+        white_p["white_games"] = white_p.get("white_games", 0) + 1
+        black_p["black_games"] = black_p.get("black_games", 0) + 1
+        white_p["last_color"] = "white"
+        black_p["last_color"] = "black"
+        # Aggiorna colori consecutivi
+        white_p["consecutive_white"] = white_p.get("consecutive_white", 0) + 1
+        white_p["consecutive_black"] = 0
+        black_p["consecutive_black"] = black_p.get("consecutive_black", 0) + 1
+        black_p["consecutive_white"] = 0
+        # Stampa DEBUG colori aggiornati
+        # print(f"DEBUG PostPair Update W: {white_p['id']} - W:{white_p['white_games']}, B:{white_p['black_games']}, Last:{white_p['last_color']}, CW:{white_p['consecutive_white']}, CB:{white_p['consecutive_black']}") #DEBUG
+        # print(f"DEBUG PostPair Update B: {black_p['id']} - W:{black_p['white_games']}, B:{black_p['black_games']}, Last:{black_p['last_color']}, CW:{black_p['consecutive_white']}, CB:{black_p['consecutive_black']}") #DEBUG
+
+
+    print(f"DEBUG: --- FINE GENERAZIONE PAIRING TURNO {round_number} ---") # DEBUG
+    return all_matches
+
+# ==============================================================================
+# --- FINE NUOVA LOGICA DI PAIRING MODULARE (Fase 1) ---
+# ==============================================================================
 
 # --- Input and Output Functions ---
 def input_players(players_db):
@@ -948,7 +1423,7 @@ def input_players(players_db):
                     "points": 0.0, "results_history": [], "opponents": set(),
                     "white_games": 0, "black_games": 0, "last_color": None,
                     "consecutive_white": 0, "consecutive_black": 0, # Nuovi campi
-                    "received_bye": False, "buchholz": 0.0, "performance_rating": None,
+                    "received_bye": False, "downfloat_count": 0, "buchholz": 0.0, "performance_rating": None,
                     "elo_change": None, "final_rank": None, "withdrawn": False
                 }
                 print(f"Giocatore {first_name} {last_name} (ID: {player_id_to_add}, Elo: {initial_tournament_elo}) aggiunto dal DB.")
@@ -1806,7 +2281,6 @@ def main():
                 else:
                     print("Il numero di turni deve essere positivo.")
             except ValueError:
-                # Indentazione corretta
                 print("Inserisci un numero intero valido.")
         # Calcola date turni
         round_dates = calculate_dates(torneo["start_date"], torneo["end_date"], torneo["total_rounds"])
@@ -1828,17 +2302,45 @@ def main():
         # Crea il dizionario cache iniziale
         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
         print("\nGenerazione abbinamenti per il Turno 1...")
-        matches_r1 = pairing(torneo)
+        matches_r1 = generate_pairings_for_round(torneo)
+
+        # --- CONTROLLO ERRORE E RIGA APPEND MANCANTE REINSERITA ---
         if matches_r1 is None:
-            # Indentazione corretta
+            # La nuova funzione restituisce None in caso di fallimento critico
             print("ERRORE CRITICO: Fallimento generazione accoppiamenti per il Turno 1.")
-            print("Controllare i dati dei giocatori e le regole. Torneo non avviato.")
+            print("Controllare i dati dei giocatori e le regole FIDE implementate. Torneo non avviato.")
             sys.exit(1)
+
         # Aggiungi il primo turno alla lista dei turni
-        torneo["rounds"].append({"round": 1, "matches": matches_r1})
+        round_entry = {"round": 1, "matches": matches_r1}
+        try:
+            # Assicurati che torneo['rounds'] sia una lista (dovrebbe esserlo, ma è una sicurezza)
+            if not isinstance(torneo.get('rounds'), list):
+                 print("DEBUG main: torneo['rounds'] non era una lista! Inizializzo.") # DEBUG
+                 torneo['rounds'] = []
+            torneo["rounds"].append(round_entry) # <<< RIGA REINSERITA
+
+            # --- DEBUG SUGGERITO PRIMA (ora utile per conferma) ---
+            print(f"DEBUG main: Appended round data. torneo['rounds'] ora contiene:") # DEBUG
+            # Importa pprint all'inizio del file se non l'hai già fatto
+            import pprint
+            pprint.pprint(torneo.get('rounds', 'ERRORE: CHIAVE rounds MANCANTE O NON LISTA'))
+            # --- FINE DEBUG AGGIUNTO ---
+
+        except Exception as e_append:
+             print(f"ERRORE durante l'append di round data: {e_append}") # DEBUG
+             # Importa traceback all'inizio del file se non l'hai già fatto
+             import traceback
+             traceback.print_exc()
+             sys.exit(1) # Esci se l'append fallisce
+        # --- FINE SEZIONE REINSERITA/MODIFICATA ---
+
+
         # Salva stato iniziale torneo e file T1
-        save_tournament(torneo)
-        save_round_text(1, torneo)
+        save_tournament(torneo) # Ora salva con il round 1 dentro
+        print(f"DEBUG main: Calling save_round_text(1, torneo)") # DEBUG
+        save_round_text(1, torneo) # Ora dovrebbe trovare i dati
+        print(f"DEBUG main: Calling save_standings_text(torneo, final=False)") # DEBUG
         save_standings_text(torneo, final=False) # Salva classifica iniziale T0
         print("\nTorneo creato e Turno 1 generato.")
     else:
@@ -1933,7 +2435,7 @@ def main():
                     torneo["current_round"] = next_round_num
                     try:
                         # Chiama la funzione di pairing
-                        next_matches = pairing(torneo)
+                        next_matches = generate_pairings_for_round(torneo)
                         if next_matches is None:
                             # Indentazione corretta
                             # Pairing fallito! Errore già stampato.

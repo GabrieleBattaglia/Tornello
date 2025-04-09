@@ -1,99 +1,155 @@
-﻿Report Database Giocatori Tornello - Martedì 8 aprile 2025 23:11:28
+﻿Report Database Giocatori Tornello - Mercoledì 9 aprile 2025 18:34:59
 ========================================
 
 ID: BARVI001
 Nome: Vincenzo Bari
-Elo Attuale: 1300
+Elo Attuale: 1294
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 7/12)
 ------------------------------
 ID: CALVA001
 Nome: Valeria Calzolari
-Elo Attuale: 1255
+Elo Attuale: 1279
 Data Iscrizione DB: Martedì 8 aprile 2025
-Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Medagliere: Oro: 0, Argento: 0, Bronzo: 1
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 3/12)
 ------------------------------
 ID: CIBSI001
 Nome: Silvia Cibin
-Elo Attuale: 1295
+Elo Attuale: 1310
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 4/12)
 ------------------------------
 ID: FORMA001
 Nome: Martina Forte
-Elo Attuale: 1280
+Elo Attuale: 1256
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 10/12)
+------------------------------
+ID: G1XG1001
+Nome: G1 G1
+Elo Attuale: 1438
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 1, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 1/7)
+------------------------------
+ID: G2XG2001
+Nome: G2 G2
+Elo Attuale: 1458
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 5/7)
+------------------------------
+ID: G3XG3001
+Nome: G3 G3
+Elo Attuale: 1509
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 4/7)
+------------------------------
+ID: G4XG4001
+Nome: G4 G4
+Elo Attuale: 1561
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 0, Bronzo: 1
+Tornei Partecipati (1):
+  1. test2 (Pos: 3/7)
+------------------------------
+ID: G5XG5001
+Nome: G5 G5
+Elo Attuale: 1579
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 6/7)
+------------------------------
+ID: G6XG6001
+Nome: G6 G6
+Elo Attuale: 1612
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 7/7)
+------------------------------
+ID: G7XG7001
+Nome: G7 G7
+Elo Attuale: 1692
+Data Iscrizione DB: Mercoledì 9 aprile 2025
+Medagliere: Oro: 0, Argento: 1, Bronzo: 0
+Tornei Partecipati (1):
+  1. test2 (Pos: 2/7)
 ------------------------------
 ID: GORSE001
 Nome: Serena Gori
-Elo Attuale: 1260
+Elo Attuale: 1210
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 12/12)
 ------------------------------
 ID: IXXLO001
 Nome: Lorenzo I
-Elo Attuale: 1285
+Elo Attuale: 1332
 Data Iscrizione DB: Martedì 8 aprile 2025
-Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Medagliere: Oro: 1, Argento: 0, Bronzo: 0
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 1/12)
 ------------------------------
 ID: LIMCA001
 Nome: Catia Lima
 Elo Attuale: 1275
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 6/12)
 ------------------------------
 ID: MERAL001
 Nome: Alessia Mereu
-Elo Attuale: 1265
+Elo Attuale: 1288
 Data Iscrizione DB: Martedì 8 aprile 2025
-Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Medagliere: Oro: 0, Argento: 1, Bronzo: 0
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 2/12)
 ------------------------------
 ID: PAGVI001
 Nome: Virginio Paglia
-Elo Attuale: 1250
+Elo Attuale: 1235
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 9/12)
 ------------------------------
 ID: TESSA001
 Nome: Sandra Testori
-Elo Attuale: 1290
+Elo Attuale: 1258
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 11/12)
 ------------------------------
 ID: VALRI001
 Nome: Rita Valla
-Elo Attuale: 1240
+Elo Attuale: 1265
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 5/12)
 ------------------------------
 ID: VENLU001
 Nome: Luigi Ventura
-Elo Attuale: 1270
+Elo Attuale: 1262
 Data Iscrizione DB: Martedì 8 aprile 2025
 Medagliere: Oro: 0, Argento: 0, Bronzo: 0
-Tornei Partecipati (0):
-  Nessuno
+Tornei Partecipati (1):
+  1. TEST1 (Pos: 8/12)
 ------------------------------
