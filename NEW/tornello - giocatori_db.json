@@ -1,202 +1,202 @@
 [
     {
-        "id": "PRO1P001",
-        "first_name": "1Provino",
-        "last_name": "Provucci",
-        "current_elo": 1001,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "PRO2P001",
-        "first_name": "2Provezza",
-        "last_name": "Provezzani",
-        "current_elo": 1002,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "PRO3P001",
-        "first_name": "3Provo",
-        "last_name": "Provetto",
-        "current_elo": 1003,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "TES4T001",
-        "first_name": "4Testone",
-        "last_name": "Testacci",
-        "current_elo": 1004,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "TES5T001",
-        "first_name": "5Testocolo",
-        "last_name": "Testori",
-        "current_elo": 1005,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "TES6T001",
-        "first_name": "6Tessa",
-        "last_name": "Testicoli",
-        "current_elo": 1006,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "ESA7E001",
-        "first_name": "7Esama",
-        "last_name": "Esaminanda",
-        "current_elo": 1007,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "TOR8T001",
-        "first_name": "8Torneo",
-        "last_name": "Tornato",
-        "current_elo": 1008,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "TES9T001",
-        "first_name": "9Turlio",
-        "last_name": "Testicolato",
-        "current_elo": 1009,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "BET10001",
-        "first_name": "10Beta",
-        "last_name": "Betadine",
-        "current_elo": 1010,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "ALF11001",
-        "first_name": "11Alfa",
-        "last_name": "Alfonsini",
-        "current_elo": 1011,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "INC12001",
-        "first_name": "12Sticazzi",
-        "last_name": "Incazzati",
-        "current_elo": 1012,
-        "registration_date": "2025-04-09",
-        "tournaments_played": [],
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "downfloat_count": 0,
-            "games_played": 0,
-            "birth_date": null
-        }
-    },
-    {
-        "id": "FIG13001",
-        "first_name": "13Figa",
-        "last_name": "Figaroli",
+        "id": "GXX1G001",
+        "first_name": "1G",
+        "last_name": "G",
         "current_elo": 1013,
-        "registration_date": "2025-04-09",
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX2G001",
+        "first_name": "2G",
+        "last_name": "G",
+        "current_elo": 1012,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX3G001",
+        "first_name": "3G",
+        "last_name": "G",
+        "current_elo": 1011,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX4G001",
+        "first_name": "4G",
+        "last_name": "G",
+        "current_elo": 1010,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX5G001",
+        "first_name": "5G",
+        "last_name": "G",
+        "current_elo": 1009,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX6G001",
+        "first_name": "6G",
+        "last_name": "G",
+        "current_elo": 1008,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX7G001",
+        "first_name": "7G",
+        "last_name": "G",
+        "current_elo": 1007,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX8G001",
+        "first_name": "8G",
+        "last_name": "G",
+        "current_elo": 1006,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX9G001",
+        "first_name": "9G",
+        "last_name": "G",
+        "current_elo": 1005,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX10001",
+        "first_name": "10G",
+        "last_name": "G",
+        "current_elo": 1004,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX11001",
+        "first_name": "11G",
+        "last_name": "G",
+        "current_elo": 1003,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX12001",
+        "first_name": "12G",
+        "last_name": "G",
+        "current_elo": 1002,
+        "registration_date": "2025-04-10",
+        "tournaments_played": [],
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "downfloat_count": 0,
+            "games_played": 0,
+            "birth_date": null
+        }
+    },
+    {
+        "id": "GXX13001",
+        "first_name": "13G",
+        "last_name": "G",
+        "current_elo": 1001,
+        "registration_date": "2025-04-10",
         "tournaments_played": [],
         "medals": {
             "gold": 0,

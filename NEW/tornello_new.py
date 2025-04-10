@@ -8,7 +8,7 @@ import traceback
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "3.8.6 del 9 aprile 2025"
+VERSIONE = "3.8.9 del 10 aprile 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -825,39 +825,28 @@ def select_downfloater(group_to_select_from, torneo):
     return downfloater
 
 # --- Funzione per il tentativo di accoppiamento standard (Fold/Slide) ---
+# Assicurati che determine_color_assignment e le altre funzioni helper siano definite prima
+
 def attempt_fold_pairing(top_half, bottom_half, torneo, round_number):
     """
     Tenta l'accoppiamento standard Top-vs-Bottom (Fold/Slide).
+    Include logica per alternare i colori al primo turno.
     Restituisce: (lista_partite_riuscite, lista_spaiati_top, lista_spaiati_bottom)
     """
     print(f"DEBUG attempt_fold_pairing: Inizio tentativo Top ({len(top_half)}) vs Bottom ({len(bottom_half)})") # DEBUG
     matches = []
     used_player_ids = set()
-    possible_matches_info = [] # Lista per debug colori
+    # possible_matches_info = [] # Debug colori preliminare rimosso per brevità, se serve si può rimettere
 
-    # Prima analizza tutte le coppie potenziali per i colori (per debug)
-    # (Questa parte è opzionale, puoi commentarla/rimuoverla se non serve più il debug colori)
-    for p1 in top_half:
-        for p2 in bottom_half:
-             played_before = p2['id'] in p1.get('opponents', set())
-             if not played_before:
-                 color_result = determine_color_assignment(p1, p2)
-                 possible_matches_info.append({
-                     'p1_id': p1['id'], 'p2_id': p2['id'],
-                     'color_result': color_result
-                 })
-    # Stampa analisi colori (opzionale)
-    # print(f"DEBUG attempt_fold_pairing: Analisi colori preliminare:") # DEBUG
-    # for info in possible_matches_info:
-    #    print(f"  - {info['p1_id']} vs {info['p2_id']} -> {info['color_result']}") # DEBUG
+    # --- Esegui il matching greedy ---
+    # Ordina le metà per Elo DESC per accoppiare H0-L0, H1-L1 etc. idealmente
+    # (anche se la ricerca k è completa, l'ordine iniziale può influenzare la prima scelta)
+    top_half.sort(key=lambda x: -x.get("initial_elo", 0))
+    bottom_half.sort(key=lambda x: -x.get("initial_elo", 0))
 
-    # Ora esegui il matching greedy
     for i in range(len(top_half)):
         p1 = top_half[i]
         if p1['id'] in used_player_ids: continue
-
-        # Nota: non serve più 'found_opponent' qui perché gestiamo gli spaiati alla fine
-        # found_opponent = False # -> Rimossa
 
         # Cerca un avversario valido nella bottom half
         for k in range(len(bottom_half)):
@@ -871,28 +860,51 @@ def attempt_fold_pairing(top_half, bottom_half, torneo, round_number):
                 if color_result[0] == 'W':
                     # Accoppiamento Trovato!
                     white_id, black_id = color_result[1], color_result[2]
-                    # print(f"DEBUG attempt_fold_pairing: Coppia trovata! {p1['id']} vs {p2['id']}. Colori: W={white_id}, B={black_id}") # DEBUG
+                    # print(f"DEBUG attempt_fold_pairing: Coppia trovata! {p1['id']} vs {p2['id']}. Colori Default: W={white_id}, B={black_id}") # DEBUG
                     match = {
                         "id": torneo["next_match_id"], "round": round_number,
                         "white_player_id": white_id, "black_player_id": black_id,
-                        "result": None
+                        "result": None,
+                        "original_p1_id": p1['id'], # Memorizza chi era Top/Bottom per l'alternanza
+                        "original_p2_id": p2['id']
                     }
                     matches.append(match)
                     torneo["next_match_id"] += 1
                     used_player_ids.add(p1['id'])
                     used_player_ids.add(p2['id'])
-                    # found_opponent = True # -> Rimossa
                     break # Trovato partner per p1, passa al prossimo p1
 
-        # Il blocco 'if not found_opponent:' che era qui è stato rimosso perché non serve
+    # --- NUOVA LOGICA: Alternanza Colori per Turno 1 ---
+    if round_number == 1 and matches:
+        print("DEBUG attempt_fold_pairing: Applico alternanza colori per Turno 1...") # DEBUG
+        # Ordina le partite create basandosi sull' Elo del giocatore della Top Half originale
+        # per simulare l'ordine delle scacchiere (dal rank più alto al più basso)
+        matches.sort(key=lambda m: torneo['players_dict'].get(m['original_p1_id'], {}).get('initial_elo', 0), reverse=True)
 
-    # --- QUESTA PARTE DEVE ESSERE QUI, DOPO LA FINE DEL CICLO 'for i ...' ---
+        for idx, match in enumerate(matches):
+            # Inverti i colori per le partite con indice dispari (seconda, quarta, ecc.)
+            # L'indice 0 è la prima partita (scacchiera più alta), indice 1 la seconda, ecc.
+            if idx % 2 != 0:
+                 # Scambia white e black player ID nel dizionario match
+                 w_id = match['white_player_id']
+                 b_id = match['black_player_id']
+                 match['white_player_id'] = b_id
+                 match['black_player_id'] = w_id
+                 print(f"DEBUG attempt_fold_pairing: Colori invertiti per match ID {match['id']} (Indice: {idx}) -> W:{b_id}, B:{w_id}") # DEBUG
+
+    # Rimuovi le chiavi temporanee usate per l'ordinamento prima di restituire
+    for match in matches:
+         if 'original_p1_id' in match: del match['original_p1_id']
+         if 'original_p2_id' in match: del match['original_p2_id']
+    # --- FINE NUOVA LOGICA ---
+
+
     # Identifica chi è rimasto spaiato dopo aver provato tutti i p1
     unpaired_top = [p for p in top_half if p['id'] not in used_player_ids]
     unpaired_bottom = [p for p in bottom_half if p['id'] not in used_player_ids]
     print(f"DEBUG attempt_fold_pairing: Fine tentativo. Partite create: {len(matches)}. Spaiati Top: {len(unpaired_top)}, Spaiati Bottom: {len(unpaired_bottom)}") # DEBUG
 
-    # Restituisci le partite create e le liste degli spaiati
+    # Restituisci le partite create (con colori alternati se T1) e le liste degli spaiati
     return matches, unpaired_top, unpaired_bottom
 
 def check_pairing_validity(p1, p2, torneo_players_dict):
@@ -2020,14 +2032,17 @@ def update_match_result(torneo):
             if match_id_str.lower() != 'cancella':
                 print("ID non valido. Inserisci un numero intero o 'cancella'.")
 
+# Assicurati che players_dict sia accessibile o ricalcolato se necessario
+# Assicurati che format_points e format_date_locale siano definite
+
 def save_round_text(round_number, torneo):
     """
     Salva/Accoda gli abbinamenti del turno in un unico file TXT per il torneo.
+    Include numero scacchiera, ordina per scacchiera, e mette il Bye per ultimo.
     Il contenuto di ogni turno (escluso l'header del turno) è indentato.
     """
     tournament_name = torneo.get('name', 'Torneo_Senza_Nome')
     sanitized_name = sanitize_filename(tournament_name)
-    # --- NUOVO NOME FILE FISSO ---
     filename = f"tornello - {sanitized_name} - Turni.txt"
 
     round_data = None
@@ -2045,79 +2060,116 @@ def save_round_text(round_number, torneo):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     players_dict = torneo['players_dict']
 
+    # --- SEPARA BYE DALLE PARTITE GIOCABILI ---
+    all_matches_in_round = round_data.get("matches", [])
+    playable_matches = [m for m in all_matches_in_round if m.get("black_player_id") is not None]
+    bye_match = next((m for m in all_matches_in_round if m.get("black_player_id") is None), None)
+
+    # --- ORDINA LE PARTITE GIOCABILI PER DETERMINARE ORDINE SCACCHIERE ---
+    # Usa l'Elo medio della coppia come criterio (più alto = scacchiera più bassa)
+    # Definiamo una piccola funzione helper qui dentro o fuori
+    def get_average_elo(match, players_dict):
+        w_id = match.get('white_player_id')
+        b_id = match.get('black_player_id')
+        w_elo_str = players_dict.get(w_id, {}).get('initial_elo', '0')
+        b_elo_str = players_dict.get(b_id, {}).get('initial_elo', '0')
+        try:
+            w_elo = float(w_elo_str) if w_elo_str is not None else 0.0
+            b_elo = float(b_elo_str) if b_elo_str is not None else 0.0
+            # Non dividere per zero se entrambi Elo sono 0 o mancanti
+            if w_elo == 0.0 and b_elo == 0.0:
+                 return 0.0
+            # Se uno manca, usa l'altro come "media" (o potremmo penalizzarlo)
+            elif w_elo == 0.0: return b_elo
+            elif b_elo == 0.0: return w_elo
+            else: return (w_elo + b_elo) / 2.0
+        except (ValueError, TypeError):
+            return 0.0 # Metti coppie con Elo non validi in fondo
+
+    playable_matches.sort(key=lambda m: get_average_elo(m, players_dict), reverse=True)
+
     try:
-        # --- MODALITÀ APPEND ('a') E SEPARATORE ---
-        # Apri in modalità 'a' (append) invece di 'w' (write)
         with open(filename, "a", encoding='utf-8-sig') as f:
-            # Aggiungi un separatore visibile se il file esiste già (cioè non è il primo turno scritto)
-            # Controlla la dimensione del file per vedere se è vuoto o meno
-            f.seek(0, os.SEEK_END) # Vai alla fine del file
-            if f.tell() > 0: # Se la posizione è > 0, il file non è vuoto
-                 f.write("\n\n" + "="*30 + f" INIZIO TURNO {round_number} " + "="*30 + "\n\n")
+            # Separatore e header generale se file non vuoto (come prima)
+            f.seek(0, os.SEEK_END)
+            if f.tell() > 0:
+                 f.write("\n" + "="*30 + f" INIZIO TURNO {round_number} " + "="*30 + "\n")
             else:
-                 # Se il file è nuovo/vuoto, scrivi l'intestazione generale del torneo
                  f.write(f"Torneo: {torneo.get('name', 'Nome Mancante')}\n")
                  f.write("=" * 80 + "\n")
-
-
-            # --- CONTENUTO DEL TURNO (HEADER NON INDENTATO, RESTO SÌ) ---
-
-            # Header del turno specifico (NON indentato)
-            f.write(f"Turno: {round_number}\n")
             round_dates_list = torneo.get("round_dates", [])
             current_round_dates = next((rd for rd in round_dates_list if rd.get("round") == round_number), None)
             if current_round_dates:
                 start_d_str = current_round_dates.get('start_date')
                 end_d_str = current_round_dates.get('end_date')
-                f.write(f"Periodo: {format_date_locale(start_d_str)} - {format_date_locale(end_d_str)}\n")
+                f.write(f"\tPeriodo: {format_date_locale(start_d_str)} - {format_date_locale(end_d_str)}\n")
             else:
-                f.write("Periodo: Date non trovate\n")
-            f.write("-" * 80 + "\n") # Separatore prima delle partite
+                f.write("\tPeriodo: Date non trovate\n")
+            f.write("\t"+"-" * 76 + "\n")
+            # --- NUOVA INTESTAZIONE TABELLA PARTITE (INDENTATO) ---
+            header_partite = "Sc | ID  | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato"
+            f.write(f"\t{header_partite}\n")
+            f.write(f"\t" + "-" * len(header_partite) + "\n")
 
-            # Header della tabella partite (INDENTATO)
-            header_partite = "ID | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato"
-            f.write(f"\t{header_partite}\n") # Aggiunto \t
-            f.write(f"\t" + "-" * len(header_partite) + "\n") # Aggiunto \t
-
-            # Lista partite (INDENTATO)
-            sorted_matches = sorted(round_data.get("matches", []), key=lambda m: m.get('id', 0))
-            for match in sorted_matches:
+            # --- SCRIVI PARTITE GIOCABILI CON NUMERO SCACCHIERA (INDENTATO) ---
+            for board_num_idx, match in enumerate(playable_matches):
+                board_num = board_num_idx + 1 # Numero scacchiera parte da 1
                 match_id = match.get('id', '?')
                 white_p_id = match.get('white_player_id')
                 black_p_id = match.get('black_player_id')
                 result_str = match.get("result", "Da giocare") if match.get("result") is not None else "Da giocare"
 
                 white_p = players_dict.get(white_p_id)
-                if not white_p:
-                    line = f"{match_id:<3}| Errore Giocatore Bianco ID: {white_p_id:<10} | {result_str}"
-                    f.write(f"\t{line}\n") # Aggiunto \t
-                    continue
+                black_p = players_dict.get(black_p_id)
 
-                w_name = f"{white_p.get('first_name','?')} {white_p.get('last_name','')}"
-                w_elo = white_p.get('initial_elo','?')
-                w_pts = format_points(white_p.get('points', 0.0))
+                # Gestisci casi in cui i giocatori potrebbero mancare (non dovrebbe succedere)
+                w_name = "? ?"
+                w_elo = "?"
+                w_pts = "?"
+                if white_p:
+                    w_name = f"{white_p.get('first_name','?')} {white_p.get('last_name','')}"
+                    w_elo = white_p.get('initial_elo','?')
+                    w_pts = format_points(white_p.get('points', 0.0))
 
-                # Gestisce il caso BYE
-                if black_p_id is None:
-                    # Allineamento leggermente aggiustato per BYE
-                    line = f"{match_id:<3}| {w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE"
+                b_name = "? ?"
+                b_elo = "?"
+                b_pts = "?"
+                if black_p:
+                    b_name = f"{black_p.get('first_name','?')} {black_p.get('last_name','')}"
+                    b_elo = black_p.get('initial_elo','?')
+                    b_pts = format_points(black_p.get('points', 0.0))
+                elif not black_p_id: # Dovrebbe essere gestito sopra, ma per sicurezza
+                    b_name = "Errore ID Nero"
+
+                # Formatta la riga con numero scacchiera e ID aggiustato
+                line = (f"{board_num:<3}| " # Colonna Scacchiera
+                        f"{match_id:<4}| " # Colonna ID (un po' più stretta)
+                        f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - "
+                        f"{b_name:<24} [{b_elo:>4}] ({b_pts:<4}) | "
+                        f"{result_str}")
+                f.write(f"\t{line}\n") # Indenta la riga
+
+            # --- SCRIVI IL BYE PER ULTIMO (SE PRESENTE) (INDENTATO) ---
+            if bye_match:
+                match_id = bye_match.get('id', '?')
+                white_p_id = bye_match.get('white_player_id')
+                white_p = players_dict.get(white_p_id)
+                if white_p:
+                     w_name = f"{white_p.get('first_name','?')} {white_p.get('last_name','')}"
+                     w_elo = white_p.get('initial_elo','?')
+                     w_pts = format_points(white_p.get('points', 0.0))
+                     # Usa placeholder per Scacchiera, ID aggiustato
+                     line = (f"{'---':<3}| "
+                             f"{match_id:<4}| "
+                             f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE")
+                     f.write(f"\t{line}\n") # Indenta la riga
                 else:
-                    # Caso partita normale
-                    black_p = players_dict.get(black_p_id)
-                    if not black_p:
-                        line = f"{match_id:<3}| {w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - Errore Giocatore Nero ID: {black_p_id:<10} | {result_str}"
-                    else:
-                        b_name = f"{black_p.get('first_name','?')} {black_p.get('last_name','')}"
-                        b_elo = black_p.get('initial_elo','?')
-                        b_pts = format_points(black_p.get('points', 0.0))
-                        # Formatta la riga della partita
-                        line = (f"{match_id:<3}| "
-                                f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - "
-                                f"{b_name:<24} [{b_elo:>4}] ({b_pts:<4}) | "
-                                f"{result_str}")
-                f.write(f"\t{line}\n") # Aggiunto \t per indentare ogni riga di partita
+                     # Errore giocatore Bye non trovato
+                     line = f"{'---':<3}| {match_id:<4}| Errore Giocatore Bye ID: {white_p_id:<10} | BYE"
+                     f.write(f"\t{line}\n")
 
-        print(f"Dati Turno {round_number} aggiunti al file {filename}") # Messaggio aggiornato
+
+        print(f"Dati Turno {round_number} aggiunti al file {filename}")
     except IOError as e:
         print(f"Errore durante l'aggiornamento del file {filename}: {e}")
     except Exception as general_e:
