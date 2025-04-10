@@ -1,0 +1,46 @@
+﻿Torneo: BersanTest
+================================================================================
+Turno: 1
+Periodo: Mercoledì 9 aprile 2025 - Domenica 20 aprile 2025
+--------------------------------------------------------------------------------
+	ID | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato
+	------------------------------------------------------------------------------------------
+	1  | 1Provino Provucci        [1001] (1   ) - BYE                             | BYE
+	2  | 13Figa Figaroli          [1013] (0   ) - 7Esama Esaminanda        [1007] (0   ) | Da giocare
+	3  | 12Sticazzi Incazzati     [1012] (0   ) - 6Tessa Testicoli         [1006] (0   ) | Da giocare
+	4  | 11Alfa Alfonsini         [1011] (0   ) - 5Testocolo Testori       [1005] (0   ) | Da giocare
+	5  | 10Beta Betadine          [1010] (0   ) - 4Testone Testacci        [1004] (0   ) | Da giocare
+	6  | 9Turlio Testicolato      [1009] (0   ) - 3Provo Provetto          [1003] (0   ) | Da giocare
+	7  | 8Torneo Tornato          [1008] (0   ) - 2Provezza Provezzani     [1002] (0   ) | Da giocare
+
+
+============================== INIZIO TURNO 1 ==============================
+
+Turno: 1
+Periodo: Mercoledì 9 aprile 2025 - Domenica 20 aprile 2025
+--------------------------------------------------------------------------------
+	ID | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato
+	------------------------------------------------------------------------------------------
+	1  | 1Provino Provucci        [1001] (1   ) - BYE                             | BYE
+	2  | 13Figa Figaroli          [1013] (0.5 ) - 7Esama Esaminanda        [1007] (0.5 ) | 1/2-1/2
+	3  | 12Sticazzi Incazzati     [1012] (0.5 ) - 6Tessa Testicoli         [1006] (0.5 ) | 1/2-1/2
+	4  | 11Alfa Alfonsini         [1011] (1   ) - 5Testocolo Testori       [1005] (0   ) | 1-0
+	5  | 10Beta Betadine          [1010] (0   ) - 4Testone Testacci        [1004] (1   ) | 0-1
+	6  | 9Turlio Testicolato      [1009] (0   ) - 3Provo Provetto          [1003] (1   ) | 0-1
+	7  | 8Torneo Tornato          [1008] (1   ) - 2Provezza Provezzani     [1002] (0   ) | 1-0
+
+
+============================== INIZIO TURNO 2 ==============================
+
+Turno: 2
+Periodo: Lunedì 21 aprile 2025 - Venerdì 2 maggio 2025
+--------------------------------------------------------------------------------
+	ID | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato
+	------------------------------------------------------------------------------------------
+	8  | 2Provezza Provezzani     [1002] (1   ) - BYE                             | BYE
+	9  | 4Testone Testacci        [1004] (1   ) - 11Alfa Alfonsini         [1011] (1   ) | Da giocare
+	10 | 1Provino Provucci        [1001] (1   ) - 8Torneo Tornato          [1008] (1   ) | Da giocare
+	11 | 3Provo Provetto          [1003] (1   ) - 13Figa Figaroli          [1013] (0.5 ) | Da giocare
+	12 | 7Esama Esaminanda        [1007] (0.5 ) - 12Sticazzi Incazzati     [1012] (0.5 ) | Da giocare
+	13 | 6Tessa Testicoli         [1006] (0.5 ) - 10Beta Betadine          [1010] (0   ) | Da giocare
+	14 | 5Testocolo Testori       [1005] (0   ) - 9Turlio Testicolato      [1009] (0   ) | Da giocare
