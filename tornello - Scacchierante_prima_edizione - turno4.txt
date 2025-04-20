@@ -1,0 +1,12 @@
+﻿Torneo: Scacchierante prima edizione
+Turno: 4
+Periodo: Giovedì 24 aprile 2025 - Domenica 4 maggio 2025
+------------------------------------------------------------
+ID | Bianco                   [Elo] (Pt) - Nero                    [Elo] (Pt) | Risultato
+------------------------------------------------------------
+	19 | Virginio Paglia          [1250] (2.5 ) - Lorenzo Ionata           [1285] (3   ) | Da programmare
+	20 | Valeria Calzolari        [1255] (2   ) - Silvia Cibin             [1295] (2   ) | Da programmare
+	21 | Alessia Mereu            [1265] (2   ) - Catia Lima               [1275] (2   ) | Da programmare
+	22 | Luigi Ventura            [1270] (1   ) - Martina Forte            [1280] (1.5 ) | Da programmare
+	23 | Rita Valleriani          [1245] (1   ) - Alessandra Testori       [1290] (1   ) | Da programmare
+	24 | Serena Gori              [1260] (0   ) - Vincenzo Di Bari         [1300] (0   ) | Da programmare
