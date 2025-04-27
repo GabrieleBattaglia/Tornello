@@ -1,0 +1,32 @@
+[
+    {
+        "id": "BATGA001",
+        "first_name": "Gabriele",
+        "last_name": "Battaglia",
+        "current_elo": 1535,
+        "registration_date": "2025-04-27",
+        "birth_date": "1974-09-13",
+        "games_played": 0,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        },
+        "tournaments_played": []
+    },
+    {
+        "id": "CALVA001",
+        "first_name": "Valeria",
+        "last_name": "Calzolari",
+        "current_elo": 1399,
+        "registration_date": "2025-04-27",
+        "birth_date": null,
+        "games_played": 0,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0
+        },
+        "tournaments_played": []
+    }
+]
