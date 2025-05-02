@@ -1,16 +1,16 @@
 ﻿Nome torneo: Scacchierante prima edizione
-Classifica Parziale - Dopo Turno 2
+Classifica Parziale - Dopo Turno 3
 Pos. Nome Cognome          [EloIni] Punti  Buchholz
 =====================================================
-1    Lorenzo Ionata        [1285]   3      5       
-2    Virginio Paglia       [1250]   2.5    3.5     
-3    Alessia Mereu         [1265]   2      6       
-4    Catia Lima            [1275]   2      5       
-5    Silvia Cibin          [1295]   2      4       
-6    Valeria Calzolari     [1255]   2      4       
-7    Martina Forte         [1280]   1.5    4.5     
-8    Luigi Ventura         [1270]   1      5       
-9    Alessandra Testori    [1290]   1      4       
-10   Rita Valleriani       [1245]   1      4       
-11   Serena Gori           [1260]   0      5       
-12   Vincenzo Di Bari      [1300]   0      4       
+1    Lorenzo Ionata        [1285]   4      9.5     
+2    Catia Lima            [1275]   3      9       
+3    Valeria Calzolari     [1255]   3      8       
+4    Virginio Paglia       [1250]   2.5    8.5     
+5    Martina Forte         [1280]   2.5    5.5     
+6    Alessia Mereu         [1265]   2      10      
+7    Silvia Cibin          [1295]   2      8       
+8    Rita Valleriani       [1245]   2      7       
+9    Luigi Ventura         [1270]   1      9.5     
+10   Alessandra Testori    [1290]   1      8       
+11   Vincenzo Di Bari      [1300]   1      6       
+12   Serena Gori           [1260]   0      7       

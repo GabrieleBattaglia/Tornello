@@ -1,11 +1,11 @@
 # Data concepimento 27 aprile 2025 by Gemini 2.5
+# Versione 2
 import os
 import json
 import sys
 from datetime import datetime
 
 # --- Constants ---
-# Assicurati che questo corrisponda ESATTAMENTE al file usato dal programma principale
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 DATE_FORMAT_ISO = "%Y-%m-%d"
 DEFAULT_ELO = 1399 # Elo predefinito se non specificato
@@ -28,11 +28,12 @@ def load_players_db():
                     p.setdefault('registration_date', None)
                     p.setdefault('birth_date', None)
                     p.setdefault('games_played', 0)
-                    p.setdefault('medals', {'gold': 0, 'silver': 0, 'bronze': 0})
+                    medals_dict = p.setdefault('medals', {})
+                    medals_dict.setdefault('gold', 0)
+                    medals_dict.setdefault('silver', 0)
+                    medals_dict.setdefault('bronze', 0)
+                    medals_dict.setdefault('wood', 0)
                     p.setdefault('tournaments_played', [])
-                    # Aggiungi altri campi di default se necessario per coerenza futura
-                    # p.setdefault('downfloat_count', 0) # Esempio
-
                     if 'id' in p:
                        players_dict[p['id']] = p
                     else:
@@ -119,7 +120,6 @@ def display_player_details(player_data):
     if not player_data or not isinstance(player_data, dict):
         print("Dati giocatore non validi.")
         return
-
     # Elenca tutti i campi noti per completezza
     fields = [
         'id', 'first_name', 'last_name', 'current_elo',
@@ -127,33 +127,22 @@ def display_player_details(player_data):
         'medals', 'tournaments_played'
         # Aggiungi altri campi se necessario
     ]
-
     for field in fields:
         value = player_data.get(field)
         display_value = ""
-
         if value is None:
             display_value = "N/D"
         elif field == 'medals' and isinstance(value, dict):
-            # Formattazione specifica per il medagliere
-            display_value = f"Oro: {value.get('gold', 0)}, Argento: {value.get('silver', 0)}, Bronzo: {value.get('bronze', 0)}"
+            display_value = f"Oro: {value.get('gold', 0)}, Argento: {value.get('silver', 0)}, Bronzo: {value.get('bronze', 0)}, Legno: {value.get('wood', 0)}"
         elif field == 'tournaments_played' and isinstance(value, list):
              # Mostra solo il numero di tornei per brevità
             display_value = f"{len(value)} tornei registrati"
-            # Potresti espandere per mostrare i nomi se vuoi
-            # if value:
-            #    display_value += " (" + ", ".join([t.get('tournament_name', '?') for t in value[:3]]) + ('...' if len(value) > 3 else '') + ")"
-            # else:
-            #    display_value = "Nessun torneo registrato"
         elif field in ['birth_date', 'registration_date']:
              # Mostra le date nel formato ISO o N/D
             display_value = value if value else "N/D"
         else:
             display_value = str(value) # Converte altri valori in stringa
-
-        # Stampa il campo e il valore formattato
         print(f"{field.replace('_', ' ').title():<20}: {display_value}")
-
     print("------------------------")
 
 # --- Main Loop ---
@@ -272,7 +261,7 @@ def main_loop(players_db):
                 "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
                 "birth_date": birth_date_str, # Può essere None
                 "games_played": 0, # Inizializza i campi standard
-                "medals": {"gold": 0, "silver": 0, "bronze": 0},
+                "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
                 "tournaments_played": []
                 # Aggiungi altri campi di default se li hai nel DB principale
                 # "downfloat_count": 0,

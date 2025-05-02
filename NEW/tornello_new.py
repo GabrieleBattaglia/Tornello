@@ -8,12 +8,12 @@ import traceback
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "3.8.9 del 10 aprile 2025"
+VERSIONE = "3.11.0 del 2 maggio 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
 DATE_FORMAT_ISO = "%Y-%m-%d"
-# DATE_FORMAT_LOCALE non più usato
+DEFAULT_ELO = 1399.0
 DEFAULT_K_FACTOR = 20
 # Costanti per regole colore FIDE
 MAX_COLOR_DIFFERENCE = 2
@@ -36,9 +36,9 @@ def get_k_factor(player_db_data, tournament_start_date_str):
 
     try:
         # Usa l'Elo che il giocatore aveva PRIMA del torneo (dal DB)
-        elo = float(player_db_data.get('current_elo', 1500))
+        elo = float(player_db_data.get('current_elo', DEFAULT_ELO))
     except (ValueError, TypeError):
-        elo = 1500 # Fallback se Elo non valido
+        elo = DEFAULT_ELO # Fallback se Elo non valido
 
     games_before_tournament = player_db_data.get('games_played', 0)
     birth_date_str = player_db_data.get('birth_date')
@@ -78,6 +78,19 @@ def get_k_factor(player_db_data, tournament_start_date_str):
     else:
         # print(f"DEBUG get_k_factor: Player {player_db_data.get('id')} -> K=10 (Elo >= 2400)")
         return 10
+
+def format_rank_ordinal(rank):
+    """Formatta il rank come numero ordinale italiano (es. 1°, 6°) o 'RIT'."""
+    if rank == "RIT":
+        return "RIT"
+    try:
+        # Prova a convertire in intero
+        rank_int = int(rank)
+        # Aggiunge il simbolo di grado per l'ordinale
+        return f"{rank_int}°"
+    except (ValueError, TypeError):
+        # Se il rank non è 'RIT' e non è convertibile in intero, ritorna '?'
+        return "?" # Fallback per rank non validi o non numerici
 
 def format_date_locale(date_input):
     """Formatta una data (oggetto datetime o stringa ISO) nel formato locale esteso
@@ -136,7 +149,11 @@ def load_players_db():
                 db_list = json.load(f)
                 # Inizializza campi mancanti se necessario all'avvio
                 for p in db_list:
-                    p.setdefault('medals', {'gold': 0, 'silver': 0, 'bronze': 0})
+                    medals_dict = p.setdefault('medals', {})
+                    medals_dict.setdefault('gold', 0)
+                    medals_dict.setdefault('silver', 0)
+                    medals_dict.setdefault('bronze', 0)
+                    medals_dict.setdefault('wood', 0)  # <-- Aggiunto controllo specifico per 'wood'
                     p.setdefault('tournaments_played', [])
                 return {p['id']: p for p in db_list}
         except (json.JSONDecodeError, IOError) as e:
@@ -174,38 +191,26 @@ def save_players_db_txt(players_db):
             f.write(f"Report Database Giocatori Tornello - {format_date_locale(now.date())} {now.strftime('%H:%M:%S')}\n")
             f.write("=" * 40 + "\n\n")
             sorted_players = sorted(players_db.values(), key=lambda p: (p.get('last_name',''), p.get('first_name','')))
-
             if not sorted_players:
                 f.write("Il database dei giocatori è vuoto.\n")
                 return
-
             for player in sorted_players:
                 player_id = player.get('id', 'N/D') # Prendi ID per passarlo a get_k_factor (utile per debug lì)
-                f.write(f"ID: {player_id}\n")
-                f.write(f"Nome: {player.get('first_name', 'N/D')} {player.get('last_name', 'N/D')}\n")
-                f.write(f"Elo Attuale: {player.get('current_elo', 'N/D')}\n")
-
-                # --- NUOVE RIGHE AGGIUNTE ---
+                f.write(f"ID: {player_id}, ")
+                f.write(f"{player.get('first_name', 'N/D')} {player.get('last_name', 'N/D')}, ")
+                f.write(f"Elo: {player.get('current_elo', 'N/D')}\n")
                 games_played_total = player.get('games_played', 0)
-                f.write(f"Partite Valutate Totali: {games_played_total}\n")
-
-                # Calcola K-Factor attuale basato sui dati correnti del DB e data odierna
-                # Passiamo l'intero dizionario 'player' che contiene elo, games, birth_date
+                f.write(f"\tPartite Valutate Totali: {games_played_total}, ")
                 current_k_factor = get_k_factor(player, current_date_iso)
-                f.write(f"K-Factor Attuale Stimato: {current_k_factor}\n")
-                # --- FINE NUOVE RIGHE ---
-
+                f.write(f"K-Factor Stimato: {current_k_factor}, ")
                 f.write(f"Data Iscrizione DB: {format_date_locale(player.get('registration_date'))}\n")
                 birth_date_display = player.get('birth_date')
-                f.write(f"Data Nascita: {format_date_locale(birth_date_display) if birth_date_display else 'N/D'}\n") # Mostra anche data nascita
-
-                medals = player.get('medals', {'gold': 0, 'silver': 0, 'bronze': 0})
-                f.write(f"Medagliere: Oro: {medals.get('gold',0)}, Argento: {medals.get('silver',0)}, Bronzo: {medals.get('bronze',0)}\n")
-
+                f.write(f"\tData Nascita: {format_date_locale(birth_date_display) if birth_date_display else 'N/D'}\n") # Mostra anche data nascita
+                medals = player.get('medals', {'gold': 0, 'silver': 0, 'bronze': 0, 'wood': 0})
+                f.write(f"\tMedagliere: Oro: {medals.get('gold',0)}, Argento: {medals.get('silver',0)}, Bronzo: {medals.get('bronze',0)}, Legno: {medals.get('wood',0)} in ")
                 tournaments = player.get('tournaments_played', [])
-                f.write(f"Tornei Partecipati ({len(tournaments)}):\n")
+                f.write(f"({len(tournaments)}) tornei:\n")
                 if tournaments:
-                    # Ordina tornei per data completamento (se disponibile), dal più recente
                     try:
                         tournaments_sorted = sorted(
                             tournaments,
@@ -214,50 +219,75 @@ def save_players_db_txt(players_db):
                         )
                     except ValueError:
                         tournaments_sorted = tournaments # Mantieni ordine originale se date non valide
-
-                    for i, t in enumerate(tournaments_sorted, 1):
-                        t_name = t.get('tournament_name', 'Nome Torneo Mancante')
-                        rank = t.get('rank', '?')
-                        total = t.get('total_players', '?')
-                        date_comp = format_date_locale(t.get('date_completed'))
-                        f.write(f"  {i}. [{date_comp}] {t_name} (Pos: {rank}/{total})\n")
+                    for t in tournaments_sorted: # Non serve più l'indice 'i' separato
+                         rank_val = t.get('rank', '?')
+                         t_name = t.get('tournament_name', 'Nome Torneo Mancante')
+                         start_date_iso = t.get('date_started') # Prende la nuova data ISO di inizio
+                         end_date_iso = t.get('date_completed') # Data di completamento
+                         rank_formatted = format_rank_ordinal(rank_val) # Usa la nuova funzione helper
+                         start_date_formatted = format_date_locale(start_date_iso)
+                         end_date_formatted = format_date_locale(end_date_iso)
+                         history_line = f"{rank_formatted}° in {t_name} - {start_date_formatted} - {end_date_formatted}"
+                         f.write(f"\t{history_line}\n")
                 else:
-                    f.write("  Nessuno\n")
+                    f.write("\tNessuno\n")
                 f.write("-" * 30 + "\n")
-
     except IOError as e:
         print(f"Errore durante il salvataggio del file TXT del DB giocatori ({PLAYER_DB_TXT_FILE}): {e}")
     except Exception as e:
         print(f"Errore imprevisto durante il salvataggio del TXT del DB: {e}")
         traceback.print_exc() # Stampa traceback per errori non gestiti
 
+# Assicurati che DEFAULT_ELO sia definito globalmente o passato come argomento
+# DEFAULT_ELO = 1500 # Definito da qualche parte nel tuo codice
+
 def add_or_update_player_in_db(players_db, first_name, last_name, elo):
-    """Aggiunge un nuovo giocatore al DB o aggiorna l'Elo se esiste già."""
+    """
+    Aggiunge un nuovo giocatore al DB principale o verifica se esiste già.
+    Riceve nome e cognome GIA' SEPARATI. Ritorna l'ID del giocatore (nuovo o esistente).
+    Include la logica di generazione ID internamente.
+    """
     norm_first = first_name.strip().title()
-    norm_last = last_name.strip().title()
-    existing_player = None
-    for p_id, player_data in players_db.items():
-        if player_data.get('first_name','').lower() == norm_first.lower() and \
-           player_data.get('last_name','').lower() == norm_last.lower():
-            existing_player = player_data
+    norm_last = last_name.strip().title() # Ora può contenere spazi, es "Di Bari"
+
+    if not norm_first or not norm_last:
+         print("Errore: Nome e Cognome non possono essere vuoti.")
+         return None # Segnala errore
+
+    # Cerca giocatore esistente nel DB principale per Nome e Cognome
+    existing_id = None
+    for pid, pdata in players_db.items():
+        # Confronto case-insensitive per sicurezza
+        if pdata.get('first_name', '').lower() == norm_first.lower() and \
+           pdata.get('last_name', '').lower() == norm_last.lower():
+            existing_id = pid
             break
-    if existing_player:
-        existing_id = existing_player.get('id', 'N/D')
-        existing_elo = existing_player.get('current_elo', 'N/D')
-        print(f"Giocatore {norm_first} {norm_last} trovato nel DB con ID {existing_id} e Elo {existing_elo}.")
-        if existing_elo != elo:
-            # Indentazione corretta
-            print(f"L'Elo fornito ({elo}) è diverso da quello nel DB ({existing_elo}). Verrà usato {elo} per questo torneo.")
-            # Nota: Non aggiorniamo l'Elo nel DB qui, solo nel torneo. Verrà aggiornato alla fine.
-        return existing_player['id']
+
+    if existing_id:
+        # Giocatore trovato nel DB principale
+        print(f"Info: Giocatore {norm_first} {norm_last} (ID: {existing_id}) già presente nel DB.")
+        # Non aggiorniamo l'ELO nel DB principale qui per mantenere il comportamento originale.
+        # L'elo specifico per il torneo viene gestito in input_players.
+        return existing_id # Ritorna l'ID esistente
     else:
+        # Giocatore non trovato, creane uno nuovo nel DB principale
+        print(f"Giocatore {norm_first} {norm_last} non trovato nel DB. Aggiungo...")
+
+        # --- INIZIO Logica Generazione ID (presa dal tuo codice originale e adattata) ---
+        # Nota: .split() qui rimuove spazi interni dal cognome/nome PRIMA di prendere le iniziali.
+        # Se vuoi iniziali da "Di Bari" come DB, questo va bene. Se volessi "DB", servirebbe logica diversa.
         last_part_cleaned = ''.join(norm_last.split())
         first_part_cleaned = ''.join(norm_first.split())
+
         last_initials = last_part_cleaned[:3].upper()
         first_initials = first_part_cleaned[:2].upper()
         while len(last_initials) < 3: last_initials += 'X'
         while len(first_initials) < 2: first_initials += 'X'
         base_id = f"{last_initials}{first_initials}"
+
+        # Gestione sicurezza se base_id diventa vuoto per input strani
+        if not base_id: base_id = "XX00"
+
         count = 1
         new_id = f"{base_id}{count:03d}"
         max_attempts = 1000
@@ -266,29 +296,37 @@ def add_or_update_player_in_db(players_db, first_name, last_name, elo):
             count += 1
             new_id = f"{base_id}{count:03d}"
             current_attempt += 1
-        if new_id in players_db:
-            print(f"ATTENZIONE: Impossibile generare ID univoco per {norm_first} {norm_last} dopo {max_attempts} tentativi.")
-            fallback_suffix = hash(datetime.now()) % 10000
+
+        if new_id in players_db: # Fallback se ancora in collisione
+            print(f"ATTENZIONE: Impossibile generare ID univoco standard per {norm_first} {norm_last} dopo {max_attempts} tentativi.")
+            fallback_suffix = hash(datetime.now()) % 10000 # Usa hash per il fallback
             new_id = f"{base_id}{fallback_suffix:04d}"
             if new_id in players_db:
-                # Indentazione corretta
-                print("ERRORE CRITICO: Fallback ID collision. Usare ID temporaneo.")
-                new_id = f"TEMP_{base_id}_{fallback_suffix}"
+                 print("ERRORE CRITICO: Fallback ID collision. Usare ID temporaneo.")
+                 new_id = f"TEMP_{base_id}_{fallback_suffix}" # ID temporaneo di emergenza
+        # --- FINE Logica Generazione ID ---
+
+        # Crea nuovo record giocatore per il DB principale
         new_player = {
             "id": new_id,
             "first_name": norm_first,
-            "last_name": norm_last,
+            "last_name": norm_last, # Cognome completo
+            # Memorizza l'elo fornito come ELO CORRENTE nel database principale
             "current_elo": elo,
             "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
-            "tournaments_played": [],
-            "medals": {"gold": 0, "silver": 0, "bronze": 0, "downfloat_count": 0,"games_played": 0,"birth_date": None}
+            "birth_date": None,   # Valuta se chiederla nell'input manuale
+            "games_played": 0,    # Default per nuovo giocatore
+            "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}, # Include wood
+            "tournaments_played": [], # Lista vuota all'inizio
+            # Aggiungi qui altri campi base che OGNI giocatore deve avere nel DB, inizializzati
+            # es: "downfloat_count": 0, # Se questo è un attributo globale del giocatore
         }
-        players_db[new_id] = new_player
-        print(f"Nuovo giocatore {norm_first} {norm_last} aggiunto al DB con ID {new_id}.")
-        save_players_db(players_db) # Salva subito il DB aggiornato
-        return new_id
+        players_db[new_id] = new_player # Aggiunge il nuovo giocatore al dizionario in memoria
+        print(f"Nuovo giocatore aggiunto al DB con ID {new_id}.")
+        # Salva immediatamente il DB principale aggiornato su file
+        save_players_db(players_db)
+        return new_id # Ritorna il nuovo ID creato
 
-# --- Tournament Utility Functions ---
 def load_tournament():
     """Carica lo stato del torneo corrente dal file JSON."""
     if os.path.exists(TOURNAMENT_FILE):
@@ -464,8 +502,8 @@ def calculate_elo_change(player, tournament_players_dict):
     try:
         initial_elo = float(initial_elo)
     except (ValueError, TypeError):
-        print(f"Warning: Elo iniziale non valido ({initial_elo}) per giocatore {player.get('id','ID Mancante')}. Usato 1500.")
-        initial_elo = 1500.0
+        print(f"Warning: Elo iniziale non valido ({initial_elo}) per giocatore {player.get('id','ID Mancante')}. Usato {DEFAULT_ELO}].")
+        initial_elo = DEFAULT_ELO
 
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
@@ -517,7 +555,7 @@ def calculate_performance_rating(player, tournament_players_dict):
     if not player or 'initial_elo' not in player or 'results_history' not in player:
         # Indentazione corretta
         # Ritorna l'Elo iniziale se non ci sono dati sufficienti
-        return player.get('initial_elo', 1500)
+        return player.get('initial_elo', DEFAULT_ELO)
     opponent_elos = []
     total_score = 0.0
     games_played_for_perf = 0
@@ -525,7 +563,7 @@ def calculate_performance_rating(player, tournament_players_dict):
         initial_elo = float(player['initial_elo'])
     except (ValueError, TypeError):
         # Indentazione corretta
-        initial_elo = 1500.0 # Fallback se Elo iniziale non valido
+        initial_elo = DEFAULT_ELO # Fallback se Elo iniziale non valido
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
@@ -827,86 +865,151 @@ def select_downfloater(group_to_select_from, torneo):
 # --- Funzione per il tentativo di accoppiamento standard (Fold/Slide) ---
 # Assicurati che determine_color_assignment e le altre funzioni helper siano definite prima
 
+# --- Funzione per il tentativo di accoppiamento standard (Fold/Slide) ---
+# Assicurati che determine_color_assignment e le altre funzioni helper siano definite prima
+
 def attempt_fold_pairing(top_half, bottom_half, torneo, round_number):
     """
-    Tenta l'accoppiamento standard Top-vs-Bottom (Fold/Slide).
+    [CON DEBUG] Tenta l'accoppiamento standard Top-vs-Bottom (Fold/Slide).
     Include logica per alternare i colori al primo turno.
     Restituisce: (lista_partite_riuscite, lista_spaiati_top, lista_spaiati_bottom)
     """
-    print(f"DEBUG attempt_fold_pairing: Inizio tentativo Top ({len(top_half)}) vs Bottom ({len(bottom_half)})") # DEBUG
+    print(f"\n[DEBUG PAIRING] === Inizio attempt_fold_pairing (Turno {round_number}) ===") # Header debug
+    print(f"[DEBUG PAIRING] Giocatori Top Half (input): {[p['id'] for p in top_half]}")
+    print(f"[DEBUG PAIRING] Giocatori Bottom Half (input): {[p['id'] for p in bottom_half]}")
+
     matches = []
     used_player_ids = set()
-    # possible_matches_info = [] # Debug colori preliminare rimosso per brevità, se serve si può rimettere
 
-    # --- Esegui il matching greedy ---
-    # Ordina le metà per Elo DESC per accoppiare H0-L0, H1-L1 etc. idealmente
-    # (anche se la ricerca k è completa, l'ordine iniziale può influenzare la prima scelta)
+    # Ordina le metà (anche se già ordinate da pair_score_group, una sicurezza)
+    # NOTA: Se pair_score_group ordina già correttamente, queste sort non dovrebbero cambiare l'ordine.
     top_half.sort(key=lambda x: -x.get("initial_elo", 0))
     bottom_half.sort(key=lambda x: -x.get("initial_elo", 0))
+    print(f"[DEBUG PAIRING] Top Half IDs (dopo sort interna per Elo): {[p['id'] for p in top_half]}")
+    print(f"[DEBUG PAIRING] Bottom Half IDs (dopo sort interna per Elo): {[p['id'] for p in bottom_half]}")
 
+    # --- Esegui il matching greedy ---
+    print("\n[DEBUG PAIRING] --- Inizio Ciclo Pairing Greedy ---")
     for i in range(len(top_half)):
         p1 = top_half[i]
-        if p1['id'] in used_player_ids: continue
+        print(f"\n[DEBUG PAIRING] Processo p1 (Top index {i}): {p1['id']} [Elo:{p1.get('initial_elo')}]")
+
+        if p1['id'] in used_player_ids:
+            print(f"[DEBUG PAIRING] --> p1 {p1['id']} già accoppiato in questo step. Salto.")
+            continue
+
+        partner_found_for_p1 = False # Flag per vedere se troviamo partner in questo ciclo 'i'
 
         # Cerca un avversario valido nella bottom half
         for k in range(len(bottom_half)):
             p2 = bottom_half[k]
-            if p2['id'] in used_player_ids: continue
+            print(f"[DEBUG PAIRING]   Valuto p2 (Bottom index {k}): {p2['id']} [Elo:{p2.get('initial_elo')}]")
 
-            # Verifica se possono giocare (non giocato + colori OK)
+            if p2['id'] in used_player_ids:
+                print(f"[DEBUG PAIRING]   --> p2 {p2['id']} già accoppiato. Salto p2.")
+                continue
+
+            # Verifica se possono giocare (Turno 1: played_before sarà sempre False)
             played_before = p2['id'] in p1.get('opponents', set())
+            print(f"[DEBUG PAIRING]   --> Giocato prima ({p1['id']} vs {p2['id']})? {played_before}")
             if not played_before:
+                # Controlla assegnazione colori
                 color_result = determine_color_assignment(p1, p2)
+                print(f"[DEBUG PAIRING]   --> Esito check colori ({p1['id']} vs {p2['id']}): {color_result}")
+
                 if color_result[0] == 'W':
                     # Accoppiamento Trovato!
                     white_id, black_id = color_result[1], color_result[2]
-                    # print(f"DEBUG attempt_fold_pairing: Coppia trovata! {p1['id']} vs {p2['id']}. Colori Default: W={white_id}, B={black_id}") # DEBUG
+                    print(f"[DEBUG PAIRING]   +++ ACCOPPIAMENTO VALIDO TROVATO! Match ID: {torneo['next_match_id']}, W:{white_id}, B:{black_id} (Orig: Top={p1['id']}, Bottom={p2['id']}) +++")
                     match = {
                         "id": torneo["next_match_id"], "round": round_number,
                         "white_player_id": white_id, "black_player_id": black_id,
                         "result": None,
-                        "original_p1_id": p1['id'], # Memorizza chi era Top/Bottom per l'alternanza
+                        # Memorizza chi era Top/Bottom originale per l'alternanza (necessario)
+                        "original_p1_id": p1['id'],
                         "original_p2_id": p2['id']
                     }
                     matches.append(match)
                     torneo["next_match_id"] += 1
                     used_player_ids.add(p1['id'])
                     used_player_ids.add(p2['id'])
-                    break # Trovato partner per p1, passa al prossimo p1
+                    print(f"[DEBUG PAIRING]   --> Aggiunti a used_player_ids: {p1['id']}, {p2['id']}")
+                    print(f"[DEBUG PAIRING]   --> Interrompo ricerca partner per p1 {p1['id']} (trovato p2 {p2['id']}).")
+                    partner_found_for_p1 = True # Segnala che abbiamo trovato partner
+                    break # Trovato partner per p1, passa al prossimo p1 (ciclo 'i')
+                else:
+                     # Colori non validi o errore, continua a cercare p2
+                     print(f"[DEBUG PAIRING]   --> Colori non assegnabili o errore: {color_result[1]}. Continuo ricerca p2.")
+            # else: # Blocco non raggiungibile in T1
+            #    print(f"[DEBUG PAIRING]   --> Già giocato. Continuo ricerca p2.")
 
-    # --- NUOVA LOGICA: Alternanza Colori per Turno 1 ---
+        # Stampa se p1 è rimasto senza partner dopo aver ciclato su tutta bottom_half
+        if not partner_found_for_p1 and p1['id'] not in used_player_ids:
+             print(f"[DEBUG PAIRING] !!! NESSUN partner valido trovato per p1 {p1['id']} in bottom_half dopo ciclo 'k'. !!!")
+
+
+    print("\n[DEBUG PAIRING] --- Fine Ciclo Pairing Greedy ---")
+    print(f"[DEBUG PAIRING] Partite grezze create prima dell'alternanza: {len(matches)}")
+    # Stampa le coppie grezze e i colori PRIMA dell'alternanza T1
+    for m_debug in matches:
+        print(f"[DEBUG PAIRING]   - Match ID {m_debug['id']}: W={m_debug['white_player_id']} vs B={m_debug['black_player_id']} (P1(Top): {m_debug['original_p1_id']}, P2(Bottom): {m_debug['original_p2_id']})")
+
+
+    # --- Logica Alternanza Colori per Turno 1 ---
     if round_number == 1 and matches:
-        print("DEBUG attempt_fold_pairing: Applico alternanza colori per Turno 1...") # DEBUG
-        # Ordina le partite create basandosi sull' Elo del giocatore della Top Half originale
-        # per simulare l'ordine delle scacchiere (dal rank più alto al più basso)
-        matches.sort(key=lambda m: torneo['players_dict'].get(m['original_p1_id'], {}).get('initial_elo', 0), reverse=True)
+        print("\n[DEBUG PAIRING] --- Applico alternanza colori per Turno 1 ---")
+        print("[DEBUG PAIRING] Ordino le partite per Elo del giocatore Top Half originale (decrescente)...")
+        try:
+             # Aggiungi gestione errori nel caso get() fallisca o elo non sia valido
+             # Usiamo una funzione interna per chiarezza nel debug dell'ordinamento
+             def get_sort_key_for_alternation(match_item):
+                 p1_id_sort = match_item.get('original_p1_id')
+                 player_data_sort = torneo['players_dict'].get(p1_id_sort, {})
+                 elo_sort = player_data_sort.get('initial_elo', 0)
+                 #print(f"DEBUG sort key for Match {match_item.get('id')}: P1={p1_id_sort}, Elo={elo_sort}") # Debug più fine se serve
+                 # Assicura che ritorni un numero per l'ordinamento
+                 try:
+                     return float(elo_sort)
+                 except (ValueError, TypeError):
+                     return 0.0 # Metti in fondo se Elo non valido
 
+             matches.sort(key=get_sort_key_for_alternation, reverse=True)
+             print("[DEBUG PAIRING] Partite ordinate per alternanza:")
+             for idx_sort, m_sort in enumerate(matches):
+                  p1_elo_sort = torneo['players_dict'].get(m_sort['original_p1_id'], {}).get('initial_elo', 'N/A')
+                  print(f"[DEBUG PAIRING]   {idx_sort}: Match ID {m_sort['id']} (P1(Top): {m_sort['original_p1_id']} [Elo:{p1_elo_sort}])")
+
+        except Exception as e_sort:
+             print(f"[DEBUG PAIRING] ERRORE durante l'ordinamento per alternanza colori: {e_sort}")
+             # Procediamo comunque con l'ordine attuale, ma l'alternanza potrebbe essere errata
+
+        print("[DEBUG PAIRING] Applico inversione colori su indici dispari (0-based)...")
         for idx, match in enumerate(matches):
-            # Inverti i colori per le partite con indice dispari (seconda, quarta, ecc.)
-            # L'indice 0 è la prima partita (scacchiera più alta), indice 1 la seconda, ecc.
+            # Inverti i colori per le partite con indice dispari (scacchiera 2, 4, 6...)
+            board_number_display = idx + 1 # Scacchiera (1-based)
             if idx % 2 != 0:
-                 # Scambia white e black player ID nel dizionario match
-                 w_id = match['white_player_id']
-                 b_id = match['black_player_id']
-                 match['white_player_id'] = b_id
-                 match['black_player_id'] = w_id
-                 print(f"DEBUG attempt_fold_pairing: Colori invertiti per match ID {match['id']} (Indice: {idx}) -> W:{b_id}, B:{w_id}") # DEBUG
-
-    # Rimuovi le chiavi temporanee usate per l'ordinamento prima di restituire
-    for match in matches:
-         if 'original_p1_id' in match: del match['original_p1_id']
-         if 'original_p2_id' in match: del match['original_p2_id']
-    # --- FINE NUOVA LOGICA ---
+                w_id_orig = match['white_player_id']
+                b_id_orig = match['black_player_id']
+                match['white_player_id'] = b_id_orig
+                match['black_player_id'] = w_id_orig
+                print(f"[DEBUG PAIRING] --> Scacchiera {board_number_display} (Indice {idx}): Colori INVERTITI. Ora W:{b_id_orig}, B:{w_id_orig}")
+            else:
+                print(f"[DEBUG PAIRING] --> Scacchiera {board_number_display} (Indice {idx}): Colori NON invertiti. Rimane W:{match['white_player_id']}, B:{match['black_player_id']}")
 
 
-    # Identifica chi è rimasto spaiato dopo aver provato tutti i p1
+    # Non rimuovere 'original_p1_id', 'original_p2_id' - potrebbero servire a chi chiama la funzione
+    # per capire la logica o per debug futuro.
+
+    # Identifica chi è rimasto spaiato
     unpaired_top = [p for p in top_half if p['id'] not in used_player_ids]
     unpaired_bottom = [p for p in bottom_half if p['id'] not in used_player_ids]
-    print(f"DEBUG attempt_fold_pairing: Fine tentativo. Partite create: {len(matches)}. Spaiati Top: {len(unpaired_top)}, Spaiati Bottom: {len(unpaired_bottom)}") # DEBUG
+    print(f"\n[DEBUG PAIRING] === Fine attempt_fold_pairing ===")
+    print(f"[DEBUG PAIRING] Partite finali generate in questo step: {len(matches)}")
+    print(f"[DEBUG PAIRING] Spaiati Top: {[p['id'] for p in unpaired_top]}")
+    print(f"[DEBUG PAIRING] Spaiati Bottom: {[p['id'] for p in unpaired_bottom]}")
+    # print(f"[DEBUG PAIRING] IDs usati totali: {used_player_ids}") # Meno utile alla fine
 
-    # Restituisci le partite create (con colori alternati se T1) e le liste degli spaiati
     return matches, unpaired_top, unpaired_bottom
-
 def check_pairing_validity(p1, p2, torneo_players_dict):
     """
     Verifica se p1 può essere accoppiato con p2.
@@ -1227,11 +1330,8 @@ def pair_score_group(group_players, downfloaters_in, torneo, round_number):
     """
     print(f"\nDEBUG pair_score_group: Processo gruppo con {len(group_players)} giocatori + {len(downfloaters_in)} downfloaters.") # DEBUG
     combined_group = downfloaters_in + group_players
-
-    # Ordina il gruppo combinato per Elo DESC (proxy per rank FIDE)
-    combined_group.sort(key=lambda x: -x.get("initial_elo", 0))
+    combined_group.sort(key=lambda x: (-x.get("initial_elo", 0), x.get("last_name", "").lower(), x.get("first_name", "").lower()))
     print(f"DEBUG pair_score_group: Gruppo combinato ordinato: {[p['id'] for p in combined_group]}") # DEBUG
-
     matches_in_this_step = [] # Lista temporanea per le partite create in questo gruppo
     current_downfloaters = [] # Questi saranno i downfloaters *finali* di questo gruppo
     players_to_pair_in_group = list(combined_group) # Lavora su una copia
@@ -1363,7 +1463,7 @@ def generate_pairings_for_round(torneo):
             # Assicura campi necessari (anche se già fatto altrove, è una sicurezza)
             p_copy['opponents'] = set(p_copy.get('opponents', []))
             p_copy.setdefault('points', 0.0)
-            p_copy.setdefault('initial_elo', 1500) # Fallback
+            p_copy.setdefault('initial_elo', DEFAULT_ELO) # Fallback
             p_copy.setdefault('received_bye', False)
             p_copy.setdefault('white_games', 0)
             p_copy.setdefault('black_games', 0)
@@ -1547,236 +1647,180 @@ def generate_pairings_for_round(torneo):
 # ==============================================================================
 
 # --- Input and Output Functions ---
+# Assicurati che DEFAULT_ELO sia definito globalmente o all'inizio del file
+DEFAULT_ELO = 1500 # O il valore che usi nel tuo file (era 1500 nel tuo codice)
+
+# Assicurati che add_or_update_player_in_db sia definita prima e che accetti
+# first_name e last_name separati, come mostrato nel punto 2 sotto.
+
+# Assicurati che le costanti e funzioni necessarie siano definite prima:
+# PLAYER_DB_FILE, DEFAULT_ELO, add_or_update_player_in_db, format_date_locale
+
 def input_players(players_db):
     """
-    Gestisce l'input dei giocatori per un torneo. Accetta:
-    1. ID Esatto (es. ROSMA001)
-    2. Nome Cognome Elo (es. Mario Rossi 1500) - Elo opzionale (default 1500)
-    3. Stringa di ricerca parziale (es. "Rossi", "Mar") - cerca in nomi/cognomi.
+    Gestisce l'input dei giocatori per un torneo.
+    1. Cerca per ID esatto nel DB.
+    2. Se non è ID, cerca per Nome/Cognome parziale nel DB.
+       - Se 1 match: aggiunge al torneo.
+       - Se >1 match: mostra lista e richiede input più specifico.
+    3. Se nessun match (né ID né ricerca), chiede Nome, Cognome, Elo separatamente.
+       - Se Nome vuoto: torna al prompt iniziale.
+       - Se Cognome o Elo vuoti/invalidi: usa default o segnala errore.
+    4. Se input iniziale vuoto: termina inserimento (con check minimo giocatori).
     """
     players_in_tournament = []
     added_player_ids = set() # Tiene traccia degli ID già aggiunti a QUESTO torneo
     print("\n--- Inserimento Giocatori ---")
-    print("Inserire ID, 'Nome Cognome [Elo]' (Elo opzionale), o parte del nome/cognome per ricerca.")
+    print("Inserire ID esatto, oppure parte del Nome/Cognome per la ricerca.")
+    print("Lasciare vuoto per terminare l'inserimento.")
 
     while True:
         current_num_players = len(players_in_tournament)
-        data = input(f"Giocatore {current_num_players + 1} (o vuoto per terminare): ").strip()
+        data = input(f"\nGiocatore {current_num_players + 1} (ID o Ricerca Nome/Cognome, vuoto per terminare): ").strip()
 
+        # --- Caso 4: Input Iniziale Vuoto -> Termina Inserimento ---
         if not data:
             min_players = 2 # Minimo per un torneo
             if current_num_players < min_players:
-                print(f"Sono necessari almeno {min_players} giocatori.")
-                continue # Continua a chiedere giocatori
+                print(f"\nAttenzione: Sono necessari almeno {min_players} giocatori per avviare il torneo.")
+                continua = input("Ci sono meno di 2 giocatori. Continuare l'inserimento? (S/n): ").strip().lower()
+                if continua == 'n':
+                     print(f"\nInserimento terminato con {current_num_players} giocatori (insufficienti).")
+                     # Ritorna la lista attuale, il chiamante deciderà se è valida
+                     break
+                else:
+                     continue # Continua a chiedere giocatori (torna all'input data)
             else:
+                # Numero sufficiente, termina
                 print(f"\nInserimento terminato con {current_num_players} giocatori.")
-                break # Termina inserimento
+                break # Esce dal ciclo while
 
-        player_added_successfully = False
+        # Variabili per tenere traccia dello stato dell'iterazione
         player_id_to_add = None
-        player_data_for_tournament = {} # Dati specifici per il torneo (incluso initial_elo)
+        player_data_to_add = None # Conterrà i dati del giocatore trovato/creato
 
-        # --- TENTATIVO 1: Input è un ID Esistente? ---
+        # --- Tentativo 1: Check Esatto ID ---
         potential_id = data.upper()
         is_id_match = False
         if potential_id in players_db:
-            print(f"Input riconosciuto come ID: {potential_id}")
+            print(f"Input riconosciuto come ID esatto: {potential_id}")
             is_id_match = True
-            if potential_id in added_player_ids:
-                print(f"Errore: Giocatore ID {potential_id} già aggiunto a questo torneo.")
-                # Non impostare player_added_successfully, il loop continua
-            else:
-                db_player = players_db[potential_id]
-                player_id_to_add = potential_id
-                first_name = db_player.get('first_name', 'N/D')
-                last_name = db_player.get('last_name', 'N/D')
-                # Usa l'Elo ATTUALE del DB come Elo iniziale per il torneo
-                current_db_elo = db_player.get('current_elo', 1500)
-                try:
-                    initial_tournament_elo = int(current_db_elo)
-                except (ValueError, TypeError):
-                    print(f"Warning: Elo nel DB ('{current_db_elo}') non valido per {first_name} {last_name}. Usato 1500.")
-                    initial_tournament_elo = 1500
+            player_id_to_add = potential_id
+            player_data_to_add = players_db[potential_id] # Dati presi direttamente dal DB
 
-                player_data_for_tournament = {
-                    "id": player_id_to_add,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "initial_elo": initial_tournament_elo, # Elo all'inizio del torneo
-                    "points": 0.0, "results_history": [], "opponents": set(),
-                    "white_games": 0, "black_games": 0, "last_color": None,
-                    "consecutive_white": 0, "consecutive_black": 0,
-                    "received_bye": False, "buchholz": 0.0, "buchholz_cut1": None,
-                    "performance_rating": None, "elo_change": None,
-                    "k_factor": None, "games_this_tournament": 0, # Campi per nuovo calcolo Elo
-                    "downfloat_count": 0, # Campo per pairing avanzato
-                    "final_rank": None, "withdrawn": False
-                }
-                print(f"Giocatore {first_name} {last_name} (ID: {player_id_to_add}, Elo: {initial_tournament_elo}) aggiunto dal DB.")
-                player_added_successfully = True # Segnala successo per questo ciclo
-
-
-        # --- TENTATIVO 2: Input è Nome Cognome [Elo]? (Solo se non era un ID) ---
-        is_name_elo_match = False
+        # --- Tentativo 2: Ricerca Parziale (se non era ID) ---
         if not is_id_match:
-            try:
-                parts = data.split()
-                first_name = ""
-                last_name = ""
-                elo = 1500 # Default Elo
-                valid_format = False
-
-                if len(parts) >= 2:
-                    try:
-                        # Prova a vedere se l'ultima parte è un Elo intero
-                        elo = int(parts[-1])
-                        name_parts = parts[:-1]
-                        if len(name_parts) >= 2: # Almeno Nome e Cognome
-                            last_name = name_parts[-1].title()
-                            first_name = " ".join(name_parts[:-1]).title()
-                            valid_format = True
-                        elif len(name_parts) == 1: # Forse solo Cognome Elo? Meno ideale
-                            last_name = name_parts[0].title()
-                            first_name = last_name # Usa cognome come nome
-                            print(f"Warning: Rilevato solo '{last_name} {elo}'. Usato '{last_name}' anche come nome.")
-                            valid_format = True
-                    except ValueError:
-                        # L'ultima parte non era un Elo, assumi sia parte del nome/cognome
-                        if len(parts) >= 2: # Nome e Cognome, usa Elo default
-                            last_name = parts[-1].title()
-                            first_name = " ".join(parts[:-1]).title()
-                            print(f"Warning: Elo non specificato per '{first_name} {last_name}'. Usato default {elo}.")
-                            valid_format = True
-                        # Se len(parts) == 1, non può essere Nome Cognome, verrà gestito dalla ricerca
-
-                if valid_format:
-                    print(f"Input interpretato come Nome/Cognome (+/- Elo): '{first_name}' '{last_name}' ({elo})")
-                    is_name_elo_match = True # Marcato come formato valido Nome/Cognome/Elo
-                    # Aggiungi/aggiorna nel DB e ottieni ID
-                    # add_or_update gestisce la logica di trovare/creare nel DB
-                    player_id_from_db = add_or_update_player_in_db(players_db, first_name, last_name, elo)
-
-                    if player_id_from_db in added_player_ids:
-                        print(f"Errore: Giocatore {first_name} {last_name} (ID: {player_id_from_db}) già aggiunto a questo torneo.")
-                        # Non impostare player_added_successfully
-                    else:
-                        player_id_to_add = player_id_from_db
-                        # Prendi l'elo E/O il nome/cognome aggiornati dal DB, se esisteva già
-                        # Anche se l'utente fornisce un Elo diverso, usiamo quello fornito ORA per il torneo
-                        db_player_data = players_db[player_id_to_add]
-                        actual_first_name = db_player_data.get('first_name', first_name)
-                        actual_last_name = db_player_data.get('last_name', last_name)
-                        # Usa l'ELO fornito DALL'UTENTE in questo input come initial_elo per il torneo
-                        initial_tournament_elo = elo
-
-                        player_data_for_tournament = {
-                            "id": player_id_to_add,
-                            "first_name": actual_first_name, # Usa nome da DB se trovato
-                            "last_name": actual_last_name,  # Usa cognome da DB se trovato
-                            "initial_elo": initial_tournament_elo, # Usa Elo fornito qui
-                            "points": 0.0, "results_history": [], "opponents": set(),
-                            "white_games": 0, "black_games": 0, "last_color": None,
-                            "consecutive_white": 0, "consecutive_black": 0,
-                            "received_bye": False, "buchholz": 0.0, "buchholz_cut1": None,
-                            "performance_rating": None, "elo_change": None,
-                            "k_factor": None, "games_this_tournament": 0,
-                            "downfloat_count": 0,
-                            "final_rank": None, "withdrawn": False
-                         }
-                        # Messaggio stampato da add_or_update_player_in_db se nuovo/trovato
-                        player_added_successfully = True
-
-            except IndexError:
-                 # Caso in cui split() fallisce o l'indicizzazione non va
-                 # Non dovrebbe accadere con i controlli len(parts)
-                 print("Errore di formato nell'interpretazione Nome Cognome [Elo].")
-                 pass # Lascia che venga gestito dalla ricerca generica
-
-
-        # --- TENTATIVO 3: Ricerca Generica (se non era ID né Nome/Cognome/Elo valido) ---
-        if not is_id_match and not is_name_elo_match:
-            print(f"Eseguo ricerca parziale per '{data}'...")
+            print(f"ID non trovato. Eseguo ricerca parziale per '{data}'...")
             search_lower = data.lower()
-            matches = []
-            for p_id, p_data in players_db.items():
-                fname_lower = p_data.get('first_name', '').lower()
-                lname_lower = p_data.get('last_name', '').lower()
-                # Cerca la stringa sia nel nome che nel cognome
+            matches = [] # Lista per contenere i DIZIONARI dei giocatori trovati
+            for p_data_search in players_db.values():
+                fname_lower = p_data_search.get('first_name', '').lower()
+                lname_lower = p_data_search.get('last_name', '').lower()
+                # Cerca la sotto-stringa nel nome O nel cognome
                 if search_lower in fname_lower or search_lower in lname_lower:
-                    matches.append(p_data) # Aggiungi i dati completi del giocatore trovato
+                    matches.append(p_data_search)
 
-            # --- Gestisci Risultati Ricerca ---
-            if len(matches) == 0:
-                print(f"Nessun giocatore trovato nel DB contenente '{data}'. Riprova.")
-                # player_added_successfully rimane False
+            # --- Gestione Risultati Ricerca Parziale ---
+            if len(matches) == 1:
+                # Trovato risultato unico con ricerca parziale!
+                player_data_to_add = matches[0]
+                player_id_to_add = player_data_to_add['id']
+                print(f"Trovato giocatore unico tramite ricerca: {player_data_to_add.get('first_name')} {player_data_to_add.get('last_name')} (ID: {player_id_to_add})")
+                # Procedi all'aggiunta (verrà fatto dopo i tentativi)
 
-            elif len(matches) == 1:
-                # Trovato risultato unico!
-                the_match = matches[0]
-                player_id_to_add = the_match['id']
-
-                if player_id_to_add in added_player_ids:
-                    print(f"Errore: Giocatore {the_match.get('first_name')} {the_match.get('last_name')} (ID: {player_id_to_add}) trovato, ma già presente nel torneo.")
-                    # player_added_successfully rimane False
-                else:
-                    # Aggiungi il giocatore trovato
-                    first_name = the_match.get('first_name', 'N/D')
-                    last_name = the_match.get('last_name', 'N/D')
-                    current_db_elo = the_match.get('current_elo', 1500)
-                    try:
-                        initial_tournament_elo = int(current_db_elo)
-                    except (ValueError, TypeError):
-                        print(f"Warning: Elo nel DB ('{current_db_elo}') non valido per {first_name} {last_name}. Usato 1500.")
-                        initial_tournament_elo = 1500
-
-                    player_data_for_tournament = {
-                        "id": player_id_to_add,
-                        "first_name": first_name,
-                        "last_name": last_name,
-                        "initial_elo": initial_tournament_elo,
-                        "points": 0.0, "results_history": [], "opponents": set(),
-                        "white_games": 0, "black_games": 0, "last_color": None,
-                        "consecutive_white": 0, "consecutive_black": 0,
-                        "received_bye": False, "buchholz": 0.0, "buchholz_cut1": None,
-                        "performance_rating": None, "elo_change": None,
-                        "k_factor": None, "games_this_tournament": 0,
-                        "downfloat_count": 0,
-                        "final_rank": None, "withdrawn": False
-                     }
-                    print(f"Giocatore '{first_name} {last_name}' (ID: {player_id_to_add}, Elo: {initial_tournament_elo}) trovato tramite ricerca '{data}' e aggiunto.")
-                    player_added_successfully = True
-
-            else: # len(matches) > 1
-                # Trovati risultati multipli
-                print(f"Trovati {len(matches)} giocatori contenenti '{data}'. Specifica usando l'ID:")
-                # Ordina i risultati per cognome, nome
-                matches.sort(key=lambda p: (p.get('last_name', ''), p.get('first_name', '')))
+            elif len(matches) > 1:
+                # Trovati risultati multipli, mostra lista e richiedi input più specifico
+                print(f"Trovati {len(matches)} giocatori contenenti '{data}'. Specifica usando l'ID esatto:")
+                # Ordina i risultati per cognome, nome per una visualizzazione chiara
+                matches.sort(key=lambda p: (p.get('last_name', '').lower(), p.get('first_name', '').lower()))
                 for i, p_match in enumerate(matches, 1):
                     p_id = p_match.get('id', 'N/D')
                     p_fname = p_match.get('first_name', 'N/D')
                     p_lname = p_match.get('last_name', 'N/D')
                     p_elo = p_match.get('current_elo', 'N/D')
                     p_bdate = p_match.get('birth_date')
-                    p_bdate_formatted = format_date_locale(p_bdate) if p_bdate else 'N/D'
-                    print(f"  {i}. ID: {p_id:<9} - {p_fname} {p_lname} (Elo: {p_elo}, Nato: {p_bdate_formatted})")
-                # Non aggiungere nessuno, l'utente deve specificare meglio
-                # player_added_successfully rimane False
+                    # Assumendo che format_date_locale sia definita correttamente altrove
+                    try:
+                         p_bdate_formatted = format_date_locale(p_bdate) if p_bdate else 'N/D'
+                    except NameError: # Se format_date_locale non è definita in questo scope
+                         p_bdate_formatted = p_bdate if p_bdate else 'N/D'
 
+                    print(f"  {i}. ID: {p_id:<9} - {p_fname} {p_lname} (Elo DB: {p_elo}, Nato: {p_bdate_formatted})")
+                # Non aggiungere nessuno ora, richiedi input più specifico nel prossimo ciclo
+                continue # Salta il resto dell'iterazione corrente
 
-        # --- Fine dei 3 Tentativi ---
+            else: # len(matches) == 0 -> Nessun match (né ID né ricerca)
+                # --- Tentativo 3: Input Manuale Separato ---
+                print(f"Nessun giocatore trovato per '{data}'. Procedere con inserimento manuale:")
+                first_name_manual = input("  Nome: ").strip()
+                if not first_name_manual:
+                     print("Inserimento manuale annullato (Nome vuoto).")
+                     continue # Torna alla richiesta ID/Ricerca
 
-        # Aggiungi il giocatore al torneo SOLO se uno dei metodi ha avuto successo
-        # E ha prodotto un player_id_to_add e i dati in player_data_for_tournament
-        if player_added_successfully and player_id_to_add and player_data_for_tournament:
-             # Questo check 'already added' è una doppia sicurezza, dovrebbe essere già gestito sopra
-            if player_id_to_add in added_player_ids:
-                print(f"Info: Tentativo di ri-aggiungere giocatore {player_id_to_add}, ignorato.")
-            else:
-                players_in_tournament.append(player_data_for_tournament)
-                added_player_ids.add(player_id_to_add)
-        elif player_added_successfully and (not player_id_to_add or not player_data_for_tournament):
-             # Se c'è un bug logico per cui è successful ma mancano dati
-             print(f"ERRORE INTERNO: Aggiunta segnalata come successfull ma mancano ID ({player_id_to_add}) o Dati Torneo.")
+                last_name_manual = input("  Cognome: ").strip()
+                if not last_name_manual:
+                     print("Errore: Cognome non può essere vuoto. Inserimento manuale annullato.")
+                     continue # Torna alla richiesta ID/Ricerca
+
+                elo_manual_input = input(f"  Elo (default {DEFAULT_ELO}): ").strip()
+                elo_manual = DEFAULT_ELO
+                if elo_manual_input:
+                    try:
+                        elo_manual = int(elo_manual_input)
+                    except ValueError:
+                        print(f"  Elo non valido '{elo_manual_input}'. Uso il default {DEFAULT_ELO}.")
+
+                # Aggiungi/Aggiorna nel DB principale e ottieni l'ID
+                # Assicurati che add_or_update_player_in_db riceva nomi separati
+                player_id_from_db = add_or_update_player_in_db(players_db, first_name_manual, last_name_manual, elo_manual)
+
+                if player_id_from_db is None:
+                     print("Errore durante la gestione del giocatore nel DB. Riprova.")
+                     continue # Torna alla richiesta ID/Ricerca
+                else:
+                     # Recupera i dati appena creati/trovati dal DB
+                     player_data_to_add = players_db[player_id_from_db]
+                     player_id_to_add = player_id_from_db
+                     # L'Elo per il TORNEO sarà quello inserito manualmente ORA
+                     initial_tournament_elo = elo_manual # Salva elo per dopo
+
+        # --- Aggiunta Giocatore al Torneo (se trovato/creato e non duplicato) ---
+        if player_id_to_add and player_data_to_add: # Se un ID e i dati sono stati determinati
+             if player_id_to_add in added_player_ids:
+                 print(f"Errore: Giocatore ID {player_id_to_add} ({player_data_to_add.get('first_name')} {player_data_to_add.get('last_name')}) è già stato aggiunto a questo torneo.")
+             else:
+                 # Prepara i dati finali specifici per il torneo
+                 # Determina l'Elo iniziale corretto per il torneo
+                 if is_id_match or len(matches) == 1: # Se aggiunto via ID o Ricerca Unica
+                      try:
+                           # Usa l'elo CORRENTE del DB
+                           elo_torneo = int(player_data_to_add.get('current_elo', DEFAULT_ELO))
+                      except (ValueError, TypeError):
+                           print(f"Warning: Elo DB non valido per {player_id_to_add}. Uso {DEFAULT_ELO}.")
+                           elo_torneo = DEFAULT_ELO
+                 else: # Se aggiunto via Input Manuale (len(matches) == 0)
+                      elo_torneo = initial_tournament_elo # Usa l'elo inserito manualmente
+
+                 # Crea il dizionario per la lista players_in_tournament
+                 player_data_for_tournament = {
+                     "id": player_id_to_add,
+                     "first_name": player_data_to_add.get('first_name', 'N/D'),
+                     "last_name": player_data_to_add.get('last_name', 'N/D'),
+                     "initial_elo": elo_torneo, # Elo all'inizio del torneo
+                     "points": 0.0, "results_history": [], "opponents": set(),
+                     "white_games": 0, "black_games": 0, "last_color": None,
+                     "consecutive_white": 0, "consecutive_black": 0,
+                     "received_bye": False, "buchholz": 0.0, "buchholz_cut1": None,
+                     "performance_rating": None, "elo_change": None,
+                     "k_factor": None, "games_this_tournament": 0,
+                     "downfloat_count": 0,
+                     "final_rank": None, "withdrawn": False
+                 }
+                 players_in_tournament.append(player_data_for_tournament)
+                 added_player_ids.add(player_id_to_add)
+                 print(f"-> Giocatore {player_data_for_tournament['first_name']} {player_data_for_tournament['last_name']} (Elo Torneo: {elo_torneo}) aggiunto al torneo.")
+        # Se non è stato trovato/creato un ID valido (es. ricerca multipla o errore manuale),
+        # non si entra in questo blocco e il ciclo while ricomincia chiedendo un nuovo input.
     return players_in_tournament
 
 def update_match_result(torneo):
@@ -1973,29 +2017,39 @@ def update_match_result(torneo):
                 b_name = f"{black_p.get('first_name','?')} {black_p.get('last_name','?')}"
                 print(f"Partita selezionata: {w_name} vs {b_name}")
                 # Chiedi risultato con opzioni chiare
-                prompt_risultato = "Risultato [1: Vince Bianco (1-0), 2: Vince Nero (0-1), 3: Patta (1/2-1/2), 4: Non giocata/Annullata (0-0F)]: "
+                prompt_risultato = "Risultato [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
                 result_input = input(prompt_risultato).strip()
                 new_result = None
                 white_score = 0.0
                 black_score = 0.0
                 valid_input = True
-                if result_input == '1':
+                if result_input == '1-0':
                     new_result = "1-0"
                     white_score = 1.0
-                elif result_input == '2':
+                elif result_input == '0-1':
                     new_result = "0-1"
                     black_score = 1.0
-                elif result_input == '3':
+                elif result_input == '1/2':
                     new_result = "1/2-1/2"
                     white_score = 0.5
                     black_score = 0.5
-                elif result_input == '4':
+                elif result_input == '0-0F':
                     new_result = "0-0F" # Forfait/Non giocata - entrambi 0 punti
                     white_score = 0.0
                     black_score = 0.0
                     print("Partita marcata come non giocata/annullata (0-0F).")
+                elif result_input == '1-F':
+                    new_result = "1-F"  # Stringa per vittoria Bianco per Forfait
+                    white_score = 1.0
+                    black_score = 0.0
+                    print("Partita registrata come vittoria del Bianco per Forfait (1-F).")
+                elif result_input == 'F-1':
+                    new_result = "F-1"  # Stringa per vittoria Nero per Forfait
+                    white_score = 0.0
+                    black_score = 1.0
+                    print("Partita registrata come vittoria del Nero per Forfait (F-1).")                
                 else:
-                    print("Input non valido. Usa 1, 2, 3, o 4.")
+                    print("Input non valido. Usa 1-0, 0-1, 1/2, 0-0F, 1-F, F-1.")
                     valid_input = False
                 if valid_input and new_result is not None:
                     # Indentazione corretta
@@ -2524,54 +2578,61 @@ def finalize_tournament(torneo, players_db):
         final_rank = p_final.get('final_rank')
         elo_change = p_final.get('elo_change') # Variazione calcolata con K corretto
         games_in_tournament = p_final.get('games_this_tournament', 0) # Partite giocate nel torneo
-
         if not player_id: continue
-
         if player_id in players_db:
             db_player = players_db[player_id] # Accedi al record del DB
-
             # Aggiorna Elo
             if elo_change is not None:
                 old_elo_db = db_player.get('current_elo', 'N/D')
                 try:
-                    current_db_elo_val = int(db_player.get('current_elo', 1500))
+                    current_db_elo_val = int(db_player.get('current_elo', DEFAULT_ELO))
                 except (ValueError, TypeError):
-                    print(f"Warning: Elo DB ('{old_elo_db}') non numerico per {player_id}. Reset a 1500.")
-                    current_db_elo_val = 1500
+                    print(f"Warning: Elo DB ('{old_elo_db}') non numerico per {player_id}. Reset a {DEFAULT_ELO}.")
+                    current_db_elo_val = DEFAULT_ELO
                 new_elo = current_db_elo_val + elo_change
                 db_player['current_elo'] = new_elo # Aggiorna Elo nel DB
                 print(f" - ID {player_id}: Elo DB aggiornato da {old_elo_db} a {new_elo} ({elo_change:+})")
             else:
                  # Questo accade per i ritirati o se il calcolo fallisce
                  print(f" - ID {player_id}: Variazione Elo non applicabile, Elo DB non aggiornato.")
-
             # Aggiorna Partite Giocate
             old_games_played = db_player.get('games_played', 0)
             new_games_played = old_games_played + games_in_tournament
             db_player['games_played'] = new_games_played
             print(f" - ID {player_id}: Partite DB aggiornate da {old_games_played} a {new_games_played} (+{games_in_tournament})")
-
-            # Aggiorna Storico Tornei e Medagliere (logica invariata)
-            tournament_record = { # ... (come prima) ...
+            tournament_record = {
                  "tournament_name": torneo.get('name', 'N/D'),
                  "tournament_id": torneo.get('tournament_id', torneo.get('name', 'N/D')),
                  "rank": final_rank if final_rank is not None else 'N/A',
                  "total_players": num_players,
+                 "date_started": torneo.get('start_date'), # <<<=== NUOVA RIGA AGGIUNTA
                  "date_completed": torneo.get('end_date', datetime.now().strftime(DATE_FORMAT_ISO))
              }
             if 'tournaments_played' not in db_player: db_player['tournaments_played'] = []
-            # Evita duplicati basati su tournament_id
             if not any(t.get('tournament_id') == tournament_record['tournament_id'] for t in db_player['tournaments_played']):
                  db_player['tournaments_played'].append(tournament_record)
                  print(f" - ID {player_id}: Torneo '{tournament_record['tournament_name']}' aggiunto allo storico DB.")
+                 if isinstance(final_rank, int) and final_rank in [1, 2, 3, 4]:
+                    # Assicura che il dizionario medals esista e abbia tutte le chiavi
+                    if 'medals' not in db_player:
+                        db_player['medals'] = {'gold': 0, 'silver': 0, 'bronze': 0, 'wood': 0}
+                    else:
+                        # Assicura comunque la presenza di tutte le chiavi per sicurezza
+                        db_player['medals'].setdefault('gold', 0)
+                        db_player['medals'].setdefault('silver', 0)
+                        db_player['medals'].setdefault('bronze', 0)
+                        db_player['medals'].setdefault('wood', 0) # Assicura wood
 
-            if isinstance(final_rank, int) and final_rank in [1, 2, 3]:
-                 # ... (logica medagliere invariata) ...
-                if 'medals' not in db_player: db_player['medals'] = {'gold': 0, 'silver': 0, 'bronze': 0}
-                medal_key = {1: 'gold', 2: 'silver', 3: 'bronze'}[final_rank]
-                db_player['medals'][medal_key] = db_player['medals'].get(medal_key, 0) + 1
-                print(f" - ID {player_id}: Medagliere DB aggiornato (+1 {medal_key}).")
+                    medal_key = None
+                    if final_rank == 1: medal_key = 'gold'
+                    elif final_rank == 2: medal_key = 'silver'
+                    elif final_rank == 3: medal_key = 'bronze'
+                    elif final_rank == 4: medal_key = 'wood' # <-- Gestisce 4° posto
 
+                    # Incrementa usando .get() per sicurezza
+                    if medal_key:
+                        db_player['medals'][medal_key] = db_player['medals'].get(medal_key, 0) + 1
+                        print(f" - ID {player_id}: Medagliere DB aggiornato (+1 {medal_key}).")
             db_updated = True
         else:
             print(f"Attenzione: Giocatore ID {player_id} non trovato nel DB principale.")
@@ -2610,7 +2671,7 @@ def main():
         launch_count = torneo['launch_count']
         # Ricostruisci il dizionario cache all'avvio
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-    print(f"Benvenuti da Tornello {VERSIONE} - {launch_count}o lancio.\n\tGabriele Battaglia and Gemini.") # Rimosso 2.5
+    print(f"\nBenvenuti da Tornello {VERSIONE} - {launch_count}o lancio.\n\tGabriele Battaglia and Gemini 2.5 Pro.") # Rimosso 2.5
     if torneo is None:
         print(f"Nessun torneo in corso trovato ({TOURNAMENT_FILE}). Creazione nuovo torneo.")
         torneo = {}

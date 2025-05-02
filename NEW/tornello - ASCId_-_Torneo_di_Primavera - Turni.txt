@@ -1,0 +1,20 @@
+﻿Torneo: ASCId - Torneo di Primavera
+================================================================================
+	Periodo: Venerdì 2 maggio 2025 - Domenica 11 maggio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato
+	------------------------------------------------------------------------------------------------
+	1  | 1   | Claudio Gasperoni        [1859] (0   ) - Catia Susana Brites Pereira Lima [1399] (0   ) | Da giocare
+	2  | 2   | Valeria Calzolari        [1399] (0   ) - Francesco Nicolini       [1776] (0   ) | Da giocare
+	3  | 3   | Jiazhuang Vandelli       [1756] (0   ) - Mariangela Cassano       [1399] (0   ) | Da giocare
+	4  | 4   | Mathias Cicciarella      [1399] (0   ) - Maurizio Soppelsa        [1731] (0   ) | Da giocare
+	5  | 5   | Fabrizio Zavan           [1671] (0   ) - Vincenzo Di Bari         [1399] (0   ) | Da giocare
+	6  | 6   | Martina Forte            [1399] (0   ) - Fabrizio Manneschi       [1609] (0   ) | Da giocare
+	7  | 7   | Cosetta Trapletti        [1586] (0   ) - Serena Gori              [1399] (0   ) | Da giocare
+	8  | 8   | Alessia Mereu            [1399] (0   ) - Filippa Tolaro           [1577] (0   ) | Da giocare
+	9  | 9   | Michele Colangelo        [1574] (0   ) - Giulia Paglia            [1399] (0   ) | Da giocare
+	10 | 10  | Virginio Paglia          [1399] (0   ) - Gabriele Battaglia       [1513] (0   ) | Da giocare
+	11 | 11  | Luca Parravano           [1506] (0   ) - Valeria Scapin           [1399] (0   ) | Da giocare
+	12 | 12  | Alessandra Testori       [1399] (0   ) - Giuseppe Baratta         [1450] (0   ) | Da giocare
+	13 | 13  | Lorenzo Ionata           [1446] (0   ) - Rita Valleriani          [1399] (0   ) | Da giocare
+	14 | 14  | Luigi Ventura            [1399] (0   ) - Giancarlo Bosetti        [1399] (0   ) | Da giocare
