@@ -1,5 +1,5 @@
 {
-    "launch_count": 1,
+    "launch_count": 3,
     "name": "ASCId - Torneo di Primavera",
     "tournament_id": "ASCId_-_Torneo_di_Pr_20250502103508",
     "start_date": "2025-05-02",
@@ -38,8 +38,16 @@
             "first_name": "Claudio",
             "last_name": "Gasperoni",
             "initial_elo": 1859,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BRICA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "BRICA001"
             ],
@@ -90,8 +98,16 @@
             "first_name": "Jiazhuang",
             "last_name": "Vandelli",
             "initial_elo": 1756,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "CASMA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "CASMA001"
             ],
@@ -116,8 +132,16 @@
             "first_name": "Maurizio",
             "last_name": "Soppelsa",
             "initial_elo": 1731,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "CICMA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "CICMA001"
             ],
@@ -168,8 +192,16 @@
             "first_name": "Fabrizio",
             "last_name": "Manneschi",
             "initial_elo": 1609,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "FORMA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "FORMA001"
             ],
@@ -194,8 +226,16 @@
             "first_name": "Cosetta",
             "last_name": "Trapletti",
             "initial_elo": 1586,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "GORSE001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "GORSE001"
             ],
@@ -220,8 +260,16 @@
             "first_name": "Filippa",
             "last_name": "Tolaro",
             "initial_elo": 1577,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "MERAL001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "MERAL001"
             ],
@@ -350,8 +398,16 @@
             "first_name": "Lorenzo",
             "last_name": "Ionata",
             "initial_elo": 1446,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "VALRI001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "VALRI001"
             ],
@@ -403,7 +459,15 @@
             "last_name": "Brites Pereira Lima",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "GASCL001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "GASCL001"
             ],
@@ -455,7 +519,15 @@
             "last_name": "Cassano",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "VANJI001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "VANJI001"
             ],
@@ -481,7 +553,15 @@
             "last_name": "Cicciarella",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "SOPMA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "SOPMA001"
             ],
@@ -533,7 +613,15 @@
             "last_name": "Forte",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "MANFA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "MANFA001"
             ],
@@ -559,7 +647,15 @@
             "last_name": "Gori",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "TRACO001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "TRACO001"
             ],
@@ -585,7 +681,15 @@
             "last_name": "Mereu",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "TOLFI001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "TOLFI001"
             ],
@@ -715,7 +819,15 @@
             "last_name": "Valleriani",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "IONLO001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "IONLO001"
             ],
@@ -772,7 +884,7 @@
                     "round": 1,
                     "white_player_id": "GASCL001",
                     "black_player_id": "BRICA001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "GASCL001",
                     "original_p2_id": "BRICA001"
                 },
@@ -790,7 +902,7 @@
                     "round": 1,
                     "white_player_id": "VANJI001",
                     "black_player_id": "CASMA001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "VANJI001",
                     "original_p2_id": "CASMA001"
                 },
@@ -799,7 +911,7 @@
                     "round": 1,
                     "white_player_id": "CICMA001",
                     "black_player_id": "SOPMA001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "SOPMA001",
                     "original_p2_id": "CICMA001"
                 },
@@ -817,7 +929,7 @@
                     "round": 1,
                     "white_player_id": "FORMA001",
                     "black_player_id": "MANFA001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "MANFA001",
                     "original_p2_id": "FORMA001"
                 },
@@ -826,7 +938,7 @@
                     "round": 1,
                     "white_player_id": "TRACO001",
                     "black_player_id": "GORSE001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "TRACO001",
                     "original_p2_id": "GORSE001"
                 },
@@ -835,7 +947,7 @@
                     "round": 1,
                     "white_player_id": "MERAL001",
                     "black_player_id": "TOLFI001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "TOLFI001",
                     "original_p2_id": "MERAL001"
                 },
@@ -880,7 +992,7 @@
                     "round": 1,
                     "white_player_id": "IONLO001",
                     "black_player_id": "VALRI001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "IONLO001",
                     "original_p2_id": "VALRI001"
                 },

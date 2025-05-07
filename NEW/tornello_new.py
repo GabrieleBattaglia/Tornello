@@ -8,7 +8,7 @@ import traceback
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "3.11.0 del 2 maggio 2025"
+VERSIONE = "3.11.1 del 2 maggio 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -231,16 +231,12 @@ def save_players_db_txt(players_db):
                          f.write(f"\t{history_line}\n")
                 else:
                     f.write("\tNessuno\n")
-                f.write("-" * 30 + "\n")
+                f.write("\t" + "-" * 30 + "\n")
     except IOError as e:
         print(f"Errore durante il salvataggio del file TXT del DB giocatori ({PLAYER_DB_TXT_FILE}): {e}")
     except Exception as e:
         print(f"Errore imprevisto durante il salvataggio del TXT del DB: {e}")
         traceback.print_exc() # Stampa traceback per errori non gestiti
-
-# Assicurati che DEFAULT_ELO sia definito globalmente o passato come argomento
-# DEFAULT_ELO = 1500 # Definito da qualche parte nel tuo codice
-
 def add_or_update_player_in_db(players_db, first_name, last_name, elo):
     """
     Aggiunge un nuovo giocatore al DB principale o verifica se esiste già.
@@ -1645,16 +1641,6 @@ def generate_pairings_for_round(torneo):
 # ==============================================================================
 # --- FINE NUOVA LOGICA DI PAIRING MODULARE (Fase 1) ---
 # ==============================================================================
-
-# --- Input and Output Functions ---
-# Assicurati che DEFAULT_ELO sia definito globalmente o all'inizio del file
-DEFAULT_ELO = 1500 # O il valore che usi nel tuo file (era 1500 nel tuo codice)
-
-# Assicurati che add_or_update_player_in_db sia definita prima e che accetti
-# first_name e last_name separati, come mostrato nel punto 2 sotto.
-
-# Assicurati che le costanti e funzioni necessarie siano definite prima:
-# PLAYER_DB_FILE, DEFAULT_ELO, add_or_update_player_in_db, format_date_locale
 
 def input_players(players_db):
     """

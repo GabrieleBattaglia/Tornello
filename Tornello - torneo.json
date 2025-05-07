@@ -66,14 +66,21 @@
                     "color": "black",
                     "result": "0-1",
                     "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "CIBSI001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "GORSE001",
                 "VALRI001",
+                "VENLU001",
                 "CIBSI001",
-                "VENLU001"
+                "GORSE001",
+                "CALVA001"
             ],
             "white_games": 3,
             "black_games": 2,
@@ -119,14 +126,21 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "MERAL001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
                 "TESAL001",
-                "BARVI001",
-                "MERAL001",
+                "IONLO001",
                 "CIBSI001",
-                "IONLO001"
+                "BARVI001",
+                "MERAL001"
             ],
             "white_games": 3,
             "black_games": 2,
@@ -143,7 +157,7 @@
             "first_name": "Silvia",
             "last_name": "Cibin",
             "initial_elo": 1295,
-            "points": 2.0,
+            "points": 3.0,
             "results_history": [
                 {
                     "round": 1,
@@ -172,14 +186,21 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "BARVI001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "BARVI001",
-                "MERAL001",
                 "VALRI001",
-                "VENLU001"
+                "VENLU001",
+                "BARVI001",
+                "CALVA001",
+                "MERAL001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -228,11 +249,11 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "MERAL001",
+                "IONLO001",
                 "PAGVI001",
                 "VENLU001",
-                "IONLO001"
+                "GORSE001",
+                "MERAL001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -249,7 +270,7 @@
             "first_name": "Serena",
             "last_name": "Gori",
             "initial_elo": 1260,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -278,13 +299,20 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "TESAL001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "PAGVI001",
+                "TESAL001",
                 "BARVI001",
-                "FORMA001",
-                "TESAL001"
+                "PAGVI001",
+                "FORMA001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -333,11 +361,11 @@
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "LIMCA001",
-                "FORMA001",
                 "PAGVI001",
-                "VENLU001"
+                "FORMA001",
+                "VENLU001",
+                "LIMCA001",
+                "CALVA001"
             ],
             "white_games": 3,
             "black_games": 2,
@@ -386,11 +414,11 @@
                 }
             ],
             "opponents": [
-                "TESAL001",
-                "MERAL001",
                 "VALRI001",
+                "TESAL001",
+                "IONLO001",
                 "PAGVI001",
-                "IONLO001"
+                "MERAL001"
             ],
             "white_games": 3,
             "black_games": 2,
@@ -407,7 +435,7 @@
             "first_name": "Alessia",
             "last_name": "Mereu",
             "initial_elo": 1265,
-            "points": 2.0,
+            "points": 3.0,
             "results_history": [
                 {
                     "round": 1,
@@ -436,14 +464,21 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "CALVA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "LIMCA001",
-                "FORMA001",
                 "PAGVI001",
-                "CIBSI001"
+                "FORMA001",
+                "LIMCA001",
+                "CIBSI001",
+                "CALVA001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -492,11 +527,11 @@
                 }
             ],
             "opponents": [
+                "IONLO001",
+                "FORMA001",
                 "LIMCA001",
                 "GORSE001",
-                "FORMA001",
-                "MERAL001",
-                "IONLO001"
+                "MERAL001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -541,6 +576,13 @@
                     "opponent_id": "VALRI001",
                     "color": "black",
                     "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "GORSE001",
+                    "color": "white",
+                    "result": "0-1",
                     "score": 0.0
                 }
             ],
@@ -594,14 +636,21 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "VENLU001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "LIMCA001",
                 "TESAL001",
-                "BARVI001",
+                "VENLU001",
+                "LIMCA001",
                 "CIBSI001",
-                "VENLU001"
+                "BARVI001"
             ],
             "white_games": 3,
             "black_games": 2,
@@ -618,7 +667,7 @@
             "first_name": "Luigi",
             "last_name": "Ventura",
             "initial_elo": 1270,
-            "points": 1.0,
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
@@ -647,14 +696,21 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "VALRI001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "BARVI001",
-                "FORMA001",
                 "VALRI001",
+                "IONLO001",
+                "FORMA001",
                 "CIBSI001",
-                "IONLO001"
+                "BARVI001"
             ],
             "white_games": 2,
             "black_games": 3,
@@ -879,33 +935,33 @@
                     "round": 5,
                     "white_player_id": "CALVA001",
                     "black_player_id": "MERAL001",
-                    "result": null
+                    "result": "0-1"
                 },
                 {
                     "id": 28,
                     "round": 5,
                     "white_player_id": "BARVI001",
                     "black_player_id": "CIBSI001",
-                    "result": null
+                    "result": "0-1"
                 },
                 {
                     "id": 29,
                     "round": 5,
                     "white_player_id": "VALRI001",
                     "black_player_id": "VENLU001",
-                    "result": null
+                    "result": "0-1"
                 },
                 {
                     "id": 30,
                     "round": 5,
                     "white_player_id": "TESAL001",
                     "black_player_id": "GORSE001",
-                    "result": null
+                    "result": "0-1"
                 }
             ]
         }
     ],
     "next_match_id": 31,
     "k_factor": 20,
-    "launch_count": 16
+    "launch_count": 18
 }
