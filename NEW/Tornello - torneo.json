@@ -1,5 +1,5 @@
 {
-    "launch_count": 5,
+    "launch_count": 6,
     "name": "ASCId - Torneo di Primavera",
     "tournament_id": "ASCId_-_Torneo_di_Pr_20250502103508",
     "start_date": "2025-05-02",
@@ -328,8 +328,16 @@
             "first_name": "Gabriele",
             "last_name": "Battaglia",
             "initial_elo": 1513,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "PAGVI001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "PAGVI001"
             ],
@@ -757,7 +765,15 @@
             "last_name": "Paglia",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BATGA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "BATGA001"
             ],
@@ -981,7 +997,7 @@
                     "round": 1,
                     "white_player_id": "PAGVI001",
                     "black_player_id": "BATGA001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "BATGA001",
                     "original_p2_id": "PAGVI001"
                 },
