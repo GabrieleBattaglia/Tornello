@@ -1,5 +1,5 @@
 {
-    "launch_count": 3,
+    "launch_count": 5,
     "name": "ASCId - Torneo di Primavera",
     "tournament_id": "ASCId_-_Torneo_di_Pr_20250502103508",
     "start_date": "2025-05-02",
@@ -166,8 +166,16 @@
             "first_name": "Fabrizio",
             "last_name": "Zavan",
             "initial_elo": 1671,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "DIBVI001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "DIBVI001"
             ],
@@ -587,7 +595,15 @@
             "last_name": "Di Bari",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "ZAVFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "ZAVFA001"
             ],
@@ -920,7 +936,7 @@
                     "round": 1,
                     "white_player_id": "ZAVFA001",
                     "black_player_id": "DIBVI001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "ZAVFA001",
                     "original_p2_id": "DIBVI001"
                 },
