@@ -1,5 +1,5 @@
 {
-    "launch_count": 6,
+    "launch_count": 8,
     "name": "ASCId - Torneo di Primavera",
     "tournament_id": "ASCId_-_Torneo_di_Pr_20250502103508",
     "start_date": "2025-05-02",
@@ -449,7 +449,15 @@
             "last_name": "Bosetti",
             "initial_elo": 1399,
             "points": 0.0,
-            "results_history": [],
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "VENLU001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
             "opponents": [
                 "VENLU001"
             ],
@@ -884,8 +892,16 @@
             "first_name": "Luigi",
             "last_name": "Ventura",
             "initial_elo": 1399,
-            "points": 0.0,
-            "results_history": [],
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BOSGI002",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
             "opponents": [
                 "BOSGI002"
             ],
@@ -1033,7 +1049,7 @@
                     "round": 1,
                     "white_player_id": "VENLU001",
                     "black_player_id": "BOSGI002",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "BOSGI002",
                     "original_p2_id": "VENLU001"
                 }

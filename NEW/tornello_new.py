@@ -8,7 +8,7 @@ import traceback
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "3.11.1 del 2 maggio 2025"
+VERSIONE = "4.0.0 del 9 maggio 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -1951,6 +1951,7 @@ def update_match_result(torneo):
                     # Salva subito il torneo dopo la cancellazione
                     save_tournament(torneo)
                     # Ricarica il dizionario interno per riflettere le modifiche
+                    save_current_tournament_round_file(torneo)
                     torneo['players_dict'] = {p['id']: p for p in torneo['players']}
                     return True # Indica che una modifica è stata fatta, forza ricalcolo prompt nel main loop
                 else:
@@ -2058,6 +2059,7 @@ def update_match_result(torneo):
                     print("Risultato registrato.")
                     # Salva lo stato dopo la registrazione
                     save_tournament(torneo)
+                    save_current_tournament_round_file(torneo)
                     # Aggiorna il dizionario interno
                     torneo['players_dict'] = {p['id']: p for p in torneo['players']}
                     return True # Indica che un aggiornamento è stato fatto
@@ -2072,73 +2074,142 @@ def update_match_result(torneo):
             if match_id_str.lower() != 'cancella':
                 print("ID non valido. Inserisci un numero intero o 'cancella'.")
 
-# Assicurati che players_dict sia accessibile o ricalcolato se necessario
-# Assicurati che format_points e format_date_locale siano definite
-
-def save_round_text(round_number, torneo):
+def save_current_tournament_round_file(torneo):
     """
-    Salva/Accoda gli abbinamenti del turno in un unico file TXT per il torneo.
-    Include numero scacchiera, ordina per scacchiera, e mette il Bye per ultimo.
-    Il contenuto di ogni turno (escluso l'header del turno) è indentato.
+    Salva lo stato del turno corrente in un file TXT che viene sovrascritto.
+    Mostra partite giocate e da giocare.
     """
     tournament_name = torneo.get('name', 'Torneo_Senza_Nome')
     sanitized_name = sanitize_filename(tournament_name)
-    filename = f"tornello - {sanitized_name} - Turni.txt"
+    current_round_num = torneo.get("current_round")
+    if current_round_num is None:
+        print("Salvataggio file turno corrente: Numero turno non definito.")
+        return
+    filename = f"tornello - {sanitized_name} - turno corrente.txt"
+    # Trova i dati del turno corrente
+    round_data = None
+    for rnd in torneo.get("rounds", []):
+        if rnd.get("round") == current_round_num:
+            round_data = rnd
+            break
+    if round_data is None or "matches" not in round_data:
+        # Potrebbe essere che il turno non sia ancora stato generato (es. all'inizio)
+        # o che ci sia un problema. Se non ci sono dati, non scriviamo nulla o un file vuoto.
+        try:
+            with open(filename, "w", encoding='utf-8-sig') as f:
+                f.write(f"Turno {current_round_num}\n")
+                f.write("(Nessuna partita ancora definita per questo turno)\n")
+            print(f"File stato turno corrente '{filename}' aggiornato (turno non ancora popolato).")
+        except IOError as e:
+            print(f"Errore durante la scrittura del file stato turno corrente '{filename}': {e}")        
+        return
+
+    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
+        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    players_dict = torneo['players_dict']
+    all_matches_in_round = round_data.get("matches", [])
+    played_matches = []
+    pending_matches = []
+    bye_player_info = None
+    for match in sorted(all_matches_in_round, key=lambda m: m.get('id', 0)): # Ordina per ID partita
+        if match.get("black_player_id") is None: # È un BYE
+            bye_p = players_dict.get(match.get('white_player_id'))
+            if bye_p:
+                bye_player_info = f"{bye_p.get('first_name','?')} {bye_p.get('last_name','?')} ha il BYE"
+            continue
+        white_p = players_dict.get(match.get('white_player_id'))
+        black_p = players_dict.get(match.get('black_player_id'))
+        w_name = f"{white_p.get('first_name','?')} {white_p.get('last_name','?')}" if white_p else "Giocatore Bianco Sconosciuto"
+        b_name = f"{black_p.get('first_name','?')} {black_p.get('last_name','?')}" if black_p else "Giocatore Nero Sconosciuto"
+        match_id = match.get('id', '?')
+        match_line = f"{match_id} {w_name} - {b_name}"
+        if match.get("result") is not None:
+            played_matches.append(f"{match_line} {match.get('result')}")
+        else:
+            pending_matches.append(match_line)
+
+    try:
+        with open(filename, "w", encoding='utf-8-sig') as f: # Modalità "w" per sovrascrivere
+            f.write(f"Turno {current_round_num}\n")
+
+            f.write("giocate\n")
+            if played_matches:
+                for p_match_str in played_matches:
+                    f.write(f" {p_match_str}\n")
+            else:
+                f.write(" (nessuna)\n")
+
+            f.write("da giocare\n")
+            if pending_matches:
+                for pend_match_str in pending_matches:
+                    f.write(f" {pend_match_str}\n")
+            else:
+                f.write(" (nessuna)\n")
+
+            if bye_player_info:
+                f.write(f"\n {bye_player_info}\n")
+
+        print(f"File stato turno corrente '{filename}' sovrascritto.")
+    except IOError as e:
+        print(f"Errore durante la sovrascrittura del file stato turno corrente '{filename}': {e}")
+
+
+def append_completed_round_to_history_file(torneo, completed_round_number):
+    """
+    Accoda i dettagli di un turno concluso al file storico dei turni.
+    Il formato è simile alla vecchia funzione save_round_text.
+    """
+    tournament_name = torneo.get('name', 'Torneo_Senza_Nome')
+    sanitized_name = sanitize_filename(tournament_name)
+    filename = f"tornello - {sanitized_name} - turni conclusi.txt"
 
     round_data = None
     for rnd in torneo.get("rounds", []):
-        if rnd.get("round") == round_number:
+        if rnd.get("round") == completed_round_number:
             round_data = rnd
             break
 
     if round_data is None or "matches" not in round_data:
-        print(f"Dati o partite turno {round_number} non trovati per il salvataggio TXT.")
+        print(f"Dati o partite del turno concluso {completed_round_number} non trovati per il salvataggio storico.")
         return
-
-    # Assicurati che il dizionario giocatori sia disponibile
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     players_dict = torneo['players_dict']
 
-    # --- SEPARA BYE DALLE PARTITE GIOCABILI ---
     all_matches_in_round = round_data.get("matches", [])
+    # Ordina le partite per ID per consistenza (o per scacchiera se si vuole mantenere la logica originale)
+    # Per semplicità, qui ordiniamo per ID. La vecchia logica ordinava per Elo medio per scacchiera.
+    # Manteniamo l'ordinamento per Elo medio per scacchiera per coerenza con l'output precedente.
+    
     playable_matches = [m for m in all_matches_in_round if m.get("black_player_id") is not None]
     bye_match = next((m for m in all_matches_in_round if m.get("black_player_id") is None), None)
-
-    # --- ORDINA LE PARTITE GIOCABILI PER DETERMINARE ORDINE SCACCHIERE ---
-    # Usa l'Elo medio della coppia come criterio (più alto = scacchiera più bassa)
-    # Definiamo una piccola funzione helper qui dentro o fuori
-    def get_average_elo(match, players_dict):
+    def get_average_elo_for_sort(match, players_dict_local): # Rinominata per evitare conflitti
         w_id = match.get('white_player_id')
         b_id = match.get('black_player_id')
-        w_elo_str = players_dict.get(w_id, {}).get('initial_elo', '0')
-        b_elo_str = players_dict.get(b_id, {}).get('initial_elo', '0')
+        w_elo_str = players_dict_local.get(w_id, {}).get('initial_elo', '0')
+        b_elo_str = players_dict_local.get(b_id, {}).get('initial_elo', '0')
         try:
-            w_elo = float(w_elo_str) if w_elo_str is not None else 0.0
-            b_elo = float(b_elo_str) if b_elo_str is not None else 0.0
-            # Non dividere per zero se entrambi Elo sono 0 o mancanti
-            if w_elo == 0.0 and b_elo == 0.0:
-                 return 0.0
-            # Se uno manca, usa l'altro come "media" (o potremmo penalizzarlo)
-            elif w_elo == 0.0: return b_elo
-            elif b_elo == 0.0: return w_elo
-            else: return (w_elo + b_elo) / 2.0
-        except (ValueError, TypeError):
-            return 0.0 # Metti coppie con Elo non validi in fondo
+            w_elo = float(w_elo_str if w_elo_str is not None else 0.0)
+            b_elo = float(b_elo_str if b_elo_str is not None else 0.0)
+            if w_elo == 0.0 and b_elo == 0.0: return 0.0
+            if w_elo == 0.0: return b_elo
+            if b_elo == 0.0: return w_elo
+            return (w_elo + b_elo) / 2.0
+        except (ValueError, TypeError): return 0.0
 
-    playable_matches.sort(key=lambda m: get_average_elo(m, players_dict), reverse=True)
+    playable_matches.sort(key=lambda m: get_average_elo_for_sort(m, players_dict), reverse=True)
 
     try:
-        with open(filename, "a", encoding='utf-8-sig') as f:
-            # Separatore e header generale se file non vuoto (come prima)
+        with open(filename, "a", encoding='utf-8-sig') as f: # Modalità "a" per append
             f.seek(0, os.SEEK_END)
             if f.tell() > 0:
-                 f.write("\n" + "="*30 + f" INIZIO TURNO {round_number} " + "="*30 + "\n")
+                 f.write("\n" + "="*30 + f" TURNO {completed_round_number} CONCLUSO " + "="*30 + "\n")
             else:
                  f.write(f"Torneo: {torneo.get('name', 'Nome Mancante')}\n")
                  f.write("=" * 80 + "\n")
+                 f.write("\n" + "="*30 + f" TURNO {completed_round_number} CONCLUSO " + "="*30 + "\n") # Anche per il primo turno nel file
             round_dates_list = torneo.get("round_dates", [])
-            current_round_dates = next((rd for rd in round_dates_list if rd.get("round") == round_number), None)
+            current_round_dates = next((rd for rd in round_dates_list if rd.get("round") == completed_round_number), None)
             if current_round_dates:
                 start_d_str = current_round_dates.get('start_date')
                 end_d_str = current_round_dates.get('end_date')
@@ -2146,18 +2217,16 @@ def save_round_text(round_number, torneo):
             else:
                 f.write("\tPeriodo: Date non trovate\n")
             f.write("\t"+"-" * 76 + "\n")
-            # --- NUOVA INTESTAZIONE TABELLA PARTITE (INDENTATO) ---
             header_partite = "Sc | ID  | Bianco                   [Elo] (Pt) - Nero                     [Elo] (Pt) | Risultato"
             f.write(f"\t{header_partite}\n")
             f.write(f"\t" + "-" * len(header_partite) + "\n")
 
-            # --- SCRIVI PARTITE GIOCABILI CON NUMERO SCACCHIERA (INDENTATO) ---
             for board_num_idx, match in enumerate(playable_matches):
-                board_num = board_num_idx + 1 # Numero scacchiera parte da 1
+                board_num = board_num_idx + 1
                 match_id = match.get('id', '?')
                 white_p_id = match.get('white_player_id')
                 black_p_id = match.get('black_player_id')
-                result_str = match.get("result", "Da giocare") if match.get("result") is not None else "Da giocare"
+                result_str = match.get("result", "ERRORE_RISULTATO_MANCANTE") # Dovrebbe sempre esserci per un turno concluso
 
                 white_p = players_dict.get(white_p_id)
                 black_p = players_dict.get(black_p_id)
@@ -2178,18 +2247,12 @@ def save_round_text(round_number, torneo):
                     b_name = f"{black_p.get('first_name','?')} {black_p.get('last_name','')}"
                     b_elo = black_p.get('initial_elo','?')
                     b_pts = format_points(black_p.get('points', 0.0))
-                elif not black_p_id: # Dovrebbe essere gestito sopra, ma per sicurezza
-                    b_name = "Errore ID Nero"
-
-                # Formatta la riga con numero scacchiera e ID aggiustato
                 line = (f"{board_num:<3}| " # Colonna Scacchiera
                         f"{match_id:<4}| " # Colonna ID (un po' più stretta)
                         f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - "
                         f"{b_name:<24} [{b_elo:>4}] ({b_pts:<4}) | "
                         f"{result_str}")
-                f.write(f"\t{line}\n") # Indenta la riga
-
-            # --- SCRIVI IL BYE PER ULTIMO (SE PRESENTE) (INDENTATO) ---
+            f.write(f"\t{line}\n")
             if bye_match:
                 match_id = bye_match.get('id', '?')
                 white_p_id = bye_match.get('white_player_id')
@@ -2198,22 +2261,18 @@ def save_round_text(round_number, torneo):
                      w_name = f"{white_p.get('first_name','?')} {white_p.get('last_name','')}"
                      w_elo = white_p.get('initial_elo','?')
                      w_pts = format_points(white_p.get('points', 0.0))
-                     # Usa placeholder per Scacchiera, ID aggiustato
                      line = (f"{'---':<3}| "
                              f"{match_id:<4}| "
                              f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE")
-                     f.write(f"\t{line}\n") # Indenta la riga
+                     f.write(f"\t{line}\n")
                 else:
-                     # Errore giocatore Bye non trovato
                      line = f"{'---':<3}| {match_id:<4}| Errore Giocatore Bye ID: {white_p_id:<10} | BYE"
                      f.write(f"\t{line}\n")
-
-
-        print(f"Dati Turno {round_number} aggiunti al file {filename}")
+        print(f"Dati Turno Concluso {completed_round_number} aggiunti al file storico '{filename}'")
     except IOError as e:
-        print(f"Errore durante l'aggiornamento del file {filename}: {e}")
+        print(f"Errore durante l'aggiornamento del file storico turni '{filename}': {e}")
     except Exception as general_e:
-        print(f"Errore inatteso durante save_round_text: {general_e}")
+        print(f"Errore inatteso durante append_completed_round_to_history_file: {general_e}")
         traceback.print_exc()
 
 def save_standings_text(torneo, final=False):
@@ -2788,9 +2847,7 @@ def main():
 
         # Salva stato iniziale torneo e file T1
         save_tournament(torneo) # Ora salva con il round 1 dentro
-        print(f"DEBUG main: Calling save_round_text(1, torneo)") # DEBUG
-        save_round_text(1, torneo) # Ora dovrebbe trovare i dati
-        print(f"DEBUG main: Calling save_standings_text(torneo, final=False)") # DEBUG
+        save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False) # Salva classifica iniziale T0
         print("\nTorneo creato e Turno 1 generato.")
     else:
@@ -2862,8 +2919,7 @@ def main():
             else:
                 # Il turno è completo
                 print(f"\nTurno {current_round_num} completato.")
-                # Salva file TXT del turno e classifica parziale
-                save_round_text(current_round_num, torneo)
+                append_completed_round_to_history_file(torneo, current_round_num) # Nuovo salvataggio per turni conclusi
                 save_standings_text(torneo, final=False) # Salva classifica parziale dopo T N
                 # Verifica se era l'ultimo turno
                 if current_round_num == total_rounds_num:
@@ -2898,7 +2954,7 @@ def main():
                         torneo["rounds"].append({"round": next_round_num, "matches": next_matches})
                         # Salva stato torneo e file del nuovo turno
                         save_tournament(torneo)
-                        save_round_text(next_round_num, torneo)
+                        save_current_tournament_round_file(torneo)
                         print(f"Turno {next_round_num} generato e salvato.")
                         # Il loop while(True) continuerà con il nuovo turno
                     except Exception as e:
@@ -2916,6 +2972,8 @@ def main():
         if torneo: # Salva stato se un torneo era in corso
             print("Salvataggio dello stato attuale del torneo...")
             save_tournament(torneo)
+            if torneo.get("current_round") is not None and torneo.get("total_rounds") is not None and torneo.get("current_round") <= torneo.get("total_rounds"):
+                save_current_tournament_round_file(torneo) # Salva anche lo stato del turno corrente
             print("Stato salvato. Uscita.")
         sys.exit(0)
     except Exception as e: # Cattura altri errori imprevisti nel loop principale
@@ -2926,6 +2984,8 @@ def main():
         if torneo: # Prova a salvare anche in caso di errore generico
             print("Tentativo di salvataggio dello stato attuale del torneo...")
             save_tournament(torneo)
+            if torneo.get("current_round") is not None and torneo.get("total_rounds") is not None and torneo.get("current_round") <= torneo.get("total_rounds"):
+                save_current_tournament_round_file(torneo) # Salva anche lo stato del turno corrente
             print("Stato (potenzialmente incompleto) salvato.")
         sys.exit(1)
     # Se il loop while termina normalmente o via break controllato
