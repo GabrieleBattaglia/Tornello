@@ -1,13 +1,10 @@
 # Data concepimento 27 aprile 2025 by Gemini 2.5 (Modificato)
-# Versione 3 - Adattato per tornello_new.py e GBUtils.dgt
-import os
-import json
-import sys
-import traceback # Per debug in save_players_db_txt
+import os, json, sys, traceback
 from datetime import datetime
-from dateutil.relativedelta import relativedelta # Necessario per get_k_factor
+from dateutil.relativedelta import relativedelta
 from GBUtils import dgt
 # --- Constants ---
+VERSION="3.1.0 del 13 maggio 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 DATE_FORMAT_ISO = "%Y-%m-%d"
@@ -15,6 +12,15 @@ DEFAULT_ELO = 1399.0
 DEFAULT_K_FACTOR = 20
 
 # --- Helper Functions (copiate/adattate da tornello_new.py) ---
+def sanitize_filename(name):
+    """Rimuove/sostituisce caratteri problematici per i nomi dei file."""
+    name = name.replace(' ', '_')
+    import re
+    name = re.sub(r'[^\w\-]+', '', name)
+    if not name:
+        name = "Torneo_Senza_Nome"
+    return name
+
 def format_date_locale(date_input):
     if not date_input:
         return "N/D"
@@ -77,7 +83,9 @@ def save_players_db_txt(players_db_dict):
                         tournaments_sorted = sorted(tournaments, key=lambda t: datetime.strptime(t.get('date_completed', '1900-01-01'), DATE_FORMAT_ISO), reverse=True)
                     except ValueError: tournaments_sorted = tournaments
                     for t in tournaments_sorted:
-                         f.write(f"\t{format_rank_ordinal(t.get('rank', '?'))} in {t.get('tournament_name', 'N/M')} - {format_date_locale(t.get('date_started'))} - {format_date_locale(t.get('date_completed'))}\n")
+                        total_players_val_txt = t.get('total_players', '?')
+                        history_line_text = f"{format_rank_ordinal(t.get('rank', '?'))} in {t.get('tournament_name', 'N/M')} (su {total_players_val_txt} gioc.) - {format_date_locale(t.get('date_started'))} - {format_date_locale(t.get('date_completed'))}"
+                        f.write(f"\t{history_line_text}\n")
                 else: f.write("\tNessuno\n")
                 f.write("\t" + "-" * 30 + "\n")
     except Exception as e:
@@ -169,8 +177,8 @@ def display_player_details(player_data):
             tournaments_sorted = sorted(tournaments, key=lambda t: datetime.strptime(t.get('date_completed', '1900-01-01'), DATE_FORMAT_ISO), reverse=True)
         except: tournaments_sorted = tournaments
         for i, t_rec in enumerate(tournaments_sorted):
-            print(f"    {i+1}. {format_rank_ordinal(t_rec.get('rank', '?'))} in '{t_rec.get('tournament_name', 'N/D')}' ({format_date_locale(t_rec.get('date_started'))} - {format_date_locale(t_rec.get('date_completed'))})")
-    print("------------------------")
+            total_p_disp = t_rec.get('total_players', '?')
+            print(f"    {i+1}. {format_rank_ordinal(t_rec.get('rank', '?'))} su {total_p_disp} in '{t_rec.get('tournament_name', 'N/D')}' ({format_date_locale(t_rec.get('date_started'))} - {format_date_locale(t_rec.get('date_completed'))}) (ID Torneo: {t_rec.get('tournament_id', 'N/A')})")
 
 def add_new_player(players_db_dict):
     print("\n--- Aggiunta Nuovo Giocatore ---")
@@ -289,7 +297,7 @@ def edit_player_data(player_id, players_db_dict):
                 ds_str = dgt("Data inizio torneo (AAAA-MM-GG): ", kind="s", smax=10)
                 try: datetime.strptime(ds_str, DATE_FORMAT_ISO); t_ds = ds_str; break
                 except ValueError: print("Formato data non valido.")
-            
+            t_total_players = dgt("Numero totale di giocatori partecipanti al torneo: ", kind="i", imin=5, default=7)
             t_dc = None
             while not t_dc:
                 dc_str = dgt("Data fine torneo (AAAA-MM-GG): ", kind="s", smax=10)
@@ -300,41 +308,51 @@ def edit_player_data(player_id, players_db_dict):
                         continue
                     t_dc = dc_str; break
                 except ValueError: print("Formato data non valido.")
-
-            tournaments.append({"tournament_name": t_name, "rank": t_rank, "date_started": t_ds, "date_completed": t_dc})
+            default_t_id = f"manual_{sanitize_filename(t_name)}_{t_ds}".replace('-', '').replace('_', '')[:30]
+            t_id = dgt(f"ID Torneo (default: {default_t_id}): ", kind="s", smax=50, default=default_t_id)
+            if not t_id: t_id = default_t_id # Assicura che non sia vuoto
+            tournaments.append({
+                "tournament_id": t_id,
+                "tournament_name": t_name, 
+                "rank": t_rank, 
+                "total_players": t_total_players,
+                "date_started": t_ds, 
+                "date_completed": t_dc
+            })
             print("Torneo aggiunto.")
-
         elif op == 'm' and tournaments:
-            idx_str = dgt(f"Numero torneo da modificare (1-{len(tournaments)}): ", kind="s", smax=2)
+            idx_str_mod = dgt(f"Numero torneo da modificare (1-{len(tournaments)}): ", kind="s", smax=len(str(len(tournaments))))
             try:
-                idx = int(idx_str) - 1
+                idx_mod = int(idx_str_mod) - 1 
                 if 0 <= idx < len(tournaments):
-                    t_edit = tournaments[idx]
-                    print(f"Modifica torneo: {t_edit.get('tournament_name')}")
-                    t_edit['tournament_name'] = dgt("Nome torneo", kind="s", smin=1, smax=100, default=t_edit.get('tournament_name'))
-                    
-                    rank_default = str(t_edit.get('rank', '?'))
-                    t_rank_str = dgt("Rank (es. 1, 2, RIT)", kind="s", smax=10, default=rank_default)
-                    t_edit['rank'] = t_rank_str
-                    if t_rank_str.upper() != "RIT":
-                        try: t_edit['rank'] = int(t_rank_str)
-                        except ValueError: t_edit['rank'] = "?"
-
-                    ds_default = t_edit.get('date_started','')
+                    t_edit_obj = tournaments[idx_mod] 
+                    print(f"Modifica torneo: '{t_edit_obj.get('tournament_name')}' ID: {t_edit_obj.get('tournament_id','N/A')}")
+                    t_edit_obj['tournament_name'] = dgt("Nome torneo", kind="s", smin=8, smax=100, default=t_edit_obj.get('tournament_name'))
+                    rank_default_val = str(t_edit_obj.get('rank', '?'))
+                    t_rank_input_str = dgt("Rank (es. 1, RIT)", kind="s", smax=10, default=rank_default_val) # Rinomino t_rank_str
+                    t_edit_obj['rank'] = t_rank_input_str
+                    if t_rank_input_str.upper() != "RIT":
+                        try: t_edit_obj['rank'] = int(t_rank_input_str)
+                        except ValueError: t_edit_obj['rank'] = "?"
+                    t_edit_obj['total_players'] = dgt("Numero totale di giocatori partecipanti: ", kind="i", imin=5,default=t_edit_obj.get('total_players', 2))
+                    ds_default_val = t_edit_obj.get('date_started','') # Rinomino ds_default
                     while True:
-                        ds_str = dgt("Data inizio (AAAA-MM-GG): ", kind="s", smax=10, default=ds_default)
-                        try: datetime.strptime(ds_str, DATE_FORMAT_ISO); t_edit['date_started'] = ds_str; break
-                        except ValueError: print("Formato data non valido.")
-                    
-                    dc_default = t_edit.get('date_completed','')
-                    while True:
-                        dc_str = dgt("Data fine (AAAA-MM-GG): ", kind="s", smax=10, default=dc_default)
+                        ds_input_str = dgt("Data inizio (AAAA-MM-GG): ", kind="s", smax=10, default=ds_default_val) # Rinomino ds_str
                         try: 
-                            dt_dc = datetime.strptime(dc_str, DATE_FORMAT_ISO)
-                            if datetime.strptime(t_edit['date_started'], DATE_FORMAT_ISO) > dt_dc:
+                            datetime.strptime(ds_input_str, DATE_FORMAT_ISO)
+                            t_edit_obj['date_started'] = ds_input_str
+                            break
+                        except ValueError: print("Formato data non valido.")
+                    dc_default_val = t_edit_obj.get('date_completed','') # Rinomino dc_default
+                    while True:
+                        dc_input_str = dgt("Data fine (AAAA-MM-GG): ", kind="s", smax=10, default=dc_default_val) # Rinomino dc_str
+                        try: 
+                            dt_dc_mod_obj = datetime.strptime(dc_input_str, DATE_FORMAT_ISO) # Rinomino dt_dc
+                            if datetime.strptime(t_edit_obj['date_started'], DATE_FORMAT_ISO) > dt_dc_mod_obj:
                                 print("Data fine non può essere prima della data inizio.")
                                 continue
-                            t_edit['date_completed'] = dc_str; break
+                            t_edit_obj['date_completed'] = dc_input_str
+                            break
                         except ValueError: print("Formato data non valido.")
                     print("Torneo modificato.")
                 else: print("Numero torneo non valido.")
@@ -364,9 +382,8 @@ def edit_player_data(player_id, players_db_dict):
 
 # --- Main Loop ---
 def main_interactive_loop(players_db):
-    print("\n" + "="*40 + "\n--- Gestore Database Giocatori Tornello ---")
+    print(f"\n--- Gestore Database Giocatori Tornello ---\n\tVersione: {VERSION}.\n")
     active_player_id = None # Per mantenere l'ID corrente in caso di modifica ID
-
     while True:
         print("\n" + "="*40)
         print(f"Giocatori nel database: {len(players_db)}")
