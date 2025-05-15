@@ -2,6 +2,8 @@
 	giocate:
 		15 Filippa Tolaro - Claudio Gasperoni 0-1
 		17 Gabriele Battaglia - Jiazhuang Vandelli 0-1
+		27 Vincenzo Di Bari - Alessandra Testori 1-0
+		28 Rita Valleriani - Martina Forte 1-0
 	Da giocare:
 		16 Francesco Nicolini - Michele Colangelo
 		18 Maurizio Soppelsa - Luca Parravano
@@ -13,5 +15,3 @@
 		24 Giulia Paglia - Valeria Calzolari
 		25 Mariangela Cassano - Virginio Paglia
 		26 Valeria Scapin - Mathias Cicciarella
-		27 Vincenzo Di Bari - Alessandra Testori
-		28 Rita Valleriani - Martina Forte

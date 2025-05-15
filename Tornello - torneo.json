@@ -1,5 +1,5 @@
 {
-    "launch_count": 4,
+    "launch_count": 5,
     "name": "ascid-primavera1",
     "tournament_id": "ascid-primavera1_20250512092422",
     "start_date": "2025-05-12",
@@ -91,8 +91,8 @@
                 }
             ],
             "opponents": [
-                "GASCL001",
-                "MERAL001"
+                "MERAL001",
+                "GASCL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -126,8 +126,8 @@
                 }
             ],
             "opponents": [
-                "PAGGI001",
-                "NICFR001"
+                "NICFR001",
+                "PAGGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -161,8 +161,8 @@
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "COLMI001"
+                "COLMI001",
+                "CALVA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -203,8 +203,8 @@
                 }
             ],
             "opponents": [
-                "BATGA001",
-                "CASMA001"
+                "CASMA001",
+                "BATGA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -367,7 +367,7 @@
             "first_name": "Vincenzo",
             "last_name": "Di Bari",
             "initial_elo": 1399,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -375,11 +375,18 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "TESAL001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "ZAVFA001",
-                "TESAL001"
+                "TESAL001",
+                "ZAVFA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -409,6 +416,13 @@
                     "opponent_id": "MANFA001",
                     "color": "white",
                     "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "VALRI001",
+                    "color": "black",
+                    "result": "1-0",
                     "score": 0.0
                 }
             ],
@@ -483,8 +497,8 @@
                 }
             ],
             "opponents": [
-                "VENLU001",
-                "GORSE001"
+                "GORSE001",
+                "VENLU001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -595,8 +609,8 @@
                 }
             ],
             "opponents": [
-                "GASCL001",
-                "MERAL001"
+                "MERAL001",
+                "GASCL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -630,8 +644,8 @@
                 }
             ],
             "opponents": [
-                "PAGGI001",
-                "NICFR001"
+                "NICFR001",
+                "PAGGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -665,8 +679,8 @@
                 }
             ],
             "opponents": [
-                "CALVA001",
-                "COLMI001"
+                "COLMI001",
+                "CALVA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -700,8 +714,8 @@
                 }
             ],
             "opponents": [
-                "BATGA001",
-                "CASMA001"
+                "CASMA001",
+                "BATGA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -844,6 +858,13 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "DIBVI001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
@@ -882,8 +903,8 @@
                 }
             ],
             "opponents": [
-                "ZAVFA001",
-                "TESAL001"
+                "TESAL001",
+                "ZAVFA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -941,7 +962,7 @@
             "first_name": "Rita",
             "last_name": "Valleriani",
             "initial_elo": 1399,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -949,6 +970,13 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "FORMA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
@@ -1022,8 +1050,8 @@
                 }
             ],
             "opponents": [
-                "VENLU001",
-                "GORSE001"
+                "GORSE001",
+                "VENLU001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -1291,7 +1319,7 @@
                     "round": 2,
                     "white_player_id": "DIBVI001",
                     "black_player_id": "TESAL001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "DIBVI001",
                     "original_p2_id": "TESAL001"
                 },
@@ -1300,7 +1328,7 @@
                     "round": 2,
                     "white_player_id": "VALRI001",
                     "black_player_id": "FORMA001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "FORMA001",
                     "original_p2_id": "VALRI001"
                 }
