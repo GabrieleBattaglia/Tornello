@@ -1,5 +1,5 @@
 {
-    "launch_count": 5,
+    "launch_count": 6,
     "name": "ascid-primavera1",
     "tournament_id": "ascid-primavera1_20250512092422",
     "start_date": "2025-05-12",
@@ -88,6 +88,13 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MERAL001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
@@ -126,8 +133,8 @@
                 }
             ],
             "opponents": [
-                "NICFR001",
-                "PAGGI001"
+                "PAGGI001",
+                "NICFR001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -203,8 +210,8 @@
                 }
             ],
             "opponents": [
-                "CASMA001",
-                "BATGA001"
+                "BATGA001",
+                "CASMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -238,8 +245,8 @@
                 }
             ],
             "opponents": [
-                "PAGVI001",
-                "VANJI001"
+                "VANJI001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -308,8 +315,8 @@
                 }
             ],
             "opponents": [
-                "CICMA001",
-                "PARLU001"
+                "PARLU001",
+                "CICMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -343,8 +350,8 @@
                 }
             ],
             "opponents": [
-                "BARGI001",
-                "DIBVI001"
+                "DIBVI001",
+                "BARGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -451,13 +458,20 @@
             "first_name": "Fabrizio",
             "last_name": "Manneschi",
             "initial_elo": 1609,
-            "points": 1.0,
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
                     "opponent_id": "FORMA001",
                     "color": "black",
                     "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "IONLO001",
+                    "color": "white",
+                    "result": "1-0",
                     "score": 1.0
                 }
             ],
@@ -497,8 +511,8 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "VENLU001"
+                "VENLU001",
+                "GORSE001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -532,8 +546,8 @@
                 }
             ],
             "opponents": [
-                "TRACO001",
-                "BOSGI002"
+                "BOSGI002",
+                "TRACO001"
             ],
             "white_games": 0,
             "black_games": 2,
@@ -556,7 +570,7 @@
             "first_name": "Alessia",
             "last_name": "Mereu",
             "initial_elo": 1399,
-            "points": 0.0,
+            "points": 1.0,
             "results_history": [
                 {
                     "round": 1,
@@ -564,6 +578,13 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BRICA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
@@ -644,8 +665,8 @@
                 }
             ],
             "opponents": [
-                "NICFR001",
-                "PAGGI001"
+                "PAGGI001",
+                "NICFR001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -714,8 +735,8 @@
                 }
             ],
             "opponents": [
-                "CASMA001",
-                "BATGA001"
+                "BATGA001",
+                "CASMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -756,8 +777,8 @@
                 }
             ],
             "opponents": [
-                "PAGVI001",
-                "VANJI001"
+                "VANJI001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -826,8 +847,8 @@
                 }
             ],
             "opponents": [
-                "CICMA001",
-                "PARLU001"
+                "PARLU001",
+                "CICMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -868,8 +889,8 @@
                 }
             ],
             "opponents": [
-                "BARGI001",
-                "DIBVI001"
+                "DIBVI001",
+                "BARGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -935,6 +956,13 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MANFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
@@ -1015,8 +1043,8 @@
                 }
             ],
             "opponents": [
-                "TRACO001",
-                "BOSGI002"
+                "BOSGI002",
+                "TRACO001"
             ],
             "white_games": 2,
             "black_games": 0,
@@ -1050,8 +1078,8 @@
                 }
             ],
             "opponents": [
-                "GORSE001",
-                "VENLU001"
+                "VENLU001",
+                "GORSE001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -1256,7 +1284,7 @@
                     "round": 2,
                     "white_player_id": "MANFA001",
                     "black_player_id": "IONLO001",
-                    "result": null,
+                    "result": "1-0",
                     "original_p1_id": "MANFA001",
                     "original_p2_id": "IONLO001"
                 },
@@ -1283,7 +1311,7 @@
                     "round": 2,
                     "white_player_id": "BRICA001",
                     "black_player_id": "MERAL001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "BRICA001",
                     "original_p2_id": "MERAL001"
                 },
