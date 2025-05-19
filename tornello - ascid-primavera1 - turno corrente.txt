@@ -1,17 +1,17 @@
 ﻿Turno 2
 	giocate:
 		15 Filippa Tolaro - Claudio Gasperoni 0-1
+		16 Francesco Nicolini - Michele Colangelo 1-0
 		17 Gabriele Battaglia - Jiazhuang Vandelli 0-1
 		20 Fabrizio Manneschi - Lorenzo Ionata 1-0
+		21 Luigi Ventura - Cosetta Trapletti 1-0
+		22 Giancarlo Bosetti - Serena Gori 1-0
 		23 Catia Susana Brites Pereira Lima - Alessia Mereu 0-1
+		24 Giulia Paglia - Valeria Calzolari 1/2-1/2
+		26 Valeria Scapin - Mathias Cicciarella 0-1
 		27 Vincenzo Di Bari - Alessandra Testori 1-0
 		28 Rita Valleriani - Martina Forte 1-0
 	Da giocare:
-		16 Francesco Nicolini - Michele Colangelo
 		18 Maurizio Soppelsa - Luca Parravano
 		19 Giuseppe Baratta - Fabrizio Zavan
-		21 Luigi Ventura - Cosetta Trapletti
-		22 Giancarlo Bosetti - Serena Gori
-		24 Giulia Paglia - Valeria Calzolari
 		25 Mariangela Cassano - Virginio Paglia
-		26 Valeria Scapin - Mathias Cicciarella
