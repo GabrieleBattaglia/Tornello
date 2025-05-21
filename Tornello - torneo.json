@@ -1,5 +1,5 @@
 {
-    "launch_count": 10,
+    "launch_count": 11,
     "name": "ascid-primavera1",
     "tournament_id": "ascid-primavera1_20250512092422",
     "start_date": "2025-05-12",
@@ -56,8 +56,8 @@
                 }
             ],
             "opponents": [
-                "BRICA001",
-                "TOLFI001"
+                "TOLFI001",
+                "BRICA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -98,8 +98,8 @@
                 }
             ],
             "opponents": [
-                "GASCL001",
-                "MERAL001"
+                "MERAL001",
+                "GASCL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -182,8 +182,8 @@
                 }
             ],
             "opponents": [
-                "COLMI001",
-                "CALVA001"
+                "CALVA001",
+                "COLMI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -224,8 +224,8 @@
                 }
             ],
             "opponents": [
-                "CASMA001",
-                "BATGA001"
+                "BATGA001",
+                "CASMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -336,8 +336,8 @@
                 }
             ],
             "opponents": [
-                "PARLU001",
-                "CICMA001"
+                "CICMA001",
+                "PARLU001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -360,7 +360,7 @@
             "first_name": "Fabrizio",
             "last_name": "Zavan",
             "initial_elo": 1671,
-            "points": 1.0,
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
@@ -368,11 +368,18 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BARGI001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "BARGI001",
-                "DIBVI001"
+                "DIBVI001",
+                "BARGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -413,8 +420,8 @@
                 }
             ],
             "opponents": [
-                "TESAL001",
-                "ZAVFA001"
+                "ZAVFA001",
+                "TESAL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -581,8 +588,8 @@
                 }
             ],
             "opponents": [
-                "TRACO001",
-                "BOSGI002"
+                "BOSGI002",
+                "TRACO001"
             ],
             "white_games": 0,
             "black_games": 2,
@@ -623,8 +630,8 @@
                 }
             ],
             "opponents": [
-                "BRICA001",
-                "TOLFI001"
+                "TOLFI001",
+                "BRICA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -665,8 +672,8 @@
                 }
             ],
             "opponents": [
-                "GASCL001",
-                "MERAL001"
+                "MERAL001",
+                "GASCL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -749,8 +756,8 @@
                 }
             ],
             "opponents": [
-                "COLMI001",
-                "CALVA001"
+                "CALVA001",
+                "COLMI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -784,8 +791,8 @@
                 }
             ],
             "opponents": [
-                "CASMA001",
-                "BATGA001"
+                "BATGA001",
+                "CASMA001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -903,8 +910,8 @@
                 }
             ],
             "opponents": [
-                "PARLU001",
-                "CICMA001"
+                "CICMA001",
+                "PARLU001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -945,8 +952,8 @@
                 }
             ],
             "opponents": [
-                "BARGI001",
-                "DIBVI001"
+                "DIBVI001",
+                "BARGI001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -977,11 +984,18 @@
                     "color": "black",
                     "result": "0-1",
                     "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "ZAVFA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "TESAL001",
-                "ZAVFA001"
+                "ZAVFA001",
+                "TESAL001"
             ],
             "white_games": 1,
             "black_games": 1,
@@ -1106,8 +1120,8 @@
                 }
             ],
             "opponents": [
-                "TRACO001",
-                "BOSGI002"
+                "BOSGI002",
+                "TRACO001"
             ],
             "white_games": 2,
             "black_games": 0,
@@ -1345,7 +1359,7 @@
                     "round": 2,
                     "white_player_id": "BARGI001",
                     "black_player_id": "ZAVFA001",
-                    "result": null,
+                    "result": "0-1",
                     "original_p1_id": "ZAVFA001",
                     "original_p2_id": "BARGI001"
                 },
