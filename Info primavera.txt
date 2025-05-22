@@ -1,3 +1,34 @@
+Torneo Primavera.
+Tabellone iniziale 
+Gasperoni Claudio    1874    Elo Standard 
+Nicolini Francesco    1776    Elo Rapid 
+Vandelli Jiazhuang    1756    Elo Standard 
+Soppelsa Maurizio    1731    Elo Standard 
+Zavan Fabrizio    1671    Elo Standard 
+Manneschi Fabrizio    1609    Elo Rapid 
+Trapletti Cosetta    1586    Elo Rapid 
+Tolaro Filippa    1577    Elo Rapid 
+Colangelo Michele    1574    Elo Rapid 
+Battaglia Gabriele    1513    Elo Standard 
+Parravano Luca    1506    Elo Standard 
+Baratta Giuseppe    1450    Elo Standard 
+Ionata Lorenzo    1446    Elo Standard 
+Bosetti Giancarlo    1399    Elo Forfettario 
+Brites Pereira Lima, Catia Susana    1399    Elo Forfettario 
+Calzolari Valeria    1399    Elo Forfettario 
+Cassano Mariangela    1399    Elo Forfettario 
+Ciciarella Mathias    1399    Elo Forfettario 
+Di Bari Vincenzo    1399    Elo Forfettario 
+Forte Martina    1399    Elo Forfettario 
+Gori Serena    1399    Elo Forfettario 
+Mereu Alessia    1399    Elo Forfettario 
+Paglia Giulia    1399    Elo Forfettario 
+Paglia Virginio    1399    Elo Forfettario 
+Scapin Valeria    1399    Elo Forfettario 
+Testori Alessandra    1399    Elo Forfettario 
+Valleriani Rita    1399    Elo Forfettario 
+Ventura Luigi    1399    Elo Forfettario
+
 Risultati 1° Turno
   1.    Gasperoni, Claudio – Brites Pereira Lima, Catia Susana 1-0
   2.    Calzolari, Valeria – Nicolini, Francesco 0-1
@@ -13,48 +44,49 @@ Risultati 1° Turno
   12.  Testori, Alessandra – Baratta, Giuseppe 0-1
   13.  Ionata, Lorenzo – Valleriani, Rita 1-0
   14.  Ventura, Luigi – Bosetti, Giancarlo 1-0
-Classifica dopo il 1° Turno
-Pos.  Giocatore                              Punti  Cut1  BuchT   ARO
-1     Gasperoni, Claudio                     1      0     0       1399.00
-2     Nicolini, Francesco                    1      0     0       1399.00
-3     Vandelli, Jiazhuang                    1      0     0       1399.00
-4     Soppelsa, Maurizio                     1      0     0       1399.00
-5     Zavan, Fabrizio                        1      0     0       1399.00
-6     Manneschi, Fabrizio                    1      0     0       1399.00
-7     Trapletti, Cosetta                     1      0     0       1399.00
-8     Tolaro, Filippa                        1      0     0       1399.00
-9     Colangelo, Michele                     1      0     0       1399.00
-10    Battaglia, Gabriele                    1      0     0       1399.00
-11    Parravano, Luca                        1      0     0       1399.00
-12    Baratta, Giuseppe                      1      0     0       1399.00
-13    Ionata, Lorenzo                        1      0     0       1399.00
-14    Ventura, Luigi                         1      0     0       1399.00
-15    Brites Pereira Lima, Catia Susana      0      0     1       1874.00
-16    Calzolari, Valeria                     0      0     1       1776.00
-17    Cassano, Mariangela                    0      0     1       1756.00
-18    Ciciarella, Mathias                    0      0     1       1731.00
-19    Di Bari, Vincenzo                      0      0     1       1671.00
-20    Forte, Martina                         0      0     1       1609.00
-21    Gori, Serena                           0      0     1       1586.00
-22    Mereu, Alessia                         0      0     1       1577.00
-23    Paglia, Giulia                         0      0     1       1574.00
-24    Paglia, Virginio                       0      0     1       1513.00
-25    Scapin, Valeria                        0      0     1       1506.00
-26    Testori, Alessandra                    0      0     1       1450.00
-27    Valleriani, Rita                       0      0     1       1446.00
-28    Bosetti, Giancarlo                     0      0     1       1399.00
-2° Turno da giocare entro mercoledì 21 maggio
-  1.    Tolaro, Filippa – Gasperoni, Claudio
-  2.    Nicolini, Francesco – Colangelo, Michele 
-  3.    Battaglia, Gabriele – Vandelli, Jiazhuang
-  4.    Soppelsa, Maurizio – Parravano, Luca
-  5.    Baratta, Giuseppe – Zavan, Fabrizio
-  6.    Manneschi, Fabrizio – Ionata, Lorenzo 
-  7.    Ventura, Luigi – Trapletti, Cosetta 
-  8.    Bosetti, Giancarlo – Gori, Serena 
-  9.    Brites Pereira Lima, Catia Susana – Mereu, Alessia 
-  10.  Paglia, Giulia – Calzolari, Valeria 
-  11.  Cassano, Mariangela – Paglia, Virginio
-  12.  Scapin, Valeria – Ciciarella, Mathias
-  13.  Di Bari, Vincenzo – Testori, Alessandra
-  14.  Valleriani, Rita – Forte, Martina
+Risultato turno 2
+1.      Tolaro, Filippa – Gasperoni, Claudio 0-1
+2.      Nicolini, Francesco – Colangelo, Michele  1-0
+3.      Battaglia, Gabriele – Vandelli, Jiazhuang 0-1
+4.      Soppelsa, Maurizio – Parravano, Luca 1-0
+5.      Baratta, Giuseppe – Zavan, Fabrizio 0-1
+6.      Manneschi, Fabrizio – Ionata, Lorenzo 1-0
+7.      Ventura, Luigi – Trapletti, Cosetta 1-0
+8.      Bosetti, Giancarlo – Gori, Serena 1-0
+9.      Brites Pereira Lima, Catia Susana – Mereu, Alessia 0-1
+10.    Paglia, Giulia – Calzolari, Valeria 1/2-1/2
+11.    Cassano, Mariangela – Paglia, Virginio 1/2-1/2
+12.    Scapin, Valeria – Ciciarella, Mathias 0-1
+13.    Di Bari, Vincenzo – Testori, Alessandra 1-0
+14.    Valleriani, Rita – Forte, Martina 1-0
+Abbinamento turno 3
+1.      Gasperoni, Claudio – Soppelsa, Maurizio
+2.      Zavan, Fabrizio – Nicolini, Francesco
+3.      Vandelli, Jiazhuang – Manneschi, Fabrizio
+4.      Colangelo, Michele – Ventura, Luigi
+5.      Trapletti, Cosetta – Bosetti, Giancarlo
+6.      Ionata, Lorenzo – Tolaro, Filippa
+7.      Ciciarella, Mathias – Battaglia, Gabriele
+8.      Parravano, Luca – Di Bari, Vincenzo
+9.      Mereu, Alessia – Baratta, Giuseppe
+10.    Calzolari, Valeria – Valleriani, Rita
+11.    Paglia, Virginio – Paglia, Giulia
+12.    Forte, Martina – Cassano, Mariangela
+13.    Testori, Alessandra – Brites Pereira Lima, Catia Susana
+14.    Gori, Serena – Scapin, Valeria
+***
+Turno 3 (generato da Tornello, errato)
+		29 Claudio Gasperoni - Maurizio Soppelsa
+		30 Fabrizio Zavan - Francesco Nicolini
+		31 Jiazhuang Vandelli - Fabrizio Manneschi
+		32 Cosetta Trapletti - Lorenzo Ionata
+		33 Mathias Cicciarella - Filippa Tolaro
+		34 Michele Colangelo - Vincenzo Di Bari
+		35 Alessia Mereu - Gabriele Battaglia
+		36 Luca Parravano - Rita Valleriani
+		37 Giuseppe Baratta - Luigi Ventura
+		39 Giancarlo Bosetti - Mariangela Cassano
+		40 Virginio Paglia - Giulia Paglia
+		41 Serena Gori - Catia Susana Brites Pereira Lima
+		42 Valeria Calzolari - Valeria Scapin
+		43 Martina Forte - Alessandra Testori

@@ -4,7 +4,7 @@ import os, json, sys, math, traceback
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "4.2.5 del 21 maggio 2025"
+VERSIONE = "4.2.4 del 14 maggio 2025"
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -752,44 +752,24 @@ def determine_color_assignment(player1, player2, torneo): # Aggiunto 'torneo'
     p1_elo = player1.get('initial_elo', 0)
     p2_elo = player2.get('initial_elo', 0)
 
-    # q1 inizio debug
-    debug_pairing = False
-    # Coppie problematiche del T3 identificate (basate sull'output testuale errato precedente)
-    # e Bosetti-Cassano (basata sul JSON errato per C.04.3.c)
-    # Nota: usa gli ID corretti dei tuoi giocatori
-    problem_pairs_t3 = [("ZAVFA001", "NICFR001"), ("VANJI001", "MANFA001"), ("BOSGI002", "CASMA001")]
-    if any((p1_id == pair[0] and p2_id == pair[1]) or \
-           (p1_id == pair[1] and p2_id == pair[0]) for pair in problem_pairs_t3):
-        debug_pairing = True
-        print(f"\nDEBUG determine_color_assignment per {p1_id} vs {p2_id} (Turno {torneo.get('current_round')})")
-        print(f"  P1 ({p1_id}): d={d1}, lc={last1}, Wg={player1.get('white_games',0)}, Bg={player1.get('black_games',0)}, CW={player1.get('consecutive_white',0)}, CB={player1.get('consecutive_black',0)}")
-        print(f"  P2 ({p2_id}): d={d2}, lc={last2}, Wg={player2.get('white_games',0)}, Bg={player2.get('black_games',0)}, CW={player2.get('consecutive_white',0)}, CB={player2.get('consecutive_black',0)}")
-
-    # Q2 fine debug
     # Priorità 1 FIDE (C.04.3.a): Differenza W-B
     if d1 < d2: 
         if check_absolute_color_constraints(player1, 'white') and check_absolute_color_constraints(player2, 'black'):
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('W', p1_id, p2_id)
         elif check_absolute_color_constraints(player1, 'black') and check_absolute_color_constraints(player2, 'white'):
             print(f"Info Colore: {p1_id} aveva preferenza Bianco (d={d1}<{d2}), ma assegnato Nero per vincoli.")
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('W', p2_id, p1_id)
         else:
             print(f"Info Colore (Blocco d1<d2): Conflitto vincoli assoluti per {p1_id} vs {p2_id}. Nessuna assegnazione automatica possibile.")
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('Error', f"Vincoli colore assoluti (pref P1) per {p1_id} vs {p2_id}")
     elif d2 < d1: 
         if check_absolute_color_constraints(player2, 'white') and check_absolute_color_constraints(player1, 'black'):
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('W', p2_id, p1_id)
         elif check_absolute_color_constraints(player2, 'black') and check_absolute_color_constraints(player1, 'white'):
             print(f"Info Colore: {p2_id} aveva preferenza Bianco (d={d2}<{d1}), ma assegnato Nero per vincoli.")
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('W', p1_id, p2_id)
         else:
             print(f"Info Colore (Blocco d2<d1): Conflitto vincoli assoluti per {p1_id} vs {p2_id}. Nessuna assegnazione automatica possibile.")
-            if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
             return ('Error', f"Vincoli colore assoluti (pref P2) per {p1_id} vs {p2_id}")
     else: # d1 == d2. Si passa a C.04.3.b (Alternanza individuale)
         p1_prefers_white_by_alt = (last1 == 'black')
@@ -797,27 +777,21 @@ def determine_color_assignment(player1, player2, torneo): # Aggiunto 'torneo'
 
         if p1_prefers_white_by_alt and not p2_prefers_white_by_alt: 
             if check_absolute_color_constraints(player1, 'white') and check_absolute_color_constraints(player2, 'black'):
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('W', p1_id, p2_id)
             elif check_absolute_color_constraints(player1, 'black') and check_absolute_color_constraints(player2, 'white'):
                 print(f"Info Colore: {p1_id} aveva preferenza Bianco (alt), ma assegnato Nero per vincoli.")
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('W', p2_id, p1_id)
             else:
                 print(f"Info Colore (Blocco alt P1): Conflitto vincoli assoluti per {p1_id} vs {p2_id}. Nessuna assegnazione automatica possibile.")
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('Error', f"Vincoli colore assoluti (alt P1) per {p1_id} vs {p2_id}")
         elif p2_prefers_white_by_alt and not p1_prefers_white_by_alt: 
             if check_absolute_color_constraints(player2, 'white') and check_absolute_color_constraints(player1, 'black'):
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('W', p2_id, p1_id)
             elif check_absolute_color_constraints(player2, 'black') and check_absolute_color_constraints(player1, 'white'):
                 print(f"Info Colore: {p2_id} aveva preferenza Bianco (alt), ma assegnato Nero per vincoli.")
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('W', p1_id, p2_id)
             else:
                 print(f"Info Colore (Blocco alt P2): Conflitto vincoli assoluti per {p1_id} vs {p2_id}. Nessuna assegnazione automatica possibile.")
-                if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                 return ('Error', f"Vincoli colore assoluti (alt P2) per {p1_id} vs {p2_id}")
         else: 
             # Qui d1==d2 E C.04.3.b non ha dato una preferenza chiara.
@@ -864,12 +838,10 @@ def determine_color_assignment(player1, player2, torneo): # Aggiunto 'torneo'
                 if p1_played_white_in_last_encounter_vs_p2: 
                     if check_absolute_color_constraints(player2, 'white') and check_absolute_color_constraints(player1, 'black'):
                         print(f"Info Colore (Criterio Arbitro 2): Assegno {p2_id} Bianco, {p1_id} Nero.")
-                        if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                         return ('W', p2_id, p1_id)
                 else: 
                     if check_absolute_color_constraints(player1, 'white') and check_absolute_color_constraints(player2, 'black'):
                         print(f"Info Colore (Criterio Arbitro 2): Assegno {p1_id} Bianco, {p2_id} Nero.")
-                        if debug_pairing: print(f"  Decisione: P1 Bianco per d1<d2, vincoli OK")
                         return ('W', p1_id, p2_id)
                 
                 print(f"Info Colore (Criterio Arbitro 2): Assegnazione storica invertita per {p1_id}-{p2_id} non possibile per vincoli. Passo a Criterio Rating.")

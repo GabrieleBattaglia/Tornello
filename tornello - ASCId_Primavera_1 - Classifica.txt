@@ -1,4 +1,4 @@
-﻿Nome torneo: ascid-primavera1
+﻿Nome torneo: ASCId Primavera 1
 Classifica Parziale - Dopo Turno 2
 Pos. Nome Cognome         [EloIni] Punti  Bucch-1 Bucch  
 ---------------------------------------------------------
@@ -16,9 +16,9 @@ Pos. Nome Cognome         [EloIni] Punti  Bucch-1 Bucch
 12   Cosetta Trapletti     [1586]   1      ---     2      
 13   Luca Parravano        [1506]   1      ---     2      
 14   Giuseppe Baratta      [1450]   1      ---     2      
-15   Mathias Cicciarella   [1399]   1      ---     2      
-16   Vincenzo Di Bari      [1399]   1      ---     2      
-17   Giancarlo Bosetti     [1399]   1      ---     2      
+15   Giancarlo Bosetti     [1399]   1      ---     2      
+16   Mathias Cicciarella   [1399]   1      ---     2      
+17   Vincenzo Di Bari      [1399]   1      ---     2      
 18   Alessia Mereu         [1399]   1      ---     1      
 19   Rita Valleriani       [1399]   1      ---     1      
 20   Valeria Calzolari     [1399]   0.5    ---     2.5    
