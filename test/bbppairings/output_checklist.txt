@@ -1,0 +1,12 @@
+
+ID	Pts	----	Pref	C2	C12	C14	Cur		R1	R2	R3	
+
+ 2	2.5	 BWW	  B 	 Y	  U	  D	   		 4	 3	 5	
+
+ 5	2.0	  WB	  w 	 N	  D	   	   		  	 1	 2	
+
+ 1	1.5	 WBW	 (B)	 Y	   	   	   		 3	 5	 4	
+ 3	1.5	  BB	  W 	 N	  D	  U	   		 1	 2	  	
+ 4	1.5	  WB	  w 	 N	   	  D	   		 2	  	 1	
+
+

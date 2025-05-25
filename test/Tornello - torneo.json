@@ -1,0 +1,383 @@
+{
+    "launch_count": 1,
+    "name": "test1",
+    "tournament_id": "test1_20250525192234",
+    "start_date": "2025-05-25",
+    "end_date": "2025-07-24",
+    "total_rounds": 5,
+    "round_dates": [
+        {
+            "round": 1,
+            "start_date": "2025-05-25",
+            "end_date": "2025-06-05"
+        },
+        {
+            "round": 2,
+            "start_date": "2025-06-06",
+            "end_date": "2025-06-17"
+        },
+        {
+            "round": 3,
+            "start_date": "2025-06-18",
+            "end_date": "2025-06-30"
+        },
+        {
+            "round": 4,
+            "start_date": "2025-07-01",
+            "end_date": "2025-07-12"
+        },
+        {
+            "round": 5,
+            "start_date": "2025-07-13",
+            "end_date": "2025-07-24"
+        }
+    ],
+    "players": [
+        {
+            "id": "GORSE001",
+            "first_name": "Serena",
+            "last_name": "Gori",
+            "initial_elo": 1399,
+            "points": 1.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BATGA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "MANFA001",
+                    "color": "black",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                }
+            ],
+            "opponents": [
+                "MANFA001",
+                "BATGA001"
+            ],
+            "white_games": 1,
+            "black_games": 1,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 1,
+            "received_bye": false,
+            "buchholz": 4.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "received_bye_in_round": [
+                2
+            ],
+            "received_bye_count": 1
+        },
+        {
+            "id": "MANFA001",
+            "first_name": "Fabrizio",
+            "last_name": "Manneschi",
+            "initial_elo": 1609,
+            "points": 1.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "FORMA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "PAGGI001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "GORSE001",
+                    "color": "white",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                }
+            ],
+            "opponents": [
+                "FORMA001",
+                "PAGGI001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 1,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
+            "received_bye": false,
+            "buchholz": 5.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false
+        },
+        {
+            "id": "BATGA001",
+            "first_name": "Gabriele",
+            "last_name": "Battaglia",
+            "initial_elo": 1513,
+            "points": 2.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "GORSE001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "FORMA001",
+                    "color": "white",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "PAGGI001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "FORMA001",
+                "PAGGI001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 1,
+            "last_color": "white",
+            "consecutive_white": 2,
+            "consecutive_black": 0,
+            "received_bye": false,
+            "buchholz": 5.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false
+        },
+        {
+            "id": "PAGGI001",
+            "first_name": "Giulia",
+            "last_name": "Paglia",
+            "initial_elo": 1399,
+            "points": 2.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MANFA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "BATGA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
+            "opponents": [
+                "BATGA001",
+                "MANFA001"
+            ],
+            "white_games": 1,
+            "black_games": 1,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 1,
+            "received_bye": false,
+            "buchholz": 4.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "received_bye_in_round": [
+                1
+            ],
+            "received_bye_count": 1
+        },
+        {
+            "id": "FORMA001",
+            "first_name": "Martina",
+            "last_name": "Forte",
+            "initial_elo": 1399,
+            "points": 1.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "MANFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BATGA001",
+                    "color": "black",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "BATGA001",
+                "MANFA001"
+            ],
+            "white_games": 0,
+            "black_games": 2,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 2,
+            "received_bye": false,
+            "buchholz": 4.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "received_bye_in_round": [
+                3
+            ],
+            "received_bye_count": 1
+        }
+    ],
+    "current_round": 3,
+    "rounds": [
+        {
+            "round": 1,
+            "matches": [
+                {
+                    "id": 1,
+                    "round": 1,
+                    "white_player_id": "MANFA001",
+                    "black_player_id": "FORMA001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 2,
+                    "round": 1,
+                    "white_player_id": "GORSE001",
+                    "black_player_id": "BATGA001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 3,
+                    "round": 1,
+                    "white_player_id": "PAGGI001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 2,
+            "matches": [
+                {
+                    "id": 4,
+                    "round": 2,
+                    "white_player_id": "PAGGI001",
+                    "black_player_id": "MANFA001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 5,
+                    "round": 2,
+                    "white_player_id": "BATGA001",
+                    "black_player_id": "FORMA001",
+                    "result": "1/2-1/2"
+                },
+                {
+                    "id": 6,
+                    "round": 2,
+                    "white_player_id": "GORSE001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 3,
+            "matches": [
+                {
+                    "id": 7,
+                    "round": 3,
+                    "white_player_id": "BATGA001",
+                    "black_player_id": "PAGGI001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 8,
+                    "round": 3,
+                    "white_player_id": "MANFA001",
+                    "black_player_id": "GORSE001",
+                    "result": "1/2-1/2"
+                },
+                {
+                    "id": 9,
+                    "round": 3,
+                    "white_player_id": "FORMA001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        }
+    ],
+    "next_match_id": 10,
+    "k_factor": 20,
+    "site": "Luogo Sconosciuto",
+    "federation_code": "ITA",
+    "chief_arbiter": "Nome Arbitro Default",
+    "time_control": "Cadenza Standard"
+}

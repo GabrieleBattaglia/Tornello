@@ -1,0 +1,177 @@
+﻿Report Database Giocatori Tornello - Mercoledì 14 maggio 2025 10:24:30
+========================================
+
+ID: BARGI001, Giuseppe Baratta, Elo: 1450
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BATGA001, Gabriele Battaglia, Elo: 1513
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Venerdì 13 settembre 1974
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BOSGI002, Giancarlo Bosetti, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BRICA001, Catia Susana Brites Pereira Lima, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
+	2° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CALVA001, Valeria Calzolari, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (1) tornei:
+	4° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CASMA001, Mariangela Cassano, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: CIBSI001, Silvia Cibin, Elo: 1399.0
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Mercoledì 14 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	5° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CICMA001, Mathias Cicciarella, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: COLMI001, Michele Colangelo, Elo: 1574
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: DIBVI001, Vincenzo Di Bari, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	10° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: FORMA001, Martina Forte, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	7° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: GASCL001, Claudio Gasperoni, Elo: 1859
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: GORSE001, Serena Gori, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	12° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: IONLO001, Lorenzo Ionata, Elo: 1446
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	1° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: MANFA001, Fabrizio Manneschi, Elo: 1609
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: MERAL001, Alessia Mereu, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (1) tornei:
+	3° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: NICFR001, Francesco Nicolini, Elo: 1776
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: PAGGI001, Giulia Paglia, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: PAGVI001, Virginio Paglia, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	6° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: PARLU001, Luca Parravano, Elo: 1506
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: SCAVA001, Valeria Scapin, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: SOPMA001, Maurizio Soppelsa, Elo: 1731
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: TESAL001, Alessandra Testori, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	11° in Sacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: TOLFI001, Filippa Tolaro, Elo: 1577
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: TRACO001, Cosetta Trapletti, Elo: 1586
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: VALRI001, Rita Valleriani, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	9° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: VANJI001, Jiazhuang Vandelli, Elo: 1756
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: VENLU001, Luigi Ventura, Elo: 1399
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	8° in Scacchierante 1 (su 12 gioc.) - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: ZAVFA001, Fabrizio Zavan, Elo: 1671
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------

@@ -1,4 +1,4 @@
-﻿Nome torneo: ASCId Primavera 1
+﻿Nome torneo: ASCId - Primavera 1
 Classifica Parziale - Dopo Turno 2
 Pos. Nome Cognome         [EloIni] Punti  Bucch-1 Bucch  
 ---------------------------------------------------------

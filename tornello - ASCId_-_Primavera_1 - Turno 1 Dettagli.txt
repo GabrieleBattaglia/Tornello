@@ -1,9 +1,9 @@
-﻿Torneo: ASCId Primavera 1
-Sito: N/D, Data Inizio Torneo: Domenica 4 maggio 2025
+﻿Torneo: ASCId - Primavera 1
+Sito: Luogo Sconosciuto, Data Inizio Torneo: Domenica 4 maggio 2025
 ================================================================================
 
 ============================== DETTAGLIO TURNO 1 CONCLUSO ==========================
-	Periodo del Turno: Domenica 4 maggio 2025 - Domenica 18 maggio 2025
+	Periodo del Turno: Domenica 4 maggio 2025 - Lunedì 12 maggio 2025
 	----------------------------------------------------------------------------
 	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
 	--------------------------------------------------------------------------------------------------------

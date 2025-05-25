@@ -1,0 +1,12 @@
+﻿Torneo: test1
+Sito: Luogo Sconosciuto, Data Inizio Torneo: Domenica 25 maggio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Venerdì 6 giugno 2025 - Martedì 17 giugno 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 4   | Giulia Paglia            [1399] (2   ) - Fabrizio Manneschi       [1609] (1   ) | 1-0
+	2  | 5   | Gabriele Battaglia       [1513] (1.5 ) - Martina Forte            [1399] (0.5 ) | 1/2-1/2
+	---| 6   | Serena Gori              [1399] (1   ) - BYE                             | BYE
