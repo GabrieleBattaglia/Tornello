@@ -1,0 +1,729 @@
+{
+    "launch_count": 1,
+    "name": "test4",
+    "tournament_id": "test4_20250526155459",
+    "start_date": "2025-05-26",
+    "end_date": "2025-07-25",
+    "total_rounds": 5,
+    "site": "Ufficio",
+    "federation_code": "ITA",
+    "chief_arbiter": "Gabry",
+    "deputy_chief_arbiters": "tu, lei, noi, voi, gli altri",
+    "time_control": "Standard",
+    "initial_board1_color_setting": "white1",
+    "round_dates": [
+        {
+            "round": 1,
+            "start_date": "2025-05-26",
+            "end_date": "2025-06-06"
+        },
+        {
+            "round": 2,
+            "start_date": "2025-06-07",
+            "end_date": "2025-06-18"
+        },
+        {
+            "round": 3,
+            "start_date": "2025-06-19",
+            "end_date": "2025-07-01"
+        },
+        {
+            "round": 4,
+            "start_date": "2025-07-02",
+            "end_date": "2025-07-13"
+        },
+        {
+            "round": 5,
+            "start_date": "2025-07-14",
+            "end_date": "2025-07-25"
+        }
+    ],
+    "players": [
+        {
+            "id": "BATGA001",
+            "first_name": "Gabriele",
+            "last_name": "Battaglia",
+            "initial_elo": 1536,
+            "fide_title": "1N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1974-09-13",
+            "points": 3.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "ZAVFA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "TRACO001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "GORSE001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "NICFR001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "TRACO001",
+                "ZAVFA001",
+                "NICFR001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 2,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
+            "received_bye_count": 1,
+            "received_bye_in_round": [
+                5
+            ],
+            "buchholz": 10.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 4
+        },
+        {
+            "id": "MERAL001",
+            "first_name": "Alessia",
+            "last_name": "Mereu",
+            "initial_elo": 1399.0,
+            "fide_title": "",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
+            "points": 2.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "NICFR001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "MANFA001",
+                    "color": "black",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "ZAVFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "GORSE001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "MANFA001",
+                "ZAVFA001",
+                "NICFR001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 2,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
+            "received_bye_count": 1,
+            "received_bye_in_round": [
+                1
+            ],
+            "buchholz": 9.5,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 5
+        },
+        {
+            "id": "GORSE001",
+            "first_name": "Serena",
+            "last_name": "Gori",
+            "initial_elo": 1399.0,
+            "fide_title": "FM",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
+            "points": 1.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "MANFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "BATGA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "TRACO001",
+                    "color": "white",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "MERAL001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
+            "opponents": [
+                "BATGA001",
+                "MANFA001",
+                "TRACO001",
+                "MERAL001"
+            ],
+            "white_games": 2,
+            "black_games": 2,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 1,
+            "received_bye_count": 1,
+            "received_bye_in_round": [
+                2
+            ],
+            "buchholz": 6.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 7
+        },
+        {
+            "id": "NICFR001",
+            "first_name": "Francesco",
+            "last_name": "Nicolini",
+            "initial_elo": 1776,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "RUS",
+            "fide_id_num_str": "33344455",
+            "birth_date": "1933-04-05",
+            "points": 5.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "TRACO001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MERAL001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "ZAVFA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "BATGA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "MANFA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "MANFA001",
+                "MERAL001",
+                "TRACO001",
+                "ZAVFA001",
+                "BATGA001"
+            ],
+            "white_games": 3,
+            "black_games": 2,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 8.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 1
+        },
+        {
+            "id": "ZAVFA001",
+            "first_name": "Fabrizio",
+            "last_name": "Zavan",
+            "initial_elo": 1710,
+            "fide_title": "3N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "90009000",
+            "birth_date": "1980-03-31",
+            "points": 4.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "BATGA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "MANFA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "NICFR001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "MERAL001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "TRACO001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                }
+            ],
+            "opponents": [
+                "MANFA001",
+                "MERAL001",
+                "TRACO001",
+                "NICFR001",
+                "BATGA001"
+            ],
+            "white_games": 2,
+            "black_games": 3,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 1,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 10.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 2
+        },
+        {
+            "id": "TRACO001",
+            "first_name": "Cosetta",
+            "last_name": "Trapletti",
+            "initial_elo": 1586,
+            "fide_title": "WCM",
+            "sex": "w",
+            "federation": "CAN",
+            "fide_id_num_str": "69",
+            "birth_date": "1973-08-15",
+            "points": 1.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "NICFR001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "BATGA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "GORSE001",
+                    "color": "black",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "ZAVFA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
+            "opponents": [
+                "BATGA001",
+                "ZAVFA001",
+                "NICFR001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 2,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
+            "received_bye_count": 1,
+            "received_bye_in_round": [
+                3
+            ],
+            "buchholz": 7.5,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 6
+        },
+        {
+            "id": "MANFA001",
+            "first_name": "Fabrizio",
+            "last_name": "Manneschi",
+            "initial_elo": 1609,
+            "fide_title": "FM",
+            "sex": "m",
+            "federation": "SLO",
+            "fide_id_num_str": "321",
+            "birth_date": "1945-04-21",
+            "points": 2.5,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "GORSE001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "ZAVFA001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "MERAL001",
+                    "color": "white",
+                    "result": "1/2-1/2",
+                    "score": 0.5
+                },
+                {
+                    "round": 4,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": null,
+                    "result": "BYE",
+                    "score": 1.0
+                },
+                {
+                    "round": 5,
+                    "opponent_id": "NICFR001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
+                }
+            ],
+            "opponents": [
+                "MERAL001",
+                "ZAVFA001",
+                "NICFR001",
+                "GORSE001"
+            ],
+            "white_games": 2,
+            "black_games": 2,
+            "last_color": "black",
+            "consecutive_white": 0,
+            "consecutive_black": 1,
+            "received_bye_count": 1,
+            "received_bye_in_round": [
+                4
+            ],
+            "buchholz": 6.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 3
+        }
+    ],
+    "current_round": 5,
+    "rounds": [
+        {
+            "round": 1,
+            "matches": [
+                {
+                    "id": 1,
+                    "round": 1,
+                    "white_player_id": "NICFR001",
+                    "black_player_id": "TRACO001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 2,
+                    "round": 1,
+                    "white_player_id": "BATGA001",
+                    "black_player_id": "ZAVFA001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 3,
+                    "round": 1,
+                    "white_player_id": "MANFA001",
+                    "black_player_id": "GORSE001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 4,
+                    "round": 1,
+                    "white_player_id": "MERAL001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 2,
+            "matches": [
+                {
+                    "id": 5,
+                    "round": 2,
+                    "white_player_id": "MERAL001",
+                    "black_player_id": "NICFR001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 6,
+                    "round": 2,
+                    "white_player_id": "ZAVFA001",
+                    "black_player_id": "MANFA001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 7,
+                    "round": 2,
+                    "white_player_id": "TRACO001",
+                    "black_player_id": "BATGA001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 8,
+                    "round": 2,
+                    "white_player_id": "GORSE001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 3,
+            "matches": [
+                {
+                    "id": 9,
+                    "round": 3,
+                    "white_player_id": "NICFR001",
+                    "black_player_id": "ZAVFA001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 10,
+                    "round": 3,
+                    "white_player_id": "MANFA001",
+                    "black_player_id": "MERAL001",
+                    "result": "1/2-1/2"
+                },
+                {
+                    "id": 11,
+                    "round": 3,
+                    "white_player_id": "GORSE001",
+                    "black_player_id": "BATGA001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 12,
+                    "round": 3,
+                    "white_player_id": "TRACO001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 4,
+            "matches": [
+                {
+                    "id": 13,
+                    "round": 4,
+                    "white_player_id": "BATGA001",
+                    "black_player_id": "NICFR001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 14,
+                    "round": 4,
+                    "white_player_id": "ZAVFA001",
+                    "black_player_id": "MERAL001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 15,
+                    "round": 4,
+                    "white_player_id": "GORSE001",
+                    "black_player_id": "TRACO001",
+                    "result": "1/2-1/2"
+                },
+                {
+                    "id": 16,
+                    "round": 4,
+                    "white_player_id": "MANFA001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        },
+        {
+            "round": 5,
+            "matches": [
+                {
+                    "id": 17,
+                    "round": 5,
+                    "white_player_id": "NICFR001",
+                    "black_player_id": "MANFA001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 18,
+                    "round": 5,
+                    "white_player_id": "TRACO001",
+                    "black_player_id": "ZAVFA001",
+                    "result": "0-1"
+                },
+                {
+                    "id": 19,
+                    "round": 5,
+                    "white_player_id": "MERAL001",
+                    "black_player_id": "GORSE001",
+                    "result": "1-0"
+                },
+                {
+                    "id": 20,
+                    "round": 5,
+                    "white_player_id": "BATGA001",
+                    "black_player_id": null,
+                    "result": "BYE"
+                }
+            ]
+        }
+    ],
+    "next_match_id": 21,
+    "k_factor": 20
+}

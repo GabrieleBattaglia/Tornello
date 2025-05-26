@@ -3,185 +3,38 @@
         "id": "GASCL001",
         "first_name": "Claudio",
         "last_name": "Gasperoni",
-        "current_elo": 1859,
+        "current_elo": 1825,
         "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
+        "birth_date": "1975-12-13",
+        "games_played": 4,
         "medals": {
             "gold": 0,
             "silver": 0,
-            "bronze": 0,
+            "bronze": 1,
             "wood": 0
         },
-        "tournaments_played": []
+        "tournaments_played": [
+            {
+                "tournament_name": "test2",
+                "tournament_id": "test2_20250526103255",
+                "rank": 3,
+                "total_players": 9,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "GM",
+        "sex": "m",
+        "federation": "HUN",
+        "fide_id_num_str": "0"
     },
     {
         "id": "NICFR001",
         "first_name": "Francesco",
         "last_name": "Nicolini",
-        "current_elo": 1776,
+        "current_elo": 1825,
         "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "VANJI001",
-        "first_name": "Jiazhuang",
-        "last_name": "Vandelli",
-        "current_elo": 1756,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "ZAVFA001",
-        "first_name": "Fabrizio",
-        "last_name": "Zavan",
-        "current_elo": 1671,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "MANFA001",
-        "first_name": "Fabrizio",
-        "last_name": "Manneschi",
-        "current_elo": 1609,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "TRACO001",
-        "first_name": "Cosetta",
-        "last_name": "Trapletti",
-        "current_elo": 1586,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "TOLFI001",
-        "first_name": "Filippa",
-        "last_name": "Tolaro",
-        "current_elo": 1577,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "COLMI001",
-        "first_name": "Michele",
-        "last_name": "Colangelo",
-        "current_elo": 1574,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "BATGA001",
-        "first_name": "Gabriele",
-        "last_name": "Battaglia",
-        "current_elo": 1513,
-        "registration_date": "2025-05-01",
-        "birth_date": "1974-09-13",
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "PARLU001",
-        "first_name": "Luca",
-        "last_name": "Parravano",
-        "current_elo": 1506,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "BARGI001",
-        "first_name": "Giuseppe",
-        "last_name": "Baratta",
-        "current_elo": 1450,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "IONLO001",
-        "first_name": "Lorenzo",
-        "last_name": "Ionata",
-        "current_elo": 1446,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
+        "birth_date": "1933-04-05",
         "games_played": 5,
         "medals": {
             "gold": 1,
@@ -191,22 +44,150 @@
         },
         "tournaments_played": [
             {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
                 "rank": 1,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
             }
-        ]
+        ],
+        "fide_title": "NC",
+        "sex": "m",
+        "federation": "RUS",
+        "fide_id_num_str": "33344455"
     },
     {
-        "id": "BOSGI002",
-        "first_name": "Giancarlo",
-        "last_name": "Bosetti",
-        "current_elo": 1399,
+        "id": "VANJI001",
+        "first_name": "Jiazhuang",
+        "last_name": "Vandelli",
+        "current_elo": 1794,
         "registration_date": "2025-05-01",
-        "birth_date": null,
+        "birth_date": "2000-09-29",
+        "games_played": 5,
+        "medals": {
+            "gold": 1,
+            "silver": 0,
+            "bronze": 0,
+            "wood": 0
+        },
+        "tournaments_played": [
+            {
+                "tournament_name": "test2",
+                "tournament_id": "test2_20250526103255",
+                "rank": 1,
+                "total_players": 9,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "2N",
+        "sex": "w",
+        "federation": "USA",
+        "fide_id_num_str": "4848484848"
+    },
+    {
+        "id": "ZAVFA001",
+        "first_name": "Fabrizio",
+        "last_name": "Zavan",
+        "current_elo": 1738,
+        "registration_date": "2025-05-01",
+        "birth_date": "1980-03-31",
+        "games_played": 10,
+        "medals": {
+            "gold": 0,
+            "silver": 2,
+            "bronze": 0,
+            "wood": 0
+        },
+        "tournaments_played": [
+            {
+                "tournament_name": "test2",
+                "tournament_id": "test2_20250526103255",
+                "rank": 2,
+                "total_players": 9,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            },
+            {
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
+                "rank": 2,
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "3N",
+        "sex": "m",
+        "federation": "ITA",
+        "fide_id_num_str": "90009000"
+    },
+    {
+        "id": "MANFA001",
+        "first_name": "Fabrizio",
+        "last_name": "Manneschi",
+        "current_elo": 1582,
+        "registration_date": "2025-05-01",
+        "birth_date": "1945-04-21",
+        "games_played": 4,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "wood": 0
+        },
+        "tournaments_played": [
+            {
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
+                "rank": 5,
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "FM",
+        "sex": "m",
+        "federation": "SLO",
+        "fide_id_num_str": "321"
+    },
+    {
+        "id": "TRACO001",
+        "first_name": "Cosetta",
+        "last_name": "Trapletti",
+        "current_elo": 1530,
+        "registration_date": "2025-05-01",
+        "birth_date": "1973-08-15",
+        "games_played": 4,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "wood": 0
+        },
+        "tournaments_played": [
+            {
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
+                "rank": 6,
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "WCM",
+        "sex": "w",
+        "federation": "CAN",
+        "fide_id_num_str": "69"
+    },
+    {
+        "id": "TOLFI001",
+        "first_name": "Filippa",
+        "last_name": "Tolaro",
+        "current_elo": 1577,
+        "registration_date": "2025-05-01",
+        "birth_date": "1990-07-20",
         "games_played": 0,
         "medals": {
             "gold": 0,
@@ -214,16 +195,77 @@
             "bronze": 0,
             "wood": 0
         },
-        "tournaments_played": []
+        "tournaments_played": [],
+        "fide_title": "WIM",
+        "sex": "w",
+        "federation": "NL",
+        "fide_id_num_str": "0"
     },
     {
-        "id": "CALVA001",
-        "first_name": "Valeria",
-        "last_name": "Calzolari",
-        "current_elo": 1399,
+        "id": "COLMI001",
+        "first_name": "Michele",
+        "last_name": "Colangelo",
+        "current_elo": 1574,
         "registration_date": "2025-05-01",
+        "birth_date": "1958-10-27",
+        "games_played": 0,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 0,
+            "wood": 0
+        },
+        "tournaments_played": [],
+        "fide_title": "CM",
+        "sex": "m",
+        "federation": "ITA",
+        "fide_id_num_str": "1"
+    },
+    {
+        "id": "BATGA001",
+        "first_name": "Gabriele",
+        "last_name": "Battaglia",
+        "current_elo": 1553,
+        "registration_date": "2025-05-01",
+        "birth_date": "1974-09-13",
+        "games_played": 9,
+        "medals": {
+            "gold": 0,
+            "silver": 0,
+            "bronze": 1,
+            "wood": 1
+        },
+        "tournaments_played": [
+            {
+                "tournament_name": "test2",
+                "tournament_id": "test2_20250526103255",
+                "rank": 4,
+                "total_players": 9,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            },
+            {
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
+                "rank": 3,
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
+            }
+        ],
+        "fide_title": "1N",
+        "sex": "m",
+        "federation": "ITA",
+        "fide_id_num_str": "0"
+    },
+    {
+        "id": "MERAL001",
+        "first_name": "Alessia",
+        "last_name": "Mereu",
+        "current_elo": 1420,
+        "registration_date": "2025-05-26",
         "birth_date": null,
-        "games_played": 5,
+        "games_played": 4,
         "medals": {
             "gold": 0,
             "silver": 0,
@@ -232,80 +274,27 @@
         },
         "tournaments_played": [
             {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
                 "rank": 4,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
             }
-        ]
-    },
-    {
-        "id": "CASMA001",
-        "first_name": "Mariangela",
-        "last_name": "Cassano",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "CICMA001",
-        "first_name": "Mathias",
-        "last_name": "Cicciarella",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "FORMA001",
-        "first_name": "Martina",
-        "last_name": "Forte",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 7,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
+        ],
+        "fide_title": "",
+        "sex": "w",
+        "federation": "ITA",
+        "fide_id_num_str": "0"
     },
     {
         "id": "GORSE001",
         "first_name": "Serena",
         "last_name": "Gori",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
+        "current_elo": 1367,
+        "registration_date": "2025-05-26",
         "birth_date": null,
-        "games_played": 5,
+        "games_played": 4,
         "medals": {
             "gold": 0,
             "silver": 0,
@@ -314,261 +303,17 @@
         },
         "tournaments_played": [
             {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 12,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
+                "tournament_name": "test4",
+                "tournament_id": "test4_20250526155459",
+                "rank": 7,
+                "total_players": 7,
+                "date_started": "2025-05-26",
+                "date_completed": "2025-07-25"
             }
-        ]
-    },
-    {
-        "id": "MERAL001",
-        "first_name": "Alessia",
-        "last_name": "Mereu",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 1,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 3,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "PAGGI001",
-        "first_name": "Giulia",
-        "last_name": "Paglia",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "PAGVI001",
-        "first_name": "Virginio",
-        "last_name": "Paglia",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 6,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "SCAVA001",
-        "first_name": "Valeria",
-        "last_name": "Scapin",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "TESAL001",
-        "first_name": "Alessandra",
-        "last_name": "Testori",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualSacchierante120250322",
-                "tournament_name": "Sacchierante 1",
-                "rank": 11,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "VALRI001",
-        "first_name": "Rita",
-        "last_name": "Valleriani",
-        "current_elo": 1399,
-        "registration_date": "2025-05-01",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 9,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "SOPMA001",
-        "first_name": "Maurizio",
-        "last_name": "Soppelsa",
-        "current_elo": 1731,
-        "registration_date": "2025-05-02",
-        "birth_date": null,
-        "games_played": 0,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": []
-    },
-    {
-        "id": "VENLU001",
-        "first_name": "Luigi",
-        "last_name": "Ventura",
-        "current_elo": 1399,
-        "registration_date": "2025-05-02",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 8,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "BRICA001",
-        "first_name": "Catia Susana",
-        "last_name": "Brites Pereira Lima",
-        "current_elo": 1399,
-        "registration_date": "2025-05-02",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 1,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 2,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "DIBVI001",
-        "first_name": "Vincenzo",
-        "last_name": "Di Bari",
-        "current_elo": 1399,
-        "registration_date": "2025-05-02",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 10,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
-    },
-    {
-        "id": "CIBSI001",
-        "first_name": "Silvia",
-        "last_name": "Cibin",
-        "current_elo": 1399.0,
-        "registration_date": "2025-05-14",
-        "birth_date": null,
-        "games_played": 5,
-        "medals": {
-            "gold": 0,
-            "silver": 0,
-            "bronze": 0,
-            "wood": 0
-        },
-        "tournaments_played": [
-            {
-                "tournament_id": "manualScacchierante120250322",
-                "tournament_name": "Scacchierante 1",
-                "rank": 5,
-                "total_players": 12,
-                "date_started": "2025-03-22",
-                "date_completed": "2025-05-15"
-            }
-        ]
+        ],
+        "fide_title": "FM",
+        "sex": "w",
+        "federation": "ITA",
+        "fide_id_num_str": "0"
     }
 ]

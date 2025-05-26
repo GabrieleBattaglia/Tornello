@@ -1,5 +1,6 @@
 ﻿Turno 3
 	giocate:
+		32 Michele Colangelo - Luigi Ventura 0-1
 		35 Mathias Cicciarella - Gabriele Battaglia 0-1
 		37 Alessia Mereu - Giuseppe Baratta 0-1
 		40 Martina Forte - Mariangela Cassano 0-1
@@ -7,7 +8,6 @@
 		29 Claudio Gasperoni - Maurizio Soppelsa
 		30 Fabrizio Zavan - Francesco Nicolini
 		31 Jiazhuang Vandelli - Fabrizio Manneschi
-		32 Michele Colangelo - Luigi Ventura
 		33 Cosetta Trapletti - Giancarlo Bosetti
 		34 Lorenzo Ionata - Filippa Tolaro
 		36 Luca Parravano - Vincenzo Di Bari

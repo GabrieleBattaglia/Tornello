@@ -1,0 +1,13 @@
+﻿Torneo: test4
+Sito: Ufficio, Data Inizio Torneo: Lunedì 26 maggio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Sabato 7 giugno 2025 - Mercoledì 18 giugno 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 6   | Fabrizio Zavan           [1710] (2   ) - Fabrizio Manneschi       [1609] (1   ) | 1-0
+	2  | 5   | Alessia Mereu            [1399.0] (1   ) - Francesco Nicolini       [1776] (2   ) | 0-1
+	3  | 7   | Cosetta Trapletti        [1586] (0   ) - Gabriele Battaglia       [1536] (1   ) | 0-1
+	---| 8   | Serena Gori              [1399.0] (1   ) - BYE                             | BYE

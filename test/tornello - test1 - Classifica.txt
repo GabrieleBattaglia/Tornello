@@ -1,9 +1,0 @@
-﻿Nome torneo: test1
-Classifica Parziale - Dopo Turno 3
-Pos. Nome Cognome         [EloIni] Punti  Bucch-1 Bucch  
----------------------------------------------------------
-1    Gabriele Battaglia    [1513]   2.5    ---     5      
-2    Giulia Paglia         [1399]   2      ---     4      
-3    Fabrizio Manneschi    [1609]   1.5    ---     5      
-4    Serena Gori           [1399]   1.5    ---     4      
-5    Martina Forte         [1399]   1.5    ---     4      
