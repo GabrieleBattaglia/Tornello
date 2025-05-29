@@ -1,17 +1,17 @@
 ﻿Turno 3
 	giocate:
+		29 Claudio Gasperoni - Maurizio Soppelsa 1-0
 		30 Fabrizio Zavan - Francesco Nicolini 0-1
 		31 Jiazhuang Vandelli - Fabrizio Manneschi 1-0
 		32 Michele Colangelo - Luigi Ventura 0-1
+		34 Lorenzo Ionata - Filippa Tolaro 1-0
 		35 Mathias Cicciarella - Gabriele Battaglia 0-1
+		36 Luca Parravano - Vincenzo Di Bari 1/2-1/2
 		37 Alessia Mereu - Giuseppe Baratta 0-1
 		38 Valeria Calzolari - Rita Valleriani 0-1
 		39 Virginio Paglia - Giulia Paglia 0-1
 		40 Martina Forte - Mariangela Cassano 0-1
 		42 Serena Gori - Valeria Scapin 0-1
 	Da giocare:
-		29 Claudio Gasperoni - Maurizio Soppelsa
 		33 Cosetta Trapletti - Giancarlo Bosetti
-		34 Lorenzo Ionata - Filippa Tolaro
-		36 Luca Parravano - Vincenzo Di Bari
 		41 Alessandra Testori - Catia Susana Brites Pereira Lima

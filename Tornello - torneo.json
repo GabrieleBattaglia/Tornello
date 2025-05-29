@@ -1,10 +1,16 @@
 {
-    "launch_count": 8,
-    "name": "ASCId - Primavera 1",
-    "tournament_id": "ASCId_-_Primavera_1_20250525173221",
+    "launch_count": 4,
+    "name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
     "start_date": "2025-05-04",
     "end_date": "2025-06-15",
     "total_rounds": 5,
+    "site": "Online",
+    "federation_code": "ITA",
+    "chief_arbiter": "Bersan Vrioni ASCId",
+    "deputy_chief_arbiters": "Gruppo ASCId, Gruppo Scacchierando",
+    "time_control": "Standard",
+    "initial_board1_color_setting": "white1",
     "round_dates": [
         {
             "round": 1,
@@ -38,7 +44,12 @@
             "first_name": "Claudio",
             "last_name": "Gasperoni",
             "initial_elo": 1859,
-            "points": 2.0,
+            "fide_title": "1N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1975-01-01",
+            "points": 3.0,
             "results_history": [
                 {
                     "round": 1,
@@ -53,20 +64,28 @@
                     "color": "black",
                     "result": "0-1",
                     "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "SOPMA001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
                 "TOLFI001",
-                "SOPMA001",
-                "BRICA001"
+                "BRICA001",
+                "SOPMA001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 1.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -75,14 +94,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 3
         },
         {
             "id": "NICFR001",
             "first_name": "Francesco",
             "last_name": "Nicolini",
             "initial_elo": 1776,
+            "fide_title": "2N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1965-01-01",
             "points": 3.0,
             "results_history": [
                 {
@@ -108,17 +131,18 @@
                 }
             ],
             "opponents": [
+                "CALVA001",
                 "ZAVFA001",
-                "COLMI001",
-                "CALVA001"
+                "COLMI001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 1.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -127,14 +151,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 2
         },
         {
             "id": "VANJI001",
             "first_name": "Jiazhuang",
             "last_name": "Vandelli",
             "initial_elo": 1756,
+            "fide_title": "2N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "2002-01-01",
             "points": 3.0,
             "results_history": [
                 {
@@ -160,17 +188,18 @@
                 }
             ],
             "opponents": [
+                "BATGA001",
                 "CASMA001",
-                "MANFA001",
-                "BATGA001"
+                "MANFA001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 1.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 5.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -179,14 +208,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 1
         },
         {
             "id": "SOPMA001",
             "first_name": "Maurizio",
             "last_name": "Soppelsa",
             "initial_elo": 1731,
+            "fide_title": "2N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1956-01-01",
             "points": 2.0,
             "results_history": [
                 {
@@ -202,20 +235,28 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "GASCL001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "GASCL001",
                 "CICMA001",
-                "PARLU001"
+                "PARLU001",
+                "GASCL001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 5.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -224,14 +265,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 6
         },
         {
             "id": "ZAVFA001",
             "first_name": "Fabrizio",
             "last_name": "Zavan",
             "initial_elo": 1671,
+            "fide_title": "2N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1963-01-01",
             "points": 2.0,
             "results_history": [
                 {
@@ -257,17 +302,18 @@
                 }
             ],
             "opponents": [
-                "DIBVI001",
+                "NICFR001",
                 "BARGI001",
-                "NICFR001"
+                "DIBVI001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 6.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -276,14 +322,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 5
         },
         {
             "id": "MANFA001",
             "first_name": "Fabrizio",
             "last_name": "Manneschi",
             "initial_elo": 1609,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1946-01-01",
             "points": 2.0,
             "results_history": [
                 {
@@ -318,8 +368,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 1.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 4.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -328,14 +379,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 8
         },
         {
             "id": "TRACO001",
             "first_name": "Cosetta",
             "last_name": "Trapletti",
             "initial_elo": 1586,
+            "fide_title": "3N",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1968-01-01",
             "points": 1.0,
             "results_history": [
                 {
@@ -355,16 +410,17 @@
             ],
             "opponents": [
                 "BOSGI002",
-                "GORSE001",
-                "VENLU001"
+                "VENLU001",
+                "GORSE001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -373,14 +429,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 17
         },
         {
             "id": "TOLFI001",
             "first_name": "Filippa",
             "last_name": "Tolaro",
             "initial_elo": 1577,
+            "fide_title": "3N",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1966-01-01",
             "points": 1.0,
             "results_history": [
                 {
@@ -396,11 +456,18 @@
                     "color": "white",
                     "result": "0-1",
                     "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "IONLO001",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0
                 }
             ],
             "opponents": [
-                "IONLO001",
                 "GASCL001",
+                "IONLO001",
                 "MERAL001"
             ],
             "white_games": 1,
@@ -408,8 +475,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 3.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 4.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -418,14 +486,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 15
         },
         {
             "id": "COLMI001",
             "first_name": "Michele",
             "last_name": "Colangelo",
             "initial_elo": 1574,
+            "fide_title": "3N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1959-01-01",
             "points": 1.0,
             "results_history": [
                 {
@@ -451,17 +523,18 @@
                 }
             ],
             "opponents": [
-                "VENLU001",
                 "NICFR001",
-                "PAGGI001"
+                "PAGGI001",
+                "VENLU001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 7.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -470,14 +543,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 13
         },
         {
             "id": "BATGA001",
             "first_name": "Gabriele",
             "last_name": "Battaglia",
             "initial_elo": 1513,
+            "fide_title": "3N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1974-09-13",
             "points": 2.0,
             "results_history": [
                 {
@@ -504,16 +581,17 @@
             ],
             "opponents": [
                 "CICMA001",
-                "PAGVI001",
-                "VANJI001"
+                "VANJI001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 4.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -522,15 +600,19 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 7
         },
         {
             "id": "PARLU001",
             "first_name": "Luca",
             "last_name": "Parravano",
             "initial_elo": 1506,
-            "points": 1.0,
+            "fide_title": "3N",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1970-01-01",
+            "points": 1.5,
             "results_history": [
                 {
                     "round": 1,
@@ -545,6 +627,13 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "DIBVI001",
+                    "color": "white",
+                    "result": "1/2-1/2",
+                    "score": 0.5
                 }
             ],
             "opponents": [
@@ -557,8 +646,9 @@
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -567,14 +657,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 18
         },
         {
             "id": "BARGI001",
             "first_name": "Giuseppe",
             "last_name": "Baratta",
             "initial_elo": 1450,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 2.0,
             "results_history": [
                 {
@@ -600,8 +694,8 @@
                 }
             ],
             "opponents": [
-                "ZAVFA001",
                 "MERAL001",
+                "ZAVFA001",
                 "TESAL001"
             ],
             "white_games": 1,
@@ -609,8 +703,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -619,15 +714,19 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 9
         },
         {
             "id": "IONLO001",
             "first_name": "Lorenzo",
             "last_name": "Ionata",
             "initial_elo": 1446,
-            "points": 1.0,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1978-01-01",
+            "points": 2.0,
             "results_history": [
                 {
                     "round": 1,
@@ -642,11 +741,18 @@
                     "color": "black",
                     "result": "1-0",
                     "score": 0.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "TOLFI001",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0
                 }
             ],
             "opponents": [
-                "VALRI001",
                 "TOLFI001",
+                "VALRI001",
                 "MANFA001"
             ],
             "white_games": 2,
@@ -654,8 +760,9 @@
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 3.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 4.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -664,14 +771,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 16
         },
         {
             "id": "BOSGI002",
             "first_name": "Giancarlo",
             "last_name": "Bosetti",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1952-01-01",
             "points": 1.0,
             "results_history": [
                 {
@@ -690,8 +801,8 @@
                 }
             ],
             "opponents": [
-                "VENLU001",
                 "TRACO001",
+                "VENLU001",
                 "GORSE001"
             ],
             "white_games": 1,
@@ -699,8 +810,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -709,14 +821,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 19
         },
         {
             "id": "BRICA001",
             "first_name": "Catia Susana",
             "last_name": "Brites Pereira Lima",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 0.0,
             "results_history": [
                 {
@@ -744,8 +860,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 3.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 4.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -754,14 +871,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 26
         },
         {
             "id": "CALVA001",
             "first_name": "Valeria",
             "last_name": "Calzolari",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1966-01-01",
             "points": 0.5,
             "results_history": [
                 {
@@ -787,17 +908,18 @@
                 }
             ],
             "opponents": [
-                "VALRI001",
                 "NICFR001",
-                "PAGGI001"
+                "PAGGI001",
+                "VALRI001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 6.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -806,14 +928,75 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
+            "display_rank": 23
+        },
+        {
+            "id": "CICMA001",
+            "first_name": "Mathias",
+            "last_name": "Cicciarella",
+            "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "2013-01-01",
+            "points": 1.0,
+            "results_history": [
+                {
+                    "round": 1,
+                    "opponent_id": "SOPMA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "SCAVA001",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "BATGA001",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0
+                }
+            ],
+            "opponents": [
+                "BATGA001",
+                "SCAVA001",
+                "SOPMA001"
+            ],
+            "white_games": 2,
+            "black_games": 1,
+            "last_color": "white",
+            "consecutive_white": 1,
+            "consecutive_black": 0,
             "received_bye_count": 0,
-            "received_bye_in_round": []
+            "received_bye_in_round": [],
+            "buchholz": 5.0,
+            "buchholz_cut1": null,
+            "performance_rating": null,
+            "elo_change": null,
+            "k_factor": null,
+            "games_this_tournament": 0,
+            "downfloat_count": 0,
+            "final_rank": null,
+            "withdrawn": false,
+            "display_rank": 14
         },
         {
             "id": "CASMA001",
             "first_name": "Mariangela",
             "last_name": "Cassano",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "1958-01-01",
             "points": 1.5,
             "results_history": [
                 {
@@ -840,16 +1023,17 @@
             ],
             "opponents": [
                 "FORMA001",
-                "PAGVI001",
-                "VANJI001"
+                "VANJI001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -858,67 +1042,19 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
-        },
-        {
-            "id": "CICMA001",
-            "first_name": "Mathias",
-            "last_name": "Cicciarella",
-            "initial_elo": 1399,
-            "points": 1.0,
-            "results_history": [
-                {
-                    "round": 1,
-                    "opponent_id": "SOPMA001",
-                    "color": "white",
-                    "result": "0-1",
-                    "score": 0.0
-                },
-                {
-                    "round": 2,
-                    "opponent_id": "SCAVA001",
-                    "color": "black",
-                    "result": "0-1",
-                    "score": 1.0
-                },
-                {
-                    "round": 3,
-                    "opponent_id": "BATGA001",
-                    "color": "white",
-                    "result": "0-1",
-                    "score": 0.0
-                }
-            ],
-            "opponents": [
-                "SOPMA001",
-                "SCAVA001",
-                "BATGA001"
-            ],
-            "white_games": 2,
-            "black_games": 1,
-            "last_color": "white",
-            "consecutive_white": 1,
-            "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
-            "buchholz_cut1": null,
-            "performance_rating": null,
-            "elo_change": null,
-            "k_factor": null,
-            "games_this_tournament": 0,
-            "downfloat_count": 0,
-            "final_rank": null,
-            "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 11
         },
         {
             "id": "DIBVI001",
             "first_name": "Vincenzo",
             "last_name": "Di Bari",
             "initial_elo": 1399,
-            "points": 1.0,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
+            "points": 1.5,
             "results_history": [
                 {
                     "round": 1,
@@ -933,19 +1069,27 @@
                     "color": "white",
                     "result": "1-0",
                     "score": 1.0
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "PARLU001",
+                    "color": "black",
+                    "result": "1/2-1/2",
+                    "score": 0.5
                 }
             ],
             "opponents": [
+                "PARLU001",
                 "ZAVFA001",
-                "TESAL001",
-                "PARLU001"
+                "TESAL001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
             "buchholz": 2.0,
             "buchholz_cut1": null,
             "performance_rating": null,
@@ -955,14 +1099,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 21
         },
         {
             "id": "FORMA001",
             "first_name": "Martina",
             "last_name": "Forte",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 0.0,
             "results_history": [
                 {
@@ -988,8 +1136,8 @@
                 }
             ],
             "opponents": [
-                "VALRI001",
                 "CASMA001",
+                "VALRI001",
                 "MANFA001"
             ],
             "white_games": 2,
@@ -997,8 +1145,9 @@
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 3.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 5.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1007,14 +1156,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 25
         },
         {
             "id": "GORSE001",
             "first_name": "Serena",
             "last_name": "Gori",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 0.0,
             "results_history": [
                 {
@@ -1049,8 +1202,9 @@
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1059,14 +1213,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 27
         },
         {
             "id": "MERAL001",
             "first_name": "Alessia",
             "last_name": "Mereu",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 1.0,
             "results_history": [
                 {
@@ -1092,17 +1250,18 @@
                 }
             ],
             "opponents": [
+                "BARGI001",
                 "TOLFI001",
-                "BRICA001",
-                "BARGI001"
+                "BRICA001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 1.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1111,14 +1270,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 19
         },
         {
             "id": "PAGGI001",
             "first_name": "Giulia",
             "last_name": "Paglia",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": "2018-01-01",
             "points": 1.5,
             "results_history": [
                 {
@@ -1144,17 +1307,18 @@
                 }
             ],
             "opponents": [
-                "PAGVI001",
                 "CALVA001",
-                "COLMI001"
+                "COLMI001",
+                "PAGVI001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 1.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 2.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1163,14 +1327,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 12
         },
         {
             "id": "PAGVI001",
             "first_name": "Virginio",
             "last_name": "Paglia",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 0.5,
             "results_history": [
                 {
@@ -1196,17 +1364,18 @@
                 }
             ],
             "opponents": [
-                "CASMA001",
+                "PAGGI001",
                 "BATGA001",
-                "PAGGI001"
+                "CASMA001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 1.5,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 5.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1215,14 +1384,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 24
         },
         {
             "id": "SCAVA001",
             "first_name": "Valeria",
             "last_name": "Scapin",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 1.0,
             "results_history": [
                 {
@@ -1249,15 +1422,16 @@
             ],
             "opponents": [
                 "CICMA001",
-                "GORSE001",
-                "PARLU001"
+                "PARLU001",
+                "GORSE001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
             "buchholz": 2.0,
             "buchholz_cut1": null,
             "performance_rating": null,
@@ -1267,14 +1441,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 21
         },
         {
             "id": "TESAL001",
             "first_name": "Alessandra",
             "last_name": "Testori",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 0.0,
             "results_history": [
                 {
@@ -1293,17 +1471,18 @@
                 }
             ],
             "opponents": [
-                "DIBVI001",
+                "BARGI001",
                 "BRICA001",
-                "BARGI001"
+                "DIBVI001"
             ],
             "white_games": 2,
             "black_games": 1,
             "last_color": "white",
             "consecutive_white": 1,
             "consecutive_black": 0,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1312,14 +1491,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 27
         },
         {
             "id": "VALRI001",
             "first_name": "Rita",
             "last_name": "Valleriani",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "w",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 2.0,
             "results_history": [
                 {
@@ -1345,17 +1528,18 @@
                 }
             ],
             "opponents": [
+                "CALVA001",
                 "IONLO001",
-                "FORMA001",
-                "CALVA001"
+                "FORMA001"
             ],
             "white_games": 1,
             "black_games": 2,
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 1.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 1.5,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1364,14 +1548,18 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 10
         },
         {
             "id": "VENLU001",
             "first_name": "Luigi",
             "last_name": "Ventura",
             "initial_elo": 1399,
+            "fide_title": "NC",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": null,
             "points": 3.0,
             "results_history": [
                 {
@@ -1406,8 +1594,9 @@
             "last_color": "black",
             "consecutive_white": 0,
             "consecutive_black": 1,
-            "received_bye": false,
-            "buchholz": 2.0,
+            "received_bye_count": 0,
+            "received_bye_in_round": [],
+            "buchholz": 3.0,
             "buchholz_cut1": null,
             "performance_rating": null,
             "elo_change": null,
@@ -1416,8 +1605,7 @@
             "downfloat_count": 0,
             "final_rank": null,
             "withdrawn": false,
-            "received_bye_count": 0,
-            "received_bye_in_round": []
+            "display_rank": 4
         }
     ],
     "current_round": 3,
@@ -1636,7 +1824,7 @@
                     "round": 3,
                     "white_player_id": "GASCL001",
                     "black_player_id": "SOPMA001",
-                    "result": null
+                    "result": "1-0"
                 },
                 {
                     "id": 30,
@@ -1671,7 +1859,7 @@
                     "round": 3,
                     "white_player_id": "IONLO001",
                     "black_player_id": "TOLFI001",
-                    "result": null
+                    "result": "1-0"
                 },
                 {
                     "id": 35,
@@ -1685,7 +1873,7 @@
                     "round": 3,
                     "white_player_id": "PARLU001",
                     "black_player_id": "DIBVI001",
-                    "result": null
+                    "result": "1/2-1/2"
                 },
                 {
                     "id": 37,
@@ -1733,10 +1921,5 @@
         }
     ],
     "next_match_id": 43,
-    "k_factor": 20,
-    "site": "Luogo Sconosciuto",
-    "federation_code": "ITA",
-    "chief_arbiter": "Nome Arbitro Default",
-    "time_control": "Cadenza Standard",
-    "deputy_chief_arbiters": ""
+    "k_factor": 20
 }
