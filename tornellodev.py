@@ -3,7 +3,7 @@ import os, json, sys, math, traceback, subprocess, pprint
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "5.9.1 del 29 maggio 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "5.9.3 del 29 maggio 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -1505,9 +1505,9 @@ def update_match_result(torneo):
                 print(f"  Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]")
         else:
             print(f"\nNessuna partita da registrare per il turno {current_round_num} (ma potresti voler cancellare un risultato).")
-
-        user_input_str = input("Inserisci N.Scacchiera (del turno), parte Nome/Cognome, 'cancella', o vuoto per terminare: ").strip()
-
+        pending_board_numbers_for_prompt_display = [str(match_info_tuple[0]) for match_info_tuple in pending_matches_info_list]
+        board_numbers_str_for_prompt = "-".join(pending_board_numbers_for_prompt_display) if pending_board_numbers_for_prompt_display else "Nessuna"
+        user_input_str = input(f"CS|nome|cognome|cancella: [{board_numbers_str_for_prompt}: ").strip()
         if not user_input_str: 
             break 
 
@@ -1659,8 +1659,20 @@ def update_match_result(torneo):
             else: valid_res_input = False
             
             if valid_res_input and parsed_result_str is not None:
-                confirm_msg_str = f"Confermi risultato '{parsed_result_str}' per {wp_name_match_disp} vs {bp_name_match_disp}? (s/n): "
-                user_confirm_input = input(confirm_msg_str).strip().lower()
+                confirm_message_str = f"Risultato '{parsed_result_str}' non standard. Confermi comunque? (s/n): " # Fallback
+                if parsed_result_str == "1-0":
+                    confirm_message_str = f"Confermi che {wp_name_match_disp} vince contro {bp_name_match_disp}? (s/n): "
+                elif parsed_result_str == "0-1":
+                    confirm_message_str = f"Confermi che {bp_name_match_disp} vince contro {wp_name_match_disp}? (s/n): "
+                elif parsed_result_str == "1/2-1/2":
+                    confirm_message_str = f"Confermi che {wp_name_match_disp} e {bp_name_match_disp} pattano? (s/n): "
+                elif parsed_result_str == "0-0F":
+                    confirm_message_str = f"Confermi partita nulla/annullata (0-0F) tra {wp_name_match_disp} e {bp_name_match_disp}? (s/n): "
+                elif parsed_result_str == "1-F": # Vittoria del Bianco per forfeit del Nero
+                    confirm_message_str = f"Confermi vittoria a tavolino per {wp_name_match_disp} (forfait di {bp_name_match_disp})? (s/n): "
+                elif parsed_result_str == "F-1": # Vittoria del Nero per forfeit del Bianco
+                    confirm_message_str = f"Confermi vittoria a tavolino per {bp_name_match_disp} (forfait di {wp_name_match_disp})? (s/n): "           
+                user_confirm_input = input(confirm_message_str).strip().lower()
                 if user_confirm_input == 's':
                     wp_data_obj["points"] = float(wp_data_obj.get("points", 0.0)) + parsed_w_score
                     bp_data_obj["points"] = float(bp_data_obj.get("points", 0.0)) + parsed_b_score
