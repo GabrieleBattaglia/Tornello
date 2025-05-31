@@ -3,7 +3,7 @@ import os, json, sys, math, traceback, subprocess, pprint
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "5.9.3 del 29 maggio 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "5.10.0 del 31 maggio 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -207,6 +207,7 @@ def get_k_factor(player_db_data, tournament_start_date_str):
         elo = DEFAULT_ELO # Fallback se Elo non valido
 
     games_before_tournament = player_db_data.get('games_played', 0)
+    is_experienced = player_db_data.get('experienced', False)
     birth_date_str = player_db_data.get('birth_date')
 
     # Calcola età all'inizio del torneo
@@ -226,7 +227,7 @@ def get_k_factor(player_db_data, tournament_start_date_str):
     # Logica basata sulle regole comuni (es. 2023/2024)
 
     # 1. Giocatori con poche partite
-    if games_before_tournament < 30:
+    if games_before_tournament < 30 and not is_experienced:
         # print(f"DEBUG get_k_factor: Player {player_db_data.get('id')} -> K=40 (Games < 30)")
         return 40
 
