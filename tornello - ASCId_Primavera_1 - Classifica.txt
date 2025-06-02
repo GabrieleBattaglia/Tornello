@@ -6,7 +6,7 @@ Arbitro Capo: Bersan Vrioni ASCId
 Vice Arbitri: Gruppo ASCId, Gruppo Scacchierando
 Controllo Tempo: Standard
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Venerdì 30 maggio 2025 09:32:15
+Data Report: Domenica 1 giugno 2025 12:36:17
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
 -----------------------------------------------------------------------

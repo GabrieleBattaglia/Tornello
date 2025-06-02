@@ -3,7 +3,7 @@ import os, json, sys, math, traceback, subprocess, pprint
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "5.10.0 del 31 maggio 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "5.10.0 del 1 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "tornello - giocatori_db.json"
 PLAYER_DB_TXT_FILE = "tornello - giocatori_db.txt"
 TOURNAMENT_FILE = "Tornello - torneo.json"
@@ -1244,7 +1244,12 @@ def get_input_with_default(prompt_message, default_value=None):
     else: 
         return input(f"{prompt_message}: ").strip()
 
-def input_players(players_db): # players_db è un dizionario {id: data}
+def input_players(players_db):
+    """
+    Gestisce l'input dei giocatori per un torneo.
+    Usa i dati arricchiti dal DB se presenti. 
+    Chiede tutti i dettagli (incluso 'experienced') solo per i giocatori NUOVI.
+    """
     players_in_tournament = []
     added_player_ids = set()
     db_modified_in_this_session = False 
@@ -1253,11 +1258,12 @@ def input_players(players_db): # players_db è un dizionario {id: data}
     print("Inserire ID esatto, oppure parte del Nome/Cognome per la ricerca.")
     print("Lasciare vuoto per terminare l'inserimento.")
 
-    while True: # Inizio loop principale per ogni giocatore da inserire/cercare
+    while True:
         current_num_players = len(players_in_tournament)
         data_input_utente = input(f"\nGiocatore {current_num_players + 1} (ID o Ricerca Nome/Cognome, vuoto per terminare): ").strip()
 
         if not data_input_utente:
+            # ... (La tua logica per terminare l'input se vuoto e controllo min_players è corretta) ...
             min_players = 2 
             if current_num_players < min_players:
                 print(f"\nAttenzione: Sono necessari almeno {min_players} giocatori per avviare il torneo.")
@@ -1271,21 +1277,19 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                 print(f"\nInserimento terminato con {current_num_players} giocatori.")
                 break 
         
-        # --- INIZIALIZZAZIONE CORRETTA ALL'INIZIO DI OGNI ITERAZIONE DEL LOOP ---
         player_id_to_add = None
-        player_record_in_db = None # Fondamentale inizializzarlo a None qui!
+        player_record_from_db = None # Riferimento al record in players_db
         elo_for_this_tournament = DEFAULT_ELO
-        was_new_player_scenario = False # Flag per tracciare se siamo nel percorso "nuovo giocatore"
         
-        # Valori finali per il giocatore nel torneo corrente
-        final_fide_title = ""
-        final_sex = "m"
-        final_federation = "ITA"
-        final_fide_id_num = "0"
-        final_birth_date = None 
-        first_name_for_tournament = "N/D"
-        last_name_for_tournament = "N/D"
-        # --------------------------------------------------------------------
+        # Variabili che conterranno i dati finali del giocatore per questo torneo
+        first_name_to_use = "N/D"
+        last_name_to_use = "N/D"
+        fide_title_to_use = ""
+        sex_to_use = "m"
+        federation_to_use = "ITA"
+        fide_id_num_to_use = "0"
+        birth_date_to_use = None # Formato YYYY-MM-DD string or None
+        experienced_to_use = False # Default a False
 
         potential_id = data_input_utente.upper()
         
@@ -1293,7 +1297,7 @@ def input_players(players_db): # players_db è un dizionario {id: data}
         if potential_id in players_db:
             print(f"Input riconosciuto come ID esatto: {potential_id}")
             player_id_to_add = potential_id
-            player_record_in_db = players_db[potential_id] # ASSEGNATO
+            player_record_from_db = players_db[potential_id] 
         
         # 2. TENTATIVO DI RICERCA PARZIALE (se non era ID esatto)
         else: 
@@ -1303,10 +1307,10 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                           search_lower in p_data.get('last_name', '').lower()]
 
             if len(matches) == 1:
-                player_record_in_db = matches[0] # ASSEGNATO
-                player_id_to_add = player_record_in_db['id']
-                f_name = player_record_in_db.get('first_name','')
-                l_name = player_record_in_db.get('last_name','')
+                player_record_from_db = matches[0]
+                player_id_to_add = player_record_from_db['id']
+                f_name = player_record_from_db.get('first_name','')
+                l_name = player_record_from_db.get('last_name','')
                 print(f"Trovato tramite ricerca: {f_name} {l_name} (ID: {player_id_to_add})")
             
             elif len(matches) > 1:
@@ -1320,28 +1324,31 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                     p_title_disp = p_match_item.get('fide_title', '') 
                     title_prefix_disp = f"{p_title_disp} " if p_title_disp else ""
                     p_bdate_val = p_match_item.get('birth_date')
-                    p_bdate_disp = format_date_locale(p_bdate_val) if p_bdate_val else 'N/D' # Assicurati che format_date_locale sia definita
+                    p_bdate_disp = format_date_locale(p_bdate_val) if p_bdate_val else 'N/D'
                     print(f"  {i}. ID: {p_id_disp:<9} - {title_prefix_disp}{p_fname_disp} {p_lname_disp} (Elo DB: {p_elo_disp}, Nato: {p_bdate_disp})")
                 continue 
             
             # 3. NESSUN MATCH -> NUOVO GIOCATORE
             else: 
-                was_new_player_scenario = True 
                 print(f"Nessun giocatore trovato per '{data_input_utente}'. Inserimento nuovo giocatore:")
-                first_name_manual = input("  Nome: ").strip()
+                first_name_manual = input("  Nome: ").strip().title()
                 if not first_name_manual: print("Inserimento annullato."); continue 
-                last_name_manual = input("  Cognome: ").strip()
+                last_name_manual = input("  Cognome: ").strip().title()
                 if not last_name_manual: print("Inserimento annullato."); continue 
                 
+                first_name_for_tournament = first_name_manual # Usato per i prompt successivi
+                last_name_for_tournament = last_name_manual
+
                 elo_manual_input_str = input(f"  Elo (default {DEFAULT_ELO}): ").strip()
                 elo_for_this_tournament = DEFAULT_ELO
                 if elo_manual_input_str:
                     try: elo_for_this_tournament = int(elo_manual_input_str)
                     except ValueError: print(f"    Elo non valido '{elo_manual_input_str}'. Uso {DEFAULT_ELO}.")
                 
-                final_fide_title = input(f"  Titolo FIDE per {first_name_manual} {last_name_manual} (es. FM, o lascia vuoto): ").strip().upper()[:3]
+                # Richiesta dei nuovi campi per il giocatore NUOVO
+                fide_title_to_use = input(f"  Titolo FIDE per {first_name_manual} {last_name_manual} (es. FM, o lascia vuoto): ").strip().upper()[:3]
                 while True:
-                    sex_input_loop = input(f"  Sesso (m/w) [Default: m]: ").strip().lower() # Rinominata per evitare conflitto di scope
+                    sex_input_loop = input(f"  Sesso (m/w) [Default: m]: ").strip().lower()
                     if sex_input_loop in ['m', 'w', '']: final_sex = sex_input_loop or 'm'; break
                     print("    Input non valido.")
                 final_federation = input(f"  Federazione Giocatore (3 lettere, es. ITA) [Default: ITA]: ").strip().upper()[:3] or "ITA"
@@ -1358,52 +1365,63 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                         break
                     except ValueError: print(f"    Formato data non valido. Usa {DATE_FORMAT_DB} o lascia vuoto.")
                 
+                # --- NUOVA RICHIESTA CAMPO 'EXPERIENCED' ---
+                while True:
+                    exp_input = input(f"  Il giocatore {first_name_manual} {last_name_manual} ha esperienza pregressa significativa? (s/n) [Default: n]: ").strip().lower()
+                    if exp_input == 's':
+                        experienced_to_use = True
+                        break
+                    elif exp_input == 'n' or exp_input == '': # Default a 'n' se vuoto
+                        experienced_to_use = False
+                        break
+                    else:
+                        print("    Risposta non valida. Inserisci 's' o 'n'.")
+                # --- FINE NUOVA RICHIESTA ---
+
+                # add_or_update_player_in_db crea il record base (ID, nomi, elo) e SALVA players_db
                 player_id_to_add = add_or_update_player_in_db(players_db, first_name_manual, last_name_manual, elo_for_this_tournament)
 
                 if player_id_to_add is None:
                     print("Errore durante creazione/aggiornamento del giocatore nel DB. Riprova.")
                     continue 
                 
-                player_record_in_db = players_db[player_id_to_add] # ASSEGNATO
-                player_record_in_db['fide_title'] = final_fide_title
-                player_record_in_db['sex'] = final_sex
-                player_record_in_db['federation'] = final_federation
-                player_record_in_db['fide_id_num_str'] = final_fide_id_num
-                player_record_in_db['birth_date'] = final_birth_date 
+                player_record_from_db = players_db[player_id_to_add] # Ottieni il record appena creato/aggiornato
+                
+                # Aggiorna questo record nel players_db IN MEMORIA con i dettagli aggiuntivi.
+                # Saranno salvati su file dalla chiamata a save_players_db alla fine della funzione input_players.
+                player_record_from_db['fide_title'] = fide_title_to_use
+                player_record_from_db['sex'] = final_sex
+                player_record_from_db['federation'] = final_federation
+                player_record_from_db['fide_id_num_str'] = final_fide_id_num
+                player_record_from_db['birth_date'] = final_birth_date 
+                player_record_from_db['experienced'] = experienced_to_use # Salva il nuovo campo
                 db_modified_in_this_session = True 
                 
-                first_name_for_tournament = first_name_manual
-                last_name_for_tournament = last_name_manual
-                print(f"Giocatore '{first_name_for_tournament} {last_name_for_tournament}' (ID: {player_id_to_add}) aggiunto al DB con dettagli.")
+                print(f"Giocatore '{first_name_for_tournament} {last_name_for_tournament}' (ID: {player_id_to_add}) aggiunto al DB con tutti i dettagli.")
 
-        # A questo punto, se player_record_in_db è stato assegnato (cioè non è None),
-        # possiamo usarlo per popolare le variabili final_... se non era un nuovo giocatore.
-        # Se era un nuovo giocatore, le variabili final_... sono già state popolate dall'input.
-        if player_record_in_db and not was_new_player_scenario: 
-            # Questo blocco ora si esegue solo se il giocatore è stato trovato nel DB
-            # (ID esatto o ricerca singola), e NON è il percorso del nuovo giocatore.
-            if not player_id_to_add : player_id_to_add = player_record_in_db['id'] # Assicura sia settato
-            elo_for_this_tournament = int(player_record_in_db.get('current_elo', DEFAULT_ELO))
+        # Se un giocatore è stato trovato nel DB (ID esatto o ricerca singola)
+        if player_record_from_db and not was_new_player_scenario: # was_new_player_scenario è False se non siamo entrati nel blocco "Nuovo Giocatore"
+            if not player_id_to_add : player_id_to_add = player_record_from_db['id']
+            elo_for_this_tournament = int(player_record_from_db.get('current_elo', DEFAULT_ELO))
+            first_name_for_tournament = player_record_from_db.get('first_name', 'N/D')
+            last_name_for_tournament = player_record_from_db.get('last_name', 'N/D')
             
-            # CORREZIONE: Usare player_record_in_db per leggere i valori
-            final_fide_title = str(player_record_in_db.get('fide_title', '')).strip().upper()
-            final_sex = str(player_record_in_db.get('sex', 'm')).lower()
-            final_federation = str(player_record_in_db.get('federation', 'ITA')).upper()[:3]
-            final_fide_id_num = str(player_record_in_db.get('fide_id_num_str', '0'))
-            final_birth_date = player_record_in_db.get('birth_date') 
-            first_name_for_tournament = player_record_in_db.get('first_name', 'N/D')
-            last_name_for_tournament = player_record_in_db.get('last_name', 'N/D')
+            # Leggi i campi arricchiti direttamente dal DB, usa default se mancano
+            final_fide_title = str(player_record_from_db.get('fide_title', '')).strip().upper()
+            final_sex = str(player_record_from_db.get('sex', 'm')).lower()
+            final_federation = str(player_record_from_db.get('federation', 'ITA')).upper()[:3]
+            final_fide_id_num = str(player_record_from_db.get('fide_id_num_str', '0'))
+            final_birth_date = player_record_from_db.get('birth_date') 
+            experienced_to_use = player_record_from_db.get('experienced', False) # Default a False se non trovato
 
-            # Assicurazioni finali sui default per i campi letti dal DB
-            if not final_fide_title: final_fide_title = ""
-            if not final_sex or final_sex not in ['m', 'w']: final_sex = "m"
-            if not final_federation: final_federation = "ITA"
+            # Assicurazioni finali sui default (principalmente per 'sex' e 'fide_id_num')
+            if final_sex not in ['m', 'w']: final_sex = "m"
             if not final_fide_id_num.isdigit() : final_fide_id_num = "0"
 
-        # --- Aggiunta Giocatore al Torneo ---
-        if player_id_to_add: # Se un giocatore è stato identificato o creato con successo
+        # --- Aggiunta Giocatore al Torneo (se player_id_to_add è stato definito) ---
+        if player_id_to_add: 
             if player_id_to_add in added_player_ids:
-                print(f"Errore: Giocatore ID {player_id_to_add} ({first_name_for_tournament} {last_name_for_tournament}) è già stato aggiunto a questo torneo.")
+                print(f"Errore: Giocatore ID {player_id_to_add} ({first_name_for_tournament} {last_name_for_tournament}) è già aggiunto.")
             else:
                 player_data_for_tournament = {
                     "id": player_id_to_add,
@@ -1416,12 +1434,13 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                     "federation": final_federation, 
                     "fide_id_num_str": final_fide_id_num, 
                     "birth_date": final_birth_date, 
+                    "experienced": experienced_to_use, # AGGIUNTO QUI
 
+                    # Campi standard di stato del torneo per il giocatore
                     "points": 0.0, "results_history": [], "opponents": set(),
                     "white_games": 0, "black_games": 0, "last_color": None,
                     "consecutive_white": 0, "consecutive_black": 0,
-                    "received_bye_count": 0, 
-                    "received_bye_in_round": [],
+                    "received_bye_count": 0, "received_bye_in_round": [],
                     "buchholz": 0.0, "buchholz_cut1": None, 
                     "performance_rating": None, "elo_change": None,
                     "k_factor": None, "games_this_tournament": 0,
@@ -1431,12 +1450,16 @@ def input_players(players_db): # players_db è un dizionario {id: data}
                 players_in_tournament.append(player_data_for_tournament)
                 added_player_ids.add(player_id_to_add)
                 title_display = f" ({final_fide_title})" if final_fide_title else ""
-                print(f"-> Giocatore {first_name_for_tournament} {last_name_for_tournament}{title_display} (Elo Torneo: {elo_for_this_tournament}) aggiunto al torneo.")
+                exp_display = " (Exp)" if experienced_to_use else ""
+                print(f"-> Giocatore {first_name_for_tournament} {last_name_for_tournament}{title_display}{exp_display} (Elo Torneo: {elo_for_this_tournament}) aggiunto al torneo.")
+        # else: Nessun player_id_to_add valido (es. ricerca multipla), si ricomincia il loop
     
+    # Fine del while True (input giocatori)
     if db_modified_in_this_session:
         print("\nDatabase principale dei giocatori modificato (dettagli aggiunti a nuovi giocatori).")
-        save_players_db(players_db) 
+        save_players_db(players_db) # Salva players_db se sono state fatte modifiche ai nuovi giocatori
         print("Modifiche al database principale salvate.")
+
     return players_in_tournament
 
 def update_match_result(torneo):
