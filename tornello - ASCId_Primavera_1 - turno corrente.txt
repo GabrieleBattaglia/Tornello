@@ -1,18 +1,20 @@
-﻿Turno 4
-	giocate:
-		(nessuna)
-	Da giocare:
-		43 Jiazhuang Vandelli - Claudio Gasperoni
-		44 Francesco Nicolini - Luigi Ventura
-		45 Maurizio Soppelsa - Lorenzo Ionata
-		46 Gabriele Battaglia - Fabrizio Zavan
-		47 Fabrizio Manneschi - Rita Valleriani
-		48 Giuseppe Baratta - Cosetta Trapletti
-		49 Mariangela Cassano - Luca Parravano
-		50 Giancarlo Bosetti - Vincenzo Di Bari
-		51 Giulia Paglia - Mathias Cicciarella
-		52 Filippa Tolaro - Michele Colangelo
-		53 Valeria Scapin - Alessia Mereu
-		54 Catia Susana Brites Pereira Lima - Virginio Paglia
-		55 Serena Gori - Valeria Calzolari
-		56 Alessandra Testori - Martina Forte
+﻿Nome Torneo: ASCId Primavera 1 - Turno: 4
+ Periodo Turno: Venerdì 30 maggio 2025 - Venerdì 6 giugno 2025
+ Partite da giocare
+  (Nessuna partita specificamente pianificata con data/ora)
+  Non pianificate (senza data/ora specifica o ancora da definire):
+   IDG:43 Jiazhuang Vandelli - Claudio Gasperoni
+   IDG:44 Francesco Nicolini - Luigi Ventura
+   IDG:45 Maurizio Soppelsa - Lorenzo Ionata
+   IDG:46 Gabriele Battaglia - Fabrizio Zavan
+   IDG:47 Fabrizio Manneschi - Rita Valleriani
+   IDG:49 Mariangela Cassano - Luca Parravano
+   IDG:50 Giancarlo Bosetti - Vincenzo Di Bari
+   IDG:51 Giulia Paglia - Mathias Cicciarella
+   IDG:52 Filippa Tolaro - Michele Colangelo
+   IDG:53 Valeria Scapin - Alessia Mereu
+   IDG:54 Catia Susana Brites Pereira Lima - Virginio Paglia
+   IDG:55 Serena Gori - Valeria Calzolari
+   IDG:56 Alessandra Testori - Martina Forte
+ Partite giocate
+  IDG:48 Giuseppe Baratta - Cosetta Trapletti  0-1
