@@ -1,0 +1,23 @@
+﻿Torneo: ASCId Primavera 1
+Sito: Online, Data Inizio Torneo: Domenica 4 maggio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 3 CONCLUSO ==========================
+	Periodo del Turno: Mercoledì 21 maggio 2025 - Giovedì 29 maggio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 29  | Claudio Gasperoni        [1859] (3   ) - Maurizio Soppelsa        [1731] (2   ) | 1-0
+	2  | 30  | Fabrizio Zavan           [1671] (2   ) - Francesco Nicolini       [1776] (3   ) | 0-1
+	3  | 31  | Jiazhuang Vandelli       [1756] (3   ) - Fabrizio Manneschi       [1609] (2   ) | 1-0
+	4  | 34  | Lorenzo Ionata           [1446] (2   ) - Filippa Tolaro           [1577] (1   ) | 1-0
+	5  | 33  | Cosetta Trapletti        [1586] (1.5 ) - Giancarlo Bosetti        [1399] (1.5 ) | 1/2-1/2
+	6  | 32  | Michele Colangelo        [1574] (1   ) - Luigi Ventura            [1399] (3   ) | 0-1
+	7  | 35  | Mathias Cicciarella      [1399] (1   ) - Gabriele Battaglia       [1513] (2   ) | 0-1
+	8  | 36  | Luca Parravano           [1506] (1.5 ) - Vincenzo Di Bari         [1399] (1.5 ) | 1/2-1/2
+	9  | 37  | Alessia Mereu            [1399] (1   ) - Giuseppe Baratta         [1450] (2   ) | 0-1
+	10 | 38  | Valeria Calzolari        [1399] (0.5 ) - Rita Valleriani          [1399] (2   ) | 0-1
+	11 | 39  | Virginio Paglia          [1399] (0.5 ) - Giulia Paglia            [1399] (1.5 ) | 0-1
+	12 | 40  | Martina Forte            [1399] (0   ) - Mariangela Cassano       [1399] (1.5 ) | 0-1
+	13 | 41  | Alessandra Testori       [1399] (0   ) - Catia Susana Brites Pereira Lima [1399] (1   ) | 0-1
+	14 | 42  | Serena Gori              [1399] (0   ) - Valeria Scapin           [1399] (1   ) | 0-1

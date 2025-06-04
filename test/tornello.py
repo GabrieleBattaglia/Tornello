@@ -1,9 +1,10 @@
 # Data concepimento: 28 marzo 2025
 import os, json, sys, math, traceback, subprocess, pprint, glob, shutil
+from GBUtils import dgt, key
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "6.3.7 del 4 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "6.3.17 del 4 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -1594,10 +1595,9 @@ def input_players(players_db): # players_db è il dizionario del DB principale
     print("Inserire ID esatto di un giocatore esistente nel DB, oppure parte del Nome/Cognome per cercarlo.")
     print("Se il giocatore non esiste o è un omonimo, potrai crearlo come nuovo record nel DB.")
     print("Lasciare vuoto per terminare l'inserimento.")
-
     while True:
         current_num_players_in_tournament = len(players_in_tournament)
-        data_input_utente = input(f"\nGiocatore {current_num_players_in_tournament + 1} (ID, Ricerca Nome/Cognome, o lascia vuoto se hai finito): ").strip()
+        data_input_utente = input(f"\nID, parte del nome o del cognome (se già presente nel DB) oppure vuoto\nGiocatore {current_num_players_in_tournament + 1}: ").strip()
 
         if not data_input_utente:
             # Logica per terminare l'input (come prima)
@@ -1664,11 +1664,7 @@ def input_players(players_db): # players_db è il dizionario del DB principale
             last_name_new_db = get_input_with_default("  Cognome del nuovo giocatore: ").strip().title()
             if not last_name_new_db: print("Cognome richiesto."); continue
             
-            elo_str_new_db = get_input_with_default(f"  Elo (default {DEFAULT_ELO})", str(DEFAULT_ELO))
-            try: elo_new_db = int(elo_str_new_db)
-            except ValueError: elo_new_db = DEFAULT_ELO; print(f"  Elo non valido, default {DEFAULT_ELO}.")
-            if not (0 <= elo_new_db <= 3500): elo_new_db = DEFAULT_ELO; print(f"  Elo fuori range, default {DEFAULT_ELO}.")
-
+            elo_new_db = dgt(f"  Elo (default {DEFAULT_ELO})", kind="f", fmin=500, fmax=4000, default=DEFAULT_ELO)
             fide_title_new_db = get_input_with_default(f"  Titolo FIDE (es. FM, o vuoto)", "").strip().upper()[:3]
             
             sex_new_db = ""
@@ -1824,7 +1820,7 @@ def update_match_result(torneo):
             print(f"\nNessuna partita da registrare per il turno {current_round_num} (ma potresti voler cancellare un risultato).")
         pending_board_numbers_for_prompt_display = [str(match_info_tuple[0]) for match_info_tuple in pending_matches_info_list]
         board_numbers_str_for_prompt = "-".join(pending_board_numbers_for_prompt_display) if pending_board_numbers_for_prompt_display else "Nessuna"
-        user_input_str = input(f"Inserisci p per entrare in modalità programmazione partite, oppure numero scacchiera o parte di nome cognome dei giocatori\nP|CS|nome|cognome|cancella: [{board_numbers_str_for_prompt}: ").strip()
+        user_input_str = input(f"Inserisci p per entrare in modalità programmazione partite, oppure numero scacchiera o parte di nome cognome dei giocatori\nP|CS|nome|cognome|cancella: [{board_numbers_str_for_prompt}]: ").strip()
         if not user_input_str: 
             break 
         elif user_input_str.lower() == 'p':
@@ -1955,8 +1951,19 @@ def update_match_result(torneo):
                 print(f"ERRORE CRITICO: Giocatori non trovati per partita ID {selected_match_obj_for_processing['id']}."); continue
             wp_name_match_disp = f"{wp_data_obj.get('first_name','?')} {wp_data_obj.get('last_name','?')}"
             bp_name_match_disp = f"{bp_data_obj.get('first_name','?')} {bp_data_obj.get('last_name','?')}"
-            print(f"Partita selezionata per risultato: {wp_name_match_disp} vs {bp_name_match_disp} (ID Glob: {selected_match_obj_for_processing['id']})")
-            result_input = input("Risultato [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: ").strip()
+            wp_name_full = f"{wp_data_obj.get('first_name','?')} {wp_data_obj.get('last_name','?')}"
+            bp_name_full = f"{bp_data_obj.get('first_name','?')} {bp_data_obj.get('last_name','?')}"
+            wp_id_display = wp_data_obj.get('id', 'ID?')
+            bp_id_display = bp_data_obj.get('id', 'ID?')            
+            wp_id_display = wp_data_obj.get('id', 'ID?')
+            bp_id_display = bp_data_obj.get('id', 'ID?')
+            display_str_white = wp_name_full
+            display_str_black = bp_name_full
+            if wp_name_full == bp_name_full: # Se i nomi completi sono identici
+                display_str_white = f"{wp_name_full} (ID: {wp_id_display})"
+                display_str_black = f"{bp_name_full} (ID: {bp_id_display})"
+            print(f"Partita selezionata per risultato: {display_str_white} vs {display_str_black} (ID Glob: {selected_match_obj_for_processing['id']})")
+            result_input = input("RisultatI: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: ").strip()
             parsed_result_str = None 
             parsed_w_score = 0.0
             parsed_b_score = 0.0
@@ -2134,7 +2141,7 @@ def save_current_tournament_round_file(torneo):
             else:
                 f.write("  (nessuna partita ancora giocata per questo turno)\n")
             
-        print(f"File stato turno corrente '{filename}' sovrascritto con il nuovo formato.")
+        print(f"File {filename} aggiornato.")
     except IOError as e:
         print(f"Errore durante la sovrascrittura del file stato turno corrente '{filename}': {e}")
     except Exception as e_general:
@@ -2900,60 +2907,55 @@ def main():
     if deve_creare_nuovo_torneo or torneo is None:
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
             print("Nessun torneo caricato. Si procede con la creazione di un nuovo torneo.")
-
         torneo = {} 
         print("\n--- Creazione Nuovo Torneo ---")
-        new_tournament_name = ""
-        while True:
-            if deve_creare_nuovo_torneo or torneo is None:
-                if not deve_creare_nuovo_torneo and torneo is None:
-                    print("Nessun torneo caricato. Si procede con la creazione di un nuovo torneo.")
-                torneo = {} 
-                print("\n--- Creazione Nuovo Torneo ---")
-                new_tournament_name_final = "" # Nome che verrà effettivamente usato
-                if nome_nuovo_torneo_suggerito: # Se un nome è stato suggerito dal passaggio precedente
-                    print(f"Nome suggerito per il nuovo torneo: '{nome_nuovo_torneo_suggerito}'")
-                    # Potresti chiedere conferma o permettere una modifica qui se lo desideri
-                    # Per ora, lo usiamo direttamente ma controlliamo la sovrascrittura
-                    new_tournament_name_final = nome_nuovo_torneo_suggerito
-                    # Logica di controllo sovrascrittura (importante)
-                    sanitized_check_name = sanitize_filename(new_tournament_name_final)
-                    prospective_filename_check = f"Tornello - {sanitized_check_name}.json" # Usa il tuo stile di nomenclatura
-                    if os.path.exists(prospective_filename_check):
-                        overwrite_choice = input(f"ATTENZIONE: Un file torneo '{prospective_filename_check}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
-                        if overwrite_choice != 's':
-                            print("Operazione annullata. Per creare un torneo con un nome diverso, riavvia o modifica la logica per richiedere un nuovo nome qui.")
-                            # Resetta per forzare la richiesta di un nuovo nome se si volesse un loop qui
-                            new_tournament_name_final = "" 
-                            nome_nuovo_torneo_suggerito = None # Non usare più questo suggerimento
-                            # Se new_tournament_name_final è vuoto ora, il blocco 'else' sotto chiederà il nome.
-                            # O, per uscire completamente se l'utente non vuole sovrascrivere:
-                            # sys.exit("Creazione torneo annullata per evitare sovrascrittura.")
-                    if new_tournament_name_final: # Se il nome è ancora valido (non annullato per sovrascrittura)
-                        torneo["name"] = new_tournament_name_final
-                        active_tournament_filename = prospective_filename_check # Usa il nome file già controllato
-                # Se non c'era un nome suggerito, O se il nome suggerito è stato invalidato 
-                # (es. utente non vuole sovrascrivere e new_tournament_name_final è stato resettato)
-                # allora chiedi il nome.
-                if not new_tournament_name_final: 
-                    while True:
-                        current_input_name = input("Inserisci il nome del torneo: ").strip()
-                        if current_input_name:
-                            sanitized_name_new = sanitize_filename(current_input_name)
-                            prospective_filename = f"Tornello - {sanitized_name_new}.json" # Usa il tuo stile
-                            if os.path.exists(prospective_filename):
-                                overwrite = input(f"ATTENZIONE: Un file torneo '{prospective_filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
-                                if overwrite != 's':
-                                    print("Operazione annullata. Scegli un nome diverso per il torneo.")
-                                    continue 
-                            torneo["name"] = current_input_name
-                            active_tournament_filename = prospective_filename
-                            break # Nome valido e utente accetta (o file non esiste/sovrascrive)
-                        else:
-                            print("Il nome del torneo non può essere vuoto.")
-                if not torneo.get("name") or not active_tournament_filename:
-                    print("Nome del torneo non definito correttamente. Creazione annullata.")
-                    sys.exit(1) # Uscita se il nome non è stato finalizzato
+        active_tournament_filename = None # Verrà impostato quando il nome sarà definito
+        new_tournament_name_final = ""    # Nome che verrà effettivamente usato per il torneo
+
+        # Fase 1: Prova a usare il nome suggerito, se esiste
+        if nome_nuovo_torneo_suggerito:
+            print(f"Nome suggerito per il nuovo torneo: '{nome_nuovo_torneo_suggerito}'")
+            current_potential_name = nome_nuovo_torneo_suggerito
+            sanitized_check_name = sanitize_filename(current_potential_name)
+            # Assicurati che il prefisso "Tornello - " sia quello corretto per il tuo stile di nomenclatura
+            prospective_filename_check = f"Tornello - {sanitized_check_name}.json" 
+
+            if os.path.exists(prospective_filename_check):
+                overwrite_choice = input(f"ATTENZIONE: Un file torneo '{prospective_filename_check}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
+                if overwrite_choice == 's':
+                    new_tournament_name_final = current_potential_name # Accetta il nome suggerito
+                    active_tournament_filename = prospective_filename_check
+                else:
+                    print("Sovrascrittura annullata. Verrà richiesto un nuovo nome.")
+                    nome_nuovo_torneo_suggerito = None # Il suggerimento non è più valido
+                    # new_tournament_name_final rimane "" (o None), quindi si passerà alla richiesta manuale
+            else: # Il file per il nome suggerito non esiste, quindi va bene
+                new_tournament_name_final = current_potential_name
+                active_tournament_filename = prospective_filename_check
+        
+        # Fase 2: Se un nome non è stato finalizzato dal suggerimento (o non c'era suggerimento), chiedilo
+        if not new_tournament_name_final:
+            while True: # Loop solo per la richiesta del nome se necessario
+                input_corrente_nome_torneo = input("Inserisci il nome del nuovo torneo: ").strip()
+                if input_corrente_nome_torneo:
+                    sanitized_name_new = sanitize_filename(input_corrente_nome_torneo)
+                    prospective_filename = f"Tornello - {sanitized_name_new}.json" # Usa il tuo stile
+
+                    if os.path.exists(prospective_filename):
+                        overwrite = input(f"ATTENZIONE: Un file torneo '{prospective_filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
+                        if overwrite != 's':
+                            print("Operazione annullata. Scegli un nome diverso per il torneo.")
+                            continue # Torna a chiedere il nome (all'inizio di QUESTO while True)
+                    
+                    new_tournament_name_final = input_corrente_nome_torneo
+                    active_tournament_filename = prospective_filename
+                    break # Esce dal loop di richiesta nome, nome definito!
+                else:
+                    print("Il nome del torneo non può essere vuoto. Riprova.")
+        if not new_tournament_name_final or not active_tournament_filename:
+            print("Nome del torneo non definito correttamente. Creazione annullata.")
+            sys.exit(1) 
+        torneo["name"] = new_tournament_name_final
         while True: 
             try:
                 oggi_str_iso = datetime.now().strftime(DATE_FORMAT_ISO)
@@ -3119,7 +3121,7 @@ def main():
                     break 
                 else: # Prepara e genera il prossimo turno
                     next_round_num = current_round_num + 1
-                    print(f"\nGenerare il Turno {next_round_num}? (s/n): ")
+                    print(f"\nTurno {next_round_num}, procedo? (s/n): ")
                     procede_next_round = input().strip().lower()
                     if procede_next_round == 's':
                         torneo["current_round"] = next_round_num

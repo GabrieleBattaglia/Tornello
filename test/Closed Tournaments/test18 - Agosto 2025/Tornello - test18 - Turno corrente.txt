@@ -1,0 +1,11 @@
+﻿Nome Torneo: test18 - Turno: 3
+ Periodo Turno: Martedì 15 luglio 2025 - Domenica 3 agosto 2025
+ Partite da giocare
+  (Nessuna partita specificamente pianificata con data/ora)
+  Non pianificate (senza data/ora specifica o ancora da definire):
+   Tutte le partite di questo turno sono state giocate o hanno un BYE.
+
+ Cosetta Trapletti ha il BYE
+ Partite giocate
+  IDG:7 Claudio Gasperoni - Gabriele Battaglia  1-0
+  IDG:8 Giulia Paglia - Gabriele Battaglia  1/2-1/2
