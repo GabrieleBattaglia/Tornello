@@ -4,7 +4,7 @@ from GBUtils import dgt, key
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "6.3.17 del 4 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "6.3.19 del 4 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -1820,7 +1820,7 @@ def update_match_result(torneo):
             print(f"\nNessuna partita da registrare per il turno {current_round_num} (ma potresti voler cancellare un risultato).")
         pending_board_numbers_for_prompt_display = [str(match_info_tuple[0]) for match_info_tuple in pending_matches_info_list]
         board_numbers_str_for_prompt = "-".join(pending_board_numbers_for_prompt_display) if pending_board_numbers_for_prompt_display else "Nessuna"
-        user_input_str = input(f"Inserisci p per entrare in modalità programmazione partite, oppure numero scacchiera o parte di nome cognome dei giocatori\nP|CS|nome|cognome|cancella: [{board_numbers_str_for_prompt}]: ").strip()
+        user_input_str = input(f"Inserisci p per entrare in modalità programmazione partite, oppure numero scacchiera o parte di nome cognome dei giocatori\nP|SC|nome|cognome|cancella: [{board_numbers_str_for_prompt}]: ").strip()
         if not user_input_str: 
             break 
         elif user_input_str.lower() == 'p':
@@ -2362,7 +2362,7 @@ def save_standings_text(torneo, final=False):
 
     tournament_name_file = torneo.get('name', 'Torneo_Senza_Nome')
     sanitized_name_file = sanitize_filename(tournament_name_file)
-    filename = f"tornello - {sanitized_name_file} - Classifica.txt" # Unico file, sovrascritto
+    filename = f"Tornello - {sanitized_name_file} - Classifica.txt"
     
     status_line = ""
     if final:
