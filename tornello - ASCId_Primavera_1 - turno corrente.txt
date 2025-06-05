@@ -1,9 +1,6 @@
 ﻿Nome Torneo: ASCId Primavera 1 - Turno: 4
  Periodo Turno: Venerdì 30 maggio 2025 - Venerdì 6 giugno 2025
  Partite da giocare
-  Mercoledì 4 giugno 2025
-   21:15 IDG:56, Alessandra Testori vs Martina Forte, Canale: whatsapp https://call.whatsapp.com/voice/DC4FLiTM014mWm8sGzW2yl, Arbitro: Alessia
-   21:30 IDG:44, Francesco Nicolini vs Luigi Ventura, Canale: whatsapp https://call.whatsapp.com/voice/abjSomRuheKu8tG2tTXjgW, Arbitro: Michele
   Giovedì 5 giugno 2025
    16:30 IDG:53, Valeria Scapin vs Alessia Mereu, Canale: whatsapp https://call.whatsapp.com/voice/aSuGqNkEgUNdSmemuaLSGQ, Arbitro: Giuseppe B
    17:00 IDG:46, Gabriele Battaglia vs Fabrizio Zavan, Canale: lichess Exylyan - ezavfabfabri27, Arbitro: 
@@ -18,6 +15,8 @@
    IDG:49 Mariangela Cassano - Luca Parravano
  Partite giocate
   IDG:43 Jiazhuang Vandelli - Claudio Gasperoni  1/2-1/2
+  IDG:44 Francesco Nicolini - Luigi Ventura  1-0
   IDG:48 Giuseppe Baratta - Cosetta Trapletti  0-1
   IDG:52 Filippa Tolaro - Michele Colangelo  1-0
   IDG:54 Catia Susana Brites Pereira Lima - Virginio Paglia  1-0
+  IDG:56 Alessandra Testori - Martina Forte  1-0
