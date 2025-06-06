@@ -1,21 +1,25 @@
 ﻿Nome Torneo: ASCId Primavera 1 - Turno: 4
  Periodo Turno: Venerdì 30 maggio 2025 - Venerdì 6 giugno 2025
+
  Partite da giocare
   Venerdì 6 giugno 2025
    21:00 IDG:45, Maurizio Soppelsa vs Lorenzo Ionata, Canale: lichess maurixio - lollo1978, Arbitro: 
    21:00 IDG:47, Fabrizio Manneschi vs Rita Valleriani, Canale: whatsapp https://call.whatsapp.com/voice/abjSomRuheKu8tG2tTXjgW, Arbitro: Erica
-   21:00 IDG:55, Serena Gori vs Valeria Calzolari, Canale: whatsapp https://call.whatsapp.com/voice/aSuGqNkEgUNdSmemuaLSGQ, Arbitro: Catia
   Domenica 8 giugno 2025
    10:00 IDG:51, Giulia Paglia vs Mathias Cicciarella, Canale: whatsapp https://call.whatsapp.com/voice/aSuGqNkEgUNdSmemuaLSGQ, Arbitro: Catia
-  Non pianificate (senza data/ora specifica o ancora da definire):
+
+  Non pianificate (giocatori attivi):
    IDG:49 Mariangela Cassano - Luca Parravano
+
  Partite giocate
   IDG:43 Jiazhuang Vandelli - Claudio Gasperoni  1/2-1/2
   IDG:44 Francesco Nicolini - Luigi Ventura  1-0
   IDG:46 Gabriele Battaglia - Fabrizio Zavan  1/2-1/2
   IDG:48 Giuseppe Baratta - Cosetta Trapletti  0-1
-  IDG:50 Giancarlo Bosetti - Vincenzo Di Bari  F-1
   IDG:52 Filippa Tolaro - Michele Colangelo  1-0
   IDG:53 Valeria Scapin - Alessia Mereu  1-0
   IDG:54 Catia Susana Brites Pereira Lima - Virginio Paglia  1-0
+  IDG:55 Serena Gori - Valeria Calzolari  0-1
   IDG:56 Alessandra Testori - Martina Forte  1-0
+  -- Partite giocate con giocatori ritirati --
+  IDG:50 Giancarlo Bosetti [RIT] - Vincenzo Di Bari  F-1

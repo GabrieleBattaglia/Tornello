@@ -6,11 +6,11 @@ Arbitro Capo: Bersan Vrioni ASCId
 Vice Arbitri: Gruppo ASCId, Gruppo Scacchierando
 Controllo Tempo: Standard
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Giovedì 5 giugno 2025 22:59:06
+Data Report: Venerdì 6 giugno 2025 20:05:49
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
 -----------------------------------------------------------------------
-  1. 2N  Nicolini, Francesco         [1776]   4.0    ----   7.00
+  1. 2N  Nicolini, Francesco         [1776]   4.0    ----   8.00
   2. 1N  Gasperoni, Claudio          [1859]   3.5    ----   9.50
   3. 2N  Vandelli, Jiazhuang         [1756]   3.5    ----   9.50
   4. NC  Ventura, Luigi              [1399]   3.0    ----   9.00
@@ -25,16 +25,16 @@ Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch
  13. NC  Brites Pereira Lima, Catia  [1399]   2.0    ----   6.00
  14. NC  Manneschi, Fabrizio         [1609]   2.0    ----   5.50
  15. NC  Scapin, Valeria             [1399]   2.0    ----   3.50
- 16. NC  Valleriani, Rita            [1399]   2.0    ----   2.50
- 17. NC  Bosetti, Giancarlo          [1399]   1.5    ----   8.00
+ 15. NC  Valleriani, Rita            [1399]   2.0    ----   3.50
+ 17. NC  Calzolari, Valeria          [1399]   1.5    ----   7.50
  18. 3N  Parravano, Luca             [1506]   1.5    ----   6.50
  19. NC  Cassano, Mariangela         [1399]   1.5    ----   4.00
- 20. NC  Paglia, Giulia              [1399]   1.5    ----   2.00
- 21. 3N  Colangelo, Michele          [1574]   1.0    ----  10.50
- 22. NC  Mereu, Alessia              [1399]   1.0    ----   8.00
- 23. NC  Cicciarella, Mathias        [1399]   1.0    ----   6.50
- 23. NC  Testori, Alessandra         [1399]   1.0    ----   6.50
- 25. NC  Calzolari, Valeria          [1399]   0.5    ----   7.50
- 25. NC  Paglia, Virginio            [1399]   0.5    ----   7.50
- 27. NC  Forte, Martina              [1399]   0.0    ----   6.50
- 28. NC  Gori, Serena                [1399]   0.0    ----   6.00
+ 20. NC  Paglia, Giulia              [1399]   1.5    ----   3.00
+RIT  NC  Bosetti, Giancarlo          [1399]   1.5    ----   0.00                           [RITIRATO]
+ 22. 3N  Colangelo, Michele          [1574]   1.0    ----  10.50
+ 23. NC  Mereu, Alessia              [1399]   1.0    ----   8.00
+ 24. NC  Cicciarella, Mathias        [1399]   1.0    ----   6.50
+ 24. NC  Testori, Alessandra         [1399]   1.0    ----   6.50
+ 26. NC  Paglia, Virginio            [1399]   0.5    ----   7.50
+ 26. NC  Gori, Serena                [1399]   0.0    ----   7.50
+ 28. NC  Forte, Martina              [1399]   0.0    ----   6.50
