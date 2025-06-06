@@ -6,35 +6,35 @@ Arbitro Capo: Bersan Vrioni ASCId
 Vice Arbitri: Gruppo ASCId, Gruppo Scacchierando
 Controllo Tempo: Standard
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Venerdì 6 giugno 2025 20:05:49
+Data Report: Venerdì 6 giugno 2025 23:29:18
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
 -----------------------------------------------------------------------
   1. 2N  Nicolini, Francesco         [1776]   4.0    ----   8.00
-  2. 1N  Gasperoni, Claudio          [1859]   3.5    ----   9.50
+  2. 1N  Gasperoni, Claudio          [1859]   3.5    ----  10.50
   3. 2N  Vandelli, Jiazhuang         [1756]   3.5    ----   9.50
   4. NC  Ventura, Luigi              [1399]   3.0    ----   9.00
-  5. 2N  Zavan, Fabrizio             [1671]   2.5    ----  11.00
-  6. 3N  Battaglia, Gabriele         [1513]   2.5    ----   7.50
-  7. 3N  Trapletti, Cosetta          [1586]   2.5    ----   6.50
-  8. NC  Di Bari, Vincenzo           [1399]   2.5    ----   6.50
-  9. 3N  Tolaro, Filippa             [1577]   2.0    ----   7.50
- 10. NC  Baratta, Giuseppe           [1450]   2.0    ----   7.00
- 11. 2N  Soppelsa, Maurizio          [1731]   2.0    ----   6.00
- 12. NC  Ionata, Lorenzo             [1446]   2.0    ----   6.00
- 13. NC  Brites Pereira Lima, Catia  [1399]   2.0    ----   6.00
- 14. NC  Manneschi, Fabrizio         [1609]   2.0    ----   5.50
- 15. NC  Scapin, Valeria             [1399]   2.0    ----   3.50
- 15. NC  Valleriani, Rita            [1399]   2.0    ----   3.50
- 17. NC  Calzolari, Valeria          [1399]   1.5    ----   7.50
- 18. 3N  Parravano, Luca             [1506]   1.5    ----   6.50
+  5. 2N  Soppelsa, Maurizio          [1731]   3.0    ----   8.00
+  6. NC  Valleriani, Rita            [1399]   3.0    ----   5.50
+  7. 2N  Zavan, Fabrizio             [1671]   2.5    ----  11.00
+  8. 3N  Battaglia, Gabriele         [1513]   2.5    ----   7.50
+  9. 3N  Trapletti, Cosetta          [1586]   2.5    ----   6.50
+ 10. NC  Di Bari, Vincenzo           [1399]   2.5    ----   6.50
+ 11. NC  Ionata, Lorenzo             [1446]   2.0    ----  10.00
+ 12. NC  Manneschi, Fabrizio         [1609]   2.0    ----   8.50
+ 13. 3N  Tolaro, Filippa             [1577]   2.0    ----   7.50
+ 14. NC  Baratta, Giuseppe           [1450]   2.0    ----   7.00
+ 15. NC  Brites Pereira Lima, Catia  [1399]   2.0    ----   6.00
+ 16. NC  Scapin, Valeria             [1399]   2.0    ----   3.50
+ 17. NC  Calzolari, Valeria          [1399]   1.5    ----   8.50
+ 18. 3N  Parravano, Luca             [1506]   1.5    ----   7.50
  19. NC  Cassano, Mariangela         [1399]   1.5    ----   4.00
  20. NC  Paglia, Giulia              [1399]   1.5    ----   3.00
 RIT  NC  Bosetti, Giancarlo          [1399]   1.5    ----   0.00                           [RITIRATO]
  22. 3N  Colangelo, Michele          [1574]   1.0    ----  10.50
  23. NC  Mereu, Alessia              [1399]   1.0    ----   8.00
- 24. NC  Cicciarella, Mathias        [1399]   1.0    ----   6.50
- 24. NC  Testori, Alessandra         [1399]   1.0    ----   6.50
+ 24. NC  Cicciarella, Mathias        [1399]   1.0    ----   7.50
+ 25. NC  Testori, Alessandra         [1399]   1.0    ----   6.50
  26. NC  Paglia, Virginio            [1399]   0.5    ----   7.50
+ 26. NC  Forte, Martina              [1399]   0.0    ----   7.50
  26. NC  Gori, Serena                [1399]   0.0    ----   7.50
- 28. NC  Forte, Martina              [1399]   0.0    ----   6.50
