@@ -1,0 +1,12 @@
+﻿Torneo: test18
+Sito: Luogo Sconosciuto, Data Inizio Torneo: Mercoledì 4 giugno 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Martedì 24 giugno 2025 - Lunedì 14 luglio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 4   | Giulia Paglia            [1399] (1   ) - Claudio Gasperoni        [1864] (2   ) | 0-1
+	2  | 5   | Gabriele Battaglia       [1550] (2   ) - Cosetta Trapletti        [1504] (0   ) | 1-0
+	---| 6   | Gabriele Battaglia       [1399] (1   ) - BYE                             | BYE

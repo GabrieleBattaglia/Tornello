@@ -1,0 +1,40 @@
+
+ID	Pts	-----	Pref	C2	C12	C14	  Cur		R1	R2	R3	R4	
+
+ 2	4.0	 BWBW	  b 	 Y	   	   	 (1B)		16	 9	 5	28	
+
+ 1	3.5	 WBWB	  w 	 Y	   	   	 (2W)		15	 8	 4	 3	
+
+ 4	3.0	 BWBW	  b 	 Y	   	   	(28B)		18	11	 1	13	
+ 6	3.0	 BWBW	  b 	 Y	   	   	 (5B)		20	13	 3	27	
+28	3.0	 WWBB	  W 	 Y	   	  D	 (4W)		14	 7	 9	 2	
+
+ 5	2.5	 WBWB	  w 	 Y	   	   	 (6W)		19	12	 2	10	
+ 7	2.5	 WBWB	  w 	 Y	  U	   	(11W)		21	28	14	12	
+10	2.5	 BWBW	  b 	 Y	   	   	(19B)		24	 3	18	 5	
+11	2.5	 WBWB	  w 	 Y	   	   	 (7B)		25	 4	19	17	
+19	2.5	  BWB	 (W)	 N	  D	   	(10W)		 5	26	11	  	
+
+ 8	2.0	 BWBW	  b 	 Y	   	   	(18B)		22	 1	13	 9	
+12	2.0	 BWBW	  b 	 Y	  D	   	(27B)		26	 5	22	 7	
+13	2.0	 WBWB	  w 	 Y	   	   	(15W)		27	 6	 8	 4	
+15	2.0	 BWBW	  b 	 Y	  D	   	(13B)		 1	22	26	24	
+18	2.0	 WBWB	  w 	 Y	  U	   	 (8W)		 4	25	10	23	
+25	2.0	 BWBW	  b 	 Y	   	   	(23B)		11	18	21	22	
+27	2.0	 BWBB	  W 	 Y	   	  D	(12W)		13	20	16	 6	
+
+16	1.5	 WBWB	  w 	 Y	  D	  U	(17W)		 2	23	27	21	
+17	1.5	 BWBW	  b 	 Y	   	  D	(16B)		 3	24	20	11	
+23	1.5	 BWBW	  b 	 Y	  D	   	(25W)		 9	16	24	18	
+
+ 9	1.0	 WBWB	  w 	 Y	   	  U	(26W)		23	 2	28	 8	
+22	1.0	 WBWB	  w 	 Y	   	   	(24W)		 8	15	12	25	
+26	1.0	 WBWW	  B 	 Y	   	   	 (9B)		12	19	15	20	
+
+24	0.5	 WBWB	  w 	 Y	  U	   	(22B)		10	17	23	15	
+
+20	0.0	 WBWB	  w 	 Y	   	  U	(21W)		 6	27	17	26	
+21	0.0	 BBWW	  B 	 Y	  U	   	(20B)		 7	14	25	16	
+
+
+BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v5.0.1 (Built Feb 25 2023 21:04:47)

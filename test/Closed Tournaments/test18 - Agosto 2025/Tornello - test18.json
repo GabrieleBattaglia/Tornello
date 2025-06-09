@@ -1,0 +1,413 @@
+{
+ "name": "test18",
+ "start_date": "2025-06-04",
+ "end_date": "2025-08-03",
+ "total_rounds": 3,
+ "site": "Luogo Sconosciuto",
+ "federation_code": "ITA",
+ "chief_arbiter": "N/D",
+ "deputy_chief_arbiters": "",
+ "time_control": "Standard",
+ "initial_board1_color_setting": "white1",
+ "round_dates": [
+  {
+   "round": 1,
+   "start_date": "2025-06-04",
+   "end_date": "2025-06-23"
+  },
+  {
+   "round": 2,
+   "start_date": "2025-06-24",
+   "end_date": "2025-07-14"
+  },
+  {
+   "round": 3,
+   "start_date": "2025-07-15",
+   "end_date": "2025-08-03"
+  }
+ ],
+ "tournament_id": "test18_20250604162844",
+ "players": [
+  {
+   "id": "BATGA001",
+   "first_name": "Gabriele",
+   "last_name": "Battaglia",
+   "initial_elo": 1550,
+   "fide_title": "3N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "birth_date": "1974-09-13",
+   "experienced": true,
+   "points": 2.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BATGA002",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "TRACO001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "GASCL001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "BATGA002",
+    "GASCL001",
+    "TRACO001"
+   ],
+   "white_games": 1,
+   "black_games": 2,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.0,
+   "buchholz_cut1": null,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": null,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "is_scheduled": false,
+   "display_rank": 2
+  },
+  {
+   "id": "BATGA002",
+   "first_name": "Gabriele",
+   "last_name": "Battaglia",
+   "initial_elo": 1399,
+   "fide_title": "",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "birth_date": "1999-09-12",
+   "experienced": true,
+   "points": 1.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BATGA001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BYE_PLAYER_ID",
+     "color": null,
+     "result": "BYE",
+     "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PAGGI001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "PAGGI001",
+    "BATGA001"
+   ],
+   "white_games": 1,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 1,
+   "received_bye_in_round": [
+    2
+   ],
+   "buchholz": 2.0,
+   "buchholz_cut1": null,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": null,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "is_scheduled": false,
+   "display_rank": 3
+  },
+  {
+   "id": "GASCL001",
+   "first_name": "Claudio",
+   "last_name": "Gasperoni",
+   "initial_elo": 1864,
+   "fide_title": "1N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "birth_date": "1975-01-01",
+   "experienced": true,
+   "points": 3.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "TRACO001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "PAGGI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "BATGA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "PAGGI001",
+    "TRACO001",
+    "BATGA001"
+   ],
+   "white_games": 2,
+   "black_games": 1,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.0,
+   "buchholz_cut1": null,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": null,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "is_scheduled": false,
+   "display_rank": 1
+  },
+  {
+   "id": "TRACO001",
+   "first_name": "Cosetta",
+   "last_name": "Trapletti",
+   "initial_elo": 1504,
+   "fide_title": "3N",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "birth_date": "1968-01-01",
+   "experienced": true,
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "GASCL001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BATGA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "BYE_PLAYER_ID",
+     "color": null,
+     "result": "BYE",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "GASCL001",
+    "BATGA001"
+   ],
+   "white_games": 0,
+   "black_games": 2,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 2,
+   "received_bye_count": 1,
+   "received_bye_in_round": [
+    3
+   ],
+   "buchholz": 4.0,
+   "buchholz_cut1": null,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": null,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "is_scheduled": false,
+   "display_rank": 5
+  },
+  {
+   "id": "PAGGI001",
+   "first_name": "Giulia",
+   "last_name": "Paglia",
+   "initial_elo": 1399,
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "birth_date": "2018-01-01",
+   "experienced": false,
+   "points": 1.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BYE_PLAYER_ID",
+     "color": null,
+     "result": "BYE",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "GASCL001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "BATGA002",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "BATGA002",
+    "GASCL001"
+   ],
+   "white_games": 2,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 2,
+   "consecutive_black": 0,
+   "received_bye_count": 1,
+   "received_bye_in_round": [
+    1
+   ],
+   "buchholz": 2.0,
+   "buchholz_cut1": null,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": null,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "is_scheduled": false,
+   "display_rank": 3
+  }
+ ],
+ "current_round": 3,
+ "rounds": [
+  {
+   "round": 1,
+   "matches": [
+    {
+     "id": 1,
+     "round": 1,
+     "white_player_id": "GASCL001",
+     "black_player_id": "TRACO001",
+     "result": "1-0"
+    },
+    {
+     "id": 2,
+     "round": 1,
+     "white_player_id": "BATGA002",
+     "black_player_id": "BATGA001",
+     "result": "0-1"
+    },
+    {
+     "id": 3,
+     "round": 1,
+     "white_player_id": "PAGGI001",
+     "black_player_id": null,
+     "result": "BYE"
+    }
+   ]
+  },
+  {
+   "round": 2,
+   "matches": [
+    {
+     "id": 4,
+     "round": 2,
+     "white_player_id": "PAGGI001",
+     "black_player_id": "GASCL001",
+     "result": "0-1"
+    },
+    {
+     "id": 5,
+     "round": 2,
+     "white_player_id": "BATGA001",
+     "black_player_id": "TRACO001",
+     "result": "1-0"
+    },
+    {
+     "id": 6,
+     "round": 2,
+     "white_player_id": "BATGA002",
+     "black_player_id": null,
+     "result": "BYE"
+    }
+   ]
+  },
+  {
+   "round": 3,
+   "matches": [
+    {
+     "id": 7,
+     "round": 3,
+     "white_player_id": "GASCL001",
+     "black_player_id": "BATGA001",
+     "result": "1-0"
+    },
+    {
+     "id": 8,
+     "round": 3,
+     "white_player_id": "PAGGI001",
+     "black_player_id": "BATGA002",
+     "result": "1/2-1/2"
+    },
+    {
+     "id": 9,
+     "round": 3,
+     "white_player_id": "TRACO001",
+     "black_player_id": null,
+     "result": "BYE"
+    }
+   ]
+  }
+ ],
+ "next_match_id": 10,
+ "launch_count": 1
+}
