@@ -1,0 +1,206 @@
+﻿Report Database Giocatori Tornello - Venerdì 6 giugno 2025 23:29:10
+========================================
+
+ID: BARGI001, NC Giuseppe Baratta, Elo: 1450
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28594010
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BATGA001, 3N Gabriele Battaglia, Elo: 1513
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 804495
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Venerdì 13 settembre 1974
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BOSGI002, NC Giancarlo Bosetti, Elo: 1399
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2854584
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Martedì 1 gennaio 1952
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
+	2° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CALVA001, NC Valeria Calzolari, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Sabato 1 gennaio 1966
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (1) tornei:
+	4° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CASMA001, NC Mariangela Cassano, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 653009215
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Mercoledì 1 gennaio 1958
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: CIBSI001, NC Silvia Cibin, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491124
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Mercoledì 14 maggio 2025
+	Data Nascita: Giovedì 13 luglio 1978
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	5° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CICMA001, NC Mathias Cicciarella, Elo: 1399
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Martedì 1 gennaio 2013
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: COLMI001, 3N Michele Colangelo, Elo: 1574
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23424087
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Giovedì 1 gennaio 1959
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1399
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	10° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: FORMA001, NC Martina Forte, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	7° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: GASCL001, 1N Claudio Gasperoni, Elo: 1874
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 825450
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Mercoledì 1 gennaio 1975
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: GORSE001, NC Serena Gori, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491132
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	12° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: IONLO001, NC Lorenzo Ionata, Elo: 1446
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28550404
+	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Domenica 1 gennaio 1978
+	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	1° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: MANFA001, 3N Fabrizio Manneschi, Elo: 1609
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2805761
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Martedì 1 gennaio 1946
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: MERAL001, NC Alessia Mereu, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (1) tornei:
+	3° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: NICFR001, 2N Francesco Nicolini, Elo: 1776
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23424109
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Venerdì 1 gennaio 1965
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: PAGGI001, NC Giulia Paglia, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Lunedì 1 gennaio 2018
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: PAGVI001, NC Virginio Paglia, Elo: 1399
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23470763
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	6° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: PARLU001, 3N Luca Parravano, Elo: 1506
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28556666
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Giovedì 1 gennaio 1970
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: SCAVA001, NC Valeria Scapin, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Giovedì 9 febbraio 1984
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1731
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 841439
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: Domenica 1 gennaio 1956
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: TESAL001, NC Alessandra Testori, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	11° su 12 in Sacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: TOLFI001, 3N Filippa Tolaro, Elo: 1584
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 28505867
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Sabato 1 gennaio 1966
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: TRACO001, 3N Cosetta Trapletti, Elo: 1504
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 2817697
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Lunedì 1 gennaio 1968
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: VALRI001, NC Rita Valleriani, Elo: 1399
+	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23470798
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	9° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: VANJI001, 2N Jiazhuang Vandelli, Elo: 1756
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23449071
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Martedì 1 gennaio 2002
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: VENLU001, NC Luigi Ventura, Elo: 1399
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
+	8° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: ZAVFA001, 2N Fabrizio Zavan, Elo: 1671
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 876020
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Martedì 1 gennaio 1963
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------

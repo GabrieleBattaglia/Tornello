@@ -1,0 +1,24 @@
+TORNELLO TODO&CHANGELOG by Gabriele Battaglia
+5. implementare mega db mondiale
+Sai che l'idea di avere in locale una copia del mega db mondiale, mi piace moltissimo? Potremmo implementarlo in questo modo.
+l'app parte, stampa il messaggio di benvenuto, poi una funzione apposta verifica la presenza locale del db, se non lo trova chiede di scaricarlo. Se lo trova va online, trova l'ultimo pubblicato, confronta le date e, se è il caso, chiede se si vuole aggiornare. Dopo l'aggiornamento presenta un report con i cambiamenti in termine di numero di giocatori e relativa percentuale rispetto a quelli precedenti.
+A questo punto fa un ciclo sui giocatori del db personale e confronta i dati con quelli del db mondiale sugli stessi giocatori e chiede se si vogliono aggiornare i dati del db locale. Se sì, tutti i dati nuovi vengono aggiornati. Segue un report degli aggiornamenti effettuati.
+In fase di creazione personaggio, dopo nome cognome e data di nascita (se presente, cerca nel db e come dicevi lo aggiunge se ne trova 1, oppure chiede se ne trova più di 1, altrimenti si procede col manuale.
+Temo però sarà necessario scrivere un tool one shot, esterno, per arricchire ulteriormente il db dei giocatori locali per uniformarlo a quello mondiale che avrà certamente molti molti più campi per singolo giocatore, penso ad esempio alle varie tipologie di Elo. Questo però lo affronteremo una volta visto il db mondiale e capita la sua struttura.
+Se sei d'accordo, procediamo pure.
+
+CHANGELOG
+8.1.x
+	+ Aggiunto menù per scelta lingua, file di configurazione e rilevazione automatica lingua del sistema operativo
+	+ Corretto un errore che calcolava male i pari punti bucoholz in classifica
+	+ internazionalizzazione con sistema babel. traduzione in inglese
+	+ Aggiunta la time machine per tornare allo stato immediatamente dopo l'abbinamento di qualsiasi turno del torneo in corso
+	+ Possibilità di scaricare il database FIDE di tutti i giocatori del mondo e integrazione/arricchimento col proprio DB locale
+	+ Inserito non-blocking input per tutte le scelte che prevedono la pressione di un solo tasto
+	+ Inserita gestione ritiro giocatore
+	+ Corrette alcune sequenze di escape
+	+ Migliorata la gestione di omonimi
+	+ ID scacchiera ora coincide in pianificazione
+	+ semplificato l'inserimento di data e ora in pianificazione assumendo anno e mese e corrente se non inseriti e minuti 0 se non inseriti
+	+ inserito riepilogo giocatori a fine inserimento per nuovo torneo con ciclo per eliminarli, in caso di aggiunte errate
+	+ Corretta una richiesta doppia quando si crea un nuovo torneo

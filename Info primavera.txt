@@ -1,0 +1,77 @@
+Torneo Primavera.
+Tabellone iniziale 
+Gasperoni Claudio    1874    Elo Standard 
+Nicolini Francesco    1776    Elo Rapid 
+Vandelli Jiazhuang    1756    Elo Standard 
+Soppelsa Maurizio    1731    Elo Standard 
+Zavan Fabrizio    1671    Elo Standard 
+Manneschi Fabrizio    1609    Elo Rapid 
+Trapletti Cosetta    1586    Elo Rapid 
+Tolaro Filippa    1577    Elo Rapid 
+Colangelo Michele    1574    Elo Rapid 
+Battaglia Gabriele    1513    Elo Standard 
+Parravano Luca    1506    Elo Standard 
+Baratta Giuseppe    1450    Elo Standard 
+Ionata Lorenzo    1446    Elo Standard 
+Bosetti Giancarlo    1399    Elo Forfettario 
+Brites Pereira Lima, Catia Susana    1399    Elo Forfettario 
+Calzolari Valeria    1399    Elo Forfettario 
+Cassano Mariangela    1399    Elo Forfettario 
+Ciciarella Mathias    1399    Elo Forfettario 
+Di Bari Vincenzo    1399    Elo Forfettario 
+Forte Martina    1399    Elo Forfettario 
+Gori Serena    1399    Elo Forfettario 
+Mereu Alessia    1399    Elo Forfettario 
+Paglia Giulia    1399    Elo Forfettario 
+Paglia Virginio    1399    Elo Forfettario 
+Scapin Valeria    1399    Elo Forfettario 
+Testori Alessandra    1399    Elo Forfettario 
+Valleriani Rita    1399    Elo Forfettario 
+Ventura Luigi    1399    Elo Forfettario
+
+Risultati 1° Turno
+  1.    Gasperoni, Claudio – Brites Pereira Lima, Catia Susana 1-0
+  2.    Calzolari, Valeria – Nicolini, Francesco 0-1
+  3.    Vandelli, Jiazhuang – Cassano, Mariangela 1-0
+  4.    Ciciarella, Mathias – Soppelsa, Maurizio 0-1
+  5.    Zavan, Fabrizio – Di Bari, Vincenzo 1-0
+  6.    Forte, Martina – Manneschi, Fabrizio 0-1
+  7.    Trapletti, Cosetta – Gori, Serena 1-0
+  8.    Mereu, Alessia – Tolaro, Filippa 0-1
+  9.    Colangelo, Michele – Paglia, Giulia 1-0
+  10.  Paglia, Virginio – Battaglia, Gabriele 0-1
+  11.  Parravano, Luca – Scapin, Valeria 1-0
+  12.  Testori, Alessandra – Baratta, Giuseppe 0-1
+  13.  Ionata, Lorenzo – Valleriani, Rita 1-0
+  14.  Ventura, Luigi – Bosetti, Giancarlo 1-0
+Risultato turno 2
+1.      Tolaro, Filippa – Gasperoni, Claudio 0-1
+2.      Nicolini, Francesco – Colangelo, Michele  1-0
+3.      Battaglia, Gabriele – Vandelli, Jiazhuang 0-1
+4.      Soppelsa, Maurizio – Parravano, Luca 1-0
+5.      Baratta, Giuseppe – Zavan, Fabrizio 0-1
+6.      Manneschi, Fabrizio – Ionata, Lorenzo 1-0
+7.      Ventura, Luigi – Trapletti, Cosetta 1-0
+8.      Bosetti, Giancarlo – Gori, Serena 1-0
+9.      Brites Pereira Lima, Catia Susana – Mereu, Alessia 0-1
+10.    Paglia, Giulia – Calzolari, Valeria 1/2-1/2
+11.    Cassano, Mariangela – Paglia, Virginio 1/2-1/2
+12.    Scapin, Valeria – Ciciarella, Mathias 0-1
+13.    Di Bari, Vincenzo – Testori, Alessandra 1-0
+14.    Valleriani, Rita – Forte, Martina 1-0
+Abbinamento turno 3
+1.      Gasperoni, Claudio – Soppelsa, Maurizio
+2.      Zavan, Fabrizio – Nicolini, Francesco
+3.      Vandelli, Jiazhuang – Manneschi, Fabrizio
+4.      Colangelo, Michele – Ventura, Luigi
+5.      Trapletti, Cosetta – Bosetti, Giancarlo
+6.      Ionata, Lorenzo – Tolaro, Filippa
+7.      Ciciarella, Mathias – Battaglia, Gabriele
+8.      Parravano, Luca – Di Bari, Vincenzo
+9.      Mereu, Alessia – Baratta, Giuseppe
+10.    Calzolari, Valeria – Valleriani, Rita
+11.    Paglia, Virginio – Paglia, Giulia
+12.    Forte, Martina – Cassano, Mariangela
+13.    Testori, Alessandra – Brites Pereira Lima, Catia Susana
+14.    Gori, Serena – Scapin, Valeria
+***

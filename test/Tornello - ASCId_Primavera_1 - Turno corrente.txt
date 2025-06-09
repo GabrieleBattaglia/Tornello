@@ -1,0 +1,20 @@
+﻿Nome Torneo: ASCId Primavera 1 - Turno: 5
+ Periodo Turno: Sabato 7 giugno 2025 - Domenica 15 giugno 2025
+
+ Partite da giocare
+  (Nessuna partita con giocatori attivi è attualmente pianificata con data/ora)
+  Non pianificate (giocatori attivi):
+   IDG:57 Claudio Gasperoni - Francesco Nicolini
+   IDG:59 Fabrizio Zavan - Fabrizio Manneschi
+   IDG:60 Cosetta Trapletti - Luca Parravano
+   IDG:61 Vincenzo Di Bari - Gabriele Battaglia
+   IDG:62 Mathias Cicciarella - Filippa Tolaro
+   IDG:63 Rita Valleriani - Giuseppe Baratta
+   IDG:64 Lorenzo Ionata - Catia Susana Brites Pereira Lima
+   IDG:65 Giulia Paglia - Valeria Scapin
+   IDG:66 Valeria Calzolari - Mariangela Cassano
+   IDG:68 Alessia Mereu - Virginio Paglia
+   IDG:69 Martina Forte - Serena Gori
+ Partite giocate
+  IDG:58 Luigi Ventura - Maurizio Soppelsa  0-1
+  IDG:67 Michele Colangelo - Alessandra Testori  1-0

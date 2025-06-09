@@ -1,0 +1,40 @@
+﻿Nome Torneo: ASCId Primavera 1
+Luogo: Online
+Date: Domenica 4 maggio 2025 - Domenica 15 giugno 2025
+Federazione Organizzante: ITA
+Arbitro Capo: Bersan Vrioni ASCId
+Vice Arbitri: Gruppo ASCId, Gruppo Scacchierando
+Controllo Tempo: Standard
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Lunedì 9 giugno 2025 13:20:17
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
+-----------------------------------------------------------------------
+  1. 2N  Nicolini, Francesco         [1776]   4.0    ----   8.00
+  2. 1N  Gasperoni, Claudio          [1859]   3.5    ----  10.50
+  3. 2N  Vandelli, Jiazhuang         [1756]   3.5    ----   9.50
+  4. 2N  Soppelsa, Maurizio          [1731]   3.0    ----  10.00
+  5. NC  Ventura, Luigi              [1399]   3.0    ----   9.00
+  6. NC  Valleriani, Rita            [1399]   3.0    ----   6.50
+  7. 2N  Zavan, Fabrizio             [1671]   2.5    ----  11.00
+  8. 3N  Parravano, Luca             [1506]   2.5    ----   9.00
+  9. 3N  Battaglia, Gabriele         [1513]   2.5    ----   8.50
+ 10. NC  Di Bari, Vincenzo           [1399]   2.5    ----   7.50
+ 11. 3N  Trapletti, Cosetta          [1586]   2.5    ----   6.50
+ 12. NC  Ionata, Lorenzo             [1446]   2.0    ----  10.00
+ 13. NC  Manneschi, Fabrizio         [1609]   2.0    ----   9.50
+ 14. NC  Cicciarella, Mathias        [1399]   2.0    ----   9.00
+ 15. 3N  Tolaro, Filippa             [1577]   2.0    ----   7.50
+ 16. NC  Baratta, Giuseppe           [1450]   2.0    ----   7.00
+ 17. NC  Brites Pereira Lima, Catia  [1399]   2.0    ----   6.00
+ 18. NC  Scapin, Valeria             [1399]   2.0    ----   5.50
+ 19. NC  Calzolari, Valeria          [1399]   1.5    ----   8.50
+ 20. NC  Cassano, Mariangela         [1399]   1.5    ----   7.50
+ 21. NC  Paglia, Giulia              [1399]   1.5    ----   5.00
+RIT  NC  Bosetti, Giancarlo          [1399]   1.5    ----   0.00                           [RITIRATO]
+ 23. 3N  Colangelo, Michele          [1574]   1.0    ----  10.50
+ 24. NC  Mereu, Alessia              [1399]   1.0    ----   8.00
+ 25. NC  Forte, Martina              [1399]   1.0    ----   7.50
+ 25. NC  Testori, Alessandra         [1399]   1.0    ----   7.50
+ 27. NC  Paglia, Virginio            [1399]   0.5    ----   7.50
+ 28. NC  Gori, Serena                [1399]   0.0    ----   7.50
