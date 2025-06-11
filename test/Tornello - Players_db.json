@@ -811,5 +811,47 @@
   "fide_id_num_str": "28578244",
   "experienced": true,
   "fide_k_factor": 0
+ },
+ {
+  "id": "TARGI001",
+  "first_name": "Giuseppe",
+  "last_name": "Tarascio",
+  "current_elo": 2154,
+  "registration_date": "2025-06-11",
+  "birth_date": "1956-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "2847057",
+  "experienced": true
+ },
+ {
+  "id": "PROPR001",
+  "first_name": "Provino",
+  "last_name": "Provucci",
+  "current_elo": 3480.0,
+  "registration_date": "2025-06-11",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "GM",
+  "sex": "w",
+  "federation": "BUR",
+  "fide_id_num_str": "0",
+  "experienced": true
  }
 ]

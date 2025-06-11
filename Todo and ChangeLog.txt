@@ -1,11 +1,38 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
-5. implementare mega db mondiale
-Sai che l'idea di avere in locale una copia del mega db mondiale, mi piace moltissimo? Potremmo implementarlo in questo modo.
-l'app parte, stampa il messaggio di benvenuto, poi una funzione apposta verifica la presenza locale del db, se non lo trova chiede di scaricarlo. Se lo trova va online, trova l'ultimo pubblicato, confronta le date e, se è il caso, chiede se si vuole aggiornare. Dopo l'aggiornamento presenta un report con i cambiamenti in termine di numero di giocatori e relativa percentuale rispetto a quelli precedenti.
-A questo punto fa un ciclo sui giocatori del db personale e confronta i dati con quelli del db mondiale sugli stessi giocatori e chiede se si vogliono aggiornare i dati del db locale. Se sì, tutti i dati nuovi vengono aggiornati. Segue un report degli aggiornamenti effettuati.
-In fase di creazione personaggio, dopo nome cognome e data di nascita (se presente, cerca nel db e come dicevi lo aggiunge se ne trova 1, oppure chiede se ne trova più di 1, altrimenti si procede col manuale.
-Temo però sarà necessario scrivere un tool one shot, esterno, per arricchire ulteriormente il db dei giocatori locali per uniformarlo a quello mondiale che avrà certamente molti molti più campi per singolo giocatore, penso ad esempio alle varie tipologie di Elo. Questo però lo affronteremo una volta visto il db mondiale e capita la sua struttura.
-Se sei d'accordo, procediamo pure.
+6. Correzione da applicare nella classifica: il secondo metodo di ordinamento, dopo il punteggio, non è il bucoholz totale ma quello tagliato, che mi pare Tornello non calcoli nemmeno.
+7. segnalibro per traduzioni, ecco quelle da fare adesso
+sel_msg = _("Partita selezionata per risultato: {white} vs {black} (ID Glob: {match_id})")
+print(sel_msg.format(white=display_str_white, black=display_str_black, match_id=selected_match_obj_for_processing['id']))
+• Stringa da marcare: "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
+• Stringhe da marcare (risultati forfait):
+• "Doppio forfeit registrato (0-0F)."
+• "Vittoria Bianco per Forfait avv. (1-F)."
+• "Vittoria Nero per Forfait Bianco (F-1)."
+• Per le f-string di conferma risultato (sono tante, le faccio tutte):
+• CERCA: confirm_message_str = f"Risultato '{parsed_result_str}' non standard. Confermi comunque? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Risultato '{result}' non standard. Confermi comunque? (s/n): ").format(result=parsed_result_str)
+• CERCA: confirm_message_str = f"Confermi che {wp_name_match_disp} vince contro {bp_name_match_disp}? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
+• CERCA: confirm_message_str = f"Confermi che {bp_name_match_disp} vince contro {wp_name_match_disp}? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
+• CERCA: confirm_message_str = f"Confermi che {wp_name_match_disp} e {bp_name_match_disp} pattano? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi che {player1} e {player2} pattano? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
+• CERCA: confirm_message_str = f"Confermi partita nulla/annullata (0-0F) tra {wp_name_match_disp} e {bp_name_match_disp}? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi partita nulla/annullata (0-0F) tra {player1} e {player2}? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
+• CERCA: confirm_message_str = f"Confermi vittoria a tavolino per {wp_name_match_disp} (forfait di {bp_name_match_disp})? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi vittoria a tavolino per {winner} (forfait di {loser})? (s/n): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
+• CERCA: confirm_message_str = f"Confermi vittoria a tavolino per {bp_name_match_disp} (forfait di {wp_name_match_disp})? (s/n): "
+• SOSTITUISCI CON: confirm_message_str = _("Confermi vittoria a tavolino per {winner} (forfait di {loser})? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
+• Stringa da marcare: "Risultato registrato."
+• Per la f-string print(f" Info: Pianificazione rimossa..."):
+• SOSTITUISCI CON:
+Python
+Copia codice
+print(_("  Info: Pianificazione rimossa per la partita ID {match_id} (risultato inserito).").format(match_id=match_object_updated.get('id','N/A')))
+• Stringa da marcare: "Operazione annullata dall'utente."
+• Stringa da marcare: "Input risultato non valido."
+8. il messaggio donazione appare in inglese anche con lingua it
+9.
 
 CHANGELOG
 8.1.x

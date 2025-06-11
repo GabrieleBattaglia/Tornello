@@ -1,0 +1,13 @@
+﻿Torneo: test19
+Sito: Luogo Sconosciuto, Data Inizio Torneo: Mercoledì 11 giugno 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Lunedì 23 giugno 2025 - Venerdì 4 luglio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 7   | Lorenzo Ionata           [1446] (0   ) - Claudio Gasperoni        [1874] (1   ) | 0-1
+	2  | 6   | Gabriele Battaglia       [1513] (1.5 ) - Jiazhuang Vandelli       [1756] (1.5 ) | 1/2-1/2
+	3  | 5   | Francesco Nicolini       [1776] (2   ) - Alessia Mereu            [1399] (1   ) | 1-0
+	---| 8   | Cosetta Trapletti        [1493] (1   ) - BYE                             | BYE

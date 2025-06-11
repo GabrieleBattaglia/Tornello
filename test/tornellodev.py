@@ -5,7 +5,7 @@ from GBUtils import dgt, key, Donazione
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "8.1.1 del 10 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.1.8 del 11 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -2068,13 +2068,12 @@ def update_match_result(torneo):
     Restituisce True se almeno un risultato è stato aggiornato o cancellato 
     durante la sessione, False altrimenti.
     """
+    print("debug _",type(_),_)
     any_changes_made_in_this_session = False
     current_round_num = torneo["current_round"]
-
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     players_dict = torneo['players_dict']
-    
     current_round_data = None
     round_index_in_torneo_rounds = -1
     for i, r_data_loop in enumerate(torneo.get("rounds", [])): # Rinominato r_data
@@ -2082,24 +2081,19 @@ def update_match_result(torneo):
             current_round_data = r_data_loop
             round_index_in_torneo_rounds = i
             break
-    
     if not current_round_data:
         error_msg = _("ERRORE: Dati turno {round_num} non trovati per aggiornamento risultati.").format(round_num=current_round_num)
         print(error_msg)
         return False
-
     while True: # Loop principale della sessione di input risultati
         # 1. Prepara la lista delle partite PENDENTI con il "Numero Scacchiera del Turno"
         pending_matches_info_list = [] # Lista di (num_scacchiera_turno, match_dict, nome_bianco, nome_nero)
-        
         all_matches_in_this_round = current_round_data.get("matches", [])
         # Ordina tutte le partite del turno per ID globale per avere un ordine scacchiere consistente
         all_matches_this_round_sorted = sorted(all_matches_in_this_round, key=lambda m: m.get('id', 0))
-
         round_board_idx_counter = 0 # Contatore 0-based per le scacchiere del turno
         for match_obj in all_matches_this_round_sorted:
             round_board_idx_counter += 1 # Numero scacchiera 1-based per questo turno
-            
             # Consideriamo questa partita per la visualizzazione e selezione solo se è pendente
             if match_obj.get("result") is None and match_obj.get("black_player_id") is not None:
                 wp_obj = players_dict.get(match_obj.get('white_player_id'))
@@ -2109,19 +2103,16 @@ def update_match_result(torneo):
                 pending_matches_info_list.append(
                     (round_board_idx_counter, match_obj, wp_name_disp, bp_name_disp)
                 )
-        
         # Controlla se ci sono partite completate da poter cancellare (per l'opzione 'cancella')
         completed_matches_to_cancel = [
             m_c for m_c in all_matches_this_round_sorted # Usa la lista già ordinata
             if m_c.get("result") is not None and m_c.get("result") != "BYE"
         ]
-
         if not pending_matches_info_list and not completed_matches_to_cancel:
             if not any_changes_made_in_this_session: 
                  info_msg = _("Info: Nessuna azione possibile per il turno {round_num} (nessuna partita pendente e nessuna da poter cancellare).").format(round_num=current_round_num)
                  print(info_msg)
             break 
-            
         if pending_matches_info_list:
             header_msg = _("\nPartite del turno {round_num} ancora da registrare (N. Scacchiera del Turno):").format(round_num=current_round_num)
             print(header_msg)
@@ -2250,7 +2241,7 @@ def update_match_result(torneo):
             try:
                 board_num_choice = int(user_input_str)
                 match_found_by_board = False
-                for displayed_b_num, match_obj_dict, _, _ in pending_matches_info_list:
+                for displayed_b_num, match_obj_dict, u1, u2 in pending_matches_info_list:
                     if displayed_b_num == board_num_choice:
                         selected_match_obj_for_processing = match_obj_dict
                         match_found_by_board = True
@@ -2272,7 +2263,7 @@ def update_match_result(torneo):
                 continue
             elif len(candidate_matches_info) == 1:
                 selected_match_obj_for_processing = candidate_matches_info[0][1]
-                sel_board_disp, _, sel_w_disp, sel_b_disp = candidate_matches_info[0]
+                sel_board_disp, u1, sel_w_disp, sel_b_disp = candidate_matches_info[0]
                 print(_("Trovata partita unica (Sc. {board_num}): {white_player} vs {black_player}").format(board_num=sel_board_disp, white_player=sel_w_disp, black_player=sel_b_disp))
             else: 
                 print(_("Trovate {num_matches} partite pendenti per '{search_term}':").format(num_matches=len(candidate_matches_info), search_term=user_input_str))
@@ -2285,7 +2276,7 @@ def update_match_result(torneo):
                     if not specific_board_input.isdigit():
                         print(_("Input non numerico per la scacchiera.")); continue
                     specific_board_choice = int(specific_board_input)
-                    for disp_b_num_cand, match_obj_cand, _, _ in candidate_matches_info:
+                    for disp_b_num_cand, match_obj_cand, u1, u2 in candidate_matches_info:
                         if disp_b_num_cand == specific_board_choice:
                             selected_match_obj_for_processing = match_obj_cand
                             break
@@ -2395,8 +2386,6 @@ def update_match_result(torneo):
                 print("Input risultato non valido.")
                 
     return any_changes_made_in_this_session
-
-# Sostituisci la tua funzione save_current_tournament_round_file con questa
 
 def save_current_tournament_round_file(torneo):
     """
@@ -3179,13 +3168,63 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     print(f"Torneo '{tournament_name_original}' finalizzato e archiviato.")
     return True
 
-def main():
+# supporto multilingua
+config = carica_configurazione()
+lingua_scelta = config.get('language')
+if not lingua_scelta:
+    print("\n--- Configurazione Lingua (prima esecuzione) ---")
+    try:
+        locale.setlocale(locale.LC_ALL, '')
+        codice_lingua_os, u1 = locale.getlocale()
+        lingua_os = codice_lingua_os.split('_')[0] if codice_lingua_os else 'en'
+    except Exception:
+        lingua_os = 'en'
+    lingue_supportate = {'it': 'Italiano', 'en': 'English'}
+    print(f"Lingua del sistema rilevata: {lingue_supportate.get(lingua_os, lingua_os)}.")
+    scelta_iniziale = input(f"Usare questa lingua o sceglierne un'altra? [Invio per confermare, 'c' per scegliere]: ").strip().lower()
+    if scelta_iniziale == 'c':
+        print("Lingue disponibili:")
+        for codice, nome in lingue_supportate.items(): print(f" - [{codice}] {nome}")
+        while True:
+            codice_scelto = input(f"Inserisci il codice desiderato (es. 'en'): ").strip().lower()
+            if codice_scelto in lingue_supportate:
+                lingua_scelta = codice_scelto
+                break
+            else: print("Codice non valido.")
+    else:
+        lingua_scelta = lingua_os if lingua_os in lingue_supportate else 'it' # Default finale a 'it'
+    print(f"Lingua impostata su: '{lingue_supportate.get(lingua_scelta)}'. Verrà salvata per le prossime esecuzioni.")
+    config['language'] = lingua_scelta
+    salva_configurazione(config)
+# Inizializzazione finale di gettext, che definisce '_' per tutto lo script
+try:
+    locales_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locales')
+    translation = gettext.translation('tornello', localedir=locales_dir, languages=[lingua_scelta])
+    # Sovrascriviamo la nostra funzione "segnaposto" globale con quella vera che traduce
+    _ = translation.gettext
+    print(f"Sistema di traduzione per la lingua '{lingua_scelta}' attivato.")
+except FileNotFoundError:
+    print(f"File di traduzione per '{lingua_scelta}' non trovati. Uso l'italiano di default.")
+    import builtins
+    builtins._ = gettext.gettext # Installa la funzione "vuota"
+
+if __name__ == "__main__":
+    # Assicurati che la cartella BBP_SUBDIR esista o venga creata se necessario
+    if not os.path.exists(BBP_SUBDIR):
+        try:
+            os.makedirs(BBP_SUBDIR)
+            print(f"Info: Creata sottocartella '{BBP_SUBDIR}' per i file di bbpPairings.")
+        except OSError as e:
+            print(f"ATTENZIONE: Impossibile creare la sottocartella '{BBP_SUBDIR}': {e}")
+            print("bbpPairings potrebbe non funzionare correttamente.")
+            sys.exit(1)
     players_db = load_players_db()
     torneo = None
     active_tournament_filename = None
     deve_creare_nuovo_torneo = False
     nome_nuovo_torneo_suggerito = None
     print(f"\nBENVENUTI! Sono Tornello {VERSIONE}") # Messaggio di benvenuto iniziale
+    print("debug _",type(_),_)
     print("\nVerifica stato database FIDE locale...")
     db_fide_esiste = os.path.exists(FIDE_DB_LOCAL_FILE)
     db_fide_appena_aggiornato = False 
@@ -3219,15 +3258,11 @@ def main():
                 sincronizza_db_personale()
     # 1. Scansione dei file torneo esistenti
     tournament_files_pattern = "tornello - *.json"
-    # Escludiamo i file che sembrano archiviati o di altro tipo se necessario,
-    # per ora cerchiamo un pattern semplice.
-    # Potremmo voler escludere i file con "- concluso_" nel nome.
     potential_tournament_files = [
         f for f in glob.glob(tournament_files_pattern) 
         if "- concluso_" not in os.path.basename(f) and 
            os.path.basename(f) != PLAYER_DB_FILE # Assicura di non confondere il DB giocatori
     ]
-
     if not potential_tournament_files:
         print("Nessun torneo esistente trovato.")
         deve_creare_nuovo_torneo = True
@@ -3330,7 +3365,6 @@ def main():
                         print("Scelta non valida.")
                 else:
                     print("Inserisci un numero.")
-    
     # 2. Creazione nuovo torneo (se necessario)
     if deve_creare_nuovo_torneo or torneo is None:
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
@@ -3466,26 +3500,21 @@ def main():
         save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False)
         print(f"\nTorneo '{torneo.get('name')}' creato e Turno 1 generato. File: '{active_tournament_filename}'")
-
     # 3. Se nessun torneo è attivo a questo punto, esci.
     if not torneo or not active_tournament_filename:
         print("\nNessun torneo attivo. Uscita dal programma.")
         sys.exit(0)
-
     # 4. Aggiorna launch_count se il torneo è stato caricato (non creato ora)
     if not deve_creare_nuovo_torneo: # Implica che è stato caricato
         torneo['launch_count'] = torneo.get('launch_count', 0) + 1
         # Assicura che players_dict sia inizializzato (load_tournament dovrebbe già farlo)
         if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
             torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-
     # Messaggio di benvenuto specifico per il torneo
     print(f"\n--- Torneo Attivo: {torneo.get('name', 'N/D')} ---")
     print(f"File: {active_tournament_filename}")
     print(f"Questa è la {torneo.get('launch_count',1)}a sessione per questo torneo.")
     print(f"Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando.")
-
-    # --- Main Loop (invariato rispetto alla tua ultima versione, ma ora usa active_tournament_filename) ---
     try:
         while True:
             current_round_num = torneo.get("current_round")
@@ -3572,7 +3601,6 @@ def main():
                         print("Generazione prossimo turno annullata. Salvataggio stato attuale.")
                         save_tournament(torneo)
                         break # Esce dal main loop
-    
     except KeyboardInterrupt:
         print("\nOperazione interrotta dall'utente.")
         if torneo and active_tournament_filename:
@@ -3589,7 +3617,6 @@ def main():
             print(f"Tentativo salvataggio stato torneo in '{active_tournament_filename}'...")
             save_tournament(torneo)
         sys.exit(1)
-
     if torneo is None and active_tournament_filename is None:
         print("\nProgramma Tornello terminato.")
         Donazione()
@@ -3598,54 +3625,3 @@ def main():
          Donazione()
     else: # Caso anomalo
          print("\nProgramma Tornello terminato con uno stato incerto del torneo.")
-
-if __name__ == "__main__":
-    config = carica_configurazione()
-    lingua_scelta = config.get('language')
-    if not lingua_scelta:
-        print("\n--- Configurazione Lingua (prima esecuzione) ---")
-        try:
-            locale.setlocale(locale.LC_ALL, '')
-            codice_lingua_os, _ = locale.getlocale()
-            lingua_os = codice_lingua_os.split('_')[0] if codice_lingua_os else 'en'
-        except Exception:
-            lingua_os = 'en' # Fallback sicuro
-        print(f"Lingua del sistema rilevata: '{lingua_os}'.")
-        # Lingue supportate dal nostro programma (con il loro codice)
-        lingue_supportate = {'it': 'Italiano', 'en': 'English'}
-        scelta_iniziale = input(f"Usare '{lingua_os}' (se supportata) o scegliere un'altra lingua? [Invio per usare '{lingua_os}', 'c' per scegliere]: ").strip().lower()
-        if scelta_iniziale == 'c':
-            print("Lingue disponibili:")
-            for codice, nome in lingue_supportate.items():
-                print(f" - [{codice}] {nome}")
-            while True:
-                codice_scelto = input(f"Inserisci il codice della lingua desiderata (es. 'en'): ").strip().lower()
-                if codice_scelto in lingue_supportate:
-                    lingua_scelta = codice_scelto
-                    break
-                else:
-                    print("Codice non valido.")
-        else:
-            lingua_scelta = lingua_os if lingua_os in lingue_supportate else 'en' # Usa la lingua rilevata se supportata, altrimenti default a inglese
-        print(f"Lingua impostata su: '{lingua_scelta}'. Verrà salvata per le prossime esecuzioni.")
-        config['language'] = lingua_scelta
-        salva_configurazione(config)
-    # --- Inizializzazione di gettext (usa la lingua_scelta) ---
-    try:
-        locales_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locales')
-        t = gettext.translation('tornello', localedir=locales_dir, languages=[lingua_scelta], fallback=True)
-        _ = t.gettext
-    except FileNotFoundError:
-        # Se i file .mo non esistono, gettext con fallback=True userà le stringhe originali
-        _ = gettext.gettext
-    # Assicurati che la cartella BBP_SUBDIR esista o venga creata se necessario
-    if not os.path.exists(BBP_SUBDIR):
-        try:
-            os.makedirs(BBP_SUBDIR)
-            print(f"Info: Creata sottocartella '{BBP_SUBDIR}' per i file di bbpPairings.")
-        except OSError as e:
-            print(f"ATTENZIONE: Impossibile creare la sottocartella '{BBP_SUBDIR}': {e}")
-            print("bbpPairings potrebbe non funzionare correttamente.")
-            # Potresti decidere di uscire qui se la cartella è critica fin da subito
-            # sys.exit(1)
-    main()
