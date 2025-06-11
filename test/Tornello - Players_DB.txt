@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Sabato 7 giugno 2025 11:06:59
+﻿Report Database Giocatori Tornello - Mercoledì 11 giugno 2025 10:05:32
 ========================================
 
 ID: BARGI001, NC Giuseppe Baratta, Elo: 1450
@@ -148,6 +148,13 @@ ID: PARLU001, 3N Luca Parravano, Elo: 1506
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
+ID: PROPR001, GM Provino Provucci, Elo: 3480.0
+	Sesso: W, Federazione Giocatore: BUR, ID FIDE num: 0
+	Partite Valutate Totali: 0, K-Factor Stimato: 10, Data Iscrizione DB: Mercoledì 11 giugno 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
 ID: SCAVA001, NC Valeria Scapin, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -158,6 +165,13 @@ ID: SCAVA001, NC Valeria Scapin, Elo: 1399
 ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1731
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 841439
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Data Nascita: Domenica 1 gennaio 1956
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
+	------------------------------
+ID: TARGI001, Giuseppe Tarascio, Elo: 2154
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2847057
+	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Mercoledì 11 giugno 2025
 	Data Nascita: Domenica 1 gennaio 1956
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno

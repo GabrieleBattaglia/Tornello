@@ -1,0 +1,21 @@
+﻿Nome Torneo: podcast
+Luogo: Luogo Sconosciuto
+Date: Mercoledì 11 giugno 2025 - Sabato 13 settembre 2025
+Federazione Organizzante: ITA
+Arbitro Capo: io me stesso
+Vice Arbitri: scaccheranti, amante sergreta
+Controllo Tempo: Standard
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Mercoledì 11 giugno 2025 14:55:17
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
+-----------------------------------------------------------------------
+  1. GM  Provucci, Provino           [3480]   1.0    ----   1.00
+  2. NC  Brites Pereira Lima, Catia  [1399]   1.0    ----   1.00
+  3.     Tarascio, Giuseppe          [2154]   1.0    ----   0.00
+  4. NC  Valleriani, Rita            [1399]   1.0    ----   0.00
+  5. NC  Paglia, Giulia              [1395]   1.0    ----   0.00
+  6. 1N  Gasperoni, Claudio          [1874]   0.5    ----   0.50
+  7. NC  Scapin, Valeria             [1399]   0.5    ----   0.50
+  8. 3N  Battaglia, Gabriele         [1513]   0.0    ----   1.00
+  9. NC  Mereu, Alessia              [1399]   0.0    ----   1.00

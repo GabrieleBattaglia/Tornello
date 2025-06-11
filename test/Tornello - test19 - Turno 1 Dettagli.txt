@@ -1,0 +1,13 @@
+﻿Torneo: test19
+Sito: Luogo Sconosciuto, Data Inizio Torneo: Mercoledì 11 giugno 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 1 CONCLUSO ==========================
+	Periodo del Turno: Mercoledì 11 giugno 2025 - Domenica 22 giugno 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 1   | Claudio Gasperoni        [1874] (0   ) - Gabriele Battaglia       [1513] (1   ) | 0-1
+	2  | 2   | Cosetta Trapletti        [1493] (0   ) - Francesco Nicolini       [1776] (1   ) | 0-1
+	3  | 3   | Jiazhuang Vandelli       [1756] (1   ) - Lorenzo Ionata           [1446] (0   ) | 1-0
+	---| 4   | Alessia Mereu            [1399] (1   ) - BYE                             | BYE
