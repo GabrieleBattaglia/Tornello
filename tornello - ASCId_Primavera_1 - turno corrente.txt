@@ -9,15 +9,14 @@
    IDG:58 Rita Valleriani - Jiazhuang Vandelli
    IDG:59 Luigi Ventura - Maurizio Soppelsa
    IDG:60 Fabrizio Zavan - Cosetta Trapletti
-   IDG:61 Vincenzo Di Bari - Gabriele Battaglia
    IDG:62 Luca Parravano - Fabrizio Manneschi
    IDG:64 Mathias Cicciarella - Giuseppe Baratta
    IDG:65 Lorenzo Ionata - Valeria Scapin
    IDG:66 Valeria Calzolari - Mariangela Cassano
-   IDG:67 Alessia Mereu - Giulia Paglia
    IDG:68 Michele Colangelo - Alessandra Testori
    IDG:69 Virginio Paglia - Serena Gori
 
  Martina Forte ha il BYE
  Partite giocate
-  (nessuna partita ancora giocata da giocatori attivi)
+  IDG:61 Vincenzo Di Bari - Gabriele Battaglia  0-1
+  IDG:67 Alessia Mereu - Giulia Paglia  0-1
