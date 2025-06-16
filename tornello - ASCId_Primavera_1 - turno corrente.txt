@@ -4,19 +4,19 @@
  Partite da giocare
   (Nessuna partita con giocatori attivi è attualmente pianificata con data/ora)
   Non pianificate (giocatori attivi):
-   IDG:57 Claudio Gasperoni - Francesco Nicolini
-   IDG:58 Rita Valleriani - Jiazhuang Vandelli
    IDG:59 Luigi Ventura - Maurizio Soppelsa
-   IDG:60 Fabrizio Zavan - Cosetta Trapletti
    IDG:62 Luca Parravano - Fabrizio Manneschi
-   IDG:64 Mathias Cicciarella - Giuseppe Baratta
-   IDG:65 Lorenzo Ionata - Valeria Scapin
    IDG:66 Valeria Calzolari - Mariangela Cassano
-   IDG:68 Michele Colangelo - Alessandra Testori
    IDG:69 Virginio Paglia - Serena Gori
 
  Martina Forte ha il BYE
  Partite giocate
+  IDG:57 Claudio Gasperoni - Francesco Nicolini  1-0
+  IDG:58 Rita Valleriani - Jiazhuang Vandelli  0-1
+  IDG:60 Fabrizio Zavan - Cosetta Trapletti  1-0
   IDG:61 Vincenzo Di Bari - Gabriele Battaglia  0-1
   IDG:63 Catia Susana Brites Pereira Lima - Filippa Tolaro  0-1
+  IDG:64 Mathias Cicciarella - Giuseppe Baratta  0-1
+  IDG:65 Lorenzo Ionata - Valeria Scapin  1-0
   IDG:67 Alessia Mereu - Giulia Paglia  0-1
+  IDG:68 Michele Colangelo - Alessandra Testori  1-0
