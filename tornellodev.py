@@ -1,11 +1,11 @@
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, pprint, glob, shutil, requests, io, zipfile, gettext
+import os, json, sys, math, traceback, subprocess, pprint, glob, shutil, requests, io, zipfile, gettext, locale
 import xml.etree.ElementTree as ET
-from GBUtils import dgt, key
+from GBUtils import dgt, key, Donazione
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "8.0.2 del 8 giugno 2025 di Gabriele Battaglia &	Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.1.9, 2025.06.12 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -22,6 +22,54 @@ BBP_EXE_PATH = os.path.join(BBP_SUBDIR, BBP_EXE_NAME)
 BBP_INPUT_TRF = os.path.join(BBP_SUBDIR, "input_bbp.trf") # Nome file input per bbp
 BBP_OUTPUT_COUPLES = os.path.join(BBP_SUBDIR, "output_coppie.txt")
 BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
+
+#QF
+def carica_configurazione():
+    """Carica la configurazione da language_set.json."""
+    if os.path.exists("language_set.json"):
+        try:
+            with open("language_set.json", "r", encoding='utf-8') as f:
+                return json.load(f)
+        except (IOError, json.JSONDecodeError):
+            return {} # Restituisce un dizionario vuoto se il file è corrotto
+    return {} # Restituisce un dizionario vuoto se il file non esiste
+
+def salva_configurazione(config_dict):
+    """Salva il dizionario di configurazione su file."""
+    try:
+        with open("language_set.json", "w", encoding='utf-8') as f:
+            json.dump(config_dict, f, indent=4)
+    except IOError as e:
+        print(_("Errore durante il salvataggio della configurazione: {}").format(e))
+
+def _cerca_giocatore_nel_db_fide(search_term):
+    """
+    Cerca un giocatore nel DB FIDE locale per nome/cognome o ID FIDE.
+    Restituisce una lista di record corrispondenti.
+    """
+    if not os.path.exists(FIDE_DB_LOCAL_FILE):
+        return [] # Se il file non esiste, non c'è nulla da cercare
+
+    try:
+        with open(FIDE_DB_LOCAL_FILE, "r", encoding='utf-8') as f:
+            fide_db = json.load(f)
+    except (IOError, json.JSONDecodeError):
+        return [] # Errore di lettura, restituisce lista vuota
+
+    matches = []
+    search_lower = search_term.strip().lower()
+    search_is_id = search_term.strip().isdigit()
+
+    if search_is_id and search_term.strip() in fide_db:
+        matches.append(fide_db[search_term.strip()])
+        return matches
+
+    for fide_id, player_data in fide_db.items():
+        full_name = f"{player_data.get('first_name', '')} {player_data.get('last_name', '')}".lower()
+        if search_lower in full_name:
+            matches.append(player_data)
+
+    return matches
 
 def _ricalcola_stato_giocatore_da_storico(player_obj):
     """
@@ -72,67 +120,50 @@ def time_machine_torneo(torneo):
     Restituisce True se il riavvolgimento è stato effettuato, False altrimenti.
     """
     current_round = torneo.get('current_round', 1)
-    
-    print("\n--- Time Machine ---")
-    print("Questa funzione ripristina lo stato del torneo a un turno precedente.")
-    print(f"Puoi tornare a un qualsiasi turno da 1 a {current_round}.")
-    print("Tutti i risultati e gli abbinamenti successivi al turno scelto verranno cancellati.")
-    
+    print(_("\n--- Time Machine ---"))
+    print(_("Questa funzione ripristina lo stato del torneo a un turno precedente."))
+    prompt_template_1 = _("Puoi tornare a un qualsiasi turno da 1 a {max_round}.")
+    print(prompt_template_1.format(max_round=current_round))
+    print(_("Tutti i risultati e gli abbinamenti successivi al turno scelto verranno cancellati."))
     try:
-        a=_("A quale turno vuoi tornare? (1-{turno}, o vuoto per annullare): ")
-        b=a.format(turno=current_round)
-        target_round_str = input(b).strip()
+        prompt_template_2 = _("A quale turno vuoi tornare? (1-{max_round}, o vuoto per annullare): ")
+        prompt_formatted = prompt_template_2.format(max_round=current_round)
+        target_round_str = input(prompt_formatted).strip()
         if not target_round_str:
-            print("Operazione annullata.")
+            print(_("Operazione annullata."))
             return False
-            
         target_round = int(target_round_str)
         if not (1 <= target_round <= current_round):
-            print("Numero di turno non valido.")
+            print(_("Numero di turno non valido."))
             return False
     except ValueError:
-        print("Input non valido. Inserisci un numero.")
+        print(_("Input non valido. Inserisci un numero."))
         return False
-
-    print("\nATTENZIONE: Stai per eseguire un'operazione distruttiva.")
-    print(f"Verranno eliminati tutti i risultati e gli abbinamenti inseriti dal turno {target_round} in poi.")
-    confirm = input("Sei assolutamente sicuro di voler procedere? (scrivi 'si' per confermare): ").strip().lower()
-
-    if confirm != 'si':
-        print("Conferma non data. Operazione di riavvolgimento annullata.")
-        return False
-        
-    print(f"\nAvvio riavvolgimento al Turno {target_round}...")
-
-    # 1. Ripristina il numero del turno corrente
-    torneo['current_round'] = target_round
-
-    # 2. Pulisci i turni futuri (strutture degli abbinamenti)
-    # Manteniamo solo i turni < target_round, più la struttura del target_round stesso
-    torneo['rounds'] = [r for r in torneo['rounds'] if r.get('round', 0) <= target_round]
+    print(_("\nATTENZIONE: Stai per eseguire un'operazione distruttiva."))
+    prompt_template_3 = _("Verranno eliminati tutti i risultati e gli abbinamenti inseriti dal turno {target_round} in poi.")
+    print(prompt_template_3.format(target_round=target_round))
     
-    # 3. Pulisci i risultati all'interno del turno target
+    confirm = input(_("Sei assolutamente sicuro di voler procedere? (scrivi 'si' per confermare): ")).strip().lower()
+    if confirm != 'si':
+        print(_("Conferma non data. Operazione di riavvolgimento annullata."))
+        return False
+    prompt_template_4 = _("\nAvvio riavvolgimento al Turno {target_round}...")
+    print(prompt_template_4.format(target_round=target_round))
+    torneo['current_round'] = target_round
+    torneo['rounds'] = [r for r in torneo['rounds'] if r.get('round', 0) <= target_round]
     for r in torneo['rounds']:
         if r.get('round') == target_round:
             for match in r.get('matches', []):
-                # Non cancellare i BYE, che sono risultati "strutturali" del turno
                 if match.get('result') != "BYE":
                     match['result'] = None
-    
-    # 4. Pulisci lo storico di ogni giocatore e ricalcola il loro stato
     for player in torneo.get('players', []):
-        # Rimuovi dallo storico tutte le partite del turno target o successive
         player['results_history'] = [res for res in player.get('results_history', []) if res.get('round', 0) < target_round]
-        # Ricalcola punti, avversari, colori, etc., basandoti sulla storia "pulita"
         _ricalcola_stato_giocatore_da_storico(player)
-
-    # 5. Ricostruisci il dizionario cache per coerenza
     torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-    
-    print("\nRiavvolgimento completato con successo!")
-    print(f"Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei risultati.")
-    
-    return True # Indica che sono state apportate modifiche
+    print(_("\nRiavvolgimento completato con successo!"))
+    prompt_template_5 = _("Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei risultati.")
+    print(prompt_template_5.format(target_round=target_round))
+    return True
 
 def sincronizza_db_personale():
     """
@@ -141,24 +172,24 @@ def sincronizza_db_personale():
     rispettando le regole di precedenza per i dati locali.
     """
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
-        print(f"ERRORE: Database FIDE locale '{FIDE_DB_LOCAL_FILE}' non trovato.")
-        print("Esegui prima la funzione di aggiornamento del DB FIDE.")
+        print(_("ERRORE: Database FIDE locale '{}' non trovato.").format(FIDE_DB_LOCAL_FILE))
+        print(_("Esegui prima la funzione di aggiornamento del DB FIDE."))
         return
-    print("\n--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---")
+    print(_("\n--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"))
     try:
         with open(FIDE_DB_LOCAL_FILE, "r", encoding='utf-8') as f:
             fide_db = json.load(f)
-        print(f"Database FIDE locale caricato con {len(fide_db)} giocatori.")
+        print(_("Database FIDE locale caricato con {} giocatori.").format(len(fide_db)))
     except Exception as e:
-        print(f"ERRORE critico durante la lettura di '{FIDE_DB_LOCAL_FILE}': {e}")
+        print(_("ERRORE critico durante la lettura di '{}': {}").format(FIDE_DB_LOCAL_FILE, e))
         return
     players_db = load_players_db()
     if not players_db:
-        print("Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione da effettuare.")
+        print(_("Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione da effettuare."))
         return
     all_potential_changes = []
     
-    print("Analisi dei giocatori nel tuo database personale...")
+    print(_("Analisi dei giocatori nel tuo database personale..."))
     for player_id, local_player in players_db.items():
         fide_id_str = local_player.get('fide_id_num_str', '0')
         fide_record = None
@@ -185,26 +216,24 @@ def sincronizza_db_personale():
             
             if len(matches) == 1:
                 match = matches[0]
-                print(f"\n-> Trovata una corrispondenza FIDE per il tuo giocatore '{local_player.get('first_name')} {local_player.get('last_name')}' (ID: {player_id}):")
+                print(_("\n-> Trovata una corrispondenza FIDE per il tuo giocatore '{} {}' (ID: {}):").format(local_player.get('first_name'), local_player.get('last_name'), player_id))
                 print(f"   FIDE ID: {match['id_fide']}, Nome: {match['last_name']}, {match['first_name']}, FED: {match['federation']}, Elo: {match['elo_standard']}, Anno Nascita: {match.get('birth_year')}")
-                if get_input_with_default("   Associare questo ID FIDE al tuo giocatore? (S/n)", "s").lower() == 's':
+                if get_input_with_default(_("   Associare questo ID FIDE al tuo giocatore? (S/n)", "s")).lower() == 's':
                     player_changes['new_fide_id'] = str(match['id_fide'])
                     fide_record = match
             elif len(matches) > 1:
-                print(f"\n-> Trovati {len(matches)} omonimi nel DB FIDE per il tuo giocatore '{local_player.get('first_name')} {local_player.get('last_name')}' (ID: {player_id}).")
-                print("   Seleziona l'ID FIDE corretto o 'n' per saltare:")
+                print(_("\n-> Trovati {} omonimi nel DB FIDE per il tuo giocatore '{} {}' (ID: {}).").format(len(matches), local_player.get('first_name'), local_player.get('last_name'), player_id))
+                print(_("   Seleziona l'ID FIDE corretto o 'n' per saltare:"))
                 for i, match in enumerate(matches):
-                    print(f"   {i+1}. FIDE ID: {match['id_fide']}, FED: {match['federation']}, Elo: {match['elo_standard']}, Anno Nascita: {match.get('birth_year')}")
-                print("   n. Nessuno di questi")
-
-                choice = input("   Scelta: ").strip().lower()
+                    print(_(" {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}").format(i + 1, match['id_fide'], match['federation'], match['elo_standard'], match.get('birth_year')))
+                print(_("   n. Nessuno di questi"))
+                choice = input(_("   Scelta: ")).strip().lower()
                 if choice.isdigit() and 1 <= int(choice) <= len(matches):
                     chosen_match = matches[int(choice) - 1]
                     player_changes['new_fide_id'] = str(chosen_match['id_fide'])
                     fide_record = chosen_match
                 else:
-                    print("   Scelta non valida o saltata. Il giocatore non verrà associato.")
-
+                    print(_("   Scelta non valida o saltata. Il giocatore non verrà associato."))
         # --- FASE 2: Se abbiamo un record FIDE (trovato tramite ID o tramite associazione), controlla gli aggiornamenti ---
         if fide_record:
             updates = {}
@@ -235,12 +264,12 @@ def sincronizza_db_personale():
     
     # --- FASE 3: Riepilogo e Conferma Finale Interattiva ---
     if not all_potential_changes:
-        print("\nAnalisi completata. Il tuo database personale è già perfettamente sincronizzato!")
+        print(_("\nAnalisi completata. Il tuo database personale è già perfettamente sincronizzato!"))
         return
-    print(f"\n--- Riepilogo Sincronizzazione: Trovate {len(all_potential_changes)} modifiche proposte ---")
+    print(_("\n--- Riepilogo Sincronizzazione: Trovate {} modifiche proposte ---").format(len(all_potential_changes)))
     for change in all_potential_changes[:3]:
         player = change['current_data']
-        print(f"  - Giocatore: {player.get('first_name')} {player.get('last_name')} (ID Locale: {player.get('id')})")
+        print(_(" - Giocatore: {} {} (ID Locale: {})").format(player.get('first_name'), player.get('last_name'), player.get('id')))
         if change['new_fide_id']:
             print(f"    -> Associazione nuovo ID FIDE: {change['new_fide_id']}")
         if change['updates']:
@@ -248,19 +277,19 @@ def sincronizza_db_personale():
                 print(f"    -> Aggiornamento {key.replace('_',' ').title()}: da '{player.get(key)}' a '{value}'")
 
     if len(all_potential_changes) > 3:
-        if get_input_with_default("\nVuoi vedere l'elenco completo di tutte le modifiche proposte? (s/N)", "n").lower() == 's':
-            print("\n--- Elenco Completo Modifiche Proposte ---")
+        if get_input_with_default(_("\nVuoi vedere l'elenco completo di tutte le modifiche proposte? (s/N)"), "n").lower() == 's':
+            print(_("\n--- Elenco Completo Modifiche Proposte ---"))
             for change in all_potential_changes: # Mostra tutti
                  player = change['current_data']
                  print(f"  - Giocatore: {player.get('first_name')} {player.get('last_name')} (ID Locale: {player.get('id')})")
                  if change['new_fide_id']:
-                     print(f"    -> Associazione nuovo ID FIDE: {change['new_fide_id']}")
+                     print(_(" -> Associazione nuovo ID FIDE: {}").format(change['new_fide_id']))
                  if change['updates']:
                      for key, value in change['updates'].items():
                          print(f"    -> Aggiornamento {key.replace('_',' ').title()}: da '{player.get(key, 'N/D')}' a '{value}'")
                  print("-" * 20)
 
-    if get_input_with_default("\nVuoi applicare tutte le modifiche proposte al tuo database personale? (s/N)", "n").lower() == 's':
+    if get_input_with_default(_("\nVuoi applicare tutte le modifiche proposte al tuo database personale? (s/N)"), "n").lower() == 's':
         for change in all_potential_changes:
             player_record_to_update = players_db[change['player_id']]
             if change['new_fide_id']:
@@ -269,9 +298,9 @@ def sincronizza_db_personale():
                 player_record_to_update.update(change['updates'])
             
         save_players_db(players_db)
-        print("\nSincronizzazione completata e database personale salvato!")
+        print(_("\nSincronizzazione completata e database personale salvato!"))
     else:
-        print("\nOperazione annullata. Nessuna modifica è stata salvata.")
+        print(_("\nOperazione annullata. Nessuna modifica è stata salvata."))
 
 def aggiorna_db_fide_locale():
     """
@@ -280,20 +309,19 @@ def aggiorna_db_fide_locale():
     Restituisce True in caso di successo, False altrimenti.
     """
     try:
-        print(f"Download del file ZIP FIDE da: {FIDE_XML_DOWNLOAD_URL}")
-        print("L'operazione potrebbe richiedere alcuni minuti a seconda della connessione...")
+        print(_("Download del file ZIP FIDE da: {url}").format(url=FIDE_XML_DOWNLOAD_URL))
+        print(_("L'operazione potrebbe richiedere alcuni minuti a seconda della connessione..."))
         zip_response = requests.get(FIDE_XML_DOWNLOAD_URL, timeout=120)
         zip_response.raise_for_status()
 
-        print("Download completato. Apertura archivio ZIP in memoria...")
+        print(_("Download completato. Apertura archivio ZIP in memoria..."))
         with zipfile.ZipFile(io.BytesIO(zip_response.content)) as zf:
             xml_filename = next((name for name in zf.namelist() if name.lower().endswith('.xml')), None)
             
             if not xml_filename:
-                print("ERRORE: Nessun file .xml trovato nell'archivio ZIP.")
+                print(_("ERRORE: Nessun file .xml trovato nell'archivio ZIP."))
                 return False
-            
-            print(f"Estrazione ed elaborazione del file XML: {xml_filename}...")
+            print(_("Estrazione ed elaborazione del file XML: {filename}...").format(filename=xml_filename))
             
             xml_content = zf.read(xml_filename)
             
@@ -347,22 +375,21 @@ def aggiorna_db_fide_locale():
                     }
                     player_count += 1
                     if player_count % 500000 == 0:
-                        print(f"  ... elaborati {player_count} giocatori...")
-            
-            print(f"Elaborazione completata. Trovati e salvati {len(fide_players_db)} giocatori FIDE.")
+                        print(_("  ... elaborati {count} giocatori...").format(count=player_count))
+            print(_("Elaborazione completata. Trovati e salvati {count} giocatori FIDE.").format(count=len(fide_players_db)))
             
             with open("fide_ratings_local.json", "w", encoding='utf-8') as f_out:
                 json.dump(fide_players_db, f_out, indent=1)
-            print("Database FIDE locale 'fide_ratings_local.json' arricchito e salvato con successo.")
+            print(_("Database FIDE locale 'fide_ratings_local.json' salvato con successo."))
             return True # Restituisce True in caso di successo
     except requests.exceptions.Timeout:
-        print(f"ERRORE: Timeout durante il download del file.")
+        print(_("ERRORE: Timeout durante il download del file."))
         return False
     except requests.exceptions.RequestException as e_req:
-        print(f"ERRORE di rete: {e_req}")
+        print(_("ERRORE di rete: {error}").format(error=e_req))
         return False
     except Exception as e_main:
-        print(f"Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: {e_main}")
+        print(_("Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: {error}").format(error=e_main))
         traceback.print_exc()
         return False
 
@@ -385,24 +412,24 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
     Modifica direttamente torneo['players'] e torneo['players_dict'].
     """
     if not torneo or 'players' not in torneo:
-        print("Errore: Dati torneo o giocatori mancanti per la conferma.")
+        print(_("Errore: Dati torneo o giocatori mancanti per la conferma."))
         return False
 
-    print("\n--- Riepilogo Giocatori Iscritti al Torneo ---")
+    print(_("\n--- Riepilogo Giocatori Iscritti al Torneo ---"))
     
     while True:
         if not torneo['players']:
-            print("Nessun giocatore attualmente iscritto al torneo.")
-            if get_input_with_default_gestore_db("Vuoi tornare all'inserimento giocatori? (s/N)", "n").lower() == 's':
+            print(_("Nessun giocatore attualmente iscritto al torneo."))
+            if get_input_with_default_gestore_db(_("Vuoi tornare all'inserimento giocatori? (s/N)"), "n").lower() == 's':
                 # Questo richiederebbe di uscire da qui e rientrare in input_players,
                 # o modificare input_players per essere richiamabile.
                 # Per ora, diciamo che l'utente deve ricreare il torneo se svuota la lista.
-                print("Lista giocatori vuota. La creazione del torneo potrebbe fallire o necessitare di nuovi inserimenti.")
+                print(_("Lista giocatori vuota. La creazione del torneo potrebbe fallire o necessitare di nuovi inserimenti."))
                 return False # Indica che la lista non è valida per procedere
             else:
                 return False # L'utente non vuole aggiungere, ma la lista è vuota.
 
-        print(f"Numero attuale di giocatori: {len(torneo['players'])}")
+        print(_("Numero attuale di giocatori: {count}").format(count=len(torneo['players'])))
         for i, player_data in enumerate(torneo['players']):
             # Assicurati che i dati per il display siano disponibili
             # Se i giocatori provengono da input_players, dovrebbero avere questi campi.
@@ -412,39 +439,36 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             elo = player_data.get('initial_elo', 'Elo?') # In un nuovo torneo, sarà initial_elo
             print(f"  {i+1}. ID: {player_id} - {first_name} {last_name} (Elo: {elo})")
 
-        choice = input("\nVuoi rimuovere un giocatore dalla lista? (Inserisci il numero, o 'f' per finire e confermare): ").strip().lower()
+        choice = input(_("\nVuoi rimuovere un giocatore dalla lista? (Inserisci il numero, o 'f' per finire e confermare): ")).strip().lower()
 
         if choice == 'f':
             min_players_for_tournament = torneo.get("total_rounds", 1) + 1 # Esempio di regola: NumTurni + 1
             if len(torneo['players']) < min_players_for_tournament:
-                 print(f"ATTENZIONE: Sono necessari almeno {min_players_for_tournament} giocatori per un torneo di {torneo.get('total_rounds')} turni.")
-                 if get_input_with_default_gestore_db("Continuare comunque con meno giocatori? (s/N)", "n").lower() != 's':
-                     print("Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo.")
-                     # Qui potresti voler un loop che riporta all'input giocatori, 
-                     # ma per ora la funzione restituisce False e main gestirà l'uscita.
+                 print(_("ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo di {rounds} turni.").format(min_players=min_players_for_tournament, rounds=torneo.get('total_rounds')))
+                 if get_input_with_default_gestore_db(_("Continuare comunque con meno giocatori? (s/N)"), "n").lower() != 's':
+                     print(_("Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo."))
                      return False 
-            print("Lista giocatori confermata.")
+            print(_("Lista giocatori confermata."))
             return True # Lista confermata e valida (o utente ha forzato con meno giocatori)
-
         elif choice.isdigit():
             try:
                 idx_to_remove = int(choice) - 1
                 if 0 <= idx_to_remove < len(torneo['players']):
                     player_to_remove = torneo['players'][idx_to_remove]
-                    confirm_remove = key(f"Rimuovere '{player_to_remove.get('first_name')} {player_to_remove.get('last_name')}'? (s/N): ").strip().lower()
+                    confirm_remove = key(_("Rimuovere '{first_name} {last_name}'? (s/N): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name'))).strip().lower()
                     if confirm_remove == 's':
                         removed_player = torneo['players'].pop(idx_to_remove)
-                        print(f"Giocatore '{removed_player.get('first_name')} {removed_player.get('last_name')}' rimosso.")
+                        print(_("Giocatore '{first_name} {last_name}' rimosso.").format(first_name=removed_player.get('first_name'), last_name=removed_player.get('last_name')))
                         # Aggiorna anche players_dict se necessario (o fallo alla fine una volta)
                         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
                     else:
-                        print("Rimozione annullata.")
+                        print(_("Rimozione annullata."))
                 else:
-                    print("Numero giocatore non valido.")
+                    print(_("Numero giocatore non valido."))
             except ValueError:
-                print("Input non valido.")
+                print(_("Input non valido."))
         else:
-            print("Comando non riconosciuto.")
+            print(_("Comando non riconosciuto."))
 
 def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
     '''
@@ -462,27 +486,23 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
         is_modifying = existing_details is not None
         now = datetime.now()
 
-        print("\n--- Dettagli Pianificazione Partita ---")
+        print(_("\n--- Dettagli Pianificazione Partita ---"))
         if is_modifying:
-            print("Lasciare il campo vuoto per mantenere il valore attuale.")
-
-        # Data Partita (con input semplificato)
+            print(_("Lasciare il campo vuoto per mantenere il valore attuale."))
         while True:
-            prompt_date = f"Data partita (formati: GG, GG-MM, {DATE_FORMAT_ISO})"
+            prompt_date = _("Data partita (formati: GG, GG-MM, {iso_format})").format(iso_format=DATE_FORMAT_ISO)
             default_date_val_for_input = "" # Stringa vuota per get_input_with_default
             current_display = "N/D"
             if is_modifying and existing_details and existing_details.get('date'):
                 default_date_val_for_input = existing_details['date']
                 current_display = format_date_locale(default_date_val_for_input)
-            prompt_date += f" [Attuale: {current_display}]: "
-            
+            prompt_date += _(" [Attuale: {current}]: ").format(current=current_display)
             date_input_str = get_input_with_default_gestore_db(prompt_date, default_date_val_for_input).strip()
-
             if not date_input_str and is_modifying: # Mantiene il vecchio valore se input vuoto in modifica
                 details['date'] = default_date_val_for_input
                 break
             if not date_input_str and not is_modifying:
-                 print("La data è obbligatoria.")
+                 print(_("La data è obbligatoria."))
                  continue
             
             parsed_date_obj = None
@@ -507,30 +527,26 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 details['date'] = parsed_date_obj.strftime(DATE_FORMAT_ISO)
                 break
             except ValueError:
-                print(f"Formato data '{date_input_str}' non valido o data inesistente. Usa GG, GG-MM, o {DATE_FORMAT_ISO}.")
+                print(_("Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o {iso_format}.").format(input=date_input_str, iso_format=DATE_FORMAT_ISO))
             except TypeError: # In caso parsed_date_obj rimanga None per un path non gestito
-                 print(f"Input data '{date_input_str}' non interpretabile.")
+                 print(_("Input data '{input}' non interpretabile.").format(input=date_input_str))
 
 
-        # Ora Partita (con input semplificato)
         while True:
-            prompt_time = "Ora partita (formati: HH, HH:MM)"
+            prompt_time = _("Ora partita (formati: HH, HH:MM)")
             default_time_val_for_input = ""
             current_display_time = "N/O"
             if is_modifying and existing_details and existing_details.get('time'):
                 default_time_val_for_input = existing_details['time']
                 current_display_time = default_time_val_for_input
-            prompt_time += f" [Attuale: {current_display_time}]: "
-
+            prompt_time += _(" [Attuale: {current}]: ").format(current=current_display_time)
             time_input_str = get_input_with_default_gestore_db(prompt_time, default_time_val_for_input).strip()
-
             if not time_input_str and is_modifying:
                 details['time'] = default_time_val_for_input
                 break
             if not time_input_str and not is_modifying:
-                 print("L'ora è obbligatoria.")
+                 print(_("L'ora è obbligatoria."))
                  continue
-            
             parsed_time_str = None
             try:
                 if ':' in time_input_str: # Formato HH:MM
@@ -540,20 +556,16 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                     hour = int(time_input_str)
                     parsed_time_str = f"{hour:02d}:00"
                 else:
-                    raise ValueError("Formato ora non riconosciuto")
-                
+                    raise ValueError(_("Formato ora non riconosciuto"))
                 details['time'] = parsed_time_str
                 break
             except ValueError:
-                print("Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30).")
-
+                print(_("Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."))
         # Canale e Arbitro (invariati)
         default_channel_val = "" if not is_modifying else existing_details.get('channel', "")
-        details['channel'] = get_input_with_default_gestore_db(f"Canale/Link partita [Attuale: {default_channel_val}]: ", default_channel_val).strip()
-
+        details['channel'] = get_input_with_default_gestore_db(_("Canale/Link partita [Attuale: {current}]: ").format(current=default_channel_val), default_channel_val).strip()
         default_arbiter_val = "" if not is_modifying else existing_details.get('arbiter', "")
-        details['arbiter'] = get_input_with_default_gestore_db(f"Arbitro assegnato [Attuale: {default_arbiter_val}]: ", default_arbiter_val).strip()
-        
+        details['arbiter'] = get_input_with_default_gestore_db(_("Arbitro assegnato [Attuale: {current}]: ").format(current=default_arbiter_val), default_arbiter_val).strip()
         if is_modifying: # Controlla se qualcosa è effettivamente cambiato
             changed = False
             if details.get('date') != existing_details.get('date'): changed = True
@@ -561,23 +573,19 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
             if details.get('channel', "") != existing_details.get('channel', ""): changed = True
             if details.get('arbiter', "") != existing_details.get('arbiter', ""): changed = True
             if not changed:
-                print("Nessun dettaglio della pianificazione è stato effettivamente modificato.")
-        
+                print(_("Nessun dettaglio della pianificazione è stato effettivamente modificato."))
         if not details.get('date') or not details.get('time'): # Campi obbligatori
-             print("Data e ora sono obbligatori per la pianificazione. Operazione annullata."); return None
+             print(_("Data e ora sono obbligatori per la pianificazione. Operazione annullata."))
+             return None
         return details
-    # --- FINE SOTTO-FUNZIONE ---
-
     while True:
-        # Ordina tutte le partite del turno per ID globale per un ordine scacchiera consistente
         all_matches_in_round_sorted_by_id = sorted(
             current_round_data.get("matches", []), 
             key=lambda m: m.get('id', 0)
         )
-
         if not any(m.get("result") is None and m.get("black_player_id") is not None for m in all_matches_in_round_sorted_by_id):
-            print(f"\nTutte le partite del Turno {current_round_num} sono state giocate o sono BYE.")
-            print("Nessuna partita disponibile per la pianificazione/modifica.")
+            print(_("\nTutte le partite del Turno {round_num} sono state giocate o sono BYE.").format(round_num=current_round_num))
+            print(_("Nessuna partita disponibile per la pianificazione/modifica."))
             break 
 
         display_lines_pending_scheduling = []
@@ -627,23 +635,23 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 round_board_is_scheduled_map[actual_board_number_counter] = False
                 display_lines_pending_scheduling.append(base_display_line)
         
-        print(f"\n--- Pianificazione Partite Turno {current_round_num} ---")
-        print("(Vengono mostrati i Numeri Scacchiera reali del turno per le partite ancora da giocare)")
+        print(_("\n--- Pianificazione Partite Turno {round_num} ---").format(round_num=current_round_num))
+        print(_("(Vengono mostrati i Numeri Scacchiera reali del turno per le partite ancora da giocare)"))
 
-        print("\nPartite da Pianificare (non hanno ancora una pianificazione):")
+        print(_("\nPartite da Pianificare (non hanno ancora una pianificazione):"))
         if display_lines_pending_scheduling:
             for line in display_lines_pending_scheduling: print(line)
         else:
-            print("  Nessuna partita attualmente da pianificare (o sono tutte già pianificate).")
+            print(_("  Nessuna partita attualmente da pianificare (o sono tutte già pianificate)."))
 
         print("\nPartite Già Pianificate (in attesa di risultato):")
         if display_lines_already_scheduled:
             for line in display_lines_already_scheduled: print(line)
         else:
-            print("  Nessuna partita attualmente pianificata.")
+            print(_("  Nessuna partita attualmente pianificata."))
         
-        if not round_board_to_global_id_map: # Se nessuna partita è risultata pianificabile
-            print("\nNessuna partita pendente disponibile per la gestione della pianificazione.")
+        if not round_board_to_global_id_map:
+            print(_("\nNessuna partita pendente disponibile per la gestione della pianificazione."))
             break
 
 
@@ -1240,7 +1248,7 @@ def save_players_db_txt(players_db):
                          history_line = f"{rank_formatted} su {t.get('total_players', '?')} in {t_name} - {start_date_formatted} - {end_date_formatted}"
                          f.write(f"\t{history_line}\n")
                 else:
-                    f.write("\tNessuno\n")
+                    f.write(_("\tNessuno\n"))
                 f.write("\t" + "-" * 30 + "\n")
     except IOError as e:
         print(f"Errore durante il salvataggio del file TXT del DB giocatori ({PLAYER_DB_TXT_FILE}): {e}")
@@ -1894,169 +1902,140 @@ def get_input_with_default(prompt_message, default_value=None):
     else: 
         return input(f"{prompt_message}: ").strip()
 
-def input_players(players_db): # players_db è il dizionario del DB principale
-    players_in_tournament = [] # Lista dei giocatori per QUESTO torneo
-    added_player_ids_to_tournament = set() # ID dei giocatori già aggiunti a QUESTO torneo
-    
+def input_players(players_db):
+    """
+    Gestisce l'input dei giocatori per un torneo con una ricerca a 3 livelli:
+    1. Cerca nel DB personale.
+    2. Se non trovato, cerca nel DB FIDE locale.
+    3. Se non trovato, procede con la creazione manuale.
+    """
+    players_in_tournament = []
+    added_player_ids_to_tournament = set()
+
     print("\n--- Inserimento Giocatori per il Torneo ---")
-    print("Inserire ID esatto di un giocatore esistente nel DB, oppure parte del Nome/Cognome per cercarlo.")
-    print("Se il giocatore non esiste o è un omonimo, potrai crearlo come nuovo record nel DB.")
-    print("Lasciare vuoto per terminare l'inserimento.")
+    print("Inserire ID locale, ID FIDE, o parte del Nome/Cognome.")
+    print("Il programma cercherà prima nel tuo DB personale, poi nel DB FIDE scaricato.")
+
     while True:
-        current_num_players_in_tournament = len(players_in_tournament)
-        #qt qui translate
-        data_input_utente = input(f"\nID, parte del nome o del cognome (se già presente nel DB) oppure vuoto\nGiocatore {current_num_players_in_tournament + 1}: ").strip()
+        current_num_players = len(players_in_tournament)
+        data_input = input(f"\nGiocatore {current_num_players + 1} (o lascia vuoto per terminare): ").strip()
 
-        if not data_input_utente:
-            # Logica per terminare l'input (come prima)
-            min_players = 2 
-            if current_num_players_in_tournament < min_players:
-                if get_input_with_default(f"Ci sono meno di {min_players} giocatori. Continuare inserimento? (S/n)", "s").lower() == 'n':
-                    print(f"Inserimento terminato con {current_num_players_in_tournament} giocatori (insufficienti).")
-                    break
+        if not data_input: # Logica per terminare l'inserimento
+            if current_num_players < 2:
+                if get_input_with_default(f"Ci sono meno di 2 giocatori. Continuare? (S/n)", "s").lower() == 'n': break
+                else: continue
+            else: break
+
+        player_id_to_add = None
+        player_data_from_db = None
+
+        # --- LIVELLO 1: Ricerca nel DB Personale (`players_db`) ---
+        potential_id_input = data_input.upper()
+        if potential_id_input in players_db:
+            player_id_to_add = potential_id_input
+        else:
+            matches_in_personal_db = [p for p in players_db.values() if data_input.lower() in f"{p.get('first_name','')} {p.get('last_name','')}".lower()]
+            if len(matches_in_personal_db) == 1:
+                player_id_to_add = matches_in_personal_db[0]['id']
+            elif len(matches_in_personal_db) > 1:
+                print(f"Trovati {len(matches_in_personal_db)} giocatori nel tuo DB personale. Specifica usando l'ID locale:")
+                for i, p in enumerate(matches_in_personal_db): print(f"  {i+1}. ID: {p.get('id')} - {p.get('first_name')} {p.get('last_name')}")
+                continue
+
+        if player_id_to_add:
+            print(f"Trovato giocatore nel DB personale: {players_db[player_id_to_add].get('first_name')} (ID: {player_id_to_add})")
+            player_data_from_db = players_db[player_id_to_add]
+
+        # --- LIVELLO 2: Ricerca nel DB FIDE Locale (se non trovato nel DB personale) ---
+        if not player_id_to_add:
+            print(f"Giocatore non trovato nel DB personale. Avvio ricerca nel DB FIDE...")
+            fide_matches = _cerca_giocatore_nel_db_fide(data_input)
+
+            selected_fide_record = None
+            if len(fide_matches) == 1:
+                match = fide_matches[0]
+                print(f"\n-> Trovata 1 corrispondenza nel DB FIDE:")
+                print(f"   Nome: {match['last_name']}, {match['first_name']} (ID FIDE: {match['id_fide']}, FED: {match['federation']}, Elo: {match['elo_standard']})")
+                if get_input_with_default("   È questo il giocatore corretto? (S/n)", "s").lower() == 's':
+                    selected_fide_record = match
+            elif len(fide_matches) > 1:
+                print(f"\n-> Trovate {len(fide_matches)} corrispondenze nel DB FIDE per '{data_input}'. Scegli quella corretta:")
+                for i, match in enumerate(fide_matches[:15]): # Mostra al massimo i primi 15 risultati
+                    print(f"   {i+1}. ID FIDE: {match['id_fide']:<9} | {match['last_name']}, {match['first_name']:<25} | FED: {match['federation']:<3} | Elo: {match['elo_standard']:<4}")
+                print(_("   0. Nessuno di questi / Inserimento manuale"))
+                choice_str = input("   Scelta: ").strip()
+                if choice_str.isdigit() and 1 <= int(choice_str) <= len(fide_matches[:15]):
+                    selected_fide_record = fide_matches[int(choice_str) - 1]
+
+            # Se è stato selezionato un giocatore dal DB FIDE, crealo nel nostro DB personale
+            if selected_fide_record:
+                print(f"Importazione di '{selected_fide_record['first_name']} {selected_fide_record['last_name']}' nel tuo DB personale...")
+                player_id_to_add = crea_nuovo_giocatore_nel_db(
+                    players_db, 
+                    first_name=selected_fide_record.get('first_name'), 
+                    last_name=selected_fide_record.get('last_name'), 
+                    elo=selected_fide_record.get('elo_standard'),
+                    fide_title=selected_fide_record.get('title', ''),
+                    sex=selected_fide_record.get('sex', 'M'),
+                    federation=selected_fide_record.get('federation', ''),
+                    fide_id_num_str=str(selected_fide_record.get('id_fide')),
+                    birth_date=f"{selected_fide_record.get('birth_year')}-01-01" if selected_fide_record.get('birth_year') else None,
+                    experienced=True # Un giocatore con rating FIDE è per definizione "experienced"
+                )
+                if player_id_to_add:
+                    player_data_from_db = players_db[player_id_to_add]
                 else:
-                    continue 
-            else:
-                print(f"Inserimento terminato con {current_num_players_in_tournament} giocatori.")
-                break
-        
-        player_id_to_add_to_tournament = None
-        player_data_for_tournament_from_db = None # Dati presi dal DB principale
+                    print("Errore durante la creazione del giocatore importato. Si prega di riprovare.")
+                    continue
 
-        # 1. Tentativo di Match ID Esatto o Ricerca Parziale
-        potential_id_input = data_input_utente.upper()
-        if potential_id_input in players_db: # L'utente ha inserito un ID esatto
-            print(f"ID esatto '{potential_id_input}' trovato nel database principale.")
-            player_id_to_add_to_tournament = potential_id_input
-            player_data_for_tournament_from_db = players_db[player_id_to_add_to_tournament]
-        else: # Ricerca parziale per nome/cognome
-            search_lower = data_input_utente.lower()
-            matches_in_db = [p_data for id_db, p_data in players_db.items()
-                             if search_lower in p_data.get('first_name', '').lower() or \
-                                search_lower in p_data.get('last_name', '').lower()]
-
-            if len(matches_in_db) == 1:
-                player_data_for_tournament_from_db = matches_in_db[0]
-                player_id_to_add_to_tournament = player_data_for_tournament_from_db['id']
-                print(f"Trovato giocatore nel DB: {player_data_for_tournament_from_db.get('first_name')} {player_data_for_tournament_from_db.get('last_name')} (ID: {player_id_to_add_to_tournament})")
-            elif len(matches_in_db) > 1:
-                print(f"Trovati {len(matches_in_db)} giocatori nel DB contenenti '{data_input_utente}'. Specifica usando l'ID esatto o crea un nuovo giocatore:")
-                # ... (stampa la lista dei match come facevi prima) ...
-                for i, p_match_item in enumerate(matches_in_db, 1):
-                     print(f"  {i}. ID: {p_match_item.get('id', 'N/D'):<9} - {p_match_item.get('first_name', 'N/D')} {p_match_item.get('last_name', 'N/D')} (Elo DB: {p_match_item.get('current_elo', 'N/D')})")
-                print(f"  {len(matches_in_db) + 1}. Crea un nuovo giocatore (o se è un omonimo non in lista).")
-                
-                choice_str = input("Scegli un numero dalla lista o inserisci un ID esatto: ").strip()
-                if choice_str.isdigit():
-                    choice_idx = int(choice_str) -1
-                    if 0 <= choice_idx < len(matches_in_db):
-                        player_data_for_tournament_from_db = matches_in_db[choice_idx]
-                        player_id_to_add_to_tournament = player_data_for_tournament_from_db['id']
-                    elif choice_idx == len(matches_in_db): # Scelta "Crea nuovo"
-                        pass # player_id_to_add_to_tournament rimane None, si passerà alla creazione
-                    else: print("Scelta non valida."); continue
-                elif choice_str.upper() in players_db: # L'utente ha inserito un ID esatto dopo la lista
-                    player_id_to_add_to_tournament = choice_str.upper()
-                    player_data_for_tournament_from_db = players_db[player_id_to_add_to_tournament]
-                else: print("Input non riconosciuto."); continue
-            # else: Nessun giocatore trovato (player_id_to_add_to_tournament è None), si passerà alla creazione
-        
-        # 2. Se non è stato selezionato un giocatore esistente, si procede alla creazione di un nuovo record nel DB
-        if player_id_to_add_to_tournament is None:
-            print(f"\nNessun giocatore esistente selezionato o trovato per '{data_input_utente}'. Procedi con l'inserimento di un nuovo giocatore nel DB (anche se omonimo).")
-            
-            # --- RACCOLTA COMPLETA DEI DATI DEL NUOVO GIOCATORE ---
-            # (Questa logica di input è quella che avevi già, assicurati sia completa)
+        # --- LIVELLO 3: Creazione Manuale (se non trovato da nessuna parte) ---
+        if not player_id_to_add:
+            print(_("Nessuna corrispondenza trovata. Procedi con l'inserimento manuale."))
+            # ... [La tua logica esistente per la raccolta manuale dei dati va qui] ...
             first_name_new_db = get_input_with_default("  Nome del nuovo giocatore: ").strip().title()
-            if not first_name_new_db: print("Nome richiesto."); continue
-            last_name_new_db = get_input_with_default("  Cognome del nuovo giocatore: ").strip().title()
-            if not last_name_new_db: print("Cognome richiesto."); continue
-            
+            if not first_name_new_db: continue
+            last_name_new_db = get_input_with_default("  Cognome: ").strip().title()
+            if not last_name_new_db: continue
             elo_new_db = dgt(f"  Elo (default {DEFAULT_ELO})", kind="f", fmin=500, fmax=4000, default=DEFAULT_ELO)
-            fide_title_new_db = get_input_with_default(f"  Titolo FIDE (es. FM, o vuoto)", "").strip().upper()[:3]
-            
-            sex_new_db = ""
-            while True:
-                sex_prompt = get_input_with_default("  Sesso (m/w)", "m").strip().lower()
-                if sex_prompt in ['m', 'w']: sex_new_db = sex_prompt; break
-                print("  Input non valido.")
-            
+            fide_title_new_db = get_input_with_default("  Titolo FIDE (es. FM, o vuoto)", "").strip().upper()[:3]
+            sex_new_db = get_input_with_default("  Sesso (m/w)", "m").strip().lower()
             fed_new_db = get_input_with_default("  Federazione (3 lettere, es. ITA)", "ITA").strip().upper()[:3] or "ITA"
-            
-            fide_id_new_db = get_input_with_default("  ID FIDE Numerico (cifre, '0' se N/D)", "0").strip()
-            if not fide_id_new_db.isdigit(): fide_id_new_db = '0'
-            if not fide_id_new_db: fide_id_new_db = '0'
+            fide_id_new_db = get_input_with_default("  ID FIDE Numerico ('0' se N/D)", "0").strip()
+            bdate_input = get_input_with_default(f"  Data Nascita ({DATE_FORMAT_DB} o vuoto)", "").strip()
+            birth_date_new_db = bdate_input if bdate_input else None
+            exp_input = get_input_with_default(f"  Esperienza pregressa significativa? (s/n)", "n").strip().lower()
+            exp_new_db = True if exp_input == 's' else False
 
-            birth_date_new_db = None
-            while True:
-                bdate_input = get_input_with_default(f"  Data Nascita ({DATE_FORMAT_DB} o vuoto)", "").strip()
-                if not bdate_input: break
-                try: datetime.strptime(bdate_input, DATE_FORMAT_DB); birth_date_new_db = bdate_input; break
-                except ValueError: print(f"  Formato data non valido.")
-            
-            exp_new_db = False
-            while True:
-                exp_input = get_input_with_default(f"  Esperienza pregressa significativa? (s/n)", "n").strip().lower()
-                if exp_input == 's': exp_new_db = True; break
-                elif exp_input == 'n': exp_new_db = False; break
-                else: print("  Risposta non valida.")
-            # --- FINE RACCOLTA DATI ---
-
-            player_id_to_add_to_tournament = crea_nuovo_giocatore_nel_db(
+            player_id_to_add = crea_nuovo_giocatore_nel_db(
                 players_db, first_name_new_db, last_name_new_db, elo_new_db,
                 fide_title_new_db, sex_new_db, fed_new_db, fide_id_new_db,
                 birth_date_new_db, exp_new_db
             )
-
-            if player_id_to_add_to_tournament is None: # Creazione nel DB fallita
-                print("Creazione giocatore nel DB fallita. Riprova l'inserimento.")
-                continue 
-            
-            # Recupera i dati appena creati per l'aggiunta al torneo
-            player_data_for_tournament_from_db = players_db.get(player_id_to_add_to_tournament)
-            if not player_data_for_tournament_from_db: # Sicurezza, non dovrebbe accadere
-                 print(f"ERRORE INTERNO: Record DB per ID {player_id_to_add_to_tournament} non trovato dopo la creazione."); continue
-        
-        # 3. Aggiunta del giocatore (selezionato o appena creato) al TORNEO
-        if player_id_to_add_to_tournament:
-            if player_id_to_add_to_tournament in added_player_ids_to_tournament:
-                p_name_display = f"{player_data_for_tournament_from_db.get('first_name','')} {player_data_for_tournament_from_db.get('last_name','')}"
-                print(f"Errore: Giocatore ID {player_id_to_add_to_tournament} ({p_name_display}) è già stato aggiunto a questo torneo.")
+            if player_id_to_add:
+                player_data_from_db = players_db.get(player_id_to_add)
+        # --- Aggiunta finale del giocatore (selezionato o creato) al TORNEO ---
+        if player_id_to_add and player_data_from_db:
+            if player_id_to_add in added_player_ids_to_tournament:
+                print(f"Errore: Giocatore ID {player_id_to_add} ({player_data_from_db.get('first_name')}) è già stato aggiunto a questo torneo.")
             else:
-                if not player_data_for_tournament_from_db: # Deve essere stato popolato sopra
-                    player_data_for_tournament_from_db = players_db.get(player_id_to_add_to_tournament)
-                    if not player_data_for_tournament_from_db:
-                         print(f"ERRORE INTERNO: Impossibile recuperare dati per ID {player_id_to_add_to_tournament} prima di aggiungere al torneo."); continue
-
-                # Prepara il record del giocatore SPECIFICO PER IL TORNEO
-                # L'elo per il torneo è l'elo CORRENTE del DB al momento dell'iscrizione
-                elo_per_torneo = int(player_data_for_tournament_from_db.get('current_elo', DEFAULT_ELO))
-
-                player_data_for_this_tournament_instance = {
-                    "id": player_id_to_add_to_tournament,
-                    "first_name": player_data_for_tournament_from_db.get('first_name'),
-                    "last_name": player_data_for_tournament_from_db.get('last_name'),
-                    "initial_elo": elo_per_torneo, # Elo al momento dell'iscrizione al torneo
-                    "fide_title": player_data_for_tournament_from_db.get('fide_title', ''),
-                    "sex": player_data_for_tournament_from_db.get('sex', 'm'),
-                    "federation": player_data_for_tournament_from_db.get('federation', 'ITA'),
-                    "fide_id_num_str": player_data_for_tournament_from_db.get('fide_id_num_str', '0'),
-                    "birth_date": player_data_for_tournament_from_db.get('birth_date'),
-                    "experienced": player_data_for_tournament_from_db.get('experienced', False),
-                    # Campi specifici dello stato nel torneo
+                elo_per_torneo = int(player_data_from_db.get('current_elo', DEFAULT_ELO))
+                player_instance = {
+                    "id": player_id_to_add,
+                    "first_name": player_data_from_db.get('first_name'),
+                    "last_name": player_data_from_db.get('last_name'),
+                    "initial_elo": elo_per_torneo,
+                    # Copia tutti gli altri campi anagrafici dal DB personale
+                    **{k: v for k, v in player_data_from_db.items() if k not in ['id','first_name','last_name','initial_elo']},
+                    # Azzera i campi di stato del torneo
                     "points": 0.0, "results_history": [], "opponents": set(),
                     "white_games": 0, "black_games": 0, "last_color": None,
                     "consecutive_white": 0, "consecutive_black": 0,
                     "received_bye_count": 0, "received_bye_in_round": [],
-                    "buchholz": 0.0, "buchholz_cut1": None, 
-                    "performance_rating": None, "elo_change": None,
-                    "k_factor": None, "games_this_tournament": 0,
-                    "downfloat_count": 0, 
-                    "final_rank": None, "withdrawn": False, "is_scheduled": False
+                    "withdrawn": False, "is_scheduled": False
                 }
-                players_in_tournament.append(player_data_for_this_tournament_instance)
-                added_player_ids_to_tournament.add(player_id_to_add_to_tournament)
-                print(f"-> Giocatore '{player_data_for_this_tournament_instance['first_name']} {player_data_for_this_tournament_instance['last_name']}' (ID DB: {player_id_to_add_to_tournament}, Elo Torneo: {elo_per_torneo}) aggiunto al torneo.")
+                players_in_tournament.append(player_instance)
+                added_player_ids_to_tournament.add(player_id_to_add)
+                print(f"-> Giocatore '{player_instance['first_name']} {player_instance['last_name']}' (ID DB: {player_id_to_add}) aggiunto al torneo.")
     return players_in_tournament
 
 def update_match_result(torneo):
@@ -2066,13 +2045,12 @@ def update_match_result(torneo):
     Restituisce True se almeno un risultato è stato aggiornato o cancellato 
     durante la sessione, False altrimenti.
     """
+    print("debug _",type(_),_)
     any_changes_made_in_this_session = False
     current_round_num = torneo["current_round"]
-
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     players_dict = torneo['players_dict']
-    
     current_round_data = None
     round_index_in_torneo_rounds = -1
     for i, r_data_loop in enumerate(torneo.get("rounds", [])): # Rinominato r_data
@@ -2080,23 +2058,19 @@ def update_match_result(torneo):
             current_round_data = r_data_loop
             round_index_in_torneo_rounds = i
             break
-    
     if not current_round_data:
-        print(f"ERRORE: Dati turno {current_round_num} non trovati per aggiornamento risultati.")
+        error_msg = _("ERRORE: Dati turno {round_num} non trovati per aggiornamento risultati.").format(round_num=current_round_num)
+        print(error_msg)
         return False
-
     while True: # Loop principale della sessione di input risultati
         # 1. Prepara la lista delle partite PENDENTI con il "Numero Scacchiera del Turno"
         pending_matches_info_list = [] # Lista di (num_scacchiera_turno, match_dict, nome_bianco, nome_nero)
-        
         all_matches_in_this_round = current_round_data.get("matches", [])
         # Ordina tutte le partite del turno per ID globale per avere un ordine scacchiere consistente
         all_matches_this_round_sorted = sorted(all_matches_in_this_round, key=lambda m: m.get('id', 0))
-
         round_board_idx_counter = 0 # Contatore 0-based per le scacchiere del turno
         for match_obj in all_matches_this_round_sorted:
             round_board_idx_counter += 1 # Numero scacchiera 1-based per questo turno
-            
             # Consideriamo questa partita per la visualizzazione e selezione solo se è pendente
             if match_obj.get("result") is None and match_obj.get("black_player_id") is not None:
                 wp_obj = players_dict.get(match_obj.get('white_player_id'))
@@ -2106,37 +2080,38 @@ def update_match_result(torneo):
                 pending_matches_info_list.append(
                     (round_board_idx_counter, match_obj, wp_name_disp, bp_name_disp)
                 )
-        
         # Controlla se ci sono partite completate da poter cancellare (per l'opzione 'cancella')
         completed_matches_to_cancel = [
             m_c for m_c in all_matches_this_round_sorted # Usa la lista già ordinata
             if m_c.get("result") is not None and m_c.get("result") != "BYE"
         ]
-
         if not pending_matches_info_list and not completed_matches_to_cancel:
             if not any_changes_made_in_this_session: 
-                 print(f"Info: Nessuna azione possibile per il turno {current_round_num} (nessuna partita pendente e nessuna da poter cancellare).")
+                 info_msg = _("Info: Nessuna azione possibile per il turno {round_num} (nessuna partita pendente e nessuna da poter cancellare).").format(round_num=current_round_num)
+                 print(info_msg)
             break 
-            
         if pending_matches_info_list:
-            print(f"\nPartite del turno {current_round_num} ancora da registrare (N. Scacchiera del Turno):")
+            header_msg = _("\nPartite del turno {round_num} ancora da registrare (N. Scacchiera del Turno):").format(round_num=current_round_num)
+            print(header_msg)
             for displayed_board_num, match_dict_disp, w_name_disp, b_name_disp in pending_matches_info_list:
                 wp_elo_disp = players_dict.get(match_dict_disp['white_player_id'], {}).get('initial_elo','?')
                 bp_elo_disp = players_dict.get(match_dict_disp['black_player_id'], {}).get('initial_elo','?')
                 print(f"  Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]")
         else:
-            print(f"\nNessuna partita da registrare per il turno {current_round_num} (ma potresti voler cancellare un risultato).")
+            header_msg_2 = _("\nNessuna partita da registrare per il turno {round_num} (ma potresti voler cancellare un risultato).").format(round_num=current_round_num)
+            print(header_msg_2)
         pending_board_numbers_for_prompt_display = [str(match_info_tuple[0]) for match_info_tuple in pending_matches_info_list]
         board_numbers_str_for_prompt = "-".join(pending_board_numbers_for_prompt_display) if pending_board_numbers_for_prompt_display else "Nessuna"
-        your_answer = f"Inserisci: \
-            \n\t[p] --- per entrare in modalità programmazione partite;\
-            \n\t[r] --- per ritirare un giocatoredal torneo (per un turno o definitivamente);\
-            \n\t[t] --- Time Machine, per tornare all'inizio di un turno;\
-            \n\t[cancella] --- per eliminare un risultato inserito;\
-            \n\t[SC] --- scrivi il numero della scacchiera della quale vuoi indicare il risultato;\
-            \n\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori.\
-            \nP|R|T|SC|nome|cognome: [{board_numbers_str_for_prompt}]: "
-        user_input_str  = input(your_answer).strip().lower()
+        prompt_lines = [
+            _("Inserisci:"),
+            _("\t[p] --- per entrare in modalità programmazione partite;"),
+            _("\t[r] --- per ritirare un giocatore dal torneo;"),
+            _("\t[t] --- Time Machine, per tornare all'inizio di un turno;"),
+            _("\t[cancella] --- per eliminare un risultato inserito;"),
+            _("\t[SC] --- il numero della scacchiera;"),
+            _("\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori.")]
+        prompt_finale = "\n".join(prompt_lines) + f"\nP|R|T|SC|nome|cognome [{board_numbers_str_for_prompt}]: "
+        user_input_str = input(prompt_finale).strip().lower()
         if not user_input_str: 
             break 
         elif user_input_str == 't':
@@ -2146,14 +2121,14 @@ def update_match_result(torneo):
                 print("Stato del torneo ripristinato e salvato.")
             continue # Torna al menu per mostrare il nuovo stato del turno
         elif user_input_str.lower() == 'r':
-            print("\n--- Ritiro Giocatore dal Torneo ---")
+            print(_("\n--- Ritiro Giocatore dal Torneo ---"))
             active_players_list = [p for p in torneo['players'] if not p.get('withdrawn', False)]
             if not active_players_list:
-                print("Nessun giocatore attivo da ritirare.")
+                print(_("Nessun giocatore attivo da ritirare."))
                 continue
             for i, p in enumerate(active_players_list):
                 print(f"  {i+1}. {p.get('first_name')} {p.get('last_name')} (ID: {p.get('id')})")
-            player_to_withdraw_input = input("Inserisci il numero o l'ID del giocatore da ritirare (o vuoto per annullare): ").strip()
+            player_to_withdraw_input = input(_("Inserisci il numero o l'ID del giocatore da ritirare (o vuoto per annullare): ")).strip()
             if not player_to_withdraw_input:
                 continue
             player_to_withdraw_obj = None
@@ -2163,18 +2138,19 @@ def update_match_result(torneo):
                 player_to_withdraw_obj = players_dict.get(player_to_withdraw_input.upper())
             if player_to_withdraw_obj and not player_to_withdraw_obj.get('withdrawn', False):
                 player_name_withdraw = f"{player_to_withdraw_obj.get('first_name','?')} {player_to_withdraw_obj.get('last_name','?')}"
-                if get_input_with_default(f"Confermi il ritiro definitivo di {player_name_withdraw}? (s/N)", "n").lower() == 's':
+                confirm_prompt = _("Confermi il ritiro definitivo di {player_name}? (s/N)").format(player_name=player_name_withdraw)
+                if get_input_with_default(confirm_prompt, "n").lower() == 's':
                     player_to_withdraw_obj['withdrawn'] = True
-                    print(f"Giocatore {player_name_withdraw} marcato come ritirato.")
+                    print(_("Giocatore {player_name} marcato come ritirato.").format(player_name=player_name_withdraw))
                     any_changes_made_in_this_session = True
                     save_tournament(torneo) # Salva subito la modifica
                 else:
-                    print("Ritiro annullato.")
+                    print(_("Ritiro annullato."))
             else:
-                print("Giocatore non trovato o già ritirato.")
+                print(_("Giocatore non trovato o già ritirato."))
             continue # Torna al menu principale di update_match_result
         elif user_input_str.lower() == 'p':
-            print("\n--- Accesso al Modulo Pianificazione Partite ---")
+            print(_("\n--- Accesso al Modulo Pianificazione Partite ---"))
             modifiche_pianificazione = gestisci_pianificazione_partite(torneo, current_round_data, players_dict)
             if modifiche_pianificazione:
                 any_changes_made_in_this_session = True # Segna che qualcosa è cambiato
@@ -2182,9 +2158,9 @@ def update_match_result(torneo):
         selected_match_obj_for_processing = None 
         if user_input_str.lower() == 'cancella':
             if not completed_matches_to_cancel:
-                print("Nessuna partita completata in questo turno da poter cancellare.")
+                print(_("Nessuna partita completata in questo turno da poter cancellare."))
                 continue
-            print(f"\nPartite completate nel turno {current_round_num} (ID Globali):")
+            print(_("\nPartite completate nel turno {round_num} (ID Globali):").format(round_num=current_round_num))
             completed_matches_to_cancel.sort(key=lambda m_sort: m_sort.get('id',0)) # Ordina per ID Globale
             for m_completed in completed_matches_to_cancel:
                 wp_c = players_dict.get(m_completed.get('white_player_id'))
@@ -2193,7 +2169,7 @@ def update_match_result(torneo):
                 bp_c_name = f"{bp_c.get('first_name','?')} {bp_c.get('last_name','?')}" if bp_c else "N/A"
                 print(f"  ID Glob: {m_completed.get('id','?'):<3} - {wp_c_name} vs {bp_c_name} = {m_completed.get('result','?')}")
             
-            cancel_id_input = input("Inserisci ID Globale della partita da cui cancellare il risultato (o vuoto per annullare): ").strip()
+            cancel_id_input = input(_("Inserisci ID Globale della partita da cui cancellare il risultato (o vuoto per annullare): ")).strip()
             if not cancel_id_input: continue
             try:
                 id_to_cancel = int(cancel_id_input)
@@ -2211,7 +2187,7 @@ def update_match_result(torneo):
                         bp_obj_c = players_dict.get(bp_id_c)
 
                         if not wp_obj_c or not bp_obj_c:
-                            print(f"ERRORE: Giocatori per partita ID {id_to_cancel} non trovati durante cancellazione.")
+                            print(_("ERRORE: Giocatori per partita ID {id_to_cancel} non trovati durante cancellazione.").format(id_to_cancel=id_to_cancel))
                             break # Esce dal for, il continue esterno riprenderà
                         
                         w_revert, b_revert = 0.0, 0.0
@@ -2227,31 +2203,31 @@ def update_match_result(torneo):
                         bp_obj_c["results_history"] = [rh for rh in bp_obj_c.get("results_history",[]) if not (rh.get("round") == current_round_num and rh.get("opponent_id") == wp_id_c)]
                         
                         torneo["rounds"][round_index_in_torneo_rounds]["matches"][idx_match_original]["result"] = None
-                        print(f"Risultato ({old_res}) della partita ID {id_to_cancel} cancellato.")
+                        print(_("Risultato ({old_res}) della partita ID {id_to_cancel} cancellato.").format(old_res=old_res, id_to_cancel=id_to_cancel))
                         save_tournament(torneo)
                         # players_dict è già aggiornato per riferimento
                         any_changes_made_in_this_session = True
                         match_found_for_cancel = True
                         break 
                 if not match_found_for_cancel:
-                    print(f"ID {id_to_cancel} non corrisponde a una partita completata cancellabile.")
+                    print(_("ID {id_to_cancel} non corrisponde a una partita completata cancellabile.").format(id_to_cancel=id_to_cancel))
             except ValueError:
-                print("ID non valido per la cancellazione.")
+                print(_("ID non valido per la cancellazione."))
             continue # Torna al prompt principale del loop while True
         elif user_input_str.isdigit():
             try:
                 board_num_choice = int(user_input_str)
                 match_found_by_board = False
-                for displayed_b_num, match_obj_dict, _, _ in pending_matches_info_list:
+                for displayed_b_num, match_obj_dict, u1, u2 in pending_matches_info_list:
                     if displayed_b_num == board_num_choice:
                         selected_match_obj_for_processing = match_obj_dict
                         match_found_by_board = True
                         break
                 if not match_found_by_board:
-                    print(f"Numero Scacchiera (del turno) '{board_num_choice}' non valido o partita non pendente.")
+                    print(_("Numero Scacchiera (del turno) '{board_num_choice}' non valido o partita non pendente.").format(board_num_choice=board_num_choice))
                     continue
             except ValueError:
-                print("Input numerico per Scacchiera non valido.")
+                print(_("Input numerico per Scacchiera non valido."))
                 continue
         else: # Ricerca per Nome/Cognome
             search_term_lower = user_input_str.lower()
@@ -2260,30 +2236,31 @@ def update_match_result(torneo):
                 if (search_term_lower in wp_n.lower()) or (search_term_lower in bp_n.lower()):
                     candidate_matches_info.append((disp_b_num, match_o, wp_n, bp_n))
             if not candidate_matches_info:
-                print(f"Nessuna partita pendente trovata con giocatori che corrispondono a '{user_input_str}'.")
+                print(_("Nessuna partita pendente trovata con giocatori che corrispondono a '{search_term}'.").format(search_term=user_input_str))
                 continue
             elif len(candidate_matches_info) == 1:
                 selected_match_obj_for_processing = candidate_matches_info[0][1]
-                sel_board_disp, _, sel_w_disp, sel_b_disp = candidate_matches_info[0]
-                print(f"Trovata partita unica (Sc. {sel_board_disp}): {sel_w_disp} vs {sel_b_disp}")
+                sel_board_disp, u1, sel_w_disp, sel_b_disp = candidate_matches_info[0]
+                print(_("Trovata partita unica (Sc. {board_num}): {white_player} vs {black_player}").format(board_num=sel_board_disp, white_player=sel_w_disp, black_player=sel_b_disp))
             else: 
-                print(f"Trovate {len(candidate_matches_info)} partite pendenti per '{user_input_str}':")
+                print(_("Trovate {num_matches} partite pendenti per '{search_term}':").format(num_matches=len(candidate_matches_info), search_term=user_input_str))
                 for disp_b_num_multi, match_d_multi, w_n_multi, b_n_multi in candidate_matches_info:
                     wp_elo_m_disp = players_dict.get(match_d_multi['white_player_id'], {}).get('initial_elo','?')
                     bp_elo_m_disp = players_dict.get(match_d_multi['black_player_id'], {}).get('initial_elo','?')
                     print(f"  Sc. {disp_b_num_multi:<2} (IDG:{match_d_multi.get('id')}) - {w_n_multi:<20} [{wp_elo_m_disp:>4}] vs {b_n_multi:<20} [{bp_elo_m_disp:>4}]")
                 try:
-                    specific_board_input = input("Inserisci il N.Scacchiera (del turno) desiderato dalla lista sopra: ").strip()
+                    specific_board_input = input(_("Inserisci il N.Scacchiera (del turno) desiderato dalla lista sopra: ")).strip()
                     if not specific_board_input.isdigit():
-                        print("Input non numerico per la scacchiera."); continue
+                        print(_("Input non numerico per la scacchiera.")); continue
                     specific_board_choice = int(specific_board_input)
-                    for disp_b_num_cand, match_obj_cand, _, _ in candidate_matches_info:
+                    for disp_b_num_cand, match_obj_cand, u1, u2 in candidate_matches_info:
                         if disp_b_num_cand == specific_board_choice:
                             selected_match_obj_for_processing = match_obj_cand
                             break
                     if not selected_match_obj_for_processing:
-                        print(f"N.Scacchiera '{specific_board_choice}' non valido dalla lista filtrata."); continue
-                except ValueError: print("Input Scacchiera non valido."); continue
+                        print(_("N.Scacchiera '{board_choice}' non valido dalla lista filtrata.").format(board_choice=specific_board_choice))
+                        continue
+                except ValueError: print(_("Input Scacchiera non valido.")); continue
         if selected_match_obj_for_processing:
             # Trova l'indice originale nella lista current_round_data["matches"]
             idx_in_original_list = -1
@@ -2292,13 +2269,13 @@ def update_match_result(torneo):
                     idx_in_original_list = idx
                     break
             if idx_in_original_list == -1: 
-                print(f"ERRORE INTERNO: Partita selezionata ID {selected_match_obj_for_processing['id']} non trovata."); continue
+                print(_("ERRORE INTERNO: Partita selezionata ID {match_id} non trovata.").format(match_id=selected_match_obj_for_processing['id'])); continue
             wp_id_match = selected_match_obj_for_processing['white_player_id']
             bp_id_match = selected_match_obj_for_processing['black_player_id']
             wp_data_obj = players_dict.get(wp_id_match) 
             bp_data_obj = players_dict.get(bp_id_match) 
             if not wp_data_obj or not bp_data_obj:
-                print(f"ERRORE CRITICO: Giocatori non trovati per partita ID {selected_match_obj_for_processing['id']}."); continue
+                print(_("ERRORE CRITICO: Giocatori non trovati per partita ID {match_id}.").format(match_id=selected_match_obj_for_processing['id'])); continue
             wp_name_match_disp = f"{wp_data_obj.get('first_name','?')} {wp_data_obj.get('last_name','?')}"
             bp_name_match_disp = f"{bp_data_obj.get('first_name','?')} {bp_data_obj.get('last_name','?')}"
             wp_name_full = f"{wp_data_obj.get('first_name','?')} {wp_data_obj.get('last_name','?')}"
@@ -2312,8 +2289,9 @@ def update_match_result(torneo):
             if wp_name_full == bp_name_full: # Se i nomi completi sono identici
                 display_str_white = f"{wp_name_full} (ID: {wp_id_display})"
                 display_str_black = f"{bp_name_full} (ID: {bp_id_display})"
-            print(f"Partita selezionata per risultato: {display_str_white} vs {display_str_black} (ID Glob: {selected_match_obj_for_processing['id']})")
-            result_input = input("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: ").strip()
+            sel_msg = _("Partita selezionata per risultato: {white} vs {black} (ID Glob: {match_id})")
+            print(sel_msg.format(white=display_str_white, black=display_str_black, match_id=selected_match_obj_for_processing['id']))
+            result_input = input(_("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: ")).strip()
             parsed_result_str = None 
             parsed_w_score = 0.0
             parsed_b_score = 0.0
@@ -2321,25 +2299,25 @@ def update_match_result(torneo):
             if result_input == '1-0': parsed_result_str, parsed_w_score = "1-0", 1.0
             elif result_input == '0-1': parsed_result_str, parsed_b_score = "0-1", 1.0
             elif result_input == '1/2': parsed_result_str, parsed_w_score, parsed_b_score = "1/2-1/2", 0.5, 0.5
-            elif result_input == '0-0F': parsed_result_str = "0-0F"; print("Doppio forfeit registrato (0-0F).") # Punti rimangono 0
-            elif result_input == '1-F': parsed_result_str, parsed_w_score = "1-F", 1.0; print("Vittoria Bianco per Forfait avv. (1-F).")
-            elif result_input == 'F-1': parsed_result_str, parsed_b_score = "F-1", 1.0; print("Vittoria Nero per Forfait Bianco (F-1).")
+            elif result_input == '0-0F': parsed_result_str = "0-0F"; print(_("Doppio forfeit registrato (0-0F).")) # Punti rimangono 0
+            elif result_input == '1-F': parsed_result_str, parsed_w_score = "1-F", 1.0; print(_("Vittoria Bianco per Forfait. (1-F)."))
+            elif result_input == 'F-1': parsed_result_str, parsed_b_score = "F-1", 1.0; print(_("Vittoria Nero per Forfait (F-1)."))
             else: valid_res_input = False
-            
             if valid_res_input and parsed_result_str is not None:
-                confirm_message_str = f"Risultato '{parsed_result_str}' non standard. Confermi comunque? (s/n): " # Fallback
+                #qt
+                confirm_message_str = _("Risultato '{result}' non standard. Confermi comunque? (s/n): ").format(result=parsed_result_str)
                 if parsed_result_str == "1-0":
-                    confirm_message_str = f"Confermi che {wp_name_match_disp} vince contro {bp_name_match_disp}? (s/n): "
+                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
                 elif parsed_result_str == "0-1":
-                    confirm_message_str = f"Confermi che {bp_name_match_disp} vince contro {wp_name_match_disp}? (s/n): "
+                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
                 elif parsed_result_str == "1/2-1/2":
-                    confirm_message_str = f"Confermi che {wp_name_match_disp} e {bp_name_match_disp} pattano? (s/n): "
+                    confirm_message_str = _("Confermi che {player1} e {player2} pattano? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
                 elif parsed_result_str == "0-0F":
-                    confirm_message_str = f"Confermi partita nulla/annullata (0-0F) tra {wp_name_match_disp} e {bp_name_match_disp}? (s/n): "
+                    confirm_message_str = _("Confermi partita nulla/annullata (0-0F) tra {player1} e {player2}? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
                 elif parsed_result_str == "1-F": # Vittoria del Bianco per forfeit del Nero
-                    confirm_message_str = f"Confermi vittoria a tavolino per {wp_name_match_disp} (forfait di {bp_name_match_disp})? (s/n): "
+                    confirm_message_str = _("Confermi vittoria a tavolino per {winner} (forfait di {loser})? (s/n): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
                 elif parsed_result_str == "F-1": # Vittoria del Nero per forfeit del Bianco
-                    confirm_message_str = f"Confermi vittoria a tavolino per {bp_name_match_disp} (forfait di {wp_name_match_disp})? (s/n): "           
+                    confirm_message_str = _("Confermi vittoria a tavolino per {winner} (forfait di {loser})? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
                 user_confirm_input = key(confirm_message_str).strip().lower()
                 if user_confirm_input == 's':
                     wp_data_obj["points"] = float(wp_data_obj.get("points", 0.0)) + parsed_w_score
@@ -2355,11 +2333,11 @@ def update_match_result(torneo):
                         "color": "black", "result": parsed_result_str, "score": parsed_b_score
                     })
                     torneo["rounds"][round_index_in_torneo_rounds]["matches"][idx_in_original_list]["result"] = parsed_result_str
-                    print("Risultato registrato.")
+                    print(_("Risultato registrato."))
                     match_object_updated = torneo["rounds"][round_index_in_torneo_rounds]["matches"][idx_in_original_list]
                     if match_object_updated.get('is_scheduled', False):
                         match_object_updated['is_scheduled'] = False
-                        print(f"    Info: Pianificazione rimossa per la partita ID {match_object_updated.get('id','N/A')} (risultato inserito).")
+                        print(_("  Info: Pianificazione rimossa per la partita ID {match_id} (risultato inserito).").format(match_id=match_object_updated.get('id','N/A')))
                     save_tournament(torneo) 
                     any_changes_made_in_this_session = True
                     if "F" in parsed_result_str:
@@ -2380,13 +2358,11 @@ def update_match_result(torneo):
                                 # La modifica viene fatta su 'forfeiting_player_obj', che è un riferimento
                                 # a un dizionario in players_dict e in torneo['players'], quindi la modifica è persistente.
                 else:
-                    print("Operazione annullata dall'utente.")
+                    print(_("Operazione annullata dall'utente."))
             elif not valid_res_input:
-                print("Input risultato non valido.")
+                print(_("Input risultato non valido."))
                 
     return any_changes_made_in_this_session
-
-# Sostituisci la tua funzione save_current_tournament_round_file con questa
 
 def save_current_tournament_round_file(torneo):
     """
@@ -3169,19 +3145,63 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     print(f"Torneo '{tournament_name_original}' finalizzato e archiviato.")
     return True
 
-def main():
-    lingua = 'en' # O 'fr', ecc.
-    # Trova il percorso dei file di traduzione e inizializza il sistema
-    locales_dir = os.path.join(os.path.dirname(__file__), 'locales')
-    t = gettext.translation('tornello', localedir=locales_dir, languages=[lingua], fallback=True)
-    # Installa la funzione _() per essere usata globalmente
-    _ = t.gettext
+# supporto multilingua
+config = carica_configurazione()
+lingua_scelta = config.get('language')
+if not lingua_scelta:
+    print("\n--- Configurazione Lingua (prima esecuzione) ---")
+    try:
+        locale.setlocale(locale.LC_ALL, '')
+        codice_lingua_os, u1 = locale.getlocale()
+        lingua_os = codice_lingua_os.split('_')[0] if codice_lingua_os else 'en'
+    except Exception:
+        lingua_os = 'en'
+    lingue_supportate = {'it': 'Italiano', 'en': 'English'}
+    print(f"Lingua del sistema rilevata: {lingue_supportate.get(lingua_os, lingua_os)}.")
+    scelta_iniziale = input(f"Usare questa lingua o sceglierne un'altra? [Invio per confermare, 'c' per scegliere]: ").strip().lower()
+    if scelta_iniziale == 'c':
+        print("Lingue disponibili:")
+        for codice, nome in lingue_supportate.items(): print(f" - [{codice}] {nome}")
+        while True:
+            codice_scelto = input(f"Inserisci il codice desiderato (es. 'en'): ").strip().lower()
+            if codice_scelto in lingue_supportate:
+                lingua_scelta = codice_scelto
+                break
+            else: print("Codice non valido.")
+    else:
+        lingua_scelta = lingua_os if lingua_os in lingue_supportate else 'it' # Default finale a 'it'
+    print(f"Lingua impostata su: '{lingue_supportate.get(lingua_scelta)}'. Verrà salvata per le prossime esecuzioni.")
+    config['language'] = lingua_scelta
+    salva_configurazione(config)
+# Inizializzazione finale di gettext, che definisce '_' per tutto lo script
+try:
+    locales_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locales')
+    translation = gettext.translation('tornello', localedir=locales_dir, languages=[lingua_scelta])
+    # Sovrascriviamo la nostra funzione "segnaposto" globale con quella vera che traduce
+    _ = translation.gettext
+    print(f"Sistema di traduzione per la lingua '{lingua_scelta}' attivato.")
+except FileNotFoundError:
+    print(f"File di traduzione per '{lingua_scelta}' non trovati. Uso l'italiano di default.")
+    import builtins
+    builtins._ = gettext.gettext # Installa la funzione "vuota"
+
+if __name__ == "__main__":
+    # Assicurati che la cartella BBP_SUBDIR esista o venga creata se necessario
+    if not os.path.exists(BBP_SUBDIR):
+        try:
+            os.makedirs(BBP_SUBDIR)
+            print(f"Info: Creata sottocartella '{BBP_SUBDIR}' per i file di bbpPairings.")
+        except OSError as e:
+            print(f"ATTENZIONE: Impossibile creare la sottocartella '{BBP_SUBDIR}': {e}")
+            print("bbpPairings potrebbe non funzionare correttamente.")
+            sys.exit(1)
     players_db = load_players_db()
     torneo = None
     active_tournament_filename = None
     deve_creare_nuovo_torneo = False
     nome_nuovo_torneo_suggerito = None
     print(f"\nBENVENUTI! Sono Tornello {VERSIONE}") # Messaggio di benvenuto iniziale
+    print("debug _",type(_),_)
     print("\nVerifica stato database FIDE locale...")
     db_fide_esiste = os.path.exists(FIDE_DB_LOCAL_FILE)
     db_fide_appena_aggiornato = False 
@@ -3215,15 +3235,11 @@ def main():
                 sincronizza_db_personale()
     # 1. Scansione dei file torneo esistenti
     tournament_files_pattern = "tornello - *.json"
-    # Escludiamo i file che sembrano archiviati o di altro tipo se necessario,
-    # per ora cerchiamo un pattern semplice.
-    # Potremmo voler escludere i file con "- concluso_" nel nome.
     potential_tournament_files = [
         f for f in glob.glob(tournament_files_pattern) 
         if "- concluso_" not in os.path.basename(f) and 
            os.path.basename(f) != PLAYER_DB_FILE # Assicura di non confondere il DB giocatori
     ]
-
     if not potential_tournament_files:
         print("Nessun torneo esistente trovato.")
         deve_creare_nuovo_torneo = True
@@ -3326,7 +3342,6 @@ def main():
                         print("Scelta non valida.")
                 else:
                     print("Inserisci un numero.")
-    
     # 2. Creazione nuovo torneo (se necessario)
     if deve_creare_nuovo_torneo or torneo is None:
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
@@ -3462,26 +3477,21 @@ def main():
         save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False)
         print(f"\nTorneo '{torneo.get('name')}' creato e Turno 1 generato. File: '{active_tournament_filename}'")
-
     # 3. Se nessun torneo è attivo a questo punto, esci.
     if not torneo or not active_tournament_filename:
         print("\nNessun torneo attivo. Uscita dal programma.")
         sys.exit(0)
-
     # 4. Aggiorna launch_count se il torneo è stato caricato (non creato ora)
     if not deve_creare_nuovo_torneo: # Implica che è stato caricato
         torneo['launch_count'] = torneo.get('launch_count', 0) + 1
         # Assicura che players_dict sia inizializzato (load_tournament dovrebbe già farlo)
         if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
             torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-
     # Messaggio di benvenuto specifico per il torneo
     print(f"\n--- Torneo Attivo: {torneo.get('name', 'N/D')} ---")
     print(f"File: {active_tournament_filename}")
     print(f"Questa è la {torneo.get('launch_count',1)}a sessione per questo torneo.")
     print(f"Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando.")
-
-    # --- Main Loop (invariato rispetto alla tua ultima versione, ma ora usa active_tournament_filename) ---
     try:
         while True:
             current_round_num = torneo.get("current_round")
@@ -3568,7 +3578,6 @@ def main():
                         print("Generazione prossimo turno annullata. Salvataggio stato attuale.")
                         save_tournament(torneo)
                         break # Esce dal main loop
-    
     except KeyboardInterrupt:
         print("\nOperazione interrotta dall'utente.")
         if torneo and active_tournament_filename:
@@ -3585,23 +3594,11 @@ def main():
             print(f"Tentativo salvataggio stato torneo in '{active_tournament_filename}'...")
             save_tournament(torneo)
         sys.exit(1)
-
     if torneo is None and active_tournament_filename is None:
         print("\nProgramma Tornello terminato.")
+        Donazione()
     elif torneo and active_tournament_filename:
          print(f"\nProgramma Tornello terminato. Ultimo stato per '{torneo.get('name', 'N/D')}' in '{active_tournament_filename}'.")
+         Donazione()
     else: # Caso anomalo
          print("\nProgramma Tornello terminato con uno stato incerto del torneo.")
-
-if __name__ == "__main__":
-    # Assicurati che la cartella BBP_SUBDIR esista o venga creata se necessario
-    if not os.path.exists(BBP_SUBDIR):
-        try:
-            os.makedirs(BBP_SUBDIR)
-            print(f"Info: Creata sottocartella '{BBP_SUBDIR}' per i file di bbpPairings.")
-        except OSError as e:
-            print(f"ATTENZIONE: Impossibile creare la sottocartella '{BBP_SUBDIR}': {e}")
-            print("bbpPairings potrebbe non funzionare correttamente.")
-            # Potresti decidere di uscire qui se la cartella è critica fin da subito
-            # sys.exit(1)
-    main()

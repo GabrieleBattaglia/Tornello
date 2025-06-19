@@ -1,6 +1,5 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 6. Correzione da applicare nella classifica: il secondo metodo di ordinamento, dopo il punteggio, non è il bucoholz totale ma quello tagliato, che mi pare Tornello non calcoli nemmeno.
-8. il messaggio donazione appare in inglese anche con lingua it
 9.
 
 CHANGELOG
