@@ -5,7 +5,7 @@ from GBUtils import dgt, key, Donazione
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "8.1.9, 2025.06.12 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.1.11, 2025.06.19 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -587,39 +587,29 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
             print(_("\nTutte le partite del Turno {round_num} sono state giocate o sono BYE.").format(round_num=current_round_num))
             print(_("Nessuna partita disponibile per la pianificazione/modifica."))
             break 
-
         display_lines_pending_scheduling = []
         display_lines_already_scheduled = []
-        
         # Mappa: Numero Scacchiera del Turno VISUALIZZATO -> ID Globale Partita
         round_board_to_global_id_map = {} 
         # Mappa: Numero Scacchiera del Turno VISUALIZZATO -> Boolean (è pianificata?)
         round_board_is_scheduled_map = {}
-
         actual_board_number_counter = 0 # Contatore per il "Numero Scacchiera del Turno"
-
         # Costruisci le liste visualizzate e le mappe
         for match_obj in all_matches_in_round_sorted_by_id:
             # I BYE non hanno un numero di scacchiera selezionabile per la pianificazione
             if match_obj.get("black_player_id") is None: 
                 continue 
-            
             actual_board_number_counter += 1 # Incrementa per ogni partita giocabile (non BYE)
-
             # Consideriamo per la pianificazione solo le partite senza risultato
             if match_obj.get("result") is not None:
                 continue 
-
             # A questo punto, la partita è giocabile e non ha risultato
             round_board_to_global_id_map[actual_board_number_counter] = match_obj['id']
-            
             wp = players_dict.get(match_obj['white_player_id'])
             bp = players_dict.get(match_obj['black_player_id'])
             wp_name = f"{wp.get('first_name','?')} {wp.get('last_name','?')}" if wp else "N/A"
             bp_name = f"{bp.get('first_name','?')} {bp.get('last_name','?')}" if bp else "N/A"
-            
             base_display_line = f"  Sc. {actual_board_number_counter}. (IDG: {match_obj['id']}) {wp_name} vs {bp_name}"
-
             if match_obj.get("is_scheduled", False) and match_obj.get("schedule_info"):
                 round_board_is_scheduled_map[actual_board_number_counter] = True
                 schedule = match_obj.get('schedule_info', {})
@@ -627,10 +617,9 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 time_str = schedule.get('time', "N/O")
                 channel_str = schedule.get('channel', "N/D")
                 arbiter_str = schedule.get('arbiter', "N/D")
-                
                 display_lines_already_scheduled.append(base_display_line)
-                display_lines_already_scheduled.append(f"     Pianificata per: {date_str} alle {time_str}")
-                display_lines_already_scheduled.append(f"     Canale: {channel_str}, Arbitro: {arbiter_str}")
+                display_lines_already_scheduled.append(_(" Pianificata per: {date} alle {time}").format(date=date_str, time=time_str))
+                display_lines_already_scheduled.append(_(" Canale: {channel}, Arbitro: {arbiter}").format(channel=channel_str, arbiter=arbiter_str))
             else:
                 round_board_is_scheduled_map[actual_board_number_counter] = False
                 display_lines_pending_scheduling.append(base_display_line)
@@ -644,7 +633,7 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
         else:
             print(_("  Nessuna partita attualmente da pianificare (o sono tutte già pianificate)."))
 
-        print("\nPartite Già Pianificate (in attesa di risultato):")
+        print(_("\nPartite Già Pianificate (in attesa di risultato):"))
         if display_lines_already_scheduled:
             for line in display_lines_already_scheduled: print(line)
         else:
@@ -660,17 +649,17 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
             break
 
         elif action == 'p' or action == 'm':
-            prompt_msg = "Inserisci il N. Scacchiera della partita"
-            if action == 'p': prompt_msg += " da pianificare: "
-            else: prompt_msg += " la cui pianificazione vuoi modificare/rimuovere: "
+            prompt_msg = _("Inserisci il N. Scacchiera della partita")
+            if action == 'p': prompt_msg += _(" da pianificare: ")
+            else: prompt_msg += _(" la cui pianificazione vuoi modificare/rimuovere: ")
             selected_board_id_str = input(prompt_msg).strip()
             if not selected_board_id_str.isdigit():
-                print("Input non valido. Inserisci un numero."); continue
+                print(_("Input non valido. Inserisci un numero.")); continue
             
             selected_board_id = int(selected_board_id_str)
             
             if selected_board_id not in round_board_to_global_id_map:
-                print("N. Scacchiera non valido o non corrisponde a una partita gestibile."); continue
+                print(_("N#. Scacchiera non valido o non corrisponde a una partita gestibile.")); continue
 
             target_match_global_id = round_board_to_global_id_map[selected_board_id]
             is_currently_scheduled = round_board_is_scheduled_map.get(selected_board_id, False) # Default a False
@@ -684,53 +673,51 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                     break
             
             if not match_object_to_update:
-                print(f"ERRORE INTERNO: Partita IDG {target_match_global_id} non trovata."); continue
+                print(_("ERRORE INTERNO: Partita IDG {match_id} non trovata.").format(match_id=target_match_global_id))
+                continue
 
             if action == 'p':
                 if is_currently_scheduled:
-                    print("Questa partita è già pianificata. Usa 'M' per modificarla."); continue
-                
-                print(f"\nPianificazione per la partita Sc. {selected_board_id} (IDG: {target_match_global_id})...")
+                    print(_("Questa partita è già pianificata. Usa 'M' per modificarla.")); continue
+                print(_("\nPianificazione per la partita Sc. {board_id} (IDG: {match_id})...").format(board_id=selected_board_id, match_id=target_match_global_id))
                 new_schedule_data = _input_schedule_details() # existing_details è None
                 if new_schedule_data:
                     match_object_to_update['schedule_info'] = new_schedule_data
                     match_object_to_update['is_scheduled'] = True
                     any_changes_made_this_session = True
-                    print("Partita pianificata con successo.")
+                    print(_("Partita pianificata con successo."))
                 else:
-                    print("Pianificazione annullata.")
-
+                    print(_("Pianificazione annullata."))
             elif action == 'm':
                 if not is_currently_scheduled:
-                    print("Questa partita non ha una pianificazione da modificare/rimuovere. Usa 'P'."); continue
-                
+                    print(_("Questa partita non ha una pianificazione da modificare/rimuovere. Usa 'P'.")); continue
                 wp_m = players_dict.get(match_object_to_update['white_player_id'])
                 bp_m = players_dict.get(match_object_to_update['black_player_id'])
                 wp_name_m = f"{wp_m.get('first_name','?')} {wp_m.get('last_name','?')}" if wp_m else "N/A"
                 bp_name_m = f"{bp_m.get('first_name','?')} {bp_m.get('last_name','?')}" if bp_m else "N/A"
-                print(f"\nGestione pianificazione per Sc. {selected_board_id} (IDG: {target_match_global_id}): {wp_name_m} vs {bp_name_m}")
+                print(_("\nGestione pianificazione per Sc. {board_id} (IDG: {match_id}): {white_player} vs {black_player}").format(board_id=selected_board_id, match_id=target_match_global_id, white_player=wp_name_m, black_player=bp_name_m))
                 
-                sub_action = key("Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): ").strip().lower()
+                sub_action = key(_("Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): ")).strip().lower()
                 if sub_action == 'm':
                     updated_schedule_data = _input_schedule_details(existing_details=match_object_to_update.get('schedule_info'))
                     if updated_schedule_data:
                         if updated_schedule_data != match_object_to_update.get('schedule_info'): # Controlla se c'è stato un cambiamento reale
                             match_object_to_update['schedule_info'] = updated_schedule_data
                             any_changes_made_this_session = True
-                            print("Pianificazione modificata.")
+                            print(_("Pianificazione modificata."))
                         # else: Nessuna modifica effettiva, non fare nulla
-                    else: print("Modifica annullata.")
+                    else: print(_("Modifica annullata."))
                 elif sub_action == 'r':
                     if get_input_with_default_gestore_db("Confermi rimozione pianificazione? (s/N)", "n").lower() == 's':
                         match_object_to_update['is_scheduled'] = False
                         if 'schedule_info' in match_object_to_update: del match_object_to_update['schedule_info']
                         any_changes_made_this_session = True
-                        print("Pianificazione rimossa.")
-                    else: print("Rimozione annullata.")
-                elif not sub_action: print("Operazione annullata.")
-                else: print("Azione non valida per modifica/rimozione.")
+                        print(_("Pianificazione rimossa."))
+                    else: print(_("Rimozione annullata."))
+                elif not sub_action: print(_("Operazione annullata."))
+                else: print(_("Azione non valida per modifica/rimozione."))
         else:
-            print("Azione non riconosciuta. Riprova.")
+            print(_("Azione non riconosciuta. Riprova."))
     return any_changes_made_this_session
 
 def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa_id_a_start_rank):
@@ -760,8 +747,8 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
             except ValueError: end_date_strf = '01/01/1900'
 
         # Intestazione (Header)
-        trf_lines.append(f"012 {str(dati_torneo.get('name', 'Torneo Sconosciuto'))[:45]:<45}\n")
-        trf_lines.append(f"022 {str(dati_torneo.get('site', 'Luogo Sconosciuto'))[:45]:<45}\n") # Usa 'site'
+        trf_lines.append(f"012 {str(dati_torneo.get('name', _('Torneo Sconosciuto')))[:45]:<45}\n")
+        trf_lines.append(f"022 {str(dati_torneo.get('site', _('Luogo Sconosciuto')))[:45]:<45}\n") # Usa 'site'
         trf_lines.append(f"032 {str(dati_torneo.get('federation_code', 'ITA'))[:3]:<3}\n")    # Usa 'federation_code'
         trf_lines.append(f"042 {start_date_strf}\n") # Già usa 'start_date'
         trf_lines.append(f"052 {end_date_strf}\n")   # Già usa 'end_date'
@@ -769,7 +756,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
         trf_lines.append(f"072 {number_of_players_val:03d}\n") # Già calcolato
         trf_lines.append("082 000\n") 
         trf_lines.append("092 Individual: Swiss-System\n") # Potrebbe diventare configurabile
-        trf_lines.append(f"102 {str(dati_torneo.get('chief_arbiter', 'Arbitro Default'))[:45]:<45}\n") # Usa 'chief_arbiter'
+        trf_lines.append(f"102 {str(dati_torneo.get('chief_arbiter', _('Arbitro Capo')))[:45]:<45}\n") # Usa 'chief_arbiter'
         deputy_str = str(dati_torneo.get('deputy_chief_arbiters', '')).strip()
         if not deputy_str: deputy_str = " " # TRF vuole almeno uno spazio se la riga 112 è presente ma vuota
         trf_lines.append(f"112 {deputy_str[:45]:<45}\n") 
@@ -796,8 +783,8 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
             # Lunghezza base fino a col 89 (Rank) + spazio per molti turni di storico
             p_line_chars = [' '] * (89 + (total_rounds_val * 10) + 5) # 89 + storico + buffer
             start_rank = mappa_id_a_start_rank[player_data['id']]
-            raw_last_name = player_data.get('last_name', 'Cognome')
-            raw_first_name = player_data.get('first_name', 'Nome')
+            raw_last_name = player_data.get('last_name', _('Cognome'))
+            raw_first_name = player_data.get('first_name', _('Nome'))
             nome_completo = f"{raw_last_name}, {raw_first_name}"
             elo = int(player_data.get('initial_elo', 1399)) 
             federazione_giocatore = str(player_data.get('federation', 'ITA')).upper()[:3]
@@ -864,7 +851,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                         elif opp_id_tornello:
                             opponent_start_rank = mappa_id_a_start_rank.get(opp_id_tornello)
                             if opponent_start_rank is None:
-                                print(f"AVVISO CRITICO: ID avv. storico {opp_id_tornello} non in mappa per {player_data['id']} R{round_of_this_entry}")
+                                print(_("AVVISO CRITICO: ID avversario storico {opponent_id} non trovato in mappa per giocatore {player_id} al turno {round_num}").format(opponent_id=opp_id_tornello, player_id=player_data['id'], round_num=round_of_this_entry))
                                 opp_start_rank_str = "XXXX" 
                             else:
                                 opp_start_rank_str = f"{opponent_start_rank:>4}"
@@ -907,7 +894,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
             trf_lines.append(final_line + "\n")
         return "".join(trf_lines)
     except Exception as e:
-        print(f"Errore catastrofico in genera_stringa_trf_per_bbpairings: {e}")
+        print(_("Errore catastrofico in genera_stringa_trf_per_bbpairings: {error}").format(error=e))
         traceback.print_exc()
         return None
 
@@ -966,30 +953,17 @@ def format_rank_ordinal(rank):
 
 def format_date_locale(date_input):
     """Formatta una data (oggetto datetime o stringa ISO) nel formato locale esteso
-       (es. Lunedì 31 marzo 2025) usando mapping manuale per i nomi.
-       Restituisce 'N/D' o la stringa originale in caso di errore o input nullo."""
+       usando il modulo locale del sistema."""
     if not date_input:
-        return "N/D"
+        return _("N/D") # Traduci solo il valore di fallback
     try:
-        if isinstance(date_input, datetime):
-            date_obj = date_input
-        else:
+        if not isinstance(date_input, datetime):
             date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO)
-        giorni = [
-            "lunedì", "martedì", "mercoledì", "giovedì",
-            "venerdì", "sabato", "domenica"
-        ]
-        mesi = [
-            "", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
-            "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
-        ]
-        giorno_settimana_num = date_obj.weekday()
-        giorno_mese = date_obj.day
-        mese_num = date_obj.month
-        anno = date_obj.year
-        nome_giorno = giorni[giorno_settimana_num].capitalize()
-        nome_mese = mesi[mese_num]
-        return f"{nome_giorno} {giorno_mese} {nome_mese} {anno}"
+        else:
+            date_obj = date_input
+        # %A = Nome completo del giorno, %d = giorno, %B = Nome completo del mese, %Y = anno
+        # Questa formattazione userà automaticamente la lingua impostata da locale.setlocale()
+        return date_obj.strftime("%A %d %B %Y").capitalize()
     except (ValueError, TypeError, IndexError):
         return str(date_input)
 
@@ -1027,16 +1001,14 @@ def run_bbpairings_engine(trf_content_string):
     if not os.path.exists(BBP_SUBDIR):
         try:
             os.makedirs(BBP_SUBDIR)
-            print(f"Info: Creata sottocartella '{BBP_SUBDIR}' per i file di bbpPairings.")
+            print(_("Info: Creata sottocartella '{subdir}' per i file di bbpPairings.").format(subdir=BBP_SUBDIR))
         except OSError as e:
-            return False, None, f"Errore creazione sottocartella '{BBP_SUBDIR}': {e}"
-
+            return False, None, _("Errore creazione sottocartella '{subdir}': {error}").format(subdir=BBP_SUBDIR, error=e)
     try:
         with open(BBP_INPUT_TRF, "w", encoding="utf-8") as f:
             f.write(trf_content_string)
     except IOError as e:
-        return False, None, f"Errore scrittura file TRF di input '{BBP_INPUT_TRF}': {e}"
-
+        return False, None, _("Errore scrittura file TRF di input '{filepath}': {error}").format(filepath=BBP_INPUT_TRF, error=e)
     command = [
         BBP_EXE_PATH,
         "--dutch",
@@ -1044,25 +1016,21 @@ def run_bbpairings_engine(trf_content_string):
         "-p", BBP_OUTPUT_COUPLES,
         "-l", BBP_OUTPUT_CHECKLIST
     ]
-
     try:
-        # print(f"DEBUG: Eseguo comando: {' '.join(command)}") # Utile per debug
         result = subprocess.run(command, capture_output=True, text=True, check=False, encoding='utf-8', errors='replace')
-
         if result.returncode != 0:
             error_message = f"bbpPairings.exe ha fallito con codice {result.returncode}.\n"
             error_message += f"Stderr:\n{result.stderr}\n"
             error_message += f"Stdout:\n{result.stdout}"
             # Se codice è 1 (no pairing), lo gestiremo specificamente più avanti
             return False, {'returncode': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}, error_message
-
         # Lettura file di output se successo
         coppie_content = ""
         if os.path.exists(BBP_OUTPUT_COUPLES):
             with open(BBP_OUTPUT_COUPLES, "r", encoding="utf-8") as f:
                 coppie_content = f.read()
         else:
-            return False, None, f"File output coppie '{BBP_OUTPUT_COUPLES}' non trovato."
+            return False, None, _("File output coppie '{filepath}' non trovato.").format(filepath=BBP_OUTPUT_COUPLES)
             
         checklist_content = ""
         if os.path.exists(BBP_OUTPUT_CHECKLIST):
@@ -1070,12 +1038,12 @@ def run_bbpairings_engine(trf_content_string):
                 checklist_content = f.read()
         # Non consideriamo un errore se il checklist non c'è, ma logghiamo
 
-        return True, {'coppie_raw': coppie_content, 'checklist_raw': checklist_content, 'stdout': result.stdout}, "Esecuzione bbpPairings completata."
+        return True, {'coppie_raw': coppie_content, 'checklist_raw': checklist_content, 'stdout': result.stdout}, _("Esecuzione bbpPairings completata.")
 
     except FileNotFoundError:
-        return False, None, f"Errore: Eseguibile '{BBP_EXE_PATH}' non trovato. Assicurati sia nel percorso corretto."
+        return False, None, _("Errore: Eseguibile '{filepath}' non trovato. Assicurati sia nel percorso corretto.").format(filepath=BBP_EXE_PATH)
     except Exception as e:
-        return False, None, f"Errore imprevisto durante esecuzione bbpPairings: {e}\n{traceback.format_exc()}"
+        return False, None, _("Errore imprevisto durante esecuzione bbpPairings: {error}\n{traceback}").format(error=e, traceback=traceback.format_exc())
 
 def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
     """
@@ -1096,20 +1064,14 @@ def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
     lines = coppie_raw_content.strip().splitlines()
 
     if not lines:
-        print("Warning: File output coppie vuoto o illeggibile.")
+        print(_("Warning: File output coppie vuoto o illeggibile."))
         return None # O lista vuota, da decidere
-
     try:
-        # La prima riga dovrebbe essere il numero di coppie, la saltiamo per ora
-        # o la usiamo per validazione se necessario.
-        # num_expected_pairs = int(lines[0])
-        
         pair_lines = lines[1:] # Le righe effettive degli abbinamenti
-
         for line_num, line in enumerate(pair_lines):
             parts = line.strip().split()
             if len(parts) != 2:
-                print(f"Warning: Riga abbinamento malformata: '{line}' (saltata)")
+                print(_("Warning: Riga abbinamento malformata: '{line}' (saltata)").format(line=line))
                 continue
             
             try:
@@ -1117,13 +1079,13 @@ def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
                 start_rank1 = int(start_rank1_str)
                 start_rank2 = int(start_rank2_str) # Può essere 0 per il BYE
             except ValueError:
-                print(f"Warning: ID non numerici nella riga abbinamento: '{line}' (saltata)")
+                print(_("Warning: ID non numerici nella riga abbinamento: '{line}' (saltata)").format(line=line))
                 continue
 
             player1_id_tornello = mappa_start_rank_a_id.get(start_rank1)
             
             if player1_id_tornello is None:
-                print(f"Warning: StartRank {start_rank1} non trovato nella mappa giocatori (riga: '{line}').")
+                print(_("Warning: StartRank {rank} non trovato nella mappa giocatori (riga: '{line}').").format(rank=start_rank1, line=line))
                 continue
 
             if start_rank2 == 0: # È un BYE
@@ -1136,9 +1098,8 @@ def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
             else:
                 player2_id_tornello = mappa_start_rank_a_id.get(start_rank2)
                 if player2_id_tornello is None:
-                    print(f"Warning: StartRank avversario {start_rank2} non trovato nella mappa (riga: '{line}').")
+                    print(_("Warning: StartRank avversario {rank} non trovato nella mappa (riga: '{line}').").format(rank=start_rank2, line=line))
                     continue
-                
                 # Assumiamo che il primo giocatore nella coppia (player1) abbia il Bianco
                 parsed_matches.append({
                     'white_player_id': player1_id_tornello,
@@ -1146,11 +1107,9 @@ def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
                     'result': None,
                     'is_bye': False
                 })
-        
         return parsed_matches
-
     except Exception as e:
-        print(f"Errore durante il parsing dell'output delle coppie: {e}\n{traceback.format_exc()}")
+        print(_("Errore durante il parsing dell'output delle coppie: {error}\n{traceback}").format(error=e, traceback=traceback.format_exc()))
         return None
 
 # --- Database Giocatori Functions ---
@@ -1171,8 +1130,8 @@ def load_players_db():
                     p.setdefault('fide_k_factor', None)
                 return {p['id']: p for p in db_list}
         except (json.JSONDecodeError, IOError) as e:
-            print(f"Errore durante il caricamento del DB giocatori ({PLAYER_DB_FILE}): {e}")
-            print("Verrà creato un nuovo DB vuoto se si aggiungono giocatori.")
+            print(_("Errore durante il caricamento del DB giocatori ({filename}): {error}").format(filename=PLAYER_DB_FILE, error=e))
+            print(_("Verrà creato un nuovo DB vuoto se si aggiungono giocatori."))
             return {}
     return {}
 
@@ -1185,9 +1144,9 @@ def save_players_db(players_db):
             json.dump(list(players_db.values()), f, indent=1, ensure_ascii=False)
         save_players_db_txt(players_db)
     except IOError as e:
-        print(f"Errore durante il salvataggio del DB giocatori ({PLAYER_DB_FILE}): {e}")
+        print(_("Errore durante il salvataggio del DB giocatori ({filename}): {error}").format(filename=PLAYER_DB_FILE, error=e))
     except Exception as e:
-        print(f"Errore imprevisto durante il salvataggio del DB: {e}")
+        print(_("Errore imprevisto durante il salvataggio del DB: {error}").format(error=e))
 
 # Assicurati che la funzione get_k_factor sia definita prima di questa
 # e che datetime sia importato (from datetime import datetime)
@@ -2045,7 +2004,6 @@ def update_match_result(torneo):
     Restituisce True se almeno un risultato è stato aggiornato o cancellato 
     durante la sessione, False altrimenti.
     """
-    print("debug _",type(_),_)
     any_changes_made_in_this_session = False
     current_round_num = torneo["current_round"]
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
@@ -3201,7 +3159,6 @@ if __name__ == "__main__":
     deve_creare_nuovo_torneo = False
     nome_nuovo_torneo_suggerito = None
     print(f"\nBENVENUTI! Sono Tornello {VERSIONE}") # Messaggio di benvenuto iniziale
-    print("debug _",type(_),_)
     print("\nVerifica stato database FIDE locale...")
     db_fide_esiste = os.path.exists(FIDE_DB_LOCAL_FILE)
     db_fide_appena_aggiornato = False 
@@ -3341,7 +3298,7 @@ if __name__ == "__main__":
                     else:
                         print("Scelta non valida.")
                 else:
-                    print("Inserisci un numero.")
+                    print(_("Inserisci un numero."))
     # 2. Creazione nuovo torneo (se necessario)
     if deve_creare_nuovo_torneo or torneo is None:
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
@@ -3375,7 +3332,7 @@ if __name__ == "__main__":
         # Fase 2: Se un nome non è stato finalizzato dal suggerimento (o non c'era suggerimento), chiedilo
         if not new_tournament_name_final:
             while True: # Loop solo per la richiesta del nome se necessario
-                input_corrente_nome_torneo = input("Inserisci il nome del nuovo torneo: ").strip()
+                input_corrente_nome_torneo = input(_("Inserisci il nome del nuovo torneo: ")).strip()
                 if input_corrente_nome_torneo:
                     sanitized_name_new = sanitize_filename(input_corrente_nome_torneo)
                     prospective_filename = f"Tornello - {sanitized_name_new}.json" # Usa il tuo stile
@@ -3425,11 +3382,11 @@ if __name__ == "__main__":
         
         while True: 
             try:
-                rounds_str = input("Inserisci il numero totale dei turni: ").strip()
+                rounds_str = input(_("Inserisci il numero totale dei turni: ")).strip()
                 total_rounds = int(rounds_str)
                 if total_rounds > 0: torneo["total_rounds"] = total_rounds; break
                 else: print("Il numero di turni deve essere positivo.")
-            except ValueError: print("Inserisci un numero intero valido.")
+            except ValueError: print(_("Inserisci un numero intero valido."))
 
         print("\nInserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare default):")
         torneo["site"] = input(f"  Luogo del torneo [Default: Luogo Sconosciuto]: ").strip() or "Luogo Sconosciuto"
