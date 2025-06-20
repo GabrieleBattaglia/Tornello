@@ -3,190 +3,280 @@
   "id": "GASCL001",
   "first_name": "Claudio",
   "last_name": "Gasperoni",
-  "current_elo": 1874,
+  "current_elo": 1890,
   "registration_date": "2025-05-01",
   "birth_date": "1975-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
-   "gold": 0,
+   "gold": 1,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 1,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "1N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "825450",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "NICFR001",
   "first_name": "Francesco",
   "last_name": "Nicolini",
-  "current_elo": 1776,
+  "current_elo": 1784,
   "registration_date": "2025-05-01",
   "birth_date": "1965-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
-   "bronze": 0,
+   "bronze": 1,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 3,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "2N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "23424109",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "VANJI001",
   "first_name": "Jiazhuang",
   "last_name": "Vandelli",
-  "current_elo": 1756,
+  "current_elo": 1773,
   "registration_date": "2025-05-01",
   "birth_date": "2002-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
-   "silver": 0,
+   "silver": 1,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 2,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "2N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "23449071",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "ZAVFA001",
   "first_name": "Fabrizio",
   "last_name": "Zavan",
-  "current_elo": 1671,
+  "current_elo": 1675,
   "registration_date": "2025-05-01",
   "birth_date": "1963-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 5,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "2N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "876020",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "MANFA001",
   "first_name": "Fabrizio",
   "last_name": "Manneschi",
-  "current_elo": 1609,
+  "current_elo": 1605,
   "registration_date": "2025-05-01",
   "birth_date": "1946-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 9,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "2805761",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "TRACO001",
   "first_name": "Cosetta",
   "last_name": "Trapletti",
-  "current_elo": 1504,
+  "current_elo": 1488,
   "registration_date": "2025-05-01",
   "birth_date": "1968-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 16,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "2817697",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "TOLFI001",
   "first_name": "Filippa",
   "last_name": "Tolaro",
-  "current_elo": 1584,
+  "current_elo": 1588,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 11,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "28505867",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "COLMI001",
   "first_name": "Michele",
   "last_name": "Colangelo",
-  "current_elo": 1574,
+  "current_elo": 1555,
   "registration_date": "2025-05-01",
   "birth_date": "1959-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 19,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "23424087",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "BATGA001",
   "first_name": "Gabriele",
   "last_name": "Battaglia",
-  "current_elo": 1513,
+  "current_elo": 1534,
   "registration_date": "2025-05-01",
   "birth_date": "1974-09-13",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 6,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "804495",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "PARLU001",
@@ -195,49 +285,69 @@
   "current_elo": 1506,
   "registration_date": "2025-05-01",
   "birth_date": "1970-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 13,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "3N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "28556666",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "BARGI001",
   "first_name": "Giuseppe",
   "last_name": "Baratta",
-  "current_elo": 1450,
+  "current_elo": 1465,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 12,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "28594010",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "IONLO001",
   "first_name": "Lorenzo",
   "last_name": "Ionata",
-  "current_elo": 1446,
+  "current_elo": 1468,
   "registration_date": "2025-05-01",
   "birth_date": "1978-01-01",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 1,
    "silver": 0,
@@ -252,13 +362,22 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 7,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "28550404",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "BOSGI002",
@@ -274,21 +393,31 @@
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": "RIT",
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "2854584",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "CALVA001",
   "first_name": "Valeria",
   "last_name": "Calzolari",
-  "current_elo": 1399,
+  "current_elo": 1415,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -303,64 +432,93 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 15,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "CASMA001",
   "first_name": "Mariangela",
   "last_name": "Cassano",
-  "current_elo": 1399,
+  "current_elo": 1390,
   "registration_date": "2025-05-01",
   "birth_date": "1958-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 22,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "653009215",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "CICMA001",
   "first_name": "Mathias",
   "last_name": "Cicciarella",
-  "current_elo": 1399,
+  "current_elo": 1403,
   "registration_date": "2025-05-01",
   "birth_date": "2013-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 18,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "FORMA001",
   "first_name": "Martina",
   "last_name": "Forte",
-  "current_elo": 1399,
+  "current_elo": 1330,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 9,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -375,22 +533,31 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 27,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "GORSE001",
   "first_name": "Serena",
   "last_name": "Gori",
-  "current_elo": 1399,
+  "current_elo": 1309,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -405,22 +572,31 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 28,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "23491132",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "MERAL001",
   "first_name": "Alessia",
   "last_name": "Mereu",
-  "current_elo": 1399,
+  "current_elo": 1351,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -435,43 +611,62 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 25,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "PAGGI001",
   "first_name": "Giulia",
   "last_name": "Paglia",
-  "current_elo": 1399,
+  "current_elo": 1408,
   "registration_date": "2025-05-01",
   "birth_date": "2018-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 17,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "PAGVI001",
   "first_name": "Virginio",
   "last_name": "Paglia",
-  "current_elo": 1399,
+  "current_elo": 1365,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -486,43 +681,62 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 23,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "23470763",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "SCAVA001",
   "first_name": "Valeria",
   "last_name": "Scapin",
-  "current_elo": 1399,
+  "current_elo": 1388,
   "registration_date": "2025-05-01",
   "birth_date": "1984-02-09",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 21,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "TESAL001",
   "first_name": "Alessandra",
   "last_name": "Testori",
-  "current_elo": 1399,
+  "current_elo": 1351,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -537,22 +751,31 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 26,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "VALRI001",
   "first_name": "Rita",
   "last_name": "Valleriani",
-  "current_elo": 1399,
+  "current_elo": 1448,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -567,43 +790,62 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 8,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "23470798",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "SOPMA001",
   "first_name": "Maurizio",
   "last_name": "Soppelsa",
-  "current_elo": 1731,
+  "current_elo": 1737,
   "registration_date": "2025-05-02",
   "birth_date": "1956-01-01",
-  "games_played": 0,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
-   "wood": 0
+   "wood": 1
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 4,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
+   }
+  ],
   "fide_title": "2N",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "841439",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "VENLU001",
   "first_name": "Luigi",
   "last_name": "Ventura",
-  "current_elo": 1399,
+  "current_elo": 1469,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -618,22 +860,31 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 10,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "BRICA001",
   "first_name": "Catia Susana",
   "last_name": "Brites Pereira Lima",
-  "current_elo": 1399,
+  "current_elo": 1405,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 1,
@@ -648,22 +899,31 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 20,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "DIBVI001",
   "first_name": "Vincenzo",
   "last_name": "Di Bari",
-  "current_elo": 1399,
+  "current_elo": 1424,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -678,13 +938,22 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId Primavera 1",
+    "tournament_id": "ASCId_Primavera_1_20250528224120",
+    "rank": 14,
+    "total_players": 28,
+    "date_started": "2025-05-04",
+    "date_completed": "2025-06-15"
    }
   ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "CIBSI001",
@@ -714,6 +983,7 @@
   "sex": "w",
   "federation": "ITA",
   "fide_id_num_str": "23491124",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  }
 ]
