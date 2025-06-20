@@ -1,14 +1,14 @@
-﻿Report Database Giocatori Tornello - Venerdì 20 giugno 2025 07:35:21
+﻿Report Database Giocatori Tornello - Venerdì 20 giugno 2025 09:50:28
 ========================================
 
-ID: BARGI001, NC Giuseppe Baratta, Elo: 1465
+ID: BARGI001, NC Giuseppe Baratta, Elo: 1450
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28594010
-	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
-	Data Nascita: N/D
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Data Nascita: Domenica 1 gennaio 1961
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	12° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: BATGA001, 3N Gabriele Battaglia, Elo: 1534
+ID: BATGA001, 3N Gabriele Battaglia, Elo: 1513
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 804495
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Venerdì 13 settembre 1974
@@ -82,7 +82,7 @@ ID: FORMA001, NC Martina Forte, Elo: 1330
 	27° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	7° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: GASCL001, 1N Claudio Gasperoni, Elo: 1890
+ID: GASCL001, 1N Claudio Gasperoni, Elo: 1874
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 825450
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1975
@@ -92,14 +92,14 @@ ID: GASCL001, 1N Claudio Gasperoni, Elo: 1890
 ID: GORSE001, NC Serena Gori, Elo: 1309
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491132
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
-	Data Nascita: N/D
+	Data Nascita: Giovedì 1 gennaio 1948
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	28° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	12° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: IONLO001, NC Lorenzo Ionata, Elo: 1468
+ID: IONLO001, NC Lorenzo Ionata, Elo: 1446
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28550404
-	Partite Valutate Totali: 10, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1978
 	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	7° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
@@ -137,14 +137,14 @@ ID: PAGGI001, NC Giulia Paglia, Elo: 1408
 ID: PAGVI001, NC Virginio Paglia, Elo: 1365
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23470763
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
-	Data Nascita: N/D
+	Data Nascita: Giovedì 1 gennaio 1981
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	23° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	6° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
 ID: PARLU001, 3N Luca Parravano, Elo: 1506
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28556666
-	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1970
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	13° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
@@ -156,7 +156,7 @@ ID: SCAVA001, NC Valeria Scapin, Elo: 1388
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	21° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1737
+ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1731
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 841439
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1956
@@ -188,14 +188,14 @@ ID: TRACO001, 3N Cosetta Trapletti, Elo: 1488
 ID: VALRI001, NC Rita Valleriani, Elo: 1448
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23470798
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
-	Data Nascita: N/D
+	Data Nascita: Mercoledì 1 gennaio 1986
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	8° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	9° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: VANJI001, 2N Jiazhuang Vandelli, Elo: 1773
+ID: VANJI001, 2N Jiazhuang Vandelli, Elo: 1756
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23449071
-	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 2002
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
 	2° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
@@ -208,7 +208,7 @@ ID: VENLU001, NC Luigi Ventura, Elo: 1469
 	10° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	8° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: ZAVFA001, 2N Fabrizio Zavan, Elo: 1675
+ID: ZAVFA001, 2N Fabrizio Zavan, Elo: 1671
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 876020
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1963
