@@ -883,7 +883,7 @@
       "date": "2025-06-20",
       "time": "18:00",
       "channel": "wa",
-      "arbiter": ""
+      "arbiter": "Vincenzo e Alessia"
      },
      "is_scheduled": true
     },
@@ -947,5 +947,5 @@
   }
  ],
  "next_match_id": 10,
- "launch_count": 8
+ "launch_count": 9
 }

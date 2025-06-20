@@ -1,5 +1,5 @@
 {
- "launch_count": 38,
+ "launch_count": 39,
  "name": "ASCId Primavera 1",
  "tournament_id": "ASCId_Primavera_1_20250528224120",
  "start_date": "2025-05-04",
@@ -88,10 +88,10 @@
     }
    ],
    "opponents": [
-    "NICFR001",
-    "TOLFI001",
     "BRICA001",
+    "TOLFI001",
     "SOPMA001",
+    "NICFR001",
     "VANJI001"
    ],
    "white_games": 3,
@@ -162,10 +162,10 @@
    ],
    "opponents": [
     "COLMI001",
+    "ZAVFA001",
     "VENLU001",
-    "CALVA001",
     "GASCL001",
-    "ZAVFA001"
+    "CALVA001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -234,11 +234,11 @@
     }
    ],
    "opponents": [
-    "VALRI001",
+    "CASMA001",
+    "MANFA001",
     "GASCL001",
     "BATGA001",
-    "CASMA001",
-    "MANFA001"
+    "VALRI001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -307,10 +307,10 @@
     }
    ],
    "opponents": [
-    "PARLU001",
     "IONLO001",
     "VENLU001",
     "GASCL001",
+    "PARLU001",
     "CICMA001"
    ],
    "white_games": 2,
@@ -380,11 +380,11 @@
     }
    ],
    "opponents": [
-    "DIBVI001",
     "TRACO001",
-    "NICFR001",
+    "BATGA001",
+    "DIBVI001",
     "BARGI001",
-    "BATGA001"
+    "NICFR001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -453,11 +453,11 @@
     }
    ],
    "opponents": [
-    "PARLU001",
-    "VALRI001",
     "IONLO001",
     "FORMA001",
-    "VANJI001"
+    "PARLU001",
+    "VANJI001",
+    "VALRI001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -526,9 +526,9 @@
     }
    ],
    "opponents": [
+    "ZAVFA001",
     "VENLU001",
     "BARGI001",
-    "ZAVFA001",
     "BOSGI002",
     "GORSE001"
    ],
@@ -599,10 +599,10 @@
     }
    ],
    "opponents": [
-    "COLMI001",
     "IONLO001",
-    "GASCL001",
     "BRICA001",
+    "COLMI001",
+    "GASCL001",
     "MERAL001"
    ],
    "white_games": 2,
@@ -672,11 +672,11 @@
     }
    ],
    "opponents": [
-    "VENLU001",
-    "NICFR001",
-    "TOLFI001",
     "PAGGI001",
-    "TESAL001"
+    "VENLU001",
+    "TOLFI001",
+    "TESAL001",
+    "NICFR001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -745,11 +745,11 @@
     }
    ],
    "opponents": [
-    "DIBVI001",
-    "VANJI001",
+    "PAGVI001",
     "ZAVFA001",
+    "DIBVI001",
     "CICMA001",
-    "PAGVI001"
+    "VANJI001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -818,11 +818,11 @@
     }
    ],
    "opponents": [
-    "DIBVI001",
-    "SCAVA001",
     "CASMA001",
+    "DIBVI001",
     "SOPMA001",
-    "MANFA001"
+    "MANFA001",
+    "SCAVA001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -893,8 +893,8 @@
    "opponents": [
     "TRACO001",
     "ZAVFA001",
-    "TESAL001",
     "CICMA001",
+    "TESAL001",
     "MERAL001"
    ],
    "white_games": 2,
@@ -964,11 +964,11 @@
     }
    ],
    "opponents": [
-    "SCAVA001",
-    "VALRI001",
+    "MANFA001",
     "TOLFI001",
     "SOPMA001",
-    "MANFA001"
+    "VALRI001",
+    "SCAVA001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -1102,11 +1102,11 @@
     }
    ],
    "opponents": [
-    "TOLFI001",
+    "PAGVI001",
     "GASCL001",
+    "TOLFI001",
     "TESAL001",
-    "MERAL001",
-    "PAGVI001"
+    "MERAL001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -1136,7 +1136,7 @@
    "federation": "ITA",
    "fide_id_num_str": "0",
    "birth_date": "1966-01-01",
-   "points": 1.5,
+   "points": 2.5,
    "results_history": [
     {
      "round": 1,
@@ -1165,13 +1165,20 @@
      "color": "black",
      "result": "0-1",
      "score": 1.0
+    },
+    {
+     "round": 5,
+     "opponent_id": "CASMA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
-    "VALRI001",
-    "NICFR001",
-    "PAGGI001",
     "CASMA001",
+    "PAGGI001",
+    "NICFR001",
+    "VALRI001",
     "GORSE001"
    ],
    "white_games": 3,
@@ -1241,11 +1248,11 @@
     }
    ],
    "opponents": [
-    "SCAVA001",
-    "BARGI001",
-    "BATGA001",
     "PAGGI001",
-    "SOPMA001"
+    "BATGA001",
+    "BARGI001",
+    "SOPMA001",
+    "SCAVA001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -1304,14 +1311,21 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 5,
+     "opponent_id": "CALVA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
-    "PARLU001",
+    "PAGVI001",
     "CALVA001",
     "FORMA001",
-    "VANJI001",
-    "PAGVI001"
+    "PARLU001",
+    "VANJI001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -1380,9 +1394,9 @@
     }
    ],
    "opponents": [
-    "PARLU001",
-    "BATGA001",
     "ZAVFA001",
+    "BATGA001",
+    "PARLU001",
     "BOSGI002",
     "TESAL001"
    ],
@@ -1454,9 +1468,9 @@
    ],
    "opponents": [
     "MANFA001",
+    "VALRI001",
     "CASMA001",
-    "TESAL001",
-    "VALRI001"
+    "TESAL001"
    ],
    "white_games": 2,
    "black_games": 2,
@@ -1527,11 +1541,11 @@
     }
    ],
    "opponents": [
-    "SCAVA001",
+    "PAGVI001",
     "TRACO001",
     "CALVA001",
     "BOSGI002",
-    "PAGVI001"
+    "SCAVA001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -1600,11 +1614,11 @@
     }
    ],
    "opponents": [
-    "SCAVA001",
+    "BRICA001",
+    "PAGGI001",
     "TOLFI001",
     "BARGI001",
-    "BRICA001",
-    "PAGGI001"
+    "SCAVA001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -1673,11 +1687,11 @@
     }
    ],
    "opponents": [
+    "PAGVI001",
     "COLMI001",
     "CALVA001",
     "CICMA001",
-    "MERAL001",
-    "PAGVI001"
+    "MERAL001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -1747,9 +1761,9 @@
    ],
    "opponents": [
     "BRICA001",
-    "BATGA001",
     "CASMA001",
     "PAGGI001",
+    "BATGA001",
     "GORSE001"
    ],
    "white_games": 3,
@@ -1819,10 +1833,10 @@
     }
    ],
    "opponents": [
-    "PARLU001",
     "IONLO001",
-    "GORSE001",
+    "PARLU001",
     "CICMA001",
+    "GORSE001",
     "MERAL001"
    ],
    "white_games": 2,
@@ -1892,10 +1906,10 @@
     }
    ],
    "opponents": [
-    "DIBVI001",
-    "COLMI001",
-    "BARGI001",
     "BRICA001",
+    "COLMI001",
+    "DIBVI001",
+    "BARGI001",
     "FORMA001"
    ],
    "white_games": 3,
@@ -1966,10 +1980,10 @@
    ],
    "opponents": [
     "IONLO001",
+    "MANFA001",
     "CALVA001",
     "FORMA001",
-    "VANJI001",
-    "MANFA001"
+    "VANJI001"
    ],
    "white_games": 2,
    "black_games": 3,
@@ -2038,11 +2052,11 @@
     }
    ],
    "opponents": [
-    "COLMI001",
     "TRACO001",
-    "NICFR001",
+    "COLMI001",
+    "SOPMA001",
     "BOSGI002",
-    "SOPMA001"
+    "NICFR001"
    ],
    "white_games": 3,
    "black_games": 2,
@@ -2633,7 +2647,7 @@
      "round": 5,
      "white_player_id": "CALVA001",
      "black_player_id": "CASMA001",
-     "result": null
+     "result": "1-0"
     },
     {
      "id": 67,

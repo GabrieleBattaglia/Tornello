@@ -5,7 +5,7 @@ from GBUtils import dgt, key, Donazione
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "8.1.11, 2025.06.19 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.1.12, 2025.06.19 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -1158,11 +1158,11 @@ def save_players_db_txt(players_db):
         with open(PLAYER_DB_TXT_FILE, "w", encoding='utf-8-sig') as f: # Usiamo utf-8-sig
             now = datetime.now()
             current_date_iso = now.strftime(DATE_FORMAT_ISO) # Data corrente per calcolo K
-            f.write(f"Report Database Giocatori Tornello - {format_date_locale(now.date())} {now.strftime('%H:%M:%S')}\n")
+            f.write(_("Report Database Giocatori Tornello - {date} {time}\n").format(date=format_date_locale(now.date()), time=now.strftime('%H:%M:%S')))
             f.write("=" * 40 + "\n\n")
             sorted_players = sorted(players_db.values(), key=lambda p: (p.get('last_name',''), p.get('first_name','')))
             if not sorted_players:
-                f.write("Il database dei giocatori è vuoto.\n")
+                f.write(_("Il database dei giocatori è vuoto.\n"))
                 return
             for player in sorted_players:
                 sesso = str(player.get('sex', 'N/D')).upper()
@@ -1175,18 +1175,18 @@ def save_players_db_txt(players_db):
                 last_name_display = player.get('last_name', 'N/D')
                 elo_display = player.get('current_elo', 'N/D')
                 f.write(f"ID: {player_id_display}, {titolo_prefix}{first_name_display} {last_name_display}, Elo: {elo_display}\n")
-                f.write(f"\tSesso: {sesso}, Federazione Giocatore: {federazione_giocatore}, ID FIDE num: {fide_id_numerico}\n")
+                f.write(_("\tSesso: {sesso}, Federazione Giocatore: {federazione}, ID FIDE num: {fide_id}\n").format(sesso=sesso, federazione=federazione_giocatore, fide_id=fide_id_numerico))
                 games_played_total = player.get('games_played', 0)
                 current_k_factor = get_k_factor(player, current_date_iso) # Assicurati che get_k_factor sia accessibile
                 registration_date_display = format_date_locale(player.get('registration_date'))
-                f.write(f"\tPartite Valutate Totali: {games_played_total}, K-Factor Stimato: {current_k_factor}, Data Iscrizione DB: {registration_date_display}\n")
+                f.write(_("\tPartite Valutate Totali: {games}, K-Factor Stimato: {k_factor}, Data Iscrizione DB: {reg_date}\n").format(games=games_played_total, k_factor=current_k_factor, reg_date=registration_date_display))
                 birth_date_val = player.get('birth_date') # Formato YYYY-MM-DD o None
                 birth_date_display = format_date_locale(birth_date_val) if birth_date_val else 'N/D'
-                f.write(f"\tData Nascita: {birth_date_display}\n") 
+                f.write(_("\tData Nascita: {birth_date}\n").format(birth_date=birth_date_display))
                 medals = player.get('medals', {'gold': 0, 'silver': 0, 'bronze': 0, 'wood': 0})
-                f.write(f"\tMedagliere: Oro: {medals.get('gold',0)}, Argento: {medals.get('silver',0)}, Bronzo: {medals.get('bronze',0)}, Legno: {medals.get('wood',0)} in ")
+                f.write(_("\tMedagliere: Oro: {gold}, Argento: {silver}, Bronzo: {bronze}, Legno: {wood} in ").format(gold=medals.get('gold',0), silver=medals.get('silver',0), bronze=medals.get('bronze',0), wood=medals.get('wood',0)))
                 tournaments = player.get('tournaments_played', [])
-                f.write(f"({len(tournaments)}) tornei:\n")
+                f.write(_("({count}) tornei:\n").format(count=len(tournaments)))
                 if tournaments:
                     try:
                         tournaments_sorted = sorted(
@@ -1198,19 +1198,19 @@ def save_players_db_txt(players_db):
                         tournaments_sorted = tournaments # Mantieni ordine originale se date non valide
                     for t in tournaments_sorted: # Non serve più l'indice 'i' separato
                          rank_val = t.get('rank', '?')
-                         t_name = t.get('tournament_name', 'Nome Torneo Mancante')
+                         t_name = t.get('tournament_name', _('Nome Torneo Mancante'))
                          start_date_iso = t.get('date_started') # Prende la nuova data ISO di inizio
                          end_date_iso = t.get('date_completed') # Data di completamento
                          rank_formatted = format_rank_ordinal(rank_val) # Usa la nuova funzione helper
                          start_date_formatted = format_date_locale(start_date_iso)
                          end_date_formatted = format_date_locale(end_date_iso)
-                         history_line = f"{rank_formatted} su {t.get('total_players', '?')} in {t_name} - {start_date_formatted} - {end_date_formatted}"
+                         history_line = _("{rank} su {total} in {name} - {start} - {end}").format(rank=rank_formatted, total=t.get('total_players', '?'), name=t_name, start=start_date_formatted, end=end_date_formatted)
                          f.write(f"\t{history_line}\n")
                 else:
                     f.write(_("\tNessuno\n"))
                 f.write("\t" + "-" * 30 + "\n")
     except IOError as e:
-        print(f"Errore durante il salvataggio del file TXT del DB giocatori ({PLAYER_DB_TXT_FILE}): {e}")
+        print(_("Errore durante il salvataggio del file TXT del DB giocatori ({filename}): {error}").format(filename=PLAYER_DB_TXT_FILE, error=e))
     except Exception as e:
         print(f"Errore imprevisto durante il salvataggio del TXT del DB: {e}")
         traceback.print_exc() # Stampa traceback per errori non gestiti

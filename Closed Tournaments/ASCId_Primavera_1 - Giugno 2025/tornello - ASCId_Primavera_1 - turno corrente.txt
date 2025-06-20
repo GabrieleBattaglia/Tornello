@@ -4,7 +4,7 @@
  Partite da giocare
   (Nessuna partita con giocatori attivi è attualmente pianificata con data/ora)
   Non pianificate (giocatori attivi):
-   IDG:66 Valeria Calzolari - Mariangela Cassano
+   (nessuna)
 
  Martina Forte ha il BYE
  Partite giocate
@@ -17,6 +17,7 @@
   IDG:63 Catia Susana Brites Pereira Lima - Filippa Tolaro  0-1
   IDG:64 Mathias Cicciarella - Giuseppe Baratta  0-1
   IDG:65 Lorenzo Ionata - Valeria Scapin  1-0
+  IDG:66 Valeria Calzolari - Mariangela Cassano  1-0
   IDG:67 Alessia Mereu - Giulia Paglia  0-1
   IDG:68 Michele Colangelo - Alessandra Testori  1-0
   IDG:69 Virginio Paglia - Serena Gori  1-0
