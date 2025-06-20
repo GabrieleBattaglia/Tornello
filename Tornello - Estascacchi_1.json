@@ -866,10 +866,10 @@
      "black_player_id": "MERAL001",
      "result": null,
      "schedule_info": {
-      "date": "2025-06-19",
-      "time": "16:00",
+      "date": "2025-06-21",
+      "time": "16:30",
       "channel": "wa",
-      "arbiter": "Gabry"
+      "arbiter": "Valeria C"
      },
      "is_scheduled": true
     },
@@ -908,10 +908,10 @@
      "black_player_id": "CALVA001",
      "result": null,
      "schedule_info": {
-      "date": "2025-06-21",
-      "time": "10:00",
+      "date": "2025-06-23",
+      "time": "21:00",
       "channel": "wa",
-      "arbiter": ""
+      "arbiter": "Gabry"
      },
      "is_scheduled": true
     },
@@ -947,5 +947,5 @@
   }
  ],
  "next_match_id": 10,
- "launch_count": 9
+ "launch_count": 11
 }
