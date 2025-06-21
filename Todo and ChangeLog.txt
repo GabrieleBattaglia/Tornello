@@ -37,9 +37,9 @@ RIT  NC  Bosetti, Giancarlo          [1399]   1.5    ----   0.00  --- ----  --- 
  27. NC  Forte, Martina              [1399]   1.0    7.50   8.50 1452  652  -69
  28. NC  Gori, Serena                [1399]   0.0    8.50  10.00 1436  636  -90
 
-La classifa perfetta generata dall'arbitro. Quella di tornello deve essere identica a questa.
-PS: sono consapevole che in questa manca la colonna titolo fide ma in questo specifico caso, va meglio quella di Tornello.
-PS2: per le colonne in più che ha Tornello come la variazione Elo, va bene così.
+La classifica perfetta generata dall'arbitro. Quella di tornello deve essere identica a questa.
+Tutte le colonne che tornello ha in più rispetto a quella dell'arbitro, a patto che i valori in esse riportate siano coerenti e corretti, vanno bene e possono rimanere. Se invece ci sono colonne non mostrate o calcolate, o calcolate male da tornello, queste vanno aggiunte/corrette.
+
 ARBITRO:
 | Pos. | Giocatore                           | Punti | Cut1 | BuchT | ARO     |
 |------|-------------------------------------|-------|------|-------|---------|
@@ -72,6 +72,10 @@ ARBITRO:
 | 27   | Forte, Martina                      | 1     | 8.5  | 8.5   | 1451.50 |
 | 28   | Gori, Serena                        | 0     | 9.5  | 11    | 1436.40 |
 
+Non toccare alcuna logica che non riguardi espressamente l'obbiettivo richiesto, nemmeno per apportare miglioramenti in altre parti: questo per non introdurre bugs. Se scopri zone potenzilalmente migliorabili, limitati a segnalarmele, ma ora il focus è sulla correzione della classifica.
+Naturalmente parlo sia di quella finiale che di quelle parziali.
+10. Aggiungere conferma prima di eliminazione orologio.
+11.
 CHANGELOG
 8.1.x
 	+ Aggiunto menù per scelta lingua, file di configurazione e rilevazione automatica lingua del sistema operativo

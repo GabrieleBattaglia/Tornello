@@ -5,7 +5,7 @@ from GBUtils import dgt, key, Donazione
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 # --- Constants ---
-VERSIONE = "8.1.13, 2025.06.20 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.1.14, 2025.06.21 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -1302,7 +1302,7 @@ def load_tournament(filename_to_load):
                 torneo_data.setdefault('launch_count', 0)
 
                 # --- INIZIO INIZIALIZZAZIONE NUOVI CAMPI HEADER ---
-                torneo_data.setdefault('site', 'Luogo Sconosciuto')
+                torneo_data.setdefault('site', _('Luogo Sconosciuto'))
                 torneo_data.setdefault('federation_code', 'ITA') # Federazione del torneo
                 torneo_data.setdefault('chief_arbiter', 'N/D')
                 torneo_data.setdefault('deputy_chief_arbiters', '')
@@ -1311,7 +1311,6 @@ def load_tournament(filename_to_load):
                 # torneo_data.setdefault('points_for_win', 1.0) 
                 # torneo_data.setdefault('points_for_draw', 0.5)
                 # --- FINE INIZIALIZZAZIONE NUOVI CAMPI HEADER ---
-
                 # Re-inizializza i set e campi necessari dopo il caricamento per i giocatori
                 if 'players' in torneo_data:
                     for p in torneo_data['players']:
@@ -2900,11 +2899,11 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         # Non interrompere la finalizzazione, ma la classifica potrebbe non essere ordinata.
 
     # --- Fase 4: Salva Classifica Finale TXT (nella directory corrente, prima dell'archiviazione) ---
-    print("Salvataggio classifica finale su file di testo...")
+    print(_("Salvataggio classifica finale su file di testo..."))
     save_standings_text(torneo, final=True)
 
     # --- Fase 5: Aggiornamento Database Giocatori ---
-    print("Aggiornamento Database Giocatori (Elo, partite, storico tornei)...")
+    print(_("Aggiornamento Database Giocatori (Elo, partite, storico tornei)..."))
     db_updated_count = 0
     for p_final_data in torneo.get('players', []):
         player_id = p_final_data.get('id')
@@ -2954,36 +2953,27 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     
     if db_updated_count > 0:
         save_players_db(players_db) # Salva sia JSON che TXT del DB giocatori
-        print(f"Database Giocatori aggiornato per {db_updated_count} giocatori e salvato.")
+        print(_("Database Giocatori aggiornato per {count} giocatori e salvato.").format(count=db_updated_count))
     else:
-        print("Nessun aggiornamento necessario per il Database Giocatori.")
-
+        print(_("Nessun aggiornamento necessario per il Database Giocatori."))
     # --- Fase 6: Archiviazione File Torneo ---
-    print(f"Archiviazione del torneo '{tournament_name_original}'...")
-    
+    print(_("Archiviazione del torneo '{name}'...").format(name=tournament_name_original))
     sanitized_tournament_name = sanitize_filename(tournament_name_original)
     end_date_str = torneo.get('end_date')
-    
     archive_folder_suffix = datetime.now().strftime("%Y-%m-%d") # Fallback per suffisso cartella
     if end_date_str:
         try:
             end_date_obj = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
-            mesi_italiani = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", 
-                             "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-            month_name_it = mesi_italiani[end_date_obj.month - 1] # Mese 1-12 -> Indice 0-11
-            year = end_date_obj.year
-            archive_folder_suffix = f"{month_name_it} {year}"
+            archive_folder_suffix = end_date_obj.strftime("%B %Y").capitalize()
         except ValueError:
-            print(f"  Warning: Formato data di fine ('{end_date_str}') non valido. Uso data corrente per suffisso cartella archivio.")
-
+            print(_(" Warning: Formato data di fine ('{date_str}') non valido. Uso data corrente per suffisso cartella archivio.").format(date_str=end_date_str))
     tournament_archive_subdir_name = f"{sanitized_tournament_name} - {archive_folder_suffix}"
     full_archive_path = os.path.join(ARCHIVED_TOURNAMENTS_DIR, tournament_archive_subdir_name)
-
     try:
         os.makedirs(full_archive_path, exist_ok=True)
     except OSError as e:
-        print(f"ERRORE: Creazione cartella di archivio '{full_archive_path}' fallita: {e}")
-        print("I file del torneo non saranno archiviati ma il resto della finalizzazione è completo.")
+        print(_("ERRORE: Creazione cartella di archivio '{path}' fallita: {error}").format(path=full_archive_path, error=e))
+        print(_("I file del torneo non saranno archiviati ma il resto della finalizzazione è completo."))
         return False # L'archiviazione è una parte importante della finalizzazione
 
     files_to_move = []
@@ -2997,7 +2987,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         if os.path.exists(guessed_json_filename) and guessed_json_filename not in files_to_move:
              files_to_move.append(guessed_json_filename)
         else:
-             print(f"  Warning: File JSON principale del torneo ('{current_tournament_filename}' o '{guessed_json_filename}') non trovato per l'archiviazione.")
+             print(_(" Warning: File JSON principale del torneo ('{current_filename}' o '{guessed_filename}') non trovato per l'archiviazione.").format(current_filename=current_tournament_filename, guessed_filename=guessed_json_filename))
 
 
     # 2. Altri file di testo (.txt) associati al torneo
@@ -3012,59 +3002,57 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                 files_to_move.append(file_in_dir)
 
     if not files_to_move:
-        print("  Warning: Nessun file specifico del torneo trovato da archiviare.")
-    
+        print(_("  Warning: Nessun file specifico del torneo trovato da archiviare."))
     moved_files_count = 0
     for filepath_to_move in files_to_move:
         try:
             filename_only = os.path.basename(filepath_to_move)
             destination_path = os.path.join(full_archive_path, filename_only)
-            
             # Gestione della sovrascrittura (anche se improbabile per una nuova cartella di archivio)
             if os.path.exists(destination_path):
-                print(f"  Warning: File '{filename_only}' esiste già in '{full_archive_path}'. Non verrà sovrascritto.")
+                print(_(" Warning: File '{filename}' esiste già in '{path}'. Non verrà sovrascritto.").format(filename=filename_only, path=full_archive_path))
                 continue # Salta lo spostamento di questo file
-
             shutil.move(filepath_to_move, destination_path)
             moved_files_count += 1
         except Exception as e_move:
             print(f"  Errore durante lo spostamento di '{os.path.basename(filepath_to_move)}': {e_move}")
-
     if moved_files_count > 0:
-        print(f"Spostati {moved_files_count} file del torneo in: '{full_archive_path}'")
+        print(_("Spostati {count} file del torneo in: '{path}'").format(count=moved_files_count, path=full_archive_path))
     else:
-        print("Nessun file del torneo è stato spostato nella cartella di archivio.")
-        # Potrebbe essere normale se il file JSON principale era l'unico e non è stato trovato.
-
-    print(f"Torneo '{tournament_name_original}' finalizzato e archiviato.")
+        print(_("Nessun file del torneo è stato spostato nella cartella di archivio."))
+    print(_("Torneo '{name}' finalizzato e archiviato.").format(name=tournament_name_original))
     return True
 
 # supporto multilingua
 config = carica_configurazione()
 lingua_scelta = config.get('language')
 if not lingua_scelta:
-    print("\n--- Configurazione Lingua (prima esecuzione) ---")
+    print("\n--- Select your language (first launch) ---")
     try:
         locale.setlocale(locale.LC_ALL, '')
         codice_lingua_os, u1 = locale.getlocale()
         lingua_os = codice_lingua_os.split('_')[0] if codice_lingua_os else 'en'
     except Exception:
         lingua_os = 'en'
-    lingue_supportate = {'it': 'Italiano', 'en': 'English'}
-    print(f"Lingua del sistema rilevata: {lingue_supportate.get(lingua_os, lingua_os)}.")
-    scelta_iniziale = input(f"Usare questa lingua o sceglierne un'altra? [Invio per confermare, 'c' per scegliere]: ").strip().lower()
+    lingue_supportate = {
+        'it': 'Italiano',
+        'en': 'English'
+        }
+    print("Linguages found from your system: {lang_name}.").format(lang_name=lingue_supportate.get(lingua_os, lingua_os))
+    scelta_iniziale = input(f"Do you want to use this language? Or choose another one? [Enter to confirm, 'c' to make your choice]: ").strip().lower()
     if scelta_iniziale == 'c':
-        print("Lingue disponibili:")
+        print("Available languages:")
         for codice, nome in lingue_supportate.items(): print(f" - [{codice}] {nome}")
         while True:
-            codice_scelto = input(f"Inserisci il codice desiderato (es. 'en'): ").strip().lower()
+            codice_scelto = input(f"Giive me the language code (es. 'en'): ").strip().lower()
             if codice_scelto in lingue_supportate:
                 lingua_scelta = codice_scelto
                 break
-            else: print("Codice non valido.")
+            else:
+                print("Invalid code.")
     else:
         lingua_scelta = lingua_os if lingua_os in lingue_supportate else 'it' # Default finale a 'it'
-    print(f"Lingua impostata su: '{lingue_supportate.get(lingua_scelta)}'. Verrà salvata per le prossime esecuzioni.")
+    print(f"Language set on: '{lingue_supportate.get(lingua_scelta)}'. It will be use from now on.")
     config['language'] = lingua_scelta
     salva_configurazione(config)
 # Inizializzazione finale di gettext, che definisce '_' per tutto lo script
@@ -3134,54 +3122,53 @@ if __name__ == "__main__":
            os.path.basename(f) != PLAYER_DB_FILE # Assicura di non confondere il DB giocatori
     ]
     if not potential_tournament_files:
-        print("Nessun torneo esistente trovato.")
+        print(_("Nessun torneo esistente trovato."))
         deve_creare_nuovo_torneo = True
     elif len(potential_tournament_files) == 1:
         single_found_filepath = potential_tournament_files[0]
-        single_tournament_name_guess = "Torneo Sconosciuto" # Default
+        single_tournament_name_guess = _("Torneo Sconosciuto")
         try:
             with open(single_found_filepath, "r", encoding='utf-8') as f_temp:
                 data_temp = json.load(f_temp)
             single_tournament_name_guess = data_temp.get("name", os.path.basename(single_found_filepath).replace("Tornello - ", "").replace(".json",""))
         except Exception as e:
             # Se non riesci a leggere il nome dal JSON, usa una parte del nome del file
-            print(f"Info: impossibile leggere i dettagli da '{os.path.basename(single_found_filepath)}' ({e}). Uso il nome del file.")
+            print(_("Info: impossibile leggere i dettagli da '{filename}' ({error}). Uso il nome del file.").format(filename=os.path.basename(single_found_filepath), error=e))
             base_name = os.path.basename(single_found_filepath)
             if base_name.startswith("Tornello - ") and base_name.endswith(".json"):
                 single_tournament_name_guess = base_name[len("Tornello - "):-len(".json")]
             else:
                 single_tournament_name_guess = base_name
-        print(f"\nTrovato un solo torneo esistente: '{single_tournament_name_guess}' (File: {os.path.basename(single_found_filepath)})")
+        print(_("\nTrovato un solo torneo esistente: '{name}' (File: {filename})").format(name=single_tournament_name_guess, filename=os.path.basename(single_found_filepath)))
         while True: # Loop per la scelta dell'utente
-            # Modifica del prompt per seguire la tua richiesta
-            user_input_choice = input(f"Vuoi caricare '{single_tournament_name_guess}'? (S/Invio per sì, oppure inserisci il nome di un NUOVO torneo da creare): ").strip()
+            user_input_choice = input(_("Vuoi caricare '{name}'? (S/Invio per sì, oppure inserisci il nome di un NUOVO torneo da creare): ").format(name=single_tournament_name_guess)).strip()
             if not user_input_choice or user_input_choice.lower() == 's':
                 # L'utente vuole caricare il torneo trovato (ha premuto Invio o 's')
                 active_tournament_filename = single_found_filepath
-                print(f"Caricamento di '{single_tournament_name_guess}'...")
+                print(_("Caricamento di '{name}'...").format(name=single_tournament_name_guess))
                 torneo = load_tournament(active_tournament_filename)
                 if not torneo:
                     # Il caricamento è fallito
-                    print(f"Errore fatale nel caricamento del torneo '{active_tournament_filename}'.")
+                    print(_("Errore fatale nel caricamento del torneo '{filename}'.").format(filename=active_tournament_filename))
                     # Chiediamo se vuole creare un nuovo torneo o uscire
                     create_new_instead_choice = key("Vuoi (c)reare un nuovo torneo o (u)scire dal programma? [c/u]: ").strip().lower()
                     if create_new_instead_choice == 'c':
                         deve_creare_nuovo_torneo = True
                         active_tournament_filename = None # Resetta perché il caricamento è fallito
                     else:
-                        print("Uscita dal programma.")
+                        print(_("Uscita dal programma."))
                         sys.exit(0) # Esce se il caricamento fallisce e non vuole creare
                 # Se torneo è stato caricato con successo (o se si è scelto di creare dopo fallimento), esci da questo loop
                 break 
             else:
                 # L'utente ha inserito un nome, quindi vuole creare un nuovo torneo.
                 # La stringa inserita (user_input_choice) è il nome del nuovo torneo.
-                print(f"Ok, procederemo con la creazione di un nuovo torneo chiamato: '{user_input_choice}'.")
+                print(_("Ok, procederemo con la creazione di un nuovo torneo chiamato: '{name}'.").format(name=user_input_choice))
                 deve_creare_nuovo_torneo = True
                 nome_nuovo_torneo_suggerito = user_input_choice
                 break # Esce dal loop s/n/nome
     else: # Più di un torneo trovato
-        print("\n--- Tornei Esistenti Trovati ---")
+        print(_("\n--- Tornei Esistenti Trovati ---"))
         tournament_options = []
         for idx, filepath in enumerate(potential_tournament_files):
             try:
@@ -3189,7 +3176,7 @@ if __name__ == "__main__":
                 with open(filepath, "r", encoding='utf-8') as f_temp:
                     data_temp = json.load(f_temp)
                 
-                t_name = data_temp.get("name", "Nome Sconosciuto")
+                t_name = data_temp.get("name", _("Nome Sconosciuto"))
                 t_start = data_temp.get("start_date")
                 t_end = data_temp.get("end_date")
                 
@@ -3203,27 +3190,26 @@ if __name__ == "__main__":
                     "start_date_display": start_display,
                     "end_date_display": end_display
                 })
-                print(f"  {idx + 1}. {t_name} (dal {start_display} al {end_display}) - File: {os.path.basename(filepath)}")
+                print(_(" {num}. {name} (dal {start_date} al {end_date}) - File: {filename}").format(num=idx + 1, name=t_name, start_date=start_display, end_date=end_display, filename=os.path.basename(filepath)))
             except Exception as e:
-                print(f"  Errore leggendo metadati da {os.path.basename(filepath)}: {e} (file saltato)")
+                print(_(" Errore durante la lettura dei metadati da {filename}: {error} (file saltato)").format(filename=os.path.basename(filepath), error=e))
 
         if not tournament_options: # Se tutti i file hanno dato errore in lettura metadati
-            print("Nessun torneo valido trovato nonostante la presenza di file. Si procederà con la creazione.")
+            print(_("Nessun torneo valido trovato nonostante la presenza di file. Si procederà con la creazione."))
             deve_creare_nuovo_torneo = True
         else:
-            print(f"  {len(tournament_options) + 1}. Crea un nuovo torneo")
-            
+            print(_(" {num}. Crea un nuovo torneo").format(num=len(tournament_options) + 1))
             while True:
-                choice_str = input(f"Scegli un torneo da caricare (1-{len(tournament_options)}) o '{len(tournament_options) + 1}' per crearne uno nuovo: ").strip()
+                choice_str = input(_("Scegli un torneo da caricare (1-{max_num}) o '{new_num}' per crearne uno nuovo: ").format(max_num=len(tournament_options), new_num=len(tournament_options) + 1)).strip()
                 if choice_str.isdigit():
                     choice_num = int(choice_str)
                     if 1 <= choice_num <= len(tournament_options):
                         chosen_option = next(opt for opt in tournament_options if opt["id_lista"] == choice_num)
                         active_tournament_filename = chosen_option["filepath"]
-                        print(f"Caricamento di '{chosen_option['name']}'...")
+                        print(_("Caricamento di '{name}'...").format(name=chosen_option['name']))
                         torneo = load_tournament(active_tournament_filename)
                         if not torneo:
-                            print(f"Errore nel caricamento del torneo {active_tournament_filename}. Riprova o crea un nuovo torneo.")
+                            print(_("Errore nel caricamento del torneo {filename}. Riprova o crea un nuovo torneo.").format(filename=active_tournament_filename))
                             # L'utente tornerà al prompt di scelta
                             active_tournament_filename = None # Resetta
                         else:
@@ -3232,33 +3218,31 @@ if __name__ == "__main__":
                         deve_creare_nuovo_torneo = True
                         break
                     else:
-                        print("Scelta non valida.")
+                        print(_("Scelta non valida."))
                 else:
                     print(_("Inserisci un numero."))
     # 2. Creazione nuovo torneo (se necessario)
     if deve_creare_nuovo_torneo or torneo is None:
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
-            print("Nessun torneo caricato. Si procede con la creazione di un nuovo torneo.")
+            print(_("Nessun torneo caricato. Si procede con la creazione di un nuovo torneo."))
         torneo = {} 
-        print("\n--- Creazione Nuovo Torneo ---")
+        print(_("\n--- Creazione Nuovo Torneo ---"))
         active_tournament_filename = None # Verrà impostato quando il nome sarà definito
         new_tournament_name_final = ""    # Nome che verrà effettivamente usato per il torneo
-
         # Fase 1: Prova a usare il nome suggerito, se esiste
         if nome_nuovo_torneo_suggerito:
-            print(f"Nome suggerito per il nuovo torneo: '{nome_nuovo_torneo_suggerito}'")
+            print(_("Nome suggerito per il nuovo torneo: '{name}'").format(name=nome_nuovo_torneo_suggerito))
             current_potential_name = nome_nuovo_torneo_suggerito
             sanitized_check_name = sanitize_filename(current_potential_name)
             # Assicurati che il prefisso "Tornello - " sia quello corretto per il tuo stile di nomenclatura
             prospective_filename_check = f"Tornello - {sanitized_check_name}.json" 
-
             if os.path.exists(prospective_filename_check):
-                overwrite_choice = key(f"ATTENZIONE: Un file torneo '{prospective_filename_check}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
+                overwrite_choice = key(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").format(filename=prospective_filename_check)).strip().lower()
                 if overwrite_choice == 's':
                     new_tournament_name_final = current_potential_name # Accetta il nome suggerito
                     active_tournament_filename = prospective_filename_check
                 else:
-                    print("Sovrascrittura annullata. Verrà richiesto un nuovo nome.")
+                    print(_("Sovrascrittura annullata. Verrà richiesto un nuovo nome."))
                     nome_nuovo_torneo_suggerito = None # Il suggerimento non è più valido
                     # new_tournament_name_final rimane "" (o None), quindi si passerà alla richiesta manuale
             else: # Il file per il nome suggerito non esiste, quindi va bene
@@ -3272,87 +3256,80 @@ if __name__ == "__main__":
                 if input_corrente_nome_torneo:
                     sanitized_name_new = sanitize_filename(input_corrente_nome_torneo)
                     prospective_filename = f"Tornello - {sanitized_name_new}.json" # Usa il tuo stile
-
                     if os.path.exists(prospective_filename):
-                        overwrite = key(f"ATTENZIONE: Un file torneo '{prospective_filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").strip().lower()
+                        overwrite_choice = key(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").format(filename=prospective_filename_check)).strip().lower()
                         if overwrite != 's':
-                            print("Operazione annullata. Scegli un nome diverso per il torneo.")
+                            print(_("Operazione annullata. Scegli un nome diverso per il torneo."))
                             continue # Torna a chiedere il nome (all'inizio di QUESTO while True)
-                    
                     new_tournament_name_final = input_corrente_nome_torneo
                     active_tournament_filename = prospective_filename
                     break # Esce dal loop di richiesta nome, nome definito!
                 else:
-                    print("Il nome del torneo non può essere vuoto. Riprova.")
+                    print(_("Il nome del torneo non può essere vuoto. Riprova."))
         if not new_tournament_name_final or not active_tournament_filename:
-            print("Nome del torneo non definito correttamente. Creazione annullata.")
+            print(_("Nome del torneo non definito correttamente. Creazione annullata."))
             sys.exit(1) 
         torneo["name"] = new_tournament_name_final
         while True: 
             try:
                 oggi_str_iso = datetime.now().strftime(DATE_FORMAT_ISO)
                 oggi_str_locale = format_date_locale(oggi_str_iso)
-                start_date_str = input(f"Inserisci data inizio ({DATE_FORMAT_ISO}) [Default: {oggi_str_locale}]: ").strip()
+                start_date_str = input(_("Inserisci data inizio ({date_format}) [Default: {default_date}]: ").format(date_format=DATE_FORMAT_ISO, default_date=oggi_str_locale)).strip()
                 if not start_date_str: start_date_str = oggi_str_iso
                 start_dt = datetime.strptime(start_date_str, DATE_FORMAT_ISO)
                 torneo["start_date"] = start_date_str
                 break 
-            except ValueError: print(f"Formato data non valido. Usa {DATE_FORMAT_ISO}. Riprova.")
-        
+            except ValueError: print(_("Formato data non valido. Usa {date_format}. Riprova.").format(date_format=DATE_FORMAT_ISO))
         while True:
             try:
                 start_date_dt = datetime.strptime(torneo["start_date"], DATE_FORMAT_ISO)
                 future_date_dt = start_date_dt + timedelta(days=60)
                 default_end_date_iso = future_date_dt.strftime(DATE_FORMAT_ISO)
                 default_end_date_locale = format_date_locale(future_date_dt)
-                end_date_str = input(f"Inserisci data fine ({DATE_FORMAT_ISO}) [Default: {default_end_date_locale}]: ").strip()
+                end_date_str = input(_("Inserisci data fine ({date_format}) [Default: {default_date}]: ").format(date_format=DATE_FORMAT_ISO, default_date=default_end_date_locale)).strip()
                 if not end_date_str: end_date_str = default_end_date_iso
                 end_dt = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
                 if end_dt < start_date_dt:
-                    print("Errore: La data di fine non può essere precedente alla data di inizio.")
+                    print(_("Errore: La data di fine non può essere precedente alla data di inizio."))
                     continue
                 torneo["end_date"] = end_date_str
                 break
             except ValueError: print(f"Formato data non valido. Usa {DATE_FORMAT_ISO}. Riprova.")
-            except OverflowError: print("Errore: La data calcolata risulta troppo lontana nel futuro."); continue
-        
+            except OverflowError: print(_("Errore: La data calcolata risulta troppo lontana nel futuro.")); continue
         while True: 
             try:
                 rounds_str = input(_("Inserisci il numero totale dei turni: ")).strip()
                 total_rounds = int(rounds_str)
                 if total_rounds > 0: torneo["total_rounds"] = total_rounds; break
-                else: print("Il numero di turni deve essere positivo.")
+                else: print(_("Il numero di turni deve essere positivo."))
             except ValueError: print(_("Inserisci un numero intero valido."))
-
-        print("\nInserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare default):")
-        torneo["site"] = input(f"  Luogo del torneo [Default: Luogo Sconosciuto]: ").strip() or "Luogo Sconosciuto"
+        print(_("\nInserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare default):"))
+        torneo["site"] = input(_(" Luogo del torneo [Default: {default_site}]: ").format(default_site=_("Luogo Sconosciuto"))).strip() or _("Luogo Sconosciuto")
         fed_code = input(f"  Federazione organizzante (codice 3 lettere) [Default: ITA]: ").strip().upper() or "ITA"
         torneo["federation_code"] = fed_code[:3]
-        torneo["chief_arbiter"] = input(f"  Arbitro Capo [Default: N/D]: ").strip() or "N/D"
-        torneo["deputy_chief_arbiters"] = input(f"  Vice Arbitri (separati da virgola) [Default: nessuno]: ").strip() or ""
-        torneo["time_control"] = input(f"  Controllo del Tempo [Default: Standard]: ").strip() or "Standard"
+        torneo["chief_arbiter"] = input(_(" Arbitro Capo [Default: {default_arbiter}]: ").format(default_arbiter=_("N/D"))).strip() or _("N/D")
+        torneo["deputy_chief_arbiters"] = input(_(" Vice Arbitri (separati da virgola) [Default: {default_deputy}]: ").format(default_deputy=_("nessuno"))).strip() or ""
+        torneo["time_control"] = input(_(" Controllo del Tempo [Default: {default_tc}]: ").format(default_tc=_("Standard"))).strip() or _("Standard")
         while True:
-            b1_choice = key(f"  Bianco alla prima scacchiera del T1? (S/n) [Default: S]: ").strip().lower()
+            b1_choice = key(_(" Bianco alla prima scacchiera del T1? (S/n) [Default: S]: ")).strip().lower()
             if b1_choice in ['s', '']: torneo['initial_board1_color_setting'] = "white1"; break
             elif b1_choice == 'n': torneo['initial_board1_color_setting'] = "black1"; break
-            else: print("Risposta non valida."); 
-        
+            else: print(_("Risposta non valida."))
         round_dates = calculate_dates(torneo["start_date"], torneo["end_date"], torneo["total_rounds"])
         if round_dates is None:
-            print("Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata."); sys.exit(1)
+            print(_("Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata.")); sys.exit(1)
         torneo["round_dates"] = round_dates
-        
         torneo["tournament_id"] = f"{sanitize_filename(torneo['name'])}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         torneo["players"] = input_players(players_db)
         if not _conferma_lista_giocatori_torneo(torneo, players_db):
-            print("Creazione torneo annullata a causa di problemi con la lista giocatori.")
+            print(_("Creazione torneo annullata a causa di problemi con la lista giocatori."))
             sys.exit(0) 
         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
         num_giocatori = len(torneo.get("players", []))
         num_turni_totali = torneo.get("total_rounds",0) # Assicurati sia int
         min_req_players = num_turni_totali + 1 if isinstance(num_turni_totali, int) and num_turni_totali > 0 else 2
         if num_giocatori < min_req_players : # Ricontrolla dopo _conferma
-             print(f"Numero insufficiente di giocatori ({num_giocatori}) per {num_turni_totali} turni dopo la conferma. Torneo annullato."); 
+             print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali));
              sys.exit(0)
         torneo["current_round"] = 1
         torneo["rounds"] = []
@@ -3360,19 +3337,18 @@ if __name__ == "__main__":
         torneo["launch_count"] = 1
         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
 
-        print("\nGenerazione abbinamenti per il Turno 1...")
+        print(_("\nGenerazione abbinamenti per il Turno 1..."))
         matches_r1 = generate_pairings_for_round(torneo)
         if matches_r1 is None:
-            print("ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non avviato."); sys.exit(1)
-        
+            print(_("ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non avviato.")); sys.exit(1)
         torneo["rounds"].append({"round": 1, "matches": matches_r1})
         save_tournament(torneo) # Salva sul nuovo active_tournament_filename
         save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False)
-        print(f"\nTorneo '{torneo.get('name')}' creato e Turno 1 generato. File: '{active_tournament_filename}'")
+        print(_("\nTorneo '{name}' creato e Turno 1 generato. File: '{filename}'").format(name=torneo.get('name'), filename=active_tournament_filename))
     # 3. Se nessun torneo è attivo a questo punto, esci.
     if not torneo or not active_tournament_filename:
-        print("\nNessun torneo attivo. Uscita dal programma.")
+        print(_("\nNessun torneo attivo. Uscita dal programma."))
         sys.exit(0)
     # 4. Aggiorna launch_count se il torneo è stato caricato (non creato ora)
     if not deve_creare_nuovo_torneo: # Implica che è stato caricato
@@ -3381,9 +3357,9 @@ if __name__ == "__main__":
         if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
             torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     # Messaggio di benvenuto specifico per il torneo
-    print(f"\n--- Torneo Attivo: {torneo.get('name', 'N/D')} ---")
+    print(_("\n--- Torneo Attivo: {name} ---").format(name=torneo.get('name', 'N/D')))
     print(f"File: {active_tournament_filename}")
-    print(f"Questa è la {torneo.get('launch_count',1)}a sessione per questo torneo.")
+    print(_("Sessione numero {count} per questo torneo.").format(count=torneo.get('launch_count',1)))
     print(f"Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando.")
     try:
         while True:
@@ -3392,12 +3368,12 @@ if __name__ == "__main__":
             if current_round_num is None or total_rounds_num is None or current_round_num > total_rounds_num:
                 # ... (condizione di uscita se il torneo è finito)
                 if torneo: # Se il torneo è "finito" ma esiste ancora l'oggetto
-                     print(f"\nIl torneo '{torneo.get('name')}' è concluso o in uno stato non valido.")
+                     print(_("\nIl torneo '{name}' si è concluso o in uno stato non valido.").format(name=torneo.get('name')))
                 else: # Se è stato finalizzato e impostato a None
-                     print("\nNessun torneo attivo o torneo concluso.")
+                     print(_("\nNessun torneo attivo o torneo concluso."))
                 break 
 
-            print(f"\n--- Gestione Turno {current_round_num} ---")
+            print(_("\n--- Gestione Turno {round_num} ---").format(round_num=current_round_num))
             display_status(torneo)
             
             current_round_data = None
@@ -3406,8 +3382,8 @@ if __name__ == "__main__":
                     current_round_data = r_data_loop; break
             
             if current_round_data is None:
-                print(f"ERRORE CRITICO: Dati turno {current_round_num} non trovati!"); break
-
+                print(_("ERRORE CRITICO: Dati turno {round_num} non trovati!").format(round_num=current_round_num))
+                break
             round_completed = all(
                 m.get("result") is not None or m.get("black_player_id") is None 
                 for m in current_round_data.get("matches", [])
@@ -3416,18 +3392,18 @@ if __name__ == "__main__":
             if not round_completed:
                 modifications_made = update_match_result(torneo) # Passa l'oggetto torneo aggiornabile
                 # update_match_result ora chiama gestisci_pianificazione_partite che usa il current_round_data da torneo
-                print("\nSessione di inserimento/modifica risultati (o pianificazione) terminata.")
+                print(_("\nSessione di inserimento/modifica risultati (o pianificazione) terminata."))
                 if modifications_made: # Se update_match_result o gestisci_pianificazione hanno fatto modifiche
-                    print("Salvataggio modifiche al torneo...")
+                    print(_("Salvataggio modifiche al torneo..."))
                     save_tournament(torneo) # Salva sul file corretto
                 
                 save_current_tournament_round_file(torneo)
                 save_standings_text(torneo, final=False)
                 
                 # Chiedi se uscire o continuare a gestire il turno
-                exit_choice = key("Vuoi (C)ontinuare a gestire questo turno o (U)scire dal programma? [C/u]: ").strip().lower()
+                exit_choice = key(_("Vuoi (C)ontinuare a gestire questo turno o (U)scire dal programma? [C/u]: ")).strip().lower()
                 if exit_choice == 'u':
-                    print("Salvataggio finale prima dell'uscita...")
+                    print(_("Salvataggio finale prima dell'uscita..."))
                     save_tournament(torneo)
                     break # Esce dal while True (main loop)
                 # Altrimenti, il loop continua mostrando lo stato del turno corrente
@@ -3437,7 +3413,7 @@ if __name__ == "__main__":
                 save_standings_text(torneo, final=False)
 
                 if current_round_num == total_rounds_num:
-                    print("\nUltimo turno completato. Avvio finalizzazione torneo...")
+                    print(_("\nUltimo turno completato. Avvio finalizzazione torneo..."))
                     if finalize_tournament(torneo, players_db, active_tournament_filename):
                         print("\n--- Torneo Concluso e Finalizzato Correttamente ---")
                         torneo = None 
@@ -3478,7 +3454,7 @@ if __name__ == "__main__":
             save_tournament(torneo)
             if torneo.get("current_round") <= torneo.get("total_rounds",0):
                 save_current_tournament_round_file(torneo)
-        print("Stato salvato. Uscita.")
+        print(_("Stato salvato. Uscita."))
         sys.exit(0)
     except Exception as e_main_loop:
         print(f"\nERRORE CRITICO NON GESTITO nel flusso principale: {e_main_loop}")
