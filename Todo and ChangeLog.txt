@@ -1,11 +1,13 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
-6. Correzione da applicare nella classifica: il secondo metodo di ordinamento, dopo il punteggio, non è il bucoholz totale ma quello tagliato, che mi pare Tornello non calcoli nemmeno.
 9. correzione alla classifica.
 Si è colncuso il torneo primavera, gestito da un arbitro professionista.
 Qui abbiamo prima la classifica di Tornello e poi quella dell'arbitro che è corretta e va presa a modello per individuare gli errori commessi da tornello.
 Ti chiedo per tanto di confrontare le 2 classifiche tenendo conto che la seconda è corretta mentre la prima riflette qualche problema nella logica di tornello. Quindi di individuare i problemi nella logica del software: vedi il codice completo qui di seguito e di proporre le correzioni opportune.
+In particolare ti chiedo di cercare in rete e verificare quali criteri vengono usati come psareggi nelle classifiche dei tornei di scacchi a sistema svizzero. Noterai delle incongruenze fra le 2 classifiche, è necessario individuare le cause di tali incoerenze e correggerle. alcune mie ipotesi sono:
+Ipotesi1: il secondo metodo di ordinamento, dopo il punteggio, non è il bucoholz totale ma quello tagliato, che mi pare Tornello non calcoli nemmeno.
+Ipotesi2: credo che il bucoholz del giocatore ritirato debba continuare ad essere calcolato per gli altri giocatori. Verifica in rete.
 
-TORNELLO:
+TORNELLO: (classifca con errori)
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch  ARO  Perf  Elo Var.
 -------------------------------------------------------------------------------------------
   1. 1N  Gasperoni, Claudio          [1859]   4.5   15.50  17.50 1648 2014  +16
@@ -40,7 +42,7 @@ RIT  NC  Bosetti, Giancarlo          [1399]   1.5    ----   0.00  --- ----  --- 
 La classifica perfetta generata dall'arbitro. Quella di tornello deve essere identica a questa.
 Tutte le colonne che tornello ha in più rispetto a quella dell'arbitro, a patto che i valori in esse riportate siano coerenti e corretti, vanno bene e possono rimanere. Se invece ci sono colonne non mostrate o calcolate, o calcolate male da tornello, queste vanno aggiunte/corrette.
 
-ARBITRO:
+ARBITRO: (classifica corretta)
 | Pos. | Giocatore                           | Punti | Cut1 | BuchT | ARO     |
 |------|-------------------------------------|-------|------|-------|---------|
 | 1    | Gasperoni, Claudio                  | 4.5   | 15.5 | 17.5  | 1647.80 |
@@ -74,7 +76,6 @@ ARBITRO:
 
 Non toccare alcuna logica che non riguardi espressamente l'obbiettivo richiesto, nemmeno per apportare miglioramenti in altre parti: questo per non introdurre bugs. Se scopri zone potenzilalmente migliorabili, limitati a segnalarmele, ma ora il focus è sulla correzione della classifica.
 Naturalmente parlo sia di quella finiale che di quelle parziali.
-10. Aggiungere conferma prima di eliminazione orologio.
 11.
 CHANGELOG
 8.1.x
