@@ -76,10 +76,14 @@ ARBITRO: (classifica corretta)
 
 Non toccare alcuna logica che non riguardi espressamente l'obbiettivo richiesto, nemmeno per apportare miglioramenti in altre parti: questo per non introdurre bugs. Se scopri zone potenzilalmente migliorabili, limitati a segnalarmele, ma ora il focus è sulla correzione della classifica.
 Naturalmente parlo sia di quella finiale che di quelle parziali.
-11.
+12.
+
 CHANGELOG
-8.1.x
+8.2.x
 	+ Aggiunto menù per scelta lingua, file di configurazione e rilevazione automatica lingua del sistema operativo
+	+ Aggiunta paginazione in caso di più di 15 giocatori trovati nel DB FIDE, in fase di aggiunta ad un torneo.
+	+ Corretto un errore di serializzazione delle date di nascita nel json
+	+ uso di pybabel per rappresentazione di date in diverse lingue
 	+ Corretto un errore che calcolava male i pari punti bucoholz in classifica
 	+ internazionalizzazione con sistema babel. traduzione in inglese
 	+ Aggiunta la time machine per tornare allo stato immediatamente dopo l'abbinamento di qualsiasi turno del torneo in corso

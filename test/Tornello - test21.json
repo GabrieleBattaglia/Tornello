@@ -1,0 +1,48 @@
+{
+ "name": "test21",
+ "start_date": "2025-06-22",
+ "end_date": "2025-08-21",
+ "total_rounds": 5,
+ "site": "Luogo Sconosciuto",
+ "federation_code": "ITA",
+ "chief_arbiter": "N/D",
+ "deputy_chief_arbiters": "",
+ "time_control": "Standard",
+ "initial_board1_color_setting": "white1",
+ "round_dates": [
+  {
+   "round": 1,
+   "start_date": "2025-06-22",
+   "end_date": "2025-07-03"
+  },
+  {
+   "round": 2,
+   "start_date": "2025-07-04",
+   "end_date": "2025-07-15"
+  },
+  {
+   "round": 3,
+   "start_date": "2025-07-16",
+   "end_date": "2025-07-28"
+  },
+  {
+   "round": 4,
+   "start_date": "2025-07-29",
+   "end_date": "2025-08-09"
+  },
+  {
+   "round": 5,
+   "start_date": "2025-08-10",
+   "end_date": "2025-08-21"
+  }
+ ],
+ "tournament_id": "test21_20250622231310",
+ "players": [
+  {
+   "id": "CROAM001",
+   "first_name": "Ambrogio",
+   "last_name": "Crozza",
+   "initial_elo": 1399,
+   "current_elo": 1399.0,
+   "registration_date": "2025-06-22",
+   "birth_date": 

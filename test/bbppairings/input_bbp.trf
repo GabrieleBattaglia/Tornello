@@ -1,23 +1,20 @@
-012 podcast                                      
+012 test21                                       
 022 Luogo Sconosciuto                            
 032 ITA
-042 11/06/2025
-052 13/09/2025
-062 009
-072 009
+042 22/06/2025
+052 21/08/2025
+062 006
+072 006
 082 000
 092 Individual: Swiss-System
-102 io me stesso                                 
-112 scaccheranti, amante sergreta                
+102 N/D                                          
+112                                              
 122 Standard                                     
 XXR 005
 XXC white1
-001    1 w GM Provucci, Provino                 3480 BUR         0               1.0    1     5 w 1
-001    2 M    Tarascio, Giuseppe                2154 ITA   2847057   1956/01/01  1.0    2     6 b 1
-001    3 m 1N Gasperoni, Claudio                1874 ITA    825450   1975/01/01  0.5    3     7 w =
-001    4 m 3N Battaglia, Gabriele               1513 ITA    804495   1974/09/13  0.0    4     8 b 0
-001    5 w NC Brites Pereira Lima, Catia Susana 1399 ITA         0               0.0    5     1 b 0
-001    6 w NC Mereu, Alessia                    1399 ITA         0               0.0    6     2 w 0
-001    7 w NC Scapin, Valeria                   1399 ITA         0   1984/02/09  0.5    7     3 b =
-001    8 w NC Valleriani, Rita                  1399 ITA  23470798   1986/01/01  1.0    8     4 w 1
-001    9 w NC Paglia, Giulia                    1395 ITA         0   2018/01/01  1.0    9  0000 - U
+001    1 w NC Scapin, Valeria                   1425 ITA         0   1984/02/09  0.0    1
+001    2 m    Crivelli, Giulia                  1399 ITA         0               0.0    2
+001    3 m    Crozza, Ambrogio                  1399 ITA         0               0.0    3
+001    4 m    Gobba, Federica                   1399 ITA         0               0.0    4
+001    5 w NC Forte, Martina                    1310 ITA         0               0.0    5
+001    6 M    Barauskas, Simonas Paulius        0    LTU  12857645   2009/01/01  0.0    6

@@ -1,0 +1,22 @@
+﻿Torneo: ASCId Primavera 1
+Sito: Online, Data Inizio Torneo: Sunday 04 may 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 5 CONCLUSO ==========================
+	Periodo del Turno: Saturday 07 june 2025 - Sunday 15 june 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 57  | Claudio Gasperoni        [1859] (4   ) - Francesco Nicolini       [1776] (4.5 ) | 1/2-1/2
+	2  | 59  | Fabrizio Zavan           [1671] (3.5 ) - Fabrizio Manneschi       [1609] (3   ) | 1-0
+	3  | 58  | Luigi Ventura            [1399] (3   ) - Maurizio Soppelsa        [1731] (4   ) | 0-1
+	4  | 60  | Cosetta Trapletti        [1586] (3   ) - Luca Parravano           [1506] (3   ) | 1/2-1/2
+	5  | 62  | Mathias Cicciarella      [1399] (2   ) - Filippa Tolaro           [1577] (3   ) | 0-1
+	6  | 67  | Michele Colangelo        [1574] (2   ) - Alessandra Testori       [1399] (1   ) | 1-0
+	7  | 61  | Vincenzo Di Bari         [1399] (2.5 ) - Gabriele Battaglia       [1513] (3.5 ) | 0-1
+	8  | 63  | Rita Valleriani          [1399] (3   ) - Giuseppe Baratta         [1450] (2   ) | 1-0
+	9  | 64  | Lorenzo Ionata           [1446] (3   ) - Catia Susana Brites Pereira Lima [1399] (2   ) | 1-0
+	10 | 65  | Giulia Paglia            [1399] (1.5 ) - Valeria Scapin           [1399] (3   ) | 0-1
+	11 | 66  | Valeria Calzolari        [1399] (2.5 ) - Mariangela Cassano       [1399] (1.5 ) | 1-0
+	12 | 68  | Alessia Mereu            [1399] (1   ) - Virginio Paglia          [1399] (1.5 ) | 0-1
+	13 | 69  | Martina Forte            [1399] (0   ) - Serena Gori              [1399] (1   ) | 0-1

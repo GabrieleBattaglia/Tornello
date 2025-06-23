@@ -1,0 +1,17 @@
+﻿Nome Torneo: test21
+Luogo: Luogo Sconosciuto
+Date: Domenica 22 giugno 2025 - Giovedì 21 agosto 2025
+Federazione Organizzante: ITA
+Arbitro Capo: N/D
+Controllo Tempo: Standard
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Domenica 22 giugno 2025 23:18:31
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
+-----------------------------------------------------------------------
+  1. NC  Scapin, Valeria             [1425]   0.0    ----   0.00
+  2.     Crozza, Ambrogio            [1399]   0.0    ----   0.00
+  2.     Gobba, Federica             [1399]   0.0    ----   0.00
+  2.     Crivelli, Giulia            [1399]   0.0    ----   0.00
+  5. NC  Forte, Martina              [1310]   0.0    ----   0.00
+  6.     Barauskas, Simonas Paulius  [   0]   0.0    ----   0.00
