@@ -4,10 +4,11 @@ import xml.etree.ElementTree as ET
 from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from babel.dates import format_date
 _ = lambda s: s
 polipo()
 # --- Constants ---
-VERSIONE = "8.2.2, 2025.06.22 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.2.6, 2025.06.23 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -970,18 +971,22 @@ def format_rank_ordinal(rank):
 
 def format_date_locale(date_input):
     """Formatta una data (oggetto datetime o stringa ISO) nel formato locale esteso
-       usando il modulo locale del sistema."""
+       usando la libreria Babel per una gestione robusta della localizzazione."""
     if not date_input:
-        return _("N/D") # Traduci solo il valore di fallback
+        return _("N/D") 
+
     try:
+        date_obj = date_input
         if not isinstance(date_input, datetime):
-            date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO)
-        else:
-            date_obj = date_input
-        # %A = Nome completo del giorno, %d = giorno, %B = Nome completo del mese, %Y = anno
-        # Questa formattazione userà automaticamente la lingua impostata da locale.setlocale()
-        return date_obj.strftime("%A %d %B %Y").capitalize()
+            # Converte la stringa ISO in un oggetto datetime, ma solo la parte della data
+            date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO).date()
+
+        # Usa Babel per formattare la data in italiano in modo sicuro
+        # 'full' corrisponde a un formato tipo "lunedì 23 giugno 2025"
+        return format_date(date_obj, format='full', locale='it_IT').capitalize()
+
     except (ValueError, TypeError, IndexError):
+        # Se qualcosa va storto, restituisce l'input originale
         return str(date_input)
 
 def format_points(points):
@@ -1921,12 +1926,45 @@ def input_players(players_db):
                     selected_fide_record = match
             elif len(fide_matches) > 1:
                 print(_("\n-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella corretta:").format(count=len(fide_matches), term=data_input))
-                for i, match in enumerate(fide_matches[:15]): # Mostra al massimo i primi 15 risultati
-                    print(f"   {i+1}. ID FIDE: {match['id_fide']:<9} | {match['last_name']}, {match['first_name']:<25} | FED: {match['federation']:<3} | Elo: {match['elo_standard']:<4}")
-                print(_("   0. Nessuno di questi / Inserimento manuale"))
-                choice_str = input(_("   Scelta: ")).strip()
-                if choice_str.isdigit() and 1 <= int(choice_str) <= len(fide_matches[:15]):
-                    selected_fide_record = fide_matches[int(choice_str) - 1]
+                start_index = 0
+                page_size = 15
+                while True: # Loop per la paginazione
+                    if start_index >= len(fide_matches):
+                        print(_("Non ci sono altri risultati da mostrare. Procedo con l'inserimento manuale."))
+                        selected_fide_record = None
+                        break
+                    # Mostra la pagina corrente di risultati
+                    page_matches = fide_matches[start_index : start_index + page_size]
+                    for i, match in enumerate(page_matches):
+                        display_num = start_index + i + 1
+                        print(f"   {display_num}. ID FIDE: {match['id_fide']:<9} | {match['last_name']}, {match['first_name']:<25} | FED: {match['federation']:<3} | Elo: {match['elo_standard']:<4}")
+                    print(_("   0. Nessuno di questi / Inserimento manuale"))
+                    # Costruisce il prompt per l'utente
+                    prompt_text = "\n"
+                    has_more_pages = (start_index + page_size) < len(fide_matches)
+                    if has_more_pages:
+                        prompt_text += _("Scelta (Numero, 0 per manuale, Invio per i prossimi {page_size}): ").format(page_size=page_size)
+                    else:
+                        prompt_text += _("Scelta (Numero o 0 per manuale): ")
+                    choice_str = input(prompt_text).strip()
+                    # Gestisce l'input dell'utente
+                    if not choice_str and has_more_pages: # L'utente preme Invio per la pagina successiva
+                        start_index += page_size
+                        print(_("--- Mostro i risultati successivi ---"))
+                        continue
+                    elif choice_str.isdigit():
+                        choice_num = int(choice_str)
+                        if choice_num == 0:
+                            selected_fide_record = None # Attiva l'inserimento manuale
+                            break
+                        elif 1 <= choice_num <= len(fide_matches):
+                            selected_fide_record = fide_matches[choice_num - 1]
+                            break
+                        else:
+                            print(_("Scelta non valida. Riprova."))
+                    else:
+                        print(_("Input non valido. Inserisci un numero o premi Invio."))
+
             # Se è stato selezionato un giocatore dal DB FIDE, crealo nel nostro DB personale
             if selected_fide_record:
                 print(_("Importazione di '{first_name} {last_name}' nel tuo DB personale...").format(first_name=selected_fide_record['first_name'], last_name=selected_fide_record['last_name']))
@@ -1961,7 +1999,7 @@ def input_players(players_db):
             sex_new_db = get_input_with_default(_("  Sesso (m/w)"), "m").strip().lower()
             fed_new_db = get_input_with_default(_("  Federazione (3 lettere, es. ITA)"), "ITA").strip().upper()[:3] or "ITA"
             fide_id_new_db = get_input_with_default(_("  ID FIDE Numerico ('0' se N/D)"), "0").strip()
-            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_DB), ...)
+            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_DB), "")
             birth_date_new_db = bdate_input if bdate_input else None
             exp_input = get_input_with_default(_(" Esperienza pregressa significativa? (s/n)"), "n").strip().lower()
             exp_new_db = True if exp_input == 's' else False
@@ -2604,58 +2642,75 @@ def save_standings_text(torneo, final=False):
     if not players:
         print(_("Attenzione: Nessun giocatore per generare la classifica."))
         return
+    # Assicura che il dizionario dei giocatori sia aggiornato per i calcoli
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(players):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-    print(_("Calcolo/Aggiornamento Buchholz per classifica..."))
+    print(_("Calcolo/Aggiornamento spareggi per classifica..."))
+    # La condizione "withdrawn" verrà usata solo per l'ordinamento e la visualizzazione.
     for p in players:
         p_id = p.get('id')
         if not p_id: continue
-        if not p.get("withdrawn", False):
-            # Assicurati che il dizionario 'torneo' completo sia passato a compute_buchholz
-            p["buchholz"] = compute_buchholz(p_id, torneo) 
-            if final and "buchholz_cut1" not in p: # Calcola B-1 solo se finale e non già fatto
-                p["buchholz_cut1"] = compute_buchholz_cut1(p_id, torneo)
-            elif not final:
-                p["buchholz_cut1"] = None 
-        else: # Giocatori ritirati
-            p["buchholz"] = 0.0
-            p["buchholz_cut1"] = None
-            p["final_rank"] = "RIT" # Assicurati che il rank per i ritirati sia gestito
+        # Calcola gli spareggi per ogni giocatore, ritirato o meno.
+        p["buchholz"] = compute_buchholz(p_id, torneo)
+        p["buchholz_cut1"] = compute_buchholz_cut1(p_id, torneo)
+        # CORREZIONE 3: Calcola e memorizza l'ARO per usarlo nell'ordinamento
+        p["aro"] = compute_aro(p_id, torneo)
+        # Se il giocatore è ritirato, assegnamo solo il rank testuale per la visualizzazione
+        if p.get("withdrawn", False):
+            p["final_rank"] = "RIT"
+    # Questa chiave rispetta l'ordine corretto degli spareggi:
+    # 1. Punti (decrescente)
+    # 2. Stato (attivi prima dei ritirati)
+    # 3. Buchholz Cut-1 (decrescente)
+    # 4. Buchholz Totale (decrescente)
+    # 5. ARO (decrescente)
+    # 6. Elo Iniziale (decrescente, come fallback)
     def sort_key_standings(player_item):
-        points_val = float(player_item.get("points", -999)) # Usa un punteggio molto basso per chi non ne ha
+        points_val = float(player_item.get("points", -999))
+        # I giocatori attivi (1) vengono prima dei ritirati (0)
         status_val = 1 if not player_item.get("withdrawn", False) else 0
         bucch_c1_val = float(player_item.get("buchholz_cut1", -1.0) if player_item.get("buchholz_cut1") is not None else -1.0)
         bucch_tot_val = float(player_item.get("buchholz", 0.0))
-        performance_val = int(player_item.get("performance_rating", -1) if player_item.get("performance_rating") is not None else -1)
+        # Gestisce il caso in cui ARO sia None (es. nessun avversario)
+        aro_val = float(player_item.get("aro", 0.0) if player_item.get("aro") is not None else 0.0)
         elo_initial_val = int(player_item.get("initial_elo", 0))
-        return (-points_val, -status_val, -bucch_c1_val if final else 0, -bucch_tot_val, -performance_val if final else 0, -elo_initial_val)
+        # Ritorna la tupla per l'ordinamento. Usiamo valori negativi per l'ordine decrescente.
+        return (
+            -points_val,
+            -status_val,
+            -bucch_c1_val,
+            -bucch_tot_val,
+            -aro_val,
+            -elo_initial_val
+        )
     try:
-        players_sorted = sorted(players, key=sort_key_standings, reverse=True) # reverse=True non serve se i criteri sono negativi
-        players_sorted = sorted(players, key=sort_key_standings) 
+        # Applica l'ordinamento corretto
+        players_sorted = sorted(players, key=sort_key_standings)
+        # Assegna il rank visualizzato (gestisce le parità)
         if not final or (players_sorted and "final_rank" not in players_sorted[0] and not players_sorted[0].get("withdrawn")):
             current_display_rank = 0
             last_sort_key_tuple = None
             for i, p_item in enumerate(players_sorted):
                 if p_item.get("withdrawn", False):
-                    p_item["display_rank"] = "RIT" # display_rank per i ritirati
+                    p_item["display_rank"] = "RIT"
                     continue
-                current_sort_key_tuple = sort_key_standings(p_item) # Escludi il primo elemento (categoria ritirati/attivi)
+                current_sort_key_tuple = sort_key_standings(p_item)
                 if current_sort_key_tuple != last_sort_key_tuple:
                     current_display_rank = i + 1
                 p_item["display_rank"] = current_display_rank
                 last_sort_key_tuple = current_sort_key_tuple
-        elif final: # Per classifica finale, usa 'final_rank' se esiste, altrimenti calcola display_rank
+        elif final:
             for i, p_item in enumerate(players_sorted):
                 if "final_rank" in p_item:
                     p_item["display_rank"] = p_item["final_rank"]
                 elif p_item.get("withdrawn", False):
                      p_item["display_rank"] = "RIT"
-                else: # Fallback se final_rank manca inspiegabilmente
+                else:
                     p_item["display_rank"] = i + 1
     except Exception as e:
         print(f"Errore durante l'ordinamento dei giocatori per la classifica: {e}")
         traceback.print_exc()
-        players_sorted = players # Usa lista non ordinata in caso di errore grave di sort
+        players_sorted = players
     tournament_name_file = torneo.get('name', 'Torneo_Senza_Nome')
     sanitized_name_file = sanitize_filename(tournament_name_file)
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
@@ -2664,19 +2719,17 @@ def save_standings_text(torneo, final=False):
         status_line = _("CLASSIFICA FINALE")
     else:
         current_round_in_state = torneo.get("current_round", 0)
-        # Determina se ci sono risultati per capire se è prima del T1 o dopo un turno N
         has_any_results = any(p.get("results_history") for p in players)
         if not has_any_results and current_round_in_state == 1:
             status_line = _("Elenco Iniziale Partecipanti (Prima del Turno 1)")
         else:
-            # Se siamo al turno N e ci sono risultati, la classifica è "dopo il turno N-1"
             round_for_title = current_round_in_state
             all_matches_for_current_round_done = True
             if not final and current_round_in_state > 0 and current_round_in_state <= torneo.get("total_rounds",0):
                 for r_data in torneo.get("rounds", []):
                     if r_data.get("round") == current_round_in_state:
                         for m in r_data.get("matches", []):
-                            if m.get("result") is None and m.get("black_player_id") is not None: # Partita pendente non BYE
+                            if m.get("result") is None and m.get("black_player_id") is not None:
                                 all_matches_for_current_round_done = False
                                 break
                         break
@@ -2698,31 +2751,30 @@ def save_standings_text(torneo, final=False):
             f.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
             f.write(_("Data Report: {date} {time}\n").format(date=format_date_locale(datetime.now().date()), time=datetime.now().strftime('%H:%M:%S')))
             f.write("-" * 70 + "\n")
-            # Header Tabella Giocatori
-            # Adattiamo la larghezza per fare spazio al titolo
+            # La larghezza dell'header deve corrispondere a quella della riga dati
             header_table = _("Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch ")
             if final:
-                header_table += " ARO  Perf  Elo Var." # Elo Var. invece di +/-Elo per chiarezza
+                header_table += " ARO  Perf  Elo Var."
             f.write(header_table + "\n")
             f.write("-" * len(header_table) + "\n")
             for player in players_sorted:
                 rank_to_show = player.get("display_rank", "?")
-                if isinstance(rank_to_show, (int, float)): # rank numerico
+                if isinstance(rank_to_show, (int, float)):
                     rank_display_str = f"{int(rank_to_show):>3}."
-                else: # Es. "RIT"
-                    rank_display_str = f"{str(rank_to_show):>3} " # Spazio dopo per allineare con punto
+                else:
+                    rank_display_str = f"{str(rank_to_show):>3} "
                 fide_title = str(player.get('fide_title', '')).strip().upper()
-                # Nome Cognome, consideriamo una larghezza fissa per nome+cognome+virgola
-                # Es. 30 caratteri per "Cognome, Nome"
                 player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
-                # Larghezza totale per Titolo + Nome Cognome. Esempio: 3 (titolo) + 1 (sp) + 30 (nome) = 34
-                title_display_str = f"{fide_title:<3}" # Max 3 caratteri per titolo, allineato a sx
-                name_display_str = f"{player_name_str:<27.27}" # Max 27 caratteri per Nome Cognome
+                title_display_str = f"{fide_title:<3}"
+                name_display_str = f"{player_name_str:<27.27}"
                 elo_ini_str = f"[{int(player.get('initial_elo', DEFAULT_ELO)):4d}]"
-                points_str = f"{float(player.get('points', 0.0)):5.1f}" # 5.1f per es. "100.0" o "  1.5"
+                points_str = f"{float(player.get('points', 0.0)):5.1f}"
+                # Visualizzazione B-1 e Bucch
                 bucch_c1_val = player.get('buchholz_cut1')
-                bucch_c1_str = f"{float(bucch_c1_val):7.2f}" if bucch_c1_val is not None else "   ----"
-                bucch_tot_str = f"{float(player.get('buchholz', 0.0)):6.2f}"
+                # Mostra '----' per i ritirati o se il valore è None
+                bucch_c1_str = f"{float(bucch_c1_val):7.2f}" if bucch_c1_val is not None and not player.get("withdrawn") else "   ----"
+                bucch_tot_val = player.get('buchholz')
+                bucch_tot_str = f"{float(bucch_tot_val):6.2f}" if bucch_tot_val is not None and not player.get("withdrawn") else "  ----"
                 line = (f"{rank_display_str} {title_display_str} {name_display_str} "
                         f"{elo_ini_str} {points_str} {bucch_c1_str} {bucch_tot_str}")
                 if final:
@@ -2737,6 +2789,7 @@ def save_standings_text(torneo, final=False):
                         elo_change_str = f"{int(elo_change_val):+4d}" if elo_change_val is not None else " ---"
                     line += f" {aro_str} {perf_str} {elo_change_str}"
                 if player.get("withdrawn", False):
+                    # Allinea la scritta [RITIRATO] alla fine della riga
                     line = f"{line.ljust(90)} [RITIRATO]"
                 f.write(line + "\n")
             print(_("File classifica '{filename}' salvato/sovrascritto.").format(filename=filename))
@@ -3040,18 +3093,6 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     return True
 
 if __name__ == "__main__":
-    # --- IMPOSTAZIONE LOCALE PER DATE IN ITALIANO ---
-    try:
-        # Prova la sintassi per Linux/macOS
-        locale.setlocale(locale.LC_TIME, 'it_IT.UTF-8')
-    except locale.Error:
-        try:
-            # Prova la sintassi per Windows
-            locale.setlocale(locale.LC_TIME, 'italian')
-        except locale.Error:
-            # Se nessuno dei due funziona, avvisa l'utente
-            print("ATTENZIONE: Non è stato possibile impostare il locale italiano per le date.")
-            print("Le date potrebbero apparire in inglese.")
     if not os.path.exists(BBP_SUBDIR):
         try:
             os.makedirs(BBP_SUBDIR)
