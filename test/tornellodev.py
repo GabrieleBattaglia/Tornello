@@ -1,11 +1,14 @@
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, pprint, glob, shutil, requests, io, zipfile, gettext, locale, threading, time 
+import os, json, sys, math, traceback, subprocess, pprint, glob, shutil, requests, io, zipfile, locale, threading, time 
 import xml.etree.ElementTree as ET
-from GBUtils import dgt, key, Donazione
+from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from babel.dates import format_date
+_ = lambda s: s
+polipo()
 # --- Constants ---
-VERSIONE = "8.2.0, 2025.06.22 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.2.5, 2025.06.23 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 PLAYER_DB_FILE = "Tornello - Players_db.json"
 PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
 ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
@@ -24,24 +27,6 @@ BBP_OUTPUT_COUPLES = os.path.join(BBP_SUBDIR, "output_coppie.txt")
 BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
 
 #QF
-def carica_configurazione():
-    """Carica la configurazione da language_set.json."""
-    if os.path.exists("language_set.json"):
-        try:
-            with open("language_set.json", "r", encoding='utf-8') as f:
-                return json.load(f)
-        except (IOError, json.JSONDecodeError):
-            return {} # Restituisce un dizionario vuoto se il file è corrotto
-    return {} # Restituisce un dizionario vuoto se il file non esiste
-
-def salva_configurazione(config_dict):
-    """Salva il dizionario di configurazione su file."""
-    try:
-        with open("language_set.json", "w", encoding='utf-8') as f:
-            json.dump(config_dict, f, indent=4)
-    except IOError as e:
-        print(_("Errore durante il salvataggio della configurazione: {}").format(e))
-
 def _cerca_giocatore_nel_db_fide(search_term):
     """
     Cerca un giocatore nel DB FIDE locale per nome/cognome o ID FIDE.
@@ -986,18 +971,22 @@ def format_rank_ordinal(rank):
 
 def format_date_locale(date_input):
     """Formatta una data (oggetto datetime o stringa ISO) nel formato locale esteso
-       usando il modulo locale del sistema."""
+       usando la libreria Babel per una gestione robusta della localizzazione."""
     if not date_input:
-        return _("N/D") # Traduci solo il valore di fallback
+        return _("N/D") 
+
     try:
+        date_obj = date_input
         if not isinstance(date_input, datetime):
-            date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO)
-        else:
-            date_obj = date_input
-        # %A = Nome completo del giorno, %d = giorno, %B = Nome completo del mese, %Y = anno
-        # Questa formattazione userà automaticamente la lingua impostata da locale.setlocale()
-        return date_obj.strftime("%A %d %B %Y").capitalize()
+            # Converte la stringa ISO in un oggetto datetime, ma solo la parte della data
+            date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO).date()
+
+        # Usa Babel per formattare la data in italiano in modo sicuro
+        # 'full' corrisponde a un formato tipo "lunedì 23 giugno 2025"
+        return format_date(date_obj, format='full', locale='it_IT').capitalize()
+
     except (ValueError, TypeError, IndexError):
+        # Se qualcosa va storto, restituisce l'input originale
         return str(date_input)
 
 def format_points(points):
@@ -1937,12 +1926,45 @@ def input_players(players_db):
                     selected_fide_record = match
             elif len(fide_matches) > 1:
                 print(_("\n-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella corretta:").format(count=len(fide_matches), term=data_input))
-                for i, match in enumerate(fide_matches[:15]): # Mostra al massimo i primi 15 risultati
-                    print(f"   {i+1}. ID FIDE: {match['id_fide']:<9} | {match['last_name']}, {match['first_name']:<25} | FED: {match['federation']:<3} | Elo: {match['elo_standard']:<4}")
-                print(_("   0. Nessuno di questi / Inserimento manuale"))
-                choice_str = input(_("   Scelta: ")).strip()
-                if choice_str.isdigit() and 1 <= int(choice_str) <= len(fide_matches[:15]):
-                    selected_fide_record = fide_matches[int(choice_str) - 1]
+                start_index = 0
+                page_size = 15
+                while True: # Loop per la paginazione
+                    if start_index >= len(fide_matches):
+                        print(_("Non ci sono altri risultati da mostrare. Procedo con l'inserimento manuale."))
+                        selected_fide_record = None
+                        break
+                    # Mostra la pagina corrente di risultati
+                    page_matches = fide_matches[start_index : start_index + page_size]
+                    for i, match in enumerate(page_matches):
+                        display_num = start_index + i + 1
+                        print(f"   {display_num}. ID FIDE: {match['id_fide']:<9} | {match['last_name']}, {match['first_name']:<25} | FED: {match['federation']:<3} | Elo: {match['elo_standard']:<4}")
+                    print(_("   0. Nessuno di questi / Inserimento manuale"))
+                    # Costruisce il prompt per l'utente
+                    prompt_text = "\n"
+                    has_more_pages = (start_index + page_size) < len(fide_matches)
+                    if has_more_pages:
+                        prompt_text += _("Scelta (Numero, 0 per manuale, Invio per i prossimi {page_size}): ").format(page_size=page_size)
+                    else:
+                        prompt_text += _("Scelta (Numero o 0 per manuale): ")
+                    choice_str = input(prompt_text).strip()
+                    # Gestisce l'input dell'utente
+                    if not choice_str and has_more_pages: # L'utente preme Invio per la pagina successiva
+                        start_index += page_size
+                        print(_("--- Mostro i risultati successivi ---"))
+                        continue
+                    elif choice_str.isdigit():
+                        choice_num = int(choice_str)
+                        if choice_num == 0:
+                            selected_fide_record = None # Attiva l'inserimento manuale
+                            break
+                        elif 1 <= choice_num <= len(fide_matches):
+                            selected_fide_record = fide_matches[choice_num - 1]
+                            break
+                        else:
+                            print(_("Scelta non valida. Riprova."))
+                    else:
+                        print(_("Input non valido. Inserisci un numero o premi Invio."))
+
             # Se è stato selezionato un giocatore dal DB FIDE, crealo nel nostro DB personale
             if selected_fide_record:
                 print(_("Importazione di '{first_name} {last_name}' nel tuo DB personale...").format(first_name=selected_fide_record['first_name'], last_name=selected_fide_record['last_name']))
@@ -1977,7 +1999,7 @@ def input_players(players_db):
             sex_new_db = get_input_with_default(_("  Sesso (m/w)"), "m").strip().lower()
             fed_new_db = get_input_with_default(_("  Federazione (3 lettere, es. ITA)"), "ITA").strip().upper()[:3] or "ITA"
             fide_id_new_db = get_input_with_default(_("  ID FIDE Numerico ('0' se N/D)"), "0").strip()
-            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_DB), ...)
+            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_DB), "")
             birth_date_new_db = bdate_input if bdate_input else None
             exp_input = get_input_with_default(_(" Esperienza pregressa significativa? (s/n)"), "n").strip().lower()
             exp_new_db = True if exp_input == 's' else False
@@ -3055,52 +3077,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     print(_("Torneo '{name}' finalizzato e archiviato.").format(name=tournament_name_original))
     return True
 
-# supporto multilingua
-config = carica_configurazione()
-lingua_scelta = config.get('language')
-if not lingua_scelta:
-    print("\n--- Select your language (first launch) ---")
-    try:
-        locale.setlocale(locale.LC_ALL, '')
-        codice_lingua_os, u1 = locale.getlocale()
-        lingua_os = codice_lingua_os.split('_')[0] if codice_lingua_os else 'en'
-    except Exception:
-        lingua_os = 'en'
-    lingue_supportate = {
-        'it': 'Italiano',
-        'en': 'English'
-        }
-    print("Languages found from your system: {lang_name}.").format(lang_name=lingue_supportate.get(lingua_os, lingua_os))
-    scelta_iniziale = input(f"Do you want to use this language? Or choose another one? [Enter to confirm, 'c' to make your choice]: ").strip().lower()
-    if scelta_iniziale == 'c':
-        print("Available languages:")
-        for codice, nome in lingue_supportate.items(): print(f" - [{codice}] {nome}")
-        while True:
-            codice_scelto = input(f"Give me the language code (es. 'en'): ").strip().lower()
-            if codice_scelto in lingue_supportate:
-                lingua_scelta = codice_scelto
-                break
-            else:
-                print("Invalid code.")
-    else:
-        lingua_scelta = lingua_os if lingua_os in lingue_supportate else 'it' # Default finale a 'it'
-    print(f"Language set on: '{lingue_supportate.get(lingua_scelta)}'. It will be used from now on.")
-    config['language'] = lingua_scelta
-    salva_configurazione(config)
-# Inizializzazione finale di gettext, che definisce '_' per tutto lo script
-try:
-    locales_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locales')
-    translation = gettext.translation('tornello', localedir=locales_dir, languages=[lingua_scelta])
-    # Sovrascriviamo la nostra funzione "segnaposto" globale con quella vera che traduce
-    _ = translation.gettext
-    print(_("Sistema di traduzione per la lingua '{lang}' attivato.").format(lang=lingua_scelta))
-except FileNotFoundError:
-    print(_("File di traduzione per '{lang}' non trovati. Uso l'italiano di default.").format(lang=lingua_scelta))
-    import builtins
-    builtins._ = gettext.gettext # Installa la funzione "vuota"
-
 if __name__ == "__main__":
-    # Assicurati che la cartella BBP_SUBDIR esista o venga creata se necessario
     if not os.path.exists(BBP_SUBDIR):
         try:
             os.makedirs(BBP_SUBDIR)

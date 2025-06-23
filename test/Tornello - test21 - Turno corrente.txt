@@ -1,0 +1,11 @@
+﻿Nome Torneo: test21 - Turno: 1
+ Periodo Turno: Domenica 22 giugno 2025 - Giovedì 3 luglio 2025
+
+ Partite da giocare
+  (Nessuna partita con giocatori attivi è attualmente pianificata con data/ora)
+  Non pianificate (giocatori attivi):
+   IDG:1 Valeria Scapin - Federica Gobba
+   IDG:2 Martina Forte - Giulia Crivelli
+   IDG:3 Ambrogio Crozza - Simonas Paulius Barauskas
+ Partite giocate
+  (nessuna partita ancora giocata da giocatori attivi)
