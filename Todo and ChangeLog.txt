@@ -2,7 +2,8 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 12.
 
 CHANGELOG
-8.2.x
+8.3.x
+	= Pianificato primo rilascio ufficiale con supporto multilingua. Al momento sono presenti italiano, inglese e portoghese
 	+ Aggiunto menù per scelta lingua, file di configurazione e rilevazione automatica lingua del sistema operativo
 	+ Corretta la generazione delle classifiche parziali e finali. Ora dovrebbero rispettare i critiri corretti per gli spareggi. Inoltre il bucoholz generato dai giocatori ritirati, rimane persistente, così come da regolamento.
 	+ Aggiunta paginazione in caso di più di 15 giocatori trovati nel DB FIDE, in fase di aggiunta ad un torneo.

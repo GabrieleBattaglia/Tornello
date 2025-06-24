@@ -6,7 +6,7 @@ Arbitro Capo: Il capitano
 Vice Arbitri: Scacchieranti, Membri ASCId, Volontari
 Controllo Tempo: Std 60+0
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Lunedì 23 giugno 2025 08:03:31
+Data Report: Lunedì 23 giugno 2025 23:57:24
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
 -----------------------------------------------------------------------
@@ -14,16 +14,16 @@ Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch
   2. 3N  Battaglia, Gabriele         [1513]   1.0    0.00   0.00
   3. 3N  Trapletti, Cosetta          [1504]   1.0    0.00   0.00
   4. NC  Ionata, Lorenzo             [1446]   1.0    0.00   0.00
+  5. NC  Brites Pereira Lima, Catia  [1399]   1.0    0.00   0.00
+  5. NC  Scapin, Valeria             [1399]   1.0    0.00   0.00
   5. NC  Cicciarella, Mathias        [1399]   1.0    0.00   0.00
-  6. NC  Ventura, Luigi              [1399]   1.0    0.00   0.00
-  7. NC  Forte, Martina              [1399]   0.0    0.00   1.00
-  8. NC  Gori, Serena                [1399]   0.0    0.00   1.00
-  9. NC  Mereu, Alessia              [1399]   0.0    0.00   1.00
- 10. NC  Paglia, Giulia              [1399]   0.0    0.00   1.00
- 11. NC  Testori, Alessandra         [1399]   0.0    0.00   1.00
- 12. NC  Brites Pereira Lima, Catia  [1399]   0.0    0.00   0.00
- 12. NC  Scapin, Valeria             [1399]   0.0    0.00   0.00
- 12. NC  Di Bari, Vincenzo           [1399]   0.0    0.00   0.00
- 12. NC  Calzolari, Valeria          [1399]   0.0    0.00   0.00
- 12. NC  Valleriani, Rita            [1399]   0.0    0.00   0.00
- 12. NC  Paglia, Virginio            [1399]   0.0    0.00   0.00
+  8. NC  Ventura, Luigi              [1399]   1.0    0.00   0.00
+  9. NC  Forte, Martina              [1399]   0.0    0.00   1.00
+ 10. NC  Gori, Serena                [1399]   0.0    0.00   1.00
+ 11. NC  Mereu, Alessia              [1399]   0.0    0.00   1.00
+ 12. NC  Paglia, Giulia              [1399]   0.0    0.00   1.00
+ 13. NC  Testori, Alessandra         [1399]   0.0    0.00   1.00
+ 13. NC  Calzolari, Valeria          [1399]   0.0    0.00   1.00
+ 13. NC  Paglia, Virginio            [1399]   0.0    0.00   1.00
+ 16. NC  Di Bari, Vincenzo           [1399]   0.0    0.00   0.00
+ 16. NC  Valleriani, Rita            [1399]   0.0    0.00   0.00

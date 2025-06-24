@@ -1,0 +1,2642 @@
+# English translations for Tornello.
+# Copyright (C) 2025 Gabesoft
+# This file is distributed under the same license as the Tornello project.
+# FIRST AUTHOR <iz4apu@libero.it>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Tornello 8.3.0\n"
+"Report-Msgid-Bugs-To: iz4apu@libero.it\n"
+"POT-Creation-Date: 2025-06-24 16:18+0200\n"
+"PO-Revision-Date: 2025-06-24 16:23+0200\n"
+"Last-Translator: Gabriele Battaglia <iz4apu@libero.it>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: tornello.py:108
+msgid ""
+"\n"
+"--- Time Machine ---"
+msgstr ""
+"\n"
+"--- Time Machine ---"
+
+#: tornello.py:109
+msgid "Questa funzione ripristina lo stato del torneo a un turno precedente."
+msgstr "This function restores the tournament state to a previous round."
+
+#: tornello.py:110
+#, python-brace-format
+msgid "Puoi tornare a un qualsiasi turno da 1 a {max_round}."
+msgstr "You can go back to any round from 1 to {max_round}."
+
+#: tornello.py:112
+msgid ""
+"Tutti i risultati e gli abbinamenti successivi al turno scelto verranno "
+"cancellati."
+msgstr "All results and pairings after the chosen round will be deleted."
+
+#: tornello.py:114
+#, python-brace-format
+msgid "A quale turno vuoi tornare? (1-{max_round}, o vuoto per annullare): "
+msgstr "Which round do you want to go back to? (1-{max_round}, or empty to cancel): "
+
+#: tornello.py:118 tornello.py:735
+msgid "Operazione annullata."
+msgstr "Operation cancelled."
+
+#: tornello.py:122
+msgid "Numero di turno non valido."
+msgstr "Invalid round number."
+
+#: tornello.py:125 tornello.py:675
+msgid "Input non valido. Inserisci un numero."
+msgstr "Invalid input. Please enter a number."
+
+#: tornello.py:127
+msgid ""
+"\n"
+"ATTENZIONE: Stai per eseguire un'operazione distruttiva."
+msgstr ""
+"\n"
+"WARNING: You are about to perform a destructive operation."
+
+#: tornello.py:128
+#, python-brace-format
+msgid ""
+"Verranno eliminati tutti i risultati e gli abbinamenti inseriti dal turno"
+" {target_round} in poi."
+msgstr "All results and pairings entered from round {target_round} onwards will be deleted."
+
+#: tornello.py:131
+msgid ""
+"Sei assolutamente sicuro di voler procedere? (scrivi 'si' per "
+"confermare): "
+msgstr "Are you absolutely sure you want to proceed? (type 'yes' to confirm): "
+
+#: tornello.py:133
+msgid "Conferma non data. Operazione di riavvolgimento annullata."
+msgstr "Confirmation not given. Rewind operation cancelled."
+
+#: tornello.py:135
+#, python-brace-format
+msgid ""
+"\n"
+"Avvio riavvolgimento al Turno {target_round}..."
+msgstr ""
+"\n"
+"Starting rewind to Round {target_round}..."
+
+#: tornello.py:148
+msgid ""
+"\n"
+"Riavvolgimento completato con successo!"
+msgstr ""
+"\n"
+"Rewind completed successfully!"
+
+#: tornello.py:149
+#, python-brace-format
+msgid ""
+"Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei "
+"risultati."
+msgstr "The tournament is now at Round {target_round}, ready for result entry."
+
+#: tornello.py:160
+#, python-brace-format
+msgid "ERRORE: Database FIDE locale '{}' non trovato."
+msgstr "ERROR: Local FIDE database '{}' not found."
+
+#: tornello.py:161
+msgid "Esegui prima la funzione di aggiornamento del DB FIDE."
+msgstr "Run the FIDE DB update function first."
+
+#: tornello.py:163
+msgid ""
+"\n"
+"--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"
+msgstr ""
+"\n"
+"--- Starting Personal Database Synchronization with Local FIDE Database ---"
+
+#: tornello.py:167
+#, python-brace-format
+msgid "Database FIDE locale caricato con {} giocatori."
+msgstr "Local FIDE database loaded with {} players."
+
+#: tornello.py:169
+#, python-brace-format
+msgid "ERRORE critico durante la lettura di '{}': {}"
+msgstr "Critical ERROR while reading '{}': {}"
+
+#: tornello.py:173
+msgid ""
+"Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione"
+" da effettuare."
+msgstr "Your personal player database is empty. No synchronization to perform."
+
+#: tornello.py:177
+msgid "Analisi dei giocatori nel tuo database personale..."
+msgstr "Analyzing players in your personal database..."
+
+#: tornello.py:204
+#, python-brace-format
+msgid ""
+"\n"
+"-> Trovata una corrispondenza FIDE per il tuo giocatore '{} {}' (ID: {}):"
+msgstr ""
+"\n"
+"-> Found a FIDE match for your player '{} {}' (ID: {}):"
+
+#: tornello.py:205
+#, python-brace-format
+msgid "   FIDE ID: {}, Nome: {}, {}, FED: {}, Elo: {}, Anno Nascita: {}"
+msgstr "   FIDE ID: {}, Name: {}, {}, FED: {}, Elo: {}, Birth Year: {}"
+
+#: tornello.py:206
+msgid "   Associare questo ID FIDE al tuo giocatore? (S/n)"
+msgstr "   Associate this FIDE ID with your player? (Y/n)"
+
+#: tornello.py:210
+#, python-brace-format
+msgid ""
+"\n"
+"-> Trovati {} omonimi nel DB FIDE per il tuo giocatore '{} {}' (ID: {})."
+msgstr ""
+"\n"
+"-> Found {} namesakes in the FIDE DB for your player '{} {}' (ID: {})."
+
+#: tornello.py:211
+msgid "   Seleziona l'ID FIDE corretto o 'n' per saltare:"
+msgstr "   Select the correct FIDE ID or 'n' to skip:"
+
+#: tornello.py:213
+#, python-brace-format
+msgid " {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}"
+msgstr " {}. FIDE ID: {}, FED: {}, Elo: {}, Birth Year: {}"
+
+#: tornello.py:214
+msgid "   n. Nessuno di questi"
+msgstr "   n. None of these"
+
+#: tornello.py:215
+msgid "   Scelta: "
+msgstr "   Choice: "
+
+#: tornello.py:221
+msgid "   Scelta non valida o saltata. Il giocatore non verrà associato."
+msgstr "   Invalid choice or skipped. The player will not be associated."
+
+#: tornello.py:252
+msgid ""
+"\n"
+"Analisi completata. Il tuo database personale è già perfettamente "
+"sincronizzato!"
+msgstr ""
+"\n"
+"Analysis complete. Your personal database is already perfectly synchronized!"
+
+#: tornello.py:254
+#, python-brace-format
+msgid ""
+"\n"
+"--- Riepilogo Sincronizzazione: Trovate {} modifiche proposte ---"
+msgstr ""
+"\n"
+"--- Synchronization Summary: Found {} proposed changes ---"
+
+#: tornello.py:257
+#, python-brace-format
+msgid " - Giocatore: {} {} (ID Locale: {})"
+msgstr " - Player: {} {} (Local ID: {})"
+
+#: tornello.py:259
+#, python-brace-format
+msgid "    -> Associazione nuovo ID FIDE: {}"
+msgstr "   -> New FIDE ID association: {}"
+
+#: tornello.py:262
+#, python-brace-format
+msgid "    -> Aggiornamento {}: da '{}' a '{}'"
+msgstr "   -> Update {}: from '{}' to '{}'"
+
+#: tornello.py:265
+msgid ""
+"\n"
+"Vuoi vedere l'elenco completo di tutte le modifiche proposte? (s/N)"
+msgstr ""
+"\n"
+"Do you want to see the full list of all proposed changes? (y/N)"
+
+#: tornello.py:266
+msgid ""
+"\n"
+"--- Elenco Completo Modifiche Proposte ---"
+msgstr ""
+"\n"
+"--- Full List of Proposed Changes ---"
+
+#: tornello.py:269
+#, python-brace-format
+msgid "  - Giocatore: {} {} (ID Locale: {})"
+msgstr "  - Player: {} {} (Local ID: {})"
+
+#: tornello.py:271
+#, python-brace-format
+msgid " -> Associazione nuovo ID FIDE: {}"
+msgstr " -> New FIDE ID association: {}"
+
+#: tornello.py:274
+#, python-brace-format
+msgid "     -> Aggiornamento {}: da '{}' a '{}'"
+msgstr "    -> Update {}: from '{}' to '{}'"
+
+#: tornello.py:274 tornello.py:976 tornello.py:3334
+msgid "N/D"
+msgstr "N/A"
+
+#: tornello.py:277
+msgid ""
+"\n"
+"Vuoi applicare tutte le modifiche proposte al tuo database personale? "
+"(s/N)"
+msgstr ""
+"\n"
+"Do you want to apply all proposed changes to your personal database? (y/N)"
+
+#: tornello.py:286
+msgid ""
+"\n"
+"Sincronizzazione completata e database personale salvato!"
+msgstr ""
+"\n"
+"Synchronization complete and personal database saved!"
+
+#: tornello.py:288
+msgid ""
+"\n"
+"Operazione annullata. Nessuna modifica è stata salvata."
+msgstr ""
+"\n"
+"Operation cancelled. No changes have been saved."
+
+#: tornello.py:297
+#, python-brace-format
+msgid "Download del file ZIP FIDE da: {url}"
+msgstr "Downloading FIDE ZIP file from: {url}"
+
+#: tornello.py:298
+msgid ""
+"L'operazione potrebbe richiedere alcuni minuti a seconda della "
+"connessione..."
+msgstr "The operation may take a few minutes depending on the connection..."
+
+#: tornello.py:302
+msgid "Download completato. Apertura archivio ZIP in memoria..."
+msgstr "Download complete. Opening ZIP archive in memory..."
+
+#: tornello.py:307
+msgid "ERRORE: Nessun file .xml trovato nell'archivio ZIP."
+msgstr "ERROR: No .xml file found in the ZIP archive."
+
+#: tornello.py:309
+#, python-brace-format
+msgid "Estrazione ed elaborazione del file XML: {filename}..."
+msgstr "Extracting and processing XML file: {filename}..."
+
+#: tornello.py:321
+msgid "  -> L'analisi del file XML è in corso, attendere..."
+msgstr "  -> XML file analysis is in progress, please wait..."
+
+#: tornello.py:324
+msgid "Analisi del file XML in corso (potrebbe richiedere più di un minuto)..."
+msgstr "Analyzing XML file (may take more than a minute)..."
+
+#: tornello.py:384
+#, python-brace-format
+msgid "  ... elaborati {count} giocatori..."
+msgstr "  ... processed {count} players..."
+
+#: tornello.py:385
+#, python-brace-format
+msgid "Elaborazione completata. Trovati e salvati {count} giocatori FIDE."
+msgstr "Processing complete. Found and saved {count} FIDE players."
+
+#: tornello.py:389
+msgid "  -> La scrittura del file JSON è in corso, attendere..."
+msgstr "  -> Writing JSON file, please wait..."
+
+#: tornello.py:392
+msgid "Salvataggio del database JSON locale (potrebbe richiedere tempo)..."
+msgstr "Saving local JSON database (may take some time)..."
+
+#: tornello.py:404
+msgid "Database FIDE locale 'fide_ratings_local.json' salvato con successo."
+msgstr "Local FIDE database 'fide_ratings_local.json' saved successfully."
+
+#: tornello.py:407
+msgid "ERRORE: Timeout durante il download del file."
+msgstr "ERROR: Timeout during file download."
+
+#: tornello.py:410
+#, python-brace-format
+msgid "ERRORE di rete: {error}"
+msgstr "Network ERROR: {error}"
+
+#: tornello.py:413
+#, python-brace-format
+msgid ""
+"Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE:"
+" {error}"
+msgstr "An unexpected error occurred while updating the FIDE DB: {error}"
+
+#: tornello.py:436
+msgid "Errore: Dati torneo o giocatori mancanti per la conferma."
+msgstr "Error: Tournament or player data missing for confirmation."
+
+#: tornello.py:439
+msgid ""
+"\n"
+"--- Riepilogo Giocatori Iscritti al Torneo ---"
+msgstr ""
+"\n"
+"--- Summary of Players Registered for the Tournament ---"
+
+#: tornello.py:443
+msgid "Nessun giocatore attualmente iscritto al torneo."
+msgstr "No players currently registered for the tournament."
+
+#: tornello.py:444
+msgid "Vuoi tornare all'inserimento giocatori? (s/N)"
+msgstr "Do you want to go back to player entry? (y/N)"
+
+#: tornello.py:448
+msgid ""
+"Lista giocatori vuota. La creazione del torneo potrebbe fallire o "
+"necessitare di nuovi inserimenti."
+msgstr "Player list is empty. Tournament creation might fail or require new entries."
+
+#: tornello.py:453
+#, python-brace-format
+msgid "Numero attuale di giocatori: {count}"
+msgstr "Current number of players: {count}"
+
+#: tornello.py:463
+msgid ""
+"\n"
+"Vuoi rimuovere un giocatore dalla lista? (Inserisci il numero, o 'f' per "
+"finire e confermare): "
+msgstr ""
+"\n"
+"Do you want to remove a player from the list? (Enter the number, or 'f' to finish and confirm): "
+
+#: tornello.py:468
+#, python-brace-format
+msgid ""
+"ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo "
+"di {rounds} turni."
+msgstr "WARNING: At least {min_players} players are required for a {rounds}-round tournament."
+
+#: tornello.py:469
+msgid "Continuare comunque con meno giocatori? (s/N)"
+msgstr "Continue with fewer players anyway? (y/N)"
+
+#: tornello.py:470
+msgid ""
+"Conferma annullata. Puoi aggiungere altri giocatori o modificare i "
+"parametri del torneo."
+msgstr "Confirmation cancelled. You can add more players or modify the tournament parameters."
+
+#: tornello.py:472
+msgid "Lista giocatori confermata."
+msgstr "Player list confirmed."
+
+#: tornello.py:479
+#, python-brace-format
+msgid "Rimuovere '{first_name} {last_name}'? (s/N): "
+msgstr "Remove '{first_name} {last_name}'? (y/N): "
+
+#: tornello.py:482
+#, python-brace-format
+msgid "Giocatore '{first_name} {last_name}' rimosso."
+msgstr "Player '{first_name} {last_name}' removed."
+
+#: tornello.py:486 tornello.py:734
+msgid "Rimozione annullata."
+msgstr "Removal cancelled."
+
+#: tornello.py:488
+msgid "Numero giocatore non valido."
+msgstr "Invalid player number."
+
+#: tornello.py:490
+msgid "Input non valido."
+msgstr "Invalid input."
+
+#: tornello.py:492
+msgid "Comando non riconosciuto."
+msgstr "Command not recognized."
+
+#: tornello.py:510
+msgid ""
+"\n"
+"--- Dettagli Pianificazione Partita ---"
+msgstr ""
+"\n"
+"--- Match Scheduling Details ---"
+
+#: tornello.py:512
+msgid "Lasciare il campo vuoto per mantenere il valore attuale."
+msgstr "Leave the field empty to keep the current value."
+
+#: tornello.py:514
+#, python-brace-format
+msgid "Data partita (formati: GG, GG-MM, {iso_format})"
+msgstr "Match date (formats: DD, DD-MM, {iso_format})"
+
+#: tornello.py:520 tornello.py:563
+#, python-brace-format
+msgid " [Attuale: {current}]: "
+msgstr " [Current: {current}]: "
+
+#: tornello.py:526
+msgid "La data è obbligatoria."
+msgstr "The date is mandatory."
+
+#: tornello.py:541
+msgid "Formato data non riconosciuto"
+msgstr "Unrecognized date format"
+
+#: tornello.py:551
+#, python-brace-format
+msgid ""
+"Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o "
+"{iso_format}."
+msgstr "Date format '{input}' invalid or non-existent date. Use DD, DD-MM, or {iso_format}."
+
+#: tornello.py:553
+#, python-brace-format
+msgid "Input data '{input}' non interpretabile."
+msgstr "Date input '{input}' cannot be interpreted."
+
+#: tornello.py:557
+msgid "Ora partita (formati: HH, HH:MM)"
+msgstr "Match time (formats: HH, HH:MM)"
+
+#: tornello.py:569
+msgid "L'ora è obbligatoria."
+msgstr "The time is mandatory."
+
+#: tornello.py:580
+msgid "Formato ora non riconosciuto"
+msgstr "Unrecognized time format"
+
+#: tornello.py:584
+msgid "Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."
+msgstr "Invalid time format. Use HH (e.g., 9) or HH:MM (e.g., 15:30)."
+
+#: tornello.py:587
+#, python-brace-format
+msgid "Canale/Link partita [Attuale: {current}]: "
+msgstr "Match channel/link [Current: {current}]: "
+
+#: tornello.py:589
+#, python-brace-format
+msgid "Arbitro assegnato [Attuale: {current}]: "
+msgstr "Assigned Arbiter [Current: {current}]: "
+
+#: tornello.py:597
+msgid "Nessun dettaglio della pianificazione è stato effettivamente modificato."
+msgstr "No scheduling details were actually changed."
+
+#: tornello.py:599
+msgid "Data e ora sono obbligatori per la pianificazione. Operazione annullata."
+msgstr "Date and time are mandatory for scheduling. Operation cancelled."
+
+#: tornello.py:608
+#, python-brace-format
+msgid ""
+"\n"
+"Tutte le partite del Turno {round_num} sono state giocate o sono BYE."
+msgstr ""
+"\n"
+"All matches for Round {round_num} have been played or are BYEs."
+
+#: tornello.py:609
+msgid "Nessuna partita disponibile per la pianificazione/modifica."
+msgstr "No matches available for scheduling/editing."
+
+#: tornello.py:642
+#, python-brace-format
+msgid " Pianificata per: {date} alle {time}"
+msgstr " Scheduled for: {date} at {time}"
+
+#: tornello.py:643
+#, python-brace-format
+msgid " Canale: {channel}, Arbitro: {arbiter}"
+msgstr " Channel: {channel}, Arbiter: {arbiter}"
+
+#: tornello.py:648
+#, python-brace-format
+msgid ""
+"\n"
+"--- Pianificazione Partite Turno {round_num} ---"
+msgstr ""
+"\n"
+"--- Round {round_num} Match Scheduling ---"
+
+#: tornello.py:649
+msgid ""
+"(Vengono mostrati i Numeri Scacchiera reali del turno per le partite "
+"ancora da giocare)"
+msgstr "(Showing the actual Board Numbers of the round for matches yet to be played)"
+
+#: tornello.py:651
+msgid ""
+"\n"
+"Partite da Pianificare (non hanno ancora una pianificazione):"
+msgstr ""
+"\n"
+"Matches to Schedule (do not have a schedule yet):"
+
+#: tornello.py:655
+msgid ""
+"  Nessuna partita attualmente da pianificare (o sono tutte già "
+"pianificate)."
+msgstr "  No matches currently to be scheduled (or they are all already scheduled)."
+
+#: tornello.py:657
+msgid ""
+"\n"
+"Partite Già Pianificate (in attesa di risultato):"
+msgstr ""
+"\n"
+"Already Scheduled Matches (awaiting results):"
+
+#: tornello.py:661
+msgid "  Nessuna partita attualmente pianificata."
+msgstr "  No matches currently scheduled."
+
+#: tornello.py:664
+msgid ""
+"\n"
+"Nessuna partita pendente disponibile per la gestione della pianificazione."
+msgstr ""
+"\n"
+"No pending matches available for schedule management."
+
+#: tornello.py:666
+msgid ""
+"\n"
+"Opzioni: (P)ianifica, (M)odifica/Rimuovi pianificazione, (F)ine: "
+msgstr ""
+"\n"
+"Options: (S)chedule, (E)dit/Remove schedule, (F)inish: "
+
+#: tornello.py:670
+msgid "Inserisci il N. Scacchiera della partita"
+msgstr "Enter the Board No. of the match"
+
+#: tornello.py:671
+msgid " da pianificare: "
+msgstr " to schedule: "
+
+#: tornello.py:672
+msgid " la cui pianificazione vuoi modificare/rimuovere: "
+msgstr " whose schedule you want to edit/remove: "
+
+#: tornello.py:680
+msgid "N#. Scacchiera non valido o non corrisponde a una partita gestibile."
+msgstr "Board No. is invalid or does not correspond to a manageable match."
+
+#: tornello.py:694
+#, python-brace-format
+msgid "ERRORE INTERNO: Partita IDG {match_id} non trovata."
+msgstr "INTERNAL ERROR: Match GID {match_id} not found."
+
+#: tornello.py:699
+msgid "Questa partita è già pianificata. Usa 'M' per modificarla."
+msgstr "This match is already scheduled. Use 'E' to edit it."
+
+#: tornello.py:700
+#, python-brace-format
+msgid ""
+"\n"
+"Pianificazione per la partita Sc. {board_id} (IDG: {match_id})..."
+msgstr ""
+"\n"
+"Scheduling for match Brd. {board_id} (GID: {match_id})..."
+
+#: tornello.py:706
+msgid "Partita pianificata con successo."
+msgstr "Match scheduled successfully."
+
+#: tornello.py:708
+msgid "Pianificazione annullata."
+msgstr "Scheduling cancelled."
+
+#: tornello.py:711
+msgid "Questa partita non ha una pianificazione da modificare/rimuovere. Usa 'P'."
+msgstr "This match has no schedule to edit/remove. Use 'S'."
+
+#: tornello.py:716
+#, python-brace-format
+msgid ""
+"\n"
+"Gestione pianificazione per Sc. {board_id} (IDG: {match_id}): "
+"{white_player} vs {black_player}"
+msgstr ""
+"\n"
+"Managing schedule for Brd. {board_id} (GID: {match_id}): {white_player} vs {black_player}"
+
+#: tornello.py:718
+msgid "Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): "
+msgstr "Do you want to (E)dit or (R)emove the schedule? (Enter to cancel): "
+
+#: tornello.py:725
+msgid "Pianificazione modificata."
+msgstr "Schedule modified."
+
+#: tornello.py:727
+msgid "Modifica annullata."
+msgstr "Edit cancelled."
+
+#: tornello.py:729
+msgid "Confermi rimozione pianificazione? (s/N)"
+msgstr "Confirm schedule removal? (y/N)"
+
+#: tornello.py:733
+msgid "Pianificazione rimossa."
+msgstr "Schedule removed."
+
+#: tornello.py:736
+msgid "Azione non valida per modifica/rimozione."
+msgstr "Invalid action for edit/removal."
+
+#: tornello.py:738
+msgid "Azione non riconosciuta. Riprova."
+msgstr "Action not recognized. Please try again."
+
+#: tornello.py:768 tornello.py:1316 tornello.py:3153
+msgid "Torneo Sconosciuto"
+msgstr "Unknown Tournament"
+
+#: tornello.py:769 tornello.py:1326 tornello.py:3331
+msgid "Luogo Sconosciuto"
+msgstr "Unknown Location"
+
+#: tornello.py:777
+msgid "Arbitro Capo"
+msgstr "Chief Arbiter"
+
+#: tornello.py:804
+msgid "Cognome"
+msgstr "Last Name"
+
+#: tornello.py:805
+msgid "Nome"
+msgstr "First Name"
+
+#: tornello.py:872
+#, python-brace-format
+msgid ""
+"AVVISO CRITICO: ID avversario storico {opponent_id} non trovato in mappa "
+"per giocatore {player_id} al turno {round_num}"
+msgstr "CRITICAL WARNING: Historical opponent ID {opponent_id} not found in map for player {player_id} in round {round_num}"
+
+#: tornello.py:915
+#, python-brace-format
+msgid "Errore catastrofico in genera_stringa_trf_per_bbpairings: {error}"
+msgstr "Catastrophic error in generate_trf_string_for_bbpairings: {error}"
+
+#: tornello.py:1026
+#, python-brace-format
+msgid "Info: Creata sottocartella '{subdir}' per i file di bbpPairings."
+msgstr "Info: Created subfolder '{subdir}' for bbpPairings files."
+
+#: tornello.py:1028
+#, python-brace-format
+msgid "Errore creazione sottocartella '{subdir}': {error}"
+msgstr "Error creating subfolder '{subdir}': {error}"
+
+#: tornello.py:1033
+#, python-brace-format
+msgid "Errore scrittura file TRF di input '{filepath}': {error}"
+msgstr "Error writing input TRF file '{filepath}': {error}"
+
+#: tornello.py:1044
+#, python-brace-format
+msgid "bbpPairings.exe ha fallito con codice {}.\n"
+msgstr "bbpPairings.exe failed with code {}.\n"
+
+#: tornello.py:1045
+#, python-brace-format
+msgid ""
+"Stderr:\n"
+"{}\n"
+msgstr ""
+"Stderr:\n"
+"{}\n"
+
+#: tornello.py:1046
+#, python-brace-format
+msgid ""
+"Stdout:\n"
+"{}"
+msgstr ""
+"Stdout:\n"
+"{}"
+
+#: tornello.py:1055
+#, python-brace-format
+msgid "File output coppie '{filepath}' non trovato."
+msgstr "Pairings output file '{filepath}' not found."
+
+#: tornello.py:1063
+msgid "Esecuzione bbpPairings completata."
+msgstr "bbpPairings execution completed."
+
+#: tornello.py:1066
+#, python-brace-format
+msgid ""
+"Errore: Eseguibile '{filepath}' non trovato. Assicurati sia nel percorso "
+"corretto."
+msgstr "Error: Executable '{filepath}' not found. Make sure it is in the correct path."
+
+#: tornello.py:1068
+#, python-brace-format
+msgid ""
+"Errore imprevisto durante esecuzione bbpPairings: {error}\n"
+"{traceback}"
+msgstr ""
+"Unexpected error during bbpPairings execution: {error}\n"
+"{traceback}"
+
+#: tornello.py:1089
+msgid "Warning: File output coppie vuoto o illeggibile."
+msgstr "Warning: Pairings output file is empty or unreadable."
+
+#: tornello.py:1096
+#, python-brace-format
+msgid "Warning: Riga abbinamento malformata: '{line}' (saltata)"
+msgstr "Warning: Malformed pairing line: '{line}' (skipped)"
+
+#: tornello.py:1104
+#, python-brace-format
+msgid "Warning: ID non numerici nella riga abbinamento: '{line}' (saltata)"
+msgstr "Warning: Non-numeric IDs in pairing line: '{line}' (skipped)"
+
+#: tornello.py:1110
+#, python-brace-format
+msgid ""
+"Warning: StartRank {rank} non trovato nella mappa giocatori (riga: "
+"'{line}')."
+msgstr "Warning: StartRank {rank} not found in player map (line: '{line}')."
+
+#: tornello.py:1123
+#, python-brace-format
+msgid ""
+"Warning: StartRank avversario {rank} non trovato nella mappa (riga: "
+"'{line}')."
+msgstr "Warning: Opponent StartRank {rank} not found in map (line: '{line}')."
+
+#: tornello.py:1134
+#, python-brace-format
+msgid ""
+"Errore durante il parsing dell'output delle coppie: {error}\n"
+"{traceback}"
+msgstr ""
+"Error while parsing pairings output: {error}\n"
+"{traceback}"
+
+#: tornello.py:1155
+#, python-brace-format
+msgid "Errore durante il caricamento del DB giocatori ({filename}): {error}"
+msgstr "Error loading player DB ({filename}): {error}"
+
+#: tornello.py:1156
+msgid "Verrà creato un nuovo DB vuoto se si aggiungono giocatori."
+msgstr "A new empty DB will be created if players are added."
+
+#: tornello.py:1169
+#, python-brace-format
+msgid "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
+msgstr "Error saving player DB ({filename}): {error}"
+
+#: tornello.py:1171
+#, python-brace-format
+msgid "Errore imprevisto durante il salvataggio del DB: {error}"
+msgstr "Unexpected error while saving DB: {error}"
+
+#: tornello.py:1180
+#, python-brace-format
+msgid "Report Database Giocatori Tornello - {date} {time}\n"
+msgstr "Tornello Player Database Report - {date} {time}\n"
+
+#: tornello.py:1184
+msgid "Il database dei giocatori è vuoto.\n"
+msgstr "The player database is empty.\n"
+
+#: tornello.py:1197
+#, python-brace-format
+msgid ""
+"\tSesso: {sesso}, Federazione Giocatore: {federazione}, ID FIDE num: "
+"{fide_id}\n"
+msgstr "\tSex: {sesso}, Player Federation: {federazione}, FIDE ID num: {fide_id}\n"
+
+#: tornello.py:1201
+#, python-brace-format
+msgid ""
+"\tPartite Valutate Totali: {games}, K-Factor Stimato: {k_factor}, Data "
+"Iscrizione DB: {reg_date}\n"
+msgstr "\tTotal Rated Games: {games}, Estimated K-Factor: {k_factor}, DB Registration Date: {reg_date}\n"
+
+#: tornello.py:1204
+#, python-brace-format
+msgid "\tData Nascita: {birth_date}\n"
+msgstr "\tBirth Date: {birth_date}\n"
+
+#: tornello.py:1206
+#, python-brace-format
+msgid ""
+"\tMedagliere: Oro: {gold}, Argento: {silver}, Bronzo: {bronze}, Legno: "
+"{wood} in "
+msgstr "\tMedals: Gold: {gold}, Silver: {silver}, Bronze: {bronze}, Wood: {wood} in "
+
+#: tornello.py:1208
+#, python-brace-format
+msgid "({count}) tornei:\n"
+msgstr "({count}) tournaments:\n"
+
+#: tornello.py:1220
+msgid "Nome Torneo Mancante"
+msgstr "Missing Tournament Name"
+
+#: tornello.py:1226
+#, python-brace-format
+msgid "{rank} su {total} in {name} - {start} - {end}"
+msgstr "{rank} of {total} in {name} - {start} - {end}"
+
+#: tornello.py:1229
+msgid "\tNessuno\n"
+msgstr "\tNone\n"
+
+#: tornello.py:1232
+#, python-brace-format
+msgid ""
+"Errore durante il salvataggio del file TXT del DB giocatori ({filename}):"
+" {error}"
+msgstr "Error saving the player DB TXT file ({filename}): {error}"
+
+#: tornello.py:1234
+#, python-brace-format
+msgid "Errore imprevisto durante il salvataggio del TXT del DB: {}"
+msgstr "Unexpected error while saving the DB TXT: {}"
+
+#: tornello.py:1251
+msgid ""
+"Errore: Nome e Cognome non possono essere vuoti per la creazione del "
+"giocatore nel DB."
+msgstr "Error: First Name and Last Name cannot be empty for player creation in the DB."
+
+#: tornello.py:1279
+#, python-brace-format
+msgid "ERRORE CRITICO: Fallimento catastrofico generazione ID per {} {}."
+msgstr "CRITICAL ERROR: Catastrophic ID generation failure for {} {}."
+
+#: tornello.py:1283
+#, python-brace-format
+msgid ""
+"ERRORE CRITICO: Impossibile generare ID univoco per {first_name} "
+"{last_name} dopo {attempts} tentativi."
+msgstr "CRITICAL ERROR: Could not generate a unique ID for {first_name} {last_name} after {attempts} attempts."
+
+#: tornello.py:1286
+#, python-brace-format
+msgid "Creazione nuovo giocatore nel DB principale: {} {} con il nuovo ID: {}"
+msgstr "Creating new player in the main DB: {} {} with the new ID: {}"
+
+#: tornello.py:1305
+#, python-brace-format
+msgid ""
+"Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) aggiunto al "
+"database principale."
+msgstr "New player '{first_name} {last_name}' (ID: {player_id}) added to the main database."
+
+#: tornello.py:1350
+#, python-brace-format
+msgid "Errore durante il caricamento del torneo ({filename}): {error}"
+msgstr "Error loading tournament ({filename}): {error}"
+
+#: tornello.py:1361
+msgid "Errore: Nome del torneo non presente. Impossibile salvare."
+msgstr "Error: Tournament name is missing. Cannot save."
+
+#: tornello.py:1381
+#, python-brace-format
+msgid "Errore durante il salvataggio del torneo ({filename}): {error}"
+msgstr "Error saving tournament ({filename}): {error}"
+
+#: tornello.py:1383
+#, python-brace-format
+msgid "Errore imprevisto durante il salvataggio del torneo: {}"
+msgstr "Unexpected error while saving tournament: {}"
+
+#: tornello.py:1399
+msgid "Errore: la data di fine non può precedere la data di inizio."
+msgstr "Error: The end date cannot be before the start date."
+
+#: tornello.py:1403
+msgid "Errore: Il numero dei turni deve essere positivo."
+msgstr "Error: The number of rounds must be positive."
+
+#: tornello.py:1406
+#, python-brace-format
+msgid ""
+"Attenzione: La durata totale ({duration} giorni) è inferiore al numero di"
+" turni ({rounds})."
+msgstr "Warning: The total duration ({duration} days) is less than the number of rounds ({rounds})."
+
+#: tornello.py:1407
+msgid "Assegnando 1 giorno per turno sequenzialmente."
+msgstr "Assigning 1 day per round sequentially."
+
+#: tornello.py:1456
+#, python-brace-format
+msgid ""
+"Avviso: Spazio insufficiente per i turni rimanenti. Il turno {round_num} "
+"inizierà il {date} (ultimo giorno)."
+msgstr "Warning: Insufficient time for the remaining rounds. Round {round_num} will start on {date} (last day)."
+
+#: tornello.py:1462
+#, python-brace-format
+msgid ""
+"Formato data non valido ('{start_date}' o '{end_date}'). Usa "
+"{date_format}."
+msgstr "Invalid date format ('{start_date}' or '{end_date}'). Use {date_format}."
+
+#: tornello.py:1465
+#, python-brace-format
+msgid "Errore nel calcolo delle date: {error}"
+msgstr "Error in date calculation: {error}"
+
+#: tornello.py:1478
+#, python-brace-format
+msgid ""
+"Warning: Elo non valido ({player_elo} o {opponent_elo}) nel calcolo "
+"atteso."
+msgstr "Warning: Invalid Elo ({player_elo} or {opponent_elo}) in expected score calculation."
+
+#: tornello.py:1484
+#, python-brace-format
+msgid "Warning: Dati giocatore incompleti per calcolo Elo ({player_id})."
+msgstr "Warning: Incomplete player data for Elo calculation ({player_id})."
+
+#: tornello.py:1484 tornello.py:1499
+msgid "ID Mancante"
+msgstr "Missing ID"
+
+#: tornello.py:1499
+#, python-brace-format
+msgid ""
+"Warning: Elo iniziale non valido ({elo}) per giocatore {player_id}. Usato"
+" {default_elo}]."
+msgstr "Warning: Invalid initial Elo ({elo}) for player {player_id}. Using {default_elo}."
+
+#: tornello.py:1520
+#, python-brace-format
+msgid ""
+"Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo "
+"Elo."
+msgstr "Warning: Opponent {opponent_id} not found or missing Elo for Elo calculation."
+
+#: tornello.py:1527
+#, python-brace-format
+msgid ""
+"Warning: Elo avversario ({}) o score ({}) non validi per partita contro "
+"{}."
+msgstr "Warning: Invalid opponent Elo ({}) or score ({}) for match against {}."
+
+#: tornello.py:1567
+#, python-brace-format
+msgid ""
+"Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo "
+"Performance."
+msgstr "Warning: Opponent {opponent_id} not found or missing Elo for Performance calculation."
+
+#: tornello.py:1575
+#, python-brace-format
+msgid ""
+"Warning: Dati non validi (Elo avversario {elo}) o score ({score}) per "
+"partita vs {opponent_id} nel calcolo performance."
+msgstr "Warning: Invalid data (opponent Elo {elo}) or score ({score}) for match vs {opponent_id} in performance calculation."
+
+#: tornello.py:1639
+#, python-brace-format
+msgid ""
+"Warning: Punti non validi ({points}) per avversario {opponent_id} nel "
+"calcolo Buchholz di {player_id}."
+msgstr "Warning: Invalid points ({points}) for opponent {opponent_id} in Buchholz calculation for {player_id}."
+
+#: tornello.py:1644
+#, python-brace-format
+msgid ""
+"Warning: Avversario {opponent_id} (dallo storico di {player_id}) non "
+"trovato nel dizionario giocatori per calcolo Buchholz."
+msgstr "Warning: Opponent {opponent_id} (from {player_id}'s history) not found in the player dictionary for Buchholz calculation."
+
+#: tornello.py:1664
+#, python-brace-format
+msgid ""
+"Warning: Punti non validi ({points}) per avversario {opponent_id} in "
+"BuchholzCut1 di {player_id}."
+msgstr "Warning: Invalid points ({points}) for opponent {opponent_id} in BuchholzCut1 for {player_id}."
+
+#: tornello.py:1694
+#, python-brace-format
+msgid ""
+"Warning: Elo iniziale non valido ({elo}) per avversario {opponent_id} in "
+"ARO di {player_id}."
+msgstr "Warning: Invalid initial Elo ({elo}) for opponent {opponent_id} in ARO for {player_id}."
+
+#: tornello.py:1712
+msgid "ERRORE: Numero turno corrente non definito nel torneo."
+msgstr "ERROR: Current round number not defined in the tournament."
+
+#: tornello.py:1715
+#, python-brace-format
+msgid ""
+"\n"
+"--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---"
+msgstr ""
+"\n"
+"--- Generating Round {round_num} Pairings with bbpPairings ---"
+
+#: tornello.py:1721
+#, python-brace-format
+msgid "Nessun giocatore attivo per il turno {round_num}."
+msgstr "No active players for round {round_num}."
+
+#: tornello.py:1740
+msgid "ERRORE: Fallita generazione della stringa TRF per bbpPairings."
+msgstr "ERROR: Failed to generate TRF string for bbpPairings."
+
+#: tornello.py:1749
+msgid "bbpPairings eseguito con successo."
+msgstr "bbpPairings executed successfully."
+
+#: tornello.py:1755
+msgid "ERRORE: Fallimento parsing output coppie di bbpPairings."
+msgstr "ERROR: Failed to parse bbpPairings pairings output."
+
+#: tornello.py:1762
+#, python-brace-format
+msgid ""
+"ATTENZIONE CRITICA: Giocatori attivi dispari ({count}) ma NESSUN BYE "
+"generato."
+msgstr "CRITICAL WARNING: Odd number of active players ({count}) but NO BYE generated."
+
+#: tornello.py:1765
+#, python-brace-format
+msgid ""
+"INFO: bbpPairings ha generato un BYE forzato nonostante un numero pari di"
+" giocatori attivi ({}). Si procede."
+msgstr "INFO: bbpPairings generated a forced BYE despite an even number of active players ({}). Proceeding."
+
+#: tornello.py:1786
+#, python-brace-format
+msgid "Info: Giocatore {player_id} riceve il BYE per il turno {round_num}."
+msgstr "Info: Player {player_id} receives the BYE for round {round_num}."
+
+#: tornello.py:1805
+#, python-brace-format
+msgid "ERRORE: Partita normale per {} ma black_player_id è None."
+msgstr "ERROR: Normal match for {} but black_player_id is None."
+
+#: tornello.py:1830
+msgid "ATTENZIONE: bbpPairings non ha trovato abbinamenti validi."
+msgstr "WARNING: bbpPairings did not find valid pairings."
+
+#: tornello.py:1833
+#, python-brace-format
+msgid "ERRORE CRITICO da bbpPairings.exe: {message}"
+msgstr "CRITICAL ERROR from bbpPairings.exe: {message}"
+
+#: tornello.py:1849
+#, python-brace-format
+msgid ""
+"AVVISO: Giocatore {} non trovato in players_dict durante la "
+"sincronizzazione finale."
+msgstr "NOTICE: Player {} not found in players_dict during final synchronization."
+
+#: tornello.py:1852
+#, python-brace-format
+msgid "--- Abbinamenti Turno {} generati e stati giocatori aggiornati ---"
+msgstr "--- Round {} Pairings generated and player states updated ---"
+
+#: tornello.py:1859
+#, python-brace-format
+msgid ""
+"\n"
+"--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---"
+msgstr ""
+"\n"
+"--- AUTOMATIC PAIRING GENERATION FAILED (Round {round_num}) ---"
+
+#: tornello.py:1861
+msgid "Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."
+msgstr "Cause: bbpPairings.exe failed to generate pairings."
+
+#: tornello.py:1862
+msgid ""
+"Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella "
+"'bbppairings' per possibili errori di formato."
+msgstr "Required action: Check the 'input_bbp.trf' file in the 'bbppairings' subfolder for possible format errors."
+
+#: tornello.py:1863
+msgid ""
+"Oppure, considerare di effettuare gli abbinamenti per questo turno "
+"manualmente (su carta)."
+msgstr "Alternatively, consider making the pairings for this round manually (on paper)."
+
+#: tornello.py:1864
+msgid "Il torneo non può procedere automaticamente per questo turno."
+msgstr "The tournament cannot proceed automatically for this round."
+
+#: tornello.py:1885
+msgid ""
+"\n"
+"--- Inserimento Giocatori per il Torneo ---"
+msgstr ""
+"\n"
+"--- Player Entry for the Tournament ---"
+
+#: tornello.py:1886
+msgid "Inserire ID locale, ID FIDE, o parte del Nome/Cognome."
+msgstr "Enter Local ID, FIDE ID, or part of the First/Last Name."
+
+#: tornello.py:1887
+msgid ""
+"Il programma cercherà prima nel tuo DB personale, poi nel DB FIDE "
+"scaricato."
+msgstr "The program will search first in your personal DB, then in the downloaded FIDE DB."
+
+#: tornello.py:1890
+#, python-brace-format
+msgid ""
+"\n"
+"Giocatore {player_num} (o lascia vuoto per terminare): "
+msgstr ""
+"\n"
+"Player {player_num} (or leave empty to finish): "
+
+#: tornello.py:1893
+msgid "Ci sono meno di 2 giocatori. Continuare? (S/n)"
+msgstr "There are fewer than 2 players. Continue? (Y/n)"
+
+#: tornello.py:1907
+#, python-brace-format
+msgid ""
+"Trovati {count} giocatori nel tuo DB personale. Specifica usando l'ID "
+"locale:"
+msgstr "Found {count} players in your personal DB. Specify using the local ID:"
+
+#: tornello.py:1912
+#, python-brace-format
+msgid "Trovato giocatore nel DB personale: {} (ID: {})"
+msgstr "Found player in personal DB: {} (ID: {})"
+
+#: tornello.py:1917
+msgid "Giocatore non trovato nel DB personale. Avvio ricerca nel DB FIDE..."
+msgstr "Player not found in personal DB. Starting search in FIDE DB..."
+
+#: tornello.py:1923
+msgid ""
+"\n"
+"-> Trovata 1 corrispondenza nel DB FIDE:"
+msgstr ""
+"\n"
+"-> Found 1 match in the FIDE DB:"
+
+#: tornello.py:1924
+#, python-brace-format
+msgid ""
+"   Nome: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: "
+"{elo})"
+msgstr "   Name: {last_name}, {first_name} (FIDE ID: {fide_id}, FED: {fed}, Elo: {elo})"
+
+#: tornello.py:1925
+msgid "   È questo il giocatore corretto? (S/n)"
+msgstr "   Is this the correct player? (Y/n)"
+
+#: tornello.py:1928
+#, python-brace-format
+msgid ""
+"\n"
+"-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella"
+" corretta:"
+msgstr ""
+"\n"
+"-> Found {count} matches in the FIDE DB for '{term}'. Choose the correct one:"
+
+#: tornello.py:1933
+msgid ""
+"Non ci sono altri risultati da mostrare. Procedo con l'inserimento "
+"manuale."
+msgstr "No more results to show. Proceeding with manual entry."
+
+#: tornello.py:1941
+msgid "   0. Nessuno di questi / Inserimento manuale"
+msgstr "   0. None of these / Manual entry"
+
+#: tornello.py:1946
+#, python-brace-format
+msgid "Scelta (Numero, 0 per manuale, Invio per i prossimi {page_size}): "
+msgstr "Choice (Number, 0 for manual, Enter for the next {page_size}): "
+
+#: tornello.py:1948
+msgid "Scelta (Numero o 0 per manuale): "
+msgstr "Choice (Number or 0 for manual): "
+
+#: tornello.py:1953
+msgid "--- Mostro i risultati successivi ---"
+msgstr "--- Showing next results ---"
+
+#: tornello.py:1964
+msgid "Scelta non valida. Riprova."
+msgstr "Invalid choice. Try again."
+
+#: tornello.py:1966
+msgid "Input non valido. Inserisci un numero o premi Invio."
+msgstr "Invalid input. Enter a number or press Enter."
+
+#: tornello.py:1970
+#, python-brace-format
+msgid "Importazione di '{first_name} {last_name}' nel tuo DB personale..."
+msgstr "Importing '{first_name} {last_name}' into your personal DB..."
+
+#: tornello.py:1986
+msgid ""
+"Errore durante la creazione del giocatore importato. Si prega di "
+"riprovare."
+msgstr "Error creating the imported player. Please try again."
+
+#: tornello.py:1991
+msgid "Nessuna corrispondenza trovata. Procedi con l'inserimento manuale."
+msgstr "No match found. Proceed with manual entry."
+
+#: tornello.py:1993
+msgid "  Nome del nuovo giocatore: "
+msgstr "  New player's First Name: "
+
+#: tornello.py:1995
+msgid "  Cognome: "
+msgstr "  Last Name: "
+
+#: tornello.py:1998
+msgid "  Titolo FIDE (es. FM, o vuoto)"
+msgstr "  FIDE Title (e.g., FM, or empty)"
+
+#: tornello.py:1999
+msgid "  Sesso (m/w)"
+msgstr "  Sex (m/f)"
+
+#: tornello.py:2000
+msgid "  Federazione (3 lettere, es. ITA)"
+msgstr "  Federation (3 letters, e.g., USA)"
+
+#: tornello.py:2001
+msgid "  ID FIDE Numerico ('0' se N/D)"
+msgstr "  Numeric FIDE ID ('0' if N/A)"
+
+#: tornello.py:2002
+#, python-brace-format
+msgid " Data Nascita ({date_format} o vuoto)"
+msgstr " Birth Date ({date_format} or empty)"
+
+#: tornello.py:2004
+msgid " Esperienza pregressa significativa? (s/n)"
+msgstr " Significant prior experience? (y/n)"
+
+#: tornello.py:2016
+#, python-brace-format
+msgid ""
+"Errore: Giocatore ID {player_id} ({player_name}) è già stato aggiunto a "
+"questo torneo."
+msgstr "Error: Player ID {player_id} ({player_name}) has already been added to this tournament."
+
+#: tornello.py:2035
+#, python-brace-format
+msgid ""
+"-> Giocatore '{first_name} {last_name}' (ID DB: {player_id}) aggiunto al "
+"torneo."
+msgstr "-> Player '{first_name} {last_name}' (DB ID: {player_id}) added to the tournament."
+
+#: tornello.py:2058
+#, python-brace-format
+msgid "ERRORE: Dati turno {round_num} non trovati per aggiornamento risultati."
+msgstr "ERROR: Round {round_num} data not found for result update."
+
+#: tornello.py:2074
+msgid "Giocatore Mancante"
+msgstr "Missing Player"
+
+#: tornello.py:2086
+#, python-brace-format
+msgid ""
+"Info: Nessuna azione possibile per il turno {round_num} (nessuna partita "
+"pendente e nessuna da poter cancellare)."
+msgstr "Info: No possible action for round {round_num} (no pending matches and none to delete)."
+
+#: tornello.py:2090
+#, python-brace-format
+msgid ""
+"\n"
+"Partite del turno {round_num} ancora da registrare (N. Scacchiera del "
+"Turno):"
+msgstr ""
+"\n"
+"Matches for round {round_num} yet to be recorded (Round Board No.):"
+
+#: tornello.py:2097
+#, python-brace-format
+msgid ""
+"\n"
+"Nessuna partita da registrare per il turno {round_num} (ma potresti voler"
+" cancellare un risultato)."
+msgstr ""
+"\n"
+"No matches to record for round {round_num} (but you might want to delete a result)."
+
+#: tornello.py:2100
+msgid "Nessuna"
+msgstr "None"
+
+#: tornello.py:2102
+msgid "Inserisci:"
+msgstr "Enter:"
+
+#: tornello.py:2103
+msgid "\t[p] --- per entrare in modalità programmazione partite;"
+msgstr "\t[p] --- to enter match scheduling mode;"
+
+#: tornello.py:2104
+msgid "\t[r] --- per ritirare un giocatore dal torneo;"
+msgstr "\t[w] --- to withdraw a player from the tournament;"
+
+#: tornello.py:2105
+msgid "\t[t] --- Time Machine, per tornare all'inizio di un turno;"
+msgstr "\t[t] --- Time Machine, to go back to the start of a round;"
+
+#: tornello.py:2106
+msgid "\t[cancella] --- per eliminare un risultato inserito;"
+msgstr "\t[delete] --- to delete an entered result;"
+
+#: tornello.py:2107
+msgid "\t[SC] --- il numero della scacchiera;"
+msgstr "\t[BN] --- the board number;"
+
+#: tornello.py:2108
+msgid "\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori."
+msgstr "\t[fname*|lname*] --- part of the first or last name of one of the players."
+
+#: tornello.py:2109
+#, python-brace-format
+msgid ""
+"\n"
+"P|R|T|SC|nome|cognome [{boards}]: "
+msgstr ""
+"\n"
+"S|W|T|BN|fname|lname [{boards}]: "
+
+#: tornello.py:2117
+msgid "Stato del torneo ripristinato e salvato."
+msgstr "Tournament state restored and saved."
+
+#: tornello.py:2120
+msgid ""
+"\n"
+"--- Ritiro Giocatore dal Torneo ---"
+msgstr ""
+"\n"
+"--- Withdraw Player from Tournament ---"
+
+#: tornello.py:2123
+msgid "Nessun giocatore attivo da ritirare."
+msgstr "No active players to withdraw."
+
+#: tornello.py:2127
+msgid ""
+"Inserisci il numero o l'ID del giocatore da ritirare (o vuoto per "
+"annullare): "
+msgstr "Enter the number or ID of the player to withdraw (or empty to cancel): "
+
+#: tornello.py:2137
+#, python-brace-format
+msgid "Confermi il ritiro definitivo di {player_name}? (s/N)"
+msgstr "Confirm the final withdrawal of {player_name}? (y/N)"
+
+#: tornello.py:2140 tornello.py:2353
+#, python-brace-format
+msgid "Giocatore {player_name} marcato come ritirato."
+msgstr "Player {player_name} marked as withdrawn."
+
+#: tornello.py:2144
+msgid "Ritiro annullato."
+msgstr "Withdrawal cancelled."
+
+#: tornello.py:2146
+msgid "Giocatore non trovato o già ritirato."
+msgstr "Player not found or already withdrawn."
+
+#: tornello.py:2149
+msgid ""
+"\n"
+"--- Accesso al Modulo Pianificazione Partite ---"
+msgstr ""
+"\n"
+"--- Accessing Match Scheduling Module ---"
+
+#: tornello.py:2157
+msgid "Nessuna partita completata in questo turno da poter cancellare."
+msgstr "No completed matches in this round to delete."
+
+#: tornello.py:2159
+#, python-brace-format
+msgid ""
+"\n"
+"Partite completate nel turno {round_num} (ID Globali):"
+msgstr ""
+"\n"
+"Completed matches in round {round_num} (Global IDs):"
+
+#: tornello.py:2168
+msgid ""
+"Inserisci ID Globale della partita da cui cancellare il risultato (o "
+"vuoto per annullare): "
+msgstr "Enter the Global ID of the match from which to delete the result (or empty to cancel): "
+
+#: tornello.py:2186
+#, python-brace-format
+msgid ""
+"ERRORE: Giocatori per partita ID {id_to_cancel} non trovati durante "
+"cancellazione."
+msgstr "ERROR: Players for match ID {id_to_cancel} not found during deletion."
+
+#: tornello.py:2202
+#, python-brace-format
+msgid "Risultato ({old_res}) della partita ID {id_to_cancel} cancellato."
+msgstr "Result ({old_res}) of match ID {id_to_cancel} deleted."
+
+#: tornello.py:2209
+#, python-brace-format
+msgid "ID {id_to_cancel} non corrisponde a una partita completata cancellabile."
+msgstr "ID {id_to_cancel} does not correspond to a deletable completed match."
+
+#: tornello.py:2211
+msgid "ID non valido per la cancellazione."
+msgstr "Invalid ID for deletion."
+
+#: tornello.py:2223
+#, python-brace-format
+msgid ""
+"Numero Scacchiera (del turno) '{board_num_choice}' non valido o partita "
+"non pendente."
+msgstr "Board Number (of the round) '{board_num_choice}' is invalid or match is not pending."
+
+#: tornello.py:2226
+msgid "Input numerico per Scacchiera non valido."
+msgstr "Invalid numeric input for Board."
+
+#: tornello.py:2235
+#, python-brace-format
+msgid ""
+"Nessuna partita pendente trovata con giocatori che corrispondono a "
+"'{search_term}'."
+msgstr "No pending matches found with players matching '{search_term}'."
+
+#: tornello.py:2240
+#, python-brace-format
+msgid "Trovata partita unica (Sc. {board_num}): {white_player} vs {black_player}"
+msgstr "Found a single match (Brd. {board_num}): {white_player} vs {black_player}"
+
+#: tornello.py:2242
+#, python-brace-format
+msgid "Trovate {num_matches} partite pendenti per '{search_term}':"
+msgstr "Found {num_matches} pending matches for '{search_term}':"
+
+#: tornello.py:2248
+msgid "Inserisci il N.Scacchiera (del turno) desiderato dalla lista sopra: "
+msgstr "Enter the desired Board No. (of the round) from the list above: "
+
+#: tornello.py:2250
+msgid "Input non numerico per la scacchiera."
+msgstr "Non-numeric input for the board."
+
+#: tornello.py:2257
+#, python-brace-format
+msgid "N.Scacchiera '{board_choice}' non valido dalla lista filtrata."
+msgstr "Board No. '{board_choice}' is not valid from the filtered list."
+
+#: tornello.py:2259
+msgid "Input Scacchiera non valido."
+msgstr "Invalid Board input."
+
+#: tornello.py:2268
+#, python-brace-format
+msgid "ERRORE INTERNO: Partita selezionata ID {match_id} non trovata."
+msgstr "INTERNAL ERROR: Selected match ID {match_id} not found."
+
+#: tornello.py:2274
+#, python-brace-format
+msgid "ERRORE CRITICO: Giocatori non trovati per partita ID {match_id}."
+msgstr "CRITICAL ERROR: Players not found for match ID {match_id}."
+
+#: tornello.py:2288
+#, python-brace-format
+msgid ""
+"Partita selezionata per risultato: {white} vs {black} (ID Glob: "
+"{match_id})"
+msgstr "Match selected for result entry: {white} vs {black} (Glob ID: {match_id})"
+
+#: tornello.py:2290
+msgid "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
+msgstr "Results: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
+
+#: tornello.py:2298
+msgid "Doppio forfeit registrato (0-0F)."
+msgstr "Double forfeit recorded (0-0F)."
+
+#: tornello.py:2299
+msgid "Vittoria Bianco per Forfait. (1-F)."
+msgstr "White wins by Forfeit. (1-F)."
+
+#: tornello.py:2300
+msgid "Vittoria Nero per Forfait (F-1)."
+msgstr "Black wins by Forfeit (F-1)."
+
+#: tornello.py:2304
+#, python-brace-format
+msgid "Risultato '{result}' non standard. Confermi comunque? (s/n): "
+msgstr "Non-standard result '{result}'. Confirm anyway? (y/n): "
+
+#: tornello.py:2306 tornello.py:2308
+#, python-brace-format
+msgid "Confermi che {winner} vince contro {loser}? (s/n): "
+msgstr "Confirm that {winner} wins against {loser}? (y/n): "
+
+#: tornello.py:2310
+#, python-brace-format
+msgid "Confermi che {player1} e {player2} pattano? (s/n): "
+msgstr "Confirm that {player1} and {player2} draw? (y/n): "
+
+#: tornello.py:2312
+#, python-brace-format
+msgid "Confermi partita nulla/annullata (0-0F) tra {player1} e {player2}? (s/n): "
+msgstr "Confirm void/cancelled match (0-0F) between {player1} and {player2}? (y/n): "
+
+#: tornello.py:2314 tornello.py:2316
+#, python-brace-format
+msgid "Confermi vittoria a tavolino per {winner} (forfait di {loser})? (s/n): "
+msgstr "Confirm win by default for {winner} (forfeit by {loser})? (y/n): "
+
+#: tornello.py:2332
+msgid "Risultato registrato."
+msgstr "Result recorded."
+
+#: tornello.py:2336
+#, python-brace-format
+msgid ""
+"  Info: Pianificazione rimossa per la partita ID {match_id} (risultato "
+"inserito)."
+msgstr "  Info: Schedule removed for match ID {match_id} (result entered)."
+
+#: tornello.py:2349
+#, python-brace-format
+msgid "Il giocatore {player_name} si ritira definitivamente dal torneo? (s/N)"
+msgstr "Is player {player_name} permanently withdrawing from the tournament? (y/N)"
+
+#: tornello.py:2357
+msgid "Operazione annullata dall'utente."
+msgstr "Operation cancelled by the user."
+
+#: tornello.py:2359
+msgid "Input risultato non valido."
+msgstr "Invalid result input."
+
+#: tornello.py:2375
+msgid "Salvataggio file turno corrente: Numero turno non definito."
+msgstr "Saving current round file: Round number not defined."
+
+#: tornello.py:2377
+#, python-brace-format
+msgid "Tornello - {name} - Turno corrente.txt"
+msgstr "Tornello - {name} - Current round.txt"
+
+#: tornello.py:2405
+#, python-brace-format
+msgid "Nome Torneo: {name} - "
+msgstr "Tournament Name: {name} - "
+
+#: tornello.py:2406
+#, python-brace-format
+msgid "Turno: {round_num}\n"
+msgstr "Round: {round_num}\n"
+
+#: tornello.py:2407
+#, python-brace-format
+msgid ""
+" Periodo Turno: {start} - {end}\n"
+"\n"
+msgstr ""
+" Round Period: {start} - {end}\n"
+"\n"
+
+#: tornello.py:2408
+msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
+msgstr " (No matches yet defined or loaded for this round)\n"
+
+#: tornello.py:2409
+#, python-brace-format
+msgid ""
+"File stato turno corrente '{filename}' aggiornato (turno non ancora "
+"popolato o vuoto)."
+msgstr "Current round status file '{filename}' updated (round not yet populated or empty)."
+
+#: tornello.py:2411
+#, python-brace-format
+msgid "Errore scrittura file stato turno corrente '{filename}': {error}"
+msgstr "Error writing current round status file '{filename}': {error}"
+
+#: tornello.py:2420
+#, python-brace-format
+msgid " {first_name} {last_name} ha il BYE"
+msgstr " {first_name} {last_name} has the BYE"
+
+#: tornello.py:2426
+msgid "Bianco?"
+msgstr "White?"
+
+#: tornello.py:2428
+msgid "Nero?"
+msgstr "Black?"
+
+#: tornello.py:2447
+#, python-brace-format
+msgid " IDG:{match_id} {white_player} - {black_player} (Pianificazione Errata)"
+msgstr " GID:{match_id} {white_player} - {black_player} (Scheduling Error)"
+
+#: tornello.py:2471
+msgid ""
+"  (Nessuna partita con giocatori attivi è attualmente pianificata con "
+"data/ora)\n"
+msgstr "  (No match with active players is currently scheduled with a date/time)\n"
+
+#: tornello.py:2481
+msgid "  Non pianificate (giocatori attivi):\n"
+msgstr "  Unscheduled (active players):\n"
+
+#: tornello.py:2485
+msgid "   (nessuna)\n"
+msgstr "   (none)\n"
+
+#: tornello.py:2488
+msgid ""
+"\n"
+"  -- Partite da giocare con giocatori ritirati --\n"
+msgstr ""
+"\n"
+"  -- Matches to be played with withdrawn players --\n"
+
+#: tornello.py:2498
+msgid "   Non pianificate (con ritirati):\n"
+msgstr "   Unscheduled (with withdrawn players):\n"
+
+#: tornello.py:2503
+msgid " Partite giocate\n"
+msgstr " Played Matches\n"
+
+#: tornello.py:2507
+msgid "  (nessuna partita ancora giocata da giocatori attivi)\n"
+msgstr "  (no matches yet played by active players)\n"
+
+#: tornello.py:2509
+msgid "  -- Partite giocate con giocatori ritirati --\n"
+msgstr "  -- Matches played with withdrawn players --\n"
+
+#: tornello.py:2511
+#, python-brace-format
+msgid "File {filename} aggiornato con raggruppamento ritirati."
+msgstr "File {filename} updated with grouping for withdrawn players."
+
+#: tornello.py:2515
+#, python-brace-format
+msgid "Errore imprevisto in save_current_tournament_round_file: {error}"
+msgstr "Unexpected error in save_current_tournament_round_file: {error}"
+
+#: tornello.py:2526
+#, python-brace-format
+msgid "Tornello - {name} - Turno {round_num} Dettagli.txt"
+msgstr "Tornello - {name} - Round {round_num} Details.txt"
+
+#: tornello.py:2535
+#, python-brace-format
+msgid ""
+"Dati o partite del turno concluso {round_num} non trovati per il "
+"salvataggio."
+msgstr "Data or matches from completed round {round_num} not found for saving."
+
+#: tornello.py:2567
+#, python-brace-format
+msgid "Torneo: {name}\n"
+msgstr "Tournament: {name}\n"
+
+#: tornello.py:2567
+msgid "Nome Mancante"
+msgstr "Name Missing"
+
+#: tornello.py:2568
+#, python-brace-format
+msgid "Sito: {site}, Data Inizio Torneo: {start_date}\n"
+msgstr "Site: {site}, Tournament Start Date: {start_date}\n"
+
+#: tornello.py:2570
+#, python-brace-format
+msgid " DETTAGLIO TURNO {round_num} CONCLUSO "
+msgstr " COMPLETED ROUND {round_num} DETAIL "
+
+#: tornello.py:2576
+#, python-brace-format
+msgid "\tPeriodo del Turno: {start} - {end}\n"
+msgstr "\tRound Period: {start} - {end}\n"
+
+#: tornello.py:2578
+msgid "\tPeriodo del Turno: Date non trovate\n"
+msgstr "\tRound Period: Dates not found\n"
+
+#: tornello.py:2580
+msgid ""
+"Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
+"                         [Elo] (Pt) | Risultato"
+msgstr ""
+"Bd | ID  | White                        [Elo] (Pts) - Black                        "
+"[Elo] (Pts) | Result"
+
+#: tornello.py:2588
+msgid "ERRORE_RISULTATO_MANCANTE"
+msgstr "ERROR_MISSING_RESULT"
+
+#: tornello.py:2627
+#, python-brace-format
+msgid "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
+msgstr "{dashes:<3}| {match_id:<4}| Bye Player ID Error: {player_id:<10} | BYE"
+
+#: tornello.py:2629
+#, python-brace-format
+msgid ""
+"Dettaglio Turno Concluso {round_num} salvato nel file separato "
+"'{filename}'"
+msgstr "Completed Round {round_num} Detail saved in separate file '{filename}'"
+
+#: tornello.py:2631
+#, python-brace-format
+msgid "Errore durante il salvataggio del file del turno '{filename}': {error}"
+msgstr "Error while saving the round file '{filename}': {error}"
+
+#: tornello.py:2633
+#, python-brace-format
+msgid "Errore inatteso durante il salvataggio del file del turno: {error}"
+msgstr "Unexpected error while saving the round file: {error}"
+
+#: tornello.py:2643
+msgid "Attenzione: Nessun giocatore per generare la classifica."
+msgstr "Warning: No players to generate standings."
+
+#: tornello.py:2648
+msgid "Calcolo/Aggiornamento spareggi per classifica..."
+msgstr "Calculating/Updating tie-breaks for standings..."
+
+#: tornello.py:2716
+#, python-brace-format
+msgid "Tornello - {name} - Classifica.txt"
+msgstr "Tornello - {name} - Standings.txt"
+
+#: tornello.py:2719
+msgid "CLASSIFICA FINALE"
+msgstr "FINAL STANDINGS"
+
+#: tornello.py:2724
+msgid "Elenco Iniziale Partecipanti (Prima del Turno 1)"
+msgstr "Initial Participant List (Before Round 1)"
+
+#: tornello.py:2737
+#, python-brace-format
+msgid "Classifica Parziale - Dopo Turno {round_num}"
+msgstr "Partial Standings - After Round {round_num}"
+
+#: tornello.py:2739
+#, python-brace-format
+msgid "Classifica Parziale - Durante Turno {round_num}"
+msgstr "Partial Standings - During Round {round_num}"
+
+#: tornello.py:2742
+#, python-brace-format
+msgid "Nome Torneo: {name}\n"
+msgstr "Tournament Name: {name}\n"
+
+#: tornello.py:2743
+#, python-brace-format
+msgid "Luogo: {site}\n"
+msgstr "Location: {site}\n"
+
+#: tornello.py:2744
+#, python-brace-format
+msgid "Date: {start_date} - {end_date}\n"
+msgstr "Dates: {start_date} - {end_date}\n"
+
+#: tornello.py:2745
+#, python-brace-format
+msgid "Federazione Organizzante: {fed}\n"
+msgstr "Organizing Federation: {fed}\n"
+
+#: tornello.py:2746
+#, python-brace-format
+msgid "Arbitro Capo: {arbiter}\n"
+msgstr "Chief Arbiter: {arbiter}\n"
+
+#: tornello.py:2749
+#, python-brace-format
+msgid "Vice Arbitri: {arbiters}\n"
+msgstr "Deputy Arbiters: {arbiters}\n"
+
+#: tornello.py:2750
+#, python-brace-format
+msgid "Controllo Tempo: {time_control}\n"
+msgstr "Time Control: {time_control}\n"
+
+#: tornello.py:2751
+msgid "Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"
+msgstr "Pairing System: Dutch Swiss (via bbpPairings)\n"
+
+#: tornello.py:2752
+#, python-brace-format
+msgid "Data Report: {date} {time}\n"
+msgstr "Report Date: {date} {time}\n"
+
+#: tornello.py:2755
+msgid "Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch "
+msgstr "Rank Title  First Name Last Name           [StartElo] Points Buch-1 Buchh "
+
+#: tornello.py:2795
+#, python-brace-format
+msgid "File classifica '{filename}' salvato/sovrascritto."
+msgstr "Standings file '{filename}' saved/overwritten."
+
+#: tornello.py:2797
+#, python-brace-format
+msgid "Errore durante il salvataggio del file classifica '{filename}': {error}"
+msgstr "Error saving standings file '{filename}': {error}"
+
+#: tornello.py:2805
+msgid ""
+"\n"
+"--- Stato Torneo ---"
+msgstr ""
+"\n"
+"--- Tournament Status ---"
+
+#: tornello.py:2806
+#, python-brace-format
+msgid "Nome: {name}"
+msgstr "Name: {name}"
+
+#: tornello.py:2809
+#, python-brace-format
+msgid "Periodo: {start} - {end}"
+msgstr "Period: {start} - {end}"
+
+#: tornello.py:2812
+#, python-brace-format
+msgid "Turno Corrente: {current} / {total}"
+msgstr "Current Round: {current} / {total}"
+
+#: tornello.py:2820
+#, python-brace-format
+msgid "Periodo Turno {round_num}: {start} - {end}"
+msgstr "Round {round_num} Period: {start} - {end}"
+
+#: tornello.py:2826
+#, python-brace-format
+msgid " -> Termine turno superato da {days} giorni."
+msgstr " -> Round deadline exceeded by {days} days."
+
+#: tornello.py:2830
+msgid " -> Ultimo giorno per completare il turno."
+msgstr " -> Last day to complete the round."
+
+#: tornello.py:2832
+#, python-brace-format
+msgid " -> Giorni rimanenti per il turno: {days}"
+msgstr " -> Days remaining for the round: {days}"
+
+#: tornello.py:2841
+msgid "Termine torneo superato."
+msgstr "Tournament deadline passed."
+
+#: tornello.py:2847
+#, python-brace-format
+msgid "Giorni rimanenti alla fine del torneo: {days}"
+msgstr "Days remaining until the end of the tournament: {days}"
+
+#: tornello.py:2849
+#, python-brace-format
+msgid "Data fine torneo ('{date}') non valida per calcolo giorni rimanenti."
+msgstr "Tournament end date ('{date}') is invalid for calculating remaining days."
+
+#: tornello.py:2864
+#, python-brace-format
+msgid ""
+"\n"
+"Partite da giocare/registrare per il Turno {round_num}: {count}"
+msgstr ""
+"\n"
+"Matches to play/record for Round {round_num}: {count}"
+
+#: tornello.py:2869
+#, python-brace-format
+msgid ""
+"\n"
+"Tutte le partite del Turno {round_num} sono state registrate."
+msgstr ""
+"\n"
+"All matches for Round {round_num} have been recorded."
+
+#: tornello.py:2872
+msgid ""
+"\n"
+"Il torneo è concluso."
+msgstr ""
+"\n"
+"The tournament is over."
+
+#: tornello.py:2874
+#, python-brace-format
+msgid ""
+"\n"
+"Dati per il Turno {round_num} non trovati o turno non valido."
+msgstr ""
+"\n"
+"Data for Round {round_num} not found or round is invalid."
+
+#: tornello.py:2885
+msgid ""
+"ERRORE CRITICO: Nome del torneo non presente nell'oggetto torneo. "
+"Impossibile finalizzare."
+msgstr "CRITICAL ERROR: Tournament name not present in the tournament object. Cannot finalize."
+
+#: tornello.py:2887
+#, python-brace-format
+msgid ""
+"\n"
+"--- Finalizzazione Torneo: {name} ---"
+msgstr ""
+"\n"
+"--- Finalizing Tournament: {name} ---"
+
+#: tornello.py:2892
+msgid "Nessun giocatore nel torneo, impossibile finalizzare."
+msgstr "No players in the tournament, cannot finalize."
+
+#: tornello.py:2895
+msgid "Accesso al DB e calcolo K-Factor e partite giocate..."
+msgstr "Accessing DB and calculating K-Factor and games played..."
+
+#: tornello.py:2919
+msgid "Ricalcolo finale Buchholz, ARO, Performance Rating, Variazione Elo..."
+msgstr "Final recalculation of Buchholz, ARO, Performance Rating, Elo Change..."
+
+#: tornello.py:2938
+msgid "Ordinamento classifica finale..."
+msgstr "Sorting final standings..."
+
+#: tornello.py:2966
+#, python-brace-format
+msgid "Errore durante l'ordinamento dei giocatori per la classifica: {error}"
+msgstr "Error while sorting players for the standings: {error}"
+
+#: tornello.py:2971
+msgid "Salvataggio classifica finale su file di testo..."
+msgstr "Saving final standings to text file..."
+
+#: tornello.py:2975
+msgid "Aggiornamento Database Giocatori (Elo, partite, storico tornei)..."
+msgstr "Updating Player Database (Elo, games, tournament history)..."
+
+#: tornello.py:3025
+#, python-brace-format
+msgid "Database Giocatori aggiornato per {count} giocatori e salvato."
+msgstr "Player Database updated for {count} players and saved."
+
+#: tornello.py:3027
+msgid "Nessun aggiornamento necessario per il Database Giocatori."
+msgstr "No updates needed for the Player Database."
+
+#: tornello.py:3029
+#, python-brace-format
+msgid "Archiviazione del torneo '{name}'..."
+msgstr "Archiving tournament '{name}'..."
+
+#: tornello.py:3038
+#, python-brace-format
+msgid ""
+" Warning: Formato data di fine ('{date_str}') non valido. Uso data "
+"corrente per suffisso cartella archivio."
+msgstr " Warning: Invalid end date format ('{date_str}'). Using current date for archive folder suffix."
+
+#: tornello.py:3044
+#, python-brace-format
+msgid "ERRORE: Creazione cartella di archivio '{path}' fallita: {error}"
+msgstr "ERROR: Failed to create archive folder '{path}': {error}"
+
+#: tornello.py:3045
+msgid ""
+"I file del torneo non saranno archiviati ma il resto della finalizzazione"
+" è completo."
+msgstr "The tournament files will not be archived, but the rest of the finalization is complete."
+
+#: tornello.py:3059
+#, python-brace-format
+msgid ""
+" Warning: File JSON principale del torneo ('{current_filename}' o "
+"'{guessed_filename}') non trovato per l'archiviazione."
+msgstr " Warning: Main tournament JSON file ('{current_filename}' or '{guessed_filename}') not found for archiving."
+
+#: tornello.py:3074
+msgid "  Warning: Nessun file specifico del torneo trovato da archiviare."
+msgstr "  Warning: No specific tournament files found to archive."
+
+#: tornello.py:3082
+#, python-brace-format
+msgid ""
+" Warning: File '{filename}' esiste già in '{path}'. Non verrà "
+"sovrascritto."
+msgstr " Warning: File '{filename}' already exists in '{path}'. It will not be overwritten."
+
+#: tornello.py:3089
+#, python-brace-format
+msgid "Spostati {count} file del torneo in: '{path}'"
+msgstr "Moved {count} tournament files to: '{path}'"
+
+#: tornello.py:3091
+msgid "Nessun file del torneo è stato spostato nella cartella di archivio."
+msgstr "No tournament files were moved to the archive folder."
+
+#: tornello.py:3092
+#, python-brace-format
+msgid "Torneo '{name}' finalizzato e archiviato."
+msgstr "Tournament '{name}' finalized and archived."
+
+#: tornello.py:3099
+#, python-brace-format
+msgid "Info: Creata sottocartella '{}' per i file di bbpPairings."
+msgstr "Info: Created subfolder '{}' for bbpPairings files."
+
+#: tornello.py:3101
+#, python-brace-format
+msgid "ATTENZIONE: Impossibile creare la sottocartella '{}': {}"
+msgstr "WARNING: Could not create subfolder '{}': {}"
+
+#: tornello.py:3102
+msgid "bbpPairings potrebbe non funzionare correttamente."
+msgstr "bbpPairings might not work correctly."
+
+#: tornello.py:3109
+#, python-brace-format
+msgid ""
+"\n"
+"BENVENUTI! Sono Tornello {}"
+msgstr ""
+"\n"
+"WELCOME! I am Tornello {}"
+
+#: tornello.py:3110
+msgid ""
+"\n"
+"Verifica stato database FIDE locale..."
+msgstr ""
+"\n"
+"Checking local FIDE database status..."
+
+#: tornello.py:3114
+msgid ""
+"\n"
+"Il database FIDE locale non è presente sul tuo computer."
+msgstr ""
+"\n"
+"The local FIDE database is not present on your computer."
+
+#: tornello.py:3116
+msgid ""
+"Vuoi scaricarlo ora? (L'operazione potrebbe richiedere alcuni minuti) "
+"(S/n)"
+msgstr "Do you want to download it now? (The operation may take a few minutes) (Y/n)"
+
+#: tornello.py:3119
+msgid "Database FIDE locale aggiornato con successo."
+msgstr "Local FIDE database updated successfully."
+
+#: tornello.py:3124
+#, python-brace-format
+msgid "Info: Il tuo database FIDE locale ha {} giorni."
+msgstr "Info: Your local FIDE database is {} days old."
+
+#: tornello.py:3126
+msgid ""
+"Essendo trascorsi più di 32 giorni dall'ultimo download, potrebbe essere "
+"stato rilasciato un aggiornamento"
+msgstr "As it has been more than 32 days since the last download, an update may have been released"
+
+#: tornello.py:3127
+msgid "Si consiglia di aggiornarlo. Vuoi scaricare la versione più recente? (s/N)"
+msgstr "It is recommended to update it. Do you want to download the latest version? (y/N)"
+
+#: tornello.py:3131
+#, python-brace-format
+msgid "Errore nel controllare la data del file DB FIDE locale: {}"
+msgstr "Error checking the local FIDE DB file date: {}"
+
+#: tornello.py:3138
+msgid ""
+"\n"
+"Database FIDE aggiornato. Vuoi sincronizzare ora il tuo DB personale?"
+msgstr ""
+"\n"
+"FIDE database updated. Do you want to synchronize your personal DB now?"
+
+#: tornello.py:3138
+msgid ""
+"\n"
+"Vuoi sincronizzare il tuo DB personale con i dati FIDE locali?"
+msgstr ""
+"\n"
+"Do you want to synchronize your personal DB with the local FIDE data?"
+
+#: tornello.py:3149
+msgid "Nessun torneo esistente trovato."
+msgstr "No existing tournaments found."
+
+#: tornello.py:3160
+#, python-brace-format
+msgid ""
+"Info: impossibile leggere i dettagli da '{filename}' ({error}). Uso il "
+"nome del file."
+msgstr "Info: unable to read details from '{filename}' ({error}). Using the filename."
+
+#: tornello.py:3166
+#, python-brace-format
+msgid ""
+"\n"
+"Trovato un solo torneo esistente: '{name}' (File: {filename})"
+msgstr ""
+"\n"
+"Found only one existing tournament: '{name}' (File: {filename})"
+
+#: tornello.py:3168
+#, python-brace-format
+msgid ""
+"Vuoi caricare '{name}'? (S/Invio per sì, oppure inserisci il nome di un "
+"NUOVO torneo da creare): "
+msgstr "Do you want to load '{name}'? (Y/Enter for yes, or enter the name of a NEW tournament to create): "
+
+#: tornello.py:3172 tornello.py:3233
+#, python-brace-format
+msgid "Caricamento di '{name}'..."
+msgstr "Loading '{name}'..."
+
+#: tornello.py:3176
+#, python-brace-format
+msgid "Errore fatale nel caricamento del torneo '{filename}'."
+msgstr "Fatal error loading tournament '{filename}'."
+
+#: tornello.py:3183
+msgid "Uscita dal programma."
+msgstr "Exiting the program."
+
+#: tornello.py:3190
+#, python-brace-format
+msgid "Ok, procederemo con la creazione di un nuovo torneo chiamato: '{name}'."
+msgstr "Ok, we will proceed with creating a new tournament called: '{name}'."
+
+#: tornello.py:3195
+msgid ""
+"\n"
+"--- Tornei Esistenti Trovati ---"
+msgstr ""
+"\n"
+"--- Existing Tournaments Found ---"
+
+#: tornello.py:3203
+msgid "Nome Sconosciuto"
+msgstr "Unknown Name"
+
+#: tornello.py:3217
+#, python-brace-format
+msgid " {num}. {name} (dal {start_date} al {end_date}) - File: {filename}"
+msgstr " {num}. {name} (from {start_date} to {end_date}) - File: {filename}"
+
+#: tornello.py:3219
+#, python-brace-format
+msgid ""
+" Errore durante la lettura dei metadati da {filename}: {error} (file "
+"saltato)"
+msgstr " Error reading metadata from {filename}: {error} (file skipped)"
+
+#: tornello.py:3222
+msgid ""
+"Nessun torneo valido trovato nonostante la presenza di file. Si procederà"
+" con la creazione."
+msgstr "No valid tournaments found despite the presence of files. Will proceed with creation."
+
+#: tornello.py:3225
+#, python-brace-format
+msgid " {num}. Crea un nuovo torneo"
+msgstr " {num}. Create a new tournament"
+
+#: tornello.py:3227
+#, python-brace-format
+msgid ""
+"Scegli un torneo da caricare (1-{max_num}) o '{new_num}' per crearne uno "
+"nuovo: "
+msgstr "Choose a tournament to load (1-{max_num}) or '{new_num}' to create a new one: "
+
+#: tornello.py:3236
+#, python-brace-format
+msgid ""
+"Errore nel caricamento del torneo {filename}. Riprova o crea un nuovo "
+"torneo."
+msgstr "Error loading tournament {filename}. Try again or create a new tournament."
+
+#: tornello.py:3245
+msgid "Scelta non valida."
+msgstr "Invalid choice."
+
+#: tornello.py:3247
+msgid "Inserisci un numero."
+msgstr "Enter a number."
+
+#: tornello.py:3251
+msgid "Nessun torneo caricato. Si procede con la creazione di un nuovo torneo."
+msgstr "No tournament loaded. Proceeding with the creation of a new tournament."
+
+#: tornello.py:3253
+msgid ""
+"\n"
+"--- Creazione Nuovo Torneo ---"
+msgstr ""
+"\n"
+"--- New Tournament Creation ---"
+
+#: tornello.py:3258
+#, python-brace-format
+msgid "Nome suggerito per il nuovo torneo: '{name}'"
+msgstr "Suggested name for the new tournament: '{name}'"
+
+#: tornello.py:3264 tornello.py:3284
+#, python-brace-format
+msgid ""
+"ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. "
+"Sovrascriverlo? (s/n): "
+msgstr "WARNING: A tournament file '{filename}' with this name already exists. Overwrite it? (y/n): "
+
+#: tornello.py:3269
+msgid "Sovrascrittura annullata. Verrà richiesto un nuovo nome."
+msgstr "Overwrite cancelled. A new name will be requested."
+
+#: tornello.py:3279
+msgid "Inserisci il nome del nuovo torneo: "
+msgstr "Enter the name of the new tournament: "
+
+#: tornello.py:3286
+msgid "Operazione annullata. Scegli un nome diverso per il torneo."
+msgstr "Operation cancelled. Choose a different name for the tournament."
+
+#: tornello.py:3292
+msgid "Il nome del torneo non può essere vuoto. Riprova."
+msgstr "The tournament name cannot be empty. Please try again."
+
+#: tornello.py:3294
+msgid "Nome del torneo non definito correttamente. Creazione annullata."
+msgstr "Tournament name not defined correctly. Creation cancelled."
+
+#: tornello.py:3301
+#, python-brace-format
+msgid "Inserisci data inizio ({date_format}) [Default: {default_date}]: "
+msgstr "Enter start date ({date_format}) [Default: {default_date}]: "
+
+#: tornello.py:3306
+#, python-brace-format
+msgid "Formato data non valido. Usa {date_format}. Riprova."
+msgstr "Invalid date format. Use {date_format}. Please try again."
+
+#: tornello.py:3313
+#, python-brace-format
+msgid "Inserisci data fine ({date_format}) [Default: {default_date}]: "
+msgstr "Enter end date ({date_format}) [Default: {default_date}]: "
+
+#: tornello.py:3317
+msgid "Errore: La data di fine non può essere precedente alla data di inizio."
+msgstr "Error: The end date cannot be earlier than the start date."
+
+#: tornello.py:3322
+msgid "Errore: La data calcolata risulta troppo lontana nel futuro."
+msgstr "Error: The calculated date is too far in the future."
+
+#: tornello.py:3325
+msgid "Inserisci il numero totale dei turni: "
+msgstr "Enter the total number of rounds: "
+
+#: tornello.py:3328
+msgid "Il numero di turni deve essere positivo."
+msgstr "The number of rounds must be positive."
+
+#: tornello.py:3329
+msgid "Inserisci un numero intero valido."
+msgstr "Enter a valid integer."
+
+#: tornello.py:3330
+msgid ""
+"\n"
+"Inserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare "
+"default):"
+msgstr ""
+"\n"
+"Enter additional tournament details (leave empty to use default):"
+
+#: tornello.py:3331
+#, python-brace-format
+msgid " Luogo del torneo [Default: {default_site}]: "
+msgstr " Tournament location [Default: {default_site}]: "
+
+#: tornello.py:3332
+msgid "  Federazione organizzante (codice 3 lettere) [Default: ITA]: "
+msgstr "  Organizing federation (3-letter code) [Default: ITA]: "
+
+#: tornello.py:3334
+#, python-brace-format
+msgid " Arbitro Capo [Default: {default_arbiter}]: "
+msgstr " Chief Arbiter [Default: {default_arbiter}]: "
+
+#: tornello.py:3335
+#, python-brace-format
+msgid " Vice Arbitri (separati da virgola) [Default: {default_deputy}]: "
+msgstr " Deputy Arbiters (comma-separated) [Default: {default_deputy}]: "
+
+#: tornello.py:3335
+msgid "nessuno"
+msgstr "none"
+
+#: tornello.py:3336
+#, python-brace-format
+msgid " Controllo del Tempo [Default: {default_tc}]: "
+msgstr " Time Control [Default: {default_tc}]: "
+
+#: tornello.py:3336
+msgid "Standard"
+msgstr "Standard"
+
+#: tornello.py:3338
+msgid " Bianco alla prima scacchiera del T1? (S/n) [Default: S]: "
+msgstr " White on board 1 in R1? (Y/n) [Default: Y]: "
+
+#: tornello.py:3341
+msgid "Risposta non valida."
+msgstr "Invalid answer."
+
+#: tornello.py:3344
+msgid ""
+"Errore fatale nel calcolo delle date dei turni. Creazione torneo "
+"annullata."
+msgstr "Fatal error in round date calculation. Tournament creation cancelled."
+
+#: tornello.py:3349
+msgid "Creazione torneo annullata a causa di problemi con la lista giocatori."
+msgstr "Tournament creation cancelled due to issues with the player list."
+
+#: tornello.py:3356
+#, python-brace-format
+msgid ""
+"Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni "
+"dopo la conferma. Torneo annullato."
+msgstr "Insufficient number of players ({num_players}) for {num_rounds} rounds after confirmation. Tournament cancelled."
+
+#: tornello.py:3364
+msgid ""
+"\n"
+"Generazione abbinamenti per il Turno 1..."
+msgstr ""
+"\n"
+"Generating pairings for Round 1..."
+
+#: tornello.py:3367
+msgid ""
+"ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non "
+"avviato."
+msgstr "CRITICAL ERROR: Failed to generate Round 1 pairings. Tournament not started."
+
+#: tornello.py:3372
+#, python-brace-format
+msgid ""
+"\n"
+"Torneo '{name}' creato e Turno 1 generato. File: '{filename}'"
+msgstr ""
+"\n"
+"Tournament '{name}' created and Round 1 generated. File: '{filename}'"
+
+#: tornello.py:3375
+msgid ""
+"\n"
+"Nessun torneo attivo. Uscita dal programma."
+msgstr ""
+"\n"
+"No active tournament. Exiting program."
+
+#: tornello.py:3384
+#, python-brace-format
+msgid ""
+"\n"
+"--- Torneo Attivo: {name} ---"
+msgstr ""
+"\n"
+"--- Active Tournament: {name} ---"
+
+#: tornello.py:3386
+#, python-brace-format
+msgid "Sessione numero {count} per questo torneo."
+msgstr "Session number {count} for this tournament."
+
+#: tornello.py:3387
+msgid "Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando."
+msgstr "Copyright 2025, dedicated to ASCId and the Scacchierando group."
+
+#: tornello.py:3395
+#, python-brace-format
+msgid ""
+"\n"
+"Il torneo '{name}' si è concluso o in uno stato non valido."
+msgstr ""
+"\n"
+"The tournament '{name}' has ended or is in an invalid state."
+
+#: tornello.py:3397
+msgid ""
+"\n"
+"Nessun torneo attivo o torneo concluso."
+msgstr ""
+"\n"
+"No active or finished tournament."
+
+#: tornello.py:3400
+#, python-brace-format
+msgid ""
+"\n"
+"--- Gestione Turno {round_num} ---"
+msgstr ""
+"\n"
+"--- Round {round_num} Management ---"
+
+#: tornello.py:3409
+#, python-brace-format
+msgid "ERRORE CRITICO: Dati turno {round_num} non trovati!"
+msgstr "CRITICAL ERROR: Round {round_num} data not found!"
+
+#: tornello.py:3419
+msgid ""
+"\n"
+"Sessione di inserimento/modifica risultati (o pianificazione) terminata."
+msgstr ""
+"\n"
+"Result entry/modification (or scheduling) session terminated."
+
+#: tornello.py:3421
+msgid "Salvataggio modifiche al torneo..."
+msgstr "Saving changes to the tournament..."
+
+#: tornello.py:3428
+msgid "Vuoi (C)ontinuare a gestire questo turno o (U)scire dal programma? [C/u]: "
+msgstr "Do you want to (C)ontinue managing this round or (E)xit the program? [C/e]: "
+
+#: tornello.py:3430
+msgid "Salvataggio finale prima dell'uscita..."
+msgstr "Final save before exiting..."
+
+#: tornello.py:3435
+#, python-brace-format
+msgid ""
+"\n"
+"Turno {round_num} completato."
+msgstr ""
+"\n"
+"Round {round_num} completed."
+
+#: tornello.py:3440
+msgid ""
+"\n"
+"Ultimo turno completato. Avvio finalizzazione torneo..."
+msgstr ""
+"\n"
+"Last round completed. Starting tournament finalization..."
+
+#: tornello.py:3442
+msgid ""
+"\n"
+"--- Torneo Concluso e Finalizzato Correttamente ---"
+msgstr ""
+"\n"
+"--- Tournament Concluded and Finalized Correctly ---"
+
+#: tornello.py:3446
+msgid ""
+"\n"
+"--- ERRORE durante la Finalizzazione del Torneo ---"
+msgstr ""
+"\n"
+"--- ERROR during Tournament Finalization ---"
+
+#: tornello.py:3451
+#, python-brace-format
+msgid ""
+"\n"
+"Turno {round_num}, procedo? (s/n): "
+msgstr ""
+"\n"
+"Round {round_num}, proceed? (y/n): "
+
+#: tornello.py:3455
+#, python-brace-format
+msgid "Generazione abbinamenti per il Turno {round_num}..."
+msgstr "Generating pairings for Round {round_num}..."
+
+#: tornello.py:3459
+#, python-brace-format
+msgid "Impossibile generare il turno {round_num}. Ripristino turno precedente."
+msgstr "Could not generate round {round_num}. Restoring previous round."
+
+#: tornello.py:3465
+#, python-brace-format
+msgid "Turno {round_num} generato e salvato."
+msgstr "Round {round_num} generated and saved."
+
+#: tornello.py:3470
+msgid "Generazione prossimo turno annullata. Salvataggio stato attuale."
+msgstr "Next round generation cancelled. Saving current state."
+
+#: tornello.py:3474
+msgid ""
+"\n"
+"Operazione interrotta dall'utente."
+msgstr ""
+"\n"
+"Operation interrupted by user."
+
+#: tornello.py:3480
+msgid "Stato salvato. Uscita."
+msgstr "State saved. Exiting."
+
+#: tornello.py:3483
+#, python-brace-format
+msgid ""
+"\n"
+"ERRORE CRITICO NON GESTITO nel flusso principale: {error}"
+msgstr ""
+"\n"
+"UNHANDLED CRITICAL ERROR in main flow: {error}"
+
+#: tornello.py:3490
+msgid ""
+"\n"
+"Programma Tornello terminato."
+msgstr ""
+"\n"
+"Tornello program terminated."
+
+#: tornello.py:3493
+#, python-brace-format
+msgid ""
+"\n"
+"Programma Tornello terminato. Ultimo stato per '{name}' in '{filename}'."
+msgstr ""
+"\n"
+"Tornello program terminated. Last state for '{name}' in '{filename}'."
+
+#: tornello.py:3496
+msgid ""
+"\n"
+"Programma Tornello terminato con uno stato incerto del torneo."
+msgstr ""
+"\n"
+"Tornello program terminated with an uncertain tournament state."
