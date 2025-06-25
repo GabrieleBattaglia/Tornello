@@ -6,7 +6,7 @@ Arbitro Capo: Il capitano
 Vice Arbitri: Scacchieranti, Membri ASCId, Volontari
 Controllo Tempo: Std 60+0
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Lunedì 23 giugno 2025 23:57:24
+Data Report: Mercoledì 25 giugno 2025 10:21:51
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
 -----------------------------------------------------------------------

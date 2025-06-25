@@ -5,26 +5,48 @@ from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from babel.dates import format_date
-_ = lambda s: s
+# installazione percorsi relativi
+def resource_path(relative_path):
+    """
+    Restituisce il percorso assoluto a una risorsa, funzionante sia in sviluppo
+    che per un eseguibile compilato con PyInstaller (anche con la cartella _internal).
+    """
+    try:
+        # PyInstaller crea una cartella temporanea e ci salva il percorso in _MEIPASS
+        # Questo è il percorso base per le risorse quando l'app è "congelata"
+        base_path = sys._MEIPASS
+    except Exception:
+        # Se _MEIPASS non esiste, non siamo in un eseguibile PyInstaller
+        # o siamo in una build onedir, il percorso base è la cartella dello script
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 lingua_rilevata, _ = polipo(source_language="it")
-# --- Constants ---
-VERSIONE = "8.3.0, 2025.06.24 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
-PLAYER_DB_FILE = "Tornello - Players_db.json"
-PLAYER_DB_TXT_FILE = "Tornello - Players_db.txt"
-ARCHIVED_TOURNAMENTS_DIR = "Closed Tournaments"
+
+# QCV Versione
+VERSIONE = "8.4.3, 2025.06.25 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+
+# QC File e Directory Principali (relativi all'eseguibile) ---
+PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
+PLAYER_DB_TXT_FILE = resource_path("Tornello - Players_db.txt")
+ARCHIVED_TOURNAMENTS_DIR = resource_path("Closed Tournaments")
+FIDE_DB_LOCAL_FILE = resource_path("fide_ratings_local.json")
+
+# QC Costanti per l'integrazione con bbpPairings ---
+BBP_SUBDIR = resource_path("bbppairings")
+BBP_EXE_NAME = "bbpPairings.exe"
+BBP_EXE_PATH = os.path.join(BBP_SUBDIR, BBP_EXE_NAME)
+BBP_INPUT_TRF = os.path.join(BBP_SUBDIR, "input_bbp.trf")
+BBP_OUTPUT_COUPLES = os.path.join(BBP_SUBDIR, "output_coppie.txt")
+BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
+
+# QC Costanti non di percorso ---
 DATE_FORMAT_ISO = "%Y-%m-%d"
 DATE_FORMAT_DB = "%Y-%m-%d"
 DEFAULT_ELO = 1399.0
 DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
-FIDE_DB_LOCAL_FILE = "fide_ratings_local.json"
-# --- Constants for bbpPairings Integration ---
-BBP_SUBDIR = "bbppairings"
-BBP_EXE_NAME = "bbpPairings.exe" # Nome dell'eseguibile
-BBP_EXE_PATH = os.path.join(BBP_SUBDIR, BBP_EXE_NAME)
-BBP_INPUT_TRF = os.path.join(BBP_SUBDIR, "input_bbp.trf") # Nome file input per bbp
-BBP_OUTPUT_COUPLES = os.path.join(BBP_SUBDIR, "output_coppie.txt")
-BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
 
 #QF
 def _cerca_giocatore_nel_db_fide(search_term):
@@ -34,7 +56,6 @@ def _cerca_giocatore_nel_db_fide(search_term):
     """
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
         return [] # Se il file non esiste, non c'è nulla da cercare
-
     try:
         with open(FIDE_DB_LOCAL_FILE, "r", encoding='utf-8') as f:
             fide_db = json.load(f)
@@ -392,9 +413,8 @@ def aggiorna_db_fide_locale():
             print(_("Salvataggio del database JSON locale (potrebbe richiedere tempo)..."))
             json_thread.daemon = True
             json_thread.start()
-
             try:
-                with open("fide_ratings_local.json", "w", encoding='utf-8') as f_out:
+                with open(FIDE_DB_LOCAL_FILE, "w", encoding='utf-8') as f_out:
                     json.dump(fide_players_db, f_out, indent=1)
             finally:
                 stop_json_feedback.set()
@@ -3139,11 +3159,11 @@ if __name__ == "__main__":
             if get_input_with_default(f"{prompt_sync} (s/N)", "n").lower() == 's':
                 sincronizza_db_personale()
     # 1. Scansione dei file torneo esistenti
-    tournament_files_pattern = "tornello - *.json"
+    tournament_files_pattern = "Tornello - *.json" 
     potential_tournament_files = [
         f for f in glob.glob(tournament_files_pattern) 
-        if "- concluso_" not in os.path.basename(f) and 
-           os.path.basename(f) != PLAYER_DB_FILE # Assicura di non confondere il DB giocatori
+        if "- concluso_" not in os.path.basename(f).lower() and # Aggiunto .lower() per sicurezza
+            os.path.basename(f) != os.path.basename(PLAYER_DB_FILE) # <-- CORREZIONE
     ]
     if not potential_tournament_files:
         print(_("Nessun torneo esistente trovato."))
