@@ -3,11 +3,11 @@
  "start_date": "2025-06-18",
  "end_date": "2025-08-03",
  "total_rounds": 5,
- "site": "Online",
+ "site": "online",
  "federation_code": "ITA",
- "chief_arbiter": "Il capitano",
- "deputy_chief_arbiters": "Scacchieranti, Membri ASCId, Volontari",
- "time_control": "Std 60+0",
+ "chief_arbiter": "Capitan Findus",
+ "deputy_chief_arbiters": "Scacchieranti, Soci ASCId, Volontari",
+ "time_control": "60+0",
  "initial_board1_color_setting": "white1",
  "round_dates": [
   {
@@ -36,16 +36,16 @@
    "end_date": "2025-08-03"
   }
  ],
- "tournament_id": "Estascacchi_1_20250617203403",
+ "tournament_id": "Estascacchi_1_20250626144822",
  "players": [
   {
-   "id": "GORSE001",
-   "first_name": "Serena",
-   "last_name": "Gori",
+   "id": "CICMA001",
+   "first_name": "Mathias",
+   "last_name": "Cicciarella",
    "initial_elo": 1399,
    "current_elo": 1399,
    "registration_date": "2025-05-01",
-   "birth_date": null,
+   "birth_date": "2013-01-01",
    "games_played": 5,
    "medals": {
     "gold": 0,
@@ -55,47 +55,108 @@
    },
    "tournaments_played": [
     {
-     "tournament_id": "manualScacchierante120250322",
-     "tournament_name": "Scacchierante 1",
-     "rank": 12,
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 18,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "TESAL001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "withdrawn": false,
+   "is_scheduled": false,
+   "buchholz": 0.0,
+   "buchholz_cut1": 0.0,
+   "aro": 1399,
+   "display_rank": 5
+  },
+  {
+   "id": "TESAL001",
+   "first_name": "Alessandra",
+   "last_name": "Testori",
+   "initial_elo": 1399,
+   "current_elo": 1399,
+   "registration_date": "2025-05-01",
+   "birth_date": null,
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_id": "manualSacchierante120250322",
+     "tournament_name": "Sacchierante 1",
+     "rank": 11,
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 26,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
    "sex": "w",
    "federation": "ITA",
-   "fide_id_num_str": "23491132",
+   "fide_id_num_str": "0",
    "experienced": false,
    "fide_k_factor": null,
    "points": 0.0,
    "results_history": [
     {
      "round": 1,
-     "opponent_id": "BATGA001",
-     "color": "white",
-     "result": "0-1",
+     "opponent_id": "CICMA001",
+     "color": "black",
+     "result": "1-0",
      "score": 0.0
     }
    ],
-   "opponents": [
-    "BATGA001",
-    "PAGVI001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 12,
-   "aro": 1513
+   "aro": 1399,
+   "display_rank": 14
   },
   {
    "id": "GASCL001",
@@ -105,20 +166,29 @@
    "current_elo": 1874,
    "registration_date": "2025-05-01",
    "birth_date": "1975-01-01",
-   "games_played": 0,
+   "games_played": 5,
    "medals": {
-    "gold": 0,
+    "gold": 1,
     "silver": 0,
     "bronze": 0,
     "wood": 0
    },
-   "tournaments_played": [],
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 1,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
    "fide_title": "1N",
    "sex": "m",
    "federation": "ITA",
    "fide_id_num_str": "825450",
    "experienced": true,
-   "fide_k_factor": null,
+   "fide_k_factor": 20,
    "points": 1.0,
    "results_history": [
     {
@@ -129,23 +199,20 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "FORMA001",
-    "DIBVI001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 3,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 1
   },
   {
    "id": "BATGA001",
@@ -155,20 +222,29 @@
    "current_elo": 1513,
    "registration_date": "2025-05-01",
    "birth_date": "1974-09-13",
-   "games_played": 0,
+   "games_played": 5,
    "medals": {
     "gold": 0,
     "silver": 0,
     "bronze": 0,
     "wood": 0
    },
-   "tournaments_played": [],
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 6,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
    "fide_title": "3N",
    "sex": "m",
    "federation": "ITA",
    "fide_id_num_str": "804495",
    "experienced": true,
-   "fide_k_factor": null,
+   "fide_k_factor": 20,
    "points": 1.0,
    "results_history": [
     {
@@ -179,14 +255,11 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "GORSE001",
-    "BRICA001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -194,8 +267,8 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 4,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 2
   },
   {
    "id": "TRACO001",
@@ -205,20 +278,29 @@
    "current_elo": 1504,
    "registration_date": "2025-05-01",
    "birth_date": "1968-01-01",
-   "games_played": 0,
+   "games_played": 5,
    "medals": {
     "gold": 0,
     "silver": 0,
     "bronze": 0,
     "wood": 0
    },
-   "tournaments_played": [],
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 16,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
    "fide_title": "3N",
    "sex": "w",
    "federation": "ITA",
    "fide_id_num_str": "2817697",
    "experienced": true,
-   "fide_k_factor": null,
+   "fide_k_factor": 0,
    "points": 1.0,
    "results_history": [
     {
@@ -229,23 +311,20 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "MERAL001",
-    "VENLU001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 5,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 3
   },
   {
    "id": "IONLO001",
@@ -255,7 +334,7 @@
    "current_elo": 1446,
    "registration_date": "2025-05-01",
    "birth_date": "1978-01-01",
-   "games_played": 5,
+   "games_played": 10,
    "medals": {
     "gold": 1,
     "silver": 0,
@@ -270,6 +349,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 7,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -277,7 +364,7 @@
    "federation": "ITA",
    "fide_id_num_str": "28550404",
    "experienced": true,
-   "fide_k_factor": null,
+   "fide_k_factor": 40,
    "points": 1.0,
    "results_history": [
     {
@@ -288,14 +375,11 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "PAGGI001",
-    "CICMA001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -303,8 +387,8 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 6,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 4
   },
   {
    "id": "BRICA001",
@@ -314,7 +398,7 @@
    "current_elo": 1399,
    "registration_date": "2025-05-02",
    "birth_date": null,
-   "games_played": 5,
+   "games_played": 10,
    "medals": {
     "gold": 0,
     "silver": 1,
@@ -329,6 +413,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 20,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -347,23 +439,20 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "BATGA001",
-    "PAGVI001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 7,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 5
   },
   {
    "id": "SCAVA001",
@@ -373,14 +462,23 @@
    "current_elo": 1399,
    "registration_date": "2025-05-01",
    "birth_date": "1984-02-09",
-   "games_played": 0,
+   "games_played": 5,
    "medals": {
     "gold": 0,
     "silver": 0,
     "bronze": 0,
     "wood": 0
    },
-   "tournaments_played": [],
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 21,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
    "fide_title": "NC",
    "sex": "w",
    "federation": "ITA",
@@ -397,132 +495,20 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "CALVA001",
-    "FORMA001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 7,
-   "aro": 1399
-  },
-  {
-   "id": "CICMA001",
-   "first_name": "Mathias",
-   "last_name": "Cicciarella",
-   "initial_elo": 1399,
-   "current_elo": 1399,
-   "registration_date": "2025-05-01",
-   "birth_date": "2013-01-01",
-   "games_played": 0,
-   "medals": {
-    "gold": 0,
-    "silver": 0,
-    "bronze": 0,
-    "wood": 0
-   },
-   "tournaments_played": [],
-   "fide_title": "NC",
-   "sex": "m",
-   "federation": "ITA",
-   "fide_id_num_str": "0",
-   "experienced": false,
-   "fide_k_factor": null,
-   "points": 1.0,
-   "results_history": [
-    {
-     "round": 1,
-     "opponent_id": "TESAL001",
-     "color": "white",
-     "result": "1-0",
-     "score": 1.0
-    }
-   ],
-   "opponents": [
-    "TESAL001",
-    "IONLO001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
-   "consecutive_white": 0,
-   "consecutive_black": 1,
-   "received_bye_count": 0,
-   "received_bye_in_round": [],
-   "withdrawn": false,
-   "is_scheduled": false,
-   "buchholz": 1.0,
-   "buchholz_cut1": 0.0,
-   "display_rank": 1,
-   "aro": 1399
-  },
-  {
-   "id": "MERAL001",
-   "first_name": "Alessia",
-   "last_name": "Mereu",
-   "initial_elo": 1399,
-   "current_elo": 1399,
-   "registration_date": "2025-05-01",
-   "birth_date": null,
-   "games_played": 5,
-   "medals": {
-    "gold": 0,
-    "silver": 0,
-    "bronze": 1,
-    "wood": 0
-   },
-   "tournaments_played": [
-    {
-     "tournament_id": "manualScacchierante120250322",
-     "tournament_name": "Scacchierante 1",
-     "rank": 3,
-     "total_players": 12,
-     "date_started": "2025-03-22",
-     "date_completed": "2025-05-15"
-    }
-   ],
-   "fide_title": "NC",
-   "sex": "w",
-   "federation": "ITA",
-   "fide_id_num_str": "0",
-   "experienced": false,
-   "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [
-    {
-     "round": 1,
-     "opponent_id": "TRACO001",
-     "color": "black",
-     "result": "1-0",
-     "score": 0.0
-    }
-   ],
-   "opponents": [
-    "VALRI001",
-    "TRACO001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
-   "consecutive_black": 0,
-   "received_bye_count": 0,
-   "received_bye_in_round": [],
-   "withdrawn": false,
-   "is_scheduled": false,
-   "buchholz": 1.0,
-   "buchholz_cut1": 0.0,
-   "display_rank": 13,
-   "aro": 1504
+   "aro": 1399,
+   "display_rank": 5
   },
   {
    "id": "DIBVI001",
@@ -532,7 +518,7 @@
    "current_elo": 1399,
    "registration_date": "2025-05-02",
    "birth_date": null,
-   "games_played": 5,
+   "games_played": 10,
    "medals": {
     "gold": 0,
     "silver": 0,
@@ -547,6 +533,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 14,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -565,14 +559,11 @@
      "score": 1.0
     }
    ],
-   "opponents": [
-    "VALRI001",
-    "GASCL001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -580,8 +571,72 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 7,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 5
+  },
+  {
+   "id": "VENLU001",
+   "first_name": "Luigi",
+   "last_name": "Ventura",
+   "initial_elo": 1399,
+   "current_elo": 1399,
+   "registration_date": "2025-05-02",
+   "birth_date": null,
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 8,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 10,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BYE_PLAYER_ID",
+     "color": null,
+     "result": "BYE",
+     "score": 1.0
+    }
+   ],
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "withdrawn": false,
+   "is_scheduled": false,
+   "buchholz": 0.0,
+   "buchholz_cut1": 0.0,
+   "aro": null,
+   "display_rank": 9
   },
   {
    "id": "FORMA001",
@@ -591,7 +646,7 @@
    "current_elo": 1399,
    "registration_date": "2025-05-01",
    "birth_date": null,
-   "games_played": 5,
+   "games_played": 9,
    "medals": {
     "gold": 0,
     "silver": 0,
@@ -606,6 +661,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 27,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -624,14 +687,11 @@
      "score": 0.0
     }
    ],
-   "opponents": [
-    "SCAVA001",
-    "GASCL001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -639,17 +699,145 @@
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 11,
-   "aro": 1874
+   "aro": 1874,
+   "display_rank": 10
   },
   {
-   "id": "TESAL001",
-   "first_name": "Alessandra",
-   "last_name": "Testori",
+   "id": "GORSE001",
+   "first_name": "Serena",
+   "last_name": "Gori",
+   "initial_elo": 1399,
+   "current_elo": 1399,
+   "registration_date": "2025-05-01",
+   "birth_date": "1948-01-01",
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 12,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 28,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "23491132",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "points": 0.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BATGA001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "withdrawn": false,
+   "is_scheduled": false,
+   "buchholz": 1.0,
+   "buchholz_cut1": 0.0,
+   "aro": 1513,
+   "display_rank": 11
+  },
+  {
+   "id": "MERAL001",
+   "first_name": "Alessia",
+   "last_name": "Mereu",
    "initial_elo": 1399,
    "current_elo": 1399,
    "registration_date": "2025-05-01",
    "birth_date": null,
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 3,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 25,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "points": 0.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "TRACO001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "withdrawn": false,
+   "is_scheduled": false,
+   "buchholz": 1.0,
+   "buchholz_cut1": 0.0,
+   "aro": 1504,
+   "display_rank": 12
+  },
+  {
+   "id": "PAGGI001",
+   "first_name": "Giulia",
+   "last_name": "Paglia",
+   "initial_elo": 1399,
+   "current_elo": 1399,
+   "registration_date": "2025-05-01",
+   "birth_date": "2018-01-01",
    "games_played": 5,
    "medals": {
     "gold": 0,
@@ -659,12 +847,12 @@
    },
    "tournaments_played": [
     {
-     "tournament_id": "manualSacchierante120250322",
-     "tournament_name": "Sacchierante 1",
-     "rank": 11,
-     "total_players": 12,
-     "date_started": "2025-03-22",
-     "date_completed": "2025-05-15"
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 17,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -673,41 +861,30 @@
    "fide_id_num_str": "0",
    "experienced": false,
    "fide_k_factor": null,
-   "points": 1.0,
+   "points": 0.0,
    "results_history": [
     {
      "round": 1,
-     "opponent_id": "CICMA001",
-     "color": "black",
-     "result": "1-0",
+     "opponent_id": "IONLO001",
+     "color": "white",
+     "result": "0-1",
      "score": 0.0
-    },
-    {
-     "round": 2,
-     "opponent_id": "BYE_PLAYER_ID",
-     "color": null,
-     "result": "BYE",
-     "score": 1.0
     }
    ],
-   "opponents": [
-    "CICMA001"
-   ],
+   "opponents": [],
    "white_games": 0,
-   "black_games": 1,
-   "last_color": "black",
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
-   "received_bye_count": 1,
-   "received_bye_in_round": [
-    2
-   ],
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 1,
-   "aro": 1399
+   "aro": 1446,
+   "display_rank": 13
   },
   {
    "id": "CALVA001",
@@ -717,7 +894,7 @@
    "current_elo": 1399,
    "registration_date": "2025-05-01",
    "birth_date": "1966-01-01",
-   "games_played": 5,
+   "games_played": 10,
    "medals": {
     "gold": 0,
     "silver": 0,
@@ -732,6 +909,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 15,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -750,14 +935,11 @@
      "score": 0.0
     }
    ],
-   "opponents": [
-    "SCAVA001",
-    "PAGGI001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -765,68 +947,8 @@
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 15,
-   "aro": 1399
-  },
-  {
-   "id": "VENLU001",
-   "first_name": "Luigi",
-   "last_name": "Ventura",
-   "initial_elo": 1399,
-   "current_elo": 1399,
-   "registration_date": "2025-05-02",
-   "birth_date": null,
-   "games_played": 5,
-   "medals": {
-    "gold": 0,
-    "silver": 0,
-    "bronze": 0,
-    "wood": 0
-   },
-   "tournaments_played": [
-    {
-     "tournament_id": "manualScacchierante120250322",
-     "tournament_name": "Scacchierante 1",
-     "rank": 8,
-     "total_players": 12,
-     "date_started": "2025-03-22",
-     "date_completed": "2025-05-15"
-    }
-   ],
-   "fide_title": "NC",
-   "sex": "m",
-   "federation": "ITA",
-   "fide_id_num_str": "0",
-   "experienced": false,
-   "fide_k_factor": null,
-   "points": 1.0,
-   "results_history": [
-    {
-     "round": 1,
-     "opponent_id": "BYE_PLAYER_ID",
-     "color": null,
-     "result": "BYE",
-     "score": 1.0
-    }
-   ],
-   "opponents": [
-    "TRACO001"
-   ],
-   "white_games": 1,
-   "black_games": 0,
-   "last_color": "white",
-   "consecutive_white": 1,
-   "consecutive_black": 0,
-   "received_bye_count": 1,
-   "received_bye_in_round": [
-    1
-   ],
-   "withdrawn": false,
-   "is_scheduled": false,
-   "buchholz": 0.0,
-   "buchholz_cut1": 0.0,
-   "display_rank": 10,
-   "aro": null
+   "aro": 1399,
+   "display_rank": 14
   },
   {
    "id": "VALRI001",
@@ -835,8 +957,8 @@
    "initial_elo": 1399,
    "current_elo": 1399,
    "registration_date": "2025-05-01",
-   "birth_date": null,
-   "games_played": 5,
+   "birth_date": "1986-01-01",
+   "games_played": 10,
    "medals": {
     "gold": 0,
     "silver": 0,
@@ -851,6 +973,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 8,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -858,7 +988,7 @@
    "federation": "ITA",
    "fide_id_num_str": "23470798",
    "experienced": false,
-   "fide_k_factor": null,
+   "fide_k_factor": 0,
    "points": 0.0,
    "results_history": [
     {
@@ -869,23 +999,20 @@
      "score": 0.0
     }
    ],
-   "opponents": [
-    "MERAL001",
-    "DIBVI001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
    "consecutive_white": 0,
-   "consecutive_black": 1,
+   "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 15,
-   "aro": 1399
+   "aro": 1399,
+   "display_rank": 14
   },
   {
    "id": "PAGVI001",
@@ -894,8 +1021,8 @@
    "initial_elo": 1399,
    "current_elo": 1399,
    "registration_date": "2025-05-01",
-   "birth_date": null,
-   "games_played": 5,
+   "birth_date": "1981-01-01",
+   "games_played": 10,
    "medals": {
     "gold": 0,
     "silver": 0,
@@ -910,6 +1037,14 @@
      "total_players": 12,
      "date_started": "2025-03-22",
      "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 23,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
     }
    ],
    "fide_title": "NC",
@@ -917,7 +1052,7 @@
    "federation": "ITA",
    "fide_id_num_str": "23470763",
    "experienced": false,
-   "fide_k_factor": null,
+   "fide_k_factor": 0,
    "points": 0.0,
    "results_history": [
     {
@@ -928,14 +1063,11 @@
      "score": 0.0
     }
    ],
-   "opponents": [
-    "GORSE001",
-    "BRICA001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "white",
-   "consecutive_white": 1,
+   "opponents": [],
+   "white_games": 0,
+   "black_games": 0,
+   "last_color": null,
+   "consecutive_white": 0,
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
@@ -943,58 +1075,8 @@
    "is_scheduled": false,
    "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "display_rank": 15,
-   "aro": 1399
-  },
-  {
-   "id": "PAGGI001",
-   "first_name": "Giulia",
-   "last_name": "Paglia",
-   "initial_elo": 1399,
-   "current_elo": 1399,
-   "registration_date": "2025-05-01",
-   "birth_date": "2018-01-01",
-   "games_played": 0,
-   "medals": {
-    "gold": 0,
-    "silver": 0,
-    "bronze": 0,
-    "wood": 0
-   },
-   "tournaments_played": [],
-   "fide_title": "NC",
-   "sex": "w",
-   "federation": "ITA",
-   "fide_id_num_str": "0",
-   "experienced": false,
-   "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [
-    {
-     "round": 1,
-     "opponent_id": "IONLO001",
-     "color": "white",
-     "result": "0-1",
-     "score": 0.0
-    }
-   ],
-   "opponents": [
-    "CALVA001",
-    "IONLO001"
-   ],
-   "white_games": 1,
-   "black_games": 1,
-   "last_color": "black",
-   "consecutive_white": 0,
-   "consecutive_black": 1,
-   "received_bye_count": 0,
-   "received_bye_in_round": [],
-   "withdrawn": false,
-   "is_scheduled": false,
-   "buchholz": 1.0,
-   "buchholz_cut1": 0.0,
-   "display_rank": 14,
-   "aro": 1446
+   "aro": 1399,
+   "display_rank": 14
   }
  ],
  "current_round": 2,
@@ -1007,112 +1089,56 @@
      "round": 1,
      "white_player_id": "GASCL001",
      "black_player_id": "FORMA001",
-     "result": "1-0",
-     "schedule_info": {
-      "date": "2025-06-22",
-      "time": "21:00",
-      "channel": "wa",
-      "arbiter": "gabry"
-     },
-     "is_scheduled": false
+     "result": "1-0"
     },
     {
      "id": 2,
      "round": 1,
      "white_player_id": "GORSE001",
      "black_player_id": "BATGA001",
-     "result": "0-1",
-     "schedule_info": {
-      "date": "2025-06-21",
-      "time": "10:00",
-      "channel": "WA",
-      "arbiter": "Claudio"
-     },
-     "is_scheduled": false
+     "result": "0-1"
     },
     {
      "id": 3,
      "round": 1,
      "white_player_id": "TRACO001",
      "black_player_id": "MERAL001",
-     "result": "1-0",
-     "schedule_info": {
-      "date": "2025-06-21",
-      "time": "16:30",
-      "channel": "wa",
-      "arbiter": "Valeria C"
-     },
-     "is_scheduled": false
+     "result": "1-0"
     },
     {
      "id": 4,
      "round": 1,
      "white_player_id": "PAGGI001",
      "black_player_id": "IONLO001",
-     "result": "0-1",
-     "schedule_info": {
-      "date": "2025-06-20",
-      "time": "18:00",
-      "channel": "wa",
-      "arbiter": "Vincenzo e Alessia"
-     },
-     "is_scheduled": false
+     "result": "0-1"
     },
     {
      "id": 5,
      "round": 1,
      "white_player_id": "BRICA001",
      "black_player_id": "PAGVI001",
-     "result": "1-0",
-     "schedule_info": {
-      "date": "2025-06-23",
-      "time": "21:00",
-      "channel": "WhatsApp",
-      "arbiter": "Alessia"
-     },
-     "is_scheduled": false
+     "result": "1-0"
     },
     {
      "id": 6,
      "round": 1,
      "white_player_id": "SCAVA001",
      "black_player_id": "CALVA001",
-     "result": "1-0",
-     "schedule_info": {
-      "date": "2025-06-23",
-      "time": "21:00",
-      "channel": "wa",
-      "arbiter": "Gabry"
-     },
-     "is_scheduled": false
+     "result": "1-0"
     },
     {
      "id": 7,
      "round": 1,
      "white_player_id": "CICMA001",
      "black_player_id": "TESAL001",
-     "result": "1-0",
-     "schedule_info": {
-      "date": "2025-06-20",
-      "time": "17:30",
-      "channel": "WhatsApp",
-      "arbiter": "Gabry"
-     },
-     "is_scheduled": false
+     "result": "1-0"
     },
     {
      "id": 8,
      "round": 1,
      "white_player_id": "VALRI001",
      "black_player_id": "DIBVI001",
-     "result": "0-1",
-     "schedule_info": {
-      "date": "2025-06-25",
-      "time": "21:00",
-      "channel": "WA",
-      "arbiter": "Claudio"
-     },
-     "is_scheduled": false
+     "result": "0-1"
     },
     {
      "id": 9,
@@ -1193,5 +1219,5 @@
   }
  ],
  "next_match_id": 19,
- "launch_count": 21
+ "launch_count": 1
 }

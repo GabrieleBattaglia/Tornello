@@ -1,29 +1,31 @@
 ﻿Nome Torneo: Estascacchi 1
-Luogo: Online
+Luogo: online
 Date: Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 Federazione Organizzante: ITA
-Arbitro Capo: Il capitano
-Vice Arbitri: Scacchieranti, Membri ASCId, Volontari
-Controllo Tempo: Std 60+0
+Arbitro Capo: Capitan Findus
+Vice Arbitri: Scacchieranti, Soci ASCId, Volontari
+Controllo Tempo: 60+0
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Mercoledì 25 giugno 2025 21:55:00
+Data Report: Giovedì 26 giugno 2025 14:51:16
 ----------------------------------------------------------------------
-Pos. Titolo Nome Cognome                 [EloIni] Punti  Bucch-1 Bucch 
------------------------------------------------------------------------
-  1. NC  Cicciarella, Mathias        [1399]   1.0    0.00   1.00
-  1. NC  Testori, Alessandra         [1399]   1.0    0.00   1.00
-  3. 1N  Gasperoni, Claudio          [1874]   1.0    0.00   0.00
-  4. 3N  Battaglia, Gabriele         [1513]   1.0    0.00   0.00
-  5. 3N  Trapletti, Cosetta          [1504]   1.0    0.00   0.00
-  6. NC  Ionata, Lorenzo             [1446]   1.0    0.00   0.00
-  7. NC  Brites Pereira Lima, Catia  [1399]   1.0    0.00   0.00
-  7. NC  Scapin, Valeria             [1399]   1.0    0.00   0.00
-  7. NC  Di Bari, Vincenzo           [1399]   1.0    0.00   0.00
- 10. NC  Ventura, Luigi              [1399]   1.0    0.00   0.00
- 11. NC  Forte, Martina              [1399]   0.0    0.00   1.00
- 12. NC  Gori, Serena                [1399]   0.0    0.00   1.00
- 13. NC  Mereu, Alessia              [1399]   0.0    0.00   1.00
- 14. NC  Paglia, Giulia              [1399]   0.0    0.00   1.00
- 15. NC  Calzolari, Valeria          [1399]   0.0    0.00   1.00
- 15. NC  Valleriani, Rita            [1399]   0.0    0.00   1.00
- 15. NC  Paglia, Virginio            [1399]   0.0    0.00   1.00
+Classifica Parziale - Durante Turno 2
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
+-----------------------------------------------------------------------------
+  1. 1N  Gasperoni, Claudio          [1874]   1.0    0.00   0.00 1399
+  2. 3N  Battaglia, Gabriele         [1513]   1.0    0.00   0.00 1399
+  3. 3N  Trapletti, Cosetta          [1504]   1.0    0.00   0.00 1399
+  4. NC  Ionata, Lorenzo             [1446]   1.0    0.00   0.00 1399
+  5. NC  Cicciarella, Mathias        [1399]   1.0    0.00   0.00 1399
+  5. NC  Brites Pereira Lima, Catia  [1399]   1.0    0.00   0.00 1399
+  5. NC  Scapin, Valeria             [1399]   1.0    0.00   0.00 1399
+  5. NC  Di Bari, Vincenzo           [1399]   1.0    0.00   0.00 1399
+  9. NC  Ventura, Luigi              [1399]   1.0    0.00   0.00  ---
+ 10. NC  Forte, Martina              [1399]   0.0    0.00   1.00 1874
+ 11. NC  Gori, Serena                [1399]   0.0    0.00   1.00 1513
+ 12. NC  Mereu, Alessia              [1399]   0.0    0.00   1.00 1504
+ 13. NC  Paglia, Giulia              [1399]   0.0    0.00   1.00 1446
+ 14. NC  Testori, Alessandra         [1399]   0.0    0.00   1.00 1399
+ 14. NC  Calzolari, Valeria          [1399]   0.0    0.00   1.00 1399
+ 14. NC  Valleriani, Rita            [1399]   0.0    0.00   1.00 1399
+ 14. NC  Paglia, Virginio            [1399]   0.0    0.00   1.00 1399
