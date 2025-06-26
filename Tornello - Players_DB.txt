@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Venerdì 20 giugno 2025 09:50:28
+﻿Report Database Giocatori Tornello - Giovedì 26 giugno 2025 10:36:49
 ========================================
 
 ID: BARGI001, NC Giuseppe Baratta, Elo: 1450
@@ -22,7 +22,7 @@ ID: BOSGI002, NC Giancarlo Bosetti, Elo: 1399
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	RIT su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1405
+ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: N/D
@@ -30,13 +30,20 @@ ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1405
 	20° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	2° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: CALVA001, NC Valeria Calzolari, Elo: 1415
+ID: CALVA001, NC Valeria Calzolari, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Sabato 1 gennaio 1966
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (2) tornei:
 	15° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	4° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+	------------------------------
+ID: CALVA002, Valeria Calzolari Calzolari, Elo: 1399.0
+	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 26 giugno 2025
+	Data Nascita: N/D
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
 	------------------------------
 ID: CASMA001, NC Mariangela Cassano, Elo: 1390
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 653009215
@@ -52,7 +59,7 @@ ID: CIBSI001, NC Silvia Cibin, Elo: 1399
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	5° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: CICMA001, NC Mathias Cicciarella, Elo: 1403
+ID: CICMA001, NC Mathias Cicciarella, Elo: 1399
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 2013
@@ -66,7 +73,7 @@ ID: COLMI001, 3N Michele Colangelo, Elo: 1555
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	19° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1424
+ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1399
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: N/D
@@ -74,7 +81,7 @@ ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1424
 	14° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	10° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: FORMA001, NC Martina Forte, Elo: 1330
+ID: FORMA001, NC Martina Forte, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 9, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: N/D
@@ -89,7 +96,7 @@ ID: GASCL001, 1N Claudio Gasperoni, Elo: 1874
 	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	1° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: GORSE001, NC Serena Gori, Elo: 1309
+ID: GORSE001, NC Serena Gori, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491132
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1948
@@ -112,7 +119,7 @@ ID: MANFA001, 3N Fabrizio Manneschi, Elo: 1605
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	9° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: MERAL001, NC Alessia Mereu, Elo: 1351
+ID: MERAL001, NC Alessia Mereu, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: N/D
@@ -127,14 +134,14 @@ ID: NICFR001, 2N Francesco Nicolini, Elo: 1784
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (1) tornei:
 	3° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: PAGGI001, NC Giulia Paglia, Elo: 1408
+ID: PAGGI001, NC Giulia Paglia, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Lunedì 1 gennaio 2018
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	17° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: PAGVI001, NC Virginio Paglia, Elo: 1365
+ID: PAGVI001, NC Virginio Paglia, Elo: 1399
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23470763
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1981
@@ -149,7 +156,7 @@ ID: PARLU001, 3N Luca Parravano, Elo: 1506
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	13° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: SCAVA001, NC Valeria Scapin, Elo: 1388
+ID: SCAVA001, NC Valeria Scapin, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 9 febbraio 1984
@@ -163,7 +170,7 @@ ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1731
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (1) tornei:
 	4° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: TESAL001, NC Alessandra Testori, Elo: 1351
+ID: TESAL001, NC Alessandra Testori, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: N/D
@@ -178,14 +185,14 @@ ID: TOLFI001, 3N Filippa Tolaro, Elo: 1588
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	11° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: TRACO001, 3N Cosetta Trapletti, Elo: 1488
+ID: TRACO001, 3N Cosetta Trapletti, Elo: 1504
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 2817697
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Lunedì 1 gennaio 1968
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	16° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: VALRI001, NC Rita Valleriani, Elo: 1448
+ID: VALRI001, NC Rita Valleriani, Elo: 1399
 	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23470798
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1986
@@ -200,7 +207,7 @@ ID: VANJI001, 2N Jiazhuang Vandelli, Elo: 1756
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
 	2° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: VENLU001, NC Luigi Ventura, Elo: 1469
+ID: VENLU001, NC Luigi Ventura, Elo: 1399
 	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: N/D
