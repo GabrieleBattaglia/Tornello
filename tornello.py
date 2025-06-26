@@ -214,7 +214,7 @@ def sincronizza_db_personale():
             p_first_name = local_player.get('first_name', '').lower()
             p_last_name = local_player.get('last_name', '').lower()
             
-            if not p_first_name or not p_last_name: continue # Salta giocatori senza nome/cognome
+            if not p_first_name or not p_last_name: continue
             
             matches = [f_p for f_p in fide_db.values() if 
                        f_p.get('first_name', '').lower() == p_first_name and 
@@ -475,13 +475,11 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             # Assicurati che i dati per il display siano disponibili
             # Se i giocatori provengono da input_players, dovrebbero avere questi campi.
             player_id = player_data.get('id', 'N/A')
-            first_name = player_data.get('first_name', 'Nome?')
-            last_name = player_data.get('last_name', 'Cognome?')
+            first_name = player_data.get('first_name', _('Nome?'))
+            last_name = player_data.get('last_name', _('Cognome?'))
             elo = player_data.get('initial_elo', 'Elo?') # In un nuovo torneo, sarà initial_elo
             print(f"  {i+1}. ID: {player_id} - {first_name} {last_name} (Elo: {elo})")
-
         choice = input(_("\nVuoi rimuovere un giocatore dalla lista? (Inserisci il numero, o 'f' per finire e confermare): ")).strip().lower()
-
         if choice == 'f':
             min_players_for_tournament = torneo.get("total_rounds", 1) + 1 # Esempio di regola: NumTurni + 1
             if len(torneo['players']) < min_players_for_tournament:
