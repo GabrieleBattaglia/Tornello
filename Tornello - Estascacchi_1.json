@@ -1157,7 +1157,14 @@
      "round": 2,
      "white_player_id": "DIBVI001",
      "black_player_id": "GASCL001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-02",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "Martina"
+     },
+     "is_scheduled": true
     },
     {
      "id": 11,
@@ -1247,5 +1254,5 @@
   }
  ],
  "next_match_id": 19,
- "launch_count": 4
+ "launch_count": 5
 }
