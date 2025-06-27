@@ -1206,7 +1206,14 @@
      "round": 2,
      "white_player_id": "FORMA001",
      "black_player_id": "SCAVA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-03",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "Vincenzo"
+     },
+     "is_scheduled": true
     },
     {
      "id": 15,
@@ -1214,20 +1221,21 @@
      "white_player_id": "CALVA001",
      "black_player_id": "PAGGI001",
      "result": null,
-     "schedule_info": {
-      "date": "2025-06-27",
-      "time": "21:15",
-      "channel": "WA",
-      "arbiter": "Gabry"
-     },
-     "is_scheduled": true
+     "is_scheduled": false
     },
     {
      "id": 16,
      "round": 2,
      "white_player_id": "PAGVI001",
      "black_player_id": "GORSE001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-06-30",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": ""
+     },
+     "is_scheduled": true
     },
     {
      "id": 17,
@@ -1254,5 +1262,5 @@
   }
  ],
  "next_match_id": 19,
- "launch_count": 5
+ "launch_count": 8
 }
