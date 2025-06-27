@@ -1,10 +1,14 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
-12. creazione torneo. Un giocatore aggiunto a mano, viene poi aggiunto al db personale?
 13. versione inglese, creazione manuale giocatore, parecchie stringhe non tradotte.
 14.
 
 CHANGELOG
 8.4.x
+	+ Corretto un bug nella time machine
+	+ aggiunta lingua spagnola
+	+ migliorata la gestione del bye
+	+ corretti vari problemi di visualizzazione in classifica
+	+ aggiunta colonna ARO in classifica
 	= Pianificato primo rilascio ufficiale con supporto multilingua. Al momento sono presenti italiano, inglese e portoghese
 	+ Aggiunto menù per scelta lingua, file di configurazione e rilevazione automatica lingua del sistema operativo
 	+ Corretta la generazione delle classifiche parziali e finali. Ora dovrebbero rispettare i critiri corretti per gli spareggi. Inoltre il bucoholz generato dai giocatori ritirati, rimane persistente, così come da regolamento.
