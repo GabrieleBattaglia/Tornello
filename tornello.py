@@ -1,5 +1,5 @@
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, pprint, glob, shutil, requests, io, zipfile, locale, threading, time 
+import os, json, sys, math, traceback, subprocess, glob, shutil, requests, io, zipfile, threading
 import xml.etree.ElementTree as ET
 from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.4.17, 2025.06.26 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.4.33, 2025.06.27 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -43,7 +43,6 @@ BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
 
 # QC Costanti non di percorso ---
 DATE_FORMAT_ISO = "%Y-%m-%d"
-DATE_FORMAT_DB = "%Y-%m-%d"
 DEFAULT_ELO = 1399.0
 DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
@@ -122,8 +121,8 @@ def _ricalcola_stato_giocatore_da_storico(player_obj):
 def time_machine_torneo(torneo):
     """
     Permette di riavvolgere il torneo a uno stato precedente, cancellando
-    i risultati dei turni successivi a quello scelto.
-    ORA CORREGGE ANCHE next_match_id e ricalcola i punti dei BYE.
+    i risultati e gli abbinamenti dei turni successivi a quello scelto.
+    Ora gestisce correttamente la rigenerazione del turno, i ritiri e lo storico.
     Restituisce True se il riavvolgimento è stato effettuato, False altrimenti.
     """
     current_round = torneo.get('current_round', 1)
@@ -160,18 +159,30 @@ def time_machine_torneo(torneo):
     prompt_template_4 = _("\nAvvio riavvolgimento al Turno {target_round}...")
     print(prompt_template_4.format(target_round=target_round))
     
-    # Azzera lo stato futuro
-    torneo['current_round'] = target_round
+    # <<< MODIFICA 1: LOGICA DI CANCELLAZIONE PIÙ CHIARA >>>
+    # Rimuovi tutti i round dal target_round in poi.
     torneo['rounds'] = [r for r in torneo.get('rounds', []) if r.get('round', 0) < target_round]
 
-    # Rimuovi lo storico futuro per ogni giocatore e ricalcola lo stato
+    # Rimuovi lo storico futuro per ogni giocatore, ricalcola lo stato e annulla i ritiri
     for player in torneo.get('players', []):
+        # Conserva solo la cronologia dei risultati dei turni precedenti al target
         player['results_history'] = [res for res in player.get('results_history', []) if res.get('round', 0) < target_round]
-        # Questa funzione azzererà i punti a 0 e li ricalcolerà dalla storia (ora ridotta)
+        
+        # <<< MODIFICA 2: RESET DELLO STATO DI RITIRO >>>
+        # Se un giocatore si è ritirato, questo stato viene annullato tornando indietro nel tempo.
+        # Una logica più avanzata potrebbe salvare in quale turno si è ritirato, ma questo è più sicuro.
+        if player.get('withdrawn', False):
+            player['withdrawn'] = False
+            print(_("Annullato lo stato di 'ritirato' per {name}.").format(name=player.get('first_name')))
+
+        # Questa funzione azzererà i punti e le altre statistiche e le ricalcolerà dalla storia (ora ridotta)
         _ricalcola_stato_giocatore_da_storico(player)
     
-    # --- INIZIO BLOCCO CORRETTIVO PER TIME MACHINE ---
-    # 1. Ricalcola il prossimo ID partita
+    # <<< MODIFICA 3: AGGIORNAMENTO DEL TURNO CORRENTE >>>
+    # Imposta il turno corrente al target round. Questo è fondamentale per la rigenerazione.
+    torneo['current_round'] = target_round
+    
+    # Ricalcola il prossimo ID partita basandosi sui round rimasti
     max_id = 0
     for r in torneo.get('rounds', []):
         for m in r.get('matches', []):
@@ -180,30 +191,34 @@ def time_machine_torneo(torneo):
     torneo['next_match_id'] = max_id + 1
     print(_("Contatore ID Partita ripristinato a: {}").format(torneo['next_match_id']))
 
-    # 2. Rigenera il primo turno (se si torna a 1) o i turni successivi
-    if target_round == 1:
-        print(_("Rigenerazione abbinamenti per il Turno 1..."))
-        matches_r1 = generate_pairings_for_round(torneo)
-        if matches_r1 is None:
-            print("ERRORE CRITICO: fallita rigenerazione turno 1 post time machine.")
-            return False
-        
-        # Ora riapplichiamo il punto del BYE
-        for match in matches_r1:
-            if match.get("result") == "BYE":
-                bye_player_id = match.get('white_player_id')
-                player_obj = get_player_by_id(torneo, bye_player_id)
-                if player_obj:
-                    player_obj['points'] = 1.0
-                    player_obj.setdefault("results_history", []).append({
-                        "round": 1, "opponent_id": "BYE_PLAYER_ID",
-                        "color": None, "result": "BYE", "score": 1.0
-                    })
-                    print(_("Ripristinato 1.0 punto per il BYE al Turno 1 per {name}.").format(name=player_obj.get('first_name')))
-        torneo.setdefault("rounds", []).append({"round": 1, "matches": matches_r1})
-
-    # --- FINE BLOCCO CORRETTIVO ---
+    # <<< MODIFICA 4: RIGENERAZIONE ABBINAMENTI PER IL TURNO DI DESTINAZIONE >>>
+    # Ora che lo stato dei giocatori e del torneo è corretto per l'inizio del target_round,
+    # rigeneriamo gli abbinamenti per quel turno.
+    print(_("Rigenerazione abbinamenti per il Turno {target_round}...").format(target_round=target_round))
+    nuovi_abbinamenti = generate_pairings_for_round(torneo)
     
+    if nuovi_abbinamenti is None:
+        print(_("ERRORE CRITICO: fallita la rigenerazione degli abbinamenti per il turno {target_round}.").format(target_round=target_round))
+        # Qui potremmo decidere di bloccare o ripristinare ulteriormente, ma per ora segnaliamo l'errore.
+        return False
+        
+    # Applica i punti per eventuali BYE nel turno appena generato
+    for match in nuovi_abbinamenti:
+        if match.get("result") == "BYE":
+            bye_player_id = match.get('white_player_id')
+            player_obj = get_player_by_id(torneo, bye_player_id)
+            if player_obj:
+                player_obj['points'] += 1.0 # Aggiungiamo il punto, non lo sovrascriviamo
+                player_obj.setdefault("results_history", []).append({
+                    "round": target_round, "opponent_id": "BYE_PLAYER_ID",
+                    "color": None, "result": "BYE", "score": 1.0
+                })
+                print(_("Ripristinato 1.0 punto per il BYE al Turno {target_round} per {name}.").format(target_round=target_round, name=player_obj.get('first_name')))
+
+    # Aggiungi il nuovo round con i suoi abbinamenti alla struttura del torneo
+    torneo.setdefault("rounds", []).append({"round": target_round, "matches": nuovi_abbinamenti})
+
+    # Ricostruisci il dizionario cache per coerenza
     torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     
     print(_("\nRiavvolgimento completato con successo!"))
@@ -474,18 +489,6 @@ def aggiorna_db_fide_locale():
         traceback.print_exc()
         return False
 
-def get_input_with_default_gestore_db(prompt_message, default_value=None):
-    """
-    Chiede un input all'utente, mostrando un valore di default.
-    Restituisce l'input dell'utente o il valore di default se l'input è vuoto.
-    """
-    default_display = str(default_value) if default_value is not None else ""
-    if default_display or (isinstance(default_value, str) and default_value == "") or default_value is None:
-        user_input = input("{} [{}]: ".format(prompt_message, default_display)).strip()
-        return user_input if user_input else default_value
-    else: 
-        return input("{}: ".format(prompt_message)).strip()
-
 def _conferma_lista_giocatori_torneo(torneo, players_db):
     """
     Mostra i giocatori iscritti a un nuovo torneo e permette la rimozione.
@@ -501,7 +504,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
     while True:
         if not torneo['players']:
             print(_("Nessun giocatore attualmente iscritto al torneo."))
-            if get_input_with_default_gestore_db(_("Vuoi tornare all'inserimento giocatori? (s/N)"), "n").lower() == 's':
+            if get_input_with_default(_("Vuoi tornare all'inserimento giocatori? (s/N)"), "n").lower() == 's':
                 # Questo richiederebbe di uscire da qui e rientrare in input_players,
                 # o modificare input_players per essere richiamabile.
                 # Per ora, diciamo che l'utente deve ricreare il torneo se svuota la lista.
@@ -524,7 +527,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             min_players_for_tournament = torneo.get("total_rounds", 1) + 1 # Esempio di regola: NumTurni + 1
             if len(torneo['players']) < min_players_for_tournament:
                  print(_("ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo di {rounds} turni.").format(min_players=min_players_for_tournament, rounds=torneo.get('total_rounds')))
-                 if get_input_with_default_gestore_db(_("Continuare comunque con meno giocatori? (s/N)"), "n").lower() != 's':
+                 if get_input_with_default(_("Continuare comunque con meno giocatori? (s/N)"), "n").lower() != 's':
                      print(_("Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo."))
                      return False 
             print(_("Lista giocatori confermata."))
@@ -576,7 +579,7 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 default_date_val_for_input = existing_details['date']
                 current_display = format_date_locale(default_date_val_for_input)
             prompt_date += _(" [Attuale: {current}]: ").format(current=current_display)
-            date_input_str = get_input_with_default_gestore_db(prompt_date, default_date_val_for_input).strip()
+            date_input_str = get_input_with_default(prompt_date, default_date_val_for_input).strip()
             if not date_input_str and is_modifying: # Mantiene il vecchio valore se input vuoto in modifica
                 details['date'] = default_date_val_for_input
                 break
@@ -619,7 +622,7 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 default_time_val_for_input = existing_details['time']
                 current_display_time = default_time_val_for_input
             prompt_time += _(" [Attuale: {current}]: ").format(current=current_display_time)
-            time_input_str = get_input_with_default_gestore_db(prompt_time, default_time_val_for_input).strip()
+            time_input_str = get_input_with_default(prompt_time, default_time_val_for_input).strip()
             if not time_input_str and is_modifying:
                 details['time'] = default_time_val_for_input
                 break
@@ -642,9 +645,9 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                 print(_("Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."))
         # Canale e Arbitro (invariati)
         default_channel_val = "" if not is_modifying else existing_details.get('channel', "")
-        details['channel'] = get_input_with_default_gestore_db(_("Canale/Link partita [Attuale: {current}]: ").format(current=default_channel_val), default_channel_val).strip()
+        details['channel'] = get_input_with_default(_("Canale/Link partita [Attuale: {current}]: ").format(current=default_channel_val), default_channel_val).strip()
         default_arbiter_val = "" if not is_modifying else existing_details.get('arbiter', "")
-        details['arbiter'] = get_input_with_default_gestore_db(_("Arbitro assegnato [Attuale: {current}]: ").format(current=default_arbiter_val), default_arbiter_val).strip()
+        details['arbiter'] = get_input_with_default(_("Arbitro assegnato [Attuale: {current}]: ").format(current=default_arbiter_val), default_arbiter_val).strip()
         if is_modifying: # Controlla se qualcosa è effettivamente cambiato
             changed = False
             if details.get('date') != existing_details.get('date'): changed = True
@@ -784,7 +787,7 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                         # else: Nessuna modifica effettiva, non fare nulla
                     else: print(_("Modifica annullata."))
                 elif sub_action == 'r':
-                    if get_input_with_default_gestore_db(_("Confermi rimozione pianificazione? (s/N)"), "n").lower() == 's':
+                    if get_input_with_default(_("Confermi rimozione pianificazione? (s/N)"), "n").lower() == 's':
                         match_object_to_update['is_scheduled'] = False
                         if 'schedule_info' in match_object_to_update: del match_object_to_update['schedule_info']
                         any_changes_made_this_session = True
@@ -883,7 +886,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
             if birth_date_from_playerdata: # Se non è None o stringa vuota
                 try:
                     # Prova a convertire da YYYY-MM-DD a YYYY/MM/DD
-                    dt_obj = datetime.strptime(birth_date_from_playerdata, DATE_FORMAT_DB) # DATE_FORMAT_DB è %Y-%m-%d
+                    dt_obj = datetime.strptime(birth_date_from_playerdata, DATE_FORMAT_ISO) # DATE_FORMAT_DB è %Y-%m-%d
                     birth_date_for_trf = dt_obj.strftime("%Y/%m/%d") # Formato TRF standard
                 except ValueError:
                     # Se non è nel formato YYYY-MM-DD, usa il valore grezzo se è lungo 10, altrimenti placeholder
@@ -1441,11 +1444,16 @@ def save_tournament(torneo):
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))
         traceback.print_exc() # Stampa più dettagli in caso di errore non previsto
 
+def _ensure_players_dict(torneo):
+    """Assicura che il dizionario cache dei giocatori sia presente e aggiornato."""
+    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players', [])):
+        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    return torneo['players_dict']
+
 def get_player_by_id(torneo, player_id):
     """Restituisce i dati del giocatore nel torneo dato il suo ID, usando il dizionario interno."""
     # Ricrea il dizionario se non esiste o sembra obsoleto
-    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
-        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    _ensure_players_dict(torneo)
     return torneo['players_dict'].get(player_id)
 
 def calculate_dates(start_date_str, end_date_str, total_rounds):
@@ -1772,9 +1780,7 @@ def generate_pairings_for_round(torneo):
         return None 
     
     print(_("\n--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---").format(round_num=round_number))
-    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
-        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
-    
+    _ensure_players_dict(torneo)
     lista_giocatori_attivi = [p.copy() for p in torneo.get('players', [])]
     if not lista_giocatori_attivi:
         print(_("Nessun giocatore attivo per il turno {round_num}.").format(round_num=round_number))
@@ -1978,7 +1984,7 @@ def input_players(players_db):
             sex_new_db = get_input_with_default(_("  Sesso (m/w)"), "m").strip().lower()
             fed_new_db = get_input_with_default(_("  Federazione (3 lettere, es. ITA)"), "ITA").strip().upper()[:3] or "ITA"
             fide_id_new_db = get_input_with_default(_("  ID FIDE Numerico ('0' se N/D)"), "0").strip()
-            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_DB), "")
+            bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_ISO), "")
             birth_date_new_db = bdate_input if bdate_input else None
             exp_input = get_input_with_default(_(" Esperienza pregressa significativa? (s/n)"), "n").strip().lower()
             exp_new_db = True if exp_input == 's' else False
@@ -2081,24 +2087,32 @@ def update_match_result(torneo):
     usando una funzione di supporto per l'applicazione dei dati.
     """
     any_changes_made_in_this_session = False
-    current_round_num = torneo["current_round"]
     
-    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
-        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    # <<< MODIFICA FONDAMENTALE: SPOSTAMENTO DELLA LOGICA ALL'INTERNO DEL LOOP >>>
+    # Le variabili che definiscono lo stato del turno (current_round_num, current_round_data)
+    # devono essere ricaricate ad ogni iterazione del loop `while True`.
+    # Questo assicura che se un'azione come la Time Machine cambia lo stato del torneo,
+    # l'iterazione successiva del loop vedrà i dati aggiornati invece di quelli "vecchi".
     
-    players_dict = torneo['players_dict']
-    current_round_data = next((r for r in torneo.get("rounds", []) if r.get("round") == current_round_num), None)
-
-    if not current_round_data:
-        print(_("ERRORE: Dati turno {round_num} non trovati.").format(round_num=current_round_num))
-        return False
-        
     while True:
+        # Ricarica lo stato ad ogni ciclo
+        current_round_num = torneo.get("current_round")
+        _ensure_players_dict(torneo)
+        players_dict = torneo['players_dict']
+        current_round_data = next((r for r in torneo.get("rounds", []) if r.get("round") == current_round_num), None)
+
+        if not current_round_data:
+            print(_("ERRORE: Dati del turno {round_num} non trovati. Potrebbe essere necessario riavviare.").format(round_num=current_round_num))
+            # Questo può accadere se la Time Machine fallisce a rigenerare gli abbinamenti.
+            # Uscire da questa funzione è la cosa più sicura da fare.
+            return False
+
         pending_matches_info_list = []
         all_matches_in_this_round = current_round_data.get("matches", [])
         all_matches_this_round_sorted = sorted(all_matches_in_this_round, key=lambda m: m.get('id', 0))
-        round_board_idx_counter = 0 
+        round_board_idx_counter = 0
         for match_obj in all_matches_this_round_sorted:
+            # La logica di visualizzazione non è cambiata, ma ora opera sui dati corretti
             round_board_idx_counter += 1
             if match_obj.get("result") is None and match_obj.get("black_player_id") is not None:
                 wp_obj = players_dict.get(match_obj.get('white_player_id'))
@@ -2108,8 +2122,10 @@ def update_match_result(torneo):
                 pending_matches_info_list.append(
                     (round_board_idx_counter, match_obj, wp_name_disp, bp_name_disp)
                 )
-        completed_matches_to_cancel = [m for m in all_matches_this_round_sorted if m.get("result") is not None and m.get("result") != "BYE"]
         
+        # Il resto della funzione rimane invariato...
+        completed_matches_to_cancel = [m for m in all_matches_this_round_sorted if m.get("result") is not None and m.get("result") != "BYE"]
+      
         if not pending_matches_info_list and not completed_matches_to_cancel:
             if not any_changes_made_in_this_session:
                 print(_("Info: Nessuna azione possibile per il turno {round_num} (nessuna partita pendente e nessuna da poter cancellare).").format(round_num=current_round_num))
@@ -2145,8 +2161,10 @@ def update_match_result(torneo):
                 any_changes_made_in_this_session = True
                 save_tournament(torneo)
                 print(_("Stato del torneo ripristinato e salvato."))
+            # Il 'continue' qui farà ripartire il loop, che ora ricaricherà i dati corretti
             continue 
         
+        # ... il resto del codice della funzione (gestione 'r', 'p', 'cancella', ecc.) rimane identico
         elif user_input_str.lower() == 'r':
             print(_("\n--- Ritiro Giocatore dal Torneo ---"))
             active_players_list = [p for p in torneo['players'] if not p.get('withdrawn', False)]
@@ -2189,7 +2207,7 @@ def update_match_result(torneo):
                 print(_("Nessuna partita completata in questo turno da poter cancellare."))
                 continue
             print(_("\nPartite completate nel turno {round_num} (ID Globali):").format(round_num=current_round_num))
-            # ... (la logica di cancellazione, che era già corretta, va qui)
+            # ... (la tua logica di cancellazione, che era già corretta, va qui)
             continue
         
         elif user_input_str.isdigit():
@@ -2266,7 +2284,7 @@ def update_match_result(torneo):
                 elif res_str == "0-1":
                     confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
                 elif res_str == "1/2-1/2":
-                     confirm_message_str = _("Confermi che {player1} e {player2} pattano? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
+                        confirm_message_str = _("Confermi che {player1} e {player2} pattano? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
                 
                 user_confirm_input = key(confirm_message_str).strip().lower()
 
@@ -2466,10 +2484,8 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
         return
 
     # Assicura che il dizionario dei giocatori sia aggiornato
-    if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
-        torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+    _ensure_players_dict(torneo)
     players_dict = torneo['players_dict']
-    
     all_matches_in_round = round_data.get("matches", [])
     playable_matches = [m for m in all_matches_in_round if m.get("black_player_id") is not None]
     bye_match = next((m for m in all_matches_in_round if m.get("black_player_id") is None), None)
@@ -3316,8 +3332,7 @@ if __name__ == "__main__":
     if not deve_creare_nuovo_torneo: # Implica che è stato caricato
         torneo['launch_count'] = torneo.get('launch_count', 0) + 1
         # Assicura che players_dict sia inizializzato (load_tournament dovrebbe già farlo)
-        if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players',[])):
-            torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
+        _ensure_players_dict(torneo)
     # Messaggio di benvenuto specifico per il torneo
     print(_("\n--- Torneo Attivo: {name} ---").format(name=torneo.get('name', 'N/D')))
     print(f"File: {active_tournament_filename}")
