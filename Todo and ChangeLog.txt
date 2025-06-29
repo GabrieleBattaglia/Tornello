@@ -1,6 +1,34 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 13. versione inglese, creazione manuale giocatore, parecchie stringhe non tradotte.
-14.
+14. errore quando ritirato.
+Vuoi procedere e generare gli abbinamenti per il Turno 4? (s/n):                                                                                                                                                 
+Generazione abbinamenti per il Turno 4...                                                                                                                                                                        
+                                                                                                                                                                                                                 
+--- Generazione Abbinamenti Turno 4 con bbpPairings ---                                                                                                                                                          
+ERRORE CRITICO da bbpPairings.exe: bbpPairings.exe ha fallito con codice 3.                                                                                                                                      
+Stderr:                                                                                                                                                                                                          
+Error parsing file e:\Dropbox\py Backup\TornelloTEST\bbppairings\input_bbp.trf: Match 3 for player 5 contradicts the entry for the opponent.                                                                     
+                                                                                                                                                                                                                 
+Stdout:                                                                                                                                                                                                          
+                                                                                                                                                                                                                 
+                                                                                                                                                                                                                 
+--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno 4) ---                                                                                                                                                  
+Errore critico bbpPairings:                                                                                                                                                                                      
+bbpPairings.exe ha fallito con codice 3.                                                                                                                                                                         
+Stderr:                                                                                                                                                                                                          
+Error parsing file e:\Dropbox\py Backup\TornelloTEST\bbppairings\input_bbp.trf: Match 3 for player 5 contradicts the entry for the opponent.                                                                     
+                                                                                                                                                                                                                 
+Stdout:                                                                                                                                                                                                          
+                                                                                                                                                                                                                 
+Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti.                                                                                                                                                
+Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella 'bbppairings' per possibili errori di formato.                                                                                          
+Oppure, considerare di effettuare gli abbinamenti per questo turno manualmente (su carta).                                                                                                                       
+Il torneo non può procedere automaticamente per questo turno.                                                                                                                                                    
+ERRORE: Impossibile generare il turno 4. Ripristino al turno precedente.                                                                                                                                         
+                                                                                                                                                                                                                 
+Programma Tornello terminato. Ultimo stato per 'ritirelli' in 'Tornello - ritirelli.json'.                                                                                                                       
+ 
+
 
 CHANGELOG
 8.4.x
