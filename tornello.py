@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.4.35, 2025.06.27 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.5.1, 2025.07.07 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -48,6 +48,27 @@ DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 #QF
+def handle_bbpairings_failure(torneo, round_number, error_message):
+    """
+    Gestisce i fallimenti di bbpPairings. Stampa un messaggio e chiede all'utente cosa fare.
+    Restituisce una stringa che indica l'azione scelta dall'utente ('time_machine' o 'terminate').
+    """
+    print(_("\n--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---").format(round_num=round_number))
+    print(error_message)
+    print(_("Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."))
+    print(_("Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella 'bbppairings' per possibili errori di formato."))
+    print(_("Oppure, un risultato potrebbe essere stato inserito in modo errato nel turno precedente."))
+    
+    while True:
+        prompt = _("\nCosa vuoi fare? (T)orna indietro con la Time Machine per correggere, (U)sci dal programma: ").format(round_num=round_number)
+        choice = key(prompt).strip().lower()
+        if choice == 't':
+            return 'time_machine'
+        elif choice == 'u':
+            return 'terminate'
+        else:
+            print(_("Scelta non valida. Inserisci 't' o 'u'."))
+
 def _cerca_giocatore_nel_db_fide(search_term):
     """
     Cerca un giocatore nel DB FIDE locale per nome/cognome o ID FIDE.
@@ -929,21 +950,19 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                                 opp_start_rank_str = "XXXX" 
                             else:
                                 opp_start_rank_str = f"{opponent_start_rank:>4}"
-                            
-                            if player_score_this_game == 1.0:
-                                # Se il risultato è una vittoria E la stringa contiene 'F', è una vittoria per forfeit (+)
-                                if "F" in tornello_result_str:
-                                    result_code_trf = "+"
-                                else:
-                                    result_code_trf = "1"
-                            elif player_score_this_game == 0.5:
+                            is_white = (player_color_this_game == "white")
+                            if tornello_result_str == "1-0":
+                                result_code_trf = "1" if is_white else "0"
+                            elif tornello_result_str == "0-1":
+                                result_code_trf = "0" if is_white else "1"
+                            elif tornello_result_str == "1/2-1/2":
                                 result_code_trf = "="
-                            elif player_score_this_game == 0.0:
-                                # Se il risultato è una sconfitta E la stringa contiene 'F', è una sconfitta per forfeit (-)
-                                if "F" in tornello_result_str:
-                                    result_code_trf = "-"
-                                else:
-                                    result_code_trf = "0"
+                            elif tornello_result_str == "1-F":
+                                result_code_trf = "+" if is_white else "-"
+                            elif tornello_result_str == "F-1":
+                                result_code_trf = "-" if is_white else "+"
+                            elif tornello_result_str == "0-0F":
+                                result_code_trf = "-"
                             else:
                                 result_code_trf = "?"
                         else: continue 
@@ -1039,8 +1058,7 @@ def format_date_locale(date_input):
 
         # Usa Babel per formattare la data in italiano in modo sicuro
         # 'full' corrisponde a un formato tipo "lunedì 23 giugno 2025"
-        return format_date(date_obj, format='full', locale='it_IT').capitalize()
-
+        return format_date(date_obj, format='full', locale=lingua_rilevata).capitalize()
     except (ValueError, TypeError, IndexError):
         # Se qualcosa va storto, restituisce l'input originale
         return str(date_input)
@@ -2074,7 +2092,7 @@ def _apply_match_result_to_players(torneo, match_obj, result_str, w_score, b_sco
                         r["matches"][i]['is_scheduled'] = False
                     break
             break
-    print(_("Risultato registrato con successo."))
+    print(_("\nRisultato registrato con successo."))
 
 def update_match_result(torneo):
     """
@@ -3236,7 +3254,7 @@ if __name__ == "__main__":
             except ValueError: print(_("Inserisci un numero intero valido."))
         print(_("\nInserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare default):"))
         torneo["site"] = input(_(" Luogo del torneo [Default: {default_site}]: ").format(default_site=_("Luogo Sconosciuto"))).strip() or _("Luogo Sconosciuto")
-        fed_code = input(_("  Federazione organizzante (codice 3 lettere) [Default: ITA]: ")).strip().upper() or "ITA"
+        fed_code = input(_("  Federazione organizzante (codice 3 lettere) [Default: ITA]: ")).strip().upper() or "ITA"
         torneo["federation_code"] = fed_code[:3]
         torneo["chief_arbiter"] = input(_(" Arbitro Capo [Default: {default_arbiter}]: ").format(default_arbiter=_("N/D"))).strip() or _("N/D")
         torneo["deputy_chief_arbiters"] = input(_(" Vice Arbitri (separati da virgola) [Default: {default_deputy}]: ").format(default_deputy=_("nessuno"))).strip() or ""
@@ -3377,10 +3395,46 @@ if __name__ == "__main__":
                         # 2. Genera gli abbinamenti
                         next_matches = generate_pairings_for_round(torneo)
                         if next_matches is None:
-                            print(_("ERRORE: Impossibile generare il turno {round_num}. Ripristino al turno precedente.").format(round_num=next_round_num))
-                            torneo["current_round"] = current_round_num
-                            save_tournament(torneo)
-                            break
+                            user_action = handle_bbpairings_failure(torneo, next_round_num, "Errore durante la generazione.")
+                            if user_action == 'time_machine':
+                                print(_("Accesso alla Time Machine..."))
+                                # Ripristiniamo il turno corrente a quello precedente, così la TM parte da uno stato noto
+                                torneo["current_round"] = current_round_num
+                                if time_machine_torneo(torneo):
+                                    any_changes_made_in_this_session = True
+                                    save_tournament(torneo)
+                                    print(_("Stato del torneo ripristinato e salvato. Riavvio del ciclo principale."))
+                                else:
+                                    print(_("Time Machine annullata o fallita. Uscita per sicurezza."))
+                                    save_tournament(torneo)
+                                    break # Esce dal ciclo principale
+                                # Non uscire dal ciclo, ricomincerà dal turno ripristinato
+                                continue 
+                            elif user_action == 'terminate':
+                                print(_("Uscita dal programma come richiesto."))
+                                torneo["current_round"] = current_round_num # Ripristina per coerenza
+                                save_tournament(torneo)
+                                break # Esce dal ciclo principale
+                        # 3. Gestisci il BYE appena generato (se presente)
+                        print(_("Registrazione risultati automatici per il Turno {round_num} (BYE)...").format(round_num=next_round_num))
+                        for match in next_matches:
+                            if match.get("result") == "BYE":
+                                bye_player_id = match.get('white_player_id')
+                                _ensure_players_dict(torneo) # Assicura che la cache giocatori sia pronta
+                                if bye_player_id and bye_player_id in torneo['players_dict']:
+                                    player_obj = torneo['players_dict'][bye_player_id]
+                                    # Assegna il punto (in modo incrementale per sicurezza)
+                                    player_obj['points'] = player_obj.get('points', 0.0) + 1.0
+                                    # Aggiungi l'evento allo storico del giocatore
+                                    player_obj.setdefault("results_history", []).append({
+                                        "round": next_round_num,
+                                        "opponent_id": "BYE_PLAYER_ID",
+                                        "color": None, "result": "BYE", "score": 1.0
+                                    })
+                                    # Aggiorna anche le altre statistiche relative al BYE
+                                    player_obj['received_bye_count'] = player_obj.get('received_bye_count', 0) + 1
+                                    player_obj.setdefault('received_bye_in_round', []).append(next_round_num)
+                                    print(_(" > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico aggiornati.").format(name=player_obj.get('first_name'), id=bye_player_id))
                         torneo["rounds"].append({"round": next_round_num, "matches": next_matches})
                         # 5. Salva tutto
                         save_tournament(torneo)

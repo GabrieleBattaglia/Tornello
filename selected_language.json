@@ -1,3 +1,9 @@
 {
-    "language_code": "it"
+    "language_code": "it",
+    "available_languages": [
+        "en",
+        "es",
+        "it",
+        "pt"
+    ]
 }
