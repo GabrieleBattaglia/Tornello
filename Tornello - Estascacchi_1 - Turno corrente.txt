@@ -1,23 +1,21 @@
-﻿Nome Torneo: Estascacchi 1 - Turno: 2
- Periodo Turno: Venerdì 27 giugno 2025 - Domenica 6 luglio 2025
+﻿Nome Torneo: Estascacchi 1 - Turno: 3
+ Periodo Turno: Lunedì 7 luglio 2025 - Martedì 15 luglio 2025
 
  Partite da giocare
-  Lunedì 30 giugno 2025
-   21:00 IDG:16, Virginio Paglia vs Serena Gori, Canale: WA, Arbitro: 
-  Martedì 1 luglio 2025
-   21:00 IDG:17, Alessia Mereu vs Rita Valleriani, Canale: WA, Arbitro: Catia
-  Mercoledì 2 luglio 2025
-   21:00 IDG:10, Vincenzo Di Bari vs Claudio Gasperoni, Canale: WA, Arbitro: Martina
-  Giovedì 3 luglio 2025
-   21:00 IDG:14, Martina Forte vs Valeria Scapin, Canale: WA, Arbitro: Vincenzo
-  Venerdì 4 luglio 2025
-   21:00 IDG:13, Lorenzo Ionata vs Mathias Cicciarella, Canale: WA, Arbitro: Catia
-  Domenica 6 luglio 2025
-   11:00 IDG:11, Gabriele Battaglia vs Catia Susana Brites Pereira Lima, Canale: lichess.org, Arbitro: lichess
+  Lunedì 7 luglio 2025
+   21:15 IDG:25, Giulia Paglia vs Martina Forte, Canale: WA, Arbitro: Claudio
+  Martedì 8 luglio 2025
+   21:00 IDG:23, Alessandra Testori vs Lorenzo Ionata, Canale: WA, Arbitro: Gabry
+   21:30 IDG:19, Claudio Gasperoni vs Luigi Ventura, Canale: WA, Arbitro: Martina
+  Mercoledì 9 luglio 2025
+   21:00 IDG:24, Catia Susana Brites Pereira Lima vs Alessia Mereu, Canale: WA, Arbitro: Gabry
+  Giovedì 10 luglio 2025
+   21:15 IDG:22, Cosetta Trapletti vs Virginio Paglia, Canale: WA, Arbitro: Catia
+  Lunedì 14 luglio 2025
+   17:00 IDG:20, Valeria Scapin vs Gabriele Battaglia, Canale: WA, Arbitro: 
   Non pianificate (giocatori attivi):
-   IDG:12 Luigi Ventura - Cosetta Trapletti
-   IDG:15 Valeria Calzolari - Giulia Paglia
+   IDG:26 Serena Gori - Valeria Calzolari
 
- Alessandra Testori ha il BYE
+ Rita Valleriani ha il BYE
  Partite giocate
-  (nessuna partita ancora giocata da giocatori attivi)
+  IDG:21 Mathias Cicciarella - Vincenzo Di Bari  1/2-1/2
