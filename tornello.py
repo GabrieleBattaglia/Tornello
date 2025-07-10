@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.5.1, 2025.07.07 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.5.22, 2025.07.10 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -48,6 +48,14 @@ DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 #QF
+def enter_escape(prompt=""):
+    '''Ritorna vero su invio, falso su escape'''
+    key=(prompt).strip()
+    if key == "":
+        return True
+    elif key == "\x1b":
+        return False
+
 def handle_bbpairings_failure(torneo, round_number, error_message):
     """
     Gestisce i fallimenti di bbpPairings. Stampa un messaggio e chiede all'utente cosa fare.
@@ -295,7 +303,7 @@ def sincronizza_db_personale():
                 match = matches[0]
                 print(_("\n-> Trovata una corrispondenza FIDE per il tuo giocatore '{} {}' (ID: {}):").format(local_player.get('first_name'), local_player.get('last_name'), player_id))
                 print(_("   FIDE ID: {}, Nome: {}, {}, FED: {}, Elo: {}, Anno Nascita: {}").format(match['id_fide'], match['last_name'], match['first_name'], match['federation'], match['elo_standard'], match.get('birth_year')))
-                if get_input_with_default(_("   Associare questo ID FIDE al tuo giocatore? (S/n)", "s")).lower() == 's':
+                if enter_escape(_("   Associare questo ID FIDE al tuo giocatore? (INVIO|ESCAPE)")):
                     player_changes['new_fide_id'] = str(match['id_fide'])
                     fide_record = match
             elif len(matches) > 1:
@@ -354,7 +362,7 @@ def sincronizza_db_personale():
                 print(_("    -> Aggiornamento {}: da '{}' a '{}'").format(key.replace('_',' ').title(), player.get(key), value))
 
     if len(all_potential_changes) > 3:
-        if get_input_with_default(_("\nVuoi vedere l'elenco completo di tutte le modifiche proposte? (s/N)"), "n").lower() == 's':
+        if enter_escape(_("\nVuoi vedere l'elenco completo di tutte le modifiche proposte? (INVIO|ESCAPE)")) == 's':
             print(_("\n--- Elenco Completo Modifiche Proposte ---"))
             for change in all_potential_changes: # Mostra tutti
                  player = change['current_data']
@@ -366,7 +374,7 @@ def sincronizza_db_personale():
                          print(_("     -> Aggiornamento {}: da '{}' a '{}'").format(key.replace('_',' ').title(), player.get(key, _('N/D')), value))
                  print("-" * 20)
 
-    if get_input_with_default(_("\nVuoi applicare tutte le modifiche proposte al tuo database personale? (s/N)"), "n").lower() == 's':
+    if enter_escape(_("\nVuoi applicare tutte le modifiche proposte al tuo database personale? (INVIO|ESCAPE)")):
         for change in all_potential_changes:
             player_record_to_update = players_db[change['player_id']]
             if change['new_fide_id']:
@@ -520,7 +528,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
     while True:
         if not torneo['players']:
             print(_("Nessun giocatore attualmente iscritto al torneo."))
-            if get_input_with_default(_("Vuoi tornare all'inserimento giocatori? (s/N)"), "n").lower() == 's':
+            if enter_escape(_("Vuoi tornare all'inserimento giocatori? (INVIO|ESCAPE)")):
                 # Questo richiederebbe di uscire da qui e rientrare in input_players,
                 # o modificare input_players per essere richiamabile.
                 # Per ora, diciamo che l'utente deve ricreare il torneo se svuota la lista.
@@ -543,7 +551,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             min_players_for_tournament = torneo.get("total_rounds", 1) + 1 # Esempio di regola: NumTurni + 1
             if len(torneo['players']) < min_players_for_tournament:
                  print(_("ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo di {rounds} turni.").format(min_players=min_players_for_tournament, rounds=torneo.get('total_rounds')))
-                 if get_input_with_default(_("Continuare comunque con meno giocatori? (s/N)"), "n").lower() != 's':
+                 if enter_escape(_("Continuare comunque con meno giocatori? (INVIO|ESCAPE)")):
                      print(_("Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo."))
                      return False 
             print(_("Lista giocatori confermata."))
@@ -553,8 +561,8 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                 idx_to_remove = int(choice) - 1
                 if 0 <= idx_to_remove < len(torneo['players']):
                     player_to_remove = torneo['players'][idx_to_remove]
-                    confirm_remove = key(_("Rimuovere '{first_name} {last_name}'? (s/N): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name'))).strip().lower()
-                    if confirm_remove == 's':
+                    confirm_remove = enter_escape(_("Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name'))).strip().lower()
+                    if confirm_remove == True:
                         removed_player = torneo['players'].pop(idx_to_remove)
                         print(_("Giocatore '{first_name} {last_name}' rimosso.").format(first_name=removed_player.get('first_name'), last_name=removed_player.get('last_name')))
                         # Aggiorna anche players_dict se necessario (o fallo alla fine una volta)
@@ -740,8 +748,8 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
         if not round_board_to_global_id_map:
             print(_("\nNessuna partita pendente disponibile per la gestione della pianificazione."))
             break
-        action = key(_("\nOpzioni: (P)ianifica, (M)odifica/Rimuovi pianificazione, (F)ine: ")).strip().lower()
-        if action == 'f':
+        action = key(_("\nOpzioni: (P)ianifica, (M)odifica/Rimuovi pianificazione, (ESCAPE) termina: ")).strip().lower()
+        if action == '\x1b':
             break
         elif action == 'p' or action == 'm':
             prompt_msg = _("Inserisci il N. Scacchiera della partita")
@@ -803,7 +811,7 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
                         # else: Nessuna modifica effettiva, non fare nulla
                     else: print(_("Modifica annullata."))
                 elif sub_action == 'r':
-                    if get_input_with_default(_("Confermi rimozione pianificazione? (s/N)"), "n").lower() == 's':
+                    if enter_escape(_("Confermi rimozione pianificazione? (INVIO|ESCAPE)")):
                         match_object_to_update['is_scheduled'] = False
                         if 'schedule_info' in match_object_to_update: del match_object_to_update['schedule_info']
                         any_changes_made_this_session = True
@@ -1888,7 +1896,7 @@ def input_players(players_db):
         data_input = input(_("\nGiocatore {player_num} (o lascia vuoto per terminare): ").format(player_num=current_num_players + 1)).strip()
         if not data_input: # Logica per terminare l'inserimento
             if current_num_players < 2:
-                if get_input_with_default(_("Ci sono meno di 2 giocatori. Continuare? (S/n)"), "s").lower() == 'n': break
+                if enter_escape(_("Ci sono meno di 2 giocatori. Continuare? (INVIO|ESCAPE)")): break
                 else: continue
             else: break
         player_id_to_add = None
@@ -1920,7 +1928,7 @@ def input_players(players_db):
                 match = fide_matches[0]
                 print(_("\n-> Trovata 1 corrispondenza nel DB FIDE:"))
                 print(_("   Nome: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: {elo})").format(last_name=match['last_name'], first_name=match['first_name'], fide_id=match['id_fide'], fed=match['federation'], elo=match['elo_standard']))
-                if get_input_with_default(_("   È questo il giocatore corretto? (S/n)"), "s").lower() == 's':
+                if enter_escape(_("   È questo il giocatore corretto? (INVIO|ESCAPE)")):
                     selected_fide_record = match
             elif len(fide_matches) > 1:
                 print(_("\n-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella corretta:").format(count=len(fide_matches), term=data_input))
@@ -1999,8 +2007,7 @@ def input_players(players_db):
             fide_id_new_db = get_input_with_default(_("  ID FIDE Numerico ('0' se N/D)"), "0").strip()
             bdate_input = get_input_with_default(_(" Data Nascita ({date_format} o vuoto)").format(date_format=DATE_FORMAT_ISO), "")
             birth_date_new_db = bdate_input if bdate_input else None
-            exp_input = get_input_with_default(_(" Esperienza pregressa significativa? (s/n)"), "n").strip().lower()
-            exp_new_db = True if exp_input == 's' else False
+            exp_new_db = enter_escape(_(" Esperienza pregressa significativa? (INVIO|ESCAPE)"))
             player_id_to_add = crea_nuovo_giocatore_nel_db(
                 players_db, first_name_new_db, last_name_new_db, elo_new_db,
                 fide_title_new_db, sex_new_db, fed_new_db, fide_id_new_db,
@@ -2176,8 +2183,8 @@ def update_match_result(torneo):
                 player_to_withdraw_obj = players_dict.get(player_to_withdraw_input.upper())
             if player_to_withdraw_obj and not player_to_withdraw_obj.get('withdrawn', False):
                 player_name_withdraw = f"{player_to_withdraw_obj.get('first_name','?')} {player_to_withdraw_obj.get('last_name','?')}"
-                confirm_prompt = _("Confermi il ritiro definitivo di {player_name}? (s/N)").format(player_name=player_name_withdraw)
-                if get_input_with_default(confirm_prompt, "n").lower() == 's':
+                confirm_prompt = _("Confermi il ritiro definitivo di {player_name}? (INVIO|ESCAPE)").format(player_name=player_name_withdraw)
+                if enter_escape(confirm_prompt):
                     player_to_withdraw_obj['withdrawn'] = True
                     print(_("Giocatore {player_name} marcato come ritirato.").format(player_name=player_name_withdraw))
                     any_changes_made_in_this_session = True
@@ -2267,24 +2274,22 @@ def update_match_result(torneo):
                 res_str, w_score, b_score = result_map[result_input]
                 confirm_message_str = _("Confermi risultato?") # Messaggio generico
                 if res_str == "1-0":
-                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
+                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (INVIO|ESCAPE): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
                 elif res_str == "0-1":
-                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (s/n): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
+                    confirm_message_str = _("Confermi che {winner} vince contro {loser}? (INVIO|ESCAPE): ").format(winner=bp_name_match_disp, loser=wp_name_match_disp)
                 elif res_str == "1/2-1/2":
-                     confirm_message_str = _("Confermi che {player1} e {player2} pattano? (s/n): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
-                user_confirm_input = key(confirm_message_str).strip().lower()
-
-                if user_confirm_input == 's':
+                     confirm_message_str = _("Confermi che {player1} e {player2} pattano? (INVIO|ESCAPE): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
+                user_confirm_input = enter_escape(confirm_message_str)
+                if user_confirm_input == True:
                     _apply_match_result_to_players(torneo, selected_match_obj_for_processing, res_str, w_score, b_score)
                     any_changes_made_in_this_session = True
                     save_tournament(torneo)
-
                     if "F" in res_str:
                         forfeiting_player_id = bp_data_obj['id'] if res_str == "1-F" else wp_data_obj['id']
                         forfeiting_player_obj = players_dict.get(forfeiting_player_id)
                         player_name_forfeit = f"{forfeiting_player_obj.get('first_name','?')} {forfeiting_player_obj.get('last_name','?')}"
-                        withdraw_choice = get_input_with_default(_("Il giocatore {player_name} si ritira definitivamente dal torneo? (s/N)").format(player_name=player_name_forfeit), "n").lower()
-                        if withdraw_choice == 's':
+                        withdraw_choice = enter_escape(_("Il giocatore {player_name} si ritira definitivamente dal torneo? (INVIO|ESCAPE)").format(player_name=player_name_forfeit))
+                        if withdraw_choice == True:
                             forfeiting_player_obj['withdrawn'] = True
                             print(_("Giocatore {player_name} marcato come ritirato.").format(player_name=player_name_forfeit))
                 else:
@@ -3038,7 +3043,7 @@ if __name__ == "__main__":
     if not db_fide_esiste:
         print(_("\nIl database FIDE locale non è presente sul tuo computer."))
         # Se non esiste, proponiamo sempre di scaricarlo
-        if get_input_with_default(_("Vuoi scaricarlo ora? (L'operazione potrebbe richiedere alcuni minuti) (S/n)"), "s").lower() == 's':
+        if enter_escape(_("Vuoi scaricarlo ora? (L'operazione potrebbe richiedere alcuni minuti) (INVIO|ESCAPE)")):
             if aggiorna_db_fide_locale():
                 db_fide_appena_aggiornato = True
                 print(_("Database FIDE locale aggiornato con successo."))
@@ -3049,7 +3054,7 @@ if __name__ == "__main__":
             print(_("Info: Il tuo database FIDE locale ha {} giorni.").format(file_age_days))
             if file_age_days >= 32:
                 print(_("Essendo trascorsi più di 32 giorni dall'ultimo download, potrebbe essere stato rilasciato un aggiornamento"))
-                if get_input_with_default(_("Si consiglia di aggiornarlo. Vuoi scaricare la versione più recente? (s/N)"), "n").lower() == 's':
+                if enter_escape(_("Si consiglia di aggiornarlo. Vuoi scaricare la versione più recente? (INVIO|ESCAPE)")):
                     if aggiorna_db_fide_locale():
                         db_fide_appena_aggiornato = True
         except Exception as e:
@@ -3061,7 +3066,7 @@ if __name__ == "__main__":
         file_age_days = (datetime.now() - datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))).days
         if db_fide_appena_aggiornato or file_age_days >= 32:
             prompt_sync = _("\nDatabase FIDE aggiornato. Vuoi sincronizzare ora il tuo DB personale?") if db_fide_appena_aggiornato else _("\nVuoi sincronizzare il tuo DB personale con i dati FIDE locali?")
-            if get_input_with_default(f"{prompt_sync} (s/N)", "n").lower() == 's':
+            if enter_escape(f"{prompt_sync} (INVIO|ESCAPE)"):
                 sincronizza_db_personale()
     # 1. Scansione dei file torneo esistenti
     tournament_files_pattern = "Tornello - *.json" 
@@ -3100,8 +3105,8 @@ if __name__ == "__main__":
                     # Il caricamento è fallito
                     print(_("Errore fatale nel caricamento del torneo '{filename}'.").format(filename=active_tournament_filename))
                     # Chiediamo se vuole creare un nuovo torneo o uscire
-                    create_new_instead_choice = key("Vuoi (c)reare un nuovo torneo o (u)scire dal programma? [c/u]: ").strip().lower()
-                    if create_new_instead_choice == 'c':
+                    create_new_instead_choice = enter_escape("Vuoi creare un nuovo torneo? (INVIO per sì|ESCAPE per uscire): ")
+                    if create_new_instead_choice:
                         deve_creare_nuovo_torneo = True
                         active_tournament_filename = None # Resetta perché il caricamento è fallito
                     else:
@@ -3115,7 +3120,7 @@ if __name__ == "__main__":
                 print(_("Ok, procederemo con la creazione di un nuovo torneo chiamato: '{name}'.").format(name=user_input_choice))
                 deve_creare_nuovo_torneo = True
                 nome_nuovo_torneo_suggerito = user_input_choice
-                break # Esce dal loop s/n/nome
+                break
     else: # Più di un torneo trovato
         print(_("\n--- Tornei Esistenti Trovati ---"))
         tournament_options = []
@@ -3186,8 +3191,8 @@ if __name__ == "__main__":
             # Assicurati che il prefisso "Tornello - " sia quello corretto per il tuo stile di nomenclatura
             prospective_filename_check = f"Tornello - {sanitized_check_name}.json" 
             if os.path.exists(prospective_filename_check):
-                overwrite_choice = key(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").format(filename=prospective_filename_check)).strip().lower()
-                if overwrite_choice == 's':
+                overwrite_choice = enter_escape(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (INVIO|ESCAPE): ").format(filename=prospective_filename_check))
+                if overwrite_choice == True:
                     new_tournament_name_final = current_potential_name # Accetta il nome suggerito
                     active_tournament_filename = prospective_filename_check
                 else:
@@ -3206,8 +3211,8 @@ if __name__ == "__main__":
                     sanitized_name_new = sanitize_filename(input_corrente_nome_torneo)
                     prospective_filename = f"Tornello - {sanitized_name_new}.json" # Usa il tuo stile
                     if os.path.exists(prospective_filename):
-                        overwrite = key(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (s/n): ").format(filename=prospective_filename_check)).strip().lower()
-                        if overwrite != 's':
+                        overwrite = enter_escape(_("ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo? (INVIO|ESCAPE): ").format(filename=prospective_filename_check))
+                        if overwrite != True:
                             print(_("Operazione annullata. Scegli un nome diverso per il torneo."))
                             continue # Torna a chiedere il nome (all'inizio di QUESTO while True)
                     new_tournament_name_final = input_corrente_nome_torneo
@@ -3260,10 +3265,9 @@ if __name__ == "__main__":
         torneo["deputy_chief_arbiters"] = input(_(" Vice Arbitri (separati da virgola) [Default: {default_deputy}]: ").format(default_deputy=_("nessuno"))).strip() or ""
         torneo["time_control"] = input(_(" Controllo del Tempo [Default: {default_tc}]: ").format(default_tc=_("Standard"))).strip() or _("Standard")
         while True:
-            b1_choice = key(_(" Bianco alla prima scacchiera del T1? (S/n) [Default: S]: ")).strip().lower()
-            if b1_choice in ['s', '']: torneo['initial_board1_color_setting'] = "white1"; break
-            elif b1_choice == 'n': torneo['initial_board1_color_setting'] = "black1"; break
-            else: print(_("Risposta non valida."))
+            b1_choice = enter_escape(_(" Bianco alla prima scacchiera del Turno 1? (INVIO|ESCAPE): "))
+            if b1_choice: torneo['initial_board1_color_setting'] = "white1"; break
+            else: torneo['initial_board1_color_setting'] = "black1"; break
         round_dates = calculate_dates(torneo["start_date"], torneo["end_date"], torneo["total_rounds"])
         if round_dates is None:
             print(_("Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata.")); sys.exit(1)
@@ -3386,9 +3390,9 @@ if __name__ == "__main__":
                     break 
                 else: # Prepara e genera il prossimo turno
                     next_round_num = current_round_num + 1
-                    print(_("\nVuoi procedere e generare gli abbinamenti per il Turno {round_num}? (s/n): ").format(round_num=next_round_num))
-                    procede_next_round = key().strip().lower()
-                    if procede_next_round == 's':
+                    print(_("\nVuoi procedere e generare gli abbinamenti per il Turno {round_num}? (INVIO|ESCAPE): ").format(round_num=next_round_num))
+                    procede_next_round = enter_escape()
+                    if procede_next_round:
                         # 1. Aggiorna il numero del turno
                         torneo["current_round"] = next_round_num
                         print(_("Generazione abbinamenti per il Turno {round_num}...").format(round_num=next_round_num))
