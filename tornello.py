@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.5.22, 2025.07.10 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.5.23, 2025.07.11 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -50,11 +50,13 @@ FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 #QF
 def enter_escape(prompt=""):
     '''Ritorna vero su invio, falso su escape'''
-    key=(prompt).strip()
-    if key == "":
-        return True
-    elif key == "\x1b":
-        return False
+    while True:
+        k=key(prompt).strip()
+        if k == "":
+            return True
+        elif k == "\x1b":
+            return False
+        print(_("Conferma con invio o annulla con escape"))
 
 def handle_bbpairings_failure(torneo, round_number, error_message):
     """
@@ -2262,17 +2264,15 @@ def update_match_result(torneo):
             bp_name_match_disp = f"{bp_data_obj.get('first_name','?')} {bp_data_obj.get('last_name','?')}"
             sel_msg = _("Partita selezionata per risultato: {white} vs {black} (ID Glob: {match_id})")
             print(sel_msg.format(white=wp_name_match_disp, black=bp_name_match_disp, match_id=selected_match_obj_for_processing['id']))
-
-            result_input = input(_("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: ")).strip()
+            result_input = dgt(_("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "),kind="s",smin=3,smax=4)
             result_map = {
                 "1-0": ("1-0", 1.0, 0.0), "0-1": ("0-1", 0.0, 1.0),
                 "1/2": ("1/2-1/2", 0.5, 0.5), "1-F": ("1-F", 1.0, 0.0),
                 "F-1": ("F-1", 0.0, 1.0), "0-0F": ("0-0F", 0.0, 0.0)
             }
-
             if result_input in result_map:
                 res_str, w_score, b_score = result_map[result_input]
-                confirm_message_str = _("Confermi risultato?") # Messaggio generico
+                confirm_message_str = _("Confermi risultato?")
                 if res_str == "1-0":
                     confirm_message_str = _("Confermi che {winner} vince contro {loser}? (INVIO|ESCAPE): ").format(winner=wp_name_match_disp, loser=bp_name_match_disp)
                 elif res_str == "0-1":
@@ -3365,15 +3365,12 @@ if __name__ == "__main__":
                 
                 save_current_tournament_round_file(torneo)
                 save_standings_text(torneo, final=False)
-                
-                # Chiedi se uscire o continuare a gestire il turno
-                exit_choice = key(_("Vuoi (C)ontinuare a gestire questo turno o (U)scire dal programma? [C/u]: ")).strip().lower()
-                if exit_choice == 'u':
+                exit_choice = enter_escape(_("Vuoi continuare? (INVIO|ESCAPE)): "))
+                if exit_choice == False:
                     print(_("Salvataggio finale prima dell'uscita..."))
                     save_tournament(torneo)
                     break # Esce dal while True (main loop)
-                # Altrimenti, il loop continua mostrando lo stato del turno corrente
-            else: # Turno completato
+            else:
                 print(_("\nTurno {round_num} completato.").format(round_num=current_round_num))
                 append_completed_round_to_history_file(torneo, current_round_num)
                 save_standings_text(torneo, final=False)

@@ -188,7 +188,7 @@
    "buchholz": 4.5,
    "buchholz_cut1": 2.5,
    "aro": 1422,
-   "display_rank": 12
+   "display_rank": 14
   },
   {
    "id": "GASCL001",
@@ -325,7 +325,7 @@
    "buchholz": 1.0,
    "buchholz_cut1": 1.0,
    "aro": 1399,
-   "display_rank": 6
+   "display_rank": 7
   },
   {
    "id": "TRACO001",
@@ -358,7 +358,7 @@
    "fide_id_num_str": "2817697",
    "experienced": true,
    "fide_k_factor": 0,
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -373,6 +373,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PAGVI001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -387,10 +394,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 4.0,
-   "buchholz_cut1": 2.0,
+   "buchholz": 5.0,
+   "buchholz_cut1": 4.0,
    "aro": 1399,
-   "display_rank": 13
+   "display_rank": 3
   },
   {
    "id": "IONLO001",
@@ -470,7 +477,7 @@
    "buchholz": 4.5,
    "buchholz_cut1": 3.5,
    "aro": 1399,
-   "display_rank": 3
+   "display_rank": 4
   },
   {
    "id": "BRICA001",
@@ -550,7 +557,7 @@
    "buchholz": 5.0,
    "buchholz_cut1": 4.0,
    "aro": 1437,
-   "display_rank": 10
+   "display_rank": 11
   },
   {
    "id": "SCAVA001",
@@ -615,7 +622,7 @@
    "buchholz": 1.0,
    "buchholz_cut1": 1.0,
    "aro": 1399,
-   "display_rank": 7
+   "display_rank": 8
   },
   {
    "id": "DIBVI001",
@@ -695,7 +702,7 @@
    "buchholz": 6.5,
    "buchholz_cut1": 5.5,
    "aro": 1557,
-   "display_rank": 8
+   "display_rank": 9
   },
   {
    "id": "VENLU001",
@@ -772,10 +779,10 @@
    ],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 4.0,
+   "buchholz": 5.0,
    "buchholz_cut1": 3.0,
    "aro": 1689,
-   "display_rank": 4
+   "display_rank": 5
   },
   {
    "id": "FORMA001",
@@ -855,7 +862,7 @@
    "buchholz": 6.0,
    "buchholz_cut1": 5.0,
    "aro": 1557,
-   "display_rank": 9
+   "display_rank": 10
   },
   {
    "id": "GORSE001",
@@ -1005,10 +1012,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 3.0,
-   "buchholz_cut1": 2.0,
+   "buchholz": 4.0,
+   "buchholz_cut1": 3.0,
    "aro": 1434,
-   "display_rank": 5
+   "display_rank": 6
   },
   {
    "id": "PAGGI001",
@@ -1080,7 +1087,7 @@
    "buchholz": 3.0,
    "buchholz_cut1": 3.0,
    "aro": 1415,
-   "display_rank": 11
+   "display_rank": 13
   },
   {
    "id": "CALVA001",
@@ -1235,7 +1242,7 @@
    "buchholz": 3.5,
    "buchholz_cut1": 2.0,
    "aro": 1399,
-   "display_rank": 14
+   "display_rank": 15
   },
   {
    "id": "PAGVI001",
@@ -1291,6 +1298,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TRACO001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1305,10 +1319,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 1.0,
-   "buchholz_cut1": 1.0,
-   "aro": 1399,
-   "display_rank": 15
+   "buchholz": 3.0,
+   "buchholz_cut1": 3.0,
+   "aro": 1434,
+   "display_rank": 12
   }
  ],
  "current_round": 3,
@@ -1492,14 +1506,14 @@
      "round": 3,
      "white_player_id": "TRACO001",
      "black_player_id": "PAGVI001",
-     "result": null,
+     "result": "1-0",
      "schedule_info": {
       "date": "2025-07-10",
       "time": "21:15",
       "channel": "WA",
       "arbiter": "Catia"
      },
-     "is_scheduled": true
+     "is_scheduled": false
     },
     {
      "id": 23,
@@ -1568,5 +1582,5 @@
   }
  ],
  "next_match_id": 28,
- "launch_count": 24
+ "launch_count": 29
 }
