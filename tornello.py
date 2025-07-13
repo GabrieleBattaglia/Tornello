@@ -5,7 +5,7 @@ from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from babel.dates import format_date
-# installazione percorsi relativi
+# installazione percorsi relativi e i18n
 def resource_path(relative_path):
     """
     Restituisce il percorso assoluto a una risorsa, funzionante sia in sviluppo
