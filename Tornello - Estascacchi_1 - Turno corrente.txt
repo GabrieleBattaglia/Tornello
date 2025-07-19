@@ -2,12 +2,6 @@
  Periodo Turno: Mercoledì 16 luglio 2025 - Venerdì 25 luglio 2025
 
  Partite da giocare
-  Giovedì 17 luglio 2025
-   21:15 IDG:28, Gabriele Battaglia vs Claudio Gasperoni, Canale: WA, Arbitro: Catia
-  Venerdì 18 luglio 2025
-   21:15 IDG:29, Alessia Mereu vs Mathias Cicciarella, Canale: WA, Arbitro: Valeria C.
-  Sabato 19 luglio 2025
-   17:00 IDG:31, Luigi Ventura vs Valeria Scapin, Canale: WA, Arbitro: Catia
   Lunedì 21 luglio 2025
    21:15 IDG:34, Martina Forte vs Rita Valleriani, Canale: WA, Arbitro: Alessia
   Martedì 22 luglio 2025
@@ -19,4 +13,7 @@
 
  Serena Gori ha il BYE
  Partite giocate
+  IDG:28 Gabriele Battaglia - Claudio Gasperoni  0-1
+  IDG:29 Alessia Mereu - Mathias Cicciarella  0-1
+  IDG:31 Luigi Ventura - Valeria Scapin  1-0
   IDG:32 Vincenzo Di Bari - Catia Susana Brites Pereira Lima  1-0
