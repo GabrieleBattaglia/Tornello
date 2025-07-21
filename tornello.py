@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.5.23, 2025.07.11 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.5.24, 2025.07.21 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -563,7 +563,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                 idx_to_remove = int(choice) - 1
                 if 0 <= idx_to_remove < len(torneo['players']):
                     player_to_remove = torneo['players'][idx_to_remove]
-                    confirm_remove = enter_escape(_("Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name'))).strip().lower()
+                    confirm_remove = enter_escape(_("Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name')))
                     if confirm_remove == True:
                         removed_player = torneo['players'].pop(idx_to_remove)
                         print(_("Giocatore '{first_name} {last_name}' rimosso.").format(first_name=removed_player.get('first_name'), last_name=removed_player.get('last_name')))
