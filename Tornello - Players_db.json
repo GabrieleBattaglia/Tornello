@@ -189,7 +189,7 @@
   "id": "TOLFI001",
   "first_name": "Filippa",
   "last_name": "Tolaro",
-  "current_elo": 1588,
+  "current_elo": 1399,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
   "games_played": 5,
@@ -985,5 +985,278 @@
   "fide_id_num_str": "23491124",
   "experienced": false,
   "fide_k_factor": 0
+ },
+ {
+  "id": "CASMA002",
+  "first_name": "Marco",
+  "last_name": "Casadei",
+  "current_elo": 1994,
+  "registration_date": "2025-07-21",
+  "birth_date": "1993-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "847542",
+  "experienced": true
+ },
+ {
+  "id": "ARICL001",
+  "first_name": "Claudio",
+  "last_name": "Ariaudo",
+  "current_elo": 1983,
+  "registration_date": "2025-07-21",
+  "birth_date": "1961-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "815535",
+  "experienced": true
+ },
+ {
+  "id": "VRIBE001",
+  "first_name": "Bersan",
+  "last_name": "Vrioni",
+  "current_elo": 1944,
+  "registration_date": "2025-07-21",
+  "birth_date": "1970-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "805351",
+  "experienced": true
+ },
+ {
+  "id": "BADGI001",
+  "first_name": "Giancarlo",
+  "last_name": "Badano",
+  "current_elo": 1840,
+  "registration_date": "2025-07-21",
+  "birth_date": "1960-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "810495",
+  "experienced": true
+ },
+ {
+  "id": "POLDI001",
+  "first_name": "Diego",
+  "last_name": "Poli",
+  "current_elo": 1686,
+  "registration_date": "2025-07-21",
+  "birth_date": "1973-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "865613",
+  "experienced": true
+ },
+ {
+  "id": "PEZER001",
+  "first_name": "Erica",
+  "last_name": "Pezzolato",
+  "current_elo": 1621,
+  "registration_date": "2025-07-21",
+  "birth_date": "1983-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "F",
+  "federation": "ITA",
+  "fide_id_num_str": "2888888",
+  "experienced": true
+ },
+ {
+  "id": "ZENSI001",
+  "first_name": "Simone",
+  "last_name": "Zenini",
+  "current_elo": 1613,
+  "registration_date": "2025-07-21",
+  "birth_date": "1987-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "898210",
+  "experienced": true
+ },
+ {
+  "id": "TESTE001",
+  "first_name": "Test",
+  "last_name": "Testicolo",
+  "current_elo": 1399.0,
+  "registration_date": "2025-07-21",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": true
+ },
+ {
+  "id": "VILGE001",
+  "first_name": "Gennaro",
+  "last_name": "Vilone",
+  "current_elo": 1478,
+  "registration_date": "2025-07-21",
+  "birth_date": "1965-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "2854606",
+  "experienced": true
+ },
+ {
+  "id": "TESTE002",
+  "first_name": "Test2",
+  "last_name": "Testicula",
+  "current_elo": 1399.0,
+  "registration_date": "2025-07-21",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": true
+ },
+ {
+  "id": "DELDA001",
+  "first_name": "Davide",
+  "last_name": "Del Monte",
+  "current_elo": 1418.0,
+  "registration_date": "2025-07-21",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": true
+ },
+ {
+  "id": "ARIGI001",
+  "first_name": "Giuliano",
+  "last_name": "Ariaudo",
+  "current_elo": 1399.0,
+  "registration_date": "2025-07-21",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": false
+ },
+ {
+  "id": "TESTE003",
+  "first_name": "Test",
+  "last_name": "Testuccio",
+  "current_elo": 1399.0,
+  "registration_date": "2025-07-21",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": true
  }
 ]

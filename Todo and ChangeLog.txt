@@ -1,5 +1,5 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
-16.
+17. aggiungere possibilità di aggiungere un giocatore ad un torneo già creato.
 
 CHANGELOG
 8.5.22
