@@ -25,7 +25,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.5.24, 2025.07.21 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.6.0, 2025.07.22 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -48,6 +48,34 @@ DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 #QF
+def calcola_valore_bye(torneo):
+    """
+    Calcola il valore in punti di un bye secondo la nuova regola FIDE.
+    - 1.0 punto se num_giocatori <= 2 * num_turni
+    - 0.5 punti se num_giocatori > 2 * num_turni
+
+    Args:
+        torneo (dict): L'oggetto principale del torneo, che contiene
+                       la lista dei giocatori e il numero totale di turni.
+
+    Returns:
+        float: Il valore del bye (1.0 o 0.5).
+    """
+    try:
+        # Recuperiamo il numero totale di giocatori iscritti al torneo
+        num_giocatori = len(torneo.get('players', []))
+        # Recuperiamo il numero totale di turni previsti
+        num_turni = int(torneo.get('total_rounds', 0))
+
+        # Applichiamo la regola FIDE
+        if num_giocatori > (2 * num_turni):
+            return 0.5
+        else:
+            return 1.0
+    except (ValueError, TypeError):
+        # In caso di errore o dati mancanti, torniamo al comportamento standard (1 punto)
+        return 1.0
+
 def enter_escape(prompt=""):
     '''Ritorna vero su invio, falso su escape'''
     while True:
@@ -228,18 +256,19 @@ def time_machine_torneo(torneo):
         return False
     
     # Ora riapplichiamo il punto del BYE per il turno appena generato
+    valore_bye = calcola_valore_bye(torneo)
     for match in matches_new:
         if match.get("result") == "BYE":
             bye_player_id = match.get('white_player_id')
             player_obj = get_player_by_id(torneo, bye_player_id)
             if player_obj:
                 # Assicurati di AGGIUNGERE il punto, non sovrascrivere
-                player_obj['points'] = player_obj.get('points', 0.0) + 1.0
+                player_obj['points'] = player_obj.get('points', 0.0) + valore_bye
                 player_obj.setdefault("results_history", []).append({
                     "round": target_round, "opponent_id": "BYE_PLAYER_ID",
-                    "color": None, "result": "BYE", "score": 1.0
+                    "color": None, "result": "BYE", "score": valore_bye
                 })
-                print(_("Ripristinato 1.0 punto per il BYE al Turno {round} per {name}.").format(round=target_round, name=player_obj.get('first_name')))
+                print(_("Ripristinato {score} punto/i per il BYE al Turno {round} per {name}.").format(score=valore_bye, round=target_round, name=player_obj.get('first_name')))
     
     # Aggiungiamo il nuovo set di abbinamenti alla lista dei round
     torneo.setdefault("rounds", []).append({"round": target_round, "matches": matches_new})
