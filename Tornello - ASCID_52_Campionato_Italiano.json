@@ -1,5 +1,5 @@
 {
- "name": "ASCId52Campionato",
+ "name": "ASCID 52 Campionato Italiano",
  "start_date": "2025-07-21",
  "end_date": "2025-07-27",
  "total_rounds": 7,
@@ -8,7 +8,7 @@
  "chief_arbiter": "N/D",
  "deputy_chief_arbiters": "",
  "time_control": "Standard",
- "initial_board1_color_setting": "white1",
+ "initial_board1_color_setting": "black1",
  "round_dates": [
   {
    "round": 1,
@@ -46,7 +46,7 @@
    "end_date": "2025-07-27"
   }
  ],
- "tournament_id": "ASCId52Campionato_20250721145746",
+ "tournament_id": "ASCID_52_Campionato_Italiano_20250722081857",
  "players": [
   {
    "id": "CASMA002",
@@ -70,8 +70,16 @@
    "fide_id_num_str": "847542",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ZENSI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -84,8 +92,8 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 2
+   "aro": 1613,
+   "display_rank": 3
   },
   {
    "id": "ARICL001",
@@ -109,8 +117,16 @@
    "fide_id_num_str": "815535",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BATGA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -123,8 +139,8 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 3
+   "aro": 1513,
+   "display_rank": 4
   },
   {
    "id": "VRIBE001",
@@ -148,8 +164,16 @@
    "fide_id_num_str": "805351",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "VILGE001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -160,10 +184,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 0.5,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 4
+   "aro": 1478,
+   "display_rank": 11
   },
   {
    "id": "GASCL001",
@@ -196,8 +220,16 @@
    "fide_id_num_str": "825450",
    "experienced": true,
    "fide_k_factor": 20,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "IONLO001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -210,7 +242,7 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
+   "aro": 1446,
    "display_rank": 5
   },
   {
@@ -235,8 +267,16 @@
    "fide_id_num_str": "810495",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "DELDA001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -249,7 +289,7 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
+   "aro": 1418,
    "display_rank": 6
   },
   {
@@ -283,8 +323,16 @@
    "fide_id_num_str": "841439",
    "experienced": true,
    "fide_k_factor": 20,
-   "points": 0.0,
-   "results_history": [],
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ARIGI001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -295,10 +343,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 0.5,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 7
+   "aro": 1399,
+   "display_rank": 12
   },
   {
    "id": "POLDI001",
@@ -322,8 +370,16 @@
    "fide_id_num_str": "865613",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "CIBSI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -336,8 +392,8 @@
    "is_scheduled": false,
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 8
+   "aro": 1399,
+   "display_rank": 7
   },
   {
    "id": "PEZER001",
@@ -361,8 +417,16 @@
    "fide_id_num_str": "2888888",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "GORSE001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -373,10 +437,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 9
+   "aro": 1399,
+   "display_rank": 2
   },
   {
    "id": "ZENSI001",
@@ -401,7 +465,15 @@
    "experienced": true,
    "fide_k_factor": null,
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "CASMA002",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -412,10 +484,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 10
+   "aro": 1994,
+   "display_rank": 13
   },
   {
    "id": "BATGA001",
@@ -449,7 +521,15 @@
    "experienced": true,
    "fide_k_factor": 20,
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ARICL001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -460,10 +540,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 11
+   "aro": 1983,
+   "display_rank": 14
   },
   {
    "id": "VILGE001",
@@ -487,8 +567,16 @@
    "fide_id_num_str": "2854606",
    "experienced": true,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "VRIBE001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -499,10 +587,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 0.5,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 12
+   "aro": 1944,
+   "display_rank": 9
   },
   {
    "id": "IONLO001",
@@ -544,7 +632,15 @@
    "experienced": true,
    "fide_k_factor": 40,
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "GASCL001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -555,10 +651,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 13
+   "aro": 1874,
+   "display_rank": 15
   },
   {
    "id": "DELDA001",
@@ -583,7 +679,15 @@
    "experienced": true,
    "fide_k_factor": null,
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BADGI001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -594,10 +698,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 14
+   "aro": 1840,
+   "display_rank": 16
   },
   {
    "id": "ARIGI001",
@@ -621,8 +725,16 @@
    "fide_id_num_str": "0",
    "experienced": false,
    "fide_k_factor": null,
-   "points": 0.0,
-   "results_history": [],
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "SOPMA001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -633,10 +745,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 0.5,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 15
+   "aro": 1731,
+   "display_rank": 10
   },
   {
    "id": "CIBSI001",
@@ -670,7 +782,15 @@
    "experienced": false,
    "fide_k_factor": 0,
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "POLDI001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -681,10 +801,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 15
+   "aro": 1686,
+   "display_rank": 17
   },
   {
    "id": "GORSE001",
@@ -725,22 +845,39 @@
    "fide_id_num_str": "23491132",
    "experienced": false,
    "fide_k_factor": 0,
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "PEZER001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BYE_PLAYER_ID",
+     "color": null,
+     "result": "BYE",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
    "last_color": null,
    "consecutive_white": 0,
    "consecutive_black": 0,
-   "received_bye_count": 0,
-   "received_bye_in_round": [],
+   "received_bye_count": 1,
+   "received_bye_in_round": [
+    2
+   ],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
+   "buchholz": 1.0,
    "buchholz_cut1": 0.0,
-   "aro": null,
-   "display_rank": 15
+   "aro": 1621,
+   "display_rank": 1
   },
   {
    "id": "TOLFI001",
@@ -796,10 +933,10 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": null,
-   "display_rank": 1
+   "display_rank": 8
   }
  ],
- "current_round": 1,
+ "current_round": 2,
  "rounds": [
   {
    "round": 1,
@@ -807,58 +944,58 @@
     {
      "id": 1,
      "round": 1,
-     "white_player_id": "CASMA002",
-     "black_player_id": "ZENSI001",
-     "result": null
+     "white_player_id": "ZENSI001",
+     "black_player_id": "CASMA002",
+     "result": "0-1"
     },
     {
      "id": 2,
      "round": 1,
-     "white_player_id": "BATGA001",
-     "black_player_id": "ARICL001",
-     "result": null
+     "white_player_id": "ARICL001",
+     "black_player_id": "BATGA001",
+     "result": "1-0"
     },
     {
      "id": 3,
      "round": 1,
-     "white_player_id": "VRIBE001",
-     "black_player_id": "VILGE001",
-     "result": null
+     "white_player_id": "VILGE001",
+     "black_player_id": "VRIBE001",
+     "result": "1/2-1/2"
     },
     {
      "id": 4,
      "round": 1,
-     "white_player_id": "IONLO001",
-     "black_player_id": "GASCL001",
-     "result": null
+     "white_player_id": "GASCL001",
+     "black_player_id": "IONLO001",
+     "result": "1-0"
     },
     {
      "id": 5,
      "round": 1,
-     "white_player_id": "BADGI001",
-     "black_player_id": "DELDA001",
-     "result": null
+     "white_player_id": "DELDA001",
+     "black_player_id": "BADGI001",
+     "result": "0-1"
     },
     {
      "id": 6,
      "round": 1,
-     "white_player_id": "ARIGI001",
-     "black_player_id": "SOPMA001",
-     "result": null
+     "white_player_id": "SOPMA001",
+     "black_player_id": "ARIGI001",
+     "result": "1/2-1/2"
     },
     {
      "id": 7,
      "round": 1,
-     "white_player_id": "POLDI001",
-     "black_player_id": "CIBSI001",
-     "result": null
+     "white_player_id": "CIBSI001",
+     "black_player_id": "POLDI001",
+     "result": "0-1"
     },
     {
      "id": 8,
      "round": 1,
-     "white_player_id": "GORSE001",
-     "black_player_id": "PEZER001",
-     "result": null
+     "white_player_id": "PEZER001",
+     "black_player_id": "GORSE001",
+     "result": "1-0"
     },
     {
      "id": 9,
@@ -868,8 +1005,76 @@
      "result": "BYE"
     }
    ]
+  },
+  {
+   "round": 2,
+   "matches": [
+    {
+     "id": 10,
+     "round": 2,
+     "white_player_id": "CASMA002",
+     "black_player_id": "PEZER001",
+     "result": null
+    },
+    {
+     "id": 11,
+     "round": 2,
+     "white_player_id": "BADGI001",
+     "black_player_id": "ARICL001",
+     "result": null
+    },
+    {
+     "id": 12,
+     "round": 2,
+     "white_player_id": "TOLFI001",
+     "black_player_id": "GASCL001",
+     "result": null
+    },
+    {
+     "id": 13,
+     "round": 2,
+     "white_player_id": "POLDI001",
+     "black_player_id": "SOPMA001",
+     "result": null
+    },
+    {
+     "id": 14,
+     "round": 2,
+     "white_player_id": "ARIGI001",
+     "black_player_id": "VILGE001",
+     "result": null
+    },
+    {
+     "id": 15,
+     "round": 2,
+     "white_player_id": "VRIBE001",
+     "black_player_id": "ZENSI001",
+     "result": null
+    },
+    {
+     "id": 16,
+     "round": 2,
+     "white_player_id": "BATGA001",
+     "black_player_id": "DELDA001",
+     "result": null
+    },
+    {
+     "id": 17,
+     "round": 2,
+     "white_player_id": "IONLO001",
+     "black_player_id": "CIBSI001",
+     "result": null
+    },
+    {
+     "id": 18,
+     "round": 2,
+     "white_player_id": "GORSE001",
+     "black_player_id": null,
+     "result": "BYE"
+    }
+   ]
   }
  ],
- "next_match_id": 10,
+ "next_match_id": 19,
  "launch_count": 1
 }

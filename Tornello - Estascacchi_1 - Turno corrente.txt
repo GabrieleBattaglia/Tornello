@@ -2,8 +2,6 @@
  Periodo Turno: Mercoledì 16 luglio 2025 - Venerdì 25 luglio 2025
 
  Partite da giocare
-  Lunedì 21 luglio 2025
-   21:15 IDG:34, Martina Forte vs Rita Valleriani, Canale: WA, Arbitro: Alessia
   Martedì 22 luglio 2025
    21:15 IDG:33, Valeria Calzolari vs Alessandra Testori, Canale: WA, Arbitro: Vins.
   Giovedì 24 luglio 2025
@@ -17,3 +15,4 @@
   IDG:29 Alessia Mereu - Mathias Cicciarella  0-1
   IDG:31 Luigi Ventura - Valeria Scapin  1-0
   IDG:32 Vincenzo Di Bari - Catia Susana Brites Pereira Lima  1-0
+  IDG:34 Martina Forte - Rita Valleriani  0-1

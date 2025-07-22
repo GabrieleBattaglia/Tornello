@@ -1,0 +1,30 @@
+﻿Nome Torneo: ASCID 52 Campionato Italiano
+Luogo: Galatina
+Date: Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
+Federazione Organizzante: ITA
+Arbitro Capo: N/D
+Controllo Tempo: Standard
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Martedì 22 luglio 2025 08:25:39
+----------------------------------------------------------------------
+Classifica Parziale - Durante Turno 2
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
+-----------------------------------------------------------------------------
+  1. NC  Gori, Serena                [1399]   1.0    0.00   1.00 1621
+  2.     Pezzolato, Erica            [1621]   1.0    0.00   1.00 1399
+  3.     Casadei, Marco              [1994]   1.0    0.00   0.00 1613
+  4.     Ariaudo, Claudio            [1983]   1.0    0.00   0.00 1513
+  5. 1N  Gasperoni, Claudio          [1874]   1.0    0.00   0.00 1446
+  6.     Badano, Giancarlo           [1840]   1.0    0.00   0.00 1418
+  7.     Poli, Diego                 [1686]   1.0    0.00   0.00 1399
+  8. 3N  Tolaro, Filippa             [1399]   1.0    0.00   0.00  ---
+  9.     Vilone, Gennaro             [1478]   0.5    0.00   0.50 1944
+ 10. NC  Ariaudo, Giuliano           [1399]   0.5    0.00   0.50 1731
+ 11.     Vrioni, Bersan              [1944]   0.5    0.00   0.50 1478
+ 12. 2N  Soppelsa, Maurizio          [1731]   0.5    0.00   0.50 1399
+ 13.     Zenini, Simone              [1613]   0.0    0.00   1.00 1994
+ 14. 3N  Battaglia, Gabriele         [1513]   0.0    0.00   1.00 1983
+ 15. NC  Ionata, Lorenzo             [1446]   0.0    0.00   1.00 1874
+ 16. NC  Del Monte, Davide           [1418]   0.0    0.00   1.00 1840
+ 17. NC  Cibin, Silvia               [1399]   0.0    0.00   1.00 1686
