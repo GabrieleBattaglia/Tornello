@@ -48,33 +48,6 @@ DEFAULT_K_FACTOR = 20
 FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 #QF
-def calcola_valore_bye(torneo):
-    """
-    Calcola il valore in punti di un bye secondo la nuova regola FIDE.
-    - 1.0 punto se num_giocatori <= 2 * num_turni
-    - 0.5 punti se num_giocatori > 2 * num_turni
-
-    Args:
-        torneo (dict): L'oggetto principale del torneo, che contiene
-                       la lista dei giocatori e il numero totale di turni.
-
-    Returns:
-        float: Il valore del bye (1.0 o 0.5).
-    """
-    try:
-        # Recuperiamo il numero totale di giocatori iscritti al torneo
-        num_giocatori = len(torneo.get('players', []))
-        # Recuperiamo il numero totale di turni previsti
-        num_turni = int(torneo.get('total_rounds', 0))
-
-        # Applichiamo la regola FIDE
-        if num_giocatori > (2 * num_turni):
-            return 0.5
-        else:
-            return 1.0
-    except (ValueError, TypeError):
-        # In caso di errore o dati mancanti, torniamo al comportamento standard (1 punto)
-        return 1.0
 
 def enter_escape(prompt=""):
     '''Ritorna vero su invio, falso su escape'''
@@ -256,7 +229,7 @@ def time_machine_torneo(torneo):
         return False
     
     # Ora riapplichiamo il punto del BYE per il turno appena generato
-    valore_bye = calcola_valore_bye(torneo)
+    valore_bye = 1.0
     for match in matches_new:
         if match.get("result") == "BYE":
             bye_player_id = match.get('white_player_id')
