@@ -6,26 +6,26 @@ Arbitro Capo: Capitan Findus
 Vice Arbitri: Scacchieranti, Soci ASCId, Volontari
 Controllo Tempo: 60+0
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Mercoledì 23 luglio 2025 07:50:26
+Data Report: Giovedì 24 luglio 2025 19:25:37
 ----------------------------------------------------------------------
-Classifica Parziale - Durante Turno 4
+Classifica Parziale - Durante Turno 5
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
 -----------------------------------------------------------------------------
   1. 1N  Gasperoni, Claudio          [1874]   4.0    8.50   9.50 1428
-  2. NC  Cicciarella, Mathias        [1399]   3.5    6.50   7.50 1411
-  3. 3N  Battaglia, Gabriele         [1513]   3.0    7.00   8.00 1518
-  4. NC  Ventura, Luigi              [1399]   3.0    6.00   8.00 1592
-  5. NC  Di Bari, Vincenzo           [1399]   2.5    9.50  10.50 1518
-  6. NC  Scapin, Valeria             [1399]   2.0    8.00   9.00 1428
-  7. NC  Mereu, Alessia              [1399]   2.0    7.50   8.50 1425
-  8. 3N  Trapletti, Cosetta          [1504]   2.0    5.00   7.00 1399
-  9. NC  Ionata, Lorenzo             [1446]   2.0    4.50   5.50 1399
- 10. NC  Valleriani, Rita            [1399]   2.0    4.50   5.50 1399
- 11. NC  Paglia, Virginio            [1399]   2.0    4.00   5.00 1425
- 12. NC  Calzolari, Valeria          [1399]   2.0    4.00   5.00 1399
- 13. NC  Forte, Martina              [1399]   1.0    8.00   9.00 1518
- 14. NC  Brites Pereira Lima, Catia  [1399]   1.0    7.50   9.50 1428
- 15. NC  Paglia, Giulia              [1399]   1.0    6.00   7.00 1411
- 16. NC  Testori, Alessandra         [1399]   1.0    5.50   7.50 1415
+  2. NC  Cicciarella, Mathias        [1399]   3.5    7.50   8.50 1411
+  3. 3N  Battaglia, Gabriele         [1513]   3.0    8.00   9.00 1518
+  4. NC  Ionata, Lorenzo             [1446]   3.0    6.50   7.50 1425
+  5. NC  Ventura, Luigi              [1399]   3.0    6.00   8.00 1592
+  6. NC  Di Bari, Vincenzo           [1399]   2.5    9.50  11.50 1518
+  7. 3N  Trapletti, Cosetta          [1504]   2.0    8.00  10.00 1411
+  8. NC  Scapin, Valeria             [1399]   2.0    8.00   9.00 1428
+  9. NC  Brites Pereira Lima, Catia  [1399]   2.0    7.50   9.50 1428
+ 10. NC  Mereu, Alessia              [1399]   2.0    7.50   9.50 1425
+ 11. NC  Paglia, Virginio            [1399]   2.0    5.00   6.00 1425
+ 12. NC  Valleriani, Rita            [1399]   2.0    4.50   5.50 1399
+ 13. NC  Calzolari, Valeria          [1399]   2.0    4.00   5.00 1399
+ 14. NC  Forte, Martina              [1399]   1.0    8.00   9.00 1518
+ 15. NC  Paglia, Giulia              [1399]   1.0    7.00   8.00 1411
+ 16. NC  Testori, Alessandra         [1399]   1.0    6.50   8.50 1415
  17. NC  Gori, Serena                [1399]   1.0    5.00   7.00 1437
