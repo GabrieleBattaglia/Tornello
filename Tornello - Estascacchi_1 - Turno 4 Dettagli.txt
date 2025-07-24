@@ -1,0 +1,18 @@
+﻿Torneo: Estascacchi 1
+Sito: online, Data Inizio Torneo: Mercoledì 18 giugno 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 4 CONCLUSO ==========================
+	Periodo del Turno: Mercoledì 16 luglio 2025 - Venerdì 25 luglio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 28  | Gabriele Battaglia       [1513] (3   ) - Claudio Gasperoni        [1874] (4   ) | 0-1
+	2  | 30  | Lorenzo Ionata           [1446] (3   ) - Cosetta Trapletti        [1504] (2   ) | 1-0
+	3  | 29  | Alessia Mereu            [1399] (2   ) - Mathias Cicciarella      [1399] (3.5 ) | 0-1
+	4  | 31  | Luigi Ventura            [1399] (3   ) - Valeria Scapin           [1399] (2   ) | 1-0
+	5  | 32  | Vincenzo Di Bari         [1399] (2.5 ) - Catia Susana Brites Pereira Lima [1399] (1   ) | 1-0
+	6  | 33  | Valeria Calzolari        [1399] (2   ) - Alessandra Testori       [1399] (1   ) | 1-0
+	7  | 34  | Martina Forte            [1399] (1   ) - Rita Valleriani          [1399] (2   ) | 0-1
+	8  | 35  | Virginio Paglia          [1399] (2   ) - Giulia Paglia            [1399] (1   ) | 1-0
+	---| 36  | Serena Gori              [1399] (1   ) - BYE                             | BYE
