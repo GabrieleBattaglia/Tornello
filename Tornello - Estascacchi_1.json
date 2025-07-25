@@ -1891,7 +1891,14 @@
      "round": 5,
      "white_player_id": "SCAVA001",
      "black_player_id": "MERAL001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-28",
+      "time": "17:00",
+      "channel": "WA",
+      "arbiter": "Gabry"
+     },
+     "is_scheduled": true
     },
     {
      "id": 42,
@@ -1925,5 +1932,5 @@
   }
  ],
  "next_match_id": 46,
- "launch_count": 42
+ "launch_count": 43
 }
