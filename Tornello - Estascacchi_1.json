@@ -1863,7 +1863,14 @@
      "round": 5,
      "white_player_id": "GASCL001",
      "black_player_id": "CICMA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-29",
+      "time": "21:15",
+      "channel": "WA",
+      "arbiter": "Martina"
+     },
+     "is_scheduled": true
     },
     {
      "id": 38,
@@ -1877,14 +1884,28 @@
      "round": 5,
      "white_player_id": "DIBVI001",
      "black_player_id": "VENLU001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-28",
+      "time": "21:30",
+      "channel": "WA",
+      "arbiter": "Martina"
+     },
+     "is_scheduled": true
     },
     {
      "id": 40,
      "round": 5,
      "white_player_id": "TRACO001",
      "black_player_id": "CALVA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-26",
+      "time": "16:30",
+      "channel": "WA",
+      "arbiter": "alessia"
+     },
+     "is_scheduled": true
     },
     {
      "id": 41,
@@ -1912,7 +1933,14 @@
      "round": 5,
      "white_player_id": "TESAL001",
      "black_player_id": "FORMA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2025-07-27",
+      "time": "21:15",
+      "channel": "WA",
+      "arbiter": "Vincenzo"
+     },
+     "is_scheduled": true
     },
     {
      "id": 44,
@@ -1932,5 +1960,5 @@
   }
  ],
  "next_match_id": 46,
- "launch_count": 43
+ "launch_count": 44
 }
