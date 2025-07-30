@@ -26,7 +26,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.6.4, 2025.07.28 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.6.8, 2025.07.29 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -815,11 +815,10 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
     """
     trf_lines = []
     try:
+        valore_bye_torneo = dati_torneo.get('bye_value', 1.0)
         total_rounds_val = int(dati_torneo.get('total_rounds', 0))
         number_of_players_val = len(lista_giocatori_attivi)
         current_round_being_paired = int(dati_torneo.get("current_round", 1))
-
-        # Formattazione Date
         start_date_strf = dati_torneo.get('start_date', '01/01/1900') 
         end_date_strf = dati_torneo.get('end_date', '01/01/1900')   
         if '/' not in start_date_strf and len(start_date_strf) == 10 and '-' in start_date_strf:
@@ -832,7 +831,6 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                 end_date_obj = datetime.strptime(end_date_strf, '%Y-%m-%d')
                 end_date_strf = end_date_obj.strftime('%d/%m/%Y')
             except ValueError: end_date_strf = '01/01/1900'
-
         # Intestazione (Header)
         trf_lines.append(f"012 {str(dati_torneo.get('name', _('Torneo Sconosciuto')))[:45]:<45}\n")
         trf_lines.append(f"022 {str(dati_torneo.get('site', _('Luogo Sconosciuto')))[:45]:<45}\n") # Usa 'site'
@@ -903,11 +901,18 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                     else: # Fallback a stringa di spazi se il formato non è gestibile
                         birth_date_for_trf = "          " 
             write_to_char_list_local(p_line_chars, 70, f"{birth_date_for_trf:<10}"[:10]) # Assicura 10 caratteri            
-            write_to_char_list_local(p_line_chars, 81, f"{float(player_data.get('points', 0.0)):4.1f}")
+            punti_reali = float(player_data.get('points', 0.0))
+            punti_per_trf = punti_reali  # Inizia con i punti reali
+            # Se il valore del BYE nel torneo è diverso da 1.0 (es. 0.5),
+            # dobbiamo correggere il punteggio da passare al motore.
+            if valore_bye_torneo != 1.0:
+                for res_entry in player_data.get("results_history", []):
+                    # Se questo risultato è un BYE, aggiungiamo la differenza per "ingannare" il motore
+                    if res_entry.get("opponent_id") == "BYE_PLAYER_ID":
+                        punti_per_trf += (1.0 - valore_bye_torneo)
+            # Scrivi il punteggio corretto per il motore
+            write_to_char_list_local(p_line_chars, 81, f"{punti_per_trf:4.1f}")
             write_to_char_list_local(p_line_chars, 86, f"{start_rank:>4}") # Campo Rank (col 86-89)
-            # --- Scrittura Storico Risultati ---
-            # Inizia a scrivere i blocchi partita dalla colonna 92 (indice 91)
-            # Le colonne 90 e 91 sono implicitamente spazi (dall'inizializzazione di p_line_chars)
             colonna_inizio_blocco_partita = 92 
             
             history_sorted = sorted(player_data.get("results_history", []), key=lambda x: x.get("round", 0))
@@ -930,10 +935,8 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
 
                         if opp_id_tornello == "BYE_PLAYER_ID" or tornello_result_str == "BYE":
                             color_char_trf = "-"
-                            if player_score_this_game == 1.0: result_code_trf = "U"
-                            elif player_score_this_game == 0.5: result_code_trf = "H" 
-                            elif player_score_this_game == 0.0: result_code_trf = "Z" 
-                            else: result_code_trf = "U" 
+                            if player_score_this_game > 0.0: result_code_trf = "U" 
+                            else: result_code_trf = "Z" 
                         elif opp_id_tornello:
                             opponent_start_rank = mappa_id_a_start_rank.get(opp_id_tornello)
                             if opponent_start_rank is None:
@@ -1794,12 +1797,6 @@ def generate_pairings_for_round(torneo):
     if not trf_string:
         print(_("ERRORE: Fallita generazione della stringa TRF per bbpPairings."))
         return handle_bbpairings_failure(torneo, round_number, "Fallimento generazione stringa TRF.") 
-    # --- INIZIO BLOCCO DI DEBUG ---
-    print("\n\n--- INIZIO FILE TRF PER IL TURNO 5 ---")
-    print(trf_string)
-    print("--- FINE FILE TRF ---")
-    input(">>> Premere INVIO per uscire. Il programma si fermerà qui. <<<")
-    sys.exit()
     # 3. Eseguire bbpPairings.exe
     success, bbp_output_data, bbp_message = run_bbpairings_engine(trf_string)
     all_generated_matches = [] 
@@ -3257,21 +3254,23 @@ if __name__ == "__main__":
         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
         num_giocatori = len(torneo.get("players", []))
         num_turni_totali = torneo.get("total_rounds",0)
-        valore_bye_calcolato = 0.5 if num_giocatori < (num_turni_totali * 2) else 1.0
-        print(_("Calcolo Valore del BYE secondo la regola FIDE:"))
-        print(_("Partecipanti: {p}, Turni: {t}").format(p=num_giocatori, t=num_turni_totali))
-        print(_("Il valore del BYE calcolato è: {val}").format(val=valore_bye_calcolato))
-        prompt_bye = _("Conferma il valore del BYE da usare per tutto il torneo\nPremi INVIO per accettare il valore suggerito ({val}), oppure ESCAPE per usare l'altro valore ({alt_val}).").format(
-            val=valore_bye_calcolato,
-            alt_val=1.0 if valore_bye_calcolato == 0.5 else 0.5
-        )
-        if enter_escape(prompt_bye):
-            valore_bye_confermato = valore_bye_calcolato
+        if num_giocatori > (num_turni_totali * 2):
+            valore_bye_calcolato = 0.5
         else:
-            valore_bye_confermato = 1.0 if valore_bye_calcolato == 0.5 else 0.5
+            valore_bye_calcolato = 1.0
+        valore_suggerito = valore_bye_calcolato
+        valore_alternativo = 1.0 if valore_suggerito == 0.5 else 0.5
+        print("-" * 30)
+        print(_("Calcolo Valore del BYE secondo la regola FIDE"))
+        print(_("Il valore suggerito è: {val}").format(val=valore_suggerito))
+        print("-" * 30)
+        prompt_conferma = _("Accetti il valore suggerito? (INVIO = Sì / ESCAPE = No, per usare {alt_val})").format(alt_val=valore_alternativo)
+        if enter_escape(prompt_conferma):
+            valore_bye_confermato = valore_suggerito
+        else:
+            valore_bye_confermato = valore_alternativo
         torneo['bye_value'] = float(valore_bye_confermato)
         print(_("Valore del BYE impostato a: {val}").format(val=torneo['bye_value']))
-        print("-"*20)
         min_req_players = num_turni_totali + 1 if isinstance(num_turni_totali, int) and num_turni_totali > 0 else 2
         if num_giocatori < min_req_players : # Ricontrolla dopo _conferma
              print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali));
