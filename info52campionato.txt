@@ -1,18 +1,104 @@
-info 52 ascid
-Casadei Marco    1994 
-Ariaudo Claudio    1983 
-Vrioni Bersan    1944 
-Gasperoni Claudio    1874 
-Badano Giancarlo    1840 
-Soppelsa Maurizio    1731 
-Poli Diego    1686 
-Pezzolato Erica    1621 
-Zenini Simone    1613 
-Battaglia Gabriele    1513 
-Vilone Gennaro    1478 
-Ionata Lorenzo    1446 
-Delmonte Davide    1418 
-Ariaudo Giuliano    1399 
-Cibin Silvia    1399 
-Gori Serena    1399 
-Tolaro Filippa    1399    Rapid 1577 
+ASCId 52
+Tabellone partenza.
+Casadei Marco
+Ariaudo Claudio
+Vrioni Bersan
+Gasperoni Claudio
+Badano Giancarlo
+Soppelsa Maurizio
+Poli Diego
+Pezzolato Erica
+Zenini Simone
+Battaglia Gabriele
+Vilone Gennaro
+Ionata Lorenzo
+Delmonte Davide
+Ariaudo Giuliano
+Cibin Silvia
+Gori Serena
+TOLARO Filippa
+t1
+1 0  Zenini Simone 1 Casadei Marco
+2 1  Ariaudo Claudio 0 Battaglia Gabriele
+3 ½ Vilone Gennaro½Vrioni Bersan
+4 1  Gasperoni Claudio 0 Ionata Lorenzo
+5 0 Delmonte Davide 1 Badano Giancarlo
+6 ½ Soppelsa Maurizio½Ariaudo Giuliano
+7 0 Cibin Silvia1 Poli Diego
+8 Pezzolato Erica Gori Serena 1-0
+TOLARO Filippa BYE
+t2
+1  1 Casadei Marco 0 Pezzolato Erica
+2 1  Badano Giancarlo 0 Ariaudo Claudio
+3 ½ Poli Diego½Gasperoni Claudio
+4 1  Vrioni Bersan 0 Soppelsa Maurizio
+5 0 TOLARO Filippa 1 Vilone Gennaro
+6 0  Ariaudo Giuliano 1 Zenini Simone
+7 1  Battaglia Gabriele 0 Delmonte Davide
+8 1 Ionata Lorenzo 0 Cibin Silvia
+Gori Serena
+t3
+1 0 Badano Giancarlo 1 Casadei Marco
+2 ½ Gasperoni Claudio½Vrioni Bersan
+3 ½ Vilone Gennaro½Poli Diego
+4 1  Ariaudo Claudio 0 Ionata Lorenzo
+5 1  Pezzolato Erica 0 Battaglia Gabriele
+6 ½ Zenini Simone ½ TOLARO Filippa
+7 0  Gori Serena 1 Ariaudo Giuliano
+8 1  Soppelsa Maurizio 0 Delmonte Davide
+t4
+1 1  Casadei Marco 0 Ariaudo Claudio
+2 1 Vrioni Bersan 0 Pezzolato Erica
+3½ Vilone Gennaro½Gasperoni Claudio
+4½ Poli Diego½Badano Giancarlo
+5 ½ Zenini Simone½Soppelsa Maurizio
+6 0F Ariaudo Giuliano 1F Battaglia Gabriele
+7 0  Ionata Lorenzo 1 TOLARO Filippa
+8 1  Cibin Silvia 0 Gori Serena
+t5
+1 ½ Vrioni Bersan½Casadei Marco
+2 1  Badano Giancarlo 0 Vilone Gennaro
+3 0  Gasperoni Claudio 1 Soppelsa Maurizio
+4½ Pezzolato Erica½Poli Diego
+5 0  TOLARO Filippa 1 Ariaudo Claudio
+6 0  Battaglia Gabriele 1 Zenini Simone
+7 1  Ariaudo Giuliano 0 Cibin Silvia
+8 1  Delmonte Davide 0 Gori Serena
+t6
+1½ Casadei Marco½Poli Diego
+2½ Badano Giancarlo½Vrioni Bersan
+3 1  Ariaudo Claudio 0 Zenini Simone
+4½ Soppelsa Maurizio½Vilone Gennaro
+5 0  Ariaudo Giuliano 1 Gasperoni Claudio
+6 0  TOLARO Filippa 1 Battaglia Gabriele
+7 0  Cibin Silvia 1 Delmonte Davide
+8 0  Gori Serena 1 Ionata Lorenzo
+t7
+1 0  Gasperoni Claudio 1 Casadei Marco
+2 1  Vrioni Bersan 0 Ariaudo Claudio
+3 0  Soppelsa Maurizio 1 Badano Giancarlo
+4 1  Poli Diego 0 Battaglia Gabriele
+5½ Zenini Simone½Pezzolato Erica
+6 1  Vilone Gennaro 0 Cibin Silvia
+7 0  Delmonte Davide 1 Ionata Lorenzo
+8 0  Gori Serena 1 TOLARO Filippa
+CL
+| Pos | N  | T | NAME              | Rtg  | PRtg | Fed | Pts | REP | DirE | BH-C1 | BH   | APRO |
+|-----|----|---|-------------------|------|------|-----|-----|-----|------|-------|------|------|
+| 1   | 1  |   | Casadei Marco     | 1994 | 2103 | ITA | 6   | 7   | 0.0  | 25.5  | 29.0 | 1769 |
+| 2   | 5  |   | Badano Giancarlo  | 1840 | 1906 | ITA | 5   | 7   | 0.5  | 27.0  | 29.5 | 1769 |
+| 3   | 3  |   | Vrioni Bersan     | 1944 | 1947 | ITA | 5   | 7   | 0.5  | 26.0  | 29.5 | 1785 |
+| 4   | 7  |   | Poli Diego        | 1686 | 1776 | ITA | 4.5 | 7   | 0.0  | 25.0  | 26.5 | 1687 |
+| 5   | 2  |   | Ariaudo Claudio   | 1983 | 1728 | ITA | 4   | 7   | 0.0  | 26.0  | 29.0 | 1744 |
+| 6   | 11 |   | Vilone Gennaro    | 1478 | 1746 | ITA | 4   | 7   | 0.0  | 24.5  | 26.0 | 1666 |
+| 7   | 4  |   | Gasperoni Claudio | 1874 | 1668 | ITA | 3.5 | 7   | 0.0  | 26.5  | 29.5 | 1772 |
+| 8   | 8  |   | Pezzolato Erica   | 1621 | 1692 | ITA | 3.5 | 7   | 0.0  | 25.5  | 26.0 | 1605 |
+| 9   | 6  |   | Soppelsa Maurizio | 1731 | 1652 | ITA | 3.5 | 7   | 0.0  | 24.0  | 26.5 | 1709 |
+| 10  | 9  |   | Zenini Simone     | 1613 | 1663 | ITA | 3.5 | 7   | 0.0  | 23.0  | 26.0 | 1684 |
+| 11  | 12 |   | Ionata Lorenzo    | 1446 | 1579 | ITA | 3.5 | 7   | 0.0  | 18.0  | 18.5 | 1364 |
+| 12  | 10 |   | Battaglia Gabriele| 1513 | 1495 | ITA | 3   | 7   | 1.0  | 21.5  | 24.0 | 1634 |
+| 13  | 17 |   | TOLARO Filippa    | 1399 | 1515 | ITA | 3   | 7   | 0.0  | 21.0  | 21.5 | 1476 |
+| 14  | 14 |   | Ariaudo Giuliano  | 1399 | 1603 | ITA | 3   | 6   | 0.0  | 15.5  | 18.5 | 1366 |
+| 15  | 13 |   | Delmonte Davide   | 1418 | 1430 | ITA | 2.5 | 7   | 0.0  | 19.0  | 19.5 | 1413 |
+| 16  | 15 |   | Cibin Silvia      | 1399 | 1198 | ITA | 1.5 | 7   | 0.0  | 19.0  | 19.5 | 1464 |
+| 17  | 16 |   | Gori Serena       | 1399 | 647  | ITA | 0.5 | 7   | 0.0  | 17.0  | 17.5 | 1503 |

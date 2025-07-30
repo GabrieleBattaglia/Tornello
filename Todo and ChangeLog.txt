@@ -1,8 +1,45 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 17. aggiungere possibilità di aggiungere un giocatore ad un torneo già creato.
-18. integrare nuova regola del bye.
+19.
 
 CHANGELOG
+8.6.x
+	L'attuale versione ha un problema che non sono in grado di risolvere perchè pare dipendere direttamente da BBPPAIRINGS. L'issue è spiegato, in iglese, da questo post di github:
+	We are using `bbpPairings.exe` (with the `--dutch` flag) to generate pairings for a Swiss-system tournament. Our tournament regulations have two specific rules that are creating a conflict within the engine's logic:
+1.  **Half-Point Bye:** A pairing-allocated bye (due to an odd number of players) must award the player **0.5 points**.
+2.  **Bye Ineligibility:** A player who receives a pairing-allocated bye is **ineligible** to receive another one for the remainder of the tournament.
+The current implementation via the TRF format forces us to choose between satisfying one rule or the other, but not both. This leads to a critical dilemma.
+**The Dilemma: Two Conflicting Approaches**
+To generate pairings for the next round, we need to provide the player's history in the `input_bbp.trf` file. We have identified two ways to represent the half-point bye, each with a significant drawback:
+**Approach 1: Using Result Code `U` (The Current Workaround)**
+To enforce the bye ineligibility rule, we must use the `U` result code (`<opponent_rank> - U`).
+* **PRO:** The engine correctly identifies this as a pairing-allocated bye and correctly prevents the player from receiving a second bye in subsequent rounds. This functionality is crucial and works perfectly.
+* **CON:** The engine is hard-coded to treat the `U` result as being worth **1.0 point**. This incorrectly places the player in a higher score group for the next pairing round. For example, a player with a 0.5-point bye is placed in the 1.0-point score group. This leads to pairings that, while internally consistent with the data provided to the engine, are considered incorrect according to the tournament's official standings.
+**Approach 2: Using Result Code `H` (Half-Point Bye)**
+To ensure the player is in the correct score group for pairing, we can use the `H` result code (`<opponent_rank> - H`).
+* **PRO:** The engine correctly awards the player **0.5 points**. The player is placed in the correct score group for the next pairing round, which produces the desired pairings that match a manual calculation by a certified arbiter.
+* **CON:** The engine appears to treat the `H` code as a *player-requested* bye (e.g., for a specific round), not a *pairing-allocated* bye. As a result, it **does not** make the player ineligible for future byes. This is a critical failure, as the engine might assign a second pairing-allocated bye to the same player later in the tournament, which violates FIDE regulations.
+**Example Scenario (17-player tournament, after Round 1)**
+* **Official Standings (0.5-point bye):**
+    * Score Group 1.0: 6 players (winners)
+    * Score Group 0.5: 5 players (4 with a draw, 1 with a bye)
+    * Score Group 0.0: 6 players (losers)
+* **Desired Pairing:** The player with the bye (0.5 points) should be paired against another player from the 0.5-point score group.
+* **Actual Result with Approach 1 (`U` code):** The engine sees the score groups as:
+    * Score Group 1.0: 7 players (6 winners + 1 bye player)
+    * Score Group 0.5: 4 players (4 with a draw)
+    * Score Group 0.0: 6 players (losers)
+This forces the bye player into the top score group, fundamentally changing the pairings for Round 2 and all subsequent rounds.
+**Request for a Solution**
+We are caught in a dilemma where we must either generate incorrect pairings or risk violating bye regulations. We need a way to achieve both objectives simultaneously: pair players based on a 0.5-point bye value, while ensuring they cannot receive another bye.
+We would like to ask:
+1.  Is there an existing command-line flag or a feature in the TRF format supported by `bbpPairings` that we have missed which can resolve this conflict?
+2.  If not, would it be possible to implement a feature to address this? For example:
+    * A command-line switch to define the point value of a pairing-bye (e.g., `bbpPairings.exe --bye-value 0.5`), which would alter the value of the `U` code.
+    * A modification to the TRF format to allow specifying the score of a bye (e.g., `U0.5`).
+This functionality would greatly enhance the engine's flexibility for tournaments with custom bye rules.
+***
+	Aggiunta nuova impostazione per i tornei che decide l'entità del BYE
 8.5.22
 	+ Corretta la gestione del BYE per i turni superiori ad 1
 	+ Corretto un bug nella time machine
