@@ -1,5 +1,6 @@
+# TORNELLO DEV
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, glob, shutil, requests, io, zipfile, threading
+import os, json, sys, math, traceback, subprocess, glob, shutil, io, zipfile, threading, requests
 import xml.etree.ElementTree as ET
 from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
@@ -25,7 +26,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.6.0, 2025.07.22 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.6.4, 2025.07.28 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -124,13 +125,10 @@ def _ricalcola_stato_giocatore_da_storico(player_obj):
     player_obj['consecutive_black'] = 0
     player_obj['received_bye_count'] = 0
     player_obj['received_bye_in_round'] = []
-    
     # Ordina lo storico per assicurare un calcolo progressivo corretto
     history_sorted = sorted(player_obj.get("results_history", []), key=lambda x: x.get("round", 0))
-
     for result in history_sorted:
         player_obj['points'] += result.get('score', 0.0)
-        
         opponent = result.get('opponent_id')
         if opponent == "BYE_PLAYER_ID":
             player_obj['received_bye_count'] += 1
@@ -163,7 +161,6 @@ def time_machine_torneo(torneo):
     prompt_template_1 = _("Puoi tornare a un qualsiasi turno da 1 a {max_round}.")
     print(prompt_template_1.format(max_round=current_round))
     print(_("Tutti i risultati e gli abbinamenti successivi al turno scelto verranno cancellati."))
-    
     try:
         prompt_template_2 = _("A quale turno vuoi tornare? (1-{max_round}, o vuoto per annullare): ")
         prompt_formatted = prompt_template_2.format(max_round=current_round)
@@ -178,36 +175,23 @@ def time_machine_torneo(torneo):
     except ValueError:
         print(_("Input non valido. Inserisci un numero."))
         return False
-
     print(_("\nATTENZIONE: Stai per eseguire un'operazione distruttiva."))
     prompt_template_3 = _("Verranno eliminati tutti i risultati e gli abbinamenti inseriti dal turno {target_round} in poi.")
     print(prompt_template_3.format(target_round=target_round))
-    
     confirm = input(_("Sei assolutamente sicuro di voler procedere? (scrivi 'si' per confermare): ")).strip().lower()
     if confirm != 'si':
         print(_("Conferma non data. Operazione di riavvolgimento annullata."))
         return False
-
     prompt_template_4 = _("\nAvvio riavvolgimento al Turno {target_round}...")
     print(prompt_template_4.format(target_round=target_round))
-    
     # Azzera lo stato futuro (rimuove i round >= target_round)
     torneo['rounds'] = [r for r in torneo.get('rounds', []) if r.get('round', 0) < target_round]
-
-    # Rimuovi lo storico futuro per ogni giocatore e ricalcola lo stato
     for player in torneo.get('players', []):
         player['results_history'] = [res for res in player.get('results_history', []) if res.get('round', 0) < target_round]
-        
-        # <<< CORREZIONE 1: RESET DELLO STATO DI RITIRO >>>
         if player.get('withdrawn', False):
             player['withdrawn'] = False
-            # Potresti aggiungere un messaggio se vuoi:
-            # print(f"Stato 'ritirato' annullato per {player['first_name']}")
-            
         # Questa funzione azzererà i punti a 0 e li ricalcolerà dalla storia (ora ridotta)
         _ricalcola_stato_giocatore_da_storico(player)
-    
-    # <<< CORREZIONE 2: IMPOSTA IL TURNO CORRENTE PRIMA DI RIGENERARE >>>
     torneo['current_round'] = target_round
 
     # Ricalcola il prossimo ID partita
@@ -224,24 +208,20 @@ def time_machine_torneo(torneo):
     matches_new = generate_pairings_for_round(torneo)
     if matches_new is None:
         print("ERRORE CRITICO: fallita rigenerazione turno post time machine.")
-        # Ripristiniamo il turno a quello precedente per evitare uno stato inconsistente
         torneo['current_round'] = current_round 
         return False
-    
-    # Ora riapplichiamo il punto del BYE per il turno appena generato
-    valore_bye = 1.0
+    valore_bye_torneo = torneo.get('bye_value', 1.0) 
     for match in matches_new:
         if match.get("result") == "BYE":
             bye_player_id = match.get('white_player_id')
             player_obj = get_player_by_id(torneo, bye_player_id)
             if player_obj:
-                # Assicurati di AGGIUNGERE il punto, non sovrascrivere
-                player_obj['points'] = player_obj.get('points', 0.0) + valore_bye
+                player_obj['points'] = player_obj.get('points', 0.0) + valore_bye_torneo
                 player_obj.setdefault("results_history", []).append({
                     "round": target_round, "opponent_id": "BYE_PLAYER_ID",
-                    "color": None, "result": "BYE", "score": valore_bye
+                    "color": None, "result": "BYE", "score": valore_bye_torneo
                 })
-                print(_("Ripristinato {score} punto/i per il BYE al Turno {round} per {name}.").format(score=valore_bye, round=target_round, name=player_obj.get('first_name')))
+                print(_("Ripristinato {score} punto/i per il BYE al Turno {round} per {name}.").format(score=valore_bye_torneo, round=target_round, name=player_obj.get('first_name')))
     
     # Aggiungiamo il nuovo set di abbinamenti alla lista dei round
     torneo.setdefault("rounds", []).append({"round": target_round, "matches": matches_new})
@@ -931,8 +911,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
             colonna_inizio_blocco_partita = 92 
             
             history_sorted = sorted(player_data.get("results_history", []), key=lambda x: x.get("round", 0))
-
-            if current_round_being_paired > 1: # Scrivi lo storico solo se non è il primo turno
+            if current_round_being_paired > 1:
                 for res_entry in history_sorted:
                     round_of_this_entry = int(res_entry.get("round", 0))
                     
@@ -1397,8 +1376,6 @@ def load_tournament(filename_to_load):
         try:
             with open(filename_to_load, "r", encoding='utf-8') as f:
                 torneo_data = json.load(f)
-                
-                # Inizializza campi standard del torneo se mancanti (per compatibilità)
                 torneo_data.setdefault('name', _('Torneo Sconosciuto'))
                 torneo_data.setdefault('start_date', datetime.now().strftime(DATE_FORMAT_ISO))
                 torneo_data.setdefault('end_date', datetime.now().strftime(DATE_FORMAT_ISO))
@@ -1408,28 +1385,19 @@ def load_tournament(filename_to_load):
                 torneo_data.setdefault('rounds', [])
                 torneo_data.setdefault('players', [])
                 torneo_data.setdefault('launch_count', 0)
-                # --- INIZIO INIZIALIZZAZIONE NUOVI CAMPI HEADER ---
                 torneo_data.setdefault('site', _('Luogo Sconosciuto'))
                 torneo_data.setdefault('federation_code', 'ITA') # Federazione del torneo
                 torneo_data.setdefault('chief_arbiter', 'N/D')
                 torneo_data.setdefault('deputy_chief_arbiters', '')
                 torneo_data.setdefault('time_control', 'Standard')
-                # Se avevi aggiunto campi per BBW, BBD, etc. per punteggi non standard:
-                # torneo_data.setdefault('points_for_win', 1.0) 
-                # torneo_data.setdefault('points_for_draw', 0.5)
-                # --- FINE INIZIALIZZAZIONE NUOVI CAMPI HEADER ---
-                # Re-inizializza i set e campi necessari dopo il caricamento per i giocatori
+                torneo_data.setdefault('bye_value', 1.0) 
                 if 'players' in torneo_data:
                     for p in torneo_data['players']:
                         p['opponents'] = set(p.get('opponents', [])) 
                         p.setdefault('white_games', 0)
                         p.setdefault('black_games', 0)
-                        # ... (altri setdefault per i giocatori come già avevi) ...
                         p.setdefault('received_bye_count', 0) # Esempio se avevi aggiunto questo
                         p.setdefault('received_bye_in_round', [])
-
-
-                # Ricostruisci players_dict
                 torneo_data['players_dict'] = {p['id']: p for p in torneo_data.get('players', [])}
                 return torneo_data
         except (json.JSONDecodeError, IOError) as e:
@@ -1803,8 +1771,9 @@ def generate_pairings_for_round(torneo):
     if round_number is None:
         print(_("ERRORE: Numero turno corrente non definito nel torneo."))
         return None 
-    
     print(_("\n--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---").format(round_num=round_number))
+    for player in torneo.get('players', []):
+        _ricalcola_stato_giocatore_da_storico(player)
     _ensure_players_dict(torneo)
     lista_giocatori_attivi = [p.copy() for p in torneo.get('players', [])]
     if not lista_giocatori_attivi:
@@ -1825,6 +1794,12 @@ def generate_pairings_for_round(torneo):
     if not trf_string:
         print(_("ERRORE: Fallita generazione della stringa TRF per bbpPairings."))
         return handle_bbpairings_failure(torneo, round_number, "Fallimento generazione stringa TRF.") 
+    # --- INIZIO BLOCCO DI DEBUG ---
+    print("\n\n--- INIZIO FILE TRF PER IL TURNO 5 ---")
+    print(trf_string)
+    print("--- FINE FILE TRF ---")
+    input(">>> Premere INVIO per uscire. Il programma si fermerà qui. <<<")
+    sys.exit()
     # 3. Eseguire bbpPairings.exe
     success, bbp_output_data, bbp_message = run_bbpairings_engine(trf_string)
     all_generated_matches = [] 
@@ -3281,7 +3256,22 @@ if __name__ == "__main__":
             sys.exit(0) 
         torneo['players_dict'] = {p['id']: p for p in torneo['players']}
         num_giocatori = len(torneo.get("players", []))
-        num_turni_totali = torneo.get("total_rounds",0) # Assicurati sia int
+        num_turni_totali = torneo.get("total_rounds",0)
+        valore_bye_calcolato = 0.5 if num_giocatori < (num_turni_totali * 2) else 1.0
+        print(_("Calcolo Valore del BYE secondo la regola FIDE:"))
+        print(_("Partecipanti: {p}, Turni: {t}").format(p=num_giocatori, t=num_turni_totali))
+        print(_("Il valore del BYE calcolato è: {val}").format(val=valore_bye_calcolato))
+        prompt_bye = _("Conferma il valore del BYE da usare per tutto il torneo\nPremi INVIO per accettare il valore suggerito ({val}), oppure ESCAPE per usare l'altro valore ({alt_val}).").format(
+            val=valore_bye_calcolato,
+            alt_val=1.0 if valore_bye_calcolato == 0.5 else 0.5
+        )
+        if enter_escape(prompt_bye):
+            valore_bye_confermato = valore_bye_calcolato
+        else:
+            valore_bye_confermato = 1.0 if valore_bye_calcolato == 0.5 else 0.5
+        torneo['bye_value'] = float(valore_bye_confermato)
+        print(_("Valore del BYE impostato a: {val}").format(val=torneo['bye_value']))
+        print("-"*20)
         min_req_players = num_turni_totali + 1 if isinstance(num_turni_totali, int) and num_turni_totali > 0 else 2
         if num_giocatori < min_req_players : # Ricontrolla dopo _conferma
              print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali));
@@ -3297,17 +3287,16 @@ if __name__ == "__main__":
         if matches_r1 is None:
             print(_("ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non avviato.")); sys.exit(1)
         print(_("Registrazione risultati automatici per il Turno 1 (BYE)..."))
+        valore_bye_torneo = torneo.get('bye_value', 1.0) 
         for match in matches_r1:
             if match.get("result") == "BYE":
                 bye_player_id = match.get('white_player_id')
                 if bye_player_id and bye_player_id in torneo['players_dict']:
                     player_obj = torneo['players_dict'][bye_player_id]
-                    # Assegna il punto
-                    player_obj['points'] = 1.0
-                    # Aggiungi allo storico
+                    player_obj['points'] = valore_bye_torneo
                     player_obj.setdefault("results_history", []).append({
                         "round": 1, "opponent_id": "BYE_PLAYER_ID",
-                        "color": None, "result": "BYE", "score": 1.0
+                        "color": None, "result": "BYE", "score": valore_bye_torneo
                     })
                     print(_(" > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico aggiornati.").format(name=player_obj.get('first_name'), id=bye_player_id))
         torneo["rounds"].append({"round": 1, "matches": matches_r1})
@@ -3420,19 +3409,18 @@ if __name__ == "__main__":
                                 break # Esce dal ciclo principale
                         # 3. Gestisci il BYE appena generato (se presente)
                         print(_("Registrazione risultati automatici per il Turno {round_num} (BYE)...").format(round_num=next_round_num))
+                        valore_bye_torneo = torneo.get('bye_value', 1.0) 
                         for match in next_matches:
                             if match.get("result") == "BYE":
                                 bye_player_id = match.get('white_player_id')
                                 _ensure_players_dict(torneo) # Assicura che la cache giocatori sia pronta
                                 if bye_player_id and bye_player_id in torneo['players_dict']:
                                     player_obj = torneo['players_dict'][bye_player_id]
-                                    # Assegna il punto (in modo incrementale per sicurezza)
-                                    player_obj['points'] = player_obj.get('points', 0.0) + 1.0
-                                    # Aggiungi l'evento allo storico del giocatore
+                                    player_obj['points'] = player_obj.get('points', 0.0) + valore_bye_torneo
                                     player_obj.setdefault("results_history", []).append({
                                         "round": next_round_num,
                                         "opponent_id": "BYE_PLAYER_ID",
-                                        "color": None, "result": "BYE", "score": 1.0
+                                        "color": None, "result": "BYE", "score": valore_bye_torneo
                                     })
                                     # Aggiorna anche le altre statistiche relative al BYE
                                     player_obj['received_bye_count'] = player_obj.get('received_bye_count', 0) + 1
