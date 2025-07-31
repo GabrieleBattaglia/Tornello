@@ -3,10 +3,10 @@
   "id": "GASCL001",
   "first_name": "Claudio",
   "last_name": "Gasperoni",
-  "current_elo": 1874,
+  "current_elo": 1846,
   "registration_date": "2025-05-01",
   "birth_date": "1975-01-01",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 1,
    "silver": 0,
@@ -21,6 +21,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 7,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "1N",
@@ -189,10 +197,10 @@
   "id": "TOLFI001",
   "first_name": "Filippa",
   "last_name": "Tolaro",
-  "current_elo": 1399,
+  "current_elo": 1409,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
-  "games_played": 5,
+  "games_played": 11,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -207,6 +215,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 13,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "3N",
@@ -254,7 +270,7 @@
   "current_elo": 1513,
   "registration_date": "2025-05-01",
   "birth_date": "1974-09-13",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -269,6 +285,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 12,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "3N",
@@ -344,10 +368,10 @@
   "id": "IONLO001",
   "first_name": "Lorenzo",
   "last_name": "Ionata",
-  "current_elo": 1446,
+  "current_elo": 1469,
   "registration_date": "2025-05-01",
   "birth_date": "1978-01-01",
-  "games_played": 10,
+  "games_played": 16,
   "medals": {
    "gold": 1,
    "silver": 0,
@@ -370,6 +394,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 11,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "NC",
@@ -554,10 +586,10 @@
   "id": "GORSE001",
   "first_name": "Serena",
   "last_name": "Gori",
-  "current_elo": 1399,
+  "current_elo": 1294,
   "registration_date": "2025-05-01",
   "birth_date": "1948-01-01",
-  "games_played": 10,
+  "games_played": 16,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -580,6 +612,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 17,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "NC",
@@ -811,10 +851,10 @@
   "id": "SOPMA001",
   "first_name": "Maurizio",
   "last_name": "Soppelsa",
-  "current_elo": 1731,
+  "current_elo": 1719,
   "registration_date": "2025-05-02",
   "birth_date": "1956-01-01",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -829,6 +869,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 8,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "2N",
@@ -959,10 +1007,10 @@
   "id": "CIBSI001",
   "first_name": "Silvia",
   "last_name": "Cibin",
-  "current_elo": 1399,
+  "current_elo": 1341,
   "registration_date": "2025-05-14",
   "birth_date": "1978-07-13",
-  "games_played": 5,
+  "games_played": 11,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -977,6 +1025,14 @@
     "total_players": 12,
     "date_started": "2025-03-22",
     "date_completed": "2025-05-15"
+   },
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 16,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
    }
   ],
   "fide_title": "NC",
@@ -990,148 +1046,218 @@
   "id": "CASMA002",
   "first_name": "Marco",
   "last_name": "Casadei",
-  "current_elo": 1994,
+  "current_elo": 2012,
   "registration_date": "2025-07-21",
   "birth_date": "1993-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
-   "gold": 0,
+   "gold": 1,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 1,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "847542",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "ARICL001",
   "first_name": "Claudio",
   "last_name": "Ariaudo",
-  "current_elo": 1983,
+  "current_elo": 1956,
   "registration_date": "2025-07-21",
   "birth_date": "1961-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 5,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "815535",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "VRIBE001",
   "first_name": "Bersan",
   "last_name": "Vrioni",
-  "current_elo": 1944,
+  "current_elo": 1951,
   "registration_date": "2025-07-21",
   "birth_date": "1970-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
-   "bronze": 0,
+   "bronze": 1,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 3,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "805351",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "BADGI001",
   "first_name": "Giancarlo",
   "last_name": "Badano",
-  "current_elo": 1840,
+  "current_elo": 1858,
   "registration_date": "2025-07-21",
   "birth_date": "1960-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
-   "silver": 0,
+   "silver": 1,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 2,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "810495",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "POLDI001",
   "first_name": "Diego",
   "last_name": "Poli",
-  "current_elo": 1686,
+  "current_elo": 1704,
   "registration_date": "2025-07-21",
   "birth_date": "1973-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
-   "wood": 0
+   "wood": 1
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 4,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "865613",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "PEZER001",
   "first_name": "Erica",
   "last_name": "Pezzolato",
-  "current_elo": 1621,
+  "current_elo": 1629,
   "registration_date": "2025-07-21",
   "birth_date": "1983-01-01",
-  "games_played": 0,
+  "games_played": 6,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 10,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "F",
   "federation": "ITA",
   "fide_id_num_str": "2888888",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "ZENSI001",
   "first_name": "Simone",
   "last_name": "Zenini",
-  "current_elo": 1613,
+  "current_elo": 1619,
   "registration_date": "2025-07-21",
   "birth_date": "1987-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 9,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "898210",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "TESTE001",
@@ -1152,28 +1278,39 @@
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "VILGE001",
   "first_name": "Gennaro",
   "last_name": "Vilone",
-  "current_elo": 1478,
+  "current_elo": 1519,
   "registration_date": "2025-07-21",
   "birth_date": "1965-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 6,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
   "fide_id_num_str": "2854606",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "TESTE002",
@@ -1194,49 +1331,70 @@
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "DELDA001",
   "first_name": "Davide",
   "last_name": "Del Monte",
-  "current_elo": 1418.0,
+  "current_elo": 1416,
   "registration_date": "2025-07-21",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 6,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 15,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  },
  {
   "id": "ARIGI001",
   "first_name": "Giuliano",
   "last_name": "Ariaudo",
-  "current_elo": 1399.0,
+  "current_elo": 1428,
   "registration_date": "2025-07-21",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 6,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "ASCId 52 Campionato Italiano",
+    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+    "rank": 14,
+    "total_players": 17,
+    "date_started": "2025-07-21",
+    "date_completed": "2025-07-27"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": false
+  "experienced": false,
+  "fide_k_factor": null
  },
  {
   "id": "TESTE003",
@@ -1257,6 +1415,7 @@
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": true
+  "experienced": true,
+  "fide_k_factor": null
  }
 ]

@@ -26,7 +26,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.6.9, 2025.07.31 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.6.10, 2025.07.31 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -849,7 +849,8 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
         trf_lines.append(f"XXR {total_rounds_val:03d}\n") # Già usa 'total_rounds'
         initial_color_setting = str(dati_torneo.get('initial_board1_color_setting', 'white1')).lower()
         trf_lines.append(f"XXC {initial_color_setting}\n")
-        trf_lines.append(f"BBU {valore_bye_torneo:.1f}\n")
+        valore_bye_formattato = f"{valore_bye_torneo:.1f}"
+        trf_lines.append(f"BBU {valore_bye_formattato:>4}\n")
         def write_to_char_list_local(target_list, start_col_1based, text_to_write):
             start_idx_0based = start_col_1based - 1
             source_chars = list(str(text_to_write))
