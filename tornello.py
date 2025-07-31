@@ -26,7 +26,7 @@ def resource_path(relative_path):
 lingua_rilevata, _ = polipo(source_language="it")
 
 # QCV Versione
-VERSIONE = "8.6.8, 2025.07.29 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+VERSIONE = "8.6.9, 2025.07.31 by Gabriele Battaglia & Gemini 2.5 Pro\n\tusing BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
 # QC File e Directory Principali (relativi all'eseguibile) ---
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
@@ -849,6 +849,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
         trf_lines.append(f"XXR {total_rounds_val:03d}\n") # Già usa 'total_rounds'
         initial_color_setting = str(dati_torneo.get('initial_board1_color_setting', 'white1')).lower()
         trf_lines.append(f"XXC {initial_color_setting}\n")
+        trf_lines.append(f"BBU {valore_bye_torneo:.1f}\n")
         def write_to_char_list_local(target_list, start_col_1based, text_to_write):
             start_idx_0based = start_col_1based - 1
             source_chars = list(str(text_to_write))
@@ -902,16 +903,7 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                         birth_date_for_trf = "          " 
             write_to_char_list_local(p_line_chars, 70, f"{birth_date_for_trf:<10}"[:10]) # Assicura 10 caratteri            
             punti_reali = float(player_data.get('points', 0.0))
-            punti_per_trf = punti_reali  # Inizia con i punti reali
-            # Se il valore del BYE nel torneo è diverso da 1.0 (es. 0.5),
-            # dobbiamo correggere il punteggio da passare al motore.
-            if valore_bye_torneo != 1.0:
-                for res_entry in player_data.get("results_history", []):
-                    # Se questo risultato è un BYE, aggiungiamo la differenza per "ingannare" il motore
-                    if res_entry.get("opponent_id") == "BYE_PLAYER_ID":
-                        punti_per_trf += (1.0 - valore_bye_torneo)
-            # Scrivi il punteggio corretto per il motore
-            write_to_char_list_local(p_line_chars, 81, f"{punti_per_trf:4.1f}")
+            write_to_char_list_local(p_line_chars, 81, f"{punti_reali:4.1f}")
             write_to_char_list_local(p_line_chars, 86, f"{start_rank:>4}") # Campo Rank (col 86-89)
             colonna_inizio_blocco_partita = 92 
             
@@ -932,11 +924,9 @@ def genera_stringa_trf_per_bbpairings(dati_torneo, lista_giocatori_attivi, mappa
                         player_score_this_game = float(res_entry.get("score", 0.0)) 
                         result_code_trf = "?"
                         opp_start_rank_str = "0000"
-
                         if opp_id_tornello == "BYE_PLAYER_ID" or tornello_result_str == "BYE":
                             color_char_trf = "-"
-                            if player_score_this_game > 0.0: result_code_trf = "U" 
-                            else: result_code_trf = "Z" 
+                            result_code_trf = "U"
                         elif opp_id_tornello:
                             opponent_start_rank = mappa_id_a_start_rank.get(opp_id_tornello)
                             if opponent_start_rank is None:

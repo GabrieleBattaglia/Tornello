@@ -1,6 +1,29 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 17. aggiungere possibilità di aggiungere un giocatore ad un torneo già creato.
-19.
+19. La Soluzione: Usare il Codice U insieme al Codice BBU
+La soluzione consiste nel combinare l'uso del codice risultato U per il giocatore che ha ricevuto il bye, con l'aggiunta di una riga di configurazione specifica nel tuo file .trf.
+Ecco i passaggi da seguire:
+1. 
+Usa il Codice Risultato U per il Bye: Nel file input_bbp.trf, continua a registrare il bye di accoppiamento usando il codice U (es. 0000 - U). Come hai giustamente notato, questo garantisce che il motore identifichi il bye come un bye di accoppiamento e renda il giocatore non idoneo a riceverne un altro. Questo comportamento è corretto ed è gestito dalla funzione eligibleForBye, che cerca specificamente le partite contrassegnate come participatedInPairing (caratteristica del codice U).
+2. 
+Imposta il Valore del Bye con BBU: Per risolvere il problema del punteggio, devi specificare che un bye di accoppiamento vale 0,5 punti. Puoi farlo aggiungendo la seguente riga in qualsiasi punto del tuo file .trf:
+BBU  0.5
+Questo codice BBU (Bye, Unpaired) è un'estensione del formato TRF supportata da bbpPairings e serve proprio a definire il punteggio per un bye di accoppiamento. Il motore è programmato per assegnare il valore specificato da BBU a qualsiasi bye registrato con il codice U.
+Esempio di file .trf corretto:
+012 Nome Torneo
+XXR 9
+BBU  0.5
+
+001    1      GiocatoreUno      ...     1.0      1    ...   0002 W 1
+001    2      GiocatoreDue      ...     0.0      2    ...   0001 B 0
+001    3      GiocatoreTre      ...     0.5      3    ...   0000 - U
+...
+Con questa configurazione, il motore di abbinamento:
+• 
+Assegnerà 0,5 punti al GiocatoreTre, inserendolo nel gruppo di punteggio corretto per il turno successivo.
+• 
+Riconoscerà che il GiocatoreTre ha già ricevuto un bye di accoppiamento e non gliene assegnerà un altro.
+ 
 
 CHANGELOG
 8.6.x
