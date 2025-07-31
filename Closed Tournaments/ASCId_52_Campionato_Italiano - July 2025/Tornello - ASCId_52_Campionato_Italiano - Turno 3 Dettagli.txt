@@ -1,0 +1,18 @@
+﻿Torneo: ASCId 52 Campionato Italiano
+Sito: Galatina (LE), Data Inizio Torneo: Lunedì 21 luglio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 3 CONCLUSO ==========================
+	Periodo del Turno: Mercoledì 23 luglio 2025 - Mercoledì 23 luglio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 19  | Giancarlo Badano         [1840] (2   ) - Marco Casadei            [1994] (3   ) | 0-1
+	2  | 20  | Claudio Gasperoni        [1874] (2   ) - Bersan Vrioni            [1944] (2   ) | 1/2-1/2
+	3  | 22  | Claudio Ariaudo          [1983] (2   ) - Lorenzo Ionata           [1446] (1   ) | 1-0
+	4  | 21  | Gennaro Vilone           [1478] (2   ) - Diego Poli               [1686] (2   ) | 1/2-1/2
+	5  | 26  | Maurizio Soppelsa        [1731] (1.5 ) - Davide Del Monte         [1418] (0   ) | 1-0
+	6  | 23  | Erica Pezzolato          [1621] (2   ) - Gabriele Battaglia       [1513] (1   ) | 1-0
+	7  | 24  | Simone Zenini            [1613] (1.5 ) - Filippa Tolaro           [1399] (1   ) | 1/2-1/2
+	8  | 25  | Serena Gori              [1399] (0.5 ) - Giuliano Ariaudo         [1399] (1.5 ) | 0-1
+	---| 27  | Silvia Cibin             [1399] (0.5 ) - BYE                             | BYE
