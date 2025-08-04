@@ -3,12 +3,12 @@
   "id": "GASCL001",
   "first_name": "Claudio",
   "last_name": "Gasperoni",
-  "current_elo": 1846,
+  "current_elo": 1855,
   "registration_date": "2025-05-01",
   "birth_date": "1975-01-01",
-  "games_played": 12,
+  "games_played": 17,
   "medals": {
-   "gold": 1,
+   "gold": 2,
    "silver": 0,
    "bronze": 0,
    "wood": 0
@@ -29,6 +29,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 1,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "1N",
@@ -166,10 +174,10 @@
   "id": "TRACO001",
   "first_name": "Cosetta",
   "last_name": "Trapletti",
-  "current_elo": 1504,
+  "current_elo": 1501,
   "registration_date": "2025-05-01",
   "birth_date": "1968-01-01",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -184,6 +192,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 7,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "3N",
@@ -267,13 +283,13 @@
   "id": "BATGA001",
   "first_name": "Gabriele",
   "last_name": "Battaglia",
-  "current_elo": 1513,
+  "current_elo": 1539,
   "registration_date": "2025-05-01",
   "birth_date": "1974-09-13",
-  "games_played": 12,
+  "games_played": 17,
   "medals": {
    "gold": 0,
-   "silver": 0,
+   "silver": 1,
    "bronze": 0,
    "wood": 0
   },
@@ -293,6 +309,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 2,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "3N",
@@ -368,10 +392,10 @@
   "id": "IONLO001",
   "first_name": "Lorenzo",
   "last_name": "Ionata",
-  "current_elo": 1469,
+  "current_elo": 1488,
   "registration_date": "2025-05-01",
   "birth_date": "1978-01-01",
-  "games_played": 16,
+  "games_played": 21,
   "medals": {
    "gold": 1,
    "silver": 0,
@@ -402,6 +426,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 5,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -446,10 +478,10 @@
   "id": "CALVA001",
   "first_name": "Valeria",
   "last_name": "Calzolari",
-  "current_elo": 1399,
+  "current_elo": 1385,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
-  "games_played": 10,
+  "games_played": 15,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -472,6 +504,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 11,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -516,15 +556,15 @@
   "id": "CICMA001",
   "first_name": "Mathias",
   "last_name": "Cicciarella",
-  "current_elo": 1399,
+  "current_elo": 1458,
   "registration_date": "2025-05-01",
   "birth_date": "2013-01-01",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
-   "wood": 0
+   "wood": 1
   },
   "tournaments_played": [
    {
@@ -534,6 +574,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 4,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -547,10 +595,10 @@
   "id": "FORMA001",
   "first_name": "Martina",
   "last_name": "Forte",
-  "current_elo": 1399,
+  "current_elo": 1355,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 9,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -573,6 +621,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 16,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -586,10 +642,10 @@
   "id": "GORSE001",
   "first_name": "Serena",
   "last_name": "Gori",
-  "current_elo": 1294,
+  "current_elo": 1220,
   "registration_date": "2025-05-01",
   "birth_date": "1948-01-01",
-  "games_played": 16,
+  "games_played": 20,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -620,6 +676,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 17,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -633,10 +697,10 @@
   "id": "MERAL001",
   "first_name": "Alessia",
   "last_name": "Mereu",
-  "current_elo": 1399,
+  "current_elo": 1385,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 10,
+  "games_played": 15,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -659,6 +723,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 10,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -672,10 +744,10 @@
   "id": "PAGGI001",
   "first_name": "Giulia",
   "last_name": "Paglia",
-  "current_elo": 1399,
+  "current_elo": 1382,
   "registration_date": "2025-05-01",
   "birth_date": "2018-01-01",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -690,6 +762,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 15,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -703,10 +783,10 @@
   "id": "PAGVI001",
   "first_name": "Virginio",
   "last_name": "Paglia",
-  "current_elo": 1399,
+  "current_elo": 1385,
   "registration_date": "2025-05-01",
   "birth_date": "1981-01-01",
-  "games_played": 10,
+  "games_played": 15,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -729,6 +809,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 11,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -742,10 +830,10 @@
   "id": "SCAVA001",
   "first_name": "Valeria",
   "last_name": "Scapin",
-  "current_elo": 1399,
+  "current_elo": 1425,
   "registration_date": "2025-05-01",
   "birth_date": "1984-02-09",
-  "games_played": 5,
+  "games_played": 10,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -760,6 +848,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 6,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -773,10 +869,10 @@
   "id": "TESAL001",
   "first_name": "Alessandra",
   "last_name": "Testori",
-  "current_elo": 1399,
+  "current_elo": 1362,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 10,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -799,6 +895,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 14,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -815,7 +919,7 @@
   "current_elo": 1399,
   "registration_date": "2025-05-01",
   "birth_date": "1986-01-01",
-  "games_played": 10,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -838,6 +942,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 8,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -890,14 +1002,14 @@
   "id": "VENLU001",
   "first_name": "Luigi",
   "last_name": "Ventura",
-  "current_elo": 1399,
+  "current_elo": 1461,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 10,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
-   "bronze": 0,
+   "bronze": 1,
    "wood": 0
   },
   "tournaments_played": [
@@ -916,6 +1028,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 3,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -929,10 +1049,10 @@
   "id": "BRICA001",
   "first_name": "Catia Susana",
   "last_name": "Brites Pereira Lima",
-  "current_elo": 1399,
+  "current_elo": 1365,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 10,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 1,
@@ -955,6 +1075,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 13,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
@@ -968,10 +1096,10 @@
   "id": "DIBVI001",
   "first_name": "Vincenzo",
   "last_name": "Di Bari",
-  "current_elo": 1399,
+  "current_elo": 1415,
   "registration_date": "2025-05-02",
   "birth_date": null,
-  "games_played": 10,
+  "games_played": 15,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -994,6 +1122,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Estascacchi 1",
+    "tournament_id": "Estascacchi_1_20250626144822",
+    "rank": 9,
+    "total_players": 17,
+    "date_started": "2025-06-18",
+    "date_completed": "2025-08-03"
    }
   ],
   "fide_title": "NC",
