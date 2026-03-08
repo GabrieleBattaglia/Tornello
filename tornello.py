@@ -2,6 +2,13 @@
 # Data concepimento: 28 marzo 2025
 import os, json, sys, math, traceback, subprocess, glob, shutil, io, zipfile, threading, requests
 import xml.etree.ElementTree as ET
+
+# Add src to sys.path for local development
+try:
+    sys._MEIPASS
+except AttributeError:
+    sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src'))
+
 from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta

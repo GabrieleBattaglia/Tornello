@@ -321,15 +321,3 @@ def parse_bbpairings_couples_output(coppie_raw_content, mappa_start_rank_a_id):
         print(_("Errore durante il parsing dell'output delle coppie: {error}\n{traceback}").format(error=e, traceback=traceback.format_exc()))
         return None
 
-def handle_bbpairings_failure(torneo, round_number, error_message):
-    """
-    Gestisce i fallimenti di bbpPairings. Stampa un messaggio e indica fallimento.
-    """
-    print(_("\n--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---").format(round_num=round_number))
-    print(error_message)
-    print(_("Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."))
-    print(_("Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella 'bbppairings' per possibili errori di formato."))
-    print(_("Oppure, considerare di effettuare gli abbinamenti per questo turno manualmente (su carta)."))
-    print(_("Il torneo non può procedere automaticamente per questo turno."))
-    return None
-
