@@ -1,0 +1,6 @@
+__version__ = "8.6.11"
+__date__ = "2026.03.08"
+__authors__ = "Gabriele Battaglia & Stella"
+__bbp_info__ = "using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."
+
+VERSIONE = f"{__version__}, {__date__} by {__authors__}\n\t{__bbp_info__}"
