@@ -7,12 +7,58 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from babel.dates import format_date
 # installazione percorsi relativi e i18n
-from config import *
-from utils import enter_escape, format_rank_ordinal, format_date_locale, format_points, sanitize_filename
+def resource_path(relative_path):
+    """
+    Restituisce il percorso assoluto a una risorsa, funzionante sia in sviluppo
+    che per un eseguibile compilato con PyInstaller (anche con la cartella _internal).
+    """
+    try:
+        # PyInstaller crea una cartella temporanea e ci salva il percorso in _MEIPASS
+        # Questo è il percorso base per le risorse quando l'app è "congelata"
+        base_path = sys._MEIPASS
+    except Exception:
+        # Se _MEIPASS non esiste, non siamo in un eseguibile PyInstaller
+        # o siamo in una build onedir, il percorso base è la cartella dello script
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+lingua_rilevata, _ = polipo(source_language="it")
+
+# QCV Versione
+from version import VERSIONE
+
+# QC File e Directory Principali (relativi all'eseguibile) ---
+PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
+PLAYER_DB_TXT_FILE = resource_path("Tornello - Players_db.txt")
+ARCHIVED_TOURNAMENTS_DIR = resource_path("Closed Tournaments")
+FIDE_DB_LOCAL_FILE = resource_path("fide_ratings_local.json")
+
+# QC Costanti per l'integrazione con bbpPairings ---
+BBP_SUBDIR = resource_path("bbppairings")
+BBP_EXE_NAME = "bbpPairings.exe"
+BBP_EXE_PATH = os.path.join(BBP_SUBDIR, BBP_EXE_NAME)
+BBP_INPUT_TRF = os.path.join(BBP_SUBDIR, "input_bbp.trf")
+BBP_OUTPUT_COUPLES = os.path.join(BBP_SUBDIR, "output_coppie.txt")
+BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
+
+# QC Costanti non di percorso ---
+DATE_FORMAT_ISO = "%Y-%m-%d"
+DEFAULT_ELO = 1399.0
+DEFAULT_K_FACTOR = 20
+FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 #QF
 
-
+def enter_escape(prompt=""):
+    '''Ritorna vero su invio, falso su escape'''
+    while True:
+        k=key(prompt).strip()
+        if k == "":
+            return True
+        elif k == "\x1b":
+            return False
+        print(_("Conferma con invio o annulla con escape"))
 
 def handle_bbpairings_failure(torneo, round_number, error_message):
     """
@@ -970,7 +1016,54 @@ def get_k_factor(player_data_dict, tournament_start_date_str):
         return 20
     return 10
 
+def format_rank_ordinal(rank):
+    """Formatta il rank come numero ordinale italiano (es. 1°, 6°) o 'RIT'."""
+    if rank == "RIT":
+        return "RIT"
+    try:
+        # Prova a convertire in intero
+        rank_int = int(rank)
+        # Aggiunge il simbolo di grado per l'ordinale
+        return f"{rank_int}°"
+    except (ValueError, TypeError):
+        # Se il rank non è 'RIT' e non è convertibile in intero, ritorna '?'
+        return "?" # Fallback per rank non validi o non numerici
 
+def format_date_locale(date_input):
+    """Formatta una data (oggetto datetime o stringa ISO) nel formato locale esteso
+       usando la libreria Babel per una gestione robusta della localizzazione."""
+    if not date_input:
+        return _("N/D") 
+
+    try:
+        date_obj = date_input
+        if not isinstance(date_input, datetime):
+            # Converte la stringa ISO in un oggetto datetime, ma solo la parte della data
+            date_obj = datetime.strptime(str(date_input), DATE_FORMAT_ISO).date()
+
+        # Usa Babel per formattare la data in italiano in modo sicuro
+        # 'full' corrisponde a un formato tipo "lunedì 23 giugno 2025"
+        return format_date(date_obj, format='full', locale=lingua_rilevata).capitalize()
+    except (ValueError, TypeError, IndexError):
+        # Se qualcosa va storto, restituisce l'input originale
+        return str(date_input)
+
+def format_points(points):
+    """Formatta i punti per la visualizzazione (intero se .0, altrimenti decimale)."""
+    try:
+        points = float(points)
+        return str(int(points)) if points == int(points) else f"{points:.1f}"
+    except (ValueError, TypeError):
+        return str(points)
+
+def sanitize_filename(name):
+    """Rimuove/sostituisce caratteri problematici per i nomi dei file."""
+    name = name.replace(' ', '_')
+    import re
+    name = re.sub(r'[^\w\-]+', '', name)
+    if not name:
+        name = "Torneo_Senza_Nome"
+    return name
 
 def run_bbpairings_engine(trf_content_string):
     """
