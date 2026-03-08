@@ -1,8 +1,37 @@
 import datetime
 import re
+import os
+import shutil
 from babel.dates import format_date
 from config import _, lingua_rilevata, DATE_FORMAT_ISO
 from GBUtils import key
+
+def create_backup(filepath, context="backup"):
+    """
+    Crea una copia di backup del file specificato nella cartella 'backup'.
+    Aggiunge un timestamp e il contesto al nome del file per non sovrascrivere backup precedenti.
+    """
+    if not os.path.exists(filepath):
+        return False
+        
+    backup_dir = "backup"
+    if not os.path.exists(backup_dir):
+        try:
+            os.makedirs(backup_dir)
+        except OSError:
+            return False
+            
+    filename = os.path.basename(filepath)
+    name, ext = os.path.splitext(filename)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_filename = f"{name}_{context}_{timestamp}{ext}"
+    backup_path = os.path.join(backup_dir, backup_filename)
+    
+    try:
+        shutil.copy2(filepath, backup_path)
+        return True
+    except Exception:
+        return False
 
 def enter_escape(prompt=""):
     '''Ritorna vero su invio, falso su escape'''
