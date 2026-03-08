@@ -329,15 +329,14 @@ def get_input_with_default(prompt_message, default_value=None):
     else: 
         return input("{}: ".format(prompt_message)).strip()
 
-def input_players(players_db):
+def input_players(players_db, existing_players=None, torneo_obj=None, torneo_filename=None):
     """
-    Gestisce l'input dei giocatori per un torneo con una ricerca a 3 livelli:
-    1. Cerca nel DB personale.
-    2. Se non trovato, cerca nel DB FIDE locale.
-    3. Se non trovato, procede con la creazione manuale.
+    Gestisce l'input dei giocatori per un torneo con una ricerca a 3 livelli.
+    Permette di riprendere un inserimento interrotto.
+    Restituisce la lista aggiornata dei giocatori (o None se l'utente sospende l'inserimento).
     """
-    players_in_tournament = []
-    added_player_ids_to_tournament = set()
+    players_in_tournament = existing_players.copy() if existing_players else []
+    added_player_ids_to_tournament = {p['id'] for p in players_in_tournament}
 
     print(_("\n--- Inserimento Giocatori per il Torneo ---"))
     print(_("Inserire ID locale, ID FIDE, o parte del Nome/Cognome."))
@@ -345,11 +344,26 @@ def input_players(players_db):
     while True:
         current_num_players = len(players_in_tournament)
         data_input = input(_("\nGiocatore {player_num} (o lascia vuoto per terminare): ").format(player_num=current_num_players + 1)).strip()
-        if not data_input: # Logica per terminare l'inserimento
-            if current_num_players < 2:
-                if enter_escape(_("Ci sono meno di 2 giocatori. Continuare? (INVIO|ESCAPE)")): break
-                else: continue
-            else: break
+        if not data_input: # Logica per terminare o sospendere l'inserimento
+            print(_("Vuoi (C)oncludere l'inserimento giocatori, (S)ospenderlo temporaneamente per riprenderlo in futuro, o (A)nnullare l'inserimento corrente?"))
+            scelta = key(_("Premi 'c' per concludere, 's' per sospendere, Esc per annullare: ")).lower()
+            if scelta == 'c':
+                return players_in_tournament
+            elif scelta == 's':
+                if torneo_obj and torneo_filename:
+                    print(_("\nSospensione inserimento. Salvataggio stato del torneo..."))
+                    torneo_obj["players"] = players_in_tournament
+                    torneo_obj['players_dict'] = {p['id']: p for p in players_in_tournament}
+                    # Aggiungiamo un flag esplicito per indicare che la creazione è sospesa
+                    torneo_obj["creation_suspended"] = True
+                    save_tournament(torneo_obj)
+                    print(_("Torneo sospeso salvato in: '{filename}'").format(filename=torneo_filename))
+                    return None
+                else:
+                    print(_("Errore: impossibile sospendere il torneo in questo momento."))
+                    continue
+            else:
+                return players_in_tournament # Di default, se annulla/escape o altro, torna la lista attuale e decide la logica chiamante
         player_id_to_add = None
         player_data_from_db = None
         # --- LIVELLO 1: Ricerca nel DB Personale (`players_db`) ---

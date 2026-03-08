@@ -5,6 +5,9 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.8.0
+	+ Nuova Feature: Possibilità di sospendere la creazione di un torneo durante l'inserimento dei giocatori e riprenderla in sessioni successive.
+
 8.7.0
 	+ Sistema di Auto-Aggiornamento tramite GitHub integrato: il programma notifica e scarica autonomamente le nuove release in formato compilato.
 	+ FIX Fragilità Date: Ora il programma impedisce la creazione di un torneo se la durata totale in giorni è inferiore al numero dei turni, evitando accavallamenti infiniti.
