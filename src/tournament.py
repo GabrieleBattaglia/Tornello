@@ -4,7 +4,7 @@ import traceback
 from datetime import datetime, timedelta
 from config import *
 from GBUtils import key
-from utils import format_date_locale, sanitize_filename
+from utils import format_date_locale, sanitize_filename, create_backup
 from engine import handle_bbpairings_failure, genera_stringa_trf_per_bbpairings, run_bbpairings_engine, parse_bbpairings_couples_output
 
 def _ricalcola_stato_giocatore_da_storico(player_obj):
@@ -82,6 +82,15 @@ def time_machine_torneo(torneo):
         return False
     prompt_template_4 = _("\nAvvio riavvolgimento al Turno {target_round}...")
     print(prompt_template_4.format(target_round=target_round))
+    
+    # Crea un backup del file torneo corrente prima dell'operazione
+    if 'name' in torneo:
+        current_filename = f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        if create_backup(current_filename, "pre_timemachine"):
+            print(_("Backup di sicurezza creato: {filename}").format(filename=current_filename))
+        else:
+            print(_("ATTENZIONE: Impossibile creare il backup di sicurezza. Procedo ugualmente..."))
+
     # Azzera lo stato futuro (rimuove i round >= target_round)
     torneo['rounds'] = [r for r in torneo.get('rounds', []) if r.get('round', 0) < target_round]
     for player in torneo.get('players', []):
@@ -224,23 +233,9 @@ def calculate_dates(start_date_str, end_date_str, total_rounds):
             print(_("Errore: Il numero dei turni deve essere positivo."))
             return None
         if total_duration < total_rounds:
-            print(_("Attenzione: La durata totale ({duration} giorni) è inferiore al numero di turni ({rounds}).").format(duration=total_duration, rounds=total_rounds))
-            print(_("Assegnando 1 giorno per turno sequenzialmente."))
-            round_dates = []
-            current_date = start_date
-            for i in range(total_rounds):
-                round_dates.append({
-                    "round": i + 1,
-                    "start_date": current_date.strftime(DATE_FORMAT_ISO),
-                    "end_date": current_date.strftime(DATE_FORMAT_ISO)
-                })
-                # Avanza data solo se non è l'ultimo turno e non supera la data finale
-                if i < total_rounds - 1:
-                    next_day = current_date + timedelta(days=1)
-                    if next_day <= end_date:
-                        current_date = next_day
-                    # Altrimenti, l'ultimo giorno viene riutilizzato
-            return round_dates
+            print(_("ERRORE: La durata totale del torneo ({duration} giorni) è inferiore al numero di turni previsti ({rounds}).").format(duration=total_duration, rounds=total_rounds))
+            print(_("Impossibile programmare i turni senza sovrapposizioni. Ampliare la finestra temporale o ridurre i turni."))
+            return None
         # Distribuzione più equa
         days_per_round_float = total_duration / total_rounds
         round_dates = []

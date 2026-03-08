@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from config import *
 from GBUtils import dgt, key
-from utils import enter_escape, format_date_locale, format_points, sanitize_filename
+from utils import enter_escape, format_date_locale, format_points, sanitize_filename, create_backup
 from db_players import _cerca_giocatore_nel_db_fide, crea_nuovo_giocatore_nel_db, save_players_db
 from tournament import time_machine_torneo, save_tournament, _apply_match_result_to_players, _ensure_players_dict
 from stats import get_k_factor, compute_buchholz, compute_buchholz_cut1, compute_aro, calculate_performance_rating, calculate_elo_change
@@ -697,6 +697,19 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         print(_("ERRORE CRITICO: Nome del torneo non presente nell'oggetto torneo. Impossibile finalizzare."))
         return False
     print(_("\n--- Finalizzazione Torneo: {name} ---").format(name=tournament_name_original))
+
+    # --- Creazione backup pre-finalizzazione ---
+    print(_("Creazione backup di sicurezza prima dell'archiviazione..."))
+    backup_db_ok = create_backup(PLAYER_DB_FILE, "pre_finalize_db")
+    backup_torneo_ok = True
+    if current_tournament_filename and os.path.exists(current_tournament_filename):
+        backup_torneo_ok = create_backup(current_tournament_filename, "pre_finalize_torneo")
+    
+    if not backup_db_ok or not backup_torneo_ok:
+        print(_("ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo ugualmente..."))
+    else:
+        print(_("Backup di sicurezza creati con successo."))
+
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(torneo.get('players', [])):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     num_players = len(torneo.get('players', []))
