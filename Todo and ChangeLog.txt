@@ -1,12 +1,18 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 
---- DA RISOLVERE (Fragilità emerse dal refactoring) ---
-1. Gestione del BYE e del next_match_id: In `generate_pairings_for_round`, il BYE modifica lo storico del giocatore ma non viene aggiunto alla lista delle partite del round corrente con un ID univoco. Questo potrebbe creare disallineamenti nella vista dei turni.
-2. Date dei turni (calcolo distributivo): In `calculate_dates`, se la durata del torneo è inferiore ai turni (es. 1 mese ma 80 turni), il blocco di fallback forza tutti i turni rimanenti sull'ultimo giorno. Meglio un errore bloccante.
-3. Mancanza di backup incrementali: `finalize_tournament` e `time_machine_torneo` sono distruttive. In caso di crash (es. disco pieno), il DB o il torneo possono restare in uno stato incerto. Aggiungere un backup pre-operazione.
-4. Funzione doppia handle_bbpairings_failure: In `engine.py` (ex `tornello.py`) era definita due volte, causandone l'overwrite e probabilmente rompendo la logica della time machine. (RISOLTO in questo commit).
+--- DA RISOLVERE ---
+(Nessuna criticità grave o prioritaria al momento. Tutte le fragilità emerse dal refactoring sono state gestite.)
+- Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.7.0
+	+ Sistema di Auto-Aggiornamento tramite GitHub integrato: il programma notifica e scarica autonomamente le nuove release in formato compilato.
+	+ FIX Fragilità Date: Ora il programma impedisce la creazione di un torneo se la durata totale in giorni è inferiore al numero dei turni, evitando accavallamenti infiniti.
+	+ FIX Sicurezza: Inserita una routine di backup automatico (`create_backup`) che salva copia del Database Giocatori e del Torneo in corso in una cartella `/backup` prima di eseguire operazioni distruttive come la Time Machine o la Finalizzazione del Torneo.
+	+ Appurato che il sistema di numerazione ID delle partite fantasma per i BYE in background funziona correttamente.
+	+ Corretta la presenza di una funzione duplicata (`handle_bbpairings_failure`) in engine.py.
+	+ Versione firmata da Stella GeminiPro3.1.
+
 8.6.11
 	+ Refactoring e modularizzazione completa del codice sorgente (spostato in cartella src/)
 	+ Creazione dei moduli tematici: config, utils, engine, db_players, stats, tournament, reports, ui.
