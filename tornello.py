@@ -241,7 +241,34 @@ if __name__ == "__main__":
             print(_("Nessun torneo valido trovato nonostante la presenza di file. Si procederà con la creazione."))
             deve_creare_nuovo_torneo = True
         else:
-            print(_(" {num}. Crea un nuovo torneo").format(num=len(tournament_options) + 1))
+            # --- Controllo Tornei Sospesi ---
+            suspended_tournaments = []
+            for opt in tournament_options:
+                try:
+                    with open(opt["filepath"], "r", encoding='utf-8') as f_temp:
+                        data_temp = json.load(f_temp)
+                    if data_temp.get("creation_suspended", False):
+                        suspended_tournaments.append(opt)
+                except Exception:
+                    pass
+
+            if suspended_tournaments:
+                print(_("\n*** TROVATI TORNEI CON CREAZIONE SOSPESA ***"))
+                for st in suspended_tournaments:
+                    print(_(" - '{name}' (File: {filename})").format(name=st['name'], filename=os.path.basename(st['filepath'])))
+
+                if len(suspended_tournaments) == 1:
+                    resume_choice = enter_escape(_("Vuoi riprendere la creazione di '{name}'? (INVIO|ESCAPE): ").format(name=suspended_tournaments[0]['name']))
+                    if resume_choice:
+                        active_tournament_filename = suspended_tournaments[0]["filepath"]
+                        torneo = load_tournament(active_tournament_filename)
+                        deve_creare_nuovo_torneo = False
+                        print(_("Ripresa creazione torneo '{name}'...").format(name=torneo['name']))
+                else:
+                    # Gestione di multipli tornei sospesi (opzionale, per ora lasciamo la scelta generale)
+                    print(_("Ci sono più tornei in stato sospeso. Selezionali dal menu per riprenderli."))
+
+            print(_("\n {num}. Crea un nuovo torneo").format(num=len(tournament_options) + 1))
             while True:
                 choice_str = input(_("Scegli un torneo da caricare (1-{max_num}) o '{new_num}' per crearne uno nuovo: ").format(max_num=len(tournament_options), new_num=len(tournament_options) + 1)).strip()
                 if choice_str.isdigit():
@@ -264,14 +291,40 @@ if __name__ == "__main__":
                         print(_("Scelta non valida."))
                 else:
                     print(_("Inserisci un numero."))
+
+            # Se abbiamo caricato un torneo che era in stato sospeso, saltiamo la fase 2 di "nuova creazione"
+            # e andiamo direttamente al completamento dell'inserimento giocatori
+            if torneo and torneo.get("creation_suspended", False):
+                print(_("\nRipresa inserimento giocatori per '{name}'...").format(name=torneo['name']))
+                existing_players_list = torneo.get("players", [])
+                risultato_input = input_players(players_db, existing_players=existing_players_list, torneo_obj=torneo, torneo_filename=active_tournament_filename)
+
+                if risultato_input is None:
+                    # Sospeso di nuovo
+                    sys.exit(0)
+
+                torneo["players"] = risultato_input
+
+                # Una volta confermata e conclusa la lista, togliamo il flag di sospensione
+                if not _conferma_lista_giocatori_torneo(torneo, players_db):
+                    print(_("Creazione torneo annullata a causa di problemi con la lista giocatori."))
+                    sys.exit(0)
+
+                torneo.pop("creation_suspended", None)
+                torneo['players_dict'] = {p['id']: p for p in torneo['players']}
+                deve_creare_nuovo_torneo = True # Forza la logica successiva (generazione turni, bye, ecc) a credere che stiamo finendo la creazione
+
     # 2. Creazione nuovo torneo (se necessario)
-    if deve_creare_nuovo_torneo or torneo is None:
+    if deve_creare_nuovo_torneo or (torneo is None and not active_tournament_filename):
         if not deve_creare_nuovo_torneo and torneo is None : # Se il caricamento è fallito ma non era stato scelto di creare
             print(_("Nessun torneo caricato. Si procede con la creazione di un nuovo torneo."))
-        torneo = {} 
-        print(_("\n--- Creazione Nuovo Torneo ---"))
-        active_tournament_filename = None # Verrà impostato quando il nome sarà definito
-        new_tournament_name_final = ""    # Nome che verrà effettivamente usato per il torneo
+
+        # Se non stiamo riprendendo un torneo sospeso, inizializziamo da zero
+        if not torneo or not torneo.get("name"):
+            torneo = {} 
+            print(_("\n--- Creazione Nuovo Torneo ---"))
+            active_tournament_filename = None # Verrà impostato quando il nome sarà definito
+            new_tournament_name_final = ""    # Nome che verrà effettivamente usato per il torneo
         # Fase 1: Prova a usare il nome suggerito, se esiste
         if nome_nuovo_torneo_suggerito:
             print(_("Nome suggerito per il nuovo torneo: '{name}'").format(name=nome_nuovo_torneo_suggerito))
