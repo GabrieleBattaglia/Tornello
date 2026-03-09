@@ -6,10 +6,8 @@ import requests
 import threading
 import traceback
 import xml.etree.ElementTree as ET
-from urllib.request import urlopen
 from datetime import datetime
 from config import *
-from GBUtils import polipo, key
 from utils import format_date_locale, enter_escape, format_rank_ordinal
 from stats import get_k_factor
 
@@ -49,8 +47,8 @@ def _cerca_giocatore_nel_db_fide(search_term):
 def sincronizza_db_personale():
     """
     Carica il DB FIDE locale e il DB personale, li confronta, e propone
-    aggiornamenti e associazioni di ID FIDE con un flusso di conferma completo e interattivo,
-    rispettando le regole di precedenza per i dati locali.
+    aggiornamenti e associazioni di ID FIDE. Mostra un sommario e permette
+    di applicare tutto in blocco o valutare singolarmente.
     """
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
         print(_("ERRORE: Database FIDE locale '{}' non trovato.").format(FIDE_DB_LOCAL_FILE))
@@ -68,121 +66,196 @@ def sincronizza_db_personale():
     if not players_db:
         print(_("Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione da effettuare."))
         return
-    all_potential_changes = []
-    
+
     print(_("Analisi dei giocatori nel tuo database personale..."))
+
+    all_potential_changes = []
+    stats = {
+        'id_associations': 0,
+        'elo_updates': 0,
+        'birth_date_updates': 0,
+        'title_updates': 0,
+        'k_factor_updates': 0
+    }
+
+    # FASE 1: Colleziona le modifiche in silenzio
     for player_id, local_player in players_db.items():
         fide_id_str = local_player.get('fide_id_num_str', '0')
         fide_record = None
-        
-        player_changes = {
-            'player_id': player_id,
-            'current_data': local_player,
-            'new_fide_id': None,
-            'updates': {}
-        }
-        
-        # --- FASE 1: Trova una corrispondenza FIDE per il giocatore ---
+        new_fide_id = None
+        is_ambiguous = False
+        matches = []
+
         if fide_id_str and fide_id_str != '0':
             fide_record = fide_db.get(fide_id_str)
-        else: # Se non c'è ID, cerca per nome/cognome per trovare una potenziale associazione
+        else: # Cerca per nome/cognome
             p_first_name = local_player.get('first_name', '').lower()
             p_last_name = local_player.get('last_name', '').lower()
-            
-            if not p_first_name or not p_last_name: continue
-            
-            matches = [f_p for f_p in fide_db.values() if 
-                       f_p.get('first_name', '').lower() == p_first_name and 
-                       f_p.get('last_name', '').lower() == p_last_name]
-            
-            if len(matches) == 1:
-                match = matches[0]
-                print(_("\n-> Trovata una corrispondenza FIDE per il tuo giocatore '{} {}' (ID: {}):").format(local_player.get('first_name'), local_player.get('last_name'), player_id))
-                print(_("   FIDE ID: {}, Nome: {}, {}, FED: {}, Elo: {}, Anno Nascita: {}").format(match['id_fide'], match['last_name'], match['first_name'], match['federation'], match['elo_standard'], match.get('birth_year')))
-                if enter_escape(_("   Associare questo ID FIDE al tuo giocatore? (INVIO|ESCAPE)")):
-                    player_changes['new_fide_id'] = str(match['id_fide'])
-                    fide_record = match
-            elif len(matches) > 1:
-                print(_("\n-> Trovati {} omonimi nel DB FIDE per il tuo giocatore '{} {}' (ID: {}).").format(len(matches), local_player.get('first_name'), local_player.get('last_name'), player_id))
-                print(_("   Seleziona l'ID FIDE corretto o 'n' per saltare:"))
-                for i, match in enumerate(matches):
-                    print(_(" {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}").format(i + 1, match['id_fide'], match['federation'], match['elo_standard'], match.get('birth_year')))
-                print(_("   n. Nessuno di questi"))
-                choice = input(_(_("   Scelta: "))).strip().lower()
-                if choice.isdigit() and 1 <= int(choice) <= len(matches):
-                    chosen_match = matches[int(choice) - 1]
-                    player_changes['new_fide_id'] = str(chosen_match['id_fide'])
-                    fide_record = chosen_match
-                else:
-                    print(_("   Scelta non valida o saltata. Il giocatore non verrà associato."))
-        # --- FASE 2: Se abbiamo un record FIDE (trovato tramite ID o tramite associazione), controlla gli aggiornamenti ---
+
+            if p_first_name and p_last_name:
+                matches = [f_p for f_p in fide_db.values() if
+                           f_p.get('first_name', '').lower() == p_first_name and
+                           f_p.get('last_name', '').lower() == p_last_name]
+
+                if len(matches) == 1:
+                    new_fide_id = str(matches[0]['id_fide'])
+                    fide_record = matches[0]
+                elif len(matches) > 1:
+                    is_ambiguous = True
+
+        updates = {}
         if fide_record:
-            updates = {}
-            # 1. Elo Standard: si aggiorna sempre se diverso
+            # Elo Standard
             fide_elo = fide_record.get('elo_standard', 0)
             if fide_elo > 0 and fide_elo != local_player.get('current_elo'):
                 updates['current_elo'] = fide_elo
-            
-            # 2. Titolo FIDE: si aggiorna solo se il campo locale è vuoto
+                stats['elo_updates'] += 1
+
+            # Titolo FIDE
             fide_title = fide_record.get('title', '')
             if fide_title and not local_player.get('fide_title'):
                 updates['fide_title'] = fide_title
+                stats['title_updates'] += 1
 
-            # 3. K-Factor: si aggiorna sempre, perché il dato FIDE è prioritario
+            # K-Factor
             fide_k = fide_record.get('k_factor')
             if fide_k is not None and fide_k != local_player.get('fide_k_factor'):
                 updates['fide_k_factor'] = fide_k
+                stats['k_factor_updates'] += 1
 
-            # 4. Data di nascita: si aggiorna solo se il campo locale è vuoto e la FIDE fornisce l'anno
+            # Anno Nascita
             fide_birth_year = fide_record.get('birth_year')
             if fide_birth_year and not local_player.get('birth_date'):
                 updates['birth_date'] = f"{fide_birth_year}-01-01"
+                stats['birth_date_updates'] += 1
 
-            player_changes['updates'] = updates
-        
-        if player_changes['new_fide_id'] or player_changes['updates']:
-            all_potential_changes.append(player_changes)
-    
-    # --- FASE 3: Riepilogo e Conferma Finale Interattiva ---
+        if new_fide_id:
+            stats['id_associations'] += 1
+
+        if new_fide_id or updates or is_ambiguous:
+            all_potential_changes.append({
+                'player_id': player_id,
+                'current_data': local_player,
+                'new_fide_id': new_fide_id,
+                'updates': updates,
+                'is_ambiguous': is_ambiguous,
+                'matches': matches
+            })
+
+    # FASE 2: Riepilogo
     if not all_potential_changes:
         print(_("\nAnalisi completata. Il tuo database personale è già perfettamente sincronizzato!"))
         return
-    print(_("\n--- Riepilogo Sincronizzazione: Trovate {} modifiche proposte ---").format(len(all_potential_changes)))
-    for change in all_potential_changes[:3]:
+
+    print(_("\n--- Sommario Aggiornamenti Disponibili ---"))
+    if stats['id_associations'] > 0:
+        print(_(" - {num} nuovi ID FIDE da associare").format(num=stats['id_associations']))
+    if stats['elo_updates'] > 0:
+        print(_(" - {num} aggiornamenti Elo").format(num=stats['elo_updates']))
+    if stats['birth_date_updates'] > 0:
+        print(_(" - {num} aggiornamenti anno di nascita").format(num=stats['birth_date_updates']))
+    if stats['title_updates'] > 0:
+        print(_(" - {num} aggiornamenti titoli FIDE").format(num=stats['title_updates']))
+    if stats['k_factor_updates'] > 0:
+        print(_(" - {num} aggiornamenti K-Factor").format(num=stats['k_factor_updates']))
+
+    ambiguous_count = sum(1 for c in all_potential_changes if c['is_ambiguous'])
+    if ambiguous_count > 0:
+        print(_(" - {num} giocatori con omonimi multipli (richiedono risoluzione manuale)").format(num=ambiguous_count))
+    print("-" * 42)
+
+    # Scelta Modalità (ESCAPE = Tutto, INVIO = Passo-passo)
+    print(_("Premi ESCAPE per applicare TUTTI gli aggiornamenti non ambigui in automatico."))
+    print(_("Premi INVIO per decidere per ciascun aggiornamento passo-passo."))
+
+    step_by_step = enter_escape(_("Scegli la modalità (INVIO = passo-passo | ESCAPE = applica tutti): "))
+
+    changes_applied = False
+
+    # FASE 3: Applicazione
+    for change in all_potential_changes:
+        player_id = change['player_id']
         player = change['current_data']
-        print(_(" - Giocatore: {} {} (ID Locale: {})").format(player.get('first_name'), player.get('last_name'), player.get('id')))
-        if change['new_fide_id']:
-            print(_("    -> Associazione nuovo ID FIDE: {}").format(change['new_fide_id']))
-        if change['updates']:
-            for key, value in change['updates'].items():
-                print(_("    -> Aggiornamento {}: da '{}' a '{}'").format(key.replace('_',' ').title(), player.get(key), value))
+        new_fide_id = change['new_fide_id']
+        updates = change['updates']
+        is_ambiguous = change['is_ambiguous']
+        matches = change['matches']
 
-    if len(all_potential_changes) > 3:
-        if enter_escape(_("\nVuoi vedere l'elenco completo di tutte le modifiche proposte? (INVIO|ESCAPE)")) == 's':
-            print(_("\n--- Elenco Completo Modifiche Proposte ---"))
-            for change in all_potential_changes: # Mostra tutti
-                 player = change['current_data']
-                 print(_("  - Giocatore: {} {} (ID Locale: {})").format(player.get('first_name'), player.get('last_name'), player.get('id')))
-                 if change['new_fide_id']:
-                     print(_(" -> Associazione nuovo ID FIDE: {}").format(change['new_fide_id']))
-                 if change['updates']:
-                     for key, value in change['updates'].items():
-                         print(_("     -> Aggiornamento {}: da '{}' a '{}'").format(key.replace('_',' ').title(), player.get(key, _('N/D')), value))
-                 print("-" * 20)
+        if not step_by_step:
+            # Modalità "Applica Tutti"
+            if is_ambiguous:
+                print(_("\nGiocatore: {} {} (ID Locale: {}) ha {} omonimi nel DB FIDE. Risoluzione manuale richiesta.").format(player.get('first_name'), player.get('last_name'), player.get('id'), len(matches)))
+                for i, match in enumerate(matches):
+                    print(_(" {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}").format(i + 1, match['id_fide'], match['federation'], match['elo_standard'], match.get('birth_year')))
+                print(_("   0. Nessuno di questi"))
+                choice = input(_("   Scelta (0-{}): ").format(len(matches))).strip()
+                if choice.isdigit() and 1 <= int(choice) <= len(matches):
+                    chosen_match = matches[int(choice) - 1]
+                    new_fide_id = str(chosen_match['id_fide'])
+                    fide_elo = chosen_match.get('elo_standard', 0)
+                    if fide_elo > 0 and fide_elo != player.get('current_elo'): updates['current_elo'] = fide_elo
+                    fide_title = chosen_match.get('title', '')
+                    if fide_title and not player.get('fide_title'): updates['fide_title'] = fide_title
+                    fide_k = chosen_match.get('k_factor')
+                    if fide_k is not None and fide_k != player.get('fide_k_factor'): updates['fide_k_factor'] = fide_k
+                    fide_birth_year = chosen_match.get('birth_year')
+                    if fide_birth_year and not player.get('birth_date'): updates['birth_date'] = f"{fide_birth_year}-01-01"
+                else:
+                    print(_("   Saltato."))
+                    continue
 
-    if enter_escape(_("\nVuoi applicare tutte le modifiche proposte al tuo database personale? (INVIO|ESCAPE)")):
-        for change in all_potential_changes:
-            player_record_to_update = players_db[change['player_id']]
-            if change['new_fide_id']:
-                player_record_to_update['fide_id_num_str'] = change['new_fide_id']
-            if change['updates']:
-                player_record_to_update.update(change['updates'])
-            
+            # Applica in silenzio (salvo i log base)
+            player_record_to_update = players_db[player_id]
+            if new_fide_id: player_record_to_update['fide_id_num_str'] = new_fide_id
+            if updates: player_record_to_update.update(updates)
+            changes_applied = True
+
+        else:
+            # Modalità "Passo-passo"
+            print(_("\n--- Modifiche per: {} {} (ID: {}) ---").format(player.get('first_name'), player.get('last_name'), player.get('id')))
+
+            if is_ambiguous:
+                print(_("Trovati {} omonimi nel DB FIDE.").format(len(matches)))
+                for i, match in enumerate(matches):
+                    print(_(" {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}").format(i + 1, match['id_fide'], match['federation'], match['elo_standard'], match.get('birth_year')))
+                print(_("   0. Nessuno di questi"))
+                choice = input(_("   Scelta (0-{}): ").format(len(matches))).strip()
+                if choice.isdigit() and 1 <= int(choice) <= len(matches):
+                    chosen_match = matches[int(choice) - 1]
+                    new_fide_id = str(chosen_match['id_fide'])
+                    fide_elo = chosen_match.get('elo_standard', 0)
+                    if fide_elo > 0 and fide_elo != player.get('current_elo'): updates['current_elo'] = fide_elo
+                    fide_title = chosen_match.get('title', '')
+                    if fide_title and not player.get('fide_title'): updates['fide_title'] = fide_title
+                    fide_k = chosen_match.get('k_factor')
+                    if fide_k is not None and fide_k != player.get('fide_k_factor'): updates['fide_k_factor'] = fide_k
+                    fide_birth_year = chosen_match.get('birth_year')
+                    if fide_birth_year and not player.get('birth_date'): updates['birth_date'] = f"{fide_birth_year}-01-01"
+                else:
+                    print(_("Saltato."))
+                    continue
+
+            if new_fide_id:
+                print(_(" -> Associa nuovo ID FIDE: {}").format(new_fide_id))
+            if updates:
+                for key, value in updates.items():
+                    print(_(" -> Aggiorna {}: da '{}' a '{}'").format(key.replace('_',' ').title(), player.get(key, _('N/D')), value))
+
+            if new_fide_id or updates:
+                if enter_escape(_("Applicare queste modifiche? (INVIO per Sì | ESCAPE per No): ")):
+                    player_record_to_update = players_db[player_id]
+                    if new_fide_id: player_record_to_update['fide_id_num_str'] = new_fide_id
+                    if updates: player_record_to_update.update(updates)
+                    changes_applied = True
+                    print(_("Modifiche applicate."))
+                else:
+                    print(_("Modifiche saltate."))
+
+    if changes_applied:
         save_players_db(players_db)
         print(_("\nSincronizzazione completata e database personale salvato!"))
     else:
-        print(_("\nOperazione annullata. Nessuna modifica è stata salvata."))
-
+        print(_("\nNessuna modifica è stata apportata al database personale."))
 def aggiorna_db_fide_locale():
     """
     Scarica l'ultimo rating list FIDE (XML), estrae un set di dati arricchito
