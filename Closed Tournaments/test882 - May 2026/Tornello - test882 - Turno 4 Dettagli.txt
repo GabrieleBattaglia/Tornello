@@ -1,0 +1,14 @@
+﻿Torneo: test882
+Sito: pc, Data Inizio Torneo: Lunedì 9 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 4 CONCLUSO ==========================
+	Periodo del Turno: Mercoledì 15 aprile 2026 - Domenica 26 aprile 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 16  | Jiazhuang Vandelli       [1723] (3.5 ) - Bersan Vrioni            [1951] (3   ) | 1/2-1/2
+	2  | 18  | Oscar A. Arabolaza       [   0] (1.5 ) - Maurizio Crozza          [1565] (2   ) | 0-1
+	3  | 17  | John Baker               [1560] (3.5 ) - Barbara Bueche           [1453] (2   ) | 1-0
+	4  | 20  | Giuseppe Baratta         [1450] (0.5 ) - Iyed -14 Achech          [   0] (1   ) | 0-1
+	5  | 19  | Luca Crosetto            [1211] (2   ) - Test2 Testicula          [1399] (1   ) | 1-0

@@ -81,14 +81,14 @@
   "id": "VANJI001",
   "first_name": "Jiazhuang",
   "last_name": "Vandelli",
-  "current_elo": 1730,
+  "current_elo": 1723,
   "registration_date": "2025-05-01",
   "birth_date": "2002-01-01",
-  "games_played": 10,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 1,
-   "bronze": 1,
+   "bronze": 0,
    "wood": 0
   },
   "tournaments_played": [
@@ -99,14 +99,6 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
-   },
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 3,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
    }
   ],
   "fide_title": "2N",
@@ -369,10 +361,10 @@
   "id": "BARGI001",
   "first_name": "Giuseppe",
   "last_name": "Baratta",
-  "current_elo": 1351,
+  "current_elo": 1450,
   "registration_date": "2025-05-01",
   "birth_date": "1961-01-01",
-  "games_played": 10,
+  "games_played": 5,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -387,14 +379,6 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
-   },
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 10,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
    }
   ],
   "fide_title": "NC",
@@ -1260,13 +1244,13 @@
   "id": "VRIBE001",
   "first_name": "Bersan",
   "last_name": "Vrioni",
-  "current_elo": 1943,
+  "current_elo": 1951,
   "registration_date": "2025-07-21",
   "birth_date": "1970-01-01",
-  "games_played": 12,
+  "games_played": 7,
   "medals": {
    "gold": 0,
-   "silver": 1,
+   "silver": 0,
    "bronze": 1,
    "wood": 0
   },
@@ -1278,14 +1262,6 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
-   },
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 2,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
    }
   ],
   "fide_title": "",
@@ -1476,26 +1452,17 @@
   "id": "TESTE002",
   "first_name": "Test2",
   "last_name": "Testicula",
-  "current_elo": 1366,
+  "current_elo": 1399.0,
   "registration_date": "2025-07-21",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 9,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "m",
   "federation": "ITA",
@@ -1657,26 +1624,17 @@
   "id": "BUEBA001",
   "first_name": "Barbara",
   "last_name": "Bueche",
-  "current_elo": 1448,
+  "current_elo": 1453,
   "registration_date": "2026-03-09",
   "birth_date": "1962-01-01",
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
-   "wood": 1
+   "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 4,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "F",
   "federation": "GER",
@@ -1687,26 +1645,17 @@
   "id": "CROLU001",
   "first_name": "Luca",
   "last_name": "Crosetto",
-  "current_elo": 1230,
+  "current_elo": 1211.0,
   "registration_date": "2026-03-09",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 5,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "m",
   "federation": "ITA",
@@ -1717,26 +1666,17 @@
   "id": "ACHIY001",
   "first_name": "Iyed -14",
   "last_name": "Achech",
-  "current_elo": 13,
+  "current_elo": 0,
   "registration_date": "2026-03-09",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 8,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "M",
   "federation": "TUN",
@@ -1747,26 +1687,17 @@
   "id": "BAKJO001",
   "first_name": "John",
   "last_name": "Baker",
-  "current_elo": 1601,
+  "current_elo": 1560.0,
   "registration_date": "2026-03-09",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
-   "gold": 1,
+   "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 1,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "156",
   "sex": "m",
   "federation": "USA",
@@ -1777,26 +1708,17 @@
   "id": "CROMA001",
   "first_name": "Maurizio",
   "last_name": "Crozza",
-  "current_elo": 1551,
+  "current_elo": 1565.0,
   "registration_date": "2026-03-09",
   "birth_date": null,
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 7,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "m",
   "federation": "ITA",
@@ -1807,26 +1729,17 @@
   "id": "ARAOS001",
   "first_name": "Oscar A.",
   "last_name": "Arabolaza",
-  "current_elo": 33,
+  "current_elo": 0,
   "registration_date": "2026-03-09",
   "birth_date": "1984-01-01",
-  "games_played": 5,
+  "games_played": 0,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "test882",
-    "tournament_id": "test882_20260309055942",
-    "rank": 6,
-    "total_players": 10,
-    "date_started": "2026-03-09",
-    "date_completed": "2026-05-08"
-   }
-  ],
+  "tournaments_played": [],
   "fide_title": "",
   "sex": "M",
   "federation": "ARG",

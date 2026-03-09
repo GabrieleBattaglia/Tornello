@@ -1,0 +1,14 @@
+﻿Torneo: test882
+Sito: pc, Data Inizio Torneo: Lunedì 9 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Sabato 21 marzo 2026 - Mercoledì 1 aprile 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 6   | John Baker               [1560] (1.5 ) - Bersan Vrioni            [1951] (1.5 ) | 1/2-1/2
+	2  | 7   | Jiazhuang Vandelli       [1723] (2   ) - Maurizio Crozza          [1565] (1   ) | 1-0
+	3  | 8   | Giuseppe Baratta         [1450] (0   ) - Barbara Bueche           [1453] (2   ) | 0-1
+	4  | 9   | Oscar A. Arabolaza       [   0] (0.5 ) - Test2 Testicula          [1399] (0.5 ) | 1/2-1/2
+	5  | 10  | Luca Crosetto            [1211] (1   ) - Iyed -14 Achech          [   0] (0   ) | 1-0

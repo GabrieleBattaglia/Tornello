@@ -3,11 +3,15 @@ import json
 import zipfile
 import io
 import requests
+import threading
+import traceback
+import xml.etree.ElementTree as ET
 from urllib.request import urlopen
 from datetime import datetime
 from config import *
 from GBUtils import polipo, key
-from utils import format_date_locale
+from utils import format_date_locale, enter_escape, format_rank_ordinal
+from stats import get_k_factor
 
 try:
     from unidecode import unidecode
@@ -407,7 +411,8 @@ def save_players_db_txt(players_db):
 def crea_nuovo_giocatore_nel_db(players_db, 
                                 first_name, last_name, elo,
                                 fide_title, sex, federation, 
-                                fide_id_num_str, birth_date, experienced):
+                                fide_id_num_str, birth_date, experienced,
+                                silent=False):
     """
     Crea SEMPRE un nuovo giocatore nel database principale (players_db),
     generando un ID univoco che gestisce gli omonimi.
@@ -453,7 +458,8 @@ def crea_nuovo_giocatore_nel_db(players_db,
         print(_("ERRORE CRITICO: Impossibile generare ID univoco per {first_name} {last_name} dopo {attempts} tentativi.").format(first_name=norm_first, last_name=norm_last, attempts=max_attempts_id_gen))
         return None
 
-    print(_("Creazione nuovo giocatore nel DB principale: {} {} con il nuovo ID: {}").format(norm_first, norm_last, new_player_id))
+    if not silent:
+        print(_("Creazione nuovo giocatore nel DB principale: {} {} con il nuovo ID: {}").format(norm_first, norm_last, new_player_id))
     new_player_data_for_db = {
         "id": new_player_id,
         "first_name": norm_first,
@@ -472,6 +478,7 @@ def crea_nuovo_giocatore_nel_db(players_db,
     }
     players_db[new_player_id] = new_player_data_for_db
     save_players_db(players_db) # Salva immediatamente il DB principale aggiornato
-    print(_("Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) aggiunto al database principale.").format(first_name=norm_first, last_name=norm_last, player_id=new_player_id))
+    if not silent:
+        print(_("Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) aggiunto al database principale.").format(first_name=norm_first, last_name=norm_last, player_id=new_player_id))
     return new_player_id
 
