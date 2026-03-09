@@ -1,7 +1,6 @@
 import os
 import sys
 from GBUtils import polipo
-from version import VERSIONE
 
 def resource_path(relative_path):
     """
