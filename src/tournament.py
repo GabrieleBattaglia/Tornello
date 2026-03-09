@@ -3,7 +3,6 @@ import json
 import traceback
 from datetime import datetime, timedelta
 from config import *
-from GBUtils import key
 from utils import format_date_locale, sanitize_filename, create_backup
 from engine import handle_bbpairings_failure, genera_stringa_trf_per_bbpairings, run_bbpairings_engine, parse_bbpairings_couples_output
 

@@ -5,9 +5,9 @@ import traceback
 from datetime import datetime
 from config import *
 from GBUtils import dgt, key
-from utils import enter_escape, format_date_locale, format_points, sanitize_filename, create_backup
+from utils import enter_escape, format_date_locale, sanitize_filename, create_backup
 from db_players import _cerca_giocatore_nel_db_fide, crea_nuovo_giocatore_nel_db, save_players_db
-from tournament import time_machine_torneo, save_tournament, _apply_match_result_to_players, _ensure_players_dict
+from tournament import time_machine_torneo, save_tournament, _apply_match_result_to_players
 from stats import get_k_factor, compute_buchholz, compute_buchholz_cut1, compute_aro, calculate_performance_rating, calculate_elo_change
 from reports import save_standings_text, save_suspended_tournament_summary
 

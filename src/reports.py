@@ -88,7 +88,7 @@ def save_current_tournament_round_file(torneo):
                     sortable_datetime = datetime.combine(s_date, s_time)
                     details_tuple = (sortable_datetime, match, schedule, wp_name, bp_name)
                     (scheduled_pending_withdrawn if is_withdrawn_match else scheduled_pending_active).append(details_tuple)
-                except (ValueError, TypeError) as e_dt:
+                except (ValueError, TypeError):
                     line = _(" IDG:{match_id} {white_player} - {black_player} (Pianificazione Errata)").format(match_id=match_id_display, white_player=wp_name, black_player=bp_name)
                     (unscheduled_pending_withdrawn if is_withdrawn_match else unscheduled_pending_active).append(line)
             else:
@@ -222,7 +222,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
             f.write("\t"+"-" * 76 + "\n")
             header_partite = _("Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato")
             f.write(f"\t{header_partite}\n")
-            f.write(f"\t" + "-" * len(header_partite) + "\n")
+            f.write("\t" + "-" * len(header_partite) + "\n")
             for board_num_idx, match in enumerate(playable_matches):
                 board_num = board_num_idx + 1
                 match_id = match.get('id', '?')
@@ -478,7 +478,7 @@ def display_status(torneo):
         else:
             days_left_tournament = time_left_tournament.days
             if days_left_tournament == 0 and time_left_tournament.total_seconds() > 0:
-                print(f"Ultimo giorno del torneo.")
+                print("Ultimo giorno del torneo.")
             elif days_left_tournament > 0:
                 print(_("Giorni rimanenti alla fine del torneo: {days}").format(days=days_left_tournament))
     except (ValueError, TypeError):
