@@ -2,6 +2,7 @@ import os
 import json
 import zipfile
 import io
+import requests
 from urllib.request import urlopen
 from datetime import datetime
 from config import *
