@@ -1,7 +1,10 @@
 # TORNELLO DEV
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, glob, shutil, io, zipfile, threading, requests
-import xml.etree.ElementTree as ET
+import os
+import json
+import sys
+import traceback
+import glob
 
 # Add src to sys.path for local development
 try:
@@ -9,37 +12,28 @@ try:
 except AttributeError:
     sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src'))
 
-from GBUtils import dgt, key, Donazione, polipo
+from GBUtils import Donazione
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from babel.dates import format_date
 # installazione percorsi relativi e i18n
 from config import *
-from utils import enter_escape, format_rank_ordinal, format_date_locale, format_points, sanitize_filename
-from engine import handle_bbpairings_failure, genera_stringa_trf_per_bbpairings, run_bbpairings_engine, parse_bbpairings_couples_output
+from utils import enter_escape, format_date_locale, sanitize_filename
+from src.engine import handle_bbpairings_failure
+from src.version import VERSIONE
 from db_players import (
-    load_players_db, save_players_db, save_players_db_txt, 
-    crea_nuovo_giocatore_nel_db, sincronizza_db_personale, 
-    aggiorna_db_fide_locale, _cerca_giocatore_nel_db_fide
-)
-from stats import (
-    get_k_factor, calculate_expected_score, calculate_elo_change, 
-    calculate_performance_rating, compute_buchholz, 
-    compute_buchholz_cut1, compute_aro
+    load_players_db, sincronizza_db_personale, 
+    aggiorna_db_fide_locale
 )
 from tournament import (
-    _ricalcola_stato_giocatore_da_storico, time_machine_torneo, 
+    time_machine_torneo, 
     load_tournament, save_tournament, _ensure_players_dict, 
-    get_player_by_id, calculate_dates, generate_pairings_for_round, 
-    ricalcola_punti_tutti_giocatori, _apply_match_result_to_players
+    calculate_dates, generate_pairings_for_round
 )
 from reports import (
     save_current_tournament_round_file, append_completed_round_to_history_file, 
     save_standings_text, display_status
 )
 from ui import (
-    _conferma_lista_giocatori_torneo, gestisci_pianificazione_partite, 
-    get_input_with_default, input_players, update_match_result, finalize_tournament
+    _conferma_lista_giocatori_torneo, input_players, update_match_result, finalize_tournament
 )
 
 #QF
@@ -449,7 +443,7 @@ if __name__ == "__main__":
         print(_("Valore del BYE impostato a: {val}").format(val=torneo['bye_value']))
         min_req_players = num_turni_totali + 1 if isinstance(num_turni_totali, int) and num_turni_totali > 0 else 2
         if num_giocatori < min_req_players : # Ricontrolla dopo _conferma
-             print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali));
+             print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali))
              sys.exit(0)
         torneo["current_round"] = 1
         torneo["rounds"] = []

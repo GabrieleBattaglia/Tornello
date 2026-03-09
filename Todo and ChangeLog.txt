@@ -5,6 +5,11 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.8.3
+	+ Rifatta la funzione di sincronizzazione del database personale: ora fornisce un sommario dei cambiamenti proposti e permette di accettarli tutti in blocco o di valutarli singolarmente passo-passo.
+	+ Refactoring completo del file `Players_DB.py`: rimosse le duplicazioni di codice, agganciato direttamente ai moduli della cartella `src/` e introdotto il supporto multilingua (i18n).
+	+ Aggiornata la configurazione di `ruff` (linter) nel file `pyproject.toml`.
+
 8.8.2
 	+ Migliorata interfaccia di inserimento giocatori:
 	  - Messaggi di feedback più chiari e concisi.
