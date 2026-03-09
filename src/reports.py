@@ -510,3 +510,29 @@ def display_status(torneo):
         print(_("\nDati per il Turno {round_num} non trovati o turno non valido.").format(round_num=current_r))
     print("--------------------\n")
 
+def save_suspended_tournament_summary(torneo_obj, filename_base):
+    """Genera un file di testo riepilogativo per un torneo con creazione sospesa."""
+    try:
+        report_filename = f"{filename_base}_sospeso.txt"
+        with open(report_filename, 'w', encoding='utf-8') as f:
+            f.write(f"--- RIEPILOGO TORNEO IN PREPARAZIONE: {torneo_obj.get('name', 'Senza Nome')} ---\n\n")
+            f.write(f"Luogo: {torneo_obj.get('location', 'N/D')}\n")
+            f.write(f"Date: {torneo_obj.get('start_date', 'N/D')} - {torneo_obj.get('end_date', 'N/D')}\n")
+            f.write(f"Turni previsti: {torneo_obj.get('total_rounds', 'N/D')}\n")
+            f.write(f"Tempo di riflessione: {torneo_obj.get('time_control', 'N/D')}\n\n")
+            
+            players = torneo_obj.get('players', [])
+            f.write(f"--- GIOCATORI INSERITI ({len(players)}) ---\n")
+            if not players:
+                f.write("Nessun giocatore inserito finora.\n")
+            else:
+                for idx, p in enumerate(players, 1):
+                    nome_cognome = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+                    id_player = p.get('id', '')
+                    elo = p.get('elo', p.get('elo_standard', 0))
+                    f.write(f"{idx:02d}. {nome_cognome} (ID: {id_player}, Elo: {elo})\n")
+        print(_("Riepilogo promemoria salvato in: '{report}'").format(report=report_filename))
+    except Exception as e:
+        print(_("Errore nel salvataggio del riepilogo sospeso: {e}").format(e=e))
+
+

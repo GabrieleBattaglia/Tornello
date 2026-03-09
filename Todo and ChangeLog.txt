@@ -5,6 +5,9 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.8.1
+	+ Aggiunta la generazione di un file riepilogativo di testo (.txt) per i tornei sospesi, fungendo da promemoria sui giocatori attualmente inseriti.
+
 8.8.0
 	+ Nuova Feature: Possibilità di sospendere la creazione di un torneo durante l'inserimento dei giocatori e riprenderla in sessioni successive.
 
