@@ -20,6 +20,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 lingua_rilevata, _ = polipo(source_language="it")
+import builtins
+builtins._ = _
 
 # File e Directory Principali (relativi all'eseguibile)
 PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
