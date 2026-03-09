@@ -5,6 +5,15 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.8.2
+	+ Migliorata interfaccia di inserimento giocatori:
+	  - Messaggi di feedback più chiari e concisi.
+	  - Risolto un bug che impediva la sospensione in fase di creazione di un nuovo torneo.
+	  - Possibilità di selezionare da una lista di omonimi locali digitando il numero.
+	  - Opzione per forzare la ricerca nel DB FIDE (tasto 0) in caso di omonimi nel DB locale.
+	  - L'inserimento manuale dell'ELO ora suggerisce e accetta valori interi.
+	+ Correzione massiva di importazioni mancanti e NameError latenti in tutti i moduli (effettuata con pyflakes).
+
 8.8.1
 	+ Aggiunta la generazione di un file riepilogativo di testo (.txt) per i tornei sospesi, fungendo da promemoria sui giocatori attualmente inseriti.
 

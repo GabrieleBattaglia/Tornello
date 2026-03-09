@@ -370,26 +370,51 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                 return players_in_tournament # Di default, se annulla/escape o altro, torna la lista attuale e decide la logica chiamante
         player_id_to_add = None
         player_data_from_db = None
+        was_newly_created = False
+        
         # --- LIVELLO 1: Ricerca nel DB Personale (`players_db`) ---
         potential_id_input = data_input.upper()
         if potential_id_input in players_db:
+            if potential_id_input in added_player_ids_to_tournament:
+                print(_("Errore: Giocatore ID {player_id} ({first_name} {last_name}) è già nel torneo.").format(player_id=potential_id_input, first_name=players_db[potential_id_input].get('first_name'), last_name=players_db[potential_id_input].get('last_name')))
+                continue
             player_id_to_add = potential_id_input
         else:
-            matches_in_personal_db = [p for p in players_db.values() if data_input.lower() in f"{p.get('first_name','')} {p.get('last_name','')}".lower()]
-            if len(matches_in_personal_db) == 1:
-                player_id_to_add = matches_in_personal_db[0]['id']
-            elif len(matches_in_personal_db) > 1:
-                print(_("Trovati {count} giocatori nel tuo DB personale. Specifica usando l'ID locale:").format(count=len(matches_in_personal_db)))
-                for i, p in enumerate(matches_in_personal_db): print(f"  {i+1}. ID: {p.get('id')} - {p.get('first_name')} {p.get('last_name')}")
-                continue
+            matches_in_personal_db = [p for p in players_db.values() if data_input.lower() in f"{p.get('first_name','')} {p.get('last_name','')} {p.get('id','')}".lower()]
+            if matches_in_personal_db:
+                print(_("\nTrovati {count} giocatori nel tuo DB personale corrispondenti a '{term}':").format(count=len(matches_in_personal_db), term=data_input))
+                for i, p in enumerate(matches_in_personal_db):
+                    status = _(" (GIÀ NEL TORNEO)") if p.get('id') in added_player_ids_to_tournament else ""
+                    print(f"  {i+1}. ID: {p.get('id')} - {p.get('first_name')} {p.get('last_name')}{status}")
+                print(_("  0. Nessuno di questi, cerca nel DB FIDE"))
+                
+                choice = input(_("Scegli un numero (o Invio per annullare e cercare un altro nome): ")).strip()
+                if not choice:
+                    continue
+                if choice == '0':
+                    player_id_to_add = None # Will proceed to Level 2
+                elif choice.isdigit():
+                    idx = int(choice) - 1
+                    if 0 <= idx < len(matches_in_personal_db):
+                        selected_p = matches_in_personal_db[idx]
+                        if selected_p['id'] in added_player_ids_to_tournament:
+                             print(_("Errore: Il giocatore selezionato è già nel torneo."))
+                             continue
+                        player_id_to_add = selected_p['id']
+                    else:
+                        print(_("Scelta non valida."))
+                        continue
+                else:
+                    print(_("Input non valido."))
+                    continue
 
         if player_id_to_add:
-            print(_("Trovato giocatore nel DB personale: {} (ID: {})").format(players_db[player_id_to_add].get('first_name'), player_id_to_add))
+            # Trovato nel DB personale (o selezionato dall'utente)
             player_data_from_db = players_db[player_id_to_add]
 
         # --- LIVELLO 2: Ricerca nel DB FIDE Locale (se non trovato nel DB personale) ---
         if not player_id_to_add:
-            print(_("Giocatore non trovato nel DB personale. Avvio ricerca nel DB FIDE..."))
+            print(_("Giocatore non trovato o non selezionato nel DB personale. Avvio ricerca nel DB FIDE..."))
             fide_matches = _cerca_giocatore_nel_db_fide(data_input)
 
             selected_fide_record = None
@@ -453,10 +478,12 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                     federation=selected_fide_record.get('federation', ''),
                     fide_id_num_str=str(selected_fide_record.get('id_fide')),
                     birth_date=f"{selected_fide_record.get('birth_year')}-01-01" if selected_fide_record.get('birth_year') else None,
-                    experienced=True # Un giocatore con rating FIDE è per definizione "experienced"
+                    experienced=True, # Un giocatore con rating FIDE è per definizione "experienced"
+                    silent=True
                 )
                 if player_id_to_add:
                     player_data_from_db = players_db[player_id_to_add]
+                    was_newly_created = True
                 else:
                     print(_("Errore durante la creazione del giocatore importato. Si prega di riprovare."))
                     continue
@@ -464,12 +491,11 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
         # --- LIVELLO 3: Creazione Manuale (se non trovato da nessuna parte) ---
         if not player_id_to_add:
             print(_("Nessuna corrispondenza trovata. Procedi con l'inserimento manuale."))
-            # ... [La tua logica esistente per la raccolta manuale dei dati va qui] ...
             first_name_new_db = get_input_with_default(_("  Nome del nuovo giocatore: ")).strip().title()
             if not first_name_new_db: continue
             last_name_new_db = get_input_with_default(_("  Cognome: ")).strip().title()
             if not last_name_new_db: continue
-            elo_new_db = dgt(f"  Elo (default {DEFAULT_ELO})", kind="f", fmin=500, fmax=4000, default=DEFAULT_ELO)
+            elo_new_db = dgt(f"  Elo (default {int(DEFAULT_ELO)})", kind="i", imin=500, imax=4000, default=int(DEFAULT_ELO))
             fide_title_new_db = get_input_with_default(_("  Titolo FIDE (es. FM, o vuoto)"), "").strip().upper()[:3]
             sex_new_db = get_input_with_default(_("  Sesso (m/w)"), "m").strip().lower()
             fed_new_db = get_input_with_default(_("  Federazione (3 lettere, es. ITA)"), "ITA").strip().upper()[:3] or "ITA"
@@ -480,10 +506,12 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
             player_id_to_add = crea_nuovo_giocatore_nel_db(
                 players_db, first_name_new_db, last_name_new_db, elo_new_db,
                 fide_title_new_db, sex_new_db, fed_new_db, fide_id_new_db,
-                birth_date_new_db, exp_new_db
+                birth_date_new_db, exp_new_db, silent=True
             )
             if player_id_to_add:
                 player_data_from_db = players_db.get(player_id_to_add)
+                was_newly_created = True
+
         # --- Aggiunta finale del giocatore (selezionato o creato) al TORNEO ---
         if player_id_to_add and player_data_from_db:
             if player_id_to_add in added_player_ids_to_tournament:
@@ -506,7 +534,11 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                 }
                 players_in_tournament.append(player_instance)
                 added_player_ids_to_tournament.add(player_id_to_add)
-                print(_("-> Giocatore '{first_name} {last_name}' (ID DB: {player_id}) aggiunto al torneo.").format(first_name=player_instance['first_name'], last_name=player_instance['last_name'], player_id=player_id_to_add))
+                
+                if was_newly_created:
+                    print(_("-> Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) salvato nel DB e iscritto al torneo.").format(first_name=player_instance['first_name'], last_name=player_instance['last_name'], player_id=player_id_to_add))
+                else:
+                    print(_("-> Giocatore '{first_name} {last_name}' (ID: {player_id}) iscritto al torneo.").format(first_name=player_instance['first_name'], last_name=player_instance['last_name'], player_id=player_id_to_add))
     return players_in_tournament
 
 def update_match_result(torneo):
@@ -804,9 +836,9 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                 current_visual_rank = i + 1
             p_item["final_rank"] = current_visual_rank
             last_sort_key_tuple_for_rank = current_sort_key_tuple_for_rank
-        torneo['players'] = players_sorted 
+        torneo['players'] = players_sorted
     except Exception as e_sort:
-        print(_("Errore durante l'ordinamento dei giocatori per la classifica: {error}").format(error=e))
+        print(_("Errore durante l'ordinamento dei giocatori per la classifica: {error}").format(error=e_sort))
         traceback.print_exc()
         # Non interrompere la finalizzazione, ma la classifica potrebbe non essere ordinata.
 

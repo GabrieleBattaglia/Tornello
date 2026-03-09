@@ -166,7 +166,11 @@ if __name__ == "__main__":
     ]
     if not potential_tournament_files:
         print(_("Nessun torneo esistente trovato."))
-        deve_creare_nuovo_torneo = True
+        if enter_escape(_("Premi INVIO per creare un nuovo torneo, ESCAPE per uscire.")):
+            deve_creare_nuovo_torneo = True
+        else:
+            print(_("Uscita dal programma."))
+            sys.exit(0)
     elif len(potential_tournament_files) == 1:
         single_found_filepath = potential_tournament_files[0]
         single_tournament_name_guess = _("Torneo Sconosciuto")
@@ -415,7 +419,11 @@ if __name__ == "__main__":
             print(_("Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata.")); sys.exit(1)
         torneo["round_dates"] = round_dates
         torneo["tournament_id"] = f"{sanitize_filename(torneo['name'])}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        torneo["players"] = input_players(players_db)
+        risultato_input = input_players(players_db, existing_players=[], torneo_obj=torneo, torneo_filename=active_tournament_filename)
+        if risultato_input is None:
+            # Utente ha sospeso la creazione
+            sys.exit(0)
+        torneo["players"] = risultato_input
         if not _conferma_lista_giocatori_torneo(torneo, players_db):
             print(_("Creazione torneo annullata a causa di problemi con la lista giocatori."))
             sys.exit(0) 
