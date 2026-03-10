@@ -6,13 +6,12 @@
 import os
 import json
 import sys
-import threading
 import traceback
 import io
 import zipfile
 import requests
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # --- Impostazioni e Costanti ---
 

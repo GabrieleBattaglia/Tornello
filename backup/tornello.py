@@ -1,6 +1,17 @@
 # TORNELLO DEV
 # Data concepimento: 28 marzo 2025
-import os, json, sys, math, traceback, subprocess, glob, shutil, io, zipfile, threading, requests
+import os
+import json
+import sys
+import math
+import traceback
+import subprocess
+import glob
+import shutil
+import io
+import zipfile
+import threading
+import requests
 import xml.etree.ElementTree as ET
 from GBUtils import dgt, key, Donazione, polipo
 from datetime import datetime, timedelta
@@ -2346,7 +2357,7 @@ def save_current_tournament_round_file(torneo):
                     sortable_datetime = datetime.combine(s_date, s_time)
                     details_tuple = (sortable_datetime, match, schedule, wp_name, bp_name)
                     (scheduled_pending_withdrawn if is_withdrawn_match else scheduled_pending_active).append(details_tuple)
-                except (ValueError, TypeError) as e_dt:
+                except (ValueError, TypeError):
                     line = _(" IDG:{match_id} {white_player} - {black_player} (Pianificazione Errata)").format(match_id=match_id_display, white_player=wp_name, black_player=bp_name)
                     (unscheduled_pending_withdrawn if is_withdrawn_match else unscheduled_pending_active).append(line)
             else:
@@ -2480,7 +2491,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
             f.write("\t"+"-" * 76 + "\n")
             header_partite = _("Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato")
             f.write(f"\t{header_partite}\n")
-            f.write(f"\t" + "-" * len(header_partite) + "\n")
+            f.write("\t" + "-" * len(header_partite) + "\n")
             for board_num_idx, match in enumerate(playable_matches):
                 board_num = board_num_idx + 1
                 match_id = match.get('id', '?')
@@ -2737,7 +2748,7 @@ def display_status(torneo):
         else:
             days_left_tournament = time_left_tournament.days
             if days_left_tournament == 0 and time_left_tournament.total_seconds() > 0:
-                print(f"Ultimo giorno del torneo.")
+                print("Ultimo giorno del torneo.")
             elif days_left_tournament > 0:
                 print(_("Giorni rimanenti alla fine del torneo: {days}").format(days=days_left_tournament))
     except (ValueError, TypeError):
@@ -2857,7 +2868,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             p_item["final_rank"] = current_visual_rank
             last_sort_key_tuple_for_rank = current_sort_key_tuple_for_rank
         torneo['players'] = players_sorted 
-    except Exception as e_sort:
+    except Exception:
         print(_("Errore durante l'ordinamento dei giocatori per la classifica: {error}").format(error=e))
         traceback.print_exc()
         # Non interrompere la finalizzazione, ma la classifica potrebbe non essere ordinata.
@@ -3264,7 +3275,7 @@ if __name__ == "__main__":
         print(_("Valore del BYE impostato a: {val}").format(val=torneo['bye_value']))
         min_req_players = num_turni_totali + 1 if isinstance(num_turni_totali, int) and num_turni_totali > 0 else 2
         if num_giocatori < min_req_players : # Ricontrolla dopo _conferma
-             print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali));
+             print(_("Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato.").format(num_players=num_giocatori, num_rounds=num_turni_totali))
              sys.exit(0)
         torneo["current_round"] = 1
         torneo["rounds"] = []
