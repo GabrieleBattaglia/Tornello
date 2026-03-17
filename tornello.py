@@ -290,27 +290,27 @@ if __name__ == "__main__":
                 else:
                     print(_("Inserisci un numero."))
 
-            # Se abbiamo caricato un torneo che era in stato sospeso, saltiamo la fase 2 di "nuova creazione"
-            # e andiamo direttamente al completamento dell'inserimento giocatori
-            if torneo and torneo.get("creation_suspended", False):
-                print(_("\nRipresa inserimento giocatori per '{name}'...").format(name=torneo['name']))
-                existing_players_list = torneo.get("players", [])
-                risultato_input = input_players(players_db, existing_players=existing_players_list, torneo_obj=torneo, torneo_filename=active_tournament_filename)
+    # Se abbiamo caricato un torneo che era in stato sospeso, saltiamo la fase 2 di "nuova creazione"
+    # e andiamo direttamente al completamento dell'inserimento giocatori
+    if torneo and torneo.get("creation_suspended", False):
+        print(_("\nRipresa inserimento giocatori per '{name}'...").format(name=torneo['name']))
+        existing_players_list = torneo.get("players", [])
+        risultato_input = input_players(players_db, existing_players=existing_players_list, torneo_obj=torneo, torneo_filename=active_tournament_filename)
 
-                if risultato_input is None:
-                    # Sospeso di nuovo
-                    sys.exit(0)
+        if risultato_input is None:
+            # Sospeso di nuovo
+            sys.exit(0)
 
-                torneo["players"] = risultato_input
+        torneo["players"] = risultato_input
 
-                # Una volta confermata e conclusa la lista, togliamo il flag di sospensione
-                if not _conferma_lista_giocatori_torneo(torneo, players_db):
-                    print(_("Creazione torneo annullata a causa di problemi con la lista giocatori."))
-                    sys.exit(0)
+        # Una volta confermata e conclusa la lista, togliamo il flag di sospensione
+        if not _conferma_lista_giocatori_torneo(torneo, players_db):
+            print(_("Creazione torneo annullata a causa di problemi con la lista giocatori."))
+            sys.exit(0)
 
-                torneo.pop("creation_suspended", None)
-                torneo['players_dict'] = {p['id']: p for p in torneo['players']}
-                deve_creare_nuovo_torneo = True # Forza la logica successiva (generazione turni, bye, ecc) a credere che stiamo finendo la creazione
+        torneo.pop("creation_suspended", None)
+        torneo['players_dict'] = {p['id']: p for p in torneo['players']}
+        deve_creare_nuovo_torneo = True # Forza la logica successiva (generazione turni, bye, ecc) a credere che stiamo finendo la creazione
 
     # 2. Creazione nuovo torneo (se necessario)
     if deve_creare_nuovo_torneo or (torneo is None and not active_tournament_filename):

@@ -5,6 +5,11 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.9.0
+	+ Creato un nuovo tool standalone `Sync_DB.py` per sincronizzare il database giocatori personale con i dati FIDE, senza dover avviare la procedura di un torneo.
+	+ Corretto un bug critico in `tornello.py` che causava il crash all'avvio in presenza di un singolo torneo sospeso (il controllo di sospensione veniva erroneamente bypassato).
+	+ Corretti i campi "Luogo" ed "Elo" (ora viene letto l'`initial_elo` invece del rating generico) nel file testuale generato alla sospensione di un torneo.
+
 8.8.6
 	+ Implementata la ricerca flessibile per token: ora l'ordine in cui si digitano nome e cognome non ha importanza, favorendo una corrispondenza più naturale.
 	+ Aggiunta la possibilità di affinare i risultati di ricerca nel DB FIDE. Quando i risultati sono troppi, si può aggiungere un prefisso `+testo` per restringere la ricerca, `-testo` per escludere parole o digitare una nuova stringa per ricominciare la ricerca da zero.
