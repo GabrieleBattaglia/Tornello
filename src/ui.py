@@ -52,6 +52,30 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                  if enter_escape(_("Continuare comunque con meno giocatori? (INVIO|ESCAPE)")):
                      print(_("Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo."))
                      return False 
+
+            # --- AGGIORNAMENTO SILENZIOSO DATI GIOCATORI ---
+            # Allinea eventuali aggiornamenti del database (Elo, Titoli) prima di cristallizzare la lista
+            aggiornati = 0
+            for tp in torneo['players']:
+                p_id = tp.get('id')
+                if p_id in players_db:
+                    db_p = players_db[p_id]
+                    # Controllo Elo
+                    db_elo = db_p.get('current_elo', 0)
+                    if db_elo > 0 and db_elo != tp.get('initial_elo'):
+                        tp['initial_elo'] = db_elo
+                        if 'elo' in tp:
+                            tp['elo'] = db_elo
+                        aggiornati += 1
+                    # Controllo Titolo FIDE
+                    db_title = db_p.get('fide_title', '')
+                    if db_title and db_title != tp.get('fide_title', ''):
+                        tp['fide_title'] = db_title
+            
+            if aggiornati > 0:
+                print(_("\nInfo: I dati (Elo/Titoli) di {count} giocatore/i sono stati automaticamente allineati all'ultimo aggiornamento del Database.").format(count=aggiornati))
+            # -----------------------------------------------
+
             print(_("Lista giocatori confermata."))
             return True # Lista confermata e valida (o utente ha forzato con meno giocatori)
         elif choice.isdigit():
