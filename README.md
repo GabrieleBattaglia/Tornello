@@ -128,7 +128,8 @@ Nonostante sia un'applicazione a riga di comando (CLI), l'utilizzo di `tornello.
 2.  **Creazione Nuovo Torneo (se non ne esiste uno attivo):**
     * Il programma chiede i dati del torneo: Nome, date, numero turni, e ora anche Luogo, Federazione, Arbitro, Controllo Tempo, e la preferenza per il Bianco/Nero alla prima scacchiera del T1.
 3.  **Inserimento Giocatori:**
-    * Si entra nella modalità di inserimento giocatori. Per ogni giocatore, si può digitare un ID (se già presente nel DB `giocatori_db.json`) o parte del nome/cognome per cercarlo.
+    * Si entra nella modalità di inserimento giocatori. Per ogni giocatore, si può digitare un ID (se già presente nel DB `giocatori_db.json`) o parte del nome/cognome per cercarlo. La ricerca è flessibile: non importa l'ordine delle parole.
+    * Se si cercano giocatori nel DB FIDE e vengono restituiti troppi risultati, è possibile affinare la ricerca inserendo un nuovo termine, oppure usando `+testo` per aggiungere un criterio, o `-testo` per rimuoverlo.
     * Se il giocatore viene trovato, i suoi dati (inclusi Elo, Titolo FIDE, ecc., se presenti nel DB) vengono caricati.
     * Se il giocatore è nuovo, vengono chiesti tutti i suoi dati, inclusi i nuovi campi anagrafici.
     * Si continua finché non si inserisce una stringa vuota per terminare l'aggiunta. Viene fatto un controllo sul numero minimo di giocatori rispetto ai turni.

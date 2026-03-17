@@ -57,13 +57,14 @@ def find_players_partial(search_term, players_db_dict):
     matches = []
     search_lower = search_term.strip().lower()
     if not search_lower: return matches
+    
+    search_terms = search_lower.split()
+    
     for p_data_item in players_db_dict.values():
-        if search_lower in p_data_item.get('first_name', '').lower() or \
-           search_lower in p_data_item.get('last_name', '').lower() or \
-           search_lower == p_data_item.get('id','').lower() or \
-           search_lower == p_data_item.get('fide_title','').lower() or \
-           search_lower == p_data_item.get('fide_id_num_str',''):
+        searchable_string = f"{p_data_item.get('first_name', '')} {p_data_item.get('last_name', '')} {p_data_item.get('id', '')} {p_data_item.get('fide_title', '')} {p_data_item.get('fide_id_num_str', '')}".lower()
+        if all(term in searchable_string for term in search_terms):
             matches.append(p_data_item)
+            
     return matches
 
 def display_player_details(player_data):
