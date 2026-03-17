@@ -5,6 +5,9 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.9.1
+	+ Implementato un aggiornamento silenzioso dei dati dei giocatori (Elo e Titoli FIDE) immediatamente prima della chiusura delle iscrizioni. In questo modo, se un torneo viene sospeso e ripreso dopo giorni (magari a seguito di un aggiornamento del database FIDE locale), i giocatori entreranno nel tabellone iniziale con l'ultimo Elo corretto.
+
 8.9.0
 	+ Creato un nuovo tool standalone `Sync_DB.py` per sincronizzare il database giocatori personale con i dati FIDE, senza dover avviare la procedura di un torneo.
 	+ Corretto un bug critico in `tornello.py` che causava il crash all'avvio in presenza di un singolo torneo sospeso (il controllo di sospensione veniva erroneamente bypassato).
