@@ -5,6 +5,11 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.8.6
+	+ Implementata la ricerca flessibile per token: ora l'ordine in cui si digitano nome e cognome non ha importanza, favorendo una corrispondenza più naturale.
+	+ Aggiunta la possibilità di affinare i risultati di ricerca nel DB FIDE. Quando i risultati sono troppi, si può aggiungere un prefisso `+testo` per restringere la ricerca, `-testo` per escludere parole o digitare una nuova stringa per ricominciare la ricerca da zero.
+	+ Aggiornata la documentazione nel README per riflettere le nuove capacità di ricerca.
+
 8.8.3
 	+ Rifatta la funzione di sincronizzazione del database personale: ora fornisce un sommario dei cambiamenti proposti e permette di accettarli tutti in blocco o di valutarli singolarmente passo-passo.
 	+ Refactoring completo del file `Players_DB.py`: rimosse le duplicazioni di codice, agganciato direttamente ai moduli della cartella `src/` e introdotto il supporto multilingua (i18n).

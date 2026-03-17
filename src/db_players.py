@@ -14,12 +14,13 @@ from stats import get_k_factor
 try:
     from unidecode import unidecode
 except ImportError:
-    unidecode = lambda x: x
+    def unidecode(x): return x
 
 def _cerca_giocatore_nel_db_fide(search_term):
     """
     Cerca un giocatore nel DB FIDE locale per nome/cognome o ID FIDE.
     Restituisce una lista di record corrispondenti.
+    Ricerca tokenizzata per non essere sensibile all'ordine delle parole.
     """
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
         return [] # Se il file non esiste, non c'è nulla da cercare
@@ -30,7 +31,7 @@ def _cerca_giocatore_nel_db_fide(search_term):
         return [] # Errore di lettura, restituisce lista vuota
 
     matches = []
-    search_lower = search_term.strip().lower()
+    search_terms = search_term.strip().lower().split()
     search_is_id = search_term.strip().isdigit()
 
     if search_is_id and search_term.strip() in fide_db:
@@ -39,7 +40,7 @@ def _cerca_giocatore_nel_db_fide(search_term):
 
     for fide_id, player_data in fide_db.items():
         full_name = f"{player_data.get('first_name', '')} {player_data.get('last_name', '')}".lower()
-        if search_lower in full_name:
+        if all(term in full_name for term in search_terms):
             matches.append(player_data)
 
     return matches

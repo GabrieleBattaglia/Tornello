@@ -60,7 +60,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                 if 0 <= idx_to_remove < len(torneo['players']):
                     player_to_remove = torneo['players'][idx_to_remove]
                     confirm_remove = enter_escape(_("Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): ").format(first_name=player_to_remove.get('first_name'), last_name=player_to_remove.get('last_name')))
-                    if confirm_remove == True:
+                    if confirm_remove:
                         removed_player = torneo['players'].pop(idx_to_remove)
                         print(_("Giocatore '{first_name} {last_name}' rimosso.").format(first_name=removed_player.get('first_name'), last_name=removed_player.get('last_name')))
                         # Aggiorna anche players_dict se necessario (o fallo alla fine una volta)
@@ -266,11 +266,9 @@ def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
             is_currently_scheduled = round_board_is_scheduled_map.get(selected_board_id, False) # Default a False
 
             match_object_to_update = None
-            original_match_idx = -1
             for m_idx, m_obj_loop in enumerate(current_round_data["matches"]):
                 if m_obj_loop.get('id') == target_match_global_id:
                     match_object_to_update = current_round_data["matches"][m_idx]
-                    original_match_idx = m_idx
                     break
             
             if not match_object_to_update:
@@ -380,7 +378,11 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                 continue
             player_id_to_add = potential_id_input
         else:
-            matches_in_personal_db = [p for p in players_db.values() if data_input.lower() in f"{p.get('first_name','')} {p.get('last_name','')} {p.get('id','')}".lower()]
+            search_terms = data_input.lower().split()
+            matches_in_personal_db = [
+                p for p in players_db.values() 
+                if all(term in f"{p.get('first_name','')} {p.get('last_name','')} {p.get('id','')}".lower() for term in search_terms)
+            ]
             if matches_in_personal_db:
                 print(_("\nTrovati {count} giocatori nel tuo DB personale corrispondenti a '{term}':").format(count=len(matches_in_personal_db), term=data_input))
                 for i, p in enumerate(matches_in_personal_db):
@@ -428,6 +430,7 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                 print(_("\n-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella corretta:").format(count=len(fide_matches), term=data_input))
                 start_index = 0
                 page_size = 15
+                current_search_term = data_input
                 while True: # Loop per la paginazione
                     if start_index >= len(fide_matches):
                         print(_("Non ci sono altri risultati da mostrare. Procedo con l'inserimento manuale."))
@@ -443,14 +446,17 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                     prompt_text = "\n"
                     has_more_pages = (start_index + page_size) < len(fide_matches)
                     if has_more_pages:
-                        prompt_text += _("Scelta (Numero, 0 per manuale, Invio per i prossimi {page_size}): ").format(page_size=page_size)
+                        prompt_text += _("Scelta (Numero, 0 per manuale, Invio per successivi, +testo/-testo/testo per affinare): ")
                     else:
-                        prompt_text += _("Scelta (Numero o 0 per manuale): ")
+                        prompt_text += _("Scelta (Numero o 0 per manuale, +testo/-testo/testo per affinare): ")
                     choice_str = input(prompt_text).strip()
                     # Gestisce l'input dell'utente
                     if not choice_str and has_more_pages: # L'utente preme Invio per la pagina successiva
                         start_index += page_size
                         print(_("--- Mostro i risultati successivi ---"))
+                        continue
+                    elif not choice_str and not has_more_pages:
+                        print(_("Non ci sono altri risultati. Scegli un numero, 0 per manuale, oppure affina la ricerca."))
                         continue
                     elif choice_str.isdigit():
                         choice_num = int(choice_str)
@@ -463,7 +469,46 @@ def input_players(players_db, existing_players=None, torneo_obj=None, torneo_fil
                         else:
                             print(_("Scelta non valida. Riprova."))
                     else:
-                        print(_("Input non valido. Inserisci un numero o premi Invio."))
+                        # Gestione affinamento ricerca
+                        if choice_str.startswith('+'):
+                            added_term = choice_str[1:].strip()
+                            if added_term:
+                                current_search_term = f"{current_search_term} {added_term}"
+                        elif choice_str.startswith('-'):
+                            removed_term = choice_str[1:].strip().lower()
+                            if removed_term:
+                                terms = current_search_term.lower().split()
+                                terms = [t for t in terms if t != removed_term]
+                                current_search_term = " ".join(terms)
+                        else:
+                            current_search_term = choice_str
+                            
+                        if not current_search_term.strip():
+                            print(_("Il termine di ricerca non può essere vuoto. Inserisci un nuovo termine."))
+                            continue
+                            
+                        print(_("\n-> Nuova ricerca nel DB FIDE per '{term}'...").format(term=current_search_term))
+                        fide_matches = _cerca_giocatore_nel_db_fide(current_search_term)
+                        start_index = 0
+                        
+                        if len(fide_matches) == 0:
+                            print(_("Nessuna corrispondenza trovata con questi termini. Procedo con l'inserimento manuale."))
+                            selected_fide_record = None
+                            break
+                        elif len(fide_matches) == 1:
+                            match = fide_matches[0]
+                            print(_("\n-> Trovata 1 corrispondenza nel DB FIDE:"))
+                            print(_("   Nome: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: {elo})").format(last_name=match['last_name'], first_name=match['first_name'], fide_id=match['id_fide'], fed=match['federation'], elo=match['elo_standard']))
+                            if enter_escape(_("   È questo il giocatore corretto? (INVIO|ESCAPE)")):
+                                selected_fide_record = match
+                                break
+                            else:
+                                print(_("Procedo con l'inserimento manuale."))
+                                selected_fide_record = None
+                                break
+                        else:
+                            print(_("Trovate {count} corrispondenze.").format(count=len(fide_matches)))
+                            continue
 
             # Se è stato selezionato un giocatore dal DB FIDE, crealo nel nostro DB personale
             if selected_fide_record:
@@ -718,7 +763,7 @@ def update_match_result(torneo):
                 elif res_str == "1/2-1/2":
                      confirm_message_str = _("Confermi che {player1} e {player2} pattano? (INVIO|ESCAPE): ").format(player1=wp_name_match_disp, player2=bp_name_match_disp)
                 user_confirm_input = enter_escape(confirm_message_str)
-                if user_confirm_input == True:
+                if user_confirm_input:
                     _apply_match_result_to_players(torneo, selected_match_obj_for_processing, res_str, w_score, b_score)
                     any_changes_made_in_this_session = True
                     save_tournament(torneo)
@@ -727,7 +772,7 @@ def update_match_result(torneo):
                         forfeiting_player_obj = players_dict.get(forfeiting_player_id)
                         player_name_forfeit = f"{forfeiting_player_obj.get('first_name','?')} {forfeiting_player_obj.get('last_name','?')}"
                         withdraw_choice = enter_escape(_("Il giocatore {player_name} si ritira definitivamente dal torneo? (INVIO|ESCAPE)").format(player_name=player_name_forfeit))
-                        if withdraw_choice == True:
+                        if withdraw_choice:
                             forfeiting_player_obj['withdrawn'] = True
                             print(_("Giocatore {player_name} marcato come ritirato.").format(player_name=player_name_forfeit))
                 else:
