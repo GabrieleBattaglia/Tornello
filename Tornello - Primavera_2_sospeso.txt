@@ -1,0 +1,40 @@
+--- RIEPILOGO TORNEO IN PREPARAZIONE: Primavera 2 ---
+
+Luogo: online
+Date: 2026-03-21 - 2026-06-30
+Turni previsti: 7
+Tempo di riflessione: Standard 40+20
+
+--- GIOCATORI INSERITI (32) ---
+01. Brites Pereira Lima Catia Susana (ID: BRICA001, Elo: 1365)
+02. Battaglia Gabriele (ID: BATGA001, Elo: 1498)
+03. Gerini Roberta (ID: GERRO001, Elo: 1399)
+04. Di Bari Vincenzo (ID: DIBVI001, Elo: 1415)
+05. Ventura Luigi (ID: VENLU001, Elo: 1461)
+06. Cassano Mariangela (ID: CASMA001, Elo: 1390)
+07. Vandelli Jiazhuang (ID: VANJI001, Elo: 1693)
+08. Forte Martina (ID: FORMA001, Elo: 1355)
+09. Tolaro Filippa (ID: TOLFI001, Elo: 1560)
+10. Demaio Gianni (ID: DEMGI001, Elo: 1399)
+11. Demaio Joshua (ID: DEMJO001, Elo: 0)
+12. Gori Serena (ID: GORSE001, Elo: 1220)
+13. Gasperoni Claudio (ID: GASCL001, Elo: 1844)
+14. Testori Alessandra (ID: TESAL001, Elo: 1362)
+15. Cinque Alessandra (ID: CINAL001, Elo: 1399)
+16. Baratta Giuseppe (ID: BARGI001, Elo: 1450)
+17. Ionata Lorenzo (ID: IONLO001, Elo: 1488)
+18. Colangelo Michele (ID: COLMI001, Elo: 1555)
+19. Trapletti Cosetta (ID: TRACO001, Elo: 1501)
+20. Bernoni Luca (ID: BERLU001, Elo: 1399)
+21. Mereu Alessia (ID: MERAL001, Elo: 1385)
+22. Riccardi Piero (ID: RICPI001, Elo: 1399)
+23. Paglia Virginio (ID: PAGVI001, Elo: 1385)
+24. Valleriani Rita (ID: VALRI001, Elo: 1399)
+25. Poli Diego (ID: POLDI001, Elo: 1670)
+26. Delmonte Davide (ID: DELDA002, Elo: 0)
+27. De Fazio Monica (ID: DEFMO001, Elo: 1399)
+28. Paglia Giulia (ID: PAGGI001, Elo: 1382)
+29. Rivalta Paolo (ID: RIVPA001, Elo: 1503)
+30. Caputi Giuliano (ID: CAPGI001, Elo: 1767)
+31. Maccaferri Massimo (ID: MACMA001, Elo: 1443)
+32. Zenini Simone (ID: ZENSI001, Elo: 1620)
