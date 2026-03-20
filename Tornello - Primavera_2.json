@@ -1788,7 +1788,14 @@
      "round": 1,
      "white_player_id": "BARGI001",
      "black_player_id": "BRICA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-03-26",
+      "time": "21:15",
+      "channel": "whatsapp",
+      "arbiter": "?"
+     },
+     "is_scheduled": true
     },
     {
      "id": 14,
@@ -1814,6 +1821,6 @@
    ]
   }
  ],
- "launch_count": 2,
+ "launch_count": 3,
  "bye_value": 0.5
 }
