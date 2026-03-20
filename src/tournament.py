@@ -299,9 +299,13 @@ def generate_pairings_for_round(torneo):
         print(_("Nessun giocatore attivo per il turno {round_num}.").format(round_num=round_number))
         return []
     # 1. Creare mappa ID Tornello -> StartRank e viceversa
+    def get_effective_elo(p):
+        elo = float(p.get('initial_elo', DEFAULT_ELO))
+        return elo if elo > 0 else DEFAULT_ELO
+
     players_sorted_for_start_rank = sorted(
         lista_giocatori_attivi, 
-        key=lambda p: (-float(p.get('initial_elo', DEFAULT_ELO)), 
+        key=lambda p: (-get_effective_elo(p), 
                        p.get('last_name','').lower(), 
                        p.get('first_name','').lower())
     )

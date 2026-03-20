@@ -306,7 +306,11 @@ def save_standings_text(torneo, final=False):
         bucch_c1_val = float(player_item.get("buchholz_cut1", -1.0) if player_item.get("buchholz_cut1") is not None else -1.0)
         bucch_tot_val = float(player_item.get("buchholz", 0.0))
         aro_val = float(player_item.get("aro", 0.0) if player_item.get("aro") is not None else 0.0)
-        elo_initial_val = int(player_item.get("initial_elo", 0))
+        
+        # Se Elo è 0, usa DEFAULT_ELO per lo spareggio
+        elo_initial_raw = float(player_item.get("initial_elo", 0))
+        elo_initial_val = elo_initial_raw if elo_initial_raw > 0 else DEFAULT_ELO
+        
         return (-points_val, -status_val, -bucch_c1_val, -bucch_tot_val, -aro_val, -elo_initial_val)
 
     try:

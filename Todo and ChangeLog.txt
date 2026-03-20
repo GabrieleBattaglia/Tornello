@@ -5,6 +5,11 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.9.2
+	+ Corretto un bug critico (NameError) che impediva il corretto caricamento dei tornei sospesi.
+	+ Risolta l'anomalia nel flusso di creazione che richiedeva nuovamente i dati del torneo dopo aver completato l'inserimento dei giocatori in un torneo ripreso.
+	+ Implementata la logica di gestione dell'Elo nullo (0): ora i giocatori senza Elo vengono trattati con il valore predefinito (DEFAULT_ELO, tipicamente 1399) sia per il sorteggio del tabellone iniziale (Start Rank) che per gli spareggi in classifica. Questo evita che ricevano ingiustamente il BYE al primo turno e balzino in testa alla classifica tecnica.
+
 8.9.1
 	+ Implementato un aggiornamento silenzioso dei dati dei giocatori (Elo e Titoli FIDE) immediatamente prima della chiusura delle iscrizioni. In questo modo, se un torneo viene sospeso e ripreso dopo giorni (magari a seguito di un aggiornamento del database FIDE locale), i giocatori entreranno nel tabellone iniziale con l'ultimo Elo corretto.
 
