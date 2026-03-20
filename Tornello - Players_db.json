@@ -1396,28 +1396,6 @@
   "fide_k_factor": 20
  },
  {
-  "id": "TESTE001",
-  "first_name": "Test",
-  "last_name": "Testicolo",
-  "current_elo": 1399.0,
-  "registration_date": "2025-07-21",
-  "birth_date": null,
-  "games_played": 0,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [],
-  "fide_title": "",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": true,
-  "fide_k_factor": null
- },
- {
   "id": "VILGE001",
   "first_name": "Gennaro",
   "last_name": "Vilone",
@@ -1447,28 +1425,6 @@
   "fide_id_num_str": "2854606",
   "experienced": true,
   "fide_k_factor": 20
- },
- {
-  "id": "TESTE002",
-  "first_name": "Test2",
-  "last_name": "Testicula",
-  "current_elo": 1399.0,
-  "registration_date": "2025-07-21",
-  "birth_date": null,
-  "games_played": 0,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [],
-  "fide_title": "",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": true,
-  "fide_k_factor": null
  },
  {
   "id": "DELDA001",
@@ -1533,11 +1489,33 @@
   "fide_k_factor": 0
  },
  {
-  "id": "TESTE003",
-  "first_name": "Test",
-  "last_name": "Testuccio",
-  "current_elo": 1399.0,
-  "registration_date": "2025-07-21",
+  "id": "GERRO001",
+  "first_name": "Roberta",
+  "last_name": "Gerini",
+  "current_elo": 1399,
+  "registration_date": "2026-03-17",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "w",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": false,
+  "fide_k_factor": null
+ },
+ {
+  "id": "DEMGI001",
+  "first_name": "Gianni",
+  "last_name": "Demaio",
+  "current_elo": 1399,
+  "registration_date": "2026-03-17",
   "birth_date": null,
   "games_played": 0,
   "medals": {
@@ -1551,7 +1529,205 @@
   "sex": "m",
   "federation": "ITA",
   "fide_id_num_str": "0",
-  "experienced": true,
+  "experienced": false,
   "fide_k_factor": null
+ },
+ {
+  "id": "DEMJO001",
+  "first_name": "Joshua",
+  "last_name": "Demaio",
+  "current_elo": 0,
+  "registration_date": "2026-03-17",
+  "birth_date": "2008-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "552014215",
+  "experienced": true,
+  "fide_k_factor": 0
+ },
+ {
+  "id": "CINAL001",
+  "first_name": "Alessandra",
+  "last_name": "Cinque",
+  "current_elo": 1399,
+  "registration_date": "2026-03-17",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "w",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": false,
+  "fide_k_factor": null
+ },
+ {
+  "id": "BERLU001",
+  "first_name": "Luca",
+  "last_name": "Bernoni",
+  "current_elo": 1399,
+  "registration_date": "2026-03-17",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": false,
+  "fide_k_factor": null
+ },
+ {
+  "id": "RICPI001",
+  "first_name": "Piero",
+  "last_name": "Riccardi",
+  "current_elo": 1399,
+  "registration_date": "2026-03-17",
+  "birth_date": null,
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "NC",
+  "sex": "m",
+  "federation": "ITA",
+  "fide_id_num_str": "0",
+  "experienced": false,
+  "fide_k_factor": null
+ },
+ {
+  "id": "DELDA002",
+  "first_name": "Davide",
+  "last_name": "Delmonte",
+  "current_elo": 0,
+  "registration_date": "2026-03-17",
+  "birth_date": "1974-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "2840761",
+  "experienced": true,
+  "fide_k_factor": 0
+ },
+ {
+  "id": "DEFMO001",
+  "first_name": "Monica",
+  "last_name": "De Fazio",
+  "current_elo": 1443,
+  "registration_date": "2026-03-17",
+  "birth_date": "1977",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "w",
+  "federation": "ITA",
+  "fide_id_num_str": "28524853",
+  "experienced": true,
+  "fide_k_factor": 20
+ },
+ {
+  "id": "RIVPA001",
+  "first_name": "Paolo",
+  "last_name": "Rivalta",
+  "current_elo": 1503,
+  "registration_date": "2026-03-17",
+  "birth_date": "1969-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "28515390",
+  "experienced": true,
+  "fide_k_factor": 20
+ },
+ {
+  "id": "CAPGI001",
+  "first_name": "Giuliano",
+  "last_name": "Caputi",
+  "current_elo": 1767,
+  "registration_date": "2026-03-17",
+  "birth_date": "1967-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "821993",
+  "experienced": true,
+  "fide_k_factor": 20
+ },
+ {
+  "id": "MACMA001",
+  "first_name": "Massimo",
+  "last_name": "Maccaferri",
+  "current_elo": 1443,
+  "registration_date": "2026-03-17",
+  "birth_date": "1957-01-01",
+  "games_played": 0,
+  "medals": {
+   "gold": 0,
+   "silver": 0,
+   "bronze": 0,
+   "wood": 0
+  },
+  "tournaments_played": [],
+  "fide_title": "",
+  "sex": "M",
+  "federation": "ITA",
+  "fide_id_num_str": "28505859",
+  "experienced": true,
+  "fide_k_factor": 40
  }
 ]
