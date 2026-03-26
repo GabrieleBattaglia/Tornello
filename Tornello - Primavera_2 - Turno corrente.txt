@@ -2,10 +2,6 @@
  Periodo Turno: Sabato 21 marzo 2026 - Sabato 4 aprile 2026
 
  Partite da giocare
-  Mercoledì 25 marzo 2026
-   17:30 IDG:11, Lorenzo Ionata vs Virginio Paglia, Canale: WhatsApp, Arbitro: Gabry.
-   21:30 IDG:3, Jiazhuang Vandelli vs Alessandra Cinque, Canale: WhatsApp, Arbitro: Claudio
-   21:30 IDG:15, Massimo Maccaferri vs Martina Forte, Canale: WhatsApp, Arbitro: Giuseppe Baratta
   Giovedì 26 marzo 2026
    21:15 IDG:13, Giuseppe Baratta vs Catia Susana Brites Pereira Lima, Canale: whatsapp, Arbitro: Claudio
   Sabato 28 marzo 2026
@@ -22,7 +18,10 @@
  Serena Gori ha il BYE
  Partite giocate
   IDG:1 Claudio Gasperoni - Vincenzo Di Bari  1-0
+  IDG:3 Jiazhuang Vandelli - Alessandra Cinque  1-0
   IDG:5 Simone Zenini - Gianni Demaio  1-0
   IDG:6 Joshua Demaio - Filippa Tolaro  1-0
   IDG:10 Alessia Mereu - Gabriele Battaglia  0-1
+  IDG:11 Lorenzo Ionata - Virginio Paglia  1-0
   IDG:12 Giulia Paglia - Luigi Ventura  0-1
+  IDG:15 Massimo Maccaferri - Martina Forte  1-0
