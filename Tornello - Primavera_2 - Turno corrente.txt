@@ -2,15 +2,12 @@
  Periodo Turno: Sabato 21 marzo 2026 - Sabato 4 aprile 2026
 
  Partite da giocare
-  Giovedì 26 marzo 2026
-   21:15 IDG:13, Giuseppe Baratta vs Catia Susana Brites Pereira Lima, Canale: whatsapp, Arbitro: Claudio
   Sabato 28 marzo 2026
    15:00 IDG:7, Michele Colangelo vs Piero Riccardi, Canale: lichess, Arbitro: non necessario
   Lunedì 30 marzo 2026
    21:00 IDG:8, Rita Valleriani vs Paolo Rivalta, Canale: WhatsApp, Arbitro: Gabry
   Martedì 31 marzo 2026
    15:00 IDG:4, Davide Delmonte vs Diego Poli, Canale: lichess, Arbitro: Non necessario
-   17:00 IDG:14, Alessandra Testori vs Monica De Fazio, Canale: whatsapp, Arbitro: Giuliano
    21:15 IDG:9, Cosetta Trapletti vs Valeria Calzolari, Canale: WhatsApp, Arbitro: Catia
   Non pianificate (giocatori attivi):
    IDG:2 Luca Bernoni - Giuliano Caputi
@@ -24,4 +21,6 @@
   IDG:10 Alessia Mereu - Gabriele Battaglia  0-1
   IDG:11 Lorenzo Ionata - Virginio Paglia  1-0
   IDG:12 Giulia Paglia - Luigi Ventura  0-1
+  IDG:13 Giuseppe Baratta - Catia Susana Brites Pereira Lima  1/2-1/2
+  IDG:14 Alessandra Testori - Monica De Fazio  1-0
   IDG:15 Massimo Maccaferri - Martina Forte  1-0
