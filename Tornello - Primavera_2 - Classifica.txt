@@ -6,40 +6,40 @@ Arbitro Capo: Gabriele Battaglia
 Vice Arbitri: ASCID, Volontari
 Controllo Tempo: Standard 40+20
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Giovedì 26 marzo 2026 23:30:29
+Data Report: Mercoledì 1 aprile 2026 20:33:19
 ----------------------------------------------------------------------
 Classifica Parziale - Durante Turno 1
 ----------------------------------------------------------------------
 Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
 -----------------------------------------------------------------------------
   1.     Demaio, Joshua              [   0]   1.0    0.00   0.00 1560
-  2. NC  Testori, Alessandra         [1362]   1.0    0.00   0.00 1443
-  3. 1N  Gasperoni, Claudio          [1844]   1.0    0.00   0.00 1415
-  4. 2N  Vandelli, Jiazhuang         [1693]   1.0    0.00   0.00 1399
-  5.     Zenini, Simone              [1620]   1.0    0.00   0.00 1399
-  6. 3N  Battaglia, Gabriele         [1498]   1.0    0.00   0.00 1385
-  7. NC  Ionata, Lorenzo             [1488]   1.0    0.00   0.00 1385
-  8. NC  Ventura, Luigi              [1461]   1.0    0.00   0.00 1382
-  9.     Maccaferri, Massimo         [1443]   1.0    0.00   0.00 1355
- 10. NC  Brites Pereira Lima, Catia  [1365]   0.5    0.00   0.50 1450
- 11. NC  Baratta, Giuseppe           [1450]   0.5    0.00   0.50 1365
- 12. NC  Gori, Serena                [1220]   0.5    0.00   0.00  ---
- 13. NC  Di Bari, Vincenzo           [1415]   0.0    0.00   1.00 1844
- 14. NC  Cinque, Alessandra          [1399]   0.0    0.00   1.00 1693
- 15.     Demaio, Gianni              [1399]   0.0    0.00   1.00 1620
- 16. NC  Mereu, Alessia              [1385]   0.0    0.00   1.00 1498
- 17. NC  Paglia, Virginio            [1385]   0.0    0.00   1.00 1488
- 18. NC  Paglia, Giulia              [1382]   0.0    0.00   1.00 1461
- 19. NC  Forte, Martina              [1355]   0.0    0.00   1.00 1443
- 20.     De Fazio, Monica            [1443]   0.0    0.00   1.00 1362
- 21. 3N  Tolaro, Filippa             [1560]   0.0    0.00   1.00    0
- 22.     Caputi, Giuliano            [1767]   0.0    0.00   0.00  ---
- 23.     Poli, Diego                 [1670]   0.0    0.00   0.00  ---
- 24. 3N  Colangelo, Michele          [1555]   0.0    0.00   0.00  ---
- 25.     Rivalta, Paolo              [1503]   0.0    0.00   0.00  ---
- 26. 3N  Trapletti, Cosetta          [1501]   0.0    0.00   0.00  ---
- 27. NC  Bernoni, Luca               [1399]   0.0    0.00   0.00  ---
- 27. NC  Riccardi, Piero             [1399]   0.0    0.00   0.00  ---
- 27. NC  Valleriani, Rita            [1399]   0.0    0.00   0.00  ---
- 27.     Delmonte, Davide            [   0]   0.0    0.00   0.00  ---
- 31. NC  Calzolari, Valeria          [1385]   0.0    0.00   0.00  ---
+  2. NC  Calzolari, Valeria          [1385]   1.0    0.00   0.00 1501
+  3. NC  Testori, Alessandra         [1362]   1.0    0.00   0.00 1443
+  4. 1N  Gasperoni, Claudio          [1844]   1.0    0.00   0.00 1415
+  5. 2N  Vandelli, Jiazhuang         [1693]   1.0    0.00   0.00 1399
+  6.     Zenini, Simone              [1620]   1.0    0.00   0.00 1399
+  7. 3N  Colangelo, Michele          [1555]   1.0    0.00   0.00 1399
+  8.     Rivalta, Paolo              [1503]   1.0    0.00   0.00 1399
+  9. 3N  Battaglia, Gabriele         [1498]   1.0    0.00   0.00 1385
+ 10. NC  Ionata, Lorenzo             [1488]   1.0    0.00   0.00 1385
+ 11. NC  Ventura, Luigi              [1461]   1.0    0.00   0.00 1382
+ 12.     Maccaferri, Massimo         [1443]   1.0    0.00   0.00 1355
+ 13.     Poli, Diego                 [1670]   1.0    0.00   0.00    0
+ 14. NC  Brites Pereira Lima, Catia  [1365]   0.5    0.00   0.50 1450
+ 15. NC  Baratta, Giuseppe           [1450]   0.5    0.00   0.50 1365
+ 16. NC  Gori, Serena                [1220]   0.5    0.00   0.00  ---
+ 17. NC  Di Bari, Vincenzo           [1415]   0.0    0.00   1.00 1844
+ 18. NC  Cinque, Alessandra          [1399]   0.0    0.00   1.00 1693
+ 19.     Delmonte, Davide            [   0]   0.0    0.00   1.00 1670
+ 20.     Demaio, Gianni              [1399]   0.0    0.00   1.00 1620
+ 21. NC  Riccardi, Piero             [1399]   0.0    0.00   1.00 1555
+ 22. NC  Valleriani, Rita            [1399]   0.0    0.00   1.00 1503
+ 23. NC  Mereu, Alessia              [1385]   0.0    0.00   1.00 1498
+ 24. NC  Paglia, Virginio            [1385]   0.0    0.00   1.00 1488
+ 25. NC  Paglia, Giulia              [1382]   0.0    0.00   1.00 1461
+ 26. NC  Forte, Martina              [1355]   0.0    0.00   1.00 1443
+ 27. 3N  Trapletti, Cosetta          [1501]   0.0    0.00   1.00 1385
+ 28.     De Fazio, Monica            [1443]   0.0    0.00   1.00 1362
+ 29. 3N  Tolaro, Filippa             [1560]   0.0    0.00   1.00    0
+ 30.     Caputi, Giuliano            [1767]   0.0    0.00   0.00  ---
+ 31. NC  Bernoni, Luca               [1399]   0.0    0.00   0.00  ---
