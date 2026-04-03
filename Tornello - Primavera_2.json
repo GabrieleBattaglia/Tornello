@@ -2328,7 +2328,14 @@
      "round": 2,
      "white_player_id": "DIBVI001",
      "black_player_id": "MERAL001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-07",
+      "time": "21:30",
+      "channel": "Lichess",
+      "arbiter": "Non necessario"
+     },
+     "is_scheduled": true
     },
     {
      "id": 29,
@@ -2342,7 +2349,14 @@
      "round": 2,
      "white_player_id": "CINAL001",
      "black_player_id": "PAGGI001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-10",
+      "time": "19:30",
+      "channel": "WhatsApp",
+      "arbiter": "Gabry"
+     },
+     "is_scheduled": true
     },
     {
      "id": 31,
@@ -2361,6 +2375,6 @@
    ]
   }
  ],
- "launch_count": 32,
+ "launch_count": 33,
  "bye_value": 0.5
 }
