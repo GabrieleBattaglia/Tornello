@@ -1,0 +1,25 @@
+﻿Torneo: Primavera 2
+Sito: online, Data Inizio Torneo: Sabato 21 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 1 CONCLUSO ==========================
+	Periodo del Turno: Sabato 21 marzo 2026 - Sabato 4 aprile 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 4   | Davide Delmonte          [   0] (0   ) - Diego Poli               [1670] (1   ) | 0-1
+	2  | 1   | Claudio Gasperoni        [1844] (1   ) - Vincenzo Di Bari         [1415] (0   ) | 1-0
+	3  | 2   | Luca Bernoni             [1399] (0   ) - Giuliano Caputi          [1767] (1   ) | 0-1
+	4  | 6   | Joshua Demaio            [   0] (1   ) - Filippa Tolaro           [1560] (0   ) | 1-0
+	5  | 3   | Jiazhuang Vandelli       [1693] (1   ) - Alessandra Cinque        [1399] (0   ) | 1-0
+	6  | 5   | Simone Zenini            [1620] (1   ) - Gianni Demaio            [1399] (0   ) | 1-0
+	7  | 7   | Michele Colangelo        [1555] (1   ) - Piero Riccardi           [1399] (0   ) | 1-0
+	8  | 8   | Rita Valleriani          [1399] (0   ) - Paolo Rivalta            [1503] (1   ) | 0-1
+	9  | 9   | Cosetta Trapletti        [1501] (0   ) - Valeria Calzolari        [1385] (1   ) | 0-1
+	10 | 10  | Alessia Mereu            [1385] (0   ) - Gabriele Battaglia       [1498] (1   ) | 0-1
+	11 | 11  | Lorenzo Ionata           [1488] (1   ) - Virginio Paglia          [1385] (0   ) | 1-0
+	12 | 12  | Giulia Paglia            [1382] (0   ) - Luigi Ventura            [1461] (1   ) | 0-1
+	13 | 13  | Giuseppe Baratta         [1450] (0.5 ) - Catia Susana Brites Pereira Lima [1365] (0.5 ) | 1/2-1/2
+	14 | 14  | Alessandra Testori       [1362] (1   ) - Monica De Fazio          [1443] (0   ) | 1-0
+	15 | 15  | Massimo Maccaferri       [1443] (1   ) - Martina Forte            [1355] (0   ) | 1-0
+	---| 16  | Serena Gori              [1220] (0.5 ) - BYE                             | BYE
