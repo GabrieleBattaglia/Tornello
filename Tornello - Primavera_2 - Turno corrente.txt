@@ -1,25 +1,26 @@
-﻿Nome Torneo: Primavera 2 - Turno: 1
- Periodo Turno: Sabato 21 marzo 2026 - Sabato 4 aprile 2026
+﻿Nome Torneo: Primavera 2 - Turno: 2
+ Periodo Turno: Domenica 5 aprile 2026 - Sabato 18 aprile 2026
 
  Partite da giocare
-  Giovedì 2 aprile 2026
-   18:00 IDG:2, Luca Bernoni vs Giuliano Caputi, Canale: WhatsApp, Arbitro: Monica
+  Venerdì 10 aprile 2026
+   17:00 IDG:24, Serena Gori vs Giuseppe Baratta, Canale: WhatsApp, Arbitro: Gabry
+  Lunedì 13 aprile 2026
+   21:15 IDG:25, Catia Susana Brites Pereira Lima vs Filippa Tolaro, Canale: WhatsApp, Arbitro: Claudio
   Non pianificate (giocatori attivi):
-   (nessuna)
+   IDG:17 Gabriele Battaglia - Claudio Gasperoni
+   IDG:18 Giuliano Caputi - Lorenzo Ionata
+   IDG:19 Luigi Ventura - Jiazhuang Vandelli
+   IDG:20 Diego Poli - Massimo Maccaferri
+   IDG:21 Joshua Demaio - Simone Zenini
+   IDG:22 Valeria Calzolari - Michele Colangelo
+   IDG:23 Paolo Rivalta - Alessandra Testori
+   IDG:26 Gianni Demaio - Cosetta Trapletti
+   IDG:27 Monica De Fazio - Rita Valleriani
+   IDG:28 Vincenzo Di Bari - Alessia Mereu
+   IDG:29 Piero Riccardi - Luca Bernoni
+   IDG:30 Alessandra Cinque - Giulia Paglia
+   IDG:31 Virginio Paglia - Davide Delmonte
 
- Serena Gori ha il BYE
+ Martina Forte ha il BYE
  Partite giocate
-  IDG:1 Claudio Gasperoni - Vincenzo Di Bari  1-0
-  IDG:3 Jiazhuang Vandelli - Alessandra Cinque  1-0
-  IDG:4 Davide Delmonte - Diego Poli  0-1
-  IDG:5 Simone Zenini - Gianni Demaio  1-0
-  IDG:6 Joshua Demaio - Filippa Tolaro  1-0
-  IDG:7 Michele Colangelo - Piero Riccardi  1-0
-  IDG:8 Rita Valleriani - Paolo Rivalta  0-1
-  IDG:9 Cosetta Trapletti - Valeria Calzolari  0-1
-  IDG:10 Alessia Mereu - Gabriele Battaglia  0-1
-  IDG:11 Lorenzo Ionata - Virginio Paglia  1-0
-  IDG:12 Giulia Paglia - Luigi Ventura  0-1
-  IDG:13 Giuseppe Baratta - Catia Susana Brites Pereira Lima  1/2-1/2
-  IDG:14 Alessandra Testori - Monica De Fazio  1-0
-  IDG:15 Massimo Maccaferri - Martina Forte  1-0
+  (nessuna partita ancora giocata da giocatori attivi)
