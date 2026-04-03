@@ -280,6 +280,7 @@ def save_standings_text(torneo, final=False):
     """
     Salva/Sovrascrive la classifica (parziale o finale) in un unico file TXT.
     Mostra sempre gli spareggi, incluso ARO. Mostra Perf/Var Elo solo alla fine.
+    Include la variazione rispetto alla posizione iniziale in tabellone (Seed).
     """
     ricalcola_punti_tutti_giocatori(torneo)
     players = torneo.get("players", [])
@@ -290,6 +291,20 @@ def save_standings_text(torneo, final=False):
     if 'players_dict' not in torneo or len(torneo['players_dict']) != len(players):
         torneo['players_dict'] = {p['id']: p for p in torneo.get('players', [])}
     
+    # --- CALCOLO SEEDING (ORDINE DI PARTENZA) ---
+    def get_effective_elo(p):
+        elo = float(p.get('initial_elo', DEFAULT_ELO))
+        return elo if elo > 0 else DEFAULT_ELO
+
+    players_for_seeding = sorted(
+        players, 
+        key=lambda p: (-get_effective_elo(p), 
+                       p.get('last_name','').lower(), 
+                       p.get('first_name','').lower())
+    )
+    seeding_map = {p['id']: i + 1 for i, p in enumerate(players_for_seeding)}
+    # --------------------------------------------
+
     print(_("Calcolo/Aggiornamento spareggi per classifica..."))
     for p in players:
         p_id = p.get('id')
@@ -313,28 +328,64 @@ def save_standings_text(torneo, final=False):
         
         return (-points_val, -status_val, -bucch_c1_val, -bucch_tot_val, -aro_val, -elo_initial_val)
 
-    try:
-        players_sorted = sorted(players, key=sort_key_standings)
-        if not final or (players_sorted and "final_rank" not in players_sorted[0] and not players_sorted[0].get("withdrawn")):
-            current_display_rank = 0
-            last_sort_key_tuple = None
-            for i, p_item in enumerate(players_sorted):
-                if p_item.get("withdrawn", False):
-                    p_item["display_rank"] = "RIT"
-                    continue
-                current_sort_key_tuple = sort_key_standings(p_item)
-                if current_sort_key_tuple != last_sort_key_tuple:
-                    current_display_rank = i + 1
-                p_item["display_rank"] = current_display_rank
-                last_sort_key_tuple = current_sort_key_tuple
-        elif final:
-            for i, p_item in enumerate(players_sorted):
-                if "final_rank" in p_item:
-                    p_item["display_rank"] = p_item["final_rank"]
-                elif p_item.get("withdrawn", False):
-                    p_item["display_rank"] = "RIT"
+    # --- DETERMINAZIONE STATO E TITOLO REPORT ---
+    current_round_in_state = torneo.get("current_round", 0)
+    has_real_results = False
+    for p in players:
+        if any(res.get("result") not in [None, "BYE"] for res in p.get("results_history", [])):
+            has_real_results = True
+            break
+
+    status_line = ""
+    is_initial_list = False
+    if final:
+        status_line = _("CLASSIFICA FINALE")
+    else:
+        if not has_real_results and current_round_in_state <= 1:
+            status_line = _("Elenco Iniziale Partecipanti (Prima del Turno 1)")
+            is_initial_list = True
+        else:
+            all_matches_for_current_round_done = True
+            if current_round_in_state > 0 and current_round_in_state <= torneo.get("total_rounds",0):
+                for r_data in torneo.get("rounds", []):
+                    if r_data.get("round") == current_round_in_state:
+                        for m in r_data.get("matches", []):
+                            if m.get("result") is None and m.get("black_player_id") is not None:
+                                all_matches_for_current_round_done = False
+                                break
+                        break
+                if all_matches_for_current_round_done:
+                    status_line = _("Classifica Parziale - Dopo Turno {round_num}").format(round_num=current_round_in_state)
                 else:
-                    p_item["display_rank"] = i + 1
+                    status_line = _("Classifica Parziale - Durante Turno {round_num}").format(round_num=current_round_in_state)
+
+    try:
+        if is_initial_list:
+            players_sorted = players_for_seeding
+            for i, p_item in enumerate(players_sorted):
+                p_item["display_rank"] = i + 1
+        else:
+            players_sorted = sorted(players, key=sort_key_standings)
+            if not final or (players_sorted and "final_rank" not in players_sorted[0] and not players_sorted[0].get("withdrawn")):
+                current_display_rank = 0
+                last_sort_key_tuple = None
+                for i, p_item in enumerate(players_sorted):
+                    if p_item.get("withdrawn", False):
+                        p_item["display_rank"] = "RIT"
+                        continue
+                    current_sort_key_tuple = sort_key_standings(p_item)
+                    if current_sort_key_tuple != last_sort_key_tuple:
+                        current_display_rank = i + 1
+                    p_item["display_rank"] = current_display_rank
+                    last_sort_key_tuple = current_sort_key_tuple
+            elif final:
+                for i, p_item in enumerate(players_sorted):
+                    if "final_rank" in p_item:
+                        p_item["display_rank"] = p_item["final_rank"]
+                    elif p_item.get("withdrawn", False):
+                        p_item["display_rank"] = "RIT"
+                    else:
+                        p_item["display_rank"] = i + 1
     except Exception as e:
         print(f"Errore durante l'ordinamento dei giocatori per la classifica: {e}")
         traceback.print_exc()
@@ -343,30 +394,6 @@ def save_standings_text(torneo, final=False):
     tournament_name_file = torneo.get('name', 'Torneo_Senza_Nome')
     sanitized_name_file = sanitize_filename(tournament_name_file)
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
-    # ... (il resto della logica per il titolo del file rimane uguale) ...
-    status_line = ""
-    if final:
-        status_line = _("CLASSIFICA FINALE")
-    else:
-        current_round_in_state = torneo.get("current_round", 0)
-        has_any_results = any(p.get("results_history") for p in players)
-        if not has_any_results and current_round_in_state == 1:
-            status_line = _("Elenco Iniziale Partecipanti (Prima del Turno 1)")
-        else:
-            round_for_title = current_round_in_state
-            all_matches_for_current_round_done = True
-            if not final and current_round_in_state > 0 and current_round_in_state <= torneo.get("total_rounds",0):
-                for r_data in torneo.get("rounds", []):
-                    if r_data.get("round") == current_round_in_state:
-                        for m in r_data.get("matches", []):
-                            if m.get("result") is None and m.get("black_player_id") is not None:
-                                all_matches_for_current_round_done = False
-                                break
-                        break
-                if all_matches_for_current_round_done and current_round_in_state > 0 :
-                        status_line = _("Classifica Parziale - Dopo Turno {round_num}").format(round_num=current_round_in_state)
-                elif current_round_in_state > 0 :
-                        status_line = _("Classifica Parziale - Durante Turno {round_num}").format(round_num=current_round_in_state)
     
     try:
         with open(filename, "w", encoding='utf-8-sig') as f:
@@ -382,12 +409,12 @@ def save_standings_text(torneo, final=False):
             f.write(_("Controllo Tempo: {time_control}\n").format(time_control=torneo.get('time_control', 'N/D')))
             f.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
             f.write(_("Data Report: {date} {time}\n").format(date=format_date_locale(datetime.now().date()), time=datetime.now().strftime('%H:%M:%S')))
-            f.write("-" * 70 + "\n")
-            f.write(f"{status_line}\n") # Aggiunto lo status calcolato
-            f.write("-" * 70 + "\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"{status_line}\n")
+            f.write("-" * 80 + "\n")
 
             # --- MODIFICA HEADER TABELLA ---
-            header_table = _("Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO ")
+            header_table = _("Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO ")
             if final:
                 header_table += " Perf  Elo Var."
             f.write(header_table + "\n")
@@ -395,7 +422,17 @@ def save_standings_text(torneo, final=False):
             
             for player in players_sorted:
                 rank_to_show = player.get("display_rank", "?")
-                rank_display_str = f"{int(rank_to_show):>3}." if isinstance(rank_to_show, (int, float)) else f"{str(rank_to_show):>3} "
+                
+                # Calcolo Delta Posizione
+                p_id = player.get('id')
+                starting_rank = seeding_map.get(p_id, 0)
+                delta_str = ""
+                if isinstance(rank_to_show, (int, float)):
+                    delta = starting_rank - int(rank_to_show)
+                    delta_str = f"({delta:+})"
+                    rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
+                else:
+                    rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
                 
                 fide_title = str(player.get('fide_title', '')).strip().upper()
                 player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"

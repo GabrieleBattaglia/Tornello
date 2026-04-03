@@ -5,6 +5,10 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.9.3
+	+ Aggiunto il Delta Posizione (variazione rispetto al tabellone iniziale) nella classifica finale e parziale.
+	+ Corretto un problema di visualizzazione nella classifica parziale (Prima del Turno 1) dove i giocatori con BYE risultavano in testa: ora l'elenco iniziale ignora i BYE e mostra il corretto ordine di partenza (Seed).
+
 8.9.2
 	+ Corretto un bug critico (NameError) che impediva il corretto caricamento dei tornei sospesi.
 	+ Risolta l'anomalia nel flusso di creazione che richiedeva nuovamente i dati del torneo dopo aver completato l'inserimento dei giocatori in un torneo ripreso.
