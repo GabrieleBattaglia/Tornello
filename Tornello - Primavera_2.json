@@ -2244,14 +2244,28 @@
      "round": 2,
      "white_player_id": "CAPGI001",
      "black_player_id": "IONLO001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-08",
+      "time": "21:30",
+      "channel": "WhatsApp",
+      "arbiter": "Monica"
+     },
+     "is_scheduled": true
     },
     {
      "id": 19,
      "round": 2,
      "white_player_id": "VENLU001",
      "black_player_id": "VANJI001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-08",
+      "time": "21:30",
+      "channel": "WhatsApp",
+      "arbiter": "Alessia"
+     },
+     "is_scheduled": true
     },
     {
      "id": 20,
@@ -2265,7 +2279,14 @@
      "round": 2,
      "white_player_id": "DEMJO001",
      "black_player_id": "ZENSI001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-15",
+      "time": "15:30",
+      "channel": "WhatsApp",
+      "arbiter": "Valeria C"
+     },
+     "is_scheduled": true
     },
     {
      "id": 22,
@@ -2375,6 +2396,6 @@
    ]
   }
  ],
- "launch_count": 33,
+ "launch_count": 34,
  "bye_value": 0.5
 }
