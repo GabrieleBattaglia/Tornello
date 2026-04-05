@@ -2237,7 +2237,14 @@
      "round": 2,
      "white_player_id": "BATGA001",
      "black_player_id": "GASCL001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-05",
+      "time": "21:30",
+      "channel": "Lichess",
+      "arbiter": "Non necessario"
+     },
+     "is_scheduled": true
     },
     {
      "id": 18,
@@ -2272,7 +2279,14 @@
      "round": 2,
      "white_player_id": "POLDI001",
      "black_player_id": "MACMA001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-09",
+      "time": "21:00",
+      "channel": "WhatsApp",
+      "arbiter": "Gabry"
+     },
+     "is_scheduled": true
     },
     {
      "id": 21,
@@ -2300,7 +2314,14 @@
      "round": 2,
      "white_player_id": "RIVPA001",
      "black_player_id": "TESAL001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-15",
+      "time": "16:30",
+      "channel": "WhatsApp",
+      "arbiter": "Gabry"
+     },
+     "is_scheduled": true
     },
     {
      "id": 24,
@@ -2342,7 +2363,14 @@
      "round": 2,
      "white_player_id": "DEFMO001",
      "black_player_id": "VALRI001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-13",
+      "time": "17:30",
+      "channel": "WhatsApp",
+      "arbiter": "Giuliano"
+     },
+     "is_scheduled": true
     },
     {
      "id": 28,
@@ -2396,6 +2424,6 @@
    ]
   }
  ],
- "launch_count": 34,
+ "launch_count": 38,
  "bye_value": 0.5
 }
