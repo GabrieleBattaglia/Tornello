@@ -6,23 +6,23 @@ Arbitro Capo: Gabriele Battaglia
 Vice Arbitri: ASCID, Volontari
 Controllo Tempo: Standard 40+20
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Domenica 5 aprile 2026 10:26:14
+Data Report: Lunedì 6 aprile 2026 13:46:35
 --------------------------------------------------------------------------------
 Classifica Parziale - Durante Turno 2
 --------------------------------------------------------------------------------
 Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
 -------------------------------------------------------------------------------------
-  1 (+14)       Maccaferri, Massimo         [1443]   1.0    0.00   0.50 1355
-  2 (+19)       Demaio, Joshua              [   0]   1.0    0.00   0.00 1560
-  3 (+21)   NC  Calzolari, Valeria          [1385]   1.0    0.00   0.00 1501
-  4 (+25)   NC  Testori, Alessandra         [1362]   1.0    0.00   0.00 1443
-  5 (-4)    1N  Gasperoni, Claudio          [1844]   1.0    0.00   0.00 1415
-  6 (-4)        Caputi, Giuliano            [1767]   1.0    0.00   0.00 1399
-  7 (-4)    2N  Vandelli, Jiazhuang         [1693]   1.0    0.00   0.00 1399
-  8 (-3)        Zenini, Simone              [1620]   1.0    0.00   0.00 1399
-  9 (-2)    3N  Colangelo, Michele          [1555]   1.0    0.00   0.00 1399
- 10 (-2)        Rivalta, Paolo              [1503]   1.0    0.00   0.00 1399
- 11 (-1)    3N  Battaglia, Gabriele         [1498]   1.0    0.00   0.00 1385
+  1 (+0)    1N  Gasperoni, Claudio          [1844]   2.0    1.00   1.00 1456
+  2 (+8)    3N  Battaglia, Gabriele         [1498]   1.0    2.00   2.00 1614
+  3 (+12)       Maccaferri, Massimo         [1443]   1.0    0.00   0.50 1355
+  4 (+17)       Demaio, Joshua              [   0]   1.0    0.00   0.00 1560
+  5 (+19)   NC  Calzolari, Valeria          [1385]   1.0    0.00   0.00 1501
+  6 (+23)   NC  Testori, Alessandra         [1362]   1.0    0.00   0.00 1443
+  7 (-5)        Caputi, Giuliano            [1767]   1.0    0.00   0.00 1399
+  8 (-5)    2N  Vandelli, Jiazhuang         [1693]   1.0    0.00   0.00 1399
+  9 (-4)        Zenini, Simone              [1620]   1.0    0.00   0.00 1399
+ 10 (-3)    3N  Colangelo, Michele          [1555]   1.0    0.00   0.00 1399
+ 11 (-3)        Rivalta, Paolo              [1503]   1.0    0.00   0.00 1399
  12 (-1)    NC  Ionata, Lorenzo             [1488]   1.0    0.00   0.00 1385
  13 (-1)    NC  Ventura, Luigi              [1461]   1.0    0.00   0.00 1382
  14 (-10)       Poli, Diego                 [1670]   1.0    0.00   0.00    0
@@ -30,7 +30,7 @@ Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch   
  16 (+12)   NC  Brites Pereira Lima, Catia  [1365]   0.5    0.00   0.50 1450
  17 (-4)    NC  Baratta, Giuseppe           [1450]   0.5    0.00   0.50 1365
  18 (+13)   NC  Gori, Serena                [1220]   0.5    0.00   0.00  ---
- 19 (-3)    NC  Di Bari, Vincenzo           [1415]   0.0    0.00   1.00 1844
+ 19 (-3)    NC  Di Bari, Vincenzo           [1415]   0.0    0.00   2.00 1844
  20 (-3)    NC  Bernoni, Luca               [1399]   0.0    0.00   1.00 1767
  21 (-3)    NC  Cinque, Alessandra          [1399]   0.0    0.00   1.00 1693
  22 (-3)        Delmonte, Davide            [   0]   0.0    0.00   1.00 1670

@@ -177,6 +177,13 @@
      "color": "black",
      "result": "0-1",
      "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "GASCL001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -191,10 +198,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
-   "buchholz_cut1": 0.0,
-   "aro": 1385,
-   "display_rank": 11
+   "buchholz": 2.0,
+   "buchholz_cut1": 2.0,
+   "aro": 1614,
+   "display_rank": 2
   },
   {
    "id": "DIBVI001",
@@ -265,7 +272,7 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 1.0,
+   "buchholz": 2.0,
    "buchholz_cut1": 0.0,
    "aro": 1844,
    "display_rank": 19
@@ -400,7 +407,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1399,
-   "display_rank": 7
+   "display_rank": 8
   },
   {
    "id": "FORMA001",
@@ -645,7 +652,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1560,
-   "display_rank": 2
+   "display_rank": 4
   },
   {
    "id": "GORSE001",
@@ -776,13 +783,20 @@
    "fide_id_num_str": "825450",
    "experienced": true,
    "fide_k_factor": 20,
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
      "opponent_id": "DIBVI001",
      "color": "white",
      "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BATGA001",
+     "color": "black",
+     "result": "0-1",
      "score": 1.0
     }
    ],
@@ -798,10 +812,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 0.0,
-   "buchholz_cut1": 0.0,
-   "aro": 1415,
-   "display_rank": 5
+   "buchholz": 1.0,
+   "buchholz_cut1": 1.0,
+   "aro": 1456,
+   "display_rank": 1
   },
   {
    "id": "TESAL001",
@@ -875,7 +889,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1443,
-   "display_rank": 4
+   "display_rank": 6
   },
   {
    "id": "CINAL001",
@@ -1121,7 +1135,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1399,
-   "display_rank": 9
+   "display_rank": 10
   },
   {
    "id": "TRACO001",
@@ -1773,7 +1787,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1399,
-   "display_rank": 10
+   "display_rank": 11
   },
   {
    "id": "CAPGI001",
@@ -1821,7 +1835,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1399,
-   "display_rank": 6
+   "display_rank": 7
   },
   {
    "id": "MACMA001",
@@ -1869,7 +1883,7 @@
    "buchholz": 0.5,
    "buchholz_cut1": 0.0,
    "aro": 1355,
-   "display_rank": 1
+   "display_rank": 3
   },
   {
    "id": "ZENSI001",
@@ -1927,7 +1941,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1399,
-   "display_rank": 8
+   "display_rank": 9
   },
   {
    "id": "CALVA001",
@@ -2001,7 +2015,7 @@
    "buchholz": 0.0,
    "buchholz_cut1": 0.0,
    "aro": 1501,
-   "display_rank": 3
+   "display_rank": 5
   }
  ],
  "current_round": 2,
@@ -2237,14 +2251,14 @@
      "round": 2,
      "white_player_id": "BATGA001",
      "black_player_id": "GASCL001",
-     "result": null,
+     "result": "0-1",
      "schedule_info": {
       "date": "2026-04-05",
       "time": "21:30",
       "channel": "Lichess",
       "arbiter": "Non necessario"
      },
-     "is_scheduled": true
+     "is_scheduled": false
     },
     {
      "id": 18,
@@ -2284,7 +2298,7 @@
       "date": "2026-04-09",
       "time": "21:00",
       "channel": "WhatsApp",
-      "arbiter": "Gabry"
+      "arbiter": "Valeria C"
      },
      "is_scheduled": true
     },
@@ -2424,6 +2438,6 @@
    ]
   }
  ],
- "launch_count": 38,
+ "launch_count": 44,
  "bye_value": 0.5
 }
