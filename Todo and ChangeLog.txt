@@ -5,6 +5,13 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.10.1
+	+ Semplificazione interfaccia: la pianificazione delle partite ora avviene direttamente tramite l'inserimento del risultato ('p') invece che da un sottomenu dedicato.
+	+ Migliorata la schermata di registrazione risultati: le partite vengono ora divise in "pianificate" (mostrando tutti i dettagli della pianificazione inclusi Canale e Arbitro) e "non pianificate".
+	+ Nel file di riepilogo del turno corrente ora viene calcolato e mostrato dinamicamente il tempo (giorni e ore) rimanente alla chiusura del turno.
+	+ L'informazione sul giocatore in BYE è stata spostata in coda al report del turno per maggiore leggibilità.
+	+ Refactoring e applicazione del principio DRY: centralizzata la logica di calcolo del tempo rimanente e ripulito il codice orfano.
+
 8.9.3
 	+ Aggiunto il Delta Posizione (variazione rispetto al tabellone iniziale) nella classifica finale e parziale.
 	+ Corretto un problema di visualizzazione nella classifica parziale (Prima del Turno 1) dove i giocatori con BYE risultavano in testa: ora l'elenco iniziale ignora i BYE e mostra il corretto ordine di partenza (Seed).

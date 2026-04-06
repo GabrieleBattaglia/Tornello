@@ -77,7 +77,7 @@ Avendo demandato la complessità degli abbinamenti a `bbpPairings`, `tornello.py
     * Interpretare l'output di `bbpPairings` per ottenere le coppie e l'assegnazione dei colori.
     * Gestire automaticamente l'assegnazione del BYE se il numero di giocatori è dispari (funzionalità delegata a `bbpPairings`).
 
-4.  **Inserimento dei Risultati:** Dopo che un turno è stato abbinato, `tornello.py` presenta le partite e permette all'utente di inserire i risultati (1-0, 0-1, 1/2-1/2, e anche risultati speciali come forfeit o doppio forfeit). Ogni risultato viene confermato e salvato.
+4.  **Pianificazione e Inserimento dei Risultati:** Dopo che un turno è stato abbinato, `tornello.py` presenta le partite divise tra quelle già pianificate e quelle da pianificare. Selezionando una partita, l'utente può inserire i risultati (1-0, 0-1, 1/2, forfeit) oppure digitare 'p' per pianificare (o modificare) data, ora, canale e arbitro della sfida. Ogni operazione viene confermata e salvata.
 
 5.  **Visualizzazione e Reportistica:** Durante e dopo il torneo, `tornello.py` offre:
     * Salvataggio dello stato del turno corrente in un file di testo (`tornello - NOMETORNEO - turno corrente.txt`), mostrando partite giocate e da giocare.
@@ -137,7 +137,7 @@ Nonostante sia un'applicazione a riga di comando (CLI), l'utilizzo di `tornello.
 5.  **Gestione del Torneo (Loop Turni):**
     * Il programma entra in un loop che gestisce il torneo turno per turno.
     * **Visualizzazione Stato:** Per il turno corrente, `display_status` mostra i dettagli e le partite ancora da giocare.
-    * **Inserimento Risultati:** `update_match_result` guida nell'inserimento dei risultati. Si seleziona la partita (ora tramite ID globale, ma si potrebbe reintrodurre il numero scacchiera del turno) e si inserisce l'esito (1-0, 1/2, 0-1, ecc.). Il file JSON principale viene salvato dopo ogni risultato.
+    * **Pianificazione e Risultati:** `update_match_result` guida nell'inserimento dei risultati mostrando la lista delle partite (evidenziando chiaramente quelle già pianificate). Si seleziona la partita (tramite numero scacchiera) e si inserisce l'esito (1-0, 1/2, 0-1, ecc.) oppure 'p' per accedere al modulo di pianificazione. Il file JSON principale viene salvato dopo ogni operazione.
     * **Fine Sessione Risultati:** Quando si termina di inserire risultati per quella sessione (input vuoto), i file di report testuali (`turno corrente` e `classifica parziale`) vengono aggiornati e, secondo la nostra ultima modifica, l'elaborazione attiva del torneo per quella esecuzione del programma termina. Si dovrà riavviare `tornello.py` per continuare.
     * **Completamento Turno:** Quando tutti i risultati di un turno sono inseriti, `tornello.py` lo riconosce. Salva lo storico dettagliato del turno e la classifica parziale.
     * **Passaggio al Turno Successivo:** Se non era l'ultimo turno, `tornello.py` incrementa il numero del turno e chiama di nuovo `bbpPairings` per generare i nuovi abbinamenti.

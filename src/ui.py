@@ -98,250 +98,6 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
         else:
             print(_("Comando non riconosciuto."))
 
-def gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
-    '''
-    Gestisce l'inserimento, la modifica e la cancellazione della pianificazione 
-    delle partite pendenti (senza risultato) per il turno corrente.
-    Usa un ID Scacchiera del Turno (basato sull'ordine fisico) per la selezione.
-    Restituisce True se sono state apportate modifiche, False altrimenti.
-    '''
-    any_changes_made_this_session = False
-    current_round_num = current_round_data.get("round")
-
-    # --- SOTTO-FUNZIONE PER INPUT DETTAGLI PIANIFICAZIONE (CON INPUT DATA/ORA SEMPLIFICATO) ---
-    def _input_schedule_details(existing_details=None):
-        details = {}
-        is_modifying = existing_details is not None
-        now = datetime.now()
-
-        print(_("\n--- Dettagli Pianificazione Partita ---"))
-        if is_modifying:
-            print(_("Lasciare il campo vuoto per mantenere il valore attuale."))
-        while True:
-            prompt_date = _("Data partita (formati: GG, GG-MM, {iso_format})").format(iso_format=DATE_FORMAT_ISO)
-            default_date_val_for_input = "" # Stringa vuota per get_input_with_default
-            current_display = "N/D"
-            if is_modifying and existing_details and existing_details.get('date'):
-                default_date_val_for_input = existing_details['date']
-                current_display = format_date_locale(default_date_val_for_input)
-            prompt_date += _(" [Attuale: {current}]: ").format(current=current_display)
-            date_input_str = get_input_with_default(prompt_date, default_date_val_for_input).strip()
-            if not date_input_str and is_modifying: # Mantiene il vecchio valore se input vuoto in modifica
-                details['date'] = default_date_val_for_input
-                break
-            if not date_input_str and not is_modifying:
-                 print(_("La data è obbligatoria."))
-                 continue
-            
-            parsed_date_obj = None
-            try:
-                if '-' in date_input_str or '/' in date_input_str: # Formato con separatori
-                    parts = date_input_str.replace('/', '-').split('-')
-                    if len(parts) == 2: # GG-MM
-                        day, month = int(parts[0]), int(parts[1])
-                        parsed_date_obj = datetime(now.year, month, day)
-                    elif len(parts) == 3: # YYYY-MM-DD
-                        year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
-                        # Se l'anno è a due cifre, prova a interpretarlo (es. 25 -> 2025)
-                        if year < 100: year += 2000 
-                        parsed_date_obj = datetime(year, month, day)
-                    else: raise ValueError(_("Formato data non riconosciuto"))
-                elif date_input_str.isdigit() and 1 <= len(date_input_str) <= 2: # Solo Giorno (GG)
-                    day = int(date_input_str)
-                    parsed_date_obj = datetime(now.year, now.month, day)
-                else: # Prova il formato ISO completo come ultima spiaggia
-                    parsed_date_obj = datetime.strptime(date_input_str, DATE_FORMAT_ISO)
-                
-                details['date'] = parsed_date_obj.strftime(DATE_FORMAT_ISO)
-                break
-            except ValueError:
-                print(_("Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o {iso_format}.").format(input=date_input_str, iso_format=DATE_FORMAT_ISO))
-            except TypeError: # In caso parsed_date_obj rimanga None per un path non gestito
-                 print(_("Input data '{input}' non interpretabile.").format(input=date_input_str))
-
-
-        while True:
-            prompt_time = _("Ora partita (formati: HH, HH:MM)")
-            default_time_val_for_input = ""
-            current_display_time = "N/O"
-            if is_modifying and existing_details and existing_details.get('time'):
-                default_time_val_for_input = existing_details['time']
-                current_display_time = default_time_val_for_input
-            prompt_time += _(" [Attuale: {current}]: ").format(current=current_display_time)
-            time_input_str = get_input_with_default(prompt_time, default_time_val_for_input).strip()
-            if not time_input_str and is_modifying:
-                details['time'] = default_time_val_for_input
-                break
-            if not time_input_str and not is_modifying:
-                 print(_("L'ora è obbligatoria."))
-                 continue
-            parsed_time_str = None
-            try:
-                if ':' in time_input_str: # Formato HH:MM
-                    dt_obj = datetime.strptime(time_input_str, "%H:%M")
-                    parsed_time_str = dt_obj.strftime("%H:%M")
-                elif time_input_str.isdigit() and 0 <= int(time_input_str) <= 23 and len(time_input_str) <=2 : # Solo Ora (HH)
-                    hour = int(time_input_str)
-                    parsed_time_str = f"{hour:02d}:00"
-                else:
-                    raise ValueError(_("Formato ora non riconosciuto"))
-                details['time'] = parsed_time_str
-                break
-            except ValueError:
-                print(_("Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."))
-        # Canale e Arbitro (invariati)
-        default_channel_val = "" if not is_modifying else existing_details.get('channel', "")
-        details['channel'] = get_input_with_default(_("Canale/Link partita [Attuale: {current}]: ").format(current=default_channel_val), default_channel_val).strip()
-        default_arbiter_val = "" if not is_modifying else existing_details.get('arbiter', "")
-        details['arbiter'] = get_input_with_default(_("Arbitro assegnato [Attuale: {current}]: ").format(current=default_arbiter_val), default_arbiter_val).strip()
-        if is_modifying: # Controlla se qualcosa è effettivamente cambiato
-            changed = False
-            if details.get('date') != existing_details.get('date'): changed = True
-            if details.get('time') != existing_details.get('time'): changed = True
-            if details.get('channel', "") != existing_details.get('channel', ""): changed = True
-            if details.get('arbiter', "") != existing_details.get('arbiter', ""): changed = True
-            if not changed:
-                print(_("Nessun dettaglio della pianificazione è stato effettivamente modificato."))
-        if not details.get('date') or not details.get('time'): # Campi obbligatori
-             print(_("Data e ora sono obbligatori per la pianificazione. Operazione annullata."))
-             return None
-        return details
-    while True:
-        all_matches_in_round_sorted_by_id = sorted(
-            current_round_data.get("matches", []), 
-            key=lambda m: m.get('id', 0)
-        )
-        if not any(m.get("result") is None and m.get("black_player_id") is not None for m in all_matches_in_round_sorted_by_id):
-            print(_("\nTutte le partite del Turno {round_num} sono state giocate o sono BYE.").format(round_num=current_round_num))
-            print(_("Nessuna partita disponibile per la pianificazione/modifica."))
-            break 
-        display_lines_pending_scheduling = []
-        display_lines_already_scheduled = []
-        # Mappa: Numero Scacchiera del Turno VISUALIZZATO -> ID Globale Partita
-        round_board_to_global_id_map = {} 
-        # Mappa: Numero Scacchiera del Turno VISUALIZZATO -> Boolean (è pianificata?)
-        round_board_is_scheduled_map = {}
-        actual_board_number_counter = 0 # Contatore per il "Numero Scacchiera del Turno"
-        # Costruisci le liste visualizzate e le mappe
-        for match_obj in all_matches_in_round_sorted_by_id:
-            # I BYE non hanno un numero di scacchiera selezionabile per la pianificazione
-            if match_obj.get("black_player_id") is None: 
-                continue 
-            actual_board_number_counter += 1 # Incrementa per ogni partita giocabile (non BYE)
-            # Consideriamo per la pianificazione solo le partite senza risultato
-            if match_obj.get("result") is not None:
-                continue 
-            # A questo punto, la partita è giocabile e non ha risultato
-            round_board_to_global_id_map[actual_board_number_counter] = match_obj['id']
-            wp = players_dict.get(match_obj['white_player_id'])
-            bp = players_dict.get(match_obj['black_player_id'])
-            wp_name = f"{wp.get('first_name','?')} {wp.get('last_name','?')}" if wp else "N/A"
-            bp_name = f"{bp.get('first_name','?')} {bp.get('last_name','?')}" if bp else "N/A"
-            base_display_line = f"  Sc. {actual_board_number_counter}. (IDG: {match_obj['id']}) {wp_name} vs {bp_name}"
-            if match_obj.get("is_scheduled", False) and match_obj.get("schedule_info"):
-                round_board_is_scheduled_map[actual_board_number_counter] = True
-                schedule = match_obj.get('schedule_info', {})
-                date_str = format_date_locale(schedule.get('date')) if schedule.get('date') else "N/D"
-                time_str = schedule.get('time', "N/O")
-                channel_str = schedule.get('channel', "N/D")
-                arbiter_str = schedule.get('arbiter', "N/D")
-                display_lines_already_scheduled.append(base_display_line)
-                display_lines_already_scheduled.append(_(" Pianificata per: {date} alle {time}").format(date=date_str, time=time_str))
-                display_lines_already_scheduled.append(_(" Canale: {channel}, Arbitro: {arbiter}").format(channel=channel_str, arbiter=arbiter_str))
-            else:
-                round_board_is_scheduled_map[actual_board_number_counter] = False
-                display_lines_pending_scheduling.append(base_display_line)
-        
-        print(_("\n--- Pianificazione Partite Turno {round_num} ---").format(round_num=current_round_num))
-        print(_("(Vengono mostrati i Numeri Scacchiera reali del turno per le partite ancora da giocare)"))
-
-        print(_("\nPartite da Pianificare (non hanno ancora una pianificazione):"))
-        if display_lines_pending_scheduling:
-            for line in display_lines_pending_scheduling: print(line)
-        else:
-            print(_("  Nessuna partita attualmente da pianificare (o sono tutte già pianificate)."))
-
-        print(_("\nPartite Già Pianificate (in attesa di risultato):"))
-        if display_lines_already_scheduled:
-            for line in display_lines_already_scheduled: print(line)
-        else:
-            print(_("  Nessuna partita attualmente pianificata."))
-        
-        if not round_board_to_global_id_map:
-            print(_("\nNessuna partita pendente disponibile per la gestione della pianificazione."))
-            break
-        action = key(_("\nOpzioni: (P)ianifica, (M)odifica/Rimuovi pianificazione, (ESCAPE) termina: ")).strip().lower()
-        if action == '\x1b':
-            break
-        elif action == 'p' or action == 'm':
-            prompt_msg = _("Inserisci il N. Scacchiera della partita")
-            if action == 'p': prompt_msg += _(" da pianificare: ")
-            else: prompt_msg += _(" la cui pianificazione vuoi modificare/rimuovere: ")
-            selected_board_id_str = input(prompt_msg).strip()
-            if not selected_board_id_str.isdigit():
-                print(_("Input non valido. Inserisci un numero.")); continue
-            
-            selected_board_id = int(selected_board_id_str)
-            
-            if selected_board_id not in round_board_to_global_id_map:
-                print(_("N#. Scacchiera non valido o non corrisponde a una partita gestibile.")); continue
-
-            target_match_global_id = round_board_to_global_id_map[selected_board_id]
-            is_currently_scheduled = round_board_is_scheduled_map.get(selected_board_id, False) # Default a False
-
-            match_object_to_update = None
-            for m_idx, m_obj_loop in enumerate(current_round_data["matches"]):
-                if m_obj_loop.get('id') == target_match_global_id:
-                    match_object_to_update = current_round_data["matches"][m_idx]
-                    break
-            
-            if not match_object_to_update:
-                print(_("ERRORE INTERNO: Partita IDG {match_id} non trovata.").format(match_id=target_match_global_id))
-                continue
-
-            if action == 'p':
-                if is_currently_scheduled:
-                    print(_("Questa partita è già pianificata. Usa 'M' per modificarla.")); continue
-                print(_("\nPianificazione per la partita Sc. {board_id} (IDG: {match_id})...").format(board_id=selected_board_id, match_id=target_match_global_id))
-                new_schedule_data = _input_schedule_details() # existing_details è None
-                if new_schedule_data:
-                    match_object_to_update['schedule_info'] = new_schedule_data
-                    match_object_to_update['is_scheduled'] = True
-                    any_changes_made_this_session = True
-                    print(_("Partita pianificata con successo."))
-                else:
-                    print(_("Pianificazione annullata."))
-            elif action == 'm':
-                if not is_currently_scheduled:
-                    print(_("Questa partita non ha una pianificazione da modificare/rimuovere. Usa 'P'.")); continue
-                wp_m = players_dict.get(match_object_to_update['white_player_id'])
-                bp_m = players_dict.get(match_object_to_update['black_player_id'])
-                wp_name_m = f"{wp_m.get('first_name','?')} {wp_m.get('last_name','?')}" if wp_m else "N/A"
-                bp_name_m = f"{bp_m.get('first_name','?')} {bp_m.get('last_name','?')}" if bp_m else "N/A"
-                print(_("\nGestione pianificazione per Sc. {board_id} (IDG: {match_id}): {white_player} vs {black_player}").format(board_id=selected_board_id, match_id=target_match_global_id, white_player=wp_name_m, black_player=bp_name_m))
-                
-                sub_action = key(_("Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): ")).strip().lower()
-                if sub_action == 'm':
-                    updated_schedule_data = _input_schedule_details(existing_details=match_object_to_update.get('schedule_info'))
-                    if updated_schedule_data:
-                        if updated_schedule_data != match_object_to_update.get('schedule_info'): # Controlla se c'è stato un cambiamento reale
-                            match_object_to_update['schedule_info'] = updated_schedule_data
-                            any_changes_made_this_session = True
-                            print(_("Pianificazione modificata."))
-                        # else: Nessuna modifica effettiva, non fare nulla
-                    else: print(_("Modifica annullata."))
-                elif sub_action == 'r':
-                    if enter_escape(_("Confermi rimozione pianificazione? (INVIO|ESCAPE)")):
-                        match_object_to_update['is_scheduled'] = False
-                        if 'schedule_info' in match_object_to_update: del match_object_to_update['schedule_info']
-                        any_changes_made_this_session = True
-                        print(_("Pianificazione rimossa."))
-                    else: print(_("Rimozione annullata."))
-                elif not sub_action: print(_("Operazione annullata."))
-                else: print(_("Azione non valida per modifica/rimozione."))
-        else:
-            print(_("Azione non riconosciuta. Riprova."))
-    return any_changes_made_this_session
 
 def get_input_with_default(prompt_message, default_value=None):
     default_display = str(default_value) if default_value is not None else ""
@@ -646,11 +402,47 @@ def update_match_result(torneo):
             break
 
         if pending_matches_info_list:
+            planned = []
+            unplanned = []
+            for item in pending_matches_info_list:
+                match_dict_disp = item[1]
+                if match_dict_disp.get("is_scheduled", False) and match_dict_disp.get("schedule_info"):
+                    planned.append(item)
+                else:
+                    unplanned.append(item)
+            
+            def sort_planned(item):
+                s = item[1].get("schedule_info", {})
+                return (s.get("date", ""), s.get("time", ""))
+            planned.sort(key=sort_planned)
+            
             print(_("\nPartite del turno {round_num} ancora da registrare (N. Scacchiera del Turno):").format(round_num=current_round_num))
-            for displayed_board_num, match_dict_disp, w_name_disp, b_name_disp in pending_matches_info_list:
-                wp_elo_disp = players_dict.get(match_dict_disp['white_player_id'], {}).get('initial_elo','?')
-                bp_elo_disp = players_dict.get(match_dict_disp['black_player_id'], {}).get('initial_elo','?')
-                print(f"  Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]")
+            if planned:
+                print(_("\n  Partite già pianificate, da giocare:"))
+                for displayed_board_num, match_dict_disp, w_name_disp, b_name_disp in planned:
+                    wp_elo_disp = players_dict.get(match_dict_disp['white_player_id'], {}).get('initial_elo','?')
+                    bp_elo_disp = players_dict.get(match_dict_disp['black_player_id'], {}).get('initial_elo','?')
+                    print(f"    Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]")
+                    schedule = match_dict_disp.get('schedule_info', {})
+                    date_str = format_date_locale(schedule.get('date')) if schedule.get('date') else "N/D"
+                    time_str = schedule.get('time', "N/O")
+                    channel_str = schedule.get('channel', "")
+                    arbiter_str = schedule.get('arbiter', "")
+                    
+                    plan_info = f"      Pianificata per: {date_str} alle {time_str}"
+                    if channel_str:
+                        plan_info += f", {channel_str}"
+                    if arbiter_str:
+                        plan_info += f", {arbiter_str}"
+                        
+                    print(plan_info)
+            
+            if unplanned:
+                print(_("\n  Ancora non pianificate:"))
+                for displayed_board_num, match_dict_disp, w_name_disp, b_name_disp in unplanned:
+                    wp_elo_disp = players_dict.get(match_dict_disp['white_player_id'], {}).get('initial_elo','?')
+                    bp_elo_disp = players_dict.get(match_dict_disp['black_player_id'], {}).get('initial_elo','?')
+                    print(f"    Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]")
         else:
             print(_("\nNessuna partita da registrare per il turno {round_num} (ma potresti voler cancellare un risultato).").format(round_num=current_round_num))
 
@@ -658,13 +450,12 @@ def update_match_result(torneo):
         board_numbers_str_for_prompt = "-".join(pending_board_numbers_for_prompt_display) if pending_board_numbers_for_prompt_display else _("Nessuna")
         prompt_lines = [
             _("Inserisci:"),
-            _("\t[p] --- per entrare in modalità programmazione partite;"),
             _("\t[r] --- per ritirare un giocatore dal torneo;"),
             _("\t[t] --- Time Machine, per tornare all'inizio di un turno;"),
             _("\t[cancella] --- per eliminare un risultato inserito;"),
             _("\t[SC] --- il numero della scacchiera;"),
             _("\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori.")]
-        prompt_finale = "\n".join(prompt_lines) + _("\nP|R|T|SC|nome|cognome [{boards}]: ").format(boards=board_numbers_str_for_prompt)
+        prompt_finale = "\n".join(prompt_lines) + _("\nR|T|SC|nome|cognome [{boards}]: ").format(boards=board_numbers_str_for_prompt)
         user_input_str = input(prompt_finale).strip().lower()
 
         if not user_input_str: 
@@ -703,11 +494,7 @@ def update_match_result(torneo):
             else:
                 print(_("Giocatore non trovato o già ritirato."))
             continue
-        elif user_input_str.lower() == 'p':
-            print(_("\n--- Accesso al Modulo Pianificazione Partite ---"))
-            if gestisci_pianificazione_partite(torneo, current_round_data, players_dict):
-                any_changes_made_in_this_session = True
-            continue 
+ 
 
         selected_match_obj_for_processing = None
         if user_input_str.lower() == 'cancella':
@@ -771,7 +558,35 @@ def update_match_result(torneo):
             bp_name_match_disp = f"{bp_data_obj.get('first_name','?')} {bp_data_obj.get('last_name','?')}"
             sel_msg = _("Partita selezionata per risultato: {white} vs {black} (ID Glob: {match_id})")
             print(sel_msg.format(white=wp_name_match_disp, black=bp_name_match_disp, match_id=selected_match_obj_for_processing['id']))
-            result_input = dgt(_("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "),kind="s",smin=3,smax=4)
+            result_input = input(_("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: ")).strip().lower()
+            if result_input == 'p':
+                is_currently_scheduled = selected_match_obj_for_processing.get("is_scheduled", False)
+                if is_currently_scheduled:
+                    sub_action = key(_("Questa partita è già pianificata. Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): ")).strip().lower()
+                    if sub_action == 'm':
+                        updated_schedule_data = input_schedule_details(existing_details=selected_match_obj_for_processing.get('schedule_info'))
+                        if updated_schedule_data:
+                            selected_match_obj_for_processing['schedule_info'] = updated_schedule_data
+                            any_changes_made_in_this_session = True
+                            save_tournament(torneo)
+                            print(_("Pianificazione modificata."))
+                    elif sub_action == 'r':
+                        if enter_escape(_("Confermi rimozione pianificazione? (INVIO|ESCAPE)")):
+                            selected_match_obj_for_processing['is_scheduled'] = False
+                            if 'schedule_info' in selected_match_obj_for_processing: del selected_match_obj_for_processing['schedule_info']
+                            any_changes_made_in_this_session = True
+                            save_tournament(torneo)
+                            print(_("Pianificazione rimossa."))
+                else:
+                    new_schedule_data = input_schedule_details()
+                    if new_schedule_data:
+                        selected_match_obj_for_processing['schedule_info'] = new_schedule_data
+                        selected_match_obj_for_processing['is_scheduled'] = True
+                        any_changes_made_in_this_session = True
+                        save_tournament(torneo)
+                        print(_("Partita pianificata con successo."))
+                continue
+
             result_map = {
                 "1-0": ("1-0", 1.0, 0.0), "0-1": ("0-1", 0.0, 1.0),
                 "1/2": ("1/2-1/2", 0.5, 0.5), "1-F": ("1-F", 1.0, 0.0),
