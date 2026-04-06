@@ -5,6 +5,13 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 
 --- CHANGELOG ---
+8.10.3
+	+ Bugfix Report Turno Corrente: rimossi i simboli '#' dai testi esportati nel report (erroneamente interpretati come testo e non come commento al programmatore) e fixata l'estrazione e visualizzazione del calcolo tempo rimanente alla fine del turno.
+	+ Ridotti gli "a capo" superflui nel file di report per migliorarne la leggibilità.
+
+8.10.2
+	+ Hotfix: Reinserita la funzione `input_schedule_details` in `ui.py` che causava un `NameError` critico nel processo di pianificazione delle partite.
+
 8.10.1
 	+ Semplificazione interfaccia: la pianificazione delle partite ora avviene direttamente tramite l'inserimento del risultato ('p') invece che da un sottomenu dedicato.
 	+ Migliorata la schermata di registrazione risultati: le partite vengono ora divise in "pianificate" (mostrando tutti i dettagli della pianificazione inclusi Canale e Arbitro) e "non pianificate".
