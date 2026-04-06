@@ -3,6 +3,7 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 --- DA RISOLVERE ---
 (Nessuna criticità grave o prioritaria al momento. Tutte le fragilità emerse dal refactoring sono state gestite.)
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
+- Implementazione futura: Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026). Evitiamo wrapper inutili come py4swiss o motori Java come JaVaFo per non complicare le dipendenze.
 
 --- CHANGELOG ---
 8.10.3
