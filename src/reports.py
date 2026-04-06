@@ -135,13 +135,10 @@ def save_current_tournament_round_file(torneo):
             else:
                 f.write("\n")
             
-            # Sezione Partite da giocare (Titolo Livello 1)
-            f.write(" Partite da giocare\n")
-            
             # --- Partite Pianificate ---
             current_printed_date_str = None
             if scheduled_pending_active:
-                f.write(_(" Partite già pianificate, da giocare:\n"))
+                f.write(_(" Partite già pianificate, da giocare ({count}):\n").format(count=len(scheduled_pending_active)))
                 for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_active:
                     match_date_iso = schedule.get('date')
                     if match_date_iso != current_printed_date_str:
@@ -151,7 +148,7 @@ def save_current_tournament_round_file(torneo):
                     f.write(f"   {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n")
             # --- Partite Non Pianificate ---
             if unscheduled_pending_active:
-                f.write(_("\n  Ancora non pianificate:\n"))
+                f.write(_("\n  Ancora non pianificate ({count}):\n").format(count=len(unscheduled_pending_active)))
                 for line in unscheduled_pending_active: f.write(f"   {line.strip()}\n")
             # --- Sezione Ritirati (se presente) ---
             if scheduled_pending_withdrawn or unscheduled_pending_withdrawn:
@@ -168,8 +165,7 @@ def save_current_tournament_round_file(torneo):
                     f.write(_("   Non pianificate (con ritirati):\n"))
                     for line in unscheduled_pending_withdrawn: f.write(f"   {line.strip()}\n") # Rimuovi e ri-applica indentazione per coerenza
             # Sezione Partite Giocate (Titolo Livello 1)
-            f.write(_("\n Partite giocate\n"))
-            f.write(_("  Partite già giocate o con risultato convalidato.\n"))
+            f.write(_("\n  Partite già giocate o con risultato convalidato ({count}):\n").format(count=len(played_matches_active)))
             if played_matches_active:
                 for line in played_matches_active: f.write(f"{line}\n")
             else:
