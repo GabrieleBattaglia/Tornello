@@ -99,6 +99,103 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             print(_("Comando non riconosciuto."))
 
 
+def input_schedule_details(existing_details=None):
+    from datetime import datetime
+    from config import DATE_FORMAT_ISO
+    details = {}
+    is_modifying = existing_details is not None
+    now = datetime.now()
+
+    print(_("\n--- Dettagli Pianificazione Partita ---"))
+    if is_modifying:
+        print(_("Lasciare il campo vuoto per mantenere il valore attuale."))
+    while True:
+        prompt_date = _("Data partita (formati: GG, GG-MM, {iso_format})").format(iso_format=DATE_FORMAT_ISO)
+        default_date_val_for_input = "" 
+        current_display = "N/D"
+        if is_modifying and existing_details and existing_details.get('date'):
+            default_date_val_for_input = existing_details['date']
+            current_display = format_date_locale(default_date_val_for_input)
+        prompt_date += _(" [Attuale: {current}]: ").format(current=current_display)
+        date_input_str = get_input_with_default(prompt_date, default_date_val_for_input).strip()
+        if not date_input_str and is_modifying: 
+            details['date'] = default_date_val_for_input
+            break
+        if not date_input_str and not is_modifying:
+             print(_("La data è obbligatoria."))
+             continue
+        
+        parsed_date_obj = None
+        try:
+            if '-' in date_input_str or '/' in date_input_str: 
+                parts = date_input_str.replace('/', '-').split('-')
+                if len(parts) == 2: 
+                    day, month = int(parts[0]), int(parts[1])
+                    parsed_date_obj = datetime(now.year, month, day)
+                elif len(parts) == 3: 
+                    year, month, day = int(parts[0]), int(parts[1]), int(parts[2])
+                    if year < 100: year += 2000 
+                    parsed_date_obj = datetime(year, month, day)
+                else: raise ValueError(_("Formato data non riconosciuto"))
+            elif date_input_str.isdigit() and 1 <= len(date_input_str) <= 2: 
+                day = int(date_input_str)
+                parsed_date_obj = datetime(now.year, now.month, day)
+            else: 
+                parsed_date_obj = datetime.strptime(date_input_str, DATE_FORMAT_ISO)
+            
+            details['date'] = parsed_date_obj.strftime(DATE_FORMAT_ISO)
+            break
+        except ValueError:
+            print(_("Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o {iso_format}.").format(input=date_input_str, iso_format=DATE_FORMAT_ISO))
+        except TypeError: 
+             print(_("Input data '{input}' non interpretabile.").format(input=date_input_str))
+
+    while True:
+        prompt_time = _("Ora partita (formati: HH, HH:MM)")
+        default_time_val_for_input = ""
+        current_display_time = "N/O"
+        if is_modifying and existing_details and existing_details.get('time'):
+            default_time_val_for_input = existing_details['time']
+            current_display_time = default_time_val_for_input
+        prompt_time += _(" [Attuale: {current}]: ").format(current=current_display_time)
+        time_input_str = get_input_with_default(prompt_time, default_time_val_for_input).strip()
+        if not time_input_str and is_modifying:
+            details['time'] = default_time_val_for_input
+            break
+        if not time_input_str and not is_modifying:
+             print(_("L'ora è obbligatoria."))
+             continue
+        parsed_time_str = None
+        try:
+            if ':' in time_input_str: 
+                dt_obj = datetime.strptime(time_input_str, "%H:%M")
+                parsed_time_str = dt_obj.strftime("%H:%M")
+            elif time_input_str.isdigit() and 0 <= int(time_input_str) <= 23 and len(time_input_str) <=2 : 
+                hour = int(time_input_str)
+                parsed_time_str = f"{hour:02d}:00"
+            else:
+                raise ValueError(_("Formato ora non riconosciuto"))
+            details['time'] = parsed_time_str
+            break
+        except ValueError:
+            print(_("Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."))
+    default_channel_val = "" if not is_modifying else existing_details.get('channel', "")
+    details['channel'] = get_input_with_default(_("Canale/Link partita [Attuale: {current}]: ").format(current=default_channel_val), default_channel_val).strip()
+    default_arbiter_val = "" if not is_modifying else existing_details.get('arbiter', "")
+    details['arbiter'] = get_input_with_default(_("Arbitro assegnato [Attuale: {current}]: ").format(current=default_arbiter_val), default_arbiter_val).strip()
+    if is_modifying: 
+        changed = False
+        if details.get('date') != existing_details.get('date'): changed = True
+        if details.get('time') != existing_details.get('time'): changed = True
+        if details.get('channel', "") != existing_details.get('channel', ""): changed = True
+        if details.get('arbiter', "") != existing_details.get('arbiter', ""): changed = True
+        if not changed:
+            print(_("Nessun dettaglio della pianificazione è stato effettivamente modificato."))
+    if not details.get('date') or not details.get('time'): 
+         print(_("Data e ora sono obbligatori per la pianificazione. Operazione annullata."))
+         return None
+    return details
+
 def get_input_with_default(prompt_message, default_value=None):
     default_display = str(default_value) if default_value is not None else ""
     if default_display or default_value is None: 
