@@ -5,6 +5,21 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 - Implementazione futura: Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026). Evitiamo wrapper inutili come py4swiss o motori Java come JaVaFo per non complicare le dipendenze.
 
+--- PIANO DI SVILUPPO PER LA VERSIONE 8.11.0 (Nuovo Control Time e Categorie Elo) ---
+1. Richiesta "Tempo di Riflessione": Modificare l'input in fase di creazione torneo. Chiedere il formato "umano" (Minuti + Secondi di incremento, es. "15+10" o "90+30").
+2. Conversione e Salvataggio: Valutare se convertire l'input nel formato standard PGN (es. 15 minuti + 10 sec = "900+10") o salvarlo internamente come minuti/secondi.
+3. Classificazione Automatica Categoria Torneo:
+   - Calcolare il Tempo Totale Stimato su base 60 mosse: `Minuti Iniziali + Incremento`. (Nota matematica: un incremento di X secondi per 60 mosse aggiunge esattamente X minuti al tempo totale).
+   - Classificare:
+     * Blitz: Tempo Totale <= 10 minuti.
+     * Rapid: 10 < Tempo Totale < 60 minuti.
+     * Standard: Tempo Totale >= 60 minuti.
+   - Salvare la categoria determinata nel file JSON del torneo.
+4. Prelievo Elo Mirato: 
+   - Durante l'aggiunta di un giocatore, leggere la categoria del torneo.
+   - Prelevare l'Elo specifico dal DB (`elo_standard`, `elo_rapid`, `elo_blitz`).
+   - Implementare un sistema di fallback nel caso in cui il giocatore sia sprovvisto dell'Elo per quella specifica cadenza.
+
 --- CHANGELOG ---
 8.10.6
 	+ Aggiunto il contatore del numero delle partite nelle varie sezioni (già pianificate, non pianificate, già giocate) all'interno del report turno corrente.
