@@ -5,6 +5,18 @@ from utils import format_date_locale, format_points, sanitize_filename
 from tournament import ricalcola_punti_tutti_giocatori, _ensure_players_dict
 from stats import compute_buchholz, compute_buchholz_cut1, compute_aro
 
+def calcola_tempo_rimanente(end_date_str):
+    from datetime import datetime, time
+    from config import DATE_FORMAT_ISO
+    try:
+        end_dt = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
+        end_dt = datetime.combine(end_dt.date(), time(23, 59, 59))
+        now = datetime.now()
+        diff = end_dt - now
+        return diff
+    except Exception:
+        return None
+
 def save_current_tournament_round_file(torneo):
     """
     Salva lo stato del turno corrente in un file TXT che viene sovrascritto.
@@ -32,6 +44,14 @@ def save_current_tournament_round_file(torneo):
     current_round_period_info = next((rd for rd in round_dates_info if rd.get("round") == current_round_num), None)
     start_date_turn_display = format_date_locale(current_round_period_info.get('start_date')) if current_round_period_info else "N/D"
     end_date_turn_display = format_date_locale(current_round_period_info.get('end_date')) if current_round_period_info else "N/D"
+    time_left_str = ""
+    if current_round_period_info and current_round_period_info.get('end_date'):
+        end_date_str = current_round_period_info.get('end_date')
+        diff = calcola_tempo_rimanente(end_date_str)
+        if diff and diff.total_seconds() > 0:
+            days = diff.days
+            hours = diff.seconds // 3600
+            time_left_str = _(" Mancano {days} giorni e {hours} ore al termine del periodo utile per questo turno.\n").format(days=days, hours=hours)
     # --- INIZIO MODIFICHE: Smistamento partite in liste separate per attivi e ritirati ---
     played_matches_active = []
     played_matches_withdrawn = []
@@ -49,7 +69,11 @@ def save_current_tournament_round_file(torneo):
             with open(filename, "w", encoding='utf-8-sig') as f:
                 f.write(_("Nome Torneo: {name} - ").format(name=tournament_name_for_file))
                 f.write(_("Turno: {round_num}\n").format(round_num=current_round_num))
-                f.write(_(" Periodo Turno: {start} - {end}\n\n").format(start=start_date_turn_display, end=end_date_turn_display))
+                f.write(_(" Periodo Turno: {start} - {end}\n").format(start=start_date_turn_display, end=end_date_turn_display))
+                if time_left_str:
+                    f.write(time_left_str + "\n")
+                else:
+                    f.write("\n")
                 f.write(_(" (Nessuna partita ancora definita o caricata per questo turno)\n"))
             print(_("File stato turno corrente '{filename}' aggiornato (turno non ancora popolato o vuoto).").format(filename=filename))
         except IOError as e:
@@ -112,9 +136,8 @@ def save_current_tournament_round_file(torneo):
             
             # --- Partite Pianificate ---
             current_printed_date_str = None
-            if not scheduled_pending_active:
-                f.write(_("  (Nessuna partita con giocatori attivi è attualmente pianificata con data/ora)\n"))
-            else:
+            if scheduled_pending_active:
+                f.write(_("# Partite già pianificate, da giocare:\n\n"))
                 for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_active:
                     match_date_iso = schedule.get('date')
                     if match_date_iso != current_printed_date_str:
@@ -123,11 +146,9 @@ def save_current_tournament_round_file(torneo):
                     time_str = schedule.get('time', 'HH:MM')
                     f.write(f"   {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n")
             # --- Partite Non Pianificate ---
-            f.write(_("  Non pianificate (giocatori attivi):\n"))
             if unscheduled_pending_active:
-                for line in unscheduled_pending_active: f.write(f"{line}\n")
-            else:
-                f.write(_("   (nessuna)\n"))
+                f.write(_("\n  # Ancora non pianificate:\n\n\n"))
+                for line in unscheduled_pending_active: f.write(f"   {line.strip()}\n")
             # --- Sezione Ritirati (se presente) ---
             if scheduled_pending_withdrawn or unscheduled_pending_withdrawn:
                 f.write(_("\n  -- Partite da giocare con giocatori ritirati --\n"))
@@ -142,17 +163,18 @@ def save_current_tournament_round_file(torneo):
                 if unscheduled_pending_withdrawn:
                     f.write(_("   Non pianificate (con ritirati):\n"))
                     for line in unscheduled_pending_withdrawn: f.write(f"   {line.strip()}\n") # Rimuovi e ri-applica indentazione per coerenza
-            if bye_player_display_line:
-                f.write(f"\n{bye_player_display_line}\n")
             # Sezione Partite Giocate (Titolo Livello 1)
-            f.write(_(" Partite giocate\n"))
+            f.write(_("\n Partite giocate\n\n"))
+            f.write(_("# Partite già giocate o con risultato convalidato.\n\n\n"))
             if played_matches_active:
                 for line in played_matches_active: f.write(f"{line}\n")
             else:
-                 f.write(_("  (nessuna partita ancora giocata da giocatori attivi)\n"))
+                 f.write(_("  # Ancora nessun risultato assegnato\n"))
             if played_matches_withdrawn:
                 f.write(_("  -- Partite giocate con giocatori ritirati --\n"))
                 for line in played_matches_withdrawn: f.write(f"{line}\n")
+            if bye_player_display_line:
+                f.write(f"\n{bye_player_display_line}\n")
         print(_("File {filename} aggiornato con raggruppamento ritirati.").format(filename=filename))
     except IOError as e:
         print(f"Errore durante la sovrascrittura del file stato turno corrente '{filename}': {e}")
@@ -497,31 +519,33 @@ def display_status(torneo):
         print(_("Periodo Turno {round_num}: {start} - {end}").format(round_num=current_r, start=format_date_locale(r_start_str), end=format_date_locale(r_end_str)))
         try:
             # Calcola giorni rimanenti per il turno
-            round_end_dt = datetime.strptime(r_end_str, DATE_FORMAT_ISO).replace(hour=23, minute=59, second=59)
-            time_left_round = round_end_dt - now
-            if time_left_round.total_seconds() < 0:
-                print(_(" -> Termine turno superato da {days} giorni.").format(days=abs(time_left_round.days)))
-            else:
-                days_left_round = time_left_round.days
-                if days_left_round == 0 and time_left_round.total_seconds() > 0:
-                    print(_(" -> Ultimo giorno per completare il turno."))
-                elif days_left_round > 0:
-                    print(_(" -> Giorni rimanenti per il turno: {days}").format(days=days_left_round))
+            time_left_round = calcola_tempo_rimanente(r_end_str)
+            if time_left_round:
+                if time_left_round.total_seconds() < 0:
+                    print(_(" -> Termine turno superato da {days} giorni.").format(days=abs(time_left_round.days)))
+                else:
+                    days_left_round = time_left_round.days
+                    if days_left_round == 0 and time_left_round.total_seconds() > 0:
+                        print(_(" -> Ultimo giorno per completare il turno."))
+                    elif days_left_round > 0:
+                        print(_(" -> Giorni rimanenti per il turno: {days}").format(days=days_left_round))
         except (ValueError, TypeError):
             # Ignora errore se le date non sono valide
             pass
     # Mostra giorni rimanenti alla fine del torneo
     try:
-        tournament_end_dt = datetime.strptime(end_d_str, DATE_FORMAT_ISO).replace(hour=23, minute=59, second=59)
-        time_left_tournament = tournament_end_dt - now
-        if time_left_tournament.total_seconds() < 0:
-            print(_("Termine torneo superato."))
+        time_left_tournament = calcola_tempo_rimanente(end_d_str)
+        if time_left_tournament:
+            if time_left_tournament.total_seconds() < 0:
+                print(_("Termine torneo superato."))
+            else:
+                days_left_tournament = time_left_tournament.days
+                if days_left_tournament == 0 and time_left_tournament.total_seconds() > 0:
+                    print("Ultimo giorno del torneo.")
+                elif days_left_tournament > 0:
+                    print(_("Giorni rimanenti alla fine del torneo: {days}").format(days=days_left_tournament))
         else:
-            days_left_tournament = time_left_tournament.days
-            if days_left_tournament == 0 and time_left_tournament.total_seconds() > 0:
-                print("Ultimo giorno del torneo.")
-            elif days_left_tournament > 0:
-                print(_("Giorni rimanenti alla fine del torneo: {days}").format(days=days_left_tournament))
+            raise ValueError()
     except (ValueError, TypeError):
         print(_("Data fine torneo ('{date}') non valida per calcolo giorni rimanenti.").format(date=format_date_locale(end_d_str)))
     # Conta partite pendenti nel turno corrente
