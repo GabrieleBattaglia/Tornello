@@ -1,12 +1,7 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 2
  Periodo Turno: Domenica 5 aprile 2026 - Sabato 18 aprile 2026
- Mancano 12 giorni e 10 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (10):
-  Martedì 7 aprile 2026
-   21:30 IDG:28, Vincenzo Di Bari vs Alessia Mereu, Canale: Lichess, Arbitro: Non necessario
-  Mercoledì 8 aprile 2026
-   21:30 IDG:18, Giuliano Caputi vs Lorenzo Ionata, Canale: WhatsApp, Arbitro: Monica
-   21:30 IDG:19, Luigi Ventura vs Jiazhuang Vandelli, Canale: WhatsApp, Arbitro: Alessia
+ Mancano 9 giorni e 18 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (7):
   Giovedì 9 aprile 2026
    21:00 IDG:20, Diego Poli vs Massimo Maccaferri, Canale: WhatsApp, Arbitro: Valeria C
   Venerdì 10 aprile 2026
@@ -25,7 +20,10 @@
    IDG:29 Piero Riccardi - Luca Bernoni
    IDG:31 Virginio Paglia - Davide Delmonte
 
-  Partite già giocate o con risultato convalidato (1):
+  Partite già giocate o con risultato convalidato (4):
   IDG:17 Gabriele Battaglia - Claudio Gasperoni  0-1
+  IDG:18 Giuliano Caputi - Lorenzo Ionata  1-0
+  IDG:19 Luigi Ventura - Jiazhuang Vandelli  0-1
+  IDG:28 Vincenzo Di Bari - Alessia Mereu  0-1
 
  Martina Forte ha il BYE
