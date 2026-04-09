@@ -1,12 +1,15 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 2
  Periodo Turno: Domenica 5 aprile 2026 - Sabato 18 aprile 2026
- Mancano 9 giorni e 18 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (7):
+ Mancano 9 giorni e 10 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (9):
   Giovedì 9 aprile 2026
    21:00 IDG:20, Diego Poli vs Massimo Maccaferri, Canale: WhatsApp, Arbitro: Valeria C
   Venerdì 10 aprile 2026
    17:00 IDG:24, Serena Gori vs Giuseppe Baratta, Canale: WhatsApp, Arbitro: Gabry
    19:30 IDG:30, Alessandra Cinque vs Giulia Paglia, Canale: WhatsApp, Arbitro: Gabry
+  Domenica 12 aprile 2026
+   15:30 IDG:26, Gianni Demaio vs Cosetta Trapletti, Canale: WhatsApp, Arbitro: Giuliano
+   16:30 IDG:31, Virginio Paglia vs Davide Delmonte, Canale: WhatsApp, Arbitro: Gabry
   Lunedì 13 aprile 2026
    17:30 IDG:27, Monica De Fazio vs Rita Valleriani, Canale: WhatsApp, Arbitro: Giuliano
    21:15 IDG:25, Catia Susana Brites Pereira Lima vs Filippa Tolaro, Canale: WhatsApp, Arbitro: Claudio
@@ -14,11 +17,9 @@
    15:30 IDG:21, Joshua Demaio vs Simone Zenini, Canale: WhatsApp, Arbitro: Valeria C
    16:30 IDG:23, Paolo Rivalta vs Alessandra Testori, Canale: WhatsApp, Arbitro: Gabry
 
-  Ancora non pianificate (4):
+  Ancora non pianificate (2):
    IDG:22 Valeria Calzolari - Michele Colangelo
-   IDG:26 Gianni Demaio - Cosetta Trapletti
    IDG:29 Piero Riccardi - Luca Bernoni
-   IDG:31 Virginio Paglia - Davide Delmonte
 
   Partite già giocate o con risultato convalidato (4):
   IDG:17 Gabriele Battaglia - Claudio Gasperoni  0-1
