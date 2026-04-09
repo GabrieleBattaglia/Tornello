@@ -2412,7 +2412,14 @@
      "round": 2,
      "white_player_id": "DEMGI001",
      "black_player_id": "TRACO001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-12",
+      "time": "15:30",
+      "channel": "WhatsApp",
+      "arbiter": "Giuliano"
+     },
+     "is_scheduled": true
     },
     {
      "id": 27,
@@ -2468,7 +2475,14 @@
      "round": 2,
      "white_player_id": "PAGVI001",
      "black_player_id": "DELDA002",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-12",
+      "time": "16:30",
+      "channel": "WhatsApp",
+      "arbiter": "Gabry"
+     },
+     "is_scheduled": true
     },
     {
      "id": 32,
@@ -2480,6 +2494,6 @@
    ]
   }
  ],
- "launch_count": 48,
+ "launch_count": 50,
  "bye_value": 0.5
 }
