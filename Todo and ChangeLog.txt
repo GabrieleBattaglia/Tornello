@@ -21,6 +21,9 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
    - Implementare un sistema di fallback nel caso in cui il giocatore sia sprovvisto dell'Elo per quella specifica cadenza.
 
 --- CHANGELOG ---
+8.10.7
+	+ Aggiunto il supporto e aggiornate le traduzioni per Inglese, Spagnolo, Portoghese e Francese.
+
 8.10.6
 	+ Aggiunto il contatore del numero delle partite nelle varie sezioni (già pianificate, non pianificate, già giocate) all'interno del report turno corrente.
 

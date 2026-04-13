@@ -1,222 +1,197 @@
-# Spanish translations for PROJECT.
-# Copyright (C) 2025 ORGANIZATION
+# French translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <gabriele.battaglia@gmail.com>, 2025.
+# FIRST AUTHOR <gabriele.battaglia@gmail.com>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
 "POT-Creation-Date: 2026-04-13 22:03+0200\n"
-"PO-Revision-Date: 2025-06-27 22:45+0200\n"
+"PO-Revision-Date: 2026-04-13 22:12+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
-"Language-Team: es <LL@li.org>\n"
-"Language: es\n"
+"Language-Team: fr <LL@li.org>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
 #: Players_DB.py:71
-#, fuzzy
 msgid ""
 "\n"
 "--- Scheda Giocatore Dettagliata ---"
-msgstr ""
-"\n"
-"--- Retirada de Jugador del Torneo ---"
+msgstr "--- Fiche de Joueur Détaillée ---"
 
 #: Players_DB.py:73
-#, fuzzy
 msgid "Dati giocatore non validi o non trovati."
-msgstr "Número de jugador no válido."
+msgstr "Données du joueur invalides ou introuvables."
 
 #: Players_DB.py:77
 msgid "ID"
-msgstr "IDENTIFICACIÓN"
+msgstr "IDENTIFIANT"
 
 #: Players_DB.py:78
-#, fuzzy
 msgid "Nome Completo"
-msgstr "Nombre Desconocido"
+msgstr "Nom et prénom"
 
 #: Players_DB.py:79
 msgid "Titolo FIDE"
-msgstr "Título FIDE"
+msgstr "Titre FIDE"
 
 #: Players_DB.py:79
-#, fuzzy
 msgid "Nessuno"
-msgstr "ninguno"
+msgstr "Personne"
 
 #: Players_DB.py:80 Players_DB.py:115
 msgid "Elo Corrente"
-msgstr "Corriente Elo"
+msgstr "Courant Elo"
 
 #: Players_DB.py:81
-#, fuzzy
 msgid "Sesso"
-msgstr "ninguno"
+msgstr "Sexe"
 
 #: Players_DB.py:82
 msgid "Federazione"
-msgstr "Federación"
+msgstr "Fédération"
 
 #: Players_DB.py:83
-#, fuzzy
 msgid "ID FIDE Numerico"
-msgstr "  ID FIDE Numérico ('0' si N/D)"
+msgstr "ID FIDE Numérique"
 
 #: Players_DB.py:84
-#, fuzzy, python-brace-format
 msgid "Data Nascita"
-msgstr "\tFecha de Nacimiento: {birth_date}\n"
+msgstr "Date de naissance"
 
 #: Players_DB.py:85
 msgid "Data Registrazione DB"
-msgstr "Fecha de registro de la base de datos"
+msgstr "Date d'enregistrement du DB"
 
 #: Players_DB.py:86
-#, fuzzy
 msgid "Partite Giocate (valutate)"
-msgstr " Partidas jugadas\n"
+msgstr "Matchs joués (notés)"
 
 #: Players_DB.py:88
 msgid "Sì"
-msgstr "Sí"
+msgstr "Oui"
 
 #: Players_DB.py:88
-#, fuzzy
 msgid "No"
-msgstr "Nombre"
+msgstr "Non"
 
 #: Players_DB.py:89
-#, fuzzy
 msgid "Esperienza Pregressa Signif."
-msgstr " ¿Experiencia previa significativa? (s/n)"
+msgstr "Expérience antérieure significative"
 
 #: Players_DB.py:92
 msgid "Medagliere"
-msgstr "Colección de medallas"
+msgstr "Collection de médailles"
 
 #: Players_DB.py:95
 msgid "Storico Tornei Giocati"
-msgstr "Historial de torneos jugados"
+msgstr "Historique des tournois joués"
 
 #: Players_DB.py:109
-#, fuzzy
 msgid ""
 "\n"
 "--- Aggiunta Nuovo Giocatore ---"
-msgstr ""
-"\n"
-"--- Creación de Nuevo Torneo ---"
+msgstr "--- Ajout d'un nouveau joueur ---"
 
 #: Players_DB.py:110
-#, fuzzy
 msgid "Nome: "
-msgstr "Nombre"
+msgstr "Nom:"
 
 #: Players_DB.py:111
 msgid "Nome richiesto."
-msgstr "Nombre requerido."
+msgstr "Nom requis."
 
 #: Players_DB.py:112
-#, fuzzy
 msgid "Cognome: "
-msgstr "  Apellido: "
+msgstr "Nom de famille:"
 
 #: Players_DB.py:113
-#, fuzzy
 msgid "Cognome richiesto."
-msgstr "Saliendo del programa."
+msgstr "Nom de famille obligatoire."
 
 #: Players_DB.py:116
-#, fuzzy
 msgid "Titolo FIDE (es. FM, o vuoto per nessuno):"
-msgstr "  Título FIDE (ej. FM, o vacío)"
+msgstr "Titre FIDE (par exemple FM, ou vide pour aucun) :"
 
 #: Players_DB.py:120
-#, fuzzy
 msgid "Sesso (m/w):"
-msgstr "  Sexo (m/w)"
+msgstr "Sexe (h/f) :"
 
 #: Players_DB.py:122
-#, fuzzy
 msgid "Input non valido. Usa 'm' o 'w'."
-msgstr "Entrada no válida."
+msgstr "Entrée invalide. Utilisez « m » ou « w »."
 
 #: Players_DB.py:124
-#, fuzzy
 msgid "Federazione (3 lettere):"
-msgstr "  Federación (3 letras, ej. ESP)"
+msgstr "Fédération (3 lettres) :"
 
 #: Players_DB.py:125
-#, fuzzy
 msgid "ID FIDE Numerico (cifre, '0' se N/D):"
-msgstr "  ID FIDE Numérico ('0' si N/D)"
+msgstr "ID FIDE Numérique (chiffres, « 0 » si N/A) :"
 
 #: Players_DB.py:130
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Data di nascita ({date_format} o vuoto):"
-msgstr " Fecha de Nacimiento ({date_format} o vacío)"
+msgstr "Date de naissance ({date_format} ou vide) :"
 
 #: Players_DB.py:136 Players_DB.py:229
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Formato data non valido. Usa {date_format}."
-msgstr "Formato de fecha no válido. Usa {date_format}. Inténtalo de nuevo."
+msgstr "Format de date invalide. Utilisez {date_format}."
 
 #: Players_DB.py:140
-#, fuzzy
 msgid "Giocatore con esperienza pregressa significativa? (s/n):"
-msgstr " ¿Experiencia previa significativa? (s/n)"
+msgstr "Joueur avec une expérience significative ? (o/n) :"
 
 #: Players_DB.py:143 Players_DB.py:237
-#, fuzzy
 msgid "Risposta non valida. Inserisci 's' o 'n'."
-msgstr "Elección no válida. Inténtalo de nuevo."
+msgstr "Réponse invalide. Entrez « o » ou « n »."
 
 #: Players_DB.py:157
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Errore: Giocatore con ID {id} non trovato."
-msgstr "ERROR: Base de datos FIDE local '{}' no encontrada."
+msgstr "Erreur : le lecteur portant l'ID {id} est introuvable."
 
 #: Players_DB.py:163
 #, python-brace-format
 msgid ""
 "\n"
 "--- Modifica Giocatore ID: {id} ({first} {last}) ---"
-msgstr "--- Editar ID del jugador: {id} ({first} {last}) ---"
+msgstr "--- Modifier l'ID du joueur : {id} ({first} {last}) ---"
 
 #: Players_DB.py:166
 msgid "--- Inserisci nuovi valori o premi Invio per mantenere i correnti ---"
 msgstr ""
-"--- Ingrese nuevos valores o presione Enter para mantener los actuales ---"
+"--- Entrez les nouvelles valeurs ou appuyez sur Entrée pour conserver les "
+"valeurs actuelles ---"
 
 #: Players_DB.py:169 backup/tornello.py:885 src/engine.py:93
 msgid "Nome"
-msgstr "Nombre"
+msgstr "Nom"
 
 #: Players_DB.py:171 backup/tornello.py:884 src/engine.py:92
 msgid "Cognome"
-msgstr "Apellido"
+msgstr "Nom de famille"
 
 #: Players_DB.py:178
-#, fuzzy
 msgid "Nome o cognome modificati."
-msgstr "Planificación modificada."
+msgstr "Le prénom ou le nom a changé."
 
 #: Players_DB.py:179
 msgid "Vuoi tentare di rigenerare l'ID in base al nuovo nome/cognome? (s/N)"
 msgstr ""
-"¿Quieres intentar regenerar el ID basándose en el nuevo nombre/apellido? "
-"(sí/no)"
+"Voulez-vous essayer de régénérer l'ID en fonction du nouveau nom/prénom ? "
+"(o/N)"
 
 #: Players_DB.py:188
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "ID giocatore aggiornato da '{old}' a '{new}'."
-msgstr "      -> Actualización {}: de '{}' a '{}'"
+msgstr "ID du joueur mis à jour de « {old} » à « {new} »."
 
 #: Players_DB.py:190
 #, python-brace-format
@@ -224,383 +199,345 @@ msgid ""
 "Errore o collisione nella generazione del nuovo ID. L'ID originale '{id}' "
 "verrà mantenuto."
 msgstr ""
-"Error o colisión al generar el nuevo ID. Se conservará el ID original "
-"'{id}'."
+"Erreur ou collision lors de la génération du nouvel identifiant. L'ID "
+"d'origine '{id}' sera conservé."
 
 #: Players_DB.py:193
 msgid ""
 "Nome e/o cognome non possono essere vuoti. Modifiche a nome/cognome "
 "annullate."
 msgstr ""
-"El nombre y/o apellido no pueden estar vacíos. Cambios de nombre/apellidos "
-"cancelados."
+"Le nom et/ou le prénom ne peuvent pas être vides. Modifications de "
+"nom/prénom annulées."
 
 #: Players_DB.py:202
 msgid "Elo Corrente (range 0-3500)"
-msgstr "Elo actual (rango 0-3500)"
+msgstr "Elo actuel (plage 0-3500)"
 
 #: Players_DB.py:204
-#, fuzzy
 msgid "Titolo FIDE (es. FM, '' per nessuno)"
-msgstr "  Título FIDE (ej. FM, o vacío)"
+msgstr "Titre FIDE (par exemple FM, « pour personne)"
 
 #: Players_DB.py:208
-#, fuzzy
 msgid "Sesso (m/w)"
-msgstr "  Sexo (m/w)"
+msgstr "Sexe (h/f)"
 
 #: Players_DB.py:212 backup/tornello.py:570 src/ui.py:97 src/ui.py:287
 msgid "Input non valido."
-msgstr "Entrada no válida."
+msgstr "Entrée invalide."
 
 #: Players_DB.py:215
-#, fuzzy
 msgid "Federazione (3 lettere)"
-msgstr "  Federación (3 letras, ej. ESP)"
+msgstr "Fédération (3 lettres)"
 
 #: Players_DB.py:218
-#, fuzzy
 msgid "ID FIDE Numerico (cifre, '0' se N/D)"
-msgstr "  ID FIDE Numérico ('0' si N/D)"
+msgstr "ID FIDE Numérique (chiffres, « 0 » si N/A)"
 
 #: Players_DB.py:224
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Data di nascita ({date_format} o vuoto per cancellare)"
-msgstr " Fecha de Nacimiento ({date_format} o vacío)"
+msgstr "Date de naissance ({date_format} ou vide pour effacer)"
 
 #: Players_DB.py:234
-#, fuzzy
 msgid "Giocatore con esperienza pregressa significativa? (s/n)"
-msgstr " ¿Experiencia previa significativa? (s/n)"
+msgstr "Joueur avec une expérience significative ? (o/n)"
 
 #: Players_DB.py:239
 msgid ""
 "\n"
 "--- Modifica Medagliere ---"
-msgstr "--- Editar lista de medallas ---"
+msgstr "--- Modifier la liste des médailles ---"
 
 #: Players_DB.py:242
 msgid "Medaglie di"
-msgstr "medallas de"
+msgstr "Médailles de"
 
 #: Players_DB.py:244
-#, fuzzy
 msgid ""
 "\n"
 "--- Modifica Storico Tornei ---"
-msgstr ""
-"\n"
-"--- Estado del Torneo ---"
+msgstr "--- Modifier l'historique du tournoi ---"
 
 #: Players_DB.py:248
 msgid ""
 "\n"
 "Storico Tornei Attuale:"
-msgstr "Historial actual del torneo:"
+msgstr "Historique actuel du tournoi :"
 
 #: Players_DB.py:250
-#, fuzzy
 msgid "  Nessun torneo registrato nello storico."
-msgstr ""
-"\n"
-"Ningún torneo activo o torneo concluido."
+msgstr "Aucun tournoi enregistré dans l'historique."
 
 #: Players_DB.py:269
 msgid "Date"
-msgstr "Fechas"
+msgstr "Dates"
 
 #: Players_DB.py:271
 msgid ""
 "\n"
 "Opzioni Storico Tornei:"
-msgstr "Opciones del historial de torneos:"
+msgstr "Options de l'historique du tournoi :"
 
 #: Players_DB.py:272
 msgid "  (A)ggiungi, (C)ancella, (F)ine gestione storico: "
-msgstr "(A)agregar, (C)eliminar, (F)finalizar la gestión del historial:"
+msgstr "(A)dd, (C)delete, (F)end gestion de l'historique :"
 
 #: Players_DB.py:276
-#, fuzzy
 msgid ""
 "\n"
 "  --- Aggiunta nuovo torneo allo storico ---"
-msgstr ""
-"\n"
-"--- Creación de Nuevo Torneo ---"
+msgstr "--- Ajout d'un nouveau tournoi à l'historique ---"
 
 #: Players_DB.py:278
-#, fuzzy, python-brace-format
 msgid "  Nome torneo: "
-msgstr "Nombre del Torneo: {name}\n"
+msgstr "Nom du tournoi :"
 
 #: Players_DB.py:280
 msgid "  ID Torneo (default: generato in automatico): "
-msgstr "ID del torneo (predeterminado: generado automáticamente):"
+msgstr "ID du tournoi (par défaut : généré automatiquement) :"
 
 #: Players_DB.py:282
 msgid "  Posizione (es. 1, 2, o RIT): "
-msgstr "Posición (por ejemplo, 1, 2 o RIT):"
+msgstr "Position (par exemple 1, 2 ou RIT) :"
 
 #: Players_DB.py:283
 msgid "  Numero totale partecipanti: "
-msgstr "Número total de participantes:"
+msgstr "Nombre total de participants :"
 
 #: Players_DB.py:288
 #, python-brace-format
 msgid "  Data {field} ({format}): "
-msgstr "Fecha {field} ({format}):"
+msgstr "Date {field} ({format}) :"
 
 #: Players_DB.py:291
-#, fuzzy
 msgid "  Formato data non valido."
-msgstr "Formato de fecha no reconocido"
+msgstr "Format de date invalide."
 
 #: Players_DB.py:293
 msgid "  Torneo aggiunto allo storico."
-msgstr "Torneo agregado a la historia."
+msgstr "Tournoi ajouté à l'histoire."
 
 #: Players_DB.py:295
-#, fuzzy
 msgid "  Numero torneo da cancellare: "
-msgstr "Nombre de Torneo Faltante"
+msgstr "Numéro du tournoi à annuler :"
 
 #: Players_DB.py:301
-#, fuzzy
 msgid "  Torneo rimosso."
-msgstr ""
-"\n"
-"El torneo ha concluido."
+msgstr "Tournoi supprimé."
 
 #: Players_DB.py:302
 msgid "  Errore cancellazione."
-msgstr "Error de eliminación."
+msgstr "Erreur de suppression."
 
 #: Players_DB.py:304
-#, fuzzy
 msgid ""
 "\n"
 "Gestione completata."
-msgstr "Ejecución de bbpPairings completada."
+msgstr "Gestion terminée."
 
 #: Players_DB.py:309
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "--- Gestore Database Giocatori Tornello ---\n"
 "\tVersione: {vers}\n"
-msgstr "Informe Base de Datos de Jugadores Tornello - {date} {time}\n"
+msgstr ""
+"--- Gestionnaire de base de données du lecteur tourniquet ---\n"
+"\tVersion : {vers}"
 
 #: Players_DB.py:313
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Giocatori nel database: {num}"
-msgstr "Analizando jugadores en tu base de datos personal..."
+msgstr "Joueurs dans la base de données : {num}"
 
 #: Players_DB.py:314
 msgid ""
 "Cerca giocatore (ID, nome/cognome), (L)ista tutti, (A)ggiungi nuovo, (S)alva"
 " e esci: "
 msgstr ""
-"Buscar jugador (ID, nombre/apellido), (L)ist todos, (A)dd new, (S)guard y "
-"salir:"
+"Recherchez le joueur (ID, nom/prénom), (L)list tout, (A)dd new, (S)ave et "
+"quittez :"
 
 #: Players_DB.py:316
 #, python-brace-format
 msgid "Cerca (ID prec: {id}), (L)ista, (A)ggiungi, (S)alva e esci: "
-msgstr "Buscar (ID anterior: {id}), (L)ist, (A)dd, (S)ave y salir:"
+msgstr "Recherchez (ID précédent : {id}), (L)ist, (A)dd, (S)ave et quittez :"
 
 #: Players_DB.py:324
-#, fuzzy
 msgid "Database vuoto."
-msgstr "La base de datos de jugadores está vacía.\n"
+msgstr "Base de données vide."
 
 #: Players_DB.py:326
-#, fuzzy
 msgid ""
 "\n"
 "--- Lista Giocatori Completa ---"
-msgstr "Lista de jugadores confirmada."
+msgstr "--- Liste complète des joueurs ---"
 
 #: Players_DB.py:336
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Nessun giocatore trovato per '{search}'."
-msgstr "Ningún jugador activo para retirar."
+msgstr "Aucun joueur trouvé pour '{search}'."
 
 #: Players_DB.py:337
-#, fuzzy
 msgid "Vuoi aggiungere un nuovo giocatore? (S/n) "
-msgstr "¿Quieres volver a la introducción de jugadores? (s/N)"
+msgstr "Voulez-vous ajouter un nouveau joueur ? (O/N)"
 
 #: Players_DB.py:348
 msgid ""
 "\n"
 "Azione: (M)odifica, (C)ancella, (S)eleziona altro/Fine"
-msgstr "Acción: (Modificar), (C)eliminar, (S)elegir más/Finalizar"
+msgstr "Action : (M)modifier, (C)supprimer, (S)électionner plus/Fin"
 
 #: Players_DB.py:352
 #, python-brace-format
 msgid "Sicuro di cancellare {first} {last} (ID: {id})? (s/N)"
-msgstr "¿Está seguro de que desea eliminar {first} {last} (ID: {id})? (sí/no)"
+msgstr "Etes-vous sûr de vouloir supprimer {first} {last} (ID : {id}) ? (o/N)"
 
 #: Players_DB.py:355
-#, fuzzy
 msgid "Giocatore cancellato."
-msgstr "Jugador Faltante"
+msgstr "Joueur supprimé."
 
 #: Players_DB.py:366
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "Trovate {num} corrispondenze. Specifica meglio:"
-msgstr ""
-"\n"
-"-> Se encontró 1 coincidencia en la BD FIDE:"
+msgstr "Recherchez les correspondances {num}. Précisez mieux :"
 
 #: Players_DB.py:372
-#, fuzzy
 msgid ""
 "\n"
 "Salvataggio finale del database prima di uscire..."
-msgstr "Guardado final antes de salir..."
+msgstr "Sauvegarde finale de la base de données avant de quitter..."
 
 #: Players_DB.py:374
-#, fuzzy
 msgid "Uscita dal gestore database giocatori."
-msgstr "La base de datos de jugadores está vacía.\n"
+msgstr "Quitter le gestionnaire de base de données des joueurs."
 
 #: Sync_DB.py:24
-#, fuzzy
 msgid ""
 "\n"
 "--- Sincronizzatore Database Tornello ---"
-msgstr ""
-"\n"
-"--- Retirada de Jugador del Torneo ---"
+msgstr "--- Synchroniseur de base de données de tourniquet ---"
 
 #: Sync_DB.py:25
 msgid "Questo tool confronta il tuo database giocatori personale"
-msgstr "Esta herramienta compara tu base de datos personal de jugadores."
+msgstr "Cet outil compare votre base de données personnelle de joueurs"
 
 #: Sync_DB.py:26
-#, fuzzy, python-brace-format
 msgid "con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"
-msgstr "Base de datos FIDE local cargada con {} jugadores."
+msgstr ""
+"avec la dernière base de données FIDE téléchargée et propose des mises à "
+"jour."
 
 #: Sync_DB.py:29
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Il database FIDE locale ({}) non è presente."
-msgstr ""
-"\n"
-"La base de datos FIDE local no está presente en tu ordenador."
+msgstr "La base de données FIDE locale ({}) n'est pas présente."
 
 #: Sync_DB.py:30
-#, fuzzy
 msgid ""
 "Vuoi scaricarlo ora da FIDE.com? (Richiede alcuni minuti) (INVIO|ESCAPE)"
 msgstr ""
-"¿Quieres descargarla ahora? (La operación podría tardar algunos minutos) "
-"(S/n)"
+"Voulez-vous le télécharger maintenant sur FIDE.com ? (Prend quelques "
+"minutes) (ENTER | ESCAPE)"
 
 #: Sync_DB.py:32
 msgid "Scaricamento annullato o fallito. Sincronizzazione impossibile."
-msgstr "Descarga cancelada o fallida. Sincronización imposible."
+msgstr "Téléchargement annulé ou échoué. Synchronisation impossible."
 
 #: Sync_DB.py:33 Sync_DB.py:37
 msgid ""
 "\n"
 "Premi Invio per uscire..."
-msgstr "Presione Entrar para salir..."
+msgstr "Appuyez sur Entrée pour quitter..."
 
 #: Sync_DB.py:36
-#, fuzzy
 msgid "Sincronizzazione impossibile senza il database FIDE."
-msgstr ""
-"\n"
-"¡Sincronización completada y base de datos personal guardada!"
+msgstr "Synchronisation impossible sans base de données FIDE."
 
 #: Sync_DB.py:43
-#, fuzzy
 msgid ""
 "\n"
 "Operazioni completate."
-msgstr "Ejecución de bbpPairings completada."
+msgstr "Opérations terminées."
 
 #: Sync_DB.py:44
 msgid "Premi Invio per uscire dal tool di sincronizzazione..."
-msgstr "Presione Enter para salir de la herramienta de sincronización..."
+msgstr "Appuyez sur Entrée pour quitter l'outil de synchronisation..."
 
 #: Sync_DB.py:50 backup/tornello.py:3440 tornello.py:622
 msgid ""
 "\n"
 "Operazione interrotta dall'utente."
-msgstr ""
-"\n"
-"Operación interrumpida por el usuario."
+msgstr "Opération interrompue par l'utilisateur."
 
 #: backup/tornello.py:3005 tornello.py:92
 #, python-brace-format
 msgid "Info: Creata sottocartella '{}' per i file di bbpPairings."
-msgstr "Info: Subcarpeta '{}' creada para los archivos de bbpPairings."
+msgstr "Info : création du sous-dossier '{}' pour les fichiers bbpPairings."
 
 #: backup/tornello.py:3007 tornello.py:94
 #, python-brace-format
 msgid "ATTENZIONE: Impossibile creare la sottocartella '{}': {}"
-msgstr "ATENCIÓN: Imposible crear la subcarpeta '{}': {}"
+msgstr "AVERTISSEMENT : Impossible de créer le sous-dossier '{}' : {}"
 
 #: backup/tornello.py:3008 tornello.py:95
 msgid "bbpPairings potrebbe non funzionare correttamente."
-msgstr "bbpPairings podría no funcionar correctamente."
+msgstr "bbpPairings peut ne pas fonctionner correctement."
 
 #: backup/tornello.py:3015 tornello.py:102
 #, python-brace-format
 msgid ""
 "\n"
 "BENVENUTI! Sono Tornello {}"
-msgstr ""
-"\n"
-"¡BIENVENIDOS! Soy Tornello {}"
+msgstr "ACCUEILLIR! Je suis Turnstile {}"
 
 #: tornello.py:108
 msgid "Controllo aggiornamenti..."
-msgstr "Buscando actualizaciones..."
+msgstr "Vérification des mises à jour..."
 
 #: tornello.py:113
 msgid ""
 "\n"
 "*** AGGIORNAMENTO DISPONIBILE! ***"
-msgstr "*** ¡ACTUALIZACIÓN DISPONIBLE! ***"
+msgstr "*** MISE À JOUR DISPONIBLE ! ***"
 
 #: tornello.py:114
 #, python-brace-format
 msgid "Versione corrente: {curr} | Nuova versione: {latest}"
-msgstr "Versión actual: {curr} | Nueva versión: {latest}"
+msgstr "Version actuelle : {curr} | Nouvelle version : {latest}"
 
 #: tornello.py:115
 msgid ""
 "Vuoi scaricare e installare l'aggiornamento ora? (INVIO per Sì | ESCAPE per "
 "ignorare)"
 msgstr ""
-"¿Quieres descargar e instalar la actualización ahora? (ENTER para Sí | "
-"ESCAPE para ignorar)"
+"Voulez-vous télécharger et installer la mise à jour maintenant ? (ENTER pour"
+" Oui | ESCAPE pour ignorer)"
 
 #: tornello.py:116
 msgid ""
 "Scaricamento e installazione in corso. Il programma si chiuderà per "
 "l'aggiornamento..."
-msgstr "Descargando e instalando. El programa se cerrará para actualizar..."
+msgstr ""
+"Téléchargement et installation. Le programme se fermera pour mettre à "
+"jour..."
 
 #: tornello.py:120
 msgid ""
 "Impossibile avviare l'aggiornamento automatico (la funzione è disponibile "
 "solo per la versione compilata)."
 msgstr ""
-"No se puede iniciar la actualización automática (la función solo está "
-"disponible para la versión compilada)."
+"Impossible de démarrer la mise à jour automatique (la fonction n'est "
+"disponible que pour la version compilée)."
 
 #: tornello.py:122
 msgid ""
 "\n"
 "*** AGGIORNAMENTO DISPONIBILE ***"
-msgstr "***ACTUALIZACIÓN DISPONIBLE***"
+msgstr "*** MISE À JOUR DISPONIBLE ***"
 
 #: tornello.py:123
 #, python-brace-format
@@ -608,106 +545,102 @@ msgid ""
 "E' disponibile la nuova versione {latest_ver}, ma i file di installazione "
 "non sono ancora pronti per il download."
 msgstr ""
-"La nueva versión {latest_ver} está disponible, pero los archivos de "
-"instalación aún no están listos para descargar."
+"La nouvelle version {latest_ver} est disponible, mais les fichiers "
+"d'installation ne sont pas encore prêts à être téléchargés."
 
 #: tornello.py:124
 msgid "Riprova più tardi."
-msgstr "Inténtelo de nuevo más tarde."
+msgstr "Veuillez réessayer plus tard."
 
 #: tornello.py:126
 #, python-brace-format
 msgid "Controllo aggiornamenti fallito: {}"
-msgstr "Error en la verificación de actualización: {}"
+msgstr "Échec de la vérification de la mise à jour : {}"
 
 #: backup/tornello.py:3016 tornello.py:128
 msgid ""
 "\n"
 "Verifica stato database FIDE locale..."
-msgstr ""
-"\n"
-"Verificando estado de la base de datos FIDE local..."
+msgstr "Vérifiez l'état de la base de données FIDE locale..."
 
 #: backup/tornello.py:3020 tornello.py:132
 msgid ""
 "\n"
 "Il database FIDE locale non è presente sul tuo computer."
 msgstr ""
-"\n"
-"La base de datos FIDE local no está presente en tu ordenador."
+"La base de données FIDE locale n'est pas présente sur votre ordinateur."
 
 #: backup/tornello.py:3022 tornello.py:134
-#, fuzzy
 msgid ""
 "Vuoi scaricarlo ora? (L'operazione potrebbe richiedere alcuni minuti) "
 "(INVIO|ESCAPE)"
 msgstr ""
-"¿Quieres descargarla ahora? (La operación podría tardar algunos minutos) "
-"(S/n)"
+"Voulez-vous le télécharger maintenant ? (Cela peut prendre quelques minutes)"
+" (ENTER|ESCAPE)"
 
 #: backup/tornello.py:3025 tornello.py:137
 msgid "Database FIDE locale aggiornato con successo."
-msgstr "Base de datos FIDE local actualizada con éxito."
+msgstr "Base de données FIDE locale mise à jour avec succès."
 
 #: backup/tornello.py:3030 tornello.py:142
 #, python-brace-format
 msgid "Info: Il tuo database FIDE locale ha {} giorni."
-msgstr "Info: Tu base de datos FIDE local tiene {} días."
+msgstr "Info : Votre base de données FIDE locale date de {} jours."
 
 #: backup/tornello.py:3032 tornello.py:144
 msgid ""
 "Essendo trascorsi più di 32 giorni dall'ultimo download, potrebbe essere "
 "stato rilasciato un aggiornamento"
 msgstr ""
-"Habiendo pasado más de 32 días desde la última descarga, podría haberse "
-"lanzado una actualización"
+"Puisque plus de 32 jours se sont écoulés depuis le dernier téléchargement, "
+"une mise à jour a peut-être été publiée"
 
 #: backup/tornello.py:3033 tornello.py:145
-#, fuzzy
 msgid ""
 "Si consiglia di aggiornarlo. Vuoi scaricare la versione più recente? "
 "(INVIO|ESCAPE)"
 msgstr ""
-"Se recomienda actualizarla. ¿Quieres descargar la versión más reciente? "
-"(s/N)"
+"Il est recommandé de le mettre à jour. Voulez-vous télécharger la dernière "
+"version ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:3037 tornello.py:149
 #, python-brace-format
 msgid "Errore nel controllare la data del file DB FIDE locale: {}"
-msgstr "Error al comprobar la fecha del archivo de la BD FIDE local: {}"
+msgstr ""
+"Erreur lors de la vérification de la date du fichier FIDE DB local : {}"
 
 #: backup/tornello.py:3044 tornello.py:156
 msgid ""
 "\n"
 "Database FIDE aggiornato. Vuoi sincronizzare ora il tuo DB personale?"
 msgstr ""
-"\n"
-"Base de datos FIDE actualizada. ¿Quieres sincronizar ahora tu BD personal?"
+"Base de données FIDE mise à jour. Voulez-vous synchroniser votre base de "
+"données personnelle maintenant ?"
 
 #: backup/tornello.py:3044 tornello.py:156
 msgid ""
 "\n"
 "Vuoi sincronizzare il tuo DB personale con i dati FIDE locali?"
 msgstr ""
-"\n"
-"¿Quieres sincronizar tu BD personal con los datos FIDE locales?"
+"Voulez-vous synchroniser votre base de données personnelle avec les données "
+"FIDE locales ?"
 
 #: backup/tornello.py:3055 tornello.py:167
 msgid "Nessun torneo esistente trovato."
-msgstr "No se encontraron torneos existentes."
+msgstr "Aucun tournoi existant trouvé."
 
 #: tornello.py:168
 msgid "Premi INVIO per creare un nuovo torneo, ESCAPE per uscire."
-msgstr "Presione ENTER para crear un nuevo torneo, ESCAPE para salir."
+msgstr "Appuyez sur ENTER pour créer un nouveau tournoi, ESCAPE pour quitter."
 
 #: backup/tornello.py:3089 tornello.py:171 tornello.py:205
 msgid "Uscita dal programma."
-msgstr "Saliendo del programa."
+msgstr "Quitter le programme."
 
 #: backup/tornello.py:846 backup/tornello.py:1384 backup/tornello.py:3059
 #: src/engine.py:54 src/tournament.py:149 tornello.py:175
 msgid "Torneo Sconosciuto"
-msgstr "Torneo Desconocido"
+msgstr "Tournoi inconnu"
 
 #: backup/tornello.py:3066 tornello.py:182
 #, python-brace-format
@@ -715,17 +648,15 @@ msgid ""
 "Info: impossibile leggere i dettagli da '{filename}' ({error}). Uso il nome "
 "del file."
 msgstr ""
-"Info: imposible leer los detalles de '{filename}' ({error}). Usando el "
-"nombre del archivo."
+"Info : Impossible de lire les détails de « {filename} » ({error}). J'utilise"
+" le nom du fichier."
 
 #: backup/tornello.py:3072 tornello.py:188
 #, python-brace-format
 msgid ""
 "\n"
 "Trovato un solo torneo esistente: '{name}' (File: {filename})"
-msgstr ""
-"\n"
-"Se encontró un solo torneo existente: '{name}' (Archivo: {filename})"
+msgstr "Un seul tournoi existant trouvé : '{name}' (Fichier : {filename})"
 
 #: backup/tornello.py:3074 tornello.py:190
 #, python-brace-format
@@ -733,94 +664,93 @@ msgid ""
 "Vuoi caricare '{name}'? (S/Invio per sì, oppure inserisci il nome di un "
 "NUOVO torneo da creare): "
 msgstr ""
-"¿Quieres cargar '{name}'? (S/Enter para sí, o introduce el nombre de un "
-"NUEVO torneo a crear): "
+"Voulez-vous charger « {name} » ? (O/Entrez pour oui, ou entrez le nom d'un "
+"NOUVEAU tournoi à créer) :"
 
 #: backup/tornello.py:3078 backup/tornello.py:3139 tornello.py:194
 #: tornello.py:282
 #, python-brace-format
 msgid "Caricamento di '{name}'..."
-msgstr "Cargando '{name}'..."
+msgstr "Chargement de '{name}'..."
 
 #: backup/tornello.py:3082 tornello.py:198
 #, python-brace-format
 msgid "Errore fatale nel caricamento del torneo '{filename}'."
-msgstr "Error fatal al cargar el torneo '{filename}'."
+msgstr "Erreur fatale lors du chargement du tournoi '{filename}'."
 
 #: backup/tornello.py:3096 tornello.py:212
 #, python-brace-format
 msgid ""
 "Ok, procederemo con la creazione di un nuovo torneo chiamato: '{name}'."
-msgstr "Ok, procederemos a crear un nuevo torneo llamado: '{name}'."
+msgstr ""
+"Ok, nous allons procéder à la création d'un nouveau tournoi appelé : "
+"'{name}'."
 
 #: backup/tornello.py:3101 tornello.py:217
 msgid ""
 "\n"
 "--- Tornei Esistenti Trovati ---"
-msgstr ""
-"\n"
-"--- Torneos Existentes Encontrados ---"
+msgstr "--- Tournois existants trouvés ---"
 
 #: backup/tornello.py:3109 tornello.py:225
 msgid "Nome Sconosciuto"
-msgstr "Nombre Desconocido"
+msgstr "Nom inconnu"
 
 #: backup/tornello.py:3123 tornello.py:239
 #, python-brace-format
 msgid " {num}. {name} (dal {start_date} al {end_date}) - File: {filename}"
-msgstr " {num}. {name} (del {start_date} al {end_date}) - Archivo: {filename}"
+msgstr "{num}. {name} (de {start_date} à {end_date}) - Fichier : {filename}"
 
 #: backup/tornello.py:3125 tornello.py:241
 #, python-brace-format
 msgid ""
 " Errore durante la lettura dei metadati da {filename}: {error} (file "
 "saltato)"
-msgstr " Error al leer los metadatos de {filename}: {error} (archivo omitido)"
+msgstr ""
+"Erreur de lecture des métadonnées de {filename} : {error} (fichier ignoré)"
 
 #: backup/tornello.py:3128 tornello.py:244
 msgid ""
 "Nessun torneo valido trovato nonostante la presenza di file. Si procederà "
 "con la creazione."
 msgstr ""
-"No se encontraron torneos válidos a pesar de la presencia de archivos. Se "
-"procederá a la creación."
+"Aucun tournoi valide trouvé malgré la présence de fichiers. Nous allons "
+"procéder à la création."
 
 #: tornello.py:259
 msgid ""
 "\n"
 "*** TROVATI TORNEI CON CREAZIONE SOSPESA ***"
-msgstr "*** TORNEOS ENCONTRADOS CON CREACIÓN SUSPENDIDA ***"
+msgstr "*** TOURNOIS TROUVÉS AVEC CRÉATION SUSPENDU ***"
 
 #: tornello.py:261
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " - '{name}' (File: {filename})"
-msgstr ""
-"\n"
-"Se encontró un solo torneo existente: '{name}' (Archivo: {filename})"
+msgstr "- '{name}' (Fichier : {filename})"
 
 #: tornello.py:264
 #, python-brace-format
 msgid "Vuoi riprendere la creazione di '{name}'? (INVIO|ESCAPE): "
-msgstr "¿Quieres reanudar la creación de '{name}'? (ENTRAR | ESCAPAR):"
+msgstr "Voulez-vous reprendre la création de '{name}' ? (ENTRER | ÉCHAPPER) :"
 
 #: tornello.py:269
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Ripresa creazione torneo '{name}'..."
-msgstr "Archivando el torneo '{name}'..."
+msgstr "Reprise de la création du tournoi '{name}'..."
 
 #: tornello.py:272
 msgid ""
 "Ci sono più tornei in stato sospeso. Selezionali dal menu per riprenderli."
 msgstr ""
-"Hay más torneos en estado suspendido. Selecciónelos del menú para "
-"reanudarlos."
+"Il y a plus de tournois en statut suspendu. Sélectionnez-les dans le menu "
+"pour les reprendre."
 
 #: tornello.py:274
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 " {num}. Crea un nuovo torneo"
-msgstr " {num}. Crear un nuevo torneo"
+msgstr "{num}. Créer un nouveau tournoi"
 
 #: backup/tornello.py:3133 tornello.py:276
 #, python-brace-format
@@ -828,8 +758,8 @@ msgid ""
 "Scegli un torneo da caricare (1-{max_num}) o '{new_num}' per crearne uno "
 "nuovo: "
 msgstr ""
-"Elige un torneo para cargar (1-{max_num}) o '{new_num}' para crear uno "
-"nuevo: "
+"Choisissez un tournoi à charger (1-{max_num}) ou '{new_num}' pour en créer "
+"un nouveau :"
 
 #: backup/tornello.py:3142 tornello.py:285
 #, python-brace-format
@@ -837,201 +767,199 @@ msgid ""
 "Errore nel caricamento del torneo {filename}. Riprova o crea un nuovo "
 "torneo."
 msgstr ""
-"Error al cargar el torneo {filename}. Inténtalo de nuevo o crea un nuevo "
-"torneo."
+"Erreur lors du chargement du tournoi {filename}. Veuillez réessayer ou créer"
+" un nouveau tournoi."
 
 #: backup/tornello.py:3151 src/ui.py:284 tornello.py:294
 msgid "Scelta non valida."
-msgstr "Elección no válida."
+msgstr "Choix invalide."
 
 #: backup/tornello.py:3153 tornello.py:296
 msgid "Inserisci un numero."
-msgstr "Introduce un número."
+msgstr "Entrez un numéro."
 
 #: tornello.py:303
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "Ripresa inserimento giocatori per '{name}'..."
-msgstr ""
-"\n"
-"--- Introducción de Jugadores para el Torneo ---"
+msgstr "Reprise de l'insertion du joueur pour '{name}'..."
 
 #: backup/tornello.py:3254 tornello.py:315 tornello.py:436
 msgid "Creazione torneo annullata a causa di problemi con la lista giocatori."
 msgstr ""
-"Creación del torneo cancelada debido a problemas con la lista de jugadores."
+"Création de tournoi annulée en raison de problèmes avec la liste des "
+"joueurs."
 
 #: backup/tornello.py:3157 tornello.py:327
 msgid ""
 "Nessun torneo caricato. Si procede con la creazione di un nuovo torneo."
-msgstr "Ningún torneo cargado. Se procede a crear un nuevo torneo."
+msgstr ""
+"Aucun tournoi chargé. Nous procédons à la création d'un nouveau tournoi."
 
 #: backup/tornello.py:3159 tornello.py:334
 msgid ""
 "\n"
 "--- Creazione Nuovo Torneo ---"
-msgstr ""
-"\n"
-"--- Creación de Nuevo Torneo ---"
+msgstr "--- Création d'un nouveau tournoi ---"
 
 #: backup/tornello.py:3164 tornello.py:342
 #, python-brace-format
 msgid "Nome suggerito per il nuovo torneo: '{name}'"
-msgstr "Nombre sugerido para el nuevo torneo: '{name}'"
+msgstr "Nom suggéré pour le nouveau tournoi : '{name}'"
 
 #: backup/tornello.py:3170 backup/tornello.py:3190 tornello.py:348
 #: tornello.py:368
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "ATTENZIONE: Un file torneo '{filename}' con questo nome esiste già. "
 "Sovrascriverlo? (INVIO|ESCAPE): "
 msgstr ""
-"ATENCIÓN: Un archivo de torneo '{filename}' con este nombre ya existe. "
-"¿Sobrescribirlo? (s/n): "
+"ATTENTION : Un fichier de tournoi '{filename}' portant ce nom existe déjà. "
+"L'écraser ? (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:3175 tornello.py:353
 msgid "Sovrascrittura annullata. Verrà richiesto un nuovo nome."
-msgstr "Sobrescritura cancelada. Se solicitará un nuevo nombre."
+msgstr "Écrasement annulé. Vous serez invité à entrer un nouveau nom."
 
 #: backup/tornello.py:3185 tornello.py:363
 msgid "Inserisci il nome del nuovo torneo: "
-msgstr "Introduce el nombre del nuevo torneo: "
+msgstr "Saisissez le nom du nouveau tournoi :"
 
 #: backup/tornello.py:3192 tornello.py:370
 msgid "Operazione annullata. Scegli un nome diverso per il torneo."
-msgstr "Operación cancelada. Elige un nombre diferente para el torneo."
+msgstr "Opération annulée. Choisissez un nom différent pour le tournoi."
 
 #: backup/tornello.py:3198 tornello.py:376
 msgid "Il nome del torneo non può essere vuoto. Riprova."
-msgstr "El nombre del torneo no puede estar vacío. Inténtalo de nuevo."
+msgstr "Le nom du tournoi ne peut pas être vide. Essayer à nouveau."
 
 #: backup/tornello.py:3200 tornello.py:378
 msgid "Nome del torneo non definito correttamente. Creazione annullata."
-msgstr "Nombre del torneo no definido correctamente. Creación cancelada."
+msgstr "Le nom du tournoi n'est pas défini correctement. Création annulée."
 
 #: backup/tornello.py:3207 tornello.py:385
 #, python-brace-format
 msgid "Inserisci data inizio ({date_format}) [Default: {default_date}]: "
 msgstr ""
-"Introduce fecha de inicio ({date_format}) [Predeterminado: {default_date}]: "
+"Saisissez la date de début ({date_format}) [Par défaut : {default_date}] :"
 
 #: backup/tornello.py:3212 tornello.py:390
 #, python-brace-format
 msgid "Formato data non valido. Usa {date_format}. Riprova."
-msgstr "Formato de fecha no válido. Usa {date_format}. Inténtalo de nuevo."
+msgstr "Format de date invalide. Utilisez {date_format}. Essayer à nouveau."
 
 #: backup/tornello.py:3219 tornello.py:397
 #, python-brace-format
 msgid "Inserisci data fine ({date_format}) [Default: {default_date}]: "
 msgstr ""
-"Introduce fecha de fin ({date_format}) [Predeterminado: {default_date}]: "
+"Saisissez la date de fin ({date_format}) [Par défaut : {default_date}] :"
 
 #: backup/tornello.py:3223 tornello.py:401
 msgid "Errore: La data di fine non può essere precedente alla data di inizio."
-msgstr "Error: La fecha de fin no puede ser anterior a la fecha de inicio."
+msgstr ""
+"Erreur : La date de fin ne peut pas être antérieure à la date de début."
 
 #: backup/tornello.py:3228 tornello.py:406
 msgid "Errore: La data calcolata risulta troppo lontana nel futuro."
-msgstr "Error: La fecha calculada resulta demasiado lejana en el futuro."
+msgstr "Erreur : La date calculée est trop éloignée dans le futur."
 
 #: backup/tornello.py:3231 tornello.py:409
 msgid "Inserisci il numero totale dei turni: "
-msgstr "Introduce el número total de rondas: "
+msgstr "Entrez le nombre total d'équipes :"
 
 #: backup/tornello.py:3234 tornello.py:412
 msgid "Il numero di turni deve essere positivo."
-msgstr "El número de rondas debe ser positivo."
+msgstr "Le nombre de tours doit être positif."
 
 #: backup/tornello.py:3235 tornello.py:413
 msgid "Inserisci un numero intero valido."
-msgstr "Introduce un número entero válido."
+msgstr "Veuillez saisir un entier valide."
 
 #: backup/tornello.py:3236 tornello.py:414
 msgid ""
 "\n"
 "Inserisci i dettagli aggiuntivi del torneo (lascia vuoto per usare default):"
 msgstr ""
-"\n"
-"Introduce los detalles adicionales del torneo (deja vacío para usar los predeterminados):"
+"Saisissez des détails supplémentaires sur le tournoi (laissez vide pour "
+"utiliser la valeur par défaut) :"
 
 #: backup/tornello.py:3237 tornello.py:415
 #, python-brace-format
 msgid " Luogo del torneo [Default: {default_site}]: "
-msgstr " Lugar del torneo [Predeterminado: {default_site}]: "
+msgstr "Lieu du tournoi [Par défaut : {default_site}] :"
 
 #: backup/tornello.py:847 backup/tornello.py:1393 backup/tornello.py:3237
 #: src/engine.py:55 src/tournament.py:158 tornello.py:415
 msgid "Luogo Sconosciuto"
-msgstr "Lugar Desconocido"
+msgstr "Lieu inconnu"
 
 #: backup/tornello.py:3238 tornello.py:416
-#, fuzzy
 msgid "  Federazione organizzante (codice 3 lettere) [Default: ITA]: "
-msgstr ""
-"  Federación organizadora (código de 3 letras) [Predeterminado: ESP]: "
+msgstr "Fédération organisatrice (code à 3 lettres) [Par défaut : ITA] :"
 
 #: backup/tornello.py:3240 tornello.py:418
 #, python-brace-format
 msgid " Arbitro Capo [Default: {default_arbiter}]: "
-msgstr " Árbitro Principal [Predeterminado: {default_arbiter}]: "
+msgstr "Arbitre en chef [Par défaut : {default_arbiter}] :"
 
 #: backup/tornello.py:369 backup/tornello.py:1047 backup/tornello.py:3240
 #: src/db_players.py:243 src/utils.py:63 tornello.py:418
 msgid "N/D"
-msgstr "N/D"
+msgstr "N / A"
 
 #: backup/tornello.py:3241 tornello.py:419
 #, python-brace-format
 msgid " Vice Arbitri (separati da virgola) [Default: {default_deputy}]: "
 msgstr ""
-" Árbitros Adjuntos (separados por coma) [Predeterminado: {default_deputy}]: "
+"Arbitres adjoints (séparés par des virgules) [Par défaut : "
+"{default_deputy}] :"
 
 #: backup/tornello.py:3241 tornello.py:419
 msgid "nessuno"
-msgstr "ninguno"
+msgstr "Personne"
 
 #: backup/tornello.py:3242 tornello.py:420
 #, python-brace-format
 msgid " Controllo del Tempo [Default: {default_tc}]: "
-msgstr " Control de Tiempo [Predeterminado: {default_tc}]: "
+msgstr "Contrôle du tempo [Par défaut : {default_tc}] :"
 
 #: backup/tornello.py:3242 tornello.py:420
 msgid "Standard"
-msgstr "Estándar"
+msgstr "Standard"
 
 #: backup/tornello.py:3244 tornello.py:422
-#, fuzzy
 msgid " Bianco alla prima scacchiera del Turno 1? (INVIO|ESCAPE): "
-msgstr " ¿Blancas en el primer tablero de la R1? (S/n) [Predeterminado: S]: "
+msgstr "Blanc sur le premier échiquier du tour 1 ? (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:3249 tornello.py:427
 msgid ""
 "Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata."
 msgstr ""
-"Error fatal en el cálculo de las fechas de las rondas. Creación del torneo "
-"cancelada."
+"Erreur fatale dans le calcul des dates de quart de travail. Création du "
+"tournoi annulée."
 
 #: backup/tornello.py:3266 tornello.py:448
 msgid "Calcolo Valore del BYE secondo la regola FIDE"
-msgstr "Cálculo del valor BYE según la regla FIDE"
+msgstr "Calcul de la valeur BYE selon la règle FIDE"
 
 #: backup/tornello.py:3267 tornello.py:449
 #, python-brace-format
 msgid "Il valore suggerito è: {val}"
-msgstr "El valor sugerido es: {val}"
+msgstr "La valeur suggérée est : {val}"
 
 #: backup/tornello.py:3269 tornello.py:451
 #, python-brace-format
 msgid ""
 "Accetti il valore suggerito? (INVIO = Sì / ESCAPE = No, per usare {alt_val})"
 msgstr ""
-"¿Aceptas el valor sugerido? (ENTER = Sí / ESCAPE = No, para usar {alt_val})"
+"Acceptez-vous la valeur suggérée ? (ENTER = Oui / ESCAPE = Non, pour "
+"utiliser {alt_val})"
 
 #: backup/tornello.py:3275 tornello.py:457
 #, python-brace-format
 msgid "Valore del BYE impostato a: {val}"
-msgstr "Valor BYE establecido en: {val}"
+msgstr "Valeur BYE définie sur : {val}"
 
 #: backup/tornello.py:3278 tornello.py:460
 #, python-brace-format
@@ -1039,28 +967,26 @@ msgid ""
 "Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni "
 "dopo la conferma. Torneo annullato."
 msgstr ""
-"Número insuficiente de jugadores ({num_players}) para {num_rounds} rondas "
-"después de la confirmación. Torneo cancelado."
+"Nombre de joueurs insuffisant ({num_players}) pour les tours {num_rounds} "
+"après confirmation. Tournoi annulé."
 
 #: backup/tornello.py:3286 tornello.py:468
 msgid ""
 "\n"
 "Generazione abbinamenti per il Turno 1..."
-msgstr ""
-"\n"
-"Generando emparejamientos para la Ronda 1..."
+msgstr "Génération de paires pour le premier tour..."
 
 #: backup/tornello.py:3289 tornello.py:471
 msgid ""
 "ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non "
 "avviato."
 msgstr ""
-"ERROR CRÍTICO: Fallo en la generación de emparejamientos de la Ronda 1. "
-"Torneo no iniciado."
+"ERREUR CRITIQUE : échec de la génération d’appariement au premier tour. "
+"Tournoi non commencé."
 
 #: backup/tornello.py:3290 tornello.py:472
 msgid "Registrazione risultati automatici per il Turno 1 (BYE)..."
-msgstr "Registrando resultados automáticos para la Ronda 1 (BYE)..."
+msgstr "Enregistrement des résultats automatiques pour le tour 1 (BYE)..."
 
 #: backup/tornello.py:3302 backup/tornello.py:3429 tornello.py:484
 #: tornello.py:611
@@ -1069,194 +995,170 @@ msgid ""
 " > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico "
 "aggiornati."
 msgstr ""
-" > Jugador {name} (ID: {id}) ha recibido un BYE. Puntos e historial "
-"actualizados."
+"> Le joueur {name} (ID : {id}) a reçu un BYE. Points et historique mis à "
+"jour."
 
 #: backup/tornello.py:3307 tornello.py:489
 #, python-brace-format
 msgid ""
 "\n"
 "Torneo '{name}' creato e Turno 1 generato. File: '{filename}'"
-msgstr ""
-"\n"
-"Torneo '{name}' creado y Ronda 1 generada. Archivo: '{filename}'"
+msgstr "Tournoi '{name}' créé et Round 1 généré. Fichier : '{filename}'"
 
 #: backup/tornello.py:3310 tornello.py:492
 msgid ""
 "\n"
 "Nessun torneo attivo. Uscita dal programma."
-msgstr ""
-"\n"
-"Ningún torneo activo. Saliendo del programa."
+msgstr "Aucun tournoi actif. Quitter le programme."
 
 #: backup/tornello.py:3318 tornello.py:500
 #, python-brace-format
 msgid ""
 "\n"
 "--- Torneo Attivo: {name} ---"
-msgstr ""
-"\n"
-"--- Torneo Activo: {name} ---"
+msgstr "--- Tournoi actif : {name} ---"
 
 #: backup/tornello.py:3320 tornello.py:502
 #, python-brace-format
 msgid "Sessione numero {count} per questo torneo."
-msgstr "Sesión número {count} para este torneo."
+msgstr "Numéro de session {count} pour ce tournoi."
 
 #: backup/tornello.py:3321 tornello.py:503
 msgid "Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando."
-msgstr "Copyright 2025, dedicado a ASCId y al grupo Scacchierando."
+msgstr "Copyright 2025, dédié à ASCId et au groupe Scacchierando."
 
 #: backup/tornello.py:3329 tornello.py:511
 #, python-brace-format
 msgid ""
 "\n"
 "Il torneo '{name}' si è concluso o in uno stato non valido."
-msgstr ""
-"\n"
-"El torneo '{name}' ha concluido o se encuentra en un estado no válido."
+msgstr "Le tournoi '{name}' est terminé ou est dans un état invalide."
 
 #: backup/tornello.py:3331 tornello.py:513
 msgid ""
 "\n"
 "Nessun torneo attivo o torneo concluso."
-msgstr ""
-"\n"
-"Ningún torneo activo o torneo concluido."
+msgstr "Aucun tournoi actif ni tournoi terminé."
 
 #: backup/tornello.py:3334 tornello.py:516
 #, python-brace-format
 msgid ""
 "\n"
 "--- Gestione Turno {round_num} ---"
-msgstr ""
-"\n"
-"--- Gestión Ronda {round_num} ---"
+msgstr "--- Gestion des équipes {round_num} ---"
 
 #: backup/tornello.py:3343 tornello.py:525
 #, python-brace-format
 msgid "ERRORE CRITICO: Dati turno {round_num} non trovati!"
-msgstr "ERROR CRÍTICO: ¡Datos de la ronda {round_num} no encontrados!"
+msgstr "ERREUR CRITIQUE : données de décalage {round_num} introuvables !"
 
 #: backup/tornello.py:3353 tornello.py:535
 msgid ""
 "\n"
 "Sessione di inserimento/modifica risultati (o pianificazione) terminata."
 msgstr ""
-"\n"
-"Sesión de introducción/modificación de resultados (o planificación) terminada."
+"La session de saisie/modification des résultats (ou du planning) est "
+"terminée."
 
 #: backup/tornello.py:3355 tornello.py:537
 msgid "Salvataggio modifiche al torneo..."
-msgstr "Guardando modificaciones en el torneo..."
+msgstr "Sauvegarde des modifications du tournoi..."
 
 #: backup/tornello.py:3360 tornello.py:542
 msgid "Vuoi continuare? (INVIO|ESCAPE)): "
-msgstr "¿Quieres continuar? (ENTRAR|ESCAPE)):"
+msgstr "Voulez-vous continuer ? (ENTRER|ÉCHAPPER)) :"
 
 #: backup/tornello.py:3362 tornello.py:544
 msgid "Salvataggio finale prima dell'uscita..."
-msgstr "Guardado final antes de salir..."
+msgstr "Sauvegarde finale avant la sortie..."
 
 #: backup/tornello.py:3366 tornello.py:548
 #, python-brace-format
 msgid ""
 "\n"
 "Turno {round_num} completato."
-msgstr ""
-"\n"
-"Ronda {round_num} completada."
+msgstr "Changement {round_num} terminé."
 
 #: backup/tornello.py:3371 tornello.py:553
 msgid ""
 "\n"
 "Ultimo turno completato. Avvio finalizzazione torneo..."
-msgstr ""
-"\n"
-"Última ronda completada. Iniciando finalización del torneo..."
+msgstr "Dernier tour terminé. Début de la finalisation du tournoi..."
 
 #: backup/tornello.py:3373 tornello.py:555
 msgid ""
 "\n"
 "--- Torneo Concluso e Finalizzato Correttamente ---"
-msgstr ""
-"\n"
-"--- Torneo Concluido y Finalizado Correctamente ---"
+msgstr "--- Tournoi terminé et finalisé correctement ---"
 
 #: backup/tornello.py:3377 tornello.py:559
 msgid ""
 "\n"
 "--- ERRORE durante la Finalizzazione del Torneo ---"
-msgstr ""
-"\n"
-"--- ERROR durante la Finalización del Torneo ---"
+msgstr "--- ERREUR lors de la finalisation du tournoi ---"
 
 #: backup/tornello.py:3382 tornello.py:564
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "Vuoi procedere e generare gli abbinamenti per il Turno {round_num}? (INVIO|ESCAPE): "
 msgstr ""
-"\n"
-"¿Quieres proceder y generar los emparejamientos para la Ronda {round_num}? (s/n): "
+"Voulez-vous continuer et générer les appariements pour le tour {round_num} ?"
+" (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:3387 tornello.py:569
 #, python-brace-format
 msgid "Generazione abbinamenti per il Turno {round_num}..."
-msgstr "Generando emparejamientos para la Ronda {round_num}..."
+msgstr "Génération d'appariements pour le tour {round_num}..."
 
 #: backup/tornello.py:3393 tornello.py:575
 msgid "Accesso alla Time Machine..."
-msgstr "Accediendo a la Máquina del Tiempo..."
+msgstr "Accéder à Time Machine..."
 
 #: backup/tornello.py:3399 tornello.py:581
-#, fuzzy
 msgid "Stato del torneo ripristinato e salvato. Riavvio del ciclo principale."
-msgstr "Estado del torneo restaurado y guardado."
+msgstr ""
+"Statut du tournoi restauré et enregistré. Redémarrage du cycle principal."
 
 #: backup/tornello.py:3401 tornello.py:583
 msgid "Time Machine annullata o fallita. Uscita per sicurezza."
-msgstr "Time Machine cancelada o fallida. Salga por seguridad."
+msgstr "Time Machine annulé ou échoué. Sortez par sécurité."
 
 #: backup/tornello.py:3407 tornello.py:589
-#, fuzzy
 msgid "Uscita dal programma come richiesto."
-msgstr "Saliendo del programa."
+msgstr "Quittez le programme si nécessaire."
 
 #: backup/tornello.py:3412 tornello.py:594
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Registrazione risultati automatici per il Turno {round_num} (BYE)..."
-msgstr "Registrando resultados automáticos para la Ronda 1 (BYE)..."
+msgstr ""
+"Enregistrement des résultats automatiques pour Shift {round_num} (BYE)..."
 
 #: backup/tornello.py:3434 tornello.py:616
 #, python-brace-format
 msgid "Turno {round_num} generato e salvato."
-msgstr "Ronda {round_num} generada y guardada."
+msgstr "Décalage {round_num} généré et enregistré."
 
 #: backup/tornello.py:3436 tornello.py:618
 msgid "Generazione prossimo turno annullata. Salvataggio stato attuale."
-msgstr "Generación de la siguiente ronda cancelada. Guardando estado actual."
+msgstr "Génération du prochain tour annulée. Sauvegarde de l'état actuel."
 
 #: backup/tornello.py:3446 tornello.py:628
 msgid "Stato salvato. Uscita."
-msgstr "Estado guardado. Saliendo."
+msgstr "Été sauvé. Sortie."
 
 #: backup/tornello.py:3449 tornello.py:631
 #, python-brace-format
 msgid ""
 "\n"
 "ERRORE CRITICO NON GESTITO nel flusso principale: {error}"
-msgstr ""
-"\n"
-"ERROR CRÍTICO NO MANEJADO en el flujo principal: {error}"
+msgstr "ERREUR CRITIQUE NON GÉRÉE dans le flux principal : {error}"
 
 #: backup/tornello.py:3456 tornello.py:638
 msgid ""
 "\n"
 "Programma Tornello terminato."
-msgstr ""
-"\n"
-"Programa Tornello terminado."
+msgstr "Programme de tourniquet terminé."
 
 #: backup/tornello.py:3459 tornello.py:641
 #, python-brace-format
@@ -1264,20 +1166,19 @@ msgid ""
 "\n"
 "Programma Tornello terminato. Ultimo stato per '{name}' in '{filename}'."
 msgstr ""
-"\n"
-"Programa Tornello terminado. Último estado para '{name}' en '{filename}'."
+"Programme de tourniquet terminé. Dernier état de « {name} » dans « "
+"{filename} »."
 
 #: backup/tornello.py:3462 tornello.py:644
 msgid ""
 "\n"
 "Programma Tornello terminato con uno stato incerto del torneo."
 msgstr ""
-"\n"
-"Programa Tornello terminado con un estado incierto del torneo."
+"Le programme Turnstile s'est terminé avec un statut de tournoi incertain."
 
 #: backup/tornello.py:72 src/utils.py:44
 msgid "Conferma con invio o annulla con escape"
-msgstr "Confirmar con enter o cancelar con escape"
+msgstr "Confirmez avec enter ou annulez avec escape"
 
 #: backup/tornello.py:79 backup/tornello.py:1843 src/engine.py:13
 #, python-brace-format
@@ -1285,91 +1186,88 @@ msgid ""
 "\n"
 "--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---"
 msgstr ""
-"\n"
-"--- FALLO EN LA GENERACIÓN DE EMPAREJAMIENTOS AUTOMÁTICOS (Ronda {round_num}) ---"
+"--- ÉCHEC DE LA GÉNÉRATION D'APPARIEMENT AUTOMATIQUE (Tourner {round_num}) "
+"---"
 
 #: backup/tornello.py:81 backup/tornello.py:1845 src/engine.py:15
 msgid "Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."
-msgstr "Causa: bbpPairings.exe no pudo generar los emparejamientos."
+msgstr "Cause : bbpPairings.exe n'a pas réussi à générer des appariements."
 
 #: backup/tornello.py:82 backup/tornello.py:1846 src/engine.py:16
 msgid ""
 "Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella "
 "'bbppairings' per possibili errori di formato."
 msgstr ""
-"Acción requerida: Verificar el archivo 'input_bbp.trf' en la subcarpeta "
-"'bbppairings' por posibles errores de formato."
+"Action requise : Vérifiez le fichier « input_bbp.trf » dans le sous-dossier "
+"« bbppairings » pour d'éventuelles erreurs de format."
 
 #: backup/tornello.py:83 src/engine.py:17
 msgid ""
 "Oppure, un risultato potrebbe essere stato inserito in modo errato nel turno"
 " precedente."
 msgstr ""
-"O bien, es posible que se haya ingresado un resultado incorrecto en la ronda"
-" anterior."
+"Ou encore, un résultat peut avoir été mal saisi lors du tour précédent."
 
 #: backup/tornello.py:86 src/engine.py:20
 msgid ""
 "\n"
 "Cosa vuoi fare? (T)orna indietro con la Time Machine per correggere, (U)sci dal programma: "
 msgstr ""
-"¿Qué es lo que quieres hacer? (V)vuelva con Time Machine para corregir, "
-"(U)salga del programa:"
+"Qu'est-ce que vous voulez faire? Revenez avec Time Machine pour corriger, "
+"(U)quittez le programme :"
 
 #: backup/tornello.py:93 src/engine.py:27
-#, fuzzy
 msgid "Scelta non valida. Inserisci 't' o 'u'."
-msgstr "Elección no válida. Inténtalo de nuevo."
+msgstr "Choix invalide. Entrez « t » ou « u »."
 
 #: backup/tornello.py:170 src/tournament.py:56
 msgid ""
 "\n"
 "--- Time Machine ---"
-msgstr ""
-"\n"
-"--- Máquina del Tiempo ---"
+msgstr "--- Machine à voyager dans le temps ---"
 
 #: backup/tornello.py:171 src/tournament.py:57
 msgid "Questa funzione ripristina lo stato del torneo a un turno precedente."
-msgstr "Esta función restaura el estado del torneo a una ronda anterior."
+msgstr ""
+"Cette fonctionnalité restaure le statut du tournoi à un tour précédent."
 
 #: backup/tornello.py:172 src/tournament.py:58
 #, python-brace-format
 msgid "Puoi tornare a un qualsiasi turno da 1 a {max_round}."
-msgstr "Puedes volver a cualquier ronda desde la 1 hasta la {max_round}."
+msgstr "Vous pouvez revenir à n'importe quel tour de 1 à {max_round}."
 
 #: backup/tornello.py:174 src/tournament.py:60
 msgid ""
 "Tutti i risultati e gli abbinamenti successivi al turno scelto verranno "
 "cancellati."
-msgstr ""
-"Todos los resultados y emparejamientos posteriores a la ronda elegida serán "
-"eliminados."
+msgstr "Tous les résultats et matchs après le tour choisi seront supprimés."
 
 #: backup/tornello.py:176 src/tournament.py:62
 #, python-brace-format
 msgid "A quale turno vuoi tornare? (1-{max_round}, o vuoto per annullare): "
-msgstr "¿A qué ronda quieres volver? (1-{max_round}, o vacío para cancelar): "
+msgstr ""
+"Dans quelle équipe souhaitez-vous revenir ? (1-{max_round}, ou vide pour "
+"annuler) :"
 
 #: backup/tornello.py:180 backup/tornello.py:815 src/tournament.py:66
 msgid "Operazione annullata."
-msgstr "Operación cancelada."
+msgstr "Opération annulée."
 
 #: backup/tornello.py:184 src/tournament.py:70
 msgid "Numero di turno non valido."
-msgstr "Número de ronda no válido."
+msgstr "Numéro d'équipe invalide."
 
 #: backup/tornello.py:187 backup/tornello.py:755 src/tournament.py:73
 msgid "Input non valido. Inserisci un numero."
-msgstr "Entrada no válida. Introduce un número."
+msgstr "Entrée invalide. Entrez un numéro."
 
 #: backup/tornello.py:189 src/tournament.py:75
 msgid ""
 "\n"
 "ATTENZIONE: Stai per eseguire un'operazione distruttiva."
 msgstr ""
-"\n"
-"ATENCIÓN: Estás a punto de realizar una operación destructiva."
+"AVERTISSEMENT : Vous êtes sur le point d'effectuer une opération "
+"destructrice."
 
 #: backup/tornello.py:190 src/tournament.py:76
 #, python-brace-format
@@ -1377,51 +1275,48 @@ msgid ""
 "Verranno eliminati tutti i risultati e gli abbinamenti inseriti dal turno "
 "{target_round} in poi."
 msgstr ""
-"Se eliminarán todos los resultados y emparejamientos introducidos desde la "
-"ronda {target_round} en adelante."
+"Tous les résultats et paires saisis à partir du tour {target_round} seront "
+"supprimés."
 
 #: backup/tornello.py:192 src/tournament.py:78
 msgid ""
 "Sei assolutamente sicuro di voler procedere? (scrivi 'si' per confermare): "
 msgstr ""
-"¿Estás absolutamente seguro de que quieres continuar? (escribe 'si' para "
-"confirmar): "
+"Êtes-vous absolument sûr de vouloir continuer ? (écrivez 'oui' pour "
+"confirmer) :"
 
 #: backup/tornello.py:194 src/tournament.py:80
 msgid "Conferma non data. Operazione di riavvolgimento annullata."
-msgstr "Confirmación no proporcionada. Operación de retroceso cancelada."
+msgstr "Confirmation non donnée. Opération de rembobinage annulée."
 
 #: backup/tornello.py:196 src/tournament.py:82
 #, python-brace-format
 msgid ""
 "\n"
 "Avvio riavvolgimento al Turno {target_round}..."
-msgstr ""
-"\n"
-"Iniciando retroceso a la Ronda {target_round}..."
+msgstr "Commencez le rembobinage au tour {target_round}..."
 
 #: backup/tornello.py:215 src/tournament.py:110
 #, python-brace-format
 msgid "Contatore ID Partita ripristinato a: {}"
-msgstr "Contador de ID de Partida restablecido a: {}"
+msgstr "Le compteur d'ID de jeu est réinitialisé à : {}"
 
 #: backup/tornello.py:218 src/tournament.py:113
 #, python-brace-format
 msgid "Rigenerazione abbinamenti per il Turno {target_round}..."
-msgstr "Regenerando emparejamientos para la Ronda {target_round}..."
+msgstr "Régénération des appariements pour le tour {target_round}..."
 
 #: backup/tornello.py:235 src/tournament.py:130
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Ripristinato {score} punto/i per il BYE al Turno {round} per {name}."
-msgstr "Restablecido 1.0 punto por el BYE en la Ronda {round} para {name}."
+msgstr ""
+"Point(s) {score} restauré(s) pour BYE sur {round} Tournez pour {name}."
 
 #: backup/tornello.py:243 src/tournament.py:138
 msgid ""
 "\n"
 "Riavvolgimento completato con successo!"
-msgstr ""
-"\n"
-"¡Retroceso completado con éxito!"
+msgstr "Rembobinage terminé avec succès !"
 
 #: backup/tornello.py:244 src/tournament.py:139
 #, python-brace-format
@@ -1429,66 +1324,65 @@ msgid ""
 "Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei "
 "risultati."
 msgstr ""
-"El torneo está ahora en la Ronda {target_round}, listo para la introducción "
-"de resultados."
+"Le tournoi en est maintenant au Round {target_round}, prêt à recevoir les "
+"résultats."
 
 #: backup/tornello.py:255 src/db_players.py:55
 #, python-brace-format
 msgid "ERRORE: Database FIDE locale '{}' non trovato."
-msgstr "ERROR: Base de datos FIDE local '{}' no encontrada."
+msgstr "ERREUR : la base de données FIDE locale '{}' est introuvable."
 
 #: backup/tornello.py:256 src/db_players.py:56
 msgid "Esegui prima la funzione di aggiornamento del DB FIDE."
-msgstr "Ejecuta primero la función de actualización de la BD FIDE."
+msgstr ""
+"Exécutez d'abord la fonction de mise à jour de la base de données FIDE."
 
 #: backup/tornello.py:258 src/db_players.py:58
 msgid ""
 "\n"
 "--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"
 msgstr ""
-"\n"
-"--- Iniciando Sincronización de Base de Datos Personal con Base de Datos FIDE Local ---"
+"--- Démarrage de la synchronisation de la base de données personnelle avec "
+"la base de données FIDE locale ---"
 
 #: backup/tornello.py:262 src/db_players.py:62
 #, python-brace-format
 msgid "Database FIDE locale caricato con {} giocatori."
-msgstr "Base de datos FIDE local cargada con {} jugadores."
+msgstr "Base de données FIDE locale chargée de {} joueurs."
 
 #: backup/tornello.py:264 src/db_players.py:64
 #, python-brace-format
 msgid "ERRORE critico durante la lettura di '{}': {}"
-msgstr "ERROR crítico durante la lectura de '{}': {}"
+msgstr "ERREUR critique lors de la lecture de « {} » : {}"
 
 #: backup/tornello.py:268 src/db_players.py:68
 msgid ""
 "Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione da"
 " effettuare."
 msgstr ""
-"Tu base de datos personal de jugadores está vacía. No hay sincronización que"
-" realizar."
+"Votre base de données personnelle de joueurs est vide. Aucune "
+"synchronisation à faire."
 
 #: backup/tornello.py:272 src/db_players.py:71
 msgid "Analisi dei giocatori nel tuo database personale..."
-msgstr "Analizando jugadores en tu base de datos personal..."
+msgstr "Analyse des joueurs dans votre base de données personnelle..."
 
 #: backup/tornello.py:299
 #, python-brace-format
 msgid ""
 "\n"
 "-> Trovata una corrispondenza FIDE per il tuo giocatore '{} {}' (ID: {}):"
-msgstr ""
-"\n"
-"-> Se encontró una coincidencia FIDE para tu jugador '{} {}' (ID: {}):"
+msgstr "-> Trouvé un match FIDE pour votre joueur '{} {}' (ID : {}) :"
 
 #: backup/tornello.py:300
 #, python-brace-format
 msgid "   FIDE ID: {}, Nome: {}, {}, FED: {}, Elo: {}, Anno Nascita: {}"
-msgstr "   ID FIDE: {}, Nombre: {}, {}, FED: {}, Elo: {}, Año Nacimiento: {}"
+msgstr ""
+"ID FIDE : {}, Nom : {}, {}, FED : {}, Elo : {}, Année de naissance : {}"
 
 #: backup/tornello.py:301
-#, fuzzy
 msgid "   Associare questo ID FIDE al tuo giocatore? (INVIO|ESCAPE)"
-msgstr "   ¿Asociar este ID FIDE a tu jugador? (S/n)"
+msgstr "Associer cet identifiant FIDE à votre joueur ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:305
 #, python-brace-format
@@ -1496,37 +1390,37 @@ msgid ""
 "\n"
 "-> Trovati {} omonimi nel DB FIDE per il tuo giocatore '{} {}' (ID: {})."
 msgstr ""
-"\n"
-"-> Se encontraron {} homónimos en la BD FIDE para tu jugador '{} {}' (ID: {})."
+"-> Trouvé {} homonymes dans la base de données FIDE pour votre joueur '{} "
+"{}' (ID : {})."
 
 #: backup/tornello.py:306
 msgid "   Seleziona l'ID FIDE corretto o 'n' per saltare:"
-msgstr "   Selecciona el ID FIDE correcto o 'n' para saltar:"
+msgstr "Sélectionnez le bon identifiant FIDE ou « n » pour ignorer :"
 
 #: backup/tornello.py:308 src/db_players.py:190 src/db_players.py:221
 #, python-brace-format
 msgid " {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}"
-msgstr " {}. ID FIDE: {}, FED: {}, Elo: {}, Año Nacimiento: {}"
+msgstr "{}. ID FIDE : {}, FED : {}, Elo : {}, Année de naissance : {}"
 
 #: backup/tornello.py:309
 msgid "   n. Nessuno di questi"
-msgstr "   n. Ninguno de estos"
+msgstr "n. Aucun de ceux-ci"
 
 #: backup/tornello.py:310
 msgid "   Scelta: "
-msgstr "   Elección: "
+msgstr "Choix:"
 
 #: backup/tornello.py:316
 msgid "   Scelta non valida o saltata. Il giocatore non verrà associato."
-msgstr "   Elección no válida o saltada. El jugador no será asociado."
+msgstr "Choix invalide ou ignoré. Le joueur ne sera pas associé."
 
 #: backup/tornello.py:347 src/db_players.py:148
 msgid ""
 "\n"
 "Analisi completata. Il tuo database personale è già perfettamente sincronizzato!"
 msgstr ""
-"\n"
-"Análisis completado. ¡Tu base de datos personal ya está perfectamente sincronizada!"
+"Analyse terminée. Votre base de données personnelle est déjà parfaitement "
+"synchronisée !"
 
 #: backup/tornello.py:349
 #, python-brace-format
@@ -1534,147 +1428,138 @@ msgid ""
 "\n"
 "--- Riepilogo Sincronizzazione: Trovate {} modifiche proposte ---"
 msgstr ""
-"\n"
-"--- Resumen de Sincronización: Se encontraron {} modificaciones propuestas ---"
+"--- Résumé de la synchronisation : {} modifications proposées trouvées ---"
 
 #: backup/tornello.py:352
 #, python-brace-format
 msgid " - Giocatore: {} {} (ID Locale: {})"
-msgstr " - Jugador: {} {} (ID Local: {})"
+msgstr "- Joueur : {} {} (ID local : {})"
 
 #: backup/tornello.py:354
 #, python-brace-format
 msgid "    -> Associazione nuovo ID FIDE: {}"
-msgstr "    -> Asociación nuevo ID FIDE: {}"
+msgstr "-> Association du nouvel ID FIDE : {}"
 
 #: backup/tornello.py:357
 #, python-brace-format
 msgid "    -> Aggiornamento {}: da '{}' a '{}'"
-msgstr "    -> Actualización {}: de '{}' a '{}'"
+msgstr "-> Mise à jour {} : de '{}' à '{}'"
 
 #: backup/tornello.py:360
-#, fuzzy
 msgid ""
 "\n"
 "Vuoi vedere l'elenco completo di tutte le modifiche proposte? (INVIO|ESCAPE)"
 msgstr ""
-"\n"
-"¿Quieres ver la lista completa de todas las modificaciones propuestas? (s/N)"
+"Vous voulez voir la liste complète de tous les changements proposés ? "
+"(ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:361
 msgid ""
 "\n"
 "--- Elenco Completo Modifiche Proposte ---"
-msgstr ""
-"\n"
-"--- Lista Completa de Modificaciones Propuestas ---"
+msgstr "--- Liste complète des modifications proposées ---"
 
 #: backup/tornello.py:364
 #, python-brace-format
 msgid "  - Giocatore: {} {} (ID Locale: {})"
-msgstr "  - Jugador: {} {} (ID Local: {})"
+msgstr "- Joueur : {} {} (ID local : {})"
 
 #: backup/tornello.py:366
 #, python-brace-format
 msgid " -> Associazione nuovo ID FIDE: {}"
-msgstr " -> Asociación nuevo ID FIDE: {}"
+msgstr "-> Association du nouvel ID FIDE : {}"
 
 #: backup/tornello.py:369
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "     -> Aggiornamento {}: da '{}' a '{}'"
-msgstr "      -> Actualización {}: de '{}' a '{}'"
+msgstr "-> Mise à jour {} : de '{}' à '{}'"
 
 #: backup/tornello.py:372
-#, fuzzy
 msgid ""
 "\n"
 "Vuoi applicare tutte le modifiche proposte al tuo database personale? (INVIO|ESCAPE)"
 msgstr ""
-"\n"
-"¿Quieres aplicar todas las modificaciones propuestas a tu base de datos personal? (s/N)"
+"Vous souhaitez appliquer toutes les modifications proposées à votre base de "
+"données personnelle ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:381 src/db_players.py:257
 msgid ""
 "\n"
 "Sincronizzazione completata e database personale salvato!"
-msgstr ""
-"\n"
-"¡Sincronización completada y base de datos personal guardada!"
+msgstr "Synchronisation terminée et base de données personnelle enregistrée !"
 
 #: backup/tornello.py:383
 msgid ""
 "\n"
 "Operazione annullata. Nessuna modifica è stata salvata."
-msgstr ""
-"\n"
-"Operación cancelada. No se ha guardado ninguna modificación."
+msgstr "Opération annulée. Aucune modification n'a été enregistrée."
 
 #: backup/tornello.py:392 src/db_players.py:267
 #, python-brace-format
 msgid "Download del file ZIP FIDE da: {url}"
-msgstr "Descargando el archivo ZIP FIDE de: {url}"
+msgstr "Téléchargez le fichier ZIP FIDE à partir de : {url}"
 
 #: backup/tornello.py:393 src/db_players.py:268
 msgid ""
 "L'operazione potrebbe richiedere alcuni minuti a seconda della "
 "connessione..."
-msgstr ""
-"La operación podría tardar algunos minutos dependiendo de la conexión..."
+msgstr "Cela peut prendre quelques minutes selon votre connexion..."
 
 #: backup/tornello.py:397 src/db_players.py:272
 msgid "Download completato. Apertura archivio ZIP in memoria..."
-msgstr "Descarga completada. Abriendo archivo ZIP en memoria..."
+msgstr "Téléchargement terminé. Ouverture de l'archive ZIP en mémoire..."
 
 #: backup/tornello.py:402 src/db_players.py:277
 msgid "ERRORE: Nessun file .xml trovato nell'archivio ZIP."
-msgstr "ERROR: No se encontró ningún archivo .xml en el archivo ZIP."
+msgstr "ERREUR : aucun fichier .xml trouvé dans l'archive ZIP."
 
 #: backup/tornello.py:404 src/db_players.py:279
 #, python-brace-format
 msgid "Estrazione ed elaborazione del file XML: {filename}..."
-msgstr "Extrayendo y procesando el archivo XML: {filename}..."
+msgstr "Extraction et traitement du fichier XML : {filename}..."
 
 #: backup/tornello.py:416 src/db_players.py:291
 msgid "  -> L'analisi del file XML è in corso, attendere..."
-msgstr "  -> El análisis del archivo XML está en curso, espere por favor..."
+msgstr "-> L'analyse du fichier XML est en cours, veuillez patienter..."
 
 #: backup/tornello.py:419 src/db_players.py:294
 msgid ""
 "Analisi del file XML in corso (potrebbe richiedere più di un minuto)..."
-msgstr "Análisis del archivo XML en curso (podría tardar más de un minuto)..."
+msgstr "Analyse du fichier XML (peut prendre plus d'une minute)..."
 
 #: backup/tornello.py:479 src/db_players.py:354
 #, python-brace-format
 msgid "  ... elaborati {count} giocatori..."
-msgstr "  ... procesados {count} jugadores..."
+msgstr "... traités les joueurs {count}..."
 
 #: backup/tornello.py:480 src/db_players.py:355
 #, python-brace-format
 msgid "Elaborazione completata. Trovati e salvati {count} giocatori FIDE."
-msgstr ""
-"Procesamiento completado. Se encontraron y guardaron {count} jugadores FIDE."
+msgstr "Traitement terminé. {count} Joueurs FIDE trouvés et enregistrés."
 
 #: backup/tornello.py:484 src/db_players.py:359
 msgid "  -> La scrittura del file JSON è in corso, attendere..."
-msgstr "  -> La escritura del archivo JSON está en curso, espere por favor..."
+msgstr "-> Le fichier JSON est en cours d'écriture, veuillez patienter..."
 
 #: backup/tornello.py:487 src/db_players.py:362
 msgid "Salvataggio del database JSON locale (potrebbe richiedere tempo)..."
-msgstr "Guardando la base de datos JSON local (podría llevar tiempo)..."
+msgstr ""
+"Sauvegarde de la base de données JSON locale (peut prendre du temps)..."
 
 #: backup/tornello.py:498 src/db_players.py:373
 msgid "Database FIDE locale 'fide_ratings_local.json' salvato con successo."
 msgstr ""
-"Base de datos FIDE local 'fide_ratings_local.json' guardada con éxito."
+"La base de données FIDE locale « fide_ratings_local.json » a été enregistrée"
+" avec succès."
 
 #: backup/tornello.py:501 src/db_players.py:376
 msgid "ERRORE: Timeout durante il download del file."
-msgstr "ERROR: Tiempo de espera agotado durante la descarga del archivo."
+msgstr "ERREUR : expiration du délai de téléchargement du fichier."
 
 #: backup/tornello.py:504 src/db_players.py:379
 #, python-brace-format
 msgid "ERRORE di rete: {error}"
-msgstr "ERROR de red: {error}"
+msgstr "ERREUR réseau : {error}"
 
 #: backup/tornello.py:507 src/db_players.py:382
 #, python-brace-format
@@ -1682,58 +1567,56 @@ msgid ""
 "Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: "
 "{error}"
 msgstr ""
-"Ocurrió un error inesperado durante la actualización de la BD FIDE: {error}"
+"Une erreur inattendue s'est produite lors de la mise à jour de la base de "
+"données FIDE : {error}"
 
 #: backup/tornello.py:518 src/ui.py:21
 msgid "Errore: Dati torneo o giocatori mancanti per la conferma."
 msgstr ""
-"Error: Faltan datos del torneo o de los jugadores para la confirmación."
+"Erreur : Données du tournoi ou du joueur manquantes pour confirmation."
 
 #: backup/tornello.py:521 src/ui.py:24
 msgid ""
 "\n"
 "--- Riepilogo Giocatori Iscritti al Torneo ---"
-msgstr ""
-"\n"
-"--- Resumen de Jugadores Inscritos en el Torneo ---"
+msgstr "--- Récapitulatif des joueurs inscrits au tournoi ---"
 
 #: backup/tornello.py:525 src/ui.py:28
 msgid "Nessun giocatore attualmente iscritto al torneo."
-msgstr "Ningún jugador actualmente inscrito en el torneo."
+msgstr "Aucun joueur actuellement inscrit au tournoi."
 
 #: backup/tornello.py:526 src/ui.py:29
-#, fuzzy
 msgid "Vuoi tornare all'inserimento giocatori? (INVIO|ESCAPE)"
-msgstr "¿Quieres volver a la introducción de jugadores? (s/N)"
+msgstr "Voulez-vous revenir à l'insertion de joueurs ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:530 src/ui.py:33
 msgid ""
 "Lista giocatori vuota. La creazione del torneo potrebbe fallire o "
 "necessitare di nuovi inserimenti."
 msgstr ""
-"Lista de jugadores vacía. La creación del torneo podría fallar o requerir "
-"nuevas inscripciones."
+"Liste de joueurs vide. La création du tournoi peut échouer ou nécessiter de "
+"nouvelles inscriptions."
 
 #: backup/tornello.py:535 src/ui.py:38
 #, python-brace-format
 msgid "Numero attuale di giocatori: {count}"
-msgstr "Número actual de jugadores: {count}"
+msgstr "Nombre actuel de joueurs : {count}"
 
 #: backup/tornello.py:540 src/ui.py:43
 msgid "Nome?"
-msgstr "¿Nombre?"
+msgstr "Nom?"
 
 #: backup/tornello.py:541 src/ui.py:44
 msgid "Cognome?"
-msgstr "¿Apellido?"
+msgstr "Nom de famille?"
 
 #: backup/tornello.py:544 src/ui.py:47
 msgid ""
 "\n"
 "Vuoi rimuovere un giocatore dalla lista? (Inserisci il numero, o 'f' per finire e confermare): "
 msgstr ""
-"\n"
-"¿Quieres eliminar a un jugador de la lista? (Introduce el número, o 'f' para finalizar y confirmar): "
+"Voulez-vous supprimer un joueur de la liste ? (Entrez le numéro, ou 'f' pour"
+" terminer et confirmer) :"
 
 #: backup/tornello.py:548 src/ui.py:51
 #, python-brace-format
@@ -1741,77 +1624,74 @@ msgid ""
 "ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo di "
 "{rounds} turni."
 msgstr ""
-"ATENCIÓN: Se necesitan al menos {min_players} jugadores para un torneo de "
-"{rounds} rondas."
+"ATTENTION : Au moins des joueurs {min_players} sont nécessaires pour un "
+"tournoi du tour {rounds}."
 
 #: backup/tornello.py:549 src/ui.py:52
-#, fuzzy
 msgid "Continuare comunque con meno giocatori? (INVIO|ESCAPE)"
-msgstr "¿Continuar de todos modos con menos jugadores? (s/N)"
+msgstr "Continuer avec moins de joueurs quand même ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:550 src/ui.py:53
 msgid ""
 "Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri"
 " del torneo."
 msgstr ""
-"Confirmación cancelada. Puedes añadir más jugadores o modificar los "
-"parámetros del torneo."
+"Confirmation annulée. Vous pouvez ajouter plus de joueurs ou modifier les "
+"paramètres du tournoi."
 
 #: backup/tornello.py:552 src/ui.py:79
 msgid "Lista giocatori confermata."
-msgstr "Lista de jugadores confirmada."
+msgstr "Liste des joueurs confirmée."
 
 #: backup/tornello.py:559 src/ui.py:86
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): "
-msgstr "¿Eliminar a '{first_name} {last_name}'? (s/N): "
+msgstr "Supprimer « {first_name} {last_name} » ? (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:562 src/ui.py:89
 #, python-brace-format
 msgid "Giocatore '{first_name} {last_name}' rimosso."
-msgstr "Jugador '{first_name} {last_name}' eliminado."
+msgstr "Le joueur '{first_name} {last_name}' a été supprimé."
 
 #: backup/tornello.py:566 backup/tornello.py:814 src/ui.py:93
 msgid "Rimozione annullata."
-msgstr "Eliminación cancelada."
+msgstr "Déménagement annulé."
 
 #: backup/tornello.py:568 src/ui.py:95
 msgid "Numero giocatore non valido."
-msgstr "Número de jugador no válido."
+msgstr "Numéro de joueur invalide."
 
 #: backup/tornello.py:572 src/ui.py:99
 msgid "Comando non riconosciuto."
-msgstr "Comando no reconocido."
+msgstr "Commande non reconnue."
 
 #: backup/tornello.py:590 src/ui.py:109
 msgid ""
 "\n"
 "--- Dettagli Pianificazione Partita ---"
-msgstr ""
-"\n"
-"--- Detalles de Planificación de Partida ---"
+msgstr "--- Détails de la planification du match ---"
 
 #: backup/tornello.py:592 src/ui.py:111
 msgid "Lasciare il campo vuoto per mantenere il valore attuale."
-msgstr "Dejar el campo vacío para mantener el valor actual."
+msgstr "Laissez le champ vide pour conserver la valeur actuelle."
 
 #: backup/tornello.py:594 src/ui.py:113
 #, python-brace-format
 msgid "Data partita (formati: GG, GG-MM, {iso_format})"
-msgstr "Fecha de la partida (formatos: DD, DD-MM, {iso_format})"
+msgstr "Date du match (formats : JJ, JJ-MM, {iso_format})"
 
 #: backup/tornello.py:600 backup/tornello.py:643 src/ui.py:119 src/ui.py:160
 #, python-brace-format
 msgid " [Attuale: {current}]: "
-msgstr " [Actual: {current}]: "
+msgstr "[Actuel : {current}] :"
 
 #: backup/tornello.py:606 src/ui.py:125
 msgid "La data è obbligatoria."
-msgstr "La fecha es obligatoria."
+msgstr "La date est obligatoire."
 
 #: backup/tornello.py:621 src/ui.py:139
 msgid "Formato data non riconosciuto"
-msgstr "Formato de fecha no reconocido"
+msgstr "Format de date non reconnu"
 
 #: backup/tornello.py:631 src/ui.py:149
 #, python-brace-format
@@ -1819,183 +1699,168 @@ msgid ""
 "Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o "
 "{iso_format}."
 msgstr ""
-"Formato de fecha '{input}' no válido o fecha inexistente. Usa DD, DD-MM, o "
-"{iso_format}."
+"Format de date invalide '{input}' ou date inexistante. Utilisez JJ, JJ-MM ou"
+" {iso_format}."
 
 #: backup/tornello.py:633 src/ui.py:151
 #, python-brace-format
 msgid "Input data '{input}' non interpretabile."
-msgstr "Entrada de fecha '{input}' no interpretable."
+msgstr "Les données d'entrée '{input}' ne sont pas interprétables."
 
 #: backup/tornello.py:637 src/ui.py:154
 msgid "Ora partita (formati: HH, HH:MM)"
-msgstr "Hora de la partida (formatos: HH, HH:MM)"
+msgstr "Heure du jeu (formats : HH, HH:MM)"
 
 #: backup/tornello.py:649 src/ui.py:166
 msgid "L'ora è obbligatoria."
-msgstr "La hora es obligatoria."
+msgstr "L'heure est obligatoire."
 
 #: backup/tornello.py:660 src/ui.py:177
 msgid "Formato ora non riconosciuto"
-msgstr "Formato de hora no reconocido"
+msgstr "Le format n'est plus reconnu"
 
 #: backup/tornello.py:664 src/ui.py:181
 msgid "Formato ora non valido. Usa HH (es. 9) o HH:MM (es. 15:30)."
-msgstr "Formato de hora no válido. Usa HH (ej. 9) o HH:MM (ej. 15:30)."
+msgstr ""
+"Format d'heure invalide. Utilisez HH (par exemple 9) ou HH:MM (par exemple "
+"15h30)."
 
 #: backup/tornello.py:667 src/ui.py:183
 #, python-brace-format
 msgid "Canale/Link partita [Attuale: {current}]: "
-msgstr "Canal/Enlace de la partida [Actual: {current}]: "
+msgstr "Lien canal/match [Actuel : {current}] :"
 
 #: backup/tornello.py:669 src/ui.py:185
 #, python-brace-format
 msgid "Arbitro assegnato [Attuale: {current}]: "
-msgstr "Árbitro asignado [Actual: {current}]: "
+msgstr "Arbitre assigné [Actuel : {current}] :"
 
 #: backup/tornello.py:677 src/ui.py:193
 msgid ""
 "Nessun dettaglio della pianificazione è stato effettivamente modificato."
-msgstr "No se ha modificado realmente ningún detalle de la planificación."
+msgstr "Aucun détail de planification n’a été modifié."
 
 #: backup/tornello.py:679 src/ui.py:195
 msgid ""
 "Data e ora sono obbligatori per la pianificazione. Operazione annullata."
 msgstr ""
-"La fecha y la hora son obligatorias para la planificación. Operación "
-"cancelada."
+"La date et l'heure sont requises pour la planification. Opération annulée."
 
 #: backup/tornello.py:688
 #, python-brace-format
 msgid ""
 "\n"
 "Tutte le partite del Turno {round_num} sono state giocate o sono BYE."
-msgstr ""
-"\n"
-"Todas las partidas de la Ronda {round_num} se han jugado o son BYE."
+msgstr "Tous les matchs du tour {round_num} ont été joués ou sont BYE."
 
 #: backup/tornello.py:689
 msgid "Nessuna partita disponibile per la pianificazione/modifica."
-msgstr "Ninguna partida disponible para planificación/modificación."
+msgstr "Aucun jeu disponible pour la planification/l'édition."
 
 #: backup/tornello.py:722
 #, python-brace-format
 msgid " Pianificata per: {date} alle {time}"
-msgstr " Planificada para: {date} a las {time}"
+msgstr "Prévu pour : {date} à {time}"
 
 #: backup/tornello.py:723
 #, python-brace-format
 msgid " Canale: {channel}, Arbitro: {arbiter}"
-msgstr " Canal: {channel}, Árbitro: {arbiter}"
+msgstr "Chaîne : {channel}, Arbitre : {arbiter}"
 
 #: backup/tornello.py:728
 #, python-brace-format
 msgid ""
 "\n"
 "--- Pianificazione Partite Turno {round_num} ---"
-msgstr ""
-"\n"
-"--- Planificación de Partidas Ronda {round_num} ---"
+msgstr "--- Planification du match du tour {round_num} ---"
 
 #: backup/tornello.py:729
 msgid ""
 "(Vengono mostrati i Numeri Scacchiera reali del turno per le partite ancora "
 "da giocare)"
 msgstr ""
-"(Se muestran los Números de Tablero reales de la ronda para las partidas aún"
-" por jugar)"
+"(Les numéros de plateau réels du tour sont affichés pour les parties restant"
+" à jouer)"
 
 #: backup/tornello.py:731
 msgid ""
 "\n"
 "Partite da Pianificare (non hanno ancora una pianificazione):"
-msgstr ""
-"\n"
-"Partidas por Planificar (aún no tienen una planificación):"
+msgstr "Correspond au plan (je n'ai pas encore de calendrier) :"
 
 #: backup/tornello.py:735
 msgid ""
 "  Nessuna partita attualmente da pianificare (o sono tutte già pianificate)."
-msgstr ""
-"  Ninguna partida por planificar actualmente (o ya están todas "
-"planificadas)."
+msgstr "Aucun match actuellement programmé (ou tous sont déjà programmés)."
 
 #: backup/tornello.py:737
 msgid ""
 "\n"
 "Partite Già Pianificate (in attesa di risultato):"
-msgstr ""
-"\n"
-"Partidas Ya Planificadas (en espera de resultado):"
+msgstr "Matchs déjà programmés (en attente de résultat) :"
 
 #: backup/tornello.py:741
 msgid "  Nessuna partita attualmente pianificata."
-msgstr "  Ninguna partida actualmente planificada."
+msgstr "Aucun match programmé actuellement."
 
 #: backup/tornello.py:744
 msgid ""
 "\n"
 "Nessuna partita pendente disponibile per la gestione della pianificazione."
 msgstr ""
-"\n"
-"Ninguna partida pendiente disponible para la gestión de la planificación."
+"Aucune correspondance en attente disponible pour la gestion de la "
+"planification."
 
 #: backup/tornello.py:746
-#, fuzzy
 msgid ""
 "\n"
 "Opzioni: (P)ianifica, (M)odifica/Rimuovi pianificazione, (ESCAPE) termina: "
-msgstr ""
-"\n"
-"Opciones: (P)lanificar, (M)odificar/Eliminar planificación, (F)in: "
+msgstr "Options : (P)plan, (M)modifier/Supprimer le planning, (ESCAPE) fin :"
 
 #: backup/tornello.py:750
 msgid "Inserisci il N. Scacchiera della partita"
-msgstr "Introduce el N.º de Tablero de la partida"
+msgstr "Entrez le numéro du plateau du jeu"
 
 #: backup/tornello.py:751
 msgid " da pianificare: "
-msgstr " a planificar: "
+msgstr "planifier:"
 
 #: backup/tornello.py:752
 msgid " la cui pianificazione vuoi modificare/rimuovere: "
-msgstr " cuya planificación quieres modificar/eliminar: "
+msgstr "dont vous souhaitez modifier/supprimer l'horaire :"
 
 #: backup/tornello.py:760
 msgid "N#. Scacchiera non valido o non corrisponde a una partita gestibile."
-msgstr "N.º de Tablero no válido o no corresponde a una partida manejable."
+msgstr "N#. Plateau invalide ou ne correspond pas à un jeu gérable."
 
 #: backup/tornello.py:774
 #, python-brace-format
 msgid "ERRORE INTERNO: Partita IDG {match_id} non trovata."
-msgstr "ERROR INTERNO: Partida IDG {match_id} no encontrada."
+msgstr "ERREUR INTERNE : correspondance IDG {match_id} introuvable."
 
 #: backup/tornello.py:779
 msgid "Questa partita è già pianificata. Usa 'M' per modificarla."
-msgstr "Esta partida ya está planificada. Usa 'M' para modificarla."
+msgstr "Ce match est déjà prévu. Utilisez 'M' pour le modifier."
 
 #: backup/tornello.py:780
 #, python-brace-format
 msgid ""
 "\n"
 "Pianificazione per la partita Sc. {board_id} (IDG: {match_id})..."
-msgstr ""
-"\n"
-"Planificando la partida Tab. {board_id} (IDG: {match_id})..."
+msgstr "Planification du match Sc. {board_id} (IDG : {match_id})..."
 
 #: backup/tornello.py:786 src/ui.py:684
 msgid "Partita pianificata con successo."
-msgstr "Partida planificada con éxito."
+msgstr "Match planifié avec succès."
 
 #: backup/tornello.py:788
 msgid "Pianificazione annullata."
-msgstr "Planificación cancelada."
+msgstr "Programme annulé."
 
 #: backup/tornello.py:791
 msgid ""
 "Questa partita non ha una pianificazione da modificare/rimuovere. Usa 'P'."
-msgstr ""
-"Esta partida no tiene una planificación para modificar/eliminar. Usa 'P'."
+msgstr "Ce match n'a pas de calendrier à modifier/supprimer. Utilisez « P »."
 
 #: backup/tornello.py:796
 #, python-brace-format
@@ -2003,43 +1868,43 @@ msgid ""
 "\n"
 "Gestione pianificazione per Sc. {board_id} (IDG: {match_id}): {white_player} vs {black_player}"
 msgstr ""
-"\n"
-"Gestión de planificación para Tab. {board_id} (IDG: {match_id}): {white_player} vs {black_player}"
+"Gestion de la planification pour Sc. {board_id} (IDG : {match_id}) : "
+"{white_player} contre {black_player}"
 
 #: backup/tornello.py:798
 msgid ""
 "Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): "
 msgstr ""
-"¿Quieres (M)odificar o (E)liminar la planificación? (Enter para cancelar): "
+"Vous souhaitez (M)modifier ou (R)supprimer le planning ? (Entrez pour "
+"annuler) :"
 
 #: backup/tornello.py:805 src/ui.py:669
 msgid "Pianificazione modificata."
-msgstr "Planificación modificada."
+msgstr "Horaire modifié."
 
 #: backup/tornello.py:807
 msgid "Modifica annullata."
-msgstr "Modificación cancelada."
+msgstr "Modification annulée."
 
 #: backup/tornello.py:809 src/ui.py:671
-#, fuzzy
 msgid "Confermi rimozione pianificazione? (INVIO|ESCAPE)"
-msgstr "¿Confirmas la eliminación de la planificación? (s/N)"
+msgstr "Confirmez-vous la suppression du planning ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:813 src/ui.py:676
 msgid "Pianificazione rimossa."
-msgstr "Planificación eliminada."
+msgstr "Calendrier supprimé."
 
 #: backup/tornello.py:816
 msgid "Azione non valida per modifica/rimozione."
-msgstr "Acción no válida para modificación/eliminación."
+msgstr "Action invalide pour modification/suppression."
 
 #: backup/tornello.py:818
 msgid "Azione non riconosciuta. Riprova."
-msgstr "Acción no reconocida. Inténtalo de nuevo."
+msgstr "Action non reconnue. Essayer à nouveau."
 
 #: backup/tornello.py:855 src/engine.py:63
 msgid "Arbitro Capo"
-msgstr "Árbitro Principal"
+msgstr "Arbitre en chef"
 
 #: backup/tornello.py:945 src/engine.py:153
 #, python-brace-format
@@ -2047,33 +1912,35 @@ msgid ""
 "AVVISO CRITICO: ID avversario storico {opponent_id} non trovato in mappa per"
 " giocatore {player_id} al turno {round_num}"
 msgstr ""
-"AVISO CRÍTICO: ID de oponente histórico {opponent_id} no encontrado en el "
-"mapa para el jugador {player_id} en la ronda {round_num}"
+"ALERTE CRITIQUE : ID historique de l'adversaire {opponent_id} introuvable "
+"sur la carte pour le joueur {player_id} au tour {round_num}"
 
 #: backup/tornello.py:986 src/engine.py:194
 #, python-brace-format
 msgid "Errore catastrofico in genera_stringa_trf_per_bbpairings: {error}"
-msgstr "Error catastrófico en genera_stringa_trf_per_bbpairings: {error}"
+msgstr ""
+"Erreur catastrophique dans generate_trf_string_for_bbpairings : {error}"
 
 #: backup/tornello.py:1096 src/engine.py:215
 #, python-brace-format
 msgid "Info: Creata sottocartella '{subdir}' per i file di bbpPairings."
-msgstr "Info: Subcarpeta '{subdir}' creada para los archivos de bbpPairings."
+msgstr ""
+"Info : Création du sous-dossier '{subdir}' pour les fichiers bbpPairings."
 
 #: backup/tornello.py:1098 src/engine.py:217
 #, python-brace-format
 msgid "Errore creazione sottocartella '{subdir}': {error}"
-msgstr "Error al crear la subcarpeta '{subdir}': {error}"
+msgstr "Erreur lors de la création du sous-dossier « {subdir} » : {error}"
 
 #: backup/tornello.py:1103 src/engine.py:222
 #, python-brace-format
 msgid "Errore scrittura file TRF di input '{filepath}': {error}"
-msgstr "Error al escribir el archivo TRF de entrada '{filepath}': {error}"
+msgstr "Erreur d'écriture du fichier TRF d'entrée '{filepath}' : {error}"
 
 #: backup/tornello.py:1114 src/engine.py:233
 #, python-brace-format
 msgid "bbpPairings.exe ha fallito con codice {}.\n"
-msgstr "bbpPairings.exe falló con el código {}.\n"
+msgstr "bbpPairings.exe a échoué avec le code {}."
 
 #: backup/tornello.py:1115 src/engine.py:234
 #, python-brace-format
@@ -2081,8 +1948,8 @@ msgid ""
 "Stderr:\n"
 "{}\n"
 msgstr ""
-"Stderr:\n"
-"{}\n"
+"Stderr :\n"
+"{}"
 
 #: backup/tornello.py:1116 src/engine.py:235
 #, python-brace-format
@@ -2090,17 +1957,17 @@ msgid ""
 "Stdout:\n"
 "{}"
 msgstr ""
-"Stdout:\n"
+"Sortie standard :\n"
 "{}"
 
 #: backup/tornello.py:1125 src/engine.py:244
 #, python-brace-format
 msgid "File output coppie '{filepath}' non trovato."
-msgstr "Archivo de salida de emparejamientos '{filepath}' no encontrado."
+msgstr "Le fichier de sortie de paire '{filepath}' est introuvable."
 
 #: backup/tornello.py:1133 src/engine.py:252
 msgid "Esecuzione bbpPairings completata."
-msgstr "Ejecución de bbpPairings completada."
+msgstr "Exécution de bbpPairings terminée."
 
 #: backup/tornello.py:1136 src/engine.py:255
 #, python-brace-format
@@ -2108,8 +1975,8 @@ msgid ""
 "Errore: Eseguibile '{filepath}' non trovato. Assicurati sia nel percorso "
 "corretto."
 msgstr ""
-"Error: Ejecutable '{filepath}' no encontrado. Asegúrate de que esté en la "
-"ruta correcta."
+"Erreur : L'exécutable '{filepath}' est introuvable. Assurez-vous qu'il est "
+"dans le bon chemin."
 
 #: backup/tornello.py:1138 src/engine.py:257
 #, python-brace-format
@@ -2117,24 +1984,25 @@ msgid ""
 "Errore imprevisto durante esecuzione bbpPairings: {error}\n"
 "{traceback}"
 msgstr ""
-"Error inesperado durante la ejecución de bbpPairings: {error}\n"
+"Erreur inattendue lors de l'exécution de bbpPairings : {error}\n"
 "{traceback}"
 
 #: backup/tornello.py:1159 src/engine.py:278
 msgid "Warning: File output coppie vuoto o illeggibile."
-msgstr "Advertencia: Archivo de salida de emparejamientos vacío o ilegible."
+msgstr "Attention : fichier de sortie du couple vide ou illisible."
 
 #: backup/tornello.py:1166 src/engine.py:285
 #, python-brace-format
 msgid "Warning: Riga abbinamento malformata: '{line}' (saltata)"
-msgstr "Advertencia: Línea de emparejamiento mal formada: '{line}' (saltada)"
+msgstr ""
+"Avertissement : Ligne de correspondance mal formée : '{line}' (ignorée)"
 
 #: backup/tornello.py:1174 src/engine.py:293
 #, python-brace-format
 msgid "Warning: ID non numerici nella riga abbinamento: '{line}' (saltata)"
 msgstr ""
-"Advertencia: IDs no numéricos en la línea de emparejamiento: '{line}' "
-"(saltada)"
+"Avertissement : ID non numériques dans la ligne d'appariement : '{line}' "
+"(ignoré)"
 
 #: backup/tornello.py:1180 src/engine.py:299
 #, python-brace-format
@@ -2142,7 +2010,7 @@ msgid ""
 "Warning: StartRank {rank} non trovato nella mappa giocatori (riga: "
 "'{line}')."
 msgstr ""
-"Advertencia: StartRank {rank} no encontrado en el mapa de jugadores (línea: "
+"Attention : StartRank {rank} introuvable dans la carte du joueur (ligne : "
 "'{line}')."
 
 #: backup/tornello.py:1193 src/engine.py:312
@@ -2151,8 +2019,8 @@ msgid ""
 "Warning: StartRank avversario {rank} non trovato nella mappa (riga: "
 "'{line}')."
 msgstr ""
-"Advertencia: StartRank de oponente {rank} no encontrado en el mapa (línea: "
-"'{line}')."
+"Attention : l'adversaire StartRank {rank} est introuvable sur la carte "
+"(ligne : '{line}')."
 
 #: backup/tornello.py:1204 src/engine.py:323
 #, python-brace-format
@@ -2160,36 +2028,42 @@ msgid ""
 "Errore durante il parsing dell'output delle coppie: {error}\n"
 "{traceback}"
 msgstr ""
-"Error durante el análisis de la salida de los emparejamientos: {error}\n"
+"Erreur lors de l'analyse de la sortie de la paire : {error}\n"
 "{traceback}"
 
 #: backup/tornello.py:1225 src/db_players.py:403
 #, python-brace-format
 msgid "Errore durante il caricamento del DB giocatori ({filename}): {error}"
-msgstr "Error durante la carga de la BD de jugadores ({filename}): {error}"
+msgstr ""
+"Erreur lors du chargement de la base de données des joueurs ({filename}) : "
+"{error}"
 
 #: backup/tornello.py:1226 src/db_players.py:404
 msgid "Verrà creato un nuovo DB vuoto se si aggiungono giocatori."
-msgstr "Se creará una nueva BD vacía si se añaden jugadores."
+msgstr ""
+"Une nouvelle base de données vide sera créée si vous ajoutez des joueurs."
 
 #: backup/tornello.py:1239 src/db_players.py:417
 #, python-brace-format
 msgid "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
-msgstr "Error durante el guardado de la BD de jugadores ({filename}): {error}"
+msgstr ""
+"Erreur lors de l'enregistrement de la base de données du lecteur "
+"({filename}) : {error}"
 
 #: backup/tornello.py:1241 src/db_players.py:419
 #, python-brace-format
 msgid "Errore imprevisto durante il salvataggio del DB: {error}"
-msgstr "Error inesperado durante el guardado de la BD: {error}"
+msgstr ""
+"Erreur inattendue lors de l'enregistrement de la base de données : {error}"
 
 #: backup/tornello.py:1250 src/db_players.py:428
 #, python-brace-format
 msgid "Report Database Giocatori Tornello - {date} {time}\n"
-msgstr "Informe Base de Datos de Jugadores Tornello - {date} {time}\n"
+msgstr "Rapport de base de données des joueurs de tourniquets - {date} {time}"
 
 #: backup/tornello.py:1254 src/db_players.py:432
 msgid "Il database dei giocatori è vuoto.\n"
-msgstr "La base de datos de jugadores está vacía.\n"
+msgstr "La base de données des joueurs est vide."
 
 #: backup/tornello.py:1267 src/db_players.py:445
 #, python-brace-format
@@ -2197,7 +2071,8 @@ msgid ""
 "\tSesso: {sesso}, Federazione Giocatore: {federazione}, ID FIDE num: "
 "{fide_id}\n"
 msgstr ""
-"\tSexo: {sesso}, Federación Jugador: {federazione}, ID FIDE num: {fide_id}\n"
+"Sexe : {sesso}, Fédération des joueurs : {federazione}, numéro "
+"d'identification FIDE : {fide_id}"
 
 #: backup/tornello.py:1271 src/db_players.py:449
 #, python-brace-format
@@ -2205,13 +2080,13 @@ msgid ""
 "\tPartite Valutate Totali: {games}, K-Factor Stimato: {k_factor}, Data "
 "Iscrizione DB: {reg_date}\n"
 msgstr ""
-"\tPartidas Evaluadas Totales: {games}, Factor-K Estimado: {k_factor}, Fecha "
-"Inscripción BD: {reg_date}\n"
+"Total des éléments notés : {games}, facteur K estimé : {k_factor}, date "
+"d'enregistrement de la base de données : {reg_date}"
 
 #: backup/tornello.py:1274 src/db_players.py:452
 #, python-brace-format
 msgid "\tData Nascita: {birth_date}\n"
-msgstr "\tFecha de Nacimiento: {birth_date}\n"
+msgstr "Date de naissance : {birth_date}"
 
 #: backup/tornello.py:1276 src/db_players.py:454
 #, python-brace-format
@@ -2219,26 +2094,26 @@ msgid ""
 "\tMedagliere: Oro: {gold}, Argento: {silver}, Bronzo: {bronze}, Legno: "
 "{wood} in "
 msgstr ""
-"\tMedallero: Oro: {gold}, Plata: {silver}, Bronce: {bronze}, Madera: {wood} "
-"en "
+"Collection de médailles : Or : {gold}, Argent : {silver}, Bronze : {bronze},"
+" Bois : {wood} in"
 
 #: backup/tornello.py:1278 src/db_players.py:456
 #, python-brace-format
 msgid "({count}) tornei:\n"
-msgstr "({count}) torneos:\n"
+msgstr "({count}) tournois :"
 
 #: backup/tornello.py:1290 src/db_players.py:468
 msgid "Nome Torneo Mancante"
-msgstr "Nombre de Torneo Faltante"
+msgstr "Nom du tournoi manquant"
 
 #: backup/tornello.py:1296 src/db_players.py:474
 #, python-brace-format
 msgid "{rank} su {total} in {name} - {start} - {end}"
-msgstr "{rank} de {total} en {name} - {start} - {end}"
+msgstr "{rank} sur {total} dans {name} - {start} - {end}"
 
 #: backup/tornello.py:1299 src/db_players.py:477
 msgid "\tNessuno\n"
-msgstr "\tNinguno\n"
+msgstr "Personne"
 
 #: backup/tornello.py:1302 src/db_players.py:480
 #, python-brace-format
@@ -2246,26 +2121,28 @@ msgid ""
 "Errore durante il salvataggio del file TXT del DB giocatori ({filename}): "
 "{error}"
 msgstr ""
-"Error durante el guardado del archivo TXT de la BD de jugadores "
-"({filename}): {error}"
+"Erreur lors de l'enregistrement du fichier DB TXT du lecteur ({filename}) : "
+"{error}"
 
 #: backup/tornello.py:1304 src/db_players.py:482
 #, python-brace-format
 msgid "Errore imprevisto durante il salvataggio del TXT del DB: {}"
-msgstr "Error inesperado durante el guardado del TXT de la BD: {}"
+msgstr ""
+"Erreur inattendue lors de l'enregistrement de la base de données TXT : {}"
 
 #: backup/tornello.py:1321 src/db_players.py:500
 msgid ""
 "Errore: Nome e Cognome non possono essere vuoti per la creazione del "
 "giocatore nel DB."
 msgstr ""
-"Error: Nombre y Apellido no pueden estar vacíos para la creación del jugador"
-" en la BD."
+"Erreur : Le nom et le prénom ne peuvent pas être vides pour la création du "
+"joueur dans la BD."
 
 #: backup/tornello.py:1349 src/db_players.py:528
 #, python-brace-format
 msgid "ERRORE CRITICO: Fallimento catastrofico generazione ID per {} {}."
-msgstr "ERROR CRÍTICO: Fallo catastrófico en la generación de ID para {} {}."
+msgstr ""
+"ERREUR CRITIQUE : échec catastrophique de la génération d'ID pour {} {}."
 
 #: backup/tornello.py:1353 src/db_players.py:532
 #, python-brace-format
@@ -2273,13 +2150,15 @@ msgid ""
 "ERRORE CRITICO: Impossibile generare ID univoco per {first_name} {last_name}"
 " dopo {attempts} tentativi."
 msgstr ""
-"ERROR CRÍTICO: Imposible generar un ID único para {first_name} {last_name} "
-"después de {attempts} intentos."
+"ERREUR CRITIQUE : Impossible de générer un identifiant unique pour "
+"{first_name} {last_name} après les tentatives de {attempts}."
 
 #: backup/tornello.py:1356 src/db_players.py:536
 #, python-brace-format
 msgid "Creazione nuovo giocatore nel DB principale: {} {} con il nuovo ID: {}"
-msgstr "Creando nuevo jugador en la BD principal: {} {} con el nuevo ID: {}"
+msgstr ""
+"Création d'un nouveau joueur dans la base de données principale : {} {} avec"
+" un nouvel ID : {}"
 
 #: backup/tornello.py:1375 src/db_players.py:556
 #, python-brace-format
@@ -2287,35 +2166,36 @@ msgid ""
 "Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) aggiunto al "
 "database principale."
 msgstr ""
-"Nuevo jugador '{first_name} {last_name}' (ID: {player_id}) añadido a la base"
-" de datos principal."
+"Nouveau joueur '{first_name} {last_name}' (ID : {player_id}) ajouté à la "
+"base de données principale."
 
 #: backup/tornello.py:1409 src/tournament.py:174
 #, python-brace-format
 msgid "Errore durante il caricamento del torneo ({filename}): {error}"
-msgstr "Error durante la carga del torneo ({filename}): {error}"
+msgstr "Erreur de chargement du tournoi ({filename}) : {error}"
 
 #: backup/tornello.py:1420 src/tournament.py:185
 msgid "Errore: Nome del torneo non presente. Impossibile salvare."
-msgstr "Error: Nombre del torneo no presente. Imposible guardar."
+msgstr ""
+"Erreur : le nom du tournoi n'est pas présent. Impossible de sauvegarder."
 
 #: backup/tornello.py:1440 src/tournament.py:205
 #, python-brace-format
 msgid "Errore durante il salvataggio del torneo ({filename}): {error}"
-msgstr "Error durante el guardado del torneo ({filename}): {error}"
+msgstr "Erreur lors de la sauvegarde du tournoi ({filename}) : {error}"
 
 #: backup/tornello.py:1442 src/tournament.py:207
 #, python-brace-format
 msgid "Errore imprevisto durante il salvataggio del torneo: {}"
-msgstr "Error inesperado durante el guardado del torneo: {}"
+msgstr "Erreur inattendue lors de la sauvegarde du tournoi : {}"
 
 #: backup/tornello.py:1463 src/tournament.py:228
 msgid "Errore: la data di fine non può precedere la data di inizio."
-msgstr "Error: la fecha de fin no puede ser anterior a la fecha de inicio."
+msgstr "Erreur : La date de fin ne peut pas précéder la date de début."
 
 #: backup/tornello.py:1467 src/tournament.py:232
 msgid "Errore: Il numero dei turni deve essere positivo."
-msgstr "Error: El número de rondas debe ser positivo."
+msgstr "Erreur : Le nombre d'équipes doit être positif."
 
 #: backup/tornello.py:1470
 #, python-brace-format
@@ -2323,12 +2203,12 @@ msgid ""
 "Attenzione: La durata totale ({duration} giorni) è inferiore al numero di "
 "turni ({rounds})."
 msgstr ""
-"Atención: La duración total ({duration} días) es inferior al número de "
-"rondas ({rounds})."
+"Attention : La durée totale ({duration} jours) est inférieure au nombre "
+"d'équipes ({rounds})."
 
 #: backup/tornello.py:1471
 msgid "Assegnando 1 giorno per turno sequenzialmente."
-msgstr "Asignando 1 día por ronda secuencialmente."
+msgstr "Attribuer 1 jour par quart de travail de manière séquentielle."
 
 #: backup/tornello.py:1520 src/tournament.py:271
 #, python-brace-format
@@ -2336,41 +2216,40 @@ msgid ""
 "Avviso: Spazio insufficiente per i turni rimanenti. Il turno {round_num} "
 "inizierà il {date} (ultimo giorno)."
 msgstr ""
-"Aviso: Espacio insuficiente para las rondas restantes. La ronda {round_num} "
-"comenzará el {date} (último día)."
+"Attention : Pas assez d'espace pour les tours restants. Le quart de travail "
+"{round_num} débutera le {date} (dernier jour)."
 
 #: backup/tornello.py:1526 src/tournament.py:277
 #, python-brace-format
 msgid ""
 "Formato data non valido ('{start_date}' o '{end_date}'). Usa {date_format}."
 msgstr ""
-"Formato de fecha no válido ('{start_date}' o '{end_date}'). Usa "
+"Format de date invalide (« {start_date} » ou « {end_date} »). Utilisez "
 "{date_format}."
 
 #: backup/tornello.py:1529 src/tournament.py:280
 #, python-brace-format
 msgid "Errore nel calcolo delle date: {error}"
-msgstr "Error en el cálculo de las fechas: {error}"
+msgstr "Erreur de calcul des dates : {error}"
 
 #: backup/tornello.py:1542 src/stats.py:57
 #, python-brace-format
 msgid ""
 "Warning: Elo non valido ({player_elo} o {opponent_elo}) nel calcolo atteso."
 msgstr ""
-"Advertencia: Elo no válido ({player_elo} o {opponent_elo}) en el cálculo "
-"esperado."
+"Attention : Notation invalide ({player_elo} ou {opponent_elo}) dans le "
+"calcul attendu."
 
 #: backup/tornello.py:1548 src/stats.py:63
 #, python-brace-format
 msgid "Warning: Dati giocatore incompleti per calcolo Elo ({player_id})."
 msgstr ""
-"Advertencia: Datos de jugador incompletos para el cálculo de Elo "
-"({player_id})."
+"Attention : Données de joueur incomplètes pour le calcul Elo ({player_id})."
 
 #: backup/tornello.py:1548 backup/tornello.py:1563 src/stats.py:63
 #: src/stats.py:78
 msgid "ID Mancante"
-msgstr "ID Faltante"
+msgstr "pièce d'identité manquante"
 
 #: backup/tornello.py:1563 src/stats.py:78
 #, python-brace-format
@@ -2378,8 +2257,8 @@ msgid ""
 "Warning: Elo iniziale non valido ({elo}) per giocatore {player_id}. Usato "
 "{default_elo}]."
 msgstr ""
-"Advertencia: Elo inicial no válido ({elo}) para el jugador {player_id}. Se "
-"usó {default_elo}]."
+"Attention : note de départ invalide ({elo}) pour le joueur {player_id}. "
+"Utilisé {default_elo}]."
 
 #: backup/tornello.py:1584 src/stats.py:99
 #, python-brace-format
@@ -2387,16 +2266,16 @@ msgid ""
 "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo "
 "Elo."
 msgstr ""
-"Advertencia: Oponente {opponent_id} no encontrado o Elo faltante para el "
-"cálculo de Elo."
+"Attention : Adversaire {opponent_id} introuvable ou Elo manquant pour le "
+"calcul d'Elo."
 
 #: backup/tornello.py:1591 src/stats.py:106
 #, python-brace-format
 msgid ""
 "Warning: Elo avversario ({}) o score ({}) non validi per partita contro {}."
 msgstr ""
-"Advertencia: Elo de oponente ({}) o puntuación ({}) no válidos para la "
-"partida contra {}."
+"Attention : Elo ({}) ou score ({}) de l'adversaire n'est pas valable pour un"
+" match contre {}."
 
 #: backup/tornello.py:1631 src/stats.py:146
 #, python-brace-format
@@ -2404,8 +2283,8 @@ msgid ""
 "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo "
 "Performance."
 msgstr ""
-"Advertencia: Oponente {opponent_id} no encontrado o Elo faltante para el "
-"cálculo de Rendimiento."
+"Attention : Adversaire {opponent_id} introuvable ou Elo manquant pour le "
+"calcul de Performance."
 
 #: backup/tornello.py:1639 src/stats.py:154
 #, python-brace-format
@@ -2413,8 +2292,9 @@ msgid ""
 "Warning: Dati non validi (Elo avversario {elo}) o score ({score}) per "
 "partita vs {opponent_id} nel calcolo performance."
 msgstr ""
-"Advertencia: Datos no válidos (Elo de oponente {elo}) o puntuación ({score})"
-" para la partida vs {opponent_id} en el cálculo de rendimiento."
+"Avertissement : Données invalides (évaluation de l'adversaire {elo}) ou "
+"score ({score}) pour le match contre {opponent_id} dans le calcul des "
+"performances."
 
 #: backup/tornello.py:1703 src/stats.py:217
 #, python-brace-format
@@ -2422,8 +2302,8 @@ msgid ""
 "Warning: Punti non validi ({points}) per avversario {opponent_id} nel "
 "calcolo Buchholz di {player_id}."
 msgstr ""
-"Advertencia: Puntos no válidos ({points}) para el oponente {opponent_id} en "
-"el cálculo de Buchholz de {player_id}."
+"Attention : Points invalides ({points}) pour l'adversaire {opponent_id} dans"
+" le calcul Buchholz de {player_id}."
 
 #: backup/tornello.py:1708 src/stats.py:222
 #, python-brace-format
@@ -2431,8 +2311,8 @@ msgid ""
 "Warning: Avversario {opponent_id} (dallo storico di {player_id}) non trovato"
 " nel dizionario giocatori per calcolo Buchholz."
 msgstr ""
-"Advertencia: Oponente {opponent_id} (del historial de {player_id}) no "
-"encontrado en el diccionario de jugadores para el cálculo de Buchholz."
+"Attention : l'adversaire {opponent_id} (de l'historique {player_id}) est "
+"introuvable dans le dictionnaire du joueur pour le calcul de Buchholz."
 
 #: backup/tornello.py:1728 src/stats.py:242
 #, python-brace-format
@@ -2440,8 +2320,8 @@ msgid ""
 "Warning: Punti non validi ({points}) per avversario {opponent_id} in "
 "BuchholzCut1 di {player_id}."
 msgstr ""
-"Advertencia: Puntos no válidos ({points}) para el oponente {opponent_id} en "
-"BuchholzCut1 de {player_id}."
+"Attention : Points invalides ({points}) pour l'adversaire {opponent_id} dans"
+" BuchholzCut1 de {player_id}."
 
 #: backup/tornello.py:1758 src/stats.py:272
 #, python-brace-format
@@ -2449,97 +2329,90 @@ msgid ""
 "Warning: Elo iniziale non valido ({elo}) per avversario {opponent_id} in ARO"
 " di {player_id}."
 msgstr ""
-"Advertencia: Elo inicial no válido ({elo}) para el oponente {opponent_id} en"
-" ARO de {player_id}."
+"Attention : Note initiale invalide ({elo}) pour l'adversaire {opponent_id} "
+"dans l'ARO de {player_id}."
 
 #: backup/tornello.py:1777 src/tournament.py:291
 msgid "ERRORE: Numero turno corrente non definito nel torneo."
-msgstr "ERROR: Número de ronda actual no definido en el torneo."
+msgstr "ERREUR : numéro de tour actuel non défini dans le tournoi."
 
 #: backup/tornello.py:1779 src/tournament.py:293
 #, python-brace-format
 msgid ""
 "\n"
 "--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---"
-msgstr ""
-"\n"
-"--- Generando Emparejamientos Ronda {round_num} con bbpPairings ---"
+msgstr "--- Génération de Shift Pairings {round_num} avec bbpPairings ---"
 
 #: backup/tornello.py:1785 src/tournament.py:299
 #, python-brace-format
 msgid "Nessun giocatore attivo per il turno {round_num}."
-msgstr "Ningún jugador activo para la ronda {round_num}."
+msgstr "Aucun joueur actif pour le tour {round_num}."
 
 #: backup/tornello.py:1800 src/tournament.py:318
 msgid "ERRORE: Fallita generazione della stringa TRF per bbpPairings."
-msgstr "ERROR: Falló la generación de la cadena TRF para bbpPairings."
+msgstr "ERREUR : échec de la génération de la chaîne TRF pour bbpPairings."
 
 #: backup/tornello.py:1806 src/tournament.py:324
 msgid "bbpPairings eseguito con successo."
-msgstr "bbpPairings ejecutado con éxito."
+msgstr "bbpPairings exécuté avec succès."
 
 #: backup/tornello.py:1811 src/tournament.py:329
 msgid "ERRORE: Fallimento parsing output coppie di bbpPairings."
-msgstr "ERROR: Fallo al analizar la salida de emparejamientos de bbpPairings."
+msgstr "ERREUR : échec de l'analyse des paires de sortie de bbpPairings."
 
 #: backup/tornello.py:1831 src/tournament.py:349
 msgid "ATTENZIONE: bbpPairings non ha trovato abbinamenti validi."
-msgstr "ATENCIÓN: bbpPairings no encontró emparejamientos válidos."
+msgstr "AVERTISSEMENT : bbpPairings n'a trouvé aucune correspondance valide."
 
 #: backup/tornello.py:1834 src/tournament.py:352
 #, python-brace-format
 msgid "ERRORE CRITICO da bbpPairings.exe: {message}"
-msgstr "ERROR CRÍTICO de bbpPairings.exe: {message}"
+msgstr "ERREUR CRITIQUE de bbpPairings.exe : {message}"
 
 #: backup/tornello.py:1836 src/tournament.py:354
 #, python-brace-format
 msgid "--- Abbinamenti Turno {} generati. ---"
-msgstr "--- Emparejamientos Ronda {} generados. ---"
+msgstr "--- Appariements de décalage {} générés. ---"
 
 #: backup/tornello.py:1847
 msgid ""
 "Oppure, considerare di effettuare gli abbinamenti per questo turno "
 "manualmente (su carta)."
 msgstr ""
-"Alternativamente, considere realizar los emparejamientos para esta ronda "
-"manualmente (en papel)."
+"Ou envisagez de faire les correspondances pour ce tour manuellement (sur "
+"papier)."
 
 #: backup/tornello.py:1848
 msgid "Il torneo non può procedere automaticamente per questo turno."
-msgstr "El torneo no puede proceder automáticamente para esta ronda."
+msgstr "Le tournoi ne peut pas automatiquement passer à ce tour."
 
 #: backup/tornello.py:1869 src/ui.py:216
 msgid ""
 "\n"
 "--- Inserimento Giocatori per il Torneo ---"
-msgstr ""
-"\n"
-"--- Introducción de Jugadores para el Torneo ---"
+msgstr "--- Insérer des joueurs pour le tournoi ---"
 
 #: backup/tornello.py:1870 src/ui.py:217
 msgid "Inserire ID locale, ID FIDE, o parte del Nome/Cognome."
-msgstr "Introducir ID local, ID FIDE, o parte del Nombre/Apellido."
+msgstr "Entrez l'ID local, l'ID FIDE ou une partie du prénom/nom."
 
 #: backup/tornello.py:1871 src/ui.py:218
 msgid ""
 "Il programma cercherà prima nel tuo DB personale, poi nel DB FIDE scaricato."
 msgstr ""
-"El programa buscará primero en tu BD personal, luego en la BD FIDE "
-"descargada."
+"Le programme recherchera d'abord dans votre base de données personnelle, "
+"puis dans la base de données FIDE téléchargée."
 
 #: backup/tornello.py:1874 src/ui.py:221
 #, python-brace-format
 msgid ""
 "\n"
 "Giocatore {player_num} (o lascia vuoto per terminare): "
-msgstr ""
-"\n"
-"Jugador {player_num} (o deja vacío para terminar): "
+msgstr "Joueur {player_num} (ou laisser vide pour terminer) :"
 
 #: backup/tornello.py:1877
-#, fuzzy
 msgid "Ci sono meno di 2 giocatori. Continuare? (INVIO|ESCAPE)"
-msgstr "Hay menos de 2 jugadores. ¿Continuar? (S/n)"
+msgstr "Il y a moins de 2 joueurs. Continuer? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:1891
 #, python-brace-format
@@ -2547,26 +2420,25 @@ msgid ""
 "Trovati {count} giocatori nel tuo DB personale. Specifica usando l'ID "
 "locale:"
 msgstr ""
-"Se encontraron {count} jugadores en tu BD personal. Especifica usando el ID "
-"local:"
+"Joueurs {count} trouvés dans votre base de données personnelle. Spécifiez à "
+"l'aide de l'ID local :"
 
 #: backup/tornello.py:1896
 #, python-brace-format
 msgid "Trovato giocatore nel DB personale: {} (ID: {})"
-msgstr "Jugador encontrado en la BD personal: {} (ID: {})"
+msgstr "Joueur trouvé dans la base de données personnelle : {} (ID : {})"
 
 #: backup/tornello.py:1901
 msgid "Giocatore non trovato nel DB personale. Avvio ricerca nel DB FIDE..."
 msgstr ""
-"Jugador no encontrado en la BD personal. Iniciando búsqueda en la BD FIDE..."
+"Joueur introuvable dans la base de données personnelle. Lancement de la "
+"recherche dans la base de données FIDE..."
 
 #: backup/tornello.py:1907 src/ui.py:302 src/ui.py:377
 msgid ""
 "\n"
 "-> Trovata 1 corrispondenza nel DB FIDE:"
-msgstr ""
-"\n"
-"-> Se encontró 1 coincidencia en la BD FIDE:"
+msgstr "-> Trouvé 1 correspondance dans la base de données FIDE :"
 
 #: backup/tornello.py:1908 src/ui.py:303 src/ui.py:378
 #, python-brace-format
@@ -2574,13 +2446,12 @@ msgid ""
 "   Nome: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: "
 "{elo})"
 msgstr ""
-"   Nombre: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: "
+"Nom : {last_name}, {first_name} (ID FIDE : {fide_id}, FED : {fed}, Elo : "
 "{elo})"
 
 #: backup/tornello.py:1909 src/ui.py:304 src/ui.py:379
-#, fuzzy
 msgid "   È questo il giocatore corretto? (INVIO|ESCAPE)"
-msgstr "   ¿Es este el jugador correcto? (S/n)"
+msgstr "Est-ce le bon joueur ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:1912 src/ui.py:307
 #, python-brace-format
@@ -2588,90 +2459,88 @@ msgid ""
 "\n"
 "-> Trovate {count} corrispondenze nel DB FIDE per '{term}'. Scegli quella corretta:"
 msgstr ""
-"\n"
-"-> Se encontraron {count} coincidencias en la BD FIDE para '{term}'. Elige la correcta:"
+"-> Trouvé des correspondances {count} dans la base de données FIDE pour "
+"'{term}'. Choisissez le bon :"
 
 #: backup/tornello.py:1917 src/ui.py:313
 msgid ""
 "Non ci sono altri risultati da mostrare. Procedo con l'inserimento manuale."
 msgstr ""
-"No hay más resultados para mostrar. Procediendo con la introducción manual."
+"Il n’y a aucun autre résultat à afficher. Je procède à l'insertion manuelle."
 
 #: backup/tornello.py:1925 src/ui.py:321
 msgid "   0. Nessuno di questi / Inserimento manuale"
-msgstr "   0. Ninguno de estos / Introducción manual"
+msgstr "0. Aucun de ces éléments / Saisie manuelle"
 
 #: backup/tornello.py:1930
 #, python-brace-format
 msgid "Scelta (Numero, 0 per manuale, Invio per i prossimi {page_size}): "
-msgstr ""
-"Elección (Número, 0 para manual, Enter para los siguientes {page_size}): "
+msgstr "Choix (Numéro, 0 pour manuel, Entrée pour le prochain {page_size}) :"
 
 #: backup/tornello.py:1932
 msgid "Scelta (Numero o 0 per manuale): "
-msgstr "Elección (Número o 0 para manual): "
+msgstr "Choix (Numéro ou 0 pour manuel) :"
 
 #: backup/tornello.py:1937 src/ui.py:333
 msgid "--- Mostro i risultati successivi ---"
-msgstr "--- Mostrando los siguientes resultados ---"
+msgstr "--- Afficher les résultats suivants ---"
 
 #: backup/tornello.py:1948 src/ui.py:347
 msgid "Scelta non valida. Riprova."
-msgstr "Elección no válida. Inténtalo de nuevo."
+msgstr "Choix invalide. Essayer à nouveau."
 
 #: backup/tornello.py:1950
 msgid "Input non valido. Inserisci un numero o premi Invio."
-msgstr "Entrada no válida. Introduce un número o presiona Enter."
+msgstr "Entrée invalide. Entrez un numéro ou appuyez sur Entrée."
 
 #: backup/tornello.py:1954 src/ui.py:392
 #, python-brace-format
 msgid "Importazione di '{first_name} {last_name}' nel tuo DB personale..."
-msgstr "Importando a '{first_name} {last_name}' a tu BD personal..."
+msgstr ""
+"Importation de '{first_name} {last_name}' dans votre base de données "
+"personnelle..."
 
 #: backup/tornello.py:1970 src/ui.py:410
 msgid ""
 "Errore durante la creazione del giocatore importato. Si prega di riprovare."
-msgstr ""
-"Error durante la creación del jugador importado. Por favor, inténtalo de "
-"nuevo."
+msgstr "Erreur lors de la création du lecteur importé. Veuillez réessayer."
 
 #: backup/tornello.py:1975 src/ui.py:415
 msgid "Nessuna corrispondenza trovata. Procedi con l'inserimento manuale."
-msgstr "No se encontraron coincidencias. Procede con la introducción manual."
+msgstr "Aucune correspondance trouvée. Procédez à l’insertion manuelle."
 
 #: backup/tornello.py:1977 src/ui.py:416
 msgid "  Nome del nuovo giocatore: "
-msgstr "  Nombre del nuevo jugador: "
+msgstr "Nom du nouveau joueur :"
 
 #: backup/tornello.py:1979 src/ui.py:418
 msgid "  Cognome: "
-msgstr "  Apellido: "
+msgstr "Nom de famille:"
 
 #: backup/tornello.py:1982 src/ui.py:421
 msgid "  Titolo FIDE (es. FM, o vuoto)"
-msgstr "  Título FIDE (ej. FM, o vacío)"
+msgstr "Titre FIDE (par exemple FM, ou vide)"
 
 #: backup/tornello.py:1983 src/ui.py:422
 msgid "  Sesso (m/w)"
-msgstr "  Sexo (m/w)"
+msgstr "Sexe (h/f)"
 
 #: backup/tornello.py:1984 src/ui.py:423
 msgid "  Federazione (3 lettere, es. ITA)"
-msgstr "  Federación (3 letras, ej. ESP)"
+msgstr "Fédération (3 lettres, par exemple ITA)"
 
 #: backup/tornello.py:1985 src/ui.py:424
 msgid "  ID FIDE Numerico ('0' se N/D)"
-msgstr "  ID FIDE Numérico ('0' si N/D)"
+msgstr "ID FIDE Numérique ('0' si N/A)"
 
 #: backup/tornello.py:1986 src/ui.py:425
 #, python-brace-format
 msgid " Data Nascita ({date_format} o vuoto)"
-msgstr " Fecha de Nacimiento ({date_format} o vacío)"
+msgstr "Date de naissance ({date_format} ou vide)"
 
 #: backup/tornello.py:1988 src/ui.py:427
-#, fuzzy
 msgid " Esperienza pregressa significativa? (INVIO|ESCAPE)"
-msgstr " ¿Experiencia previa significativa? (s/n)"
+msgstr "Une expérience antérieure significative ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:1999 src/ui.py:440
 #, python-brace-format
@@ -2679,8 +2548,8 @@ msgid ""
 "Errore: Giocatore ID {player_id} ({player_name}) è già stato aggiunto a "
 "questo torneo."
 msgstr ""
-"Error: El jugador ID {player_id} ({player_name}) ya ha sido añadido a este "
-"torneo."
+"Erreur : L'ID du joueur {player_id} ({player_name}) a déjà été ajouté à ce "
+"tournoi."
 
 #: backup/tornello.py:2018
 #, python-brace-format
@@ -2688,24 +2557,23 @@ msgid ""
 "-> Giocatore '{first_name} {last_name}' (ID DB: {player_id}) aggiunto al "
 "torneo."
 msgstr ""
-"-> Jugador '{first_name} {last_name}' (ID BD: {player_id}) añadido al "
-"torneo."
+"-> Joueur '{first_name} {last_name}' (ID DB : {player_id}) ajouté au "
+"tournoi."
 
 #: backup/tornello.py:2080 src/tournament.py:416
-#, fuzzy
 msgid ""
 "\n"
 "Risultato registrato con successo."
-msgstr "Resultado registrado con éxito."
+msgstr "Résultat enregistré avec succès."
 
 #: backup/tornello.py:2095 src/ui.py:479
 #, python-brace-format
 msgid "ERRORE: Dati turno {round_num} non trovati."
-msgstr "ERROR: Datos de la ronda {round_num} no encontrados."
+msgstr "ERREUR : données de décalage {round_num} introuvables."
 
 #: backup/tornello.py:2106 src/ui.py:490
 msgid "Giocatore Mancante"
-msgstr "Jugador Faltante"
+msgstr "Joueur manquant"
 
 #: backup/tornello.py:2114 src/ui.py:498
 #, python-brace-format
@@ -2713,17 +2581,15 @@ msgid ""
 "Info: Nessuna azione possibile per il turno {round_num} (nessuna partita "
 "pendente e nessuna da poter cancellare)."
 msgstr ""
-"Info: Ninguna acción posible para la ronda {round_num} (ninguna partida "
-"pendiente y ninguna que se pueda cancelar)."
+"Info : Aucune action possible pour le tour {round_num} (pas de parties en "
+"attente et aucune pouvant être annulée)."
 
 #: backup/tornello.py:2118 src/ui.py:516
 #, python-brace-format
 msgid ""
 "\n"
 "Partite del turno {round_num} ancora da registrare (N. Scacchiera del Turno):"
-msgstr ""
-"\n"
-"Partidas de la ronda {round_num} aún por registrar (N.º de Tablero de la Ronda):"
+msgstr "Parties du tour {round_num} restant à enregistrer (Round Board No.) :"
 
 #: backup/tornello.py:2124 src/ui.py:544
 #, python-brace-format
@@ -2731,111 +2597,103 @@ msgid ""
 "\n"
 "Nessuna partita da registrare per il turno {round_num} (ma potresti voler cancellare un risultato)."
 msgstr ""
-"\n"
-"Ninguna partida por registrar para la ronda {round_num} (pero podrías querer cancelar un resultado)."
+"Aucun jeu à enregistrer pour le tour {round_num} (mais vous souhaiterez "
+"peut-être supprimer un résultat)."
 
 #: backup/tornello.py:2127 src/ui.py:547
 msgid "Nessuna"
-msgstr "Ninguna"
+msgstr "Aucun"
 
 #: backup/tornello.py:2129 src/ui.py:549
 msgid "Inserisci:"
-msgstr "Introduce:"
+msgstr "Entrer:"
 
 #: backup/tornello.py:2130
 msgid "\t[p] --- per entrare in modalità programmazione partite;"
-msgstr "\t[p] --- para entrar en modo de programación de partidas;"
+msgstr "[p] --- pour entrer en mode de programmation de match ;"
 
 #: backup/tornello.py:2131 src/ui.py:550
 msgid "\t[r] --- per ritirare un giocatore dal torneo;"
-msgstr "\t[r] --- para retirar a un jugador del torneo;"
+msgstr "[r] --- pour retirer un joueur du tournoi ;"
 
 #: backup/tornello.py:2132 src/ui.py:551
 msgid "\t[t] --- Time Machine, per tornare all'inizio di un turno;"
-msgstr "\t[t] --- Máquina del Tiempo, para volver al inicio de una ronda;"
+msgstr "[t] --- Time Machine, pour revenir au début d'un tour ;"
 
 #: backup/tornello.py:2133 src/ui.py:552
 msgid "\t[cancella] --- per eliminare un risultato inserito;"
-msgstr "\t[borrar] --- para eliminar un resultado introducido;"
+msgstr "[delete] --- pour supprimer un résultat inséré ;"
 
 #: backup/tornello.py:2134 src/ui.py:553
 msgid "\t[SC] --- il numero della scacchiera;"
-msgstr "\t[TB] --- el número del tablero;"
+msgstr "[SC] --- le numéro du tableau ;"
 
 #: backup/tornello.py:2135 src/ui.py:554
 msgid "\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori."
-msgstr "\t[nom*|ape*] --- parte del nombre o apellido de uno de los jugadores."
+msgstr "[nom*|cog*] --- partie du prénom ou du nom de l'un des joueurs."
 
 #: backup/tornello.py:2136
 #, python-brace-format
 msgid ""
 "\n"
 "P|R|T|SC|nome|cognome [{boards}]: "
-msgstr ""
-"\n"
-"P|R|T|TB|nombre|apellido [{boards}]: "
+msgstr "P|R|T|SC|nom|nom [{boards}] :"
 
 #: backup/tornello.py:2145 src/ui.py:564
 msgid "Stato del torneo ripristinato e salvato."
-msgstr "Estado del torneo restaurado y guardado."
+msgstr "Statut du tournoi restauré et enregistré."
 
 #: backup/tornello.py:2148 src/ui.py:567
 msgid ""
 "\n"
 "--- Ritiro Giocatore dal Torneo ---"
-msgstr ""
-"\n"
-"--- Retirada de Jugador del Torneo ---"
+msgstr "--- Retrait d'un joueur du tournoi ---"
 
 #: backup/tornello.py:2151 src/ui.py:570
 msgid "Nessun giocatore attivo da ritirare."
-msgstr "Ningún jugador activo para retirar."
+msgstr "Aucun joueur actif à prendre sa retraite."
 
 #: backup/tornello.py:2155 src/ui.py:574
 msgid ""
 "Inserisci il numero o l'ID del giocatore da ritirare (o vuoto per "
 "annullare): "
-msgstr ""
-"Introduce el número o el ID del jugador a retirar (o vacío para cancelar): "
+msgstr "Entrez le numéro ou l'ID du joueur à retirer (ou vide pour annuler) :"
 
 #: backup/tornello.py:2164 src/ui.py:583
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Confermi il ritiro definitivo di {player_name}? (INVIO|ESCAPE)"
-msgstr "¿Confirmas la retirada definitiva de {player_name}? (s/N)"
+msgstr ""
+"Confirmez-vous le retrait définitif de {player_name} ? (ENTRER | ÉCHAPPER)"
 
 #: backup/tornello.py:2167 backup/tornello.py:2270 src/ui.py:586 src/ui.py:713
 #, python-brace-format
 msgid "Giocatore {player_name} marcato come ritirato."
-msgstr "Jugador {player_name} marcado como retirado."
+msgstr "Joueur {player_name} marqué comme retraité."
 
 #: backup/tornello.py:2171 src/ui.py:590
 msgid "Ritiro annullato."
-msgstr "Retirada cancelada."
+msgstr "Ramassage annulé."
 
 #: backup/tornello.py:2173 src/ui.py:592
 msgid "Giocatore non trovato o già ritirato."
-msgstr "Jugador no encontrado o ya retirado."
+msgstr "Joueur introuvable ou déjà retiré."
 
 #: backup/tornello.py:2176
 msgid ""
 "\n"
 "--- Accesso al Modulo Pianificazione Partite ---"
-msgstr ""
-"\n"
-"--- Acceso al Módulo de Planificación de Partidas ---"
+msgstr "--- Accès au module de planification des matchs ---"
 
 #: backup/tornello.py:2184 src/ui.py:599
 msgid "Nessuna partita completata in questo turno da poter cancellare."
-msgstr "Ninguna partida completada en esta ronda para poder cancelar."
+msgstr "Aucun jeu terminé ce tour ne peut être supprimé."
 
 #: backup/tornello.py:2186 src/ui.py:601
 #, python-brace-format
 msgid ""
 "\n"
 "Partite completate nel turno {round_num} (ID Globali):"
-msgstr ""
-"\n"
-"Partidas completadas en la ronda {round_num} (IDs Globales):"
+msgstr "Jeux terminés lors du cycle {round_num} (ID globaux) :"
 
 #: backup/tornello.py:2199 src/ui.py:614
 #, python-brace-format
@@ -2843,12 +2701,12 @@ msgid ""
 "Numero Scacchiera (del turno) '{board_num_choice}' non valido o partita non "
 "pendente."
 msgstr ""
-"Número de Tablero (de la ronda) '{board_num_choice}' no válido o partida no "
-"pendiente."
+"Numéro de plateau (du tour) '{board_num_choice}' invalide ou partie non en "
+"attente."
 
 #: backup/tornello.py:2202 src/ui.py:617
 msgid "Input numerico per Scacchiera non valido."
-msgstr "Entrada numérica para Tablero no válida."
+msgstr "Entrée numérique non valide pour le tableau."
 
 #: backup/tornello.py:2211 src/ui.py:626
 #, python-brace-format
@@ -2856,113 +2714,115 @@ msgid ""
 "Nessuna partita pendente trovata con giocatori che corrispondono a "
 "'{search_term}'."
 msgstr ""
-"Ninguna partida pendiente encontrada con jugadores que coincidan con "
-"'{search_term}'."
+"Aucune correspondance en attente trouvée avec des joueurs correspondant à "
+"« {search_term} »."
 
 #: backup/tornello.py:2216 src/ui.py:631
 #, python-brace-format
 msgid ""
 "Trovata partita unica (Sc. {board_num}): {white_player} vs {black_player}"
 msgstr ""
-"Partida única encontrada (Tab. {board_num}): {white_player} vs "
+"Correspondance unique trouvée (Sc. {board_num}) : {white_player} vs "
 "{black_player}"
 
 #: backup/tornello.py:2218 src/ui.py:633
 #, python-brace-format
 msgid "Trovate {num_matches} partite pendenti per '{search_term}':"
 msgstr ""
-"Se encontraron {num_matches} partidas pendientes para '{search_term}':"
+"Correspondances {num_matches} en attente trouvées pour « {search_term} » :"
 
 #: backup/tornello.py:2224 src/ui.py:639
 msgid "Inserisci il N.Scacchiera (del turno) desiderato dalla lista sopra: "
 msgstr ""
-"Introduce el N.º de Tablero (de la ronda) deseado de la lista de arriba: "
+"Entrez le numéro de carte souhaité (du tour) dans la liste ci-dessus :"
 
 #: backup/tornello.py:2226 src/ui.py:641
 msgid "Input non numerico per la scacchiera."
-msgstr "Entrada no numérica para el tablero."
+msgstr "Entrée non numérique pour la carte."
 
 #: backup/tornello.py:2233 src/ui.py:648
 #, python-brace-format
 msgid "N.Scacchiera '{board_choice}' non valido dalla lista filtrata."
-msgstr "N.º de Tablero '{board_choice}' no válido de la lista filtrada."
+msgstr "Numéro de carte « {board_choice} » non valide dans la liste filtrée."
 
 #: backup/tornello.py:2235 src/ui.py:650
 msgid "Input Scacchiera non valido."
-msgstr "Entrada de Tablero no válida."
+msgstr "Entrée de carte invalide."
 
 #: backup/tornello.py:2241 src/ui.py:656
 #, python-brace-format
 msgid ""
 "Partita selezionata per risultato: {white} vs {black} (ID Glob: {match_id})"
 msgstr ""
-"Partida seleccionada para resultado: {white} vs {black} (ID Glob: "
-"{match_id})"
+"Match sélectionné par résultat : {white} vs {black} (ID global : {match_id})"
 
 #: backup/tornello.py:2243
 msgid "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
-msgstr "Resultados: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
+msgstr "Résultats : [1-0, 0-1, 1/2, 0-0F, 1-F, F-1] :"
 
 #: backup/tornello.py:2251 src/ui.py:694
 msgid "Confermi risultato?"
-msgstr "¿Confirmas el resultado?"
+msgstr "Confirmez-vous le résultat ?"
 
 #: backup/tornello.py:2253 backup/tornello.py:2255 src/ui.py:696 src/ui.py:698
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Confermi che {winner} vince contro {loser}? (INVIO|ESCAPE): "
-msgstr "¿Confirmas que {winner} gana contra {loser}? (s/n): "
+msgstr ""
+"Confirmez-vous que {winner} gagne contre {loser} ? (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:2257 src/ui.py:700
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Confermi che {player1} e {player2} pattano? (INVIO|ESCAPE): "
-msgstr "¿Confirmas que {player1} y {player2} empatan? (s/n): "
+msgstr ""
+"Confirmez-vous que {player1} et {player2} sont nuls ? (ENTRER | ÉCHAPPER) :"
 
 #: backup/tornello.py:2267 src/ui.py:710
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Il giocatore {player_name} si ritira definitivamente dal torneo? "
 "(INVIO|ESCAPE)"
-msgstr "¿El jugador {player_name} se retira definitivamente del torneo? (s/N)"
+msgstr ""
+"Le joueur {player_name} se retire-t-il définitivement du tournoi ? (ENTRER |"
+" ÉCHAPPER)"
 
 #: backup/tornello.py:2272 src/ui.py:715
 msgid "Operazione annullata dall'utente."
-msgstr "Operación cancelada por el usuario."
+msgstr "Opération annulée par l'utilisateur."
 
 #: backup/tornello.py:2274 src/ui.py:717
 msgid "Input risultato non valido."
-msgstr "Entrada de resultado no válida."
+msgstr "Entrée de résultat invalide."
 
 #: backup/tornello.py:2289 src/reports.py:32
 msgid "Salvataggio file turno corrente: Numero turno non definito."
-msgstr "Guardando archivo de ronda actual: Número de ronda no definido."
+msgstr ""
+"Enregistrement du fichier d'équipe actuel : numéro d'équipe non défini."
 
 #: backup/tornello.py:2291 src/reports.py:34
 #, python-brace-format
 msgid "Tornello - {name} - Turno corrente.txt"
-msgstr "Tornello - {name} - Ronda actual.txt"
+msgstr "Tourniquet - {name} - Shift.txt actuel"
 
 #: backup/tornello.py:2319 src/reports.py:70
 #, python-brace-format
 msgid "Nome Torneo: {name} - "
-msgstr "Nombre del Torneo: {name} - "
+msgstr "Nom du tournoi : {name} -"
 
 #: backup/tornello.py:2320 src/reports.py:71
 #, python-brace-format
 msgid "Turno: {round_num}\n"
-msgstr "Ronda: {round_num}\n"
+msgstr "Décalage : {round_num}"
 
 #: backup/tornello.py:2321
 #, python-brace-format
 msgid ""
 " Periodo Turno: {start} - {end}\n"
 "\n"
-msgstr ""
-" Periodo Ronda: {start} - {end}\n"
-"\n"
+msgstr "Période de décalage : {start} - {end}"
 
 #: backup/tornello.py:2322 src/reports.py:77
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
-msgstr " (Ninguna partida definida o cargada para esta ronda todavía)\n"
+msgstr "(Aucun jeu défini ou chargé pour ce tour pour le moment)"
 
 #: backup/tornello.py:2323 src/reports.py:78
 #, python-brace-format
@@ -2970,90 +2830,88 @@ msgid ""
 "File stato turno corrente '{filename}' aggiornato (turno non ancora popolato"
 " o vuoto)."
 msgstr ""
-"Archivo de estado de ronda actual '{filename}' actualizado (ronda aún no "
-"poblada o vacía)."
+"Fichier de statut d'équipe actuel '{filename}' mis à jour (équipe pas encore"
+" remplie ou vide)."
 
 #: backup/tornello.py:2325 src/reports.py:80
 #, python-brace-format
 msgid "Errore scrittura file stato turno corrente '{filename}': {error}"
 msgstr ""
-"Error al escribir el archivo de estado de la ronda actual '{filename}': "
+"Erreur d'écriture du fichier d'état de l'équipe actuelle '{filename}' : "
 "{error}"
 
 #: backup/tornello.py:2334 src/reports.py:89
 #, python-brace-format
 msgid " {first_name} {last_name} ha il BYE"
-msgstr " {first_name} {last_name} tiene el BYE"
+msgstr "{first_name} {last_name} a BYE"
 
 #: backup/tornello.py:2340 src/reports.py:95
 msgid "Bianco?"
-msgstr "¿Blancas?"
+msgstr "Blanc?"
 
 #: backup/tornello.py:2342 src/reports.py:97
 msgid "Nero?"
-msgstr "¿Negras?"
+msgstr "Noir?"
 
 #: backup/tornello.py:2361 src/reports.py:116
 #, python-brace-format
 msgid ""
 " IDG:{match_id} {white_player} - {black_player} (Pianificazione Errata)"
 msgstr ""
-" IDG:{match_id} {white_player} - {black_player} (Planificación Errónea)"
+"IDG: {match_id} {white_player} - {black_player} (Planification incorrecte)"
 
 #: backup/tornello.py:2385
 msgid ""
 "  (Nessuna partita con giocatori attivi è attualmente pianificata con "
 "data/ora)\n"
 msgstr ""
-"  (Ninguna partida con jugadores activos está actualmente planificada con "
-"fecha/hora)\n"
+"(Aucun jeu avec des joueurs actifs n'est actuellement programmé avec des "
+"horodatages)"
 
 #: backup/tornello.py:2395
 msgid "  Non pianificate (giocatori attivi):\n"
-msgstr "  No planificadas (jugadores activos):\n"
+msgstr "Non planifié (joueurs actifs) :"
 
 #: backup/tornello.py:2399
 msgid "   (nessuna)\n"
-msgstr "   (ninguna)\n"
+msgstr "(aucun)"
 
 #: backup/tornello.py:2402 src/reports.py:155
 msgid ""
 "\n"
 "  -- Partite da giocare con giocatori ritirati --\n"
-msgstr ""
-"\n"
-"  -- Partidas por jugar con jugadores retirados --\n"
+msgstr "-- Matchs à jouer avec des joueurs retraités --"
 
 #: backup/tornello.py:2412 src/reports.py:165
 msgid "   Non pianificate (con ritirati):\n"
-msgstr "   No planificadas (con retirados):\n"
+msgstr "Non planifié (avec retrait) :"
 
 #: backup/tornello.py:2417
 msgid " Partite giocate\n"
-msgstr " Partidas jugadas\n"
+msgstr "Jeux joués"
 
 #: backup/tornello.py:2421
 msgid "  (nessuna partita ancora giocata da giocatori attivi)\n"
-msgstr "  (ninguna partida jugada todavía por jugadores activos)\n"
+msgstr "(aucun jeu joué pour l'instant par des joueurs actifs)"
 
 #: backup/tornello.py:2423 src/reports.py:174
 msgid "  -- Partite giocate con giocatori ritirati --\n"
-msgstr "  -- Partidas jugadas con jugadores retirados --\n"
+msgstr "-- Matchs joués avec des joueurs retraités --"
 
 #: backup/tornello.py:2425 src/reports.py:178
 #, python-brace-format
 msgid "File {filename} aggiornato con raggruppamento ritirati."
-msgstr "Archivo {filename} actualizado con agrupación de retirados."
+msgstr "Fichier {filename} mis à jour avec le regroupement retiré."
 
 #: backup/tornello.py:2429 src/reports.py:182
 #, python-brace-format
 msgid "Errore imprevisto in save_current_tournament_round_file: {error}"
-msgstr "Error inesperado en save_current_tournament_round_file: {error}"
+msgstr "Erreur inattendue dans save_current_tournament_round_file : {error}"
 
 #: backup/tornello.py:2440 src/reports.py:193
 #, python-brace-format
 msgid "Tornello - {name} - Turno {round_num} Dettagli.txt"
-msgstr "Tornello - {name} - Ronda {round_num} Detalles.txt"
+msgstr "Tourniquet - {name} - Shift {round_num} Details.txt"
 
 #: backup/tornello.py:2449 src/reports.py:202
 #, python-brace-format
@@ -3061,327 +2919,312 @@ msgid ""
 "Dati o partite del turno concluso {round_num} non trovati per il "
 "salvataggio."
 msgstr ""
-"Datos o partidas de la ronda concluida {round_num} no encontrados para "
-"guardar."
+"Données ou jeux du tour terminé {round_num} introuvables pour la sauvegarde."
 
 #: backup/tornello.py:2479 src/reports.py:232
 #, python-brace-format
 msgid "Torneo: {name}\n"
-msgstr "Torneo: {name}\n"
+msgstr "Tournoi : {name}"
 
 #: backup/tornello.py:2479 src/reports.py:232
 msgid "Nome Mancante"
-msgstr "Nombre Faltante"
+msgstr "Nom manquant"
 
 #: backup/tornello.py:2480 src/reports.py:233
 #, python-brace-format
 msgid "Sito: {site}, Data Inizio Torneo: {start_date}\n"
-msgstr "Sede: {site}, Fecha de Inicio del Torneo: {start_date}\n"
+msgstr "Site : {site}, Date de début du tournoi : {start_date}"
 
 #: backup/tornello.py:2482 src/reports.py:235
 #, python-brace-format
 msgid " DETTAGLIO TURNO {round_num} CONCLUSO "
-msgstr " DETALLE RONDA {round_num} CONCLUIDA "
+msgstr "DÉTAIL DU TOUR {round_num} TERMINÉ"
 
 #: backup/tornello.py:2488 src/reports.py:241
 #, python-brace-format
 msgid "\tPeriodo del Turno: {start} - {end}\n"
-msgstr "\tPeriodo de la Ronda: {start} - {end}\n"
+msgstr "Période de tour : {start} - {end}"
 
 #: backup/tornello.py:2490 src/reports.py:243
 msgid "\tPeriodo del Turno: Date non trovate\n"
-msgstr "\tPeriodo de la Ronda: Fechas no encontradas\n"
+msgstr "Période de quart : dates introuvables"
 
 #: backup/tornello.py:2492 src/reports.py:245
-#, fuzzy
 msgid ""
 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
 "                         [Elo] (Pt) | Risultato"
-msgstr ""
-"Tb | ID  | Blancas                       [Elo] (Pt) - Negras"
-"                       [Elo] (Pt) | Resultado"
+msgstr "Sc | ID | Blanc [Elo] (Pt) - Noir [Elo] (Pt) | Résultat"
 
 #: backup/tornello.py:2500 src/reports.py:253
 msgid "ERRORE_RISULTATO_MANCANTE"
-msgstr "ERROR_RESULTADO_FALTANTE"
+msgstr "ERROR_RESULT_MISSING"
 
 #: backup/tornello.py:2539 src/reports.py:292
 #, python-brace-format
 msgid ""
 "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
 msgstr ""
-"{dashes:<3}| {match_id:<4}| Error Jugador Bye ID: {player_id:<10} | BYE"
+"{dashes:<3}| {match_id:<4}| Erreur d'identification du joueur : "
+"{player_id:<10} | AU REVOIR"
 
 #: backup/tornello.py:2541 src/reports.py:294
 #, python-brace-format
 msgid ""
 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
 msgstr ""
-"Detalle de Ronda Concluida {round_num} guardado en el archivo separado "
-"'{filename}'"
+"Détails de l'équipe terminés {round_num} enregistrés dans un fichier séparé "
+"« {filename} »"
 
 #: backup/tornello.py:2543 src/reports.py:296
 #, python-brace-format
 msgid "Errore durante il salvataggio del file del turno '{filename}': {error}"
-msgstr "Error al guardar el archivo de la ronda '{filename}': {error}"
+msgstr ""
+"Erreur lors de l'enregistrement du fichier d'équipe '{filename}' : {error}"
 
 #: backup/tornello.py:2545 src/reports.py:298
 #, python-brace-format
 msgid "Errore inatteso durante il salvataggio del file del turno: {error}"
-msgstr "Error inesperado al guardar el archivo de la ronda: {error}"
+msgstr ""
+"Erreur inattendue lors de l'enregistrement du fichier d'équipe : {error}"
 
 #: backup/tornello.py:2556 src/reports.py:310
 msgid "Attenzione: Nessun giocatore per generare la classifica."
-msgstr "Atención: Ningún jugador para generar la clasificación."
+msgstr "Attention : Aucun joueur pour générer le classement."
 
 #: backup/tornello.py:2562 src/reports.py:330
 msgid "Calcolo/Aggiornamento spareggi per classifica..."
-msgstr "Calculando/Actualizando desempates para la clasificación..."
+msgstr "Calcul/Mise à jour des play-offs par classement..."
 
 #: backup/tornello.py:2610 src/reports.py:418
 #, python-brace-format
 msgid "Tornello - {name} - Classifica.txt"
-msgstr "Tornello - {name} - Clasificación.txt"
+msgstr "Tourniquet - {name} - Classifica.txt"
 
 #: backup/tornello.py:2614 src/reports.py:364
 msgid "CLASSIFICA FINALE"
-msgstr "CLASIFICACIÓN FINAL"
+msgstr "CLASSEMENT FINAL"
 
 #: backup/tornello.py:2619 src/reports.py:367
 msgid "Elenco Iniziale Partecipanti (Prima del Turno 1)"
-msgstr "Lista Inicial de Participantes (Antes de la Ronda 1)"
+msgstr "Liste initiale des participants (avant le premier tour)"
 
 #: backup/tornello.py:2632 src/reports.py:380
 #, python-brace-format
 msgid "Classifica Parziale - Dopo Turno {round_num}"
-msgstr "Clasificación Parcial - Después de la Ronda {round_num}"
+msgstr "Classement partiel - Après le tour {round_num}"
 
 #: backup/tornello.py:2634 src/reports.py:382
 #, python-brace-format
 msgid "Classifica Parziale - Durante Turno {round_num}"
-msgstr "Clasificación Parcial - Durante la Ronda {round_num}"
+msgstr "Classement partiel - Durant le tour {round_num}"
 
 #: backup/tornello.py:2639 src/reports.py:423
 #, python-brace-format
 msgid "Nome Torneo: {name}\n"
-msgstr "Nombre del Torneo: {name}\n"
+msgstr "Nom du tournoi : {name}"
 
 #: backup/tornello.py:2640 src/reports.py:424
 #, python-brace-format
 msgid "Luogo: {site}\n"
-msgstr "Lugar: {site}\n"
+msgstr "Emplacement : {site}"
 
 #: backup/tornello.py:2641 src/reports.py:425
 #, python-brace-format
 msgid "Date: {start_date} - {end_date}\n"
-msgstr "Fechas: {start_date} - {end_date}\n"
+msgstr "Dates : {start_date} - {end_date}"
 
 #: backup/tornello.py:2642 src/reports.py:426
 #, python-brace-format
 msgid "Federazione Organizzante: {fed}\n"
-msgstr "Federación Organizadora: {fed}\n"
+msgstr "Fédération organisatrice : {fed}"
 
 #: backup/tornello.py:2643 src/reports.py:427
 #, python-brace-format
 msgid "Arbitro Capo: {arbiter}\n"
-msgstr "Árbitro Principal: {arbiter}\n"
+msgstr "Arbitre en chef : {arbiter}"
 
 #: backup/tornello.py:2646 src/reports.py:430
 #, python-brace-format
 msgid "Vice Arbitri: {arbiters}\n"
-msgstr "Árbitros Adjuntos: {arbiters}\n"
+msgstr "Arbitres adjoints : {arbiters}"
 
 #: backup/tornello.py:2647 src/reports.py:431
 #, python-brace-format
 msgid "Controllo Tempo: {time_control}\n"
-msgstr "Control de Tiempo: {time_control}\n"
+msgstr "Contrôle du temps : {time_control}"
 
 #: backup/tornello.py:2648 src/reports.py:432
 msgid "Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"
-msgstr "Sistema de Emparejamiento: Suizo Holandés (vía bbpPairings)\n"
+msgstr "Système d'appariement : suisse néerlandais (via bbpPairings)"
 
 #: backup/tornello.py:2649 src/reports.py:433
 #, python-brace-format
 msgid "Data Report: {date} {time}\n"
-msgstr "Fecha del Informe: {date} {time}\n"
+msgstr "Rapport de données : {date} {time}"
 
 #: backup/tornello.py:2655
-#, fuzzy
 msgid ""
 "Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO"
 " "
-msgstr ""
-"Pos. Título Nombre Apellido           [EloIni] Puntos  Bucch-1  Bucch    ARO"
-" "
+msgstr "Pos. Titre Prénom Prénom [EloIni] Points Bucch-1 Bucch ARO"
 
 #: backup/tornello.py:2701 src/reports.py:495
 #, python-brace-format
 msgid "File classifica '{filename}' salvato/sovrascritto."
-msgstr "Archivo de clasificación '{filename}' guardado/sobrescrito."
+msgstr "Fichier de classement '{filename}' enregistré/écrasé."
 
 #: backup/tornello.py:2703 src/reports.py:497
 #, python-brace-format
 msgid ""
 "Errore durante il salvataggio del file classifica '{filename}': {error}"
-msgstr "Error al guardar el archivo de clasificación '{filename}': {error}"
+msgstr ""
+"Erreur lors de l'enregistrement du fichier de classement « {filename} » : "
+"{error}"
 
 #: backup/tornello.py:2711 src/reports.py:504
 msgid ""
 "\n"
 "--- Stato Torneo ---"
-msgstr ""
-"\n"
-"--- Estado del Torneo ---"
+msgstr "--- Statut du tournoi ---"
 
 #: backup/tornello.py:2712 src/reports.py:505
 #, python-brace-format
 msgid "Nome: {name}"
-msgstr "Nombre: {name}"
+msgstr "Nom : {name}"
 
 #: backup/tornello.py:2715 src/reports.py:508
 #, python-brace-format
 msgid "Periodo: {start} - {end}"
-msgstr "Periodo: {start} - {end}"
+msgstr "Période : {start} - {end}"
 
 #: backup/tornello.py:2718 src/reports.py:511
 #, python-brace-format
 msgid "Turno Corrente: {current} / {total}"
-msgstr "Ronda Actual: {current} / {total}"
+msgstr "Equipe actuelle : {current} / {total}"
 
 #: backup/tornello.py:2726 src/reports.py:519
 #, python-brace-format
 msgid "Periodo Turno {round_num}: {start} - {end}"
-msgstr "Periodo Ronda {round_num}: {start} - {end}"
+msgstr "Période de décalage {round_num} : {start} - {end}"
 
 #: backup/tornello.py:2732 src/reports.py:525
 #, python-brace-format
 msgid " -> Termine turno superato da {days} giorni."
-msgstr " -> Fin de la ronda superado por {days} días."
+msgstr "-> Délai d'équipe dépassé de {days} jours."
 
 #: backup/tornello.py:2736 src/reports.py:529
 msgid " -> Ultimo giorno per completare il turno."
-msgstr " -> Último día para completar la ronda."
+msgstr "-> Dernier jour pour terminer le quart de travail."
 
 #: backup/tornello.py:2738 src/reports.py:531
 #, python-brace-format
 msgid " -> Giorni rimanenti per il turno: {days}"
-msgstr " -> Días restantes para la ronda: {days}"
+msgstr "-> Jours restants pour le quart de travail : {days}"
 
 #: backup/tornello.py:2747 src/reports.py:540
 msgid "Termine torneo superato."
-msgstr "Fin del torneo superado."
+msgstr "La date limite du tournoi est dépassée."
 
 #: backup/tornello.py:2753 src/reports.py:546
 #, python-brace-format
 msgid "Giorni rimanenti alla fine del torneo: {days}"
-msgstr "Días restantes para el fin del torneo: {days}"
+msgstr "Jours restants jusqu'à la fin du tournoi : {days}"
 
 #: backup/tornello.py:2755 src/reports.py:550
 #, python-brace-format
 msgid "Data fine torneo ('{date}') non valida per calcolo giorni rimanenti."
 msgstr ""
-"Fecha de fin de torneo ('{date}') no válida para el cálculo de días "
-"restantes."
+"La date de fin du tournoi (« {date} ») n'est pas valide pour le calcul des "
+"jours restants."
 
 #: backup/tornello.py:2770 src/reports.py:565
 #, python-brace-format
 msgid ""
 "\n"
 "Partite da giocare/registrare per il Turno {round_num}: {count}"
-msgstr ""
-"\n"
-"Partidas por jugar/registrar para la Ronda {round_num}: {count}"
+msgstr "Parties à jouer/enregistrer pour le tour {round_num} : {count}"
 
 #: backup/tornello.py:2775 src/reports.py:570
 #, python-brace-format
 msgid ""
 "\n"
 "Tutte le partite del Turno {round_num} sono state registrate."
-msgstr ""
-"\n"
-"Todas las partidas de la Ronda {round_num} han sido registradas."
+msgstr "Tous les matchs du Round {round_num} ont été enregistrés."
 
 #: backup/tornello.py:2778 src/reports.py:573
 msgid ""
 "\n"
 "Il torneo è concluso."
-msgstr ""
-"\n"
-"El torneo ha concluido."
+msgstr "Le tournoi est terminé."
 
 #: backup/tornello.py:2780 src/reports.py:575
 #, python-brace-format
 msgid ""
 "\n"
 "Dati per il Turno {round_num} non trovati o turno non valido."
-msgstr ""
-"\n"
-"Datos para la Ronda {round_num} no encontrados o ronda no válida."
+msgstr "Données pour Shift {round_num} introuvables ou shift invalide."
 
 #: backup/tornello.py:2791 src/ui.py:728
 msgid ""
 "ERRORE CRITICO: Nome del torneo non presente nell'oggetto torneo. "
 "Impossibile finalizzare."
 msgstr ""
-"ERROR CRÍTICO: Nombre del torneo no presente en el objeto torneo. Imposible "
-"finalizar."
+"ERREUR CRITIQUE : le nom du tournoi n'est pas présent dans l'objet du "
+"tournoi. Impossible de finaliser."
 
 #: backup/tornello.py:2793 src/ui.py:730
 #, python-brace-format
 msgid ""
 "\n"
 "--- Finalizzazione Torneo: {name} ---"
-msgstr ""
-"\n"
-"--- Finalización del Torneo: {name} ---"
+msgstr "--- Finalisation du tournoi : {name} ---"
 
 #: backup/tornello.py:2798 src/ui.py:748
 msgid "Nessun giocatore nel torneo, impossibile finalizzare."
-msgstr "Ningún jugador en el torneo, imposible finalizar."
+msgstr "Aucun joueur dans le tournoi, impossible de finaliser."
 
 #: backup/tornello.py:2801 src/ui.py:751
 msgid "Accesso al DB e calcolo K-Factor e partite giocate..."
-msgstr "Accediendo a la BD y calculando Factor-K y partidas jugadas..."
+msgstr "Accès au calcul DB et K-Factor et aux jeux joués..."
 
 #: backup/tornello.py:2825 src/ui.py:775
 msgid "Ricalcolo finale Buchholz, ARO, Performance Rating, Variazione Elo..."
-msgstr "Recálculo final de Buchholz, ARO, Rendimiento, Variación de Elo..."
+msgstr "Recalcul final Buchholz, ARO, Performance Rating, Elo Change..."
 
 #: backup/tornello.py:2844 src/ui.py:794
 msgid "Ordinamento classifica finale..."
-msgstr "Ordenando la clasificación final..."
+msgstr "Ordre de classement final..."
 
 #: backup/tornello.py:2872 src/ui.py:822
 #, python-brace-format
 msgid "Errore durante l'ordinamento dei giocatori per la classifica: {error}"
-msgstr ""
-"Error durante la ordenación de los jugadores para la clasificación: {error}"
+msgstr "Erreur lors du tri des joueurs pour le classement : {error}"
 
 #: backup/tornello.py:2877 src/ui.py:827
 msgid "Salvataggio classifica finale su file di testo..."
-msgstr "Guardando clasificación final en archivo de texto..."
+msgstr "Enregistrement du classement final dans un fichier texte..."
 
 #: backup/tornello.py:2881 src/ui.py:831
 msgid "Aggiornamento Database Giocatori (Elo, partite, storico tornei)..."
 msgstr ""
-"Actualizando Base de Datos de Jugadores (Elo, partidas, historial de "
-"torneos)..."
+"Mise à jour de la base de données des joueurs (Elo, matchs, historique des "
+"tournois)..."
 
 #: backup/tornello.py:2931 src/ui.py:881
 #, python-brace-format
 msgid "Database Giocatori aggiornato per {count} giocatori e salvato."
 msgstr ""
-"Base de Datos de Jugadores actualizada para {count} jugadores y guardada."
+"Base de données des joueurs mise à jour pour les joueurs {count} et "
+"enregistrée."
 
 #: backup/tornello.py:2933 src/ui.py:883
 msgid "Nessun aggiornamento necessario per il Database Giocatori."
-msgstr ""
-"No es necesaria ninguna actualización para la Base de Datos de Jugadores."
+msgstr "Aucune mise à jour nécessaire pour la base de données des joueurs."
 
 #: backup/tornello.py:2935 src/ui.py:885
 #, python-brace-format
 msgid "Archiviazione del torneo '{name}'..."
-msgstr "Archivando el torneo '{name}'..."
+msgstr "Archivage du tournoi '{name}'..."
 
 #: backup/tornello.py:2944 src/ui.py:894
 #, python-brace-format
@@ -3389,21 +3232,21 @@ msgid ""
 " Warning: Formato data di fine ('{date_str}') non valido. Uso data corrente "
 "per suffisso cartella archivio."
 msgstr ""
-" Advertencia: Formato de fecha de fin ('{date_str}') no válido. Usando fecha"
-" actual para el sufijo de la carpeta de archivo."
+"Avertissement : Format de date de fin non valide (\"{date_str}\"). Utilisez "
+"la date actuelle pour le suffixe du dossier d'archive."
 
 #: backup/tornello.py:2950 src/ui.py:900
 #, python-brace-format
 msgid "ERRORE: Creazione cartella di archivio '{path}' fallita: {error}"
-msgstr "ERROR: La creación de la carpeta de archivo '{path}' falló: {error}"
+msgstr "ERREUR : La création du dossier d'archive '{path}' a échoué : {error}"
 
 #: backup/tornello.py:2951 src/ui.py:901
 msgid ""
 "I file del torneo non saranno archiviati ma il resto della finalizzazione è "
 "completo."
 msgstr ""
-"Los archivos del torneo no se archivarán pero el resto de la finalización "
-"está completa."
+"Les fichiers du tournoi ne seront pas archivés mais le reste de la "
+"finalisation est terminé."
 
 #: backup/tornello.py:2965 src/ui.py:915
 #, python-brace-format
@@ -3411,95 +3254,96 @@ msgid ""
 " Warning: File JSON principale del torneo ('{current_filename}' o "
 "'{guessed_filename}') non trovato per l'archiviazione."
 msgstr ""
-" Advertencia: Archivo JSON principal del torneo ('{current_filename}' o "
-"'{guessed_filename}') no encontrado para archivar."
+"Attention : fichier JSON principal du tournoi (\"{current_filename}\" ou "
+"\"{guessed_filename}\") introuvable pour l'archivage."
 
 #: backup/tornello.py:2980 src/ui.py:930
 msgid "  Warning: Nessun file specifico del torneo trovato da archiviare."
 msgstr ""
-"  Advertencia: No se encontró ningún archivo específico del torneo para "
-"archivar."
+"Attention : aucun fichier spécifique au tournoi à archiver n'a été trouvé."
 
 #: backup/tornello.py:2988 src/ui.py:938
 #, python-brace-format
 msgid ""
 " Warning: File '{filename}' esiste già in '{path}'. Non verrà sovrascritto."
 msgstr ""
-" Advertencia: El archivo '{filename}' ya existe en '{path}'. No se "
-"sobrescribirá."
+"Attention : Le fichier '{filename}' existe déjà dans '{path}'. Il ne sera "
+"pas écrasé."
 
 #: backup/tornello.py:2995 src/ui.py:945
 #, python-brace-format
 msgid "Spostati {count} file del torneo in: '{path}'"
-msgstr "Movidos {count} archivos del torneo a: '{path}'"
+msgstr "Fichier de tournoi {count} déplacé vers : '{path}'"
 
 #: backup/tornello.py:2997 src/ui.py:947
 msgid "Nessun file del torneo è stato spostato nella cartella di archivio."
-msgstr "Ningún archivo del torneo ha sido movido a la carpeta de archivo."
+msgstr "Aucun fichier de tournoi n'a été déplacé vers le dossier d'archive."
 
 #: backup/tornello.py:2998 src/ui.py:948
 #, python-brace-format
 msgid "Torneo '{name}' finalizzato e archiviato."
-msgstr "Torneo '{name}' finalizado y archivado."
+msgstr "Tournoi '{name}' finalisé et archivé."
 
 #: backup/tornello.py:3131
 #, python-brace-format
 msgid " {num}. Crea un nuovo torneo"
-msgstr " {num}. Crear un nuevo torneo"
+msgstr "{num}. Créer un nouveau tournoi"
 
 #: src/db_players.py:151
 msgid ""
 "\n"
 "--- Sommario Aggiornamenti Disponibili ---"
-msgstr "--- Resumen de actualizaciones disponibles ---"
+msgstr "--- Résumé des mises à jour disponibles ---"
 
 #: src/db_players.py:153
 #, python-brace-format
 msgid " - {num} nuovi ID FIDE da associare"
-msgstr "- {num} nuevos ID FIDE para asociar"
+msgstr "- {num} nouveaux identifiants FIDE à associer"
 
 #: src/db_players.py:155
 #, python-brace-format
 msgid " - {num} aggiornamenti Elo"
-msgstr "- Actualizaciones {num} Elo"
+msgstr "- Mises à jour {num} Elo"
 
 #: src/db_players.py:157
 #, python-brace-format
 msgid " - {num} aggiornamenti anno di nascita"
-msgstr "- Actualizaciones del año de nacimiento {num}"
+msgstr "- Mises à jour de l'année de naissance {num}"
 
 #: src/db_players.py:159
 #, python-brace-format
 msgid " - {num} aggiornamenti titoli FIDE"
-msgstr "- {num} actualiza los títulos FIDE"
+msgstr "- {num} met à jour les titres FIDE"
 
 #: src/db_players.py:161
 #, python-brace-format
 msgid " - {num} aggiornamenti K-Factor"
-msgstr "- Actualizaciones del factor K {num}"
+msgstr "- Mises à jour du facteur K {num}"
 
 #: src/db_players.py:165
 #, python-brace-format
 msgid ""
 " - {num} giocatori con omonimi multipli (richiedono risoluzione manuale)"
 msgstr ""
-"- Reproductores {num} con múltiples homónimos (requiere resolución manual)"
+"- Lecteurs {num} avec plusieurs homonymes (nécessite une résolution "
+"manuelle)"
 
 #: src/db_players.py:169
 msgid ""
 "Premi ESCAPE per applicare TUTTI gli aggiornamenti non ambigui in "
 "automatico."
 msgstr ""
-"Presione ESCAPE para aplicar TODAS las actualizaciones inequívocas "
-"automáticamente."
+"Appuyez sur ÉCHAP pour appliquer automatiquement TOUTES les mises à jour "
+"sans ambiguïté."
 
 #: src/db_players.py:170
 msgid "Premi INVIO per decidere per ciascun aggiornamento passo-passo."
-msgstr "Presione ENTER para decidir para cada actualización paso a paso."
+msgstr ""
+"Appuyez sur ENTRÉE pour décider de chaque mise à jour étape par étape."
 
 #: src/db_players.py:172
 msgid "Scegli la modalità (INVIO = passo-passo | ESCAPE = applica tutti): "
-msgstr "Elija el modo (ENTER = paso a paso | ESCAPE = aplicar todo):"
+msgstr "Choisissez le mode (ENTER = pas à pas | ESCAPE = tout appliquer) :"
 
 #: src/db_players.py:188
 #, python-brace-format
@@ -3507,70 +3351,66 @@ msgid ""
 "\n"
 "Giocatore: {} {} (ID Locale: {}) ha {} omonimi nel DB FIDE. Risoluzione manuale richiesta."
 msgstr ""
-"Jugador: {} {} (ID local: {}) tiene {} homónimos en la base de datos FIDE. "
-"Se requiere resolución manual."
+"Joueur : {} {} (ID local : {}) a {} homonymes dans la base de données FIDE. "
+"Résolution manuelle requise."
 
 #: src/db_players.py:191 src/db_players.py:222
-#, fuzzy
 msgid "   0. Nessuno di questi"
-msgstr "   n. Ninguno de estos"
+msgstr "0. Aucun de ces éléments"
 
 #: src/db_players.py:192 src/db_players.py:223
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "   Scelta (0-{}): "
-msgstr "   Elección: "
+msgstr "Choix (0-{}) :"
 
 #: src/db_players.py:205
 msgid "   Saltato."
-msgstr "Saltado."
+msgstr "Sauté."
 
 #: src/db_players.py:216
 #, python-brace-format
 msgid ""
 "\n"
 "--- Modifiche per: {} {} (ID: {}) ---"
-msgstr "--- Cambios para: {} {} (ID: {}) ---"
+msgstr "--- Modifications pour : {} {} (ID : {}) ---"
 
 #: src/db_players.py:219
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Trovati {} omonimi nel DB FIDE."
-msgstr ""
-"\n"
-"-> Se encontró 1 coincidencia en la BD FIDE:"
+msgstr "Trouvé {} homonymes dans la base de données FIDE."
 
 #: src/db_players.py:236
 msgid "Saltato."
-msgstr "Saltado."
+msgstr "Sauté."
 
 #: src/db_players.py:240
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " -> Associa nuovo ID FIDE: {}"
-msgstr " -> Asociación nuevo ID FIDE: {}"
+msgstr "-> Associer un nouvel identifiant FIDE : {}"
 
 #: src/db_players.py:243
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " -> Aggiorna {}: da '{}' a '{}'"
-msgstr "      -> Actualización {}: de '{}' a '{}'"
+msgstr "-> Mise à jour {} : de '{}' à '{}'"
 
 #: src/db_players.py:246
 msgid "Applicare queste modifiche? (INVIO per Sì | ESCAPE per No): "
-msgstr "¿Aplicar estos cambios? (ENTRAR para Sí | ESCAPAR para No):"
+msgstr "Appliquer ces changements ? (ENTER pour Oui | ESCAPE pour Non) :"
 
 #: src/db_players.py:251
-#, fuzzy
 msgid "Modifiche applicate."
-msgstr "Modificación cancelada."
+msgstr "Modifications appliquées."
 
 #: src/db_players.py:253
-#, fuzzy
 msgid "Modifiche saltate."
-msgstr "Modificación cancelada."
+msgstr "Modifications ignorées."
 
 #: src/db_players.py:259
 msgid ""
 "\n"
 "Nessuna modifica è stata apportata al database personale."
-msgstr "No se realizaron cambios en la base de datos personal."
+msgstr ""
+"Aucune modification n'a été apportée à la base de données personnelle."
 
 #: src/reports.py:54
 #, python-brace-format
@@ -3578,87 +3418,81 @@ msgid ""
 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo"
 " turno."
 msgstr ""
-"Quedan {days} días y {hours} horas hasta el final del periodo útil de este "
-"turno."
+"Il reste des jours {days} et des heures {hours} jusqu'à la fin de la période"
+" utile pour cette équipe."
 
 #: src/reports.py:72
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
-msgstr ""
-" Periodo Ronda: {start} - {end}\n"
-"\n"
+msgstr "Période de décalage : {start} - {end}"
 
 #: src/reports.py:141
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " Partite già pianificate, da giocare ({count}):\n"
-msgstr ""
-"\n"
-"Partidas Ya Planificadas (en espera de resultado):"
+msgstr "Matchs déjà programmés, à jouer ({count}) :"
 
 #: src/reports.py:151
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "  Ancora non pianificate ({count}):\n"
-msgstr "   No planificadas (con retirados):\n"
+msgstr "Pas encore prévu ({count}) :"
 
 #: src/reports.py:168
 #, python-brace-format
 msgid ""
 "\n"
 "  Partite già giocate o con risultato convalidato ({count}):\n"
-msgstr "Partidos ya jugados o con resultado validado ({count}):"
+msgstr "Matchs déjà joués ou avec résultat validé ({count}) :"
 
 #: src/reports.py:172
 msgid "  Ancora nessun risultato assegnato\n"
-msgstr "Aún no se han otorgado resultados"
+msgstr "Aucun résultat attribué pour l'instant"
 
 #: src/reports.py:439
-#, fuzzy
 msgid ""
 "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  "
 "Bucch    ARO "
-msgstr ""
-"Pos. Título Nombre Apellido           [EloIni] Puntos  Bucch-1  Bucch    ARO"
-" "
+msgstr "Pos. (Tab) Titre Nom Prénom [EloIni] Points Bucch-1 Bucch ARO"
 
 #: src/reports.py:599
 #, python-brace-format
 msgid "Riepilogo promemoria salvato in: '{report}'"
-msgstr "Resumen del recordatorio guardado en: '{report}'"
+msgstr "Résumé du rappel enregistré dans : '{report}'"
 
 #: src/reports.py:601
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Errore nel salvataggio del riepilogo sospeso: {e}"
-msgstr "Error durante el guardado del torneo ({filename}): {error}"
+msgstr "Erreur lors de l'enregistrement du résumé suspendu : {e}"
 
 #: src/tournament.py:89
 #, python-brace-format
 msgid "Backup di sicurezza creato: {filename}"
-msgstr "Copia de seguridad de seguridad creada: {filename}"
+msgstr "Sauvegarde de sécurité créée : {filename}"
 
 #: src/tournament.py:91
-#, fuzzy, python-brace-format
 msgid ""
 "ATTENZIONE: Impossibile creare il backup di sicurezza. Procedo ugualmente..."
-msgstr "ATENCIÓN: Imposible crear la subcarpeta '{}': {}"
+msgstr ""
+"AVERTISSEMENT : Impossible de créer une sauvegarde de sécurité. Je continue "
+"quand même..."
 
 #: src/tournament.py:235
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "ERRORE: La durata totale del torneo ({duration} giorni) è inferiore al "
 "numero di turni previsti ({rounds})."
 msgstr ""
-"Atención: La duración total ({duration} días) es inferior al número de "
-"rondas ({rounds})."
+"ERREUR : La durée totale du tournoi ({duration} jours) est inférieure au "
+"nombre de tours prévu ({rounds})."
 
 #: src/tournament.py:236
 msgid ""
 "Impossibile programmare i turni senza sovrapposizioni. Ampliare la finestra "
 "temporale o ridurre i turni."
 msgstr ""
-"Imposible programar turnos sin superposiciones. Ampliar la ventana de tiempo"
-" o reducir turnos."
+"Impossible de planifier des quarts de travail sans chevauchements. Prolongez"
+" la fenêtre de temps ou réduisez les quarts de travail."
 
 #: src/ui.py:76
 #, python-brace-format
@@ -3666,216 +3500,190 @@ msgid ""
 "\n"
 "Info: I dati (Elo/Titoli) di {count} giocatore/i sono stati automaticamente allineati all'ultimo aggiornamento del Database."
 msgstr ""
-"Información: Los datos (Elo/Títulos) de los jugadores {count} se han "
-"alineado automáticamente con la última actualización de la base de datos."
+"Info : Les données (Elo/Titres) du ou des joueurs {count} ont été "
+"automatiquement alignées avec la dernière mise à jour de la base de données."
 
 #: src/ui.py:223
 msgid ""
 "Vuoi (C)oncludere l'inserimento giocatori, (S)ospenderlo temporaneamente per"
 " riprenderlo in futuro, o (A)nnullare l'inserimento corrente?"
 msgstr ""
-"¿Quiere (C) finalizar la inserción del reproductor, (S) suspenderla "
-"temporalmente para reanudarla en el futuro o (A) cancelar la inserción "
-"actual?"
+"Voulez-vous (C)mettre fin à l'insertion du lecteur, (S)la suspendre "
+"temporairement pour la reprendre ultérieurement, ou (A)annuler l'insertion "
+"en cours ?"
 
 #: src/ui.py:224
 msgid "Premi 'c' per concludere, 's' per sospendere, Esc per annullare: "
-msgstr "Presione 'c' para finalizar, 's' para suspender, Esc para cancelar:"
+msgstr ""
+"Appuyez sur « c » pour terminer, « s » pour suspendre, Esc pour annuler :"
 
 #: src/ui.py:229
 msgid ""
 "\n"
 "Sospensione inserimento. Salvataggio stato del torneo..."
-msgstr "Suspensión de armado. Guardando el estado del torneo..."
+msgstr "Suspension d'armement. Sauvegarde du statut du tournoi..."
 
 #: src/ui.py:235
 #, python-brace-format
 msgid "Torneo sospeso salvato in: '{filename}'"
-msgstr "Torneo suspendido guardado en: '{filename}'"
+msgstr "Tournoi suspendu enregistré dans : '{filename}'"
 
 #: src/ui.py:242
 msgid "Errore: impossibile sospendere il torneo in questo momento."
-msgstr "Error: No se puede suspender el torneo en este momento."
+msgstr "Erreur : Impossible de suspendre le tournoi pour le moment."
 
 #: src/ui.py:254
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Errore: Giocatore ID {player_id} ({first_name} {last_name}) è già nel "
 "torneo."
 msgstr ""
-"Error: El jugador ID {player_id} ({player_name}) ya ha sido añadido a este "
-"torneo."
+"Erreur : L'ID du joueur {player_id} ({first_name} {last_name}) est déjà dans"
+" le tournoi."
 
 #: src/ui.py:264
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "Trovati {count} giocatori nel tuo DB personale corrispondenti a '{term}':"
 msgstr ""
-"Se encontraron {count} jugadores en tu BD personal. Especifica usando el ID "
-"local:"
+"Joueurs {count} trouvés dans votre base de données personnelle correspondant"
+" à '{term}' :"
 
 #: src/ui.py:266
 msgid " (GIÀ NEL TORNEO)"
-msgstr "(YA EN EL TORNEO)"
+msgstr "(DÉJÀ DANS LE TOURNOI)"
 
 #: src/ui.py:268
-#, fuzzy
 msgid "  0. Nessuno di questi, cerca nel DB FIDE"
-msgstr "   n. Ninguno de estos"
+msgstr "0. Aucun de ceux-ci, recherchez dans la base de données FIDE"
 
 #: src/ui.py:270
 msgid "Scegli un numero (o Invio per annullare e cercare un altro nome): "
-msgstr "Elija un número (o Ingrese para cancelar y buscar otro nombre):"
+msgstr ""
+"Choisissez un numéro (ou Entrée pour annuler et rechercher un autre nom) :"
 
 #: src/ui.py:280
 msgid "Errore: Il giocatore selezionato è già nel torneo."
-msgstr "Error: El jugador seleccionado ya está en el torneo."
+msgstr "Erreur : Le joueur sélectionné est déjà dans le tournoi."
 
 #: src/ui.py:296
-#, fuzzy
 msgid ""
 "Giocatore non trovato o non selezionato nel DB personale. Avvio ricerca nel "
 "DB FIDE..."
 msgstr ""
-"Jugador no encontrado en la BD personal. Iniciando búsqueda en la BD FIDE..."
+"Joueur introuvable ou non sélectionné dans la base de données personnelle. "
+"Lancement de la recherche dans la base de données FIDE..."
 
 #: src/ui.py:326
-#, fuzzy, python-brace-format
 msgid ""
 "Scelta (Numero, 0 per manuale, Invio per successivi, +testo/-testo/testo per"
 " affinare): "
 msgstr ""
-"Elección (Número, 0 para manual, Enter para los siguientes {page_size}): "
+"Choix (Numéro, 0 pour manuel, Entrée pour suivant, +texte/-texte/texte pour "
+"affiner) :"
 
 #: src/ui.py:328
-#, fuzzy
 msgid "Scelta (Numero o 0 per manuale, +testo/-testo/testo per affinare): "
-msgstr "Elección (Número o 0 para manual): "
+msgstr "Choix (Numéro ou 0 pour manuel, +texte/-texte/texte à affiner) :"
 
 #: src/ui.py:336
 msgid ""
 "Non ci sono altri risultati. Scegli un numero, 0 per manuale, oppure affina "
 "la ricerca."
 msgstr ""
-"No hay otros resultados. Elija un número, 0 para manual, o refine su "
-"búsqueda."
+"Il n'y a pas d'autres résultats. Choisissez un chiffre, 0 pour manuel, ou "
+"affinez votre recherche."
 
 #: src/ui.py:364
-#, fuzzy
 msgid ""
 "Il termine di ricerca non può essere vuoto. Inserisci un nuovo termine."
-msgstr "El nombre del torneo no puede estar vacío. Inténtalo de nuevo."
+msgstr "Le terme de recherche ne peut pas être vide. Entrez un nouveau terme."
 
 #: src/ui.py:367
 #, python-brace-format
 msgid ""
 "\n"
 "-> Nuova ricerca nel DB FIDE per '{term}'..."
-msgstr "-> Nueva búsqueda en la base de datos de la FIDE para '{term}'..."
+msgstr "-> Nouvelle recherche dans la BD FIDE pour '{term}'..."
 
 #: src/ui.py:372
-#, fuzzy
 msgid ""
 "Nessuna corrispondenza trovata con questi termini. Procedo con l'inserimento"
 " manuale."
-msgstr "No se encontraron coincidencias. Procede con la introducción manual."
+msgstr ""
+"Aucune correspondance trouvée avec ces termes. Je procède à l'insertion "
+"manuelle."
 
 #: src/ui.py:383
-#, fuzzy
 msgid "Procedo con l'inserimento manuale."
-msgstr "No se encontraron coincidencias. Procede con la introducción manual."
+msgstr "Je procède à l'insertion manuelle."
 
 #: src/ui.py:387
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Trovate {count} corrispondenze."
-msgstr ""
-"\n"
-"-> Se encontró 1 coincidencia en la BD FIDE:"
+msgstr "Recherchez les correspondances {count}."
 
 #: src/ui.py:461
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "-> Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) salvato nel "
 "DB e iscritto al torneo."
 msgstr ""
-"-> Jugador '{first_name} {last_name}' (ID BD: {player_id}) añadido al "
-"torneo."
+"-> Nouveau joueur '{first_name} {last_name}' (ID : {player_id}) enregistré "
+"dans la base de données et inscrit au tournoi."
 
 #: src/ui.py:463
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "-> Giocatore '{first_name} {last_name}' (ID: {player_id}) iscritto al "
 "torneo."
 msgstr ""
-"-> Jugador '{first_name} {last_name}' (ID BD: {player_id}) añadido al "
-"torneo."
+"-> Joueur '{first_name} {last_name}' (ID : {player_id}) inscrit au tournoi."
 
 #: src/ui.py:518
-#, fuzzy
 msgid ""
 "\n"
 "  Partite già pianificate, da giocare:"
-msgstr ""
-"\n"
-"Partidas Ya Planificadas (en espera de resultado):"
+msgstr "Matchs déjà programmés, à jouer :"
 
 #: src/ui.py:538
-#, fuzzy
 msgid ""
 "\n"
 "  Ancora non pianificate:"
-msgstr " a planificar: "
+msgstr "Pas encore prévu :"
 
 #: src/ui.py:555
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "R|T|SC|nome|cognome [{boards}]: "
-msgstr ""
-"\n"
-"P|R|T|TB|nombre|apellido [{boards}]: "
+msgstr "R|T|SC|nom|nom [{boards}] :"
 
 #: src/ui.py:658
-#, fuzzy
 msgid "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: "
-msgstr "Resultados: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1]: "
+msgstr "Résultats : [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p au plan] :"
 
 #: src/ui.py:662
-#, fuzzy
 msgid ""
 "Questa partita è già pianificata. Vuoi (M)odificare o (R)imuovere la "
 "pianificazione? (Invio per annullare): "
 msgstr ""
-"¿Quieres (M)odificar o (E)liminar la planificación? (Enter para cancelar): "
+"Ce match est déjà prévu. Vous souhaitez (M)modifier ou (R)supprimer le "
+"planning ? (Entrez pour annuler) :"
 
 #: src/ui.py:733
 msgid "Creazione backup di sicurezza prima dell'archiviazione..."
-msgstr "Crear copias de seguridad de seguridad antes de archivar..."
+msgstr "Création de sauvegardes de sécurité avant l'archivage..."
 
 #: src/ui.py:740
 msgid ""
 "ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo "
 "ugualmente..."
 msgstr ""
-"ADVERTENCIA: Error al crear uno o más archivos de respaldo. Procedo de todos"
-" modos..."
+"AVERTISSEMENT : La création d'un ou plusieurs fichiers de sauvegarde a "
+"échoué. Je continue quand même..."
 
 #: src/ui.py:742
 msgid "Backup di sicurezza creati con successo."
-msgstr "Copias de seguridad de seguridad creadas exitosamente."
-
-#~ msgid ""
-#~ "ERRORE: Impossibile generare il turno {round_num}. Ripristino al turno "
-#~ "precedente."
-#~ msgstr ""
-#~ "ERROR: Imposible generar la ronda {round_num}. Restaurando a la ronda "
-#~ "anterior."
-
-#~ msgid "Risposta non valida."
-#~ msgstr "Respuesta no válida."
-
-#~ msgid ""
-#~ "Vuoi (C)ontinuare a gestire questo turno o (U)scire dal programma? [C/u]: "
-#~ msgstr ""
-#~ "¿Quieres (C)ontinuar gestionando esta ronda o (S)alir del programa? [C/s]: "
+msgstr "Sauvegardes de sécurité créées avec succès."

@@ -24,6 +24,7 @@ FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
 
 # --- Funzioni Principali ---
 
+
 def aggiorna_db_fide_locale():
     """
     Scarica l'ultimo rating list FIDE (XML), estrae i dati più importanti
@@ -32,56 +33,70 @@ def aggiorna_db_fide_locale():
     """
     try:
         print(f"Download del file ZIP FIDE da: {FIDE_XML_DOWNLOAD_URL}")
-        print("L'operazione potrebbe richiedere alcuni minuti a seconda della connessione...")
-        
+        print(
+            "L'operazione potrebbe richiedere alcuni minuti a seconda della connessione..."
+        )
+
         # Esegue la richiesta per scaricare il file .zip
         zip_response = requests.get(FIDE_XML_DOWNLOAD_URL, timeout=120)
-        zip_response.raise_for_status() # Lancia un errore se il download fallisce
+        zip_response.raise_for_status()  # Lancia un errore se il download fallisce
 
         print("Download completato. Apertura archivio ZIP in memoria...")
         # Apre il file .zip direttamente in memoria, senza salvarlo su disco
         with zipfile.ZipFile(io.BytesIO(zip_response.content)) as zf:
             # Trova il nome del file .xml all'interno dello .zip
-            xml_filename = next((name for name in zf.namelist() if name.lower().endswith('.xml')), None)
-            
+            xml_filename = next(
+                (name for name in zf.namelist() if name.lower().endswith(".xml")), None
+            )
+
             if not xml_filename:
                 print("ERRORE: Nessun file .xml trovato nell'archivio ZIP.")
                 return False
-            
+
             print(f"Estrazione ed elaborazione del file XML: {xml_filename}...")
-            
+
             # Legge il contenuto del file XML
             xml_content = zf.read(xml_filename)
-            
-            print("Analisi del file XML in corso (potrebbe richiedere più di un minuto)...")
-            
+
+            print(
+                "Analisi del file XML in corso (potrebbe richiedere più di un minuto)..."
+            )
+
             fide_players_db = {}
             # Inizia l'analisi (parsing) del file XML
             root = ET.fromstring(xml_content)
-            
+
             player_count = 0
             # Itera su ogni "player" trovato nel file XML
-            for player_node in root.findall('player'):
-                fide_id_node = player_node.find('fideid')
-                
+            for player_node in root.findall("player"):
+                fide_id_node = player_node.find("fideid")
+
                 if fide_id_node is not None and fide_id_node.text:
                     fide_id_str = fide_id_node.text.strip()
-                    
-                    # Estrae i dati che ci interessano
-                    name = player_node.find('name').text
-                    rating_std_node = player_node.find('rating')
-                    flag_node = player_node.find('flag')
 
-                    rating_std = int(rating_std_node.text) if rating_std_node is not None and rating_std_node.text else 0
-                    
+                    # Estrae i dati che ci interessano
+                    name = player_node.find("name").text
+                    rating_std_node = player_node.find("rating")
+                    flag_node = player_node.find("flag")
+
+                    rating_std = (
+                        int(rating_std_node.text)
+                        if rating_std_node is not None and rating_std_node.text
+                        else 0
+                    )
+
                     # Filtriamo i giocatori inattivi o senza rating standard, che sono meno rilevanti
-                    if rating_std == 0 and (flag_node is not None and flag_node.text and 'i' in flag_node.text.lower()):
+                    if rating_std == 0 and (
+                        flag_node is not None
+                        and flag_node.text
+                        and "i" in flag_node.text.lower()
+                    ):
                         continue
 
                     # Separa il cognome dal nome
                     last_name_fide, first_name_fide = name, ""
-                    if ',' in name:
-                        parts = name.split(',', 1)
+                    if "," in name:
+                        parts = name.split(",", 1)
                         last_name_fide = parts[0].strip()
                         first_name_fide = parts[1].strip()
 
@@ -90,30 +105,44 @@ def aggiorna_db_fide_locale():
                         "id_fide": int(fide_id_str),
                         "first_name": first_name_fide,
                         "last_name": last_name_fide,
-                        "federation": player_node.find('country').text,
-                        "title": player_node.find('title').text or "",
-                        "sex": player_node.find('sex').text or "",
+                        "federation": player_node.find("country").text,
+                        "title": player_node.find("title").text or "",
+                        "sex": player_node.find("sex").text or "",
                         "elo_standard": rating_std,
-                        "elo_rapid": int(r.text) if (r := player_node.find('rapid_rating')) is not None and r.text else 0,
-                        "elo_blitz": int(b.text) if (b := player_node.find('blitz_rating')) is not None and b.text else 0,
-                        "k_factor": int(k.text) if (k := player_node.find('k')) is not None and k.text else None,
+                        "elo_rapid": int(r.text)
+                        if (r := player_node.find("rapid_rating")) is not None
+                        and r.text
+                        else 0,
+                        "elo_blitz": int(b.text)
+                        if (b := player_node.find("blitz_rating")) is not None
+                        and b.text
+                        else 0,
+                        "k_factor": int(k.text)
+                        if (k := player_node.find("k")) is not None and k.text
+                        else None,
                         "flag": flag_node.text if flag_node is not None else None,
-                        "birth_year": int(by.text) if (by := player_node.find('birthday')) is not None and by.text and by.text.isdigit() else None
+                        "birth_year": int(by.text)
+                        if (by := player_node.find("birthday")) is not None
+                        and by.text
+                        and by.text.isdigit()
+                        else None,
                     }
                     player_count += 1
                     # Fornisce un feedback ogni 500.000 giocatori elaborati
                     if player_count % 500000 == 0:
                         print(f"   ... elaborati {player_count} giocatori...")
 
-            print(f"Elaborazione completata. Trovati e salvati {len(fide_players_db)} giocatori FIDE.")
-            
+            print(
+                f"Elaborazione completata. Trovati e salvati {len(fide_players_db)} giocatori FIDE."
+            )
+
             print("Salvataggio del database JSON locale (potrebbe richiedere tempo)...")
             # Salva il grande dizionario in un file JSON
-            with open(FIDE_DB_LOCAL_FILE, "w", encoding='utf-8') as f_out:
+            with open(FIDE_DB_LOCAL_FILE, "w", encoding="utf-8") as f_out:
                 json.dump(fide_players_db, f_out, indent=1)
-                
+
             print(f"Database FIDE locale '{FIDE_DB_LOCAL_FILE}' salvato con successo.")
-            return True # Restituisce True per indicare successo
+            return True  # Restituisce True per indicare successo
 
     except requests.exceptions.Timeout:
         print("ERRORE: Timeout durante il download del file.")
@@ -122,7 +151,9 @@ def aggiorna_db_fide_locale():
         print(f"ERRORE di rete: {e_req}")
         return False
     except Exception as e_main:
-        print(f"Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: {e_main}")
+        print(
+            f"Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: {e_main}"
+        )
         traceback.print_exc()
         return False
 
@@ -133,12 +164,12 @@ def cerca_giocatore_fide(search_term):
     Restituisce una lista di record corrispondenti.
     """
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
-        return [] # Se il file non esiste, non c'è nulla da cercare
+        return []  # Se il file non esiste, non c'è nulla da cercare
     try:
-        with open(FIDE_DB_LOCAL_FILE, "r", encoding='utf-8') as f:
+        with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
             fide_db = json.load(f)
     except (IOError, json.JSONDecodeError):
-        return [] # Errore di lettura, restituisce lista vuota
+        return []  # Errore di lettura, restituisce lista vuota
 
     matches = []
     search_lower = search_term.strip().lower()
@@ -157,7 +188,9 @@ def cerca_giocatore_fide(search_term):
 
     return matches
 
+
 # --- NUOVE FUNZIONI DI VISUALIZZAZIONE ---
+
 
 def stampa_dettagli_giocatore(player):
     """
@@ -181,23 +214,31 @@ def gestisci_risultati_con_pager(results):
     while start_index < num_results:
         # Calcola l'indice di fine per la pagina corrente (massimo 10 risultati)
         end_index = min(start_index + 10, num_results)
-        
-        print("\n--- Pagina " + str(start_index // 10 + 1) + f" di { (num_results + 9) // 10 } ---")
+
+        print(
+            "\n--- Pagina "
+            + str(start_index // 10 + 1)
+            + f" di {(num_results + 9) // 10} ---"
+        )
 
         # Stampa il riepilogo per i giocatori nella pagina corrente
         for i in range(start_index, end_index):
             player = results[i]
             progressivo = i + 1
-            nome_completo = f"{player.get('first_name', '')} {player.get('last_name', '')}"
+            nome_completo = (
+                f"{player.get('first_name', '')} {player.get('last_name', '')}"
+            )
             # Usiamo .get(key, 'N/D') per evitare errori se un dato manca
-            elo_std = player.get('elo_standard', 'N/D')
-            elo_rapid = player.get('elo_rapid', 'N/D')
-            anno = player.get('birth_year', 'N/D')
-            nazione = player.get('federation', 'N/D')
-            
+            elo_std = player.get("elo_standard", "N/D")
+            elo_rapid = player.get("elo_rapid", "N/D")
+            anno = player.get("birth_year", "N/D")
+            nazione = player.get("federation", "N/D")
+
             # Formattiamo la riga di riepilogo
-            print(f"{progressivo:>3}. {nome_completo:<30} | Elo Std: {elo_std:<4} | Elo Rapid: {elo_rapid:<4} | Anno: {anno:<4} | Naz: {nazione}")
-        
+            print(
+                f"{progressivo:>3}. {nome_completo:<30} | Elo Std: {elo_std:<4} | Elo Rapid: {elo_rapid:<4} | Anno: {anno:<4} | Naz: {nazione}"
+            )
+
         # Chiede all'utente cosa fare
         prompt = "\nInserisci il numero del giocatore per vederne i dettagli,\no premi Invio per la pagina successiva (q per tornare alla ricerca): "
         user_choice = input(prompt).strip()
@@ -206,17 +247,19 @@ def gestisci_risultati_con_pager(results):
             start_index += 10
             if start_index >= num_results:
                 print("Fine dei risultati.")
-                break # Esce dal ciclo del pager
-        elif user_choice.lower() == 'q':
-             print("Torno alla ricerca...")
-             break # Esce dal ciclo del pager
+                break  # Esce dal ciclo del pager
+        elif user_choice.lower() == "q":
+            print("Torno alla ricerca...")
+            break  # Esce dal ciclo del pager
         elif user_choice.isdigit():
             choice_index = int(user_choice)
             if 1 <= choice_index <= num_results:
                 # L'utente ha scelto un giocatore valido, mostriamo i dettagli
                 print(f"\n--- Dettagli per il giocatore #{choice_index} ---")
-                stampa_dettagli_giocatore(results[choice_index - 1]) # -1 perché la lista parte da 0
-                break # Esce dal ciclo del pager dopo aver mostrato i dettagli
+                stampa_dettagli_giocatore(
+                    results[choice_index - 1]
+                )  # -1 perché la lista parte da 0
+                break  # Esce dal ciclo del pager dopo aver mostrato i dettagli
             else:
                 print(f"ERRORE: Inserisci un numero tra 1 e {num_results}.")
         else:
@@ -229,7 +272,7 @@ def main():
     """
     print("--- FIDE Player Checker ---")
     print("Verifica stato database FIDE locale...")
-    
+
     db_needs_update = False
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
         print("\nIl database FIDE locale non è presente sul tuo computer.")
@@ -240,7 +283,7 @@ def main():
             file_mod_timestamp = os.path.getmtime(FIDE_DB_LOCAL_FILE)
             file_age = datetime.now() - datetime.fromtimestamp(file_mod_timestamp)
             file_age_days = file_age.days
-            
+
             print(f"Info: Il tuo database FIDE locale ha {file_age_days} giorni.")
             if file_age_days >= 30:
                 print("È più vecchio di 30 giorni e potrebbe essere obsoleto.")
@@ -250,8 +293,10 @@ def main():
 
     # Se il DB deve essere aggiornato, chiedi conferma all'utente
     if db_needs_update:
-        user_choice = input("Vuoi scaricare/aggiornare il database ora? (s/n): ").strip().lower()
-        if user_choice in ['s', 'si', 'y', 'yes', '']:
+        user_choice = (
+            input("Vuoi scaricare/aggiornare il database ora? (s/n): ").strip().lower()
+        )
+        if user_choice in ["s", "si", "y", "yes", ""]:
             aggiorna_db_fide_locale()
         else:
             if not os.path.exists(FIDE_DB_LOCAL_FILE):
@@ -260,9 +305,11 @@ def main():
 
     print("\n--- Ricerca Giocatori ---")
     while True:
-        search_term = input("Inserisci parte del nome/cognome o ID FIDE (o lascia vuoto per uscire): ")
+        search_term = input(
+            "Inserisci parte del nome/cognome o ID FIDE (o lascia vuoto per uscire): "
+        )
         if not search_term:
-            break # Esce dal ciclo se l'utente preme Invio
+            break  # Esce dal ciclo se l'utente preme Invio
 
         results = cerca_giocatore_fide(search_term)
         num_results = len(results)
@@ -270,20 +317,22 @@ def main():
         # --- LOGICA DI VISUALIZZAZIONE MODIFICATA ---
         if num_results == 0:
             print(f"Nessun giocatore trovato per '{search_term}'.")
-        
+
         elif num_results <= 3:
             print(f"\nTrovati {num_results} risultati per '{search_term}':")
             for player in results:
-                stampa_dettagli_giocatore(player) # Uso la nuova funzione
-        
+                stampa_dettagli_giocatore(player)  # Uso la nuova funzione
+
         elif num_results > 100:
-            print(f"\nTrovati {num_results} risultati. Sono troppi per essere visualizzati.")
+            print(
+                f"\nTrovati {num_results} risultati. Sono troppi per essere visualizzati."
+            )
             print("Prova con una chiave di ricerca più specifica.")
-        
-        else: # Da 4 a 100 risultati
+
+        else:  # Da 4 a 100 risultati
             print(f"\nTrovati {num_results} risultati per '{search_term}'.")
-            gestisci_risultati_con_pager(results) # Uso la nuova funzione per il pager
-    
+            gestisci_risultati_con_pager(results)  # Uso la nuova funzione per il pager
+
     print("\nGrazie per aver usato FIDE Player Checker. A presto!")
 
 
