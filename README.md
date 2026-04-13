@@ -146,6 +146,36 @@ Nonostante sia un'applicazione a riga di comando (CLI), l'utilizzo di `tornello.
 
 L'interazione avviene tramite una serie di domande e risposte testuali, che guidano l'arbitro o l'organizzatore attraverso le varie fasi.
 
+**6. Guida Rapida: Il tuo primo torneo in 5 minuti**
+
+Non è necessario configurare nulla in anticipo. Puoi creare il tuo primo torneo e aggiungere i tuoi giocatori locali direttamente dall'interfaccia principale di **Tornello**.
+
+### Fase 1: Creazione del Torneo
+Avvia `tornello.exe` (o lo script `tornello.py`) e seleziona l'opzione **"Nuovo Torneo"**. Inserisci i dati richiesti seguendo questo esempio:
+- **Nome del Torneo:** Torneo Sociale di Primavera
+- **Luogo:** Bologna
+- **Data Inizio:** `2026-04-12`  <-- *IMPORTANTE: Usa il formato ANNO-MESE-GIORNO (es: 2026-04-12).*
+- **Data Fine:** `2026-04-12`
+- **Numero di Turni:** 3
+
+### Fase 2: Aggiungere i Giocatori (e popolare il Database)
+Dopo aver creato il torneo, Tornello ti chiederà di aggiungere i partecipanti.
+1. **Cerca il giocatore:** Digita il cognome (es: `Rossi`) e premi Invio.
+2. **Se non esiste:** Se il giocatore non è nel tuo database locale, Tornello ti avviserà. Scegli l'opzione per **"Creare un nuovo giocatore locale"**.
+3. **Inserisci i dati:** Inserisci Nome, Cognome e un Elo indicativo (es: 1400).
+   *Nota: Da questo momento, il giocatore è salvato permanentemente nel tuo database e potrai trovarlo subito nei prossimi tornei senza doverlo reinserire.*
+4. **Concludi la lista:** Quando hai finito di aggiungere i giocatori, premi Invio senza scrivere nulla per procedere alla generazione degli abbinamenti.
+
+### Fase 3: Gestione del Turno e Risultati
+1. Seleziona **"Gestione Turno Corrente"**. Tornello userà il motore *bbpPairings* per creare gli abbinamenti più equi (Sistema Svizzero).
+2. Per ogni partita, inserisci il risultato:
+   - `1` per la vittoria del Bianco.
+   - `0` per la vittoria del Nero.
+   - `0.5` per la patta.
+3. Una volta inseriti tutti i risultati, il turno verrà chiuso e potrai vedere la classifica aggiornata o passare al turno successivo.
+
+> **Nota tecnica:** Lo script `Players_DB.py` incluso nella cartella sorgente è un tool avanzato pensato principalmente per correggere errori di inserimento o gestire database molto grandi. Per l'uso quotidiano e la creazione di tornei, l'interfaccia principale di Tornello è lo strumento raccomandato.
+
 **Conclusione e Prospettive Future**
 
 `tornello.py`, nella sua versione attuale (5.9.3 come l'hai battezzata!), rappresenta un significativo passo avanti nella gestione informatizzata dei tornei di scacchi a livello di club. L'integrazione con un motore di abbinamento esterno robusto come `bbpPairings` ha risolto la complessità maggiore, permettendo a `tornello.py` di concentrarsi sull'interfaccia utente (seppur CLI), sulla gestione dei dati e sul flusso generale del torneo.

@@ -2,6 +2,7 @@ import os
 import sys
 from GBUtils import polipo
 
+
 def resource_path(relative_path):
     """
     Restituisce il percorso assoluto a una risorsa, funzionante sia in sviluppo
@@ -18,8 +19,10 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 lingua_rilevata, _ = polipo(source_language="it")
 import builtins
+
 builtins._ = _
 
 # File e Directory Principali (relativi all'eseguibile)
