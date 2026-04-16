@@ -15,10 +15,14 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
      * Rapid: 10 < Tempo Totale < 60 minuti.
      * Standard: Tempo Totale >= 60 minuti.
    - Salvare la categoria determinata nel file JSON del torneo.
-4. Prelievo Elo Mirato: 
-   - Durante l'aggiunta di un giocatore, leggere la categoria del torneo.
-   - Prelevare l'Elo specifico dal DB (`elo_standard`, `elo_rapid`, `elo_blitz`).
-   - Implementare un sistema di fallback nel caso in cui il giocatore sia sprovvisto dell'Elo per quella specifica cadenza.
+4. Prelievo Elo Mirato e Ristrutturazione Database Giocatori: 
+   - Ristrutturare il DB personale locale (`Tornello - Players_db.json`) affinché contenga TUTTI i campi presenti nel DB FIDE (inclusi `elo_standard`, `elo_rapid`, `elo_blitz`, `flag`, ecc.) e li copi/aggiorni sistematicamente durante le importazioni o la sincronizzazione (tramite `Sync_DB.py`).
+   - Assicurare la **retrocompatibilità**: all'avvio, il programma o il tool di sincronizzazione dovrà rilevare i vecchi DB locali e aggiornarli al volo (aggiungendo i nuovi campi mancanti).
+   - Introdurre il concetto di **"Elo Club"**: un valore Elo puramente locale che fungerà da *ultimo fallback* qualora il giocatore non possieda alcun Elo FIDE valido per la specifica cadenza del torneo.
+   - Durante l'aggiunta di un giocatore al torneo, leggere la categoria calcolata.
+   - Prelevare l'Elo specifico dal DB (es. `elo_rapid`). Se mancante o pari a 0, usare il fallback (es. `elo_standard` -> `elo_club` -> `DEFAULT_ELO`).
+5. Firme sui report:
+   - In chiusura di tutti i file di testo generati dall'applicazione, aggiungere la stringa: "Tornello (versione - data_versione) - Gabriele Battaglia & AI"
 
 --- CHANGELOG ---
 8.10.7
