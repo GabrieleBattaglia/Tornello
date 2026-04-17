@@ -13,34 +13,34 @@
 XXR 007
 XXC white1
 BBU  0.5
-001    1 m 1N Gasperoni, Claudio                1844 ITA    825450   1975/01/01  1.0    1    16 w 1
-001    2 M    Caputi, Giuliano                  1767 ITA    821993   1967/01/01  1.0    2    17 b 1
-001    3 m 2N Vandelli, Jiazhuang               1693 ITA  23449071   2002/01/01  1.0    3    18 w 1
-001    4 M    Poli, Diego                       1670 ITA    865613   1973/01/01  1.0    4    19 b 1
-001    5 M    Zenini, Simone                    1620 ITA    898210   1987/01/01  1.0    5    20 w 1
-001    6 w 3N Tolaro, Filippa                   1560 ITA  28505867   1966/01/01  0.0    6    21 b 0
-001    7 m 3N Colangelo, Michele                1555 ITA  23424087   1959/01/01  1.0    7    22 w 1
-001    8 M    Rivalta, Paolo                    1503 ITA  28515390   1969/01/01  1.0    8    23 b 1
-001    9 w 3N Trapletti, Cosetta                1501 ITA   2817697   1968/01/01  0.0    9    24 w 0
-001   10 m 3N Battaglia, Gabriele               1498 ITA    804495   1974/09/13  1.0   10    25 b 1
-001   11 m NC Ionata, Lorenzo                   1488 ITA  28550404   1978/01/01  1.0   11    26 w 1
-001   12 m NC Ventura, Luigi                    1461 ITA 552016773   1974/01/01  1.0   12    27 b 1
-001   13 m NC Baratta, Giuseppe                 1450 ITA  28594010   1961/01/01  0.5   13    28 w =
-001   14 w    De Fazio, Monica                  1443 ITA         0               0.0   14    29 b 0
-001   15 M    Maccaferri, Massimo               1443 ITA  28505859   1957/01/01  1.0   15    30 w 1
-001   16 m NC Di Bari, Vincenzo                 1415 ITA         0               0.0   16     1 b 0
-001   17 m NC Bernoni, Luca                     1399 ITA         0               0.0   17     2 w 0
-001   18 w NC Cinque, Alessandra                1399 ITA         0               0.0   18     3 b 0
-001   19 M    Delmonte, Davide                  0    ITA   2840761   1974/01/01  0.0   19     4 w 0
-001   20 m    Demaio, Gianni                    1399 ITA         0               0.0   20     5 b 0
-001   21 M    Demaio, Joshua                    0    ITA 552014215   2008/01/01  1.0   21     6 w 1
-001   22 m NC Riccardi, Piero                   1399 ITA         0               0.0   22     7 b 0
-001   23 w NC Valleriani, Rita                  1399 ITA  23470798   1986/01/01  0.0   23     8 w 0
-001   24 w NC Calzolari, Valeria                1385 ITA 552014193   1966/01/01  1.0   24     9 b 1
-001   25 w NC Mereu, Alessia                    1385 ITA         0               0.0   25    10 w 0
-001   26 m NC Paglia, Virginio                  1385 ITA  23470763   1981/01/01  0.0   26    11 b 0
-001   27 w NC Paglia, Giulia                    1382 ITA 552014223   2018/01/01  0.0   27    12 w 0
-001   28 w NC Brites Pereira Lima, Catia Susana 1365 ITA   1990942   1978/01/01  0.5   28    13 b =
-001   29 w NC Testori, Alessandra               1362 ITA         0               1.0   29    14 w 1
-001   30 w NC Forte, Martina                    1355 ITA         0               0.0   30    15 b 0
-001   31 w NC Gori, Serena                      1220 ITA  23491132   1948/01/01  0.5   31  0000 - U
+001    1 m 1N Gasperoni, Claudio                1844 ITA    825450   1975/01/01  2.0    1    16 w 1    10 b 1
+001    2 M    Caputi, Giuliano                  1767 ITA    821993   1967/01/01  2.0    2    17 b 1    11 w 1
+001    3 m 2N Vandelli, Jiazhuang               1693 ITA  23449071   2002/01/01  2.0    3    18 w 1    12 b 1
+001    4 M    Poli, Diego                       1670 ITA    865613   1973/01/01  2.0    4    19 b 1    15 w 1
+001    5 M    Zenini, Simone                    1620 ITA    898210   1987/01/01  2.0    5    20 w 1    21 b 1
+001    6 w 3N Tolaro, Filippa                   1560 ITA  28505867   1966/01/01  0.0    6    21 b 0    28 b 0
+001    7 m 3N Colangelo, Michele                1555 ITA  23424087   1959/01/01  1.0    7    22 w 1    24 b 0
+001    8 M    Rivalta, Paolo                    1503 ITA  28515390   1969/01/01  2.0    8    23 b 1    29 w 1
+001    9 w 3N Trapletti, Cosetta                1501 ITA   2817697   1968/01/01  1.0    9    24 w 0    20 b 1
+001   10 m 3N Battaglia, Gabriele               1498 ITA    804495   1974/09/13  1.0   10    25 b 1     1 w 0
+001   11 m NC Ionata, Lorenzo                   1488 ITA  28550404   1978/01/01  1.0   11    26 w 1     2 b 0
+001   12 m NC Ventura, Luigi                    1461 ITA 552016773   1974/01/01  1.0   12    27 b 1     3 w 0
+001   13 m NC Baratta, Giuseppe                 1450 ITA  28594010   1961/01/01  1.5   13    28 w =    31 b 1
+001   14 w    De Fazio, Monica                  1443 ITA         0               1.0   14    29 b 0    23 w 1
+001   15 M    Maccaferri, Massimo               1443 ITA  28505859   1957/01/01  1.0   15    30 w 1     4 b 0
+001   16 m NC Di Bari, Vincenzo                 1415 ITA         0               0.0   16     1 b 0    25 w 0
+001   17 m NC Bernoni, Luca                     1399 ITA         0               1.0   17     2 w 0    22 b 1
+001   18 w NC Cinque, Alessandra                1399 ITA         0               0.0   18     3 b 0    27 w 0
+001   19 M    Delmonte, Davide                  0    ITA   2840761   1974/01/01  1.0   19     4 w 0    26 b 1
+001   20 m    Demaio, Gianni                    1399 ITA         0               0.0   20     5 b 0     9 w 0
+001   21 M    Demaio, Joshua                    0    ITA 552014215   2008/01/01  1.0   21     6 w 1     5 w 0
+001   22 m NC Riccardi, Piero                   1399 ITA         0               0.0   22     7 b 0    17 w 0
+001   23 w NC Valleriani, Rita                  1399 ITA  23470798   1986/01/01  0.0   23     8 w 0    14 b 0
+001   24 w NC Calzolari, Valeria                1385 ITA 552014193   1966/01/01  2.0   24     9 b 1     7 w 1
+001   25 w NC Mereu, Alessia                    1385 ITA         0               1.0   25    10 w 0    16 b 1
+001   26 m NC Paglia, Virginio                  1385 ITA  23470763   1981/01/01  0.0   26    11 b 0    19 w 0
+001   27 w NC Paglia, Giulia                    1382 ITA 552014223   2018/01/01  1.0   27    12 w 0    18 b 1
+001   28 w NC Brites Pereira Lima, Catia Susana 1365 ITA   1990942   1978/01/01  1.5   28    13 b =     6 w 1
+001   29 w NC Testori, Alessandra               1362 ITA         0               1.0   29    14 w 1     8 b 0
+001   30 w NC Forte, Martina                    1355 ITA         0               0.5   30    15 b 0  0000 - U
+001   31 w NC Gori, Serena                      1220 ITA  23491132   1948/01/01  0.5   31  0000 - U    13 w 0

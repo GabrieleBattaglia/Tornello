@@ -1,24 +1,27 @@
-﻿Nome Torneo: Primavera 2 - Turno: 2
- Periodo Turno: Domenica 5 aprile 2026 - Sabato 18 aprile 2026
- Mancano 3 giorni e 1 ore al termine del periodo utile per questo turno.
+﻿Nome Torneo: Primavera 2 - Turno: 3
+ Periodo Turno: Domenica 19 aprile 2026 - Domenica 3 maggio 2026
+ Mancano 16 giorni e 15 ore al termine del periodo utile per questo turno.
  Partite già pianificate, da giocare (1):
-  Giovedì 16 aprile 2026
-   15:00 IDG:22, Valeria Calzolari vs Michele Colangelo, Canale: lichess, Arbitro: Non necessario
+  Sabato 18 aprile 2026
+   16:00 IDG:34, Simone Zenini vs Giuliano Caputi, Canale: WhatsApp, Arbitro: Monica
 
-  Partite già giocate o con risultato convalidato (14):
-  IDG:17 Gabriele Battaglia - Claudio Gasperoni  0-1
-  IDG:18 Giuliano Caputi - Lorenzo Ionata  1-0
-  IDG:19 Luigi Ventura - Jiazhuang Vandelli  0-1
-  IDG:20 Diego Poli - Massimo Maccaferri  1-0
-  IDG:21 Joshua Demaio - Simone Zenini  0-1
-  IDG:23 Paolo Rivalta - Alessandra Testori  1-0
-  IDG:24 Serena Gori - Giuseppe Baratta  0-1
-  IDG:25 Catia Susana Brites Pereira Lima - Filippa Tolaro  1-0
-  IDG:26 Gianni Demaio - Cosetta Trapletti  0-1
-  IDG:27 Monica De Fazio - Rita Valleriani  1-0
-  IDG:28 Vincenzo Di Bari - Alessia Mereu  0-1
-  IDG:29 Piero Riccardi - Luca Bernoni  0-1
-  IDG:30 Alessandra Cinque - Giulia Paglia  0-1
-  IDG:31 Virginio Paglia - Davide Delmonte  0-1
+  Ancora non pianificate (14):
+   IDG:33 Claudio Gasperoni - Diego Poli
+   IDG:35 Jiazhuang Vandelli - Paolo Rivalta
+   IDG:36 Giuseppe Baratta - Valeria Calzolari
+   IDG:37 Michele Colangelo - Catia Susana Brites Pereira Lima
+   IDG:38 Cosetta Trapletti - Luca Bernoni
+   IDG:39 Davide Delmonte - Gabriele Battaglia
+   IDG:40 Lorenzo Ionata - Joshua Demaio
+   IDG:41 Alessia Mereu - Luigi Ventura
+   IDG:42 Giulia Paglia - Monica De Fazio
+   IDG:43 Massimo Maccaferri - Alessandra Testori
+   IDG:44 Martina Forte - Serena Gori
+   IDG:45 Filippa Tolaro - Gianni Demaio
+   IDG:46 Piero Riccardi - Vincenzo Di Bari
+   IDG:47 Rita Valleriani - Alessandra Cinque
 
- Martina Forte ha il BYE
+  Partite già giocate o con risultato convalidato (0):
+  Ancora nessun risultato assegnato
+
+ Virginio Paglia ha il BYE
