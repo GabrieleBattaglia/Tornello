@@ -6,33 +6,33 @@ Arbitro Capo: Gabriele Battaglia
 Vice Arbitri: ASCID, Volontari
 Controllo Tempo: Standard 40+20
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Venerdì 17 aprile 2026 08:03:46
+Data Report: Martedì 21 aprile 2026 08:17:08
 --------------------------------------------------------------------------------
 Classifica Parziale - Durante Turno 3
 --------------------------------------------------------------------------------
 Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
 -------------------------------------------------------------------------------------
-  1 (+23)   NC  Calzolari, Valeria          [1385]   2.0    1.00   2.00 1528
-  2 (+0)        Caputi, Giuliano            [1767]   2.0    1.00   2.00 1444
-  3 (+1)        Poli, Diego                 [1670]   2.0    1.00   2.00  722
-  4 (-3)    1N  Gasperoni, Claudio          [1844]   2.0    1.00   1.00 1456
-  5 (-2)    2N  Vandelli, Jiazhuang         [1693]   2.0    1.00   1.00 1430
-  6 (+2)        Rivalta, Paolo              [1503]   2.0    1.00   1.00 1380
-  7 (-2)        Zenini, Simone              [1620]   2.0    1.00   1.00  700
-  8 (+5)    NC  Baratta, Giuseppe           [1450]   1.5    1.50   2.00 1292
-  9 (+19)   NC  Brites Pereira Lima, Catia  [1365]   1.5    1.50   1.50 1505
- 10 (+0)    3N  Battaglia, Gabriele         [1498]   1.0    2.00   3.00 1614
- 11 (+1)    NC  Ventura, Luigi              [1461]   1.0    2.00   3.00 1538
- 12 (+17)   NC  Testori, Alessandra         [1362]   1.0    2.00   3.00 1473
- 13 (-2)    NC  Ionata, Lorenzo             [1488]   1.0    2.00   2.50 1576
- 14 (+5)        Delmonte, Davide            [   0]   1.0    2.00   2.50 1528
- 15 (+0)        Maccaferri, Massimo         [1443]   1.0    2.00   2.50 1512
- 16 (+5)        Demaio, Joshua              [   0]   1.0    2.00   2.00 1590
- 17 (+0)    NC  Bernoni, Luca               [1399]   1.0    2.00   2.00 1583
- 18 (-11)   3N  Colangelo, Michele          [1555]   1.0    2.00   2.00 1392
- 19 (-10)   3N  Trapletti, Cosetta          [1501]   1.0    2.00   2.00 1392
- 20 (+5)    NC  Mereu, Alessia              [1385]   1.0    1.00   1.00 1456
- 21 (+6)    NC  Paglia, Giulia              [1382]   1.0    1.00   1.00 1430
+  1 (+1)        Caputi, Giuliano            [1767]   3.0    3.00   4.00 1502
+  2 (+3)        Zenini, Simone              [1620]   2.0    4.00   4.00 1055
+  3 (+9)    NC  Ventura, Luigi              [1461]   2.0    3.00   4.00 1487
+  4 (-1)    2N  Vandelli, Jiazhuang         [1693]   2.0    2.00   2.00 1430
+  5 (+19)   NC  Calzolari, Valeria          [1385]   2.0    1.00   2.00 1528
+  6 (-2)        Poli, Diego                 [1670]   2.0    1.00   2.00  722
+  7 (-6)    1N  Gasperoni, Claudio          [1844]   2.0    1.00   1.00 1456
+  8 (+0)        Rivalta, Paolo              [1503]   2.0    1.00   1.00 1380
+  9 (+4)    NC  Baratta, Giuseppe           [1450]   1.5    1.50   2.00 1292
+ 10 (+18)   NC  Brites Pereira Lima, Catia  [1365]   1.5    1.50   1.50 1505
+ 11 (+0)    NC  Ionata, Lorenzo             [1488]   1.0    3.00   3.50 1576
+ 12 (+5)    NC  Bernoni, Luca               [1399]   1.0    3.00   3.00 1583
+ 13 (+12)   NC  Mereu, Alessia              [1385]   1.0    3.00   3.00 1458
+ 14 (-4)    3N  Battaglia, Gabriele         [1498]   1.0    2.00   3.00 1614
+ 15 (+14)   NC  Testori, Alessandra         [1362]   1.0    2.00   3.00 1473
+ 16 (+3)        Delmonte, Davide            [   0]   1.0    2.00   2.50 1528
+ 17 (-2)        Maccaferri, Massimo         [1443]   1.0    2.00   2.50 1512
+ 18 (+3)        Demaio, Joshua              [   0]   1.0    2.00   2.00 1590
+ 19 (+8)    NC  Paglia, Giulia              [1382]   1.0    2.00   2.00 1430
+ 20 (-13)   3N  Colangelo, Michele          [1555]   1.0    2.00   2.00 1392
+ 21 (-12)   3N  Trapletti, Cosetta          [1501]   1.0    2.00   2.00 1392
  22 (-8)        De Fazio, Monica            [1443]   1.0    1.00   1.00 1380
  23 (+3)    NC  Paglia, Virginio            [1385]   0.5    1.00   2.00  744
  24 (+7)    NC  Gori, Serena                [1220]   0.5    0.00   1.50 1450
