@@ -5,24 +5,27 @@ TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 - Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
 - Implementazione futura: Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026). Evitiamo wrapper inutili come py4swiss o motori Java come JaVaFo per non complicare le dipendenze.
 
---- PIANO DI SVILUPPO PER LA VERSIONE 8.11.0 (Nuovo Control Time e Categorie Elo) ---
+--- PIANO DI SVILUPPO PER LA VERSIONE 8.11.0 (Nuova Architettura e Motore FIDE 2026) ---
+
+FASE A: LOGICA E MOTORE (Preparazione alla GUI)
 1. Richiesta "Tempo di Riflessione": Modificare l'input in fase di creazione torneo. Chiedere il formato "umano" (Minuti + Secondi di incremento, es. "15+10" o "90+30").
 2. Conversione e Salvataggio: Valutare se convertire l'input nel formato standard PGN (es. 15 minuti + 10 sec = "900+10") o salvarlo internamente come minuti/secondi.
 3. Classificazione Automatica Categoria Torneo:
    - Calcolare il Tempo Totale Stimato su base 60 mosse: `Minuti Iniziali + Incremento`. (Nota matematica: un incremento di X secondi per 60 mosse aggiunge esattamente X minuti al tempo totale).
-   - Classificare:
-     * Blitz: Tempo Totale <= 10 minuti.
-     * Rapid: 10 < Tempo Totale < 60 minuti.
-     * Standard: Tempo Totale >= 60 minuti.
-   - Salvare la categoria determinata nel file JSON del torneo.
+   - Classificare: Blitz (<= 10m), Rapid (10-60m), Standard (>= 60m).
 4. Prelievo Elo Mirato e Ristrutturazione Database Giocatori: 
-   - Ristrutturare il DB personale locale (`Tornello - Players_db.json`) affinché contenga TUTTI i campi presenti nel DB FIDE (inclusi `elo_standard`, `elo_rapid`, `elo_blitz`, `flag`, ecc.) e li copi/aggiorni sistematicamente durante le importazioni o la sincronizzazione (tramite `Sync_DB.py`).
-   - Assicurare la **retrocompatibilità**: all'avvio, il programma o il tool di sincronizzazione dovrà rilevare i vecchi DB locali e aggiornarli al volo (aggiungendo i nuovi campi mancanti).
-   - Introdurre il concetto di **"Elo Club"**: un valore Elo puramente locale che fungerà da *ultimo fallback* qualora il giocatore non possieda alcun Elo FIDE valido per la specifica cadenza del torneo.
-   - Durante l'aggiunta di un giocatore al torneo, leggere la categoria calcolata.
-   - Prelevare l'Elo specifico dal DB (es. `elo_rapid`). Se mancante o pari a 0, usare il fallback (es. `elo_standard` -> `elo_club` -> `DEFAULT_ELO`).
-5. Firme sui report:
-   - In chiusura di tutti i file di testo generati dall'applicazione, aggiungere la stringa: "Tornello (versione - data_versione) - Gabriele Battaglia & AI"
+   - Ristrutturare il DB personale locale affinché contenga TUTTI i campi presenti nel DB FIDE.
+   - Assicurare la retrocompatibilità (aggiornamento al volo dei vecchi DB).
+   - Introdurre l' "Elo Club" come fallback finale.
+5. bbpPairings v6:
+   - Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026).
+6. Firme sui report: Aggiungere in chiusura "Tornello (versione - data) - Gabriele Battaglia & AI".
+
+FASE B: TRANSIZIONE ARCHITETTURALE (Disaccoppiamento)
+7. Refactoring Decoupling: Separare nettamente la logica di calcolo/motore (Core) dall'interfaccia utente (UI). Rimuovere `input()` e `print()` sparsi nei moduli logici per permettere a Tornello di funzionare sia in CLI che in GUI.
+
+FASE C: INTERFACCIA GRAFICA (GUI wxPython)
+8. Sviluppo GUI: Creazione dell'interfaccia con wxPython, dando priorità assoluta all'accessibilità (screen reader, scorciatoie da tastiera).
 
 --- CHANGELOG ---
 8.10.7
