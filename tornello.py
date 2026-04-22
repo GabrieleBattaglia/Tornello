@@ -13,6 +13,8 @@ except AttributeError:
     sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "src"))
 
 from GBUtils import Donazione
+import atexit
+atexit.register(Donazione)
 from datetime import datetime, timedelta
 
 # installazione percorsi relativi e i18n
@@ -45,6 +47,8 @@ from ui import (
     update_match_result,
     finalize_tournament,
 )
+
+atexit.register(Donazione)
 
 # QF
 
@@ -1075,7 +1079,6 @@ if __name__ == "__main__":
         sys.exit(1)
     if torneo is None and active_tournament_filename is None:
         print(_("\nProgramma Tornello terminato."))
-        Donazione()
     elif torneo and active_tournament_filename:
         print(
             _(
@@ -1084,6 +1087,5 @@ if __name__ == "__main__":
                 name=torneo.get("name", "N/D"), filename=active_tournament_filename
             )
         )
-        Donazione()
     else:  # Caso anomalo
         print(_("\nProgramma Tornello terminato con uno stato incerto del torneo."))

@@ -1162,9 +1162,10 @@ def update_match_result(torneo):
                     _("Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: ")
                 )
                 .strip()
-                .lower()
+                .upper()
             )
-            if result_input == "p":
+
+            if result_input == "P":
                 is_currently_scheduled = selected_match_obj_for_processing.get(
                     "is_scheduled", False
                 )
@@ -1248,23 +1249,28 @@ def update_match_result(torneo):
                     any_changes_made_in_this_session = True
                     save_tournament(torneo)
                     if "F" in res_str:
-                        forfeiting_player_id = (
-                            bp_data_obj["id"] if res_str == "1-F" else wp_data_obj["id"]
-                        )
-                        forfeiting_player_obj = players_dict.get(forfeiting_player_id)
-                        player_name_forfeit = f"{forfeiting_player_obj.get('first_name', '?')} {forfeiting_player_obj.get('last_name', '?')}"
-                        withdraw_choice = enter_escape(
-                            _(
-                                "Il giocatore {player_name} si ritira definitivamente dal torneo? (INVIO|ESCAPE)"
-                            ).format(player_name=player_name_forfeit)
-                        )
-                        if withdraw_choice:
-                            forfeiting_player_obj["withdrawn"] = True
-                            print(
+                        forfeiting_players = []
+                        if res_str == "1-F":
+                            forfeiting_players.append(bp_data_obj)
+                        elif res_str == "F-1":
+                            forfeiting_players.append(wp_data_obj)
+                        elif res_str == "0-0F":
+                            forfeiting_players.extend([wp_data_obj, bp_data_obj])
+                            
+                        for f_player_obj in forfeiting_players:
+                            player_name_forfeit = f"{f_player_obj.get('first_name', '?')} {f_player_obj.get('last_name', '?')}"
+                            withdraw_choice = enter_escape(
                                 _(
-                                    "Giocatore {player_name} marcato come ritirato."
+                                    "Il giocatore {player_name} si ritira definitivamente dal torneo? (INVIO|ESCAPE)"
                                 ).format(player_name=player_name_forfeit)
                             )
+                            if withdraw_choice:
+                                f_player_obj["withdrawn"] = True
+                                print(
+                                    _(
+                                        "Giocatore {player_name} marcato come ritirato."
+                                    ).format(player_name=player_name_forfeit)
+                                )
                 else:
                     print(_("Operazione annullata dall'utente."))
             else:
