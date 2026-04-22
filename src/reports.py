@@ -4,6 +4,7 @@ from config import *
 from utils import format_date_locale, format_points, sanitize_filename
 from tournament import ricalcola_punti_tutti_giocatori, _ensure_players_dict
 from stats import compute_buchholz, compute_buchholz_cut1, compute_aro
+from version import VERSIONE
 
 
 def calcola_tempo_rimanente(end_date_str):
@@ -279,6 +280,8 @@ def save_current_tournament_round_file(torneo):
                     f.write(f"{line}\n")
             if bye_player_display_line:
                 f.write(f"\n{bye_player_display_line}\n")
+                
+            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
         print(
             _("File {filename} aggiornato con raggruppamento ritirati.").format(
                 filename=filename
@@ -459,6 +462,8 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                         "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
                     ).format(dashes="---", match_id=match_id, player_id=white_p_id)
                     f.write(f"\t{line}\n")
+            
+            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
         print(
             _(
                 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
@@ -751,8 +756,8 @@ def save_standings_text(torneo, final=False):
 
                 f.write(line + "\n")
 
-            print(
-                _("File classifica '{filename}' salvato/sovrascritto.").format(
+                f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+                print(                _("File classifica '{filename}' salvato/sovrascritto.").format(
                     filename=filename
                 )
             )
@@ -922,6 +927,7 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
                     f.write(
                         f"{idx:02d}. {nome_cognome} (ID: {id_player}, Elo: {elo})\n"
                     )
+            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
         print(
             _("Riepilogo promemoria salvato in: '{report}'").format(
                 report=report_filename

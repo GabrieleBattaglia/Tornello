@@ -28,6 +28,9 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 8. Sviluppo GUI: Creazione dell'interfaccia con wxPython, dando priorità assoluta all'accessibilità (screen reader, scorciatoie da tastiera).
 
 --- CHANGELOG ---
+8.10.9
+	+ Aggiunta la firma ("Tornello (versione - data) - Gabriele Battaglia & AI") in coda a tutti i report testuali generati dal programma (Classifica, Turno Corrente, Dettaglio Turno e Riepilogo Sospeso).
+
 8.10.8
 	+ Hotfix: Risolta un'anomalia critica nell'inserimento dei risultati a forfait (1-F, F-1, 0-0F). In precedenza i risultati venivano indicati come possibili opzioni, ma a causa del controllo del case (lettera minuscola "f" anziché "F") e della mancata estensione nel flusso di conferma, non venivano processati correttamente né marcavano i giocatori come ritirati.
 
