@@ -373,8 +373,8 @@
     }
    ],
    "opponents": [
-    "VANJI001",
-    "PAGGI001"
+    "PAGGI001",
+    "VANJI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -970,8 +970,8 @@
     }
    ],
    "opponents": [
-    "RIVPA001",
-    "DEFMO001"
+    "DEFMO001",
+    "RIVPA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1026,8 +1026,8 @@
     }
    ],
    "opponents": [
-    "VANJI001",
-    "PAGGI001"
+    "PAGGI001",
+    "VANJI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1092,8 +1092,8 @@
     }
    ],
    "opponents": [
-    "BRICA001",
-    "GORSE001"
+    "GORSE001",
+    "BRICA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1182,8 +1182,8 @@
     }
    ],
    "opponents": [
-    "CAPGI001",
-    "PAGVI001"
+    "PAGVI001",
+    "CAPGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1248,8 +1248,8 @@
     }
    ],
    "opponents": [
-    "CALVA001",
-    "RICPI001"
+    "RICPI001",
+    "CALVA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1392,8 +1392,8 @@
     }
    ],
    "opponents": [
-    "CAPGI001",
-    "RICPI001"
+    "RICPI001",
+    "CAPGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1626,8 +1626,8 @@
     }
    ],
    "opponents": [
-    "DELDA002",
-    "IONLO001"
+    "IONLO001",
+    "DELDA002"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1710,8 +1710,8 @@
     }
    ],
    "opponents": [
-    "RIVPA001",
-    "DEFMO001"
+    "DEFMO001",
+    "RIVPA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2165,8 +2165,8 @@
     }
    ],
    "opponents": [
-    "FORMA001",
-    "POLDI001"
+    "POLDI001",
+    "FORMA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2238,8 +2238,8 @@
     }
    ],
    "opponents": [
-    "DEMJO001",
-    "DEMGI001"
+    "DEMGI001",
+    "DEMJO001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2320,8 +2320,8 @@
     }
    ],
    "opponents": [
-    "COLMI001",
-    "TRACO001"
+    "TRACO001",
+    "COLMI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2922,7 +2922,7 @@
      "result": null,
      "schedule_info": {
       "date": "2026-04-23",
-      "time": "21:00",
+      "time": "15:00",
       "channel": "WhatsApp",
       "arbiter": "Giuliano"
      },
@@ -2987,6 +2987,6 @@
    ]
   }
  ],
- "launch_count": 74,
+ "launch_count": 75,
  "bye_value": 0.5
 }
