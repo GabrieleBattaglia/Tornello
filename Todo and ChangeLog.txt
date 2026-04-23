@@ -1,11 +1,6 @@
 TORNELLO TODO&CHANGELOG by Gabriele Battaglia
 
---- DA RISOLVERE ---
-(Nessuna criticità grave o prioritaria al momento. Tutte le fragilità emerse dal refactoring sono state gestite.)
-- Eventuale futura implementazione: Ripristino automatico/assistito dei backup in caso di crash al lancio.
-- Implementazione futura: Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026). Evitiamo wrapper inutili come py4swiss o motori Java come JaVaFo per non complicare le dipendenze.
-
---- PIANO DI SVILUPPO PER LA VERSIONE 8.11.0 (Nuova Architettura e Motore FIDE 2026) ---
+--- PIANO DI SVILUPPO PER LA VERSIONE 9.0.0 (Nuova Architettura e Motore FIDE 2026) ---
 
 FASE A: LOGICA E MOTORE (Preparazione alla GUI)
 1. Richiesta "Tempo di Riflessione": Modificare l'input in fase di creazione torneo. Chiedere il formato "umano" (Minuti + Secondi di incremento, es. "15+10" o "90+30").
@@ -19,13 +14,15 @@ FASE A: LOGICA E MOTORE (Preparazione alla GUI)
    - Introdurre l' "Elo Club" come fallback finale.
 5. bbpPairings v6:
    - Adattare Tornello per supportare bbpPairings v6 (formato TRF-2026 e nuove regole abbinamenti FIDE 2026).
-6. Firme sui report: Aggiungere in chiusura "Tornello (versione - data) - Gabriele Battaglia & AI".
+			- in git\other\ è presente il clone del repo bbpairings da usare come fonte primaria per speicifiche e documentazione
 
 FASE B: TRANSIZIONE ARCHITETTURALE (Disaccoppiamento)
 7. Refactoring Decoupling: Separare nettamente la logica di calcolo/motore (Core) dall'interfaccia utente (UI). Rimuovere `input()` e `print()` sparsi nei moduli logici per permettere a Tornello di funzionare sia in CLI che in GUI.
+	- La priorità sarà comunque la GUI. Non importa che l'app continui a funzionare in CLI.
 
 FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 8. Sviluppo GUI: Creazione dell'interfaccia con wxPython, dando priorità assoluta all'accessibilità (screen reader, scorciatoie da tastiera).
+	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
 8.10.9
@@ -36,8 +33,6 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 
 8.10.6
 	+ Aggiunto il supporto e aggiornate le traduzioni per Inglese, Spagnolo, Portoghese e Francese.
-
-8.10.6
 	+ Aggiunto il contatore del numero delle partite nelle varie sezioni (già pianificate, non pianificate, già giocate) all'interno del report turno corrente.
 
 8.10.4
