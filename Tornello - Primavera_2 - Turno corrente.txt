@@ -1,14 +1,9 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 3
  Periodo Turno: Domenica 19 aprile 2026 - Domenica 3 maggio 2026
- Mancano 12 giorni e 15 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (9):
-  Martedì 21 aprile 2026
-   21:30 IDG:39, Davide Delmonte vs Gabriele Battaglia, Canale: WhatsApp, Arbitro: Claudio
-  Mercoledì 22 aprile 2026
-   17:00 IDG:45, Filippa Tolaro vs Gianni Demaio, Canale: WhatsApp, Arbitro: Joshua
-   17:30 IDG:42, Giulia Paglia vs Monica De Fazio, Canale: WhatsApp, Arbitro: Giuliano
-   21:00 IDG:35, Jiazhuang Vandelli vs Paolo Rivalta, Canale: Lichess, Arbitro: Non necessario
+ Mancano 10 giorni e 16 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (7):
   Giovedì 23 aprile 2026
+   15:00 IDG:45, Filippa Tolaro vs Gianni Demaio, Canale: WhatsApp, Arbitro: Simone
    21:00 IDG:43, Massimo Maccaferri vs Alessandra Testori, Canale: WhatsApp, Arbitro: Giuliano
   Domenica 26 aprile 2026
    21:30 IDG:47, Rita Valleriani vs Alessandra Cinque, Canale: WhatsApp, Arbitro: Catia
@@ -16,15 +11,23 @@
    15:30 IDG:37, Michele Colangelo vs Catia Susana Brites Pereira Lima, Canale: WhatsApp, Arbitro: Simone
    17:00 IDG:36, Giuseppe Baratta vs Valeria Calzolari, Canale: WhatsApp, Arbitro: Monica
    21:30 IDG:44, Martina Forte vs Serena Gori, Canale: WhatsApp, Arbitro: Ale_Vins
+  Martedì 28 aprile 2026
+   16:00 IDG:40, Lorenzo Ionata vs Joshua Demaio, Canale: Lichess, Arbitro: Non necessario
 
-  Ancora non pianificate (4):
+  Ancora non pianificate (2):
    IDG:33 Claudio Gasperoni - Diego Poli
-   IDG:38 Cosetta Trapletti - Luca Bernoni
-   IDG:40 Lorenzo Ionata - Joshua Demaio
    IDG:46 Piero Riccardi - Vincenzo Di Bari
 
-  Partite già giocate o con risultato convalidato (2):
+  Partite già giocate o con risultato convalidato (6):
   IDG:34 Simone Zenini - Giuliano Caputi  0-1
+  IDG:35 Jiazhuang Vandelli - Paolo Rivalta  1-0
+  IDG:38 Cosetta Trapletti - Luca Bernoni  0-1
+  IDG:39 Davide Delmonte - Gabriele Battaglia  0-1
   IDG:41 Alessia Mereu - Luigi Ventura  0-1
+  IDG:42 Giulia Paglia - Monica De Fazio  0-1
 
  Virginio Paglia ha il BYE
+
+
+Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
