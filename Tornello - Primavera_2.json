@@ -128,7 +128,7 @@
    "buchholz": 1.5,
    "buchholz_cut1": 1.5,
    "aro": 1505,
-   "display_rank": 13
+   "display_rank": 14
   },
   {
    "id": "BATGA001",
@@ -299,7 +299,7 @@
    "buchholz": 3.0,
    "buchholz_cut1": 2.0,
    "aro": 1614,
-   "display_rank": 28
+   "display_rank": 30
   },
   {
    "id": "VENLU001",
@@ -373,8 +373,8 @@
     }
    ],
    "opponents": [
-    "PAGGI001",
-    "VANJI001"
+    "VANJI001",
+    "PAGGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -541,7 +541,7 @@
    ],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 1.0,
+   "buchholz": 2.0,
    "buchholz_cut1": 0.0,
    "aro": 1443,
    "display_rank": 25
@@ -600,6 +600,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "DEMGI001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -615,10 +622,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 2.5,
-   "buchholz_cut1": 1.5,
-   "aro": 682,
-   "display_rank": 31
+   "buchholz": 3.5,
+   "buchholz_cut1": 2.5,
+   "aro": 921,
+   "display_rank": 28
   },
   {
    "id": "DEMGI001",
@@ -641,7 +648,7 @@
    "federation": "ITA",
    "fide_id_num_str": "0",
    "experienced": false,
-   "points": 0.0,
+   "points": 1.0,
    "results_history": [
     {
      "round": 1,
@@ -656,11 +663,18 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TOLFI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
     }
    ],
    "opponents": [
-    "ZENSI001",
-    "TRACO001"
+    "TRACO001",
+    "ZENSI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -672,9 +686,9 @@
    "withdrawn": false,
    "is_scheduled": false,
    "buchholz": 3.0,
-   "buchholz_cut1": 2.0,
+   "buchholz_cut1": 3.0,
    "aro": 1560,
-   "display_rank": 29
+   "display_rank": 21
   },
   {
    "id": "DEMJO001",
@@ -715,8 +729,8 @@
     }
    ],
    "opponents": [
-    "ZENSI001",
-    "TOLFI001"
+    "TOLFI001",
+    "ZENSI001"
    ],
    "white_games": 2,
    "black_games": 0,
@@ -730,7 +744,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 2.0,
    "aro": 1590,
-   "display_rank": 21
+   "display_rank": 22
   },
   {
    "id": "GORSE001",
@@ -821,7 +835,7 @@
    "buchholz": 1.5,
    "buchholz_cut1": 0.0,
    "aro": 1450,
-   "display_rank": 24
+   "display_rank": 26
   },
   {
    "id": "GASCL001",
@@ -903,7 +917,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 2.0,
    "aro": 1456,
-   "display_rank": 8
+   "display_rank": 10
   },
   {
    "id": "TESAL001",
@@ -967,11 +981,18 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "MACMA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
-    "DEFMO001",
-    "RIVPA001"
+    "RIVPA001",
+    "DEFMO001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -982,10 +1003,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 4.0,
-   "buchholz_cut1": 2.0,
-   "aro": 1473,
-   "display_rank": 19
+   "buchholz": 6.0,
+   "buchholz_cut1": 4.0,
+   "aro": 1463,
+   "display_rank": 15
   },
   {
    "id": "CINAL001",
@@ -1026,8 +1047,8 @@
     }
    ],
    "opponents": [
-    "PAGGI001",
-    "VANJI001"
+    "VANJI001",
+    "PAGGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1041,7 +1062,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 3.0,
    "aro": 1538,
-   "display_rank": 26
+   "display_rank": 27
   },
   {
    "id": "BARGI001",
@@ -1107,7 +1128,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 1.5,
    "aro": 1292,
-   "display_rank": 12
+   "display_rank": 13
   },
   {
    "id": "IONLO001",
@@ -1182,8 +1203,8 @@
     }
    ],
    "opponents": [
-    "PAGVI001",
-    "CAPGI001"
+    "CAPGI001",
+    "PAGVI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1197,7 +1218,7 @@
    "buchholz": 3.5,
    "buchholz_cut1": 3.0,
    "aro": 1576,
-   "display_rank": 18
+   "display_rank": 20
   },
   {
    "id": "COLMI001",
@@ -1263,7 +1284,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 2.0,
    "aro": 1392,
-   "display_rank": 22
+   "display_rank": 23
   },
   {
    "id": "TRACO001",
@@ -1329,8 +1350,8 @@
     }
    ],
    "opponents": [
-    "CALVA001",
-    "DEMGI001"
+    "DEMGI001",
+    "CALVA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1341,10 +1362,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 4.0,
+   "buchholz": 5.0,
    "buchholz_cut1": 4.0,
    "aro": 1394,
-   "display_rank": 17
+   "display_rank": 16
   },
   {
    "id": "BERLU001",
@@ -1392,8 +1413,8 @@
     }
    ],
    "opponents": [
-    "RICPI001",
-    "CAPGI001"
+    "CAPGI001",
+    "RICPI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1407,7 +1428,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 4.0,
    "aro": 1556,
-   "display_rank": 4
+   "display_rank": 5
   },
   {
    "id": "MERAL001",
@@ -1496,7 +1517,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 4.0,
    "aro": 1458,
-   "display_rank": 15
+   "display_rank": 18
   },
   {
    "id": "RICPI001",
@@ -1552,7 +1573,7 @@
    "buchholz": 3.0,
    "buchholz_cut1": 2.0,
    "aro": 1477,
-   "display_rank": 30
+   "display_rank": 31
   },
   {
    "id": "PAGVI001",
@@ -1643,7 +1664,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 1.0,
    "aro": 744,
-   "display_rank": 23
+   "display_rank": 24
   },
   {
    "id": "VALRI001",
@@ -1710,8 +1731,8 @@
     }
    ],
    "opponents": [
-    "DEFMO001",
-    "RIVPA001"
+    "RIVPA001",
+    "DEFMO001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1725,7 +1746,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 2.0,
    "aro": 1473,
-   "display_rank": 27
+   "display_rank": 29
   },
   {
    "id": "POLDI001",
@@ -1788,10 +1809,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 2.0,
-   "buchholz_cut1": 1.0,
+   "buchholz": 3.0,
+   "buchholz_cut1": 2.0,
    "aro": 722,
-   "display_rank": 11
+   "display_rank": 9
   },
   {
    "id": "DELDA002",
@@ -1839,8 +1860,8 @@
     }
    ],
    "opponents": [
-    "PAGVI001",
-    "POLDI001"
+    "POLDI001",
+    "PAGVI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1854,7 +1875,7 @@
    "buchholz": 4.5,
    "buchholz_cut1": 4.0,
    "aro": 1518,
-   "display_rank": 14
+   "display_rank": 17
   },
   {
    "id": "DEFMO001",
@@ -1917,7 +1938,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 2.0,
    "aro": 1381,
-   "display_rank": 9
+   "display_rank": 11
   },
   {
    "id": "PAGGI001",
@@ -1998,7 +2019,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 4.0,
    "aro": 1434,
-   "display_rank": 16
+   "display_rank": 19
   },
   {
    "id": "RIVPA001",
@@ -2061,7 +2082,7 @@
    "buchholz": 4.0,
    "buchholz_cut1": 4.0,
    "aro": 1485,
-   "display_rank": 5
+   "display_rank": 6
   },
   {
    "id": "CAPGI001",
@@ -2109,8 +2130,8 @@
     }
    ],
    "opponents": [
-    "BERLU001",
-    "IONLO001"
+    "IONLO001",
+    "BERLU001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2147,7 +2168,7 @@
    "federation": "ITA",
    "fide_id_num_str": "28505859",
    "experienced": true,
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -2162,6 +2183,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TESAL001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -2177,10 +2205,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 2.5,
-   "buchholz_cut1": 2.0,
-   "aro": 1512,
-   "display_rank": 20
+   "buchholz": 3.5,
+   "buchholz_cut1": 3.0,
+   "aro": 1462,
+   "display_rank": 8
   },
   {
    "id": "ZENSI001",
@@ -2250,10 +2278,10 @@
    "received_bye_in_round": [],
    "withdrawn": false,
    "is_scheduled": false,
-   "buchholz": 4.0,
+   "buchholz": 5.0,
    "buchholz_cut1": 4.0,
    "aro": 1055,
-   "display_rank": 6
+   "display_rank": 4
   },
   {
    "id": "CALVA001",
@@ -2335,7 +2363,7 @@
    "buchholz": 2.0,
    "buchholz_cut1": 1.0,
    "aro": 1528,
-   "display_rank": 10
+   "display_rank": 12
   }
  ],
  "current_round": 3,
@@ -2919,14 +2947,14 @@
      "round": 3,
      "white_player_id": "MACMA001",
      "black_player_id": "TESAL001",
-     "result": null,
+     "result": "1-0",
      "schedule_info": {
       "date": "2026-04-23",
       "time": "15:00",
       "channel": "WhatsApp",
       "arbiter": "Giuliano"
      },
-     "is_scheduled": true
+     "is_scheduled": false
     },
     {
      "id": 44,
@@ -2947,14 +2975,14 @@
      "round": 3,
      "white_player_id": "TOLFI001",
      "black_player_id": "DEMGI001",
-     "result": null,
+     "result": "0-1",
      "schedule_info": {
       "date": "2026-04-23",
       "time": "15:00",
       "channel": "WhatsApp",
       "arbiter": "Simone"
      },
-     "is_scheduled": true
+     "is_scheduled": false
     },
     {
      "id": 46,
@@ -2987,6 +3015,6 @@
    ]
   }
  ],
- "launch_count": 75,
+ "launch_count": 76,
  "bye_value": 0.5
 }
