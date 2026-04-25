@@ -6,7 +6,7 @@ Arbitro Capo: Gabriele Battaglia
 Vice Arbitri: ASCID, Volontari
 Controllo Tempo: Standard 40+20
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Giovedì 23 aprile 2026 20:07:34
+Data Report: Sabato 25 aprile 2026 09:47:07
 --------------------------------------------------------------------------------
 Classifica Parziale - Durante Turno 3
 --------------------------------------------------------------------------------
@@ -22,17 +22,17 @@ Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
-  3 (+9)    NC  Ventura, Luigi              [1461]   2.0    4.00   5.00 1487
+  3 (+14)   NC  Bernoni, Luca               [1399]   2.0    4.00   5.00 1556
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
-  4 (+1)        Zenini, Simone              [1620]   2.0    4.00   5.00 1055
+  4 (+8)    NC  Ventura, Luigi              [1461]   2.0    4.00   5.00 1487
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
-  5 (+12)   NC  Bernoni, Luca               [1399]   2.0    4.00   4.00 1556
+  5 (+0)        Zenini, Simone              [1620]   2.0    4.00   5.00 1055
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
@@ -117,52 +117,52 @@ Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 22 (-1)        Demaio, Joshua              [   0]   1.0    2.00   2.00 1590
+ 22 (+0)    NC  Riccardi, Piero             [1399]   1.0    3.00   3.00 1456
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 23 (-16)   3N  Colangelo, Michele          [1555]   1.0    2.00   2.00 1392
+ 23 (-16)   3N  Colangelo, Michele          [1555]   1.0    2.00   3.00 1392
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 24 (+2)    NC  Paglia, Virginio            [1385]   0.5    1.00   2.00  744
+ 24 (-3)        Demaio, Joshua              [   0]   1.0    2.00   2.00 1590
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 25 (+5)    NC  Forte, Martina              [1355]   0.5    0.00   2.00 1443
+ 25 (+1)    NC  Paglia, Virginio            [1385]   0.5    1.00   2.00  744
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 26 (+5)    NC  Gori, Serena                [1220]   0.5    0.00   1.50 1450
+ 26 (+4)    NC  Forte, Martina              [1355]   0.5    0.00   2.00 1443
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 27 (-9)    NC  Cinque, Alessandra          [1399]   0.0    3.00   4.00 1538
+ 27 (+4)    NC  Gori, Serena                [1220]   0.5    0.00   1.50 1450
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 28 (-22)   3N  Tolaro, Filippa             [1560]   0.0    2.50   3.50  921
+ 28 (-12)   NC  Di Bari, Vincenzo           [1415]   0.0    3.00   4.00 1543
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 29 (-6)    NC  Valleriani, Rita            [1399]   0.0    2.00   4.00 1473
+ 29 (-11)   NC  Cinque, Alessandra          [1399]   0.0    3.00   4.00 1538
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 30 (-14)   NC  Di Bari, Vincenzo           [1415]   0.0    2.00   3.00 1614
+ 30 (-24)   3N  Tolaro, Filippa             [1560]   0.0    2.50   3.50  921
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
- 31 (-9)    NC  Riccardi, Piero             [1399]   0.0    2.00   3.00 1477
+ 31 (-8)    NC  Valleriani, Rita            [1399]   0.0    2.00   4.00 1473
 
 
 Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
