@@ -1,7 +1,7 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 3
  Periodo Turno: Domenica 19 aprile 2026 - Domenica 3 maggio 2026
- Mancano 8 giorni e 14 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (5):
+ Mancano 7 giorni e 12 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (6):
   Domenica 26 aprile 2026
    21:30 IDG:47, Rita Valleriani vs Alessandra Cinque, Canale: WhatsApp, Arbitro: Catia
   Lunedì 27 aprile 2026
@@ -10,9 +10,8 @@
    21:30 IDG:44, Martina Forte vs Serena Gori, Canale: WhatsApp, Arbitro: Ale_Vins
   Martedì 28 aprile 2026
    16:00 IDG:40, Lorenzo Ionata vs Joshua Demaio, Canale: Lichess, Arbitro: Non necessario
-
-  Ancora non pianificate (1):
-   IDG:33 Claudio Gasperoni - Diego Poli
+  Giovedì 30 aprile 2026
+   21:00 IDG:33, Claudio Gasperoni vs Diego Poli, Canale: Lichess, Arbitro: Non necessario
 
   Partite già giocate o con risultato convalidato (9):
   IDG:34 Simone Zenini - Giuliano Caputi  0-1

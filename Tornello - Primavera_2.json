@@ -380,8 +380,8 @@
     }
    ],
    "opponents": [
-    "PAGGI001",
-    "VANJI001"
+    "VANJI001",
+    "PAGGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -453,8 +453,8 @@
     }
    ],
    "opponents": [
-    "VENLU001",
-    "CINAL001"
+    "CINAL001",
+    "VENLU001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -617,8 +617,8 @@
     }
    ],
    "opponents": [
-    "BRICA001",
-    "DEMJO001"
+    "DEMJO001",
+    "BRICA001"
    ],
    "white_games": 0,
    "black_games": 2,
@@ -680,8 +680,8 @@
     }
    ],
    "opponents": [
-    "ZENSI001",
-    "TRACO001"
+    "TRACO001",
+    "ZENSI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -736,8 +736,8 @@
     }
    ],
    "opponents": [
-    "ZENSI001",
-    "TOLFI001"
+    "TOLFI001",
+    "ZENSI001"
    ],
    "white_games": 2,
    "black_games": 0,
@@ -998,8 +998,8 @@
     }
    ],
    "opponents": [
-    "RIVPA001",
-    "DEFMO001"
+    "DEFMO001",
+    "RIVPA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1054,8 +1054,8 @@
     }
    ],
    "opponents": [
-    "PAGGI001",
-    "VANJI001"
+    "VANJI001",
+    "PAGGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1120,8 +1120,8 @@
     }
    ],
    "opponents": [
-    "BRICA001",
-    "GORSE001"
+    "GORSE001",
+    "BRICA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1357,8 +1357,8 @@
     }
    ],
    "opponents": [
-    "DEMGI001",
-    "CALVA001"
+    "CALVA001",
+    "DEMGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1420,8 +1420,8 @@
     }
    ],
    "opponents": [
-    "CAPGI001",
-    "RICPI001"
+    "RICPI001",
+    "CAPGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1745,8 +1745,8 @@
     }
    ],
    "opponents": [
-    "RIVPA001",
-    "DEFMO001"
+    "DEFMO001",
+    "RIVPA001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -1937,8 +1937,8 @@
     }
    ],
    "opponents": [
-    "VALRI001",
-    "TESAL001"
+    "TESAL001",
+    "VALRI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2018,8 +2018,8 @@
     }
    ],
    "opponents": [
-    "VENLU001",
-    "CINAL001"
+    "CINAL001",
+    "VENLU001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2081,8 +2081,8 @@
     }
    ],
    "opponents": [
-    "VALRI001",
-    "TESAL001"
+    "TESAL001",
+    "VALRI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2280,8 +2280,8 @@
     }
    ],
    "opponents": [
-    "DEMGI001",
-    "DEMJO001"
+    "DEMJO001",
+    "DEMGI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2362,8 +2362,8 @@
     }
    ],
    "opponents": [
-    "COLMI001",
-    "TRACO001"
+    "TRACO001",
+    "COLMI001"
    ],
    "white_games": 1,
    "black_games": 1,
@@ -2835,7 +2835,14 @@
      "round": 3,
      "white_player_id": "GASCL001",
      "black_player_id": "POLDI001",
-     "result": null
+     "result": null,
+     "schedule_info": {
+      "date": "2026-04-30",
+      "time": "21:00",
+      "channel": "Lichess",
+      "arbiter": "Non necessario"
+     },
+     "is_scheduled": true
     },
     {
      "id": 34,
@@ -3029,6 +3036,6 @@
    ]
   }
  ],
- "launch_count": 77,
+ "launch_count": 78,
  "bye_value": 0.5
 }
