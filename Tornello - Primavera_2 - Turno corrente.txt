@@ -1,9 +1,7 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 3
  Periodo Turno: Domenica 19 aprile 2026 - Domenica 3 maggio 2026
- Mancano 7 giorni e 12 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (6):
-  Domenica 26 aprile 2026
-   21:30 IDG:47, Rita Valleriani vs Alessandra Cinque, Canale: WhatsApp, Arbitro: Catia
+ Mancano 6 giorni e 13 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (5):
   Lunedì 27 aprile 2026
    15:30 IDG:37, Michele Colangelo vs Catia Susana Brites Pereira Lima, Canale: WhatsApp, Arbitro: Simone
    17:00 IDG:36, Giuseppe Baratta vs Valeria Calzolari, Canale: WhatsApp, Arbitro: Monica
@@ -13,7 +11,7 @@
   Giovedì 30 aprile 2026
    21:00 IDG:33, Claudio Gasperoni vs Diego Poli, Canale: Lichess, Arbitro: Non necessario
 
-  Partite già giocate o con risultato convalidato (9):
+  Partite già giocate o con risultato convalidato (10):
   IDG:34 Simone Zenini - Giuliano Caputi  0-1
   IDG:35 Jiazhuang Vandelli - Paolo Rivalta  1-0
   IDG:38 Cosetta Trapletti - Luca Bernoni  0-1
@@ -23,6 +21,7 @@
   IDG:43 Massimo Maccaferri - Alessandra Testori  1-0
   IDG:45 Filippa Tolaro - Gianni Demaio  0-1
   IDG:46 Piero Riccardi - Vincenzo Di Bari  1-0
+  IDG:47 Rita Valleriani - Alessandra Cinque  1-0
 
  Virginio Paglia ha il BYE
 
