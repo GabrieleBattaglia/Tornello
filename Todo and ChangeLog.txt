@@ -25,6 +25,9 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.10.10
+	+ Hotfix: Spostata la stampa della firma dell'applicazione ("Tornello (versione - data) - Gabriele Battaglia & AI") al di fuori del ciclo giocatori nel file di report della Classifica, evitando che venisse ripetuta erroneamente dopo ogni riga (chiude Issue #1).
+
 8.10.9
 	+ Aggiunta la firma ("Tornello (versione - data) - Gabriele Battaglia & AI") in coda a tutti i report testuali generati dal programma (Classifica, Turno Corrente, Dettaglio Turno e Riepilogo Sospeso).
 
