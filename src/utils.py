@@ -98,3 +98,32 @@ def sanitize_filename(name):
     if not name:
         name = "Torneo_Senza_Nome"
     return name
+
+def parse_flexible_date(date_input_str):
+    """
+    Tenta di parsare una data da vari formati, incluso ISO (YYYY-MM-DD)
+    e compatto senza punteggiatura (YYYYMMDD).
+    Restituisce un oggetto datetime se valido, solleva ValueError altrimenti.
+    """
+    from config import DATE_FORMAT_ISO
+    from datetime import datetime
+    
+    date_str = date_input_str.strip()
+    if not date_str:
+        raise ValueError("Data vuota")
+        
+    # Tentativo ISO standard
+    try:
+        return datetime.strptime(date_str, DATE_FORMAT_ISO)
+    except ValueError:
+        pass
+        
+    # Tentativo AAAAMMGG compatto (lunghezza 8, solo numeri)
+    if len(date_str) == 8 and date_str.isdigit():
+        try:
+            year, month, day = int(date_str[:4]), int(date_str[4:6]), int(date_str[6:])
+            return datetime(year, month, day)
+        except ValueError:
+            pass
+            
+    raise ValueError(f"Formato data '{date_str}' non riconosciuto.")

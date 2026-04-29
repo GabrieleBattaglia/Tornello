@@ -208,14 +208,15 @@ def input_schedule_details(existing_details=None):
                 day = int(date_input_str)
                 parsed_date_obj = datetime(now.year, now.month, day)
             else:
-                parsed_date_obj = datetime.strptime(date_input_str, DATE_FORMAT_ISO)
+                from utils import parse_flexible_date
+                parsed_date_obj = parse_flexible_date(date_input_str)
 
             details["date"] = parsed_date_obj.strftime(DATE_FORMAT_ISO)
             break
         except ValueError:
             print(
                 _(
-                    "Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, o {iso_format}."
+                    "Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, {iso_format} o AAAAMMGG."
                 ).format(input=date_input_str, iso_format=DATE_FORMAT_ISO)
             )
         except TypeError:
@@ -688,13 +689,26 @@ def input_players(
             fide_id_new_db = get_input_with_default(
                 _("  ID FIDE Numerico ('0' se N/D)"), "0"
             ).strip()
-            bdate_input = get_input_with_default(
-                _(" Data Nascita ({date_format} o vuoto)").format(
-                    date_format=DATE_FORMAT_ISO
-                ),
-                "",
-            )
-            birth_date_new_db = bdate_input if bdate_input else None
+            
+            while True:
+                bdate_input = get_input_with_default(
+                    _("  Data Nascita ({date_format} o vuoto o AAAAMMGG)").format(
+                        date_format=DATE_FORMAT_ISO
+                    ),
+                    "",
+                )
+                if bdate_input:
+                    try:
+                        from utils import parse_flexible_date
+                        parsed_dt = parse_flexible_date(bdate_input)
+                        birth_date_new_db = parsed_dt.strftime(DATE_FORMAT_ISO)
+                        break
+                    except ValueError:
+                        print(_("Formato data non valido. Riprova."))
+                else:
+                    birth_date_new_db = None
+                    break
+                    
             exp_new_db = enter_escape(
                 _(" Esperienza pregressa significativa? (INVIO|ESCAPE)")
             )
@@ -1209,11 +1223,18 @@ def update_match_result(torneo):
 
             result_map = {
                 "1-0": ("1-0", 1.0, 0.0),
+                "10": ("1-0", 1.0, 0.0),
                 "0-1": ("0-1", 0.0, 1.0),
+                "01": ("0-1", 0.0, 1.0),
                 "1/2": ("1/2-1/2", 0.5, 0.5),
+                "12": ("1/2-1/2", 0.5, 0.5),
+                "7": ("1/2-1/2", 0.5, 0.5),
                 "1-F": ("1-F", 1.0, 0.0),
+                "1F": ("1-F", 1.0, 0.0),
                 "F-1": ("F-1", 0.0, 1.0),
+                "F1": ("F-1", 0.0, 1.0),
                 "0-0F": ("0-0F", 0.0, 0.0),
+                "00F": ("0-0F", 0.0, 0.0),
             }
             if result_input in result_map:
                 res_str, w_score, b_score = result_map[result_input]
