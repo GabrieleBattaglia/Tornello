@@ -14,12 +14,11 @@ except AttributeError:
 
 from GBUtils import Donazione
 import atexit
-atexit.register(Donazione)
 from datetime import datetime, timedelta
 
 # installazione percorsi relativi e i18n
 from config import *
-from utils import enter_escape, format_date_locale, sanitize_filename
+from utils import enter_escape, format_date_locale, sanitize_filename, parse_flexible_date
 from src.engine import handle_bbpairings_failure
 from src.version import VERSIONE
 from db_players import (
@@ -600,13 +599,13 @@ if __name__ == "__main__":
                         ).strip()
                         if not start_date_str:
                             start_date_str = oggi_str_iso
-                        start_dt = datetime.strptime(start_date_str, DATE_FORMAT_ISO)
-                        torneo["start_date"] = start_date_str
+                        start_dt = parse_flexible_date(start_date_str)
+                        torneo["start_date"] = start_dt.strftime(DATE_FORMAT_ISO)
                         break
                     except ValueError:
                         print(
                             _(
-                                "Formato data non valido. Usa {date_format}. Riprova."
+                                "Formato data non valido. Usa {date_format} o AAAAMMGG. Riprova."
                             ).format(date_format=DATE_FORMAT_ISO)
                         )
                 while True:
@@ -724,23 +723,23 @@ if __name__ == "__main__":
                 torneo["tournament_id"] = (
                     f"{sanitize_filename(torneo['name'])}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
                 )
-                risultato_input = input_players(
-                    players_db,
-                    existing_players=[],
-                    torneo_obj=torneo,
-                    torneo_filename=active_tournament_filename,
-                )
-                if risultato_input is None:
-                    # Utente ha sospeso la creazione
-                    sys.exit(0)
-                torneo["players"] = risultato_input
-                if not _conferma_lista_giocatori_torneo(torneo, players_db):
-                    print(
-                        _(
-                            "Creazione torneo annullata a causa di problemi con la lista giocatori."
-                        )
+                existing_players = []
+                while True:
+                    risultato_input = input_players(
+                        players_db,
+                        existing_players=existing_players,
+                        torneo_obj=torneo,
+                        torneo_filename=active_tournament_filename,
                     )
-                    sys.exit(0)
+                    if risultato_input is None:
+                        # Utente ha sospeso la creazione
+                        sys.exit(0)
+                    torneo["players"] = risultato_input
+                    if _conferma_lista_giocatori_torneo(torneo, players_db):
+                        break
+                    else:
+                        print(_("\nReindirizzamento all'inserimento giocatori..."))
+                        existing_players = torneo["players"]
                 torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
         num_giocatori = len(torneo.get("players", []))
         num_turni_totali = torneo.get("total_rounds", 0)
