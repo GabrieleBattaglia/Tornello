@@ -88,21 +88,14 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             if len(torneo["players"]) < min_players_for_tournament:
                 print(
                     _(
-                        "ATTENZIONE: Sono necessari almeno {min_players} giocatori per un torneo di {rounds} turni."
+                        "ERRORE CRITICO: Sono necessari almeno {min_players} giocatori per un torneo di {rounds} turni."
                     ).format(
                         min_players=min_players_for_tournament,
                         rounds=torneo.get("total_rounds"),
                     )
                 )
-                if enter_escape(
-                    _("Continuare comunque con meno giocatori? (INVIO|ESCAPE)")
-                ):
-                    print(
-                        _(
-                            "Conferma annullata. Puoi aggiungere altri giocatori o modificare i parametri del torneo."
-                        )
-                    )
-                    return False
+                print(_("Non puoi procedere finché non inserisci un numero sufficiente di giocatori, oppure modifichi i parametri del torneo."))
+                return False
 
             # --- AGGIORNAMENTO SILENZIOSO DATI GIOCATORI ---
             # Allinea eventuali aggiornamenti del database (Elo, Titoli) prima di cristallizzare la lista
