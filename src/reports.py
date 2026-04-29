@@ -756,8 +756,9 @@ def save_standings_text(torneo, final=False):
 
                 f.write(line + "\n")
 
-                f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
-                print(                _("File classifica '{filename}' salvato/sovrascritto.").format(
+            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+            print(
+                _("File classifica '{filename}' salvato/sovrascritto.").format(
                     filename=filename
                 )
             )
