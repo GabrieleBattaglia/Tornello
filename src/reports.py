@@ -124,9 +124,10 @@ def save_current_tournament_round_file(torneo):
         bp_obj = players_dict.get(match.get("black_player_id"))
 
         if bp_obj is None and wp_obj is not None:  # È un BYE
-            bye_player_display_line = _(" {first_name} {last_name} ha il BYE").format(
+            bye_player_display_line = _(" {first_name} {last_name} ({elo}) ha il BYE").format(
                 first_name=wp_obj.get("first_name", "?"),
                 last_name=wp_obj.get("last_name", "?"),
+                elo=int(wp_obj.get("initial_elo", 0)),
             )
             continue
         if bp_obj is None or wp_obj is None:  # Partita corrotta o invalida
@@ -134,12 +135,12 @@ def save_current_tournament_round_file(torneo):
 
         # Aggiungi il flag [RIT] ai nomi dei giocatori ritirati
         wp_name = (
-            f"{wp_obj.get('first_name', _('Bianco?'))} {wp_obj.get('last_name', '')}"
+            f"{wp_obj.get('first_name', _('Bianco?'))} {wp_obj.get('last_name', '')} ({int(wp_obj.get('initial_elo', 0))})"
         )
         if wp_obj.get("withdrawn"):
             wp_name += " [RIT]"
         bp_name = (
-            f"{bp_obj.get('first_name', _('Nero?'))} {bp_obj.get('last_name', '')}"
+            f"{bp_obj.get('first_name', _('Nero?'))} {bp_obj.get('last_name', '')} ({int(bp_obj.get('initial_elo', 0))})"
         )
         if bp_obj.get("withdrawn"):
             bp_name += " [RIT]"
