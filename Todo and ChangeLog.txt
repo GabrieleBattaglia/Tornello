@@ -25,6 +25,9 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.10.12
+	+ Feature: Nel file di testo del "Turno corrente", l'Elo di partenza dei giocatori è ora visualizzato tra parentesi tonde accanto ai loro nomi (inclusi i BYE).
+
 8.10.11
 	+ Feature: Aggiunto supporto per formati di data più flessibili (es. "20260427" in aggiunta ad ISO) in tutti i prompt, per facilitare la dettatura tramite screen reader (chiude Issue #3).
 	+ Feature: Implementata l'accettazione di formati di punteggio alternativi senza punteggiatura ("10", "01", "12", "7", "1f", "00f") per velocizzare e semplificare l'input dei risultati (chiude Issue #4).
