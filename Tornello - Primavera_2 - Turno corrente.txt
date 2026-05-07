@@ -1,30 +1,32 @@
-﻿Nome Torneo: Primavera 2 - Turno: 3
- Periodo Turno: Domenica 19 aprile 2026 - Domenica 3 maggio 2026
- Mancano 6 giorni e 13 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (5):
-  Lunedì 27 aprile 2026
-   15:30 IDG:37, Michele Colangelo vs Catia Susana Brites Pereira Lima, Canale: WhatsApp, Arbitro: Simone
-   17:00 IDG:36, Giuseppe Baratta vs Valeria Calzolari, Canale: WhatsApp, Arbitro: Monica
-   21:30 IDG:44, Martina Forte vs Serena Gori, Canale: WhatsApp, Arbitro: Ale_Vins
-  Martedì 28 aprile 2026
-   16:00 IDG:40, Lorenzo Ionata vs Joshua Demaio, Canale: Lichess, Arbitro: Non necessario
-  Giovedì 30 aprile 2026
-   21:00 IDG:33, Claudio Gasperoni vs Diego Poli, Canale: Lichess, Arbitro: Non necessario
+﻿Nome Torneo: Primavera 2 - Turno: 4
+ Periodo Turno: Lunedì 4 maggio 2026 - Domenica 17 maggio 2026
+ Mancano 11 giorni e 1 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (3):
+  Giovedì 7 maggio 2026
+   21:30 IDG:62, Martina Forte (1355) vs Virginio Paglia (1385), Canale: WhatsApp, Arbitro: Catia
+  Lunedì 11 maggio 2026
+   21:30 IDG:63, Vincenzo Di Bari (1415) vs Filippa Tolaro (1560), Canale: WhatsApp, Arbitro: Martina
+  Domenica 17 maggio 2026
+   21:30 IDG:52, Luigi Ventura (1461) vs Simone Zenini (1620), Canale: WhatsApp, Arbitro: Ale & Vins
 
-  Partite già giocate o con risultato convalidato (10):
-  IDG:34 Simone Zenini - Giuliano Caputi  0-1
-  IDG:35 Jiazhuang Vandelli - Paolo Rivalta  1-0
-  IDG:38 Cosetta Trapletti - Luca Bernoni  0-1
-  IDG:39 Davide Delmonte - Gabriele Battaglia  0-1
-  IDG:41 Alessia Mereu - Luigi Ventura  0-1
-  IDG:42 Giulia Paglia - Monica De Fazio  0-1
-  IDG:43 Massimo Maccaferri - Alessandra Testori  1-0
-  IDG:45 Filippa Tolaro - Gianni Demaio  0-1
-  IDG:46 Piero Riccardi - Vincenzo Di Bari  1-0
-  IDG:47 Rita Valleriani - Alessandra Cinque  1-0
+  Ancora non pianificate (5):
+   IDG:49 Valeria Calzolari (1385) - Jiazhuang Vandelli (1693)
+   IDG:50 Giuliano Caputi (1767) - Claudio Gasperoni (1844)
+   IDG:55 Luca Bernoni (1399) - Lorenzo Ionata (1488)
+   IDG:58 Rita Valleriani (1399) - Michele Colangelo (1555)
+   IDG:60 Joshua Demaio (0) - Giulia Paglia (1382)
 
- Virginio Paglia ha il BYE
+  Partite già giocate o con risultato convalidato (7):
+  IDG:51 Diego Poli (1670) - Catia Susana Brites Pereira Lima (1365)  1/2-1/2
+  IDG:53 Paolo Rivalta (1503) - Monica De Fazio (1443)  0-1
+  IDG:54 Gabriele Battaglia (1498) - Massimo Maccaferri (1443)  1-0
+  IDG:56 Cosetta Trapletti (1501) - Giuseppe Baratta (1450)  1-0
+  IDG:57 Serena Gori (1220) - Davide Delmonte (0)  1-0
+  IDG:59 Gianni Demaio (1399) - Alessia Mereu (1385)  F-1
+  IDG:61 Alessandra Testori (1362) - Piero Riccardi (1399)  0-1
+
+ Alessandra Cinque (1399) ha il BYE
 
 
-Tornello (8.10.9, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
+Tornello (8.10.12, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
