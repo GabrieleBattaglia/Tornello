@@ -153,6 +153,28 @@ def sincronizza_db_personale():
                 updates["birth_date"] = f"{fide_birth_year}-01-01"
                 stats["birth_date_updates"] += 1
 
+            # Nuovi campi FIDE
+            fide_fields_to_sync = [
+                ("elo_rapid", "fide_elo_rapid"),
+                ("elo_blitz", "fide_elo_blitz"),
+                ("games", "fide_games"),
+                ("rapid_games", "fide_rapid_games"),
+                ("rapid_k", "fide_rapid_k"),
+                ("blitz_games", "fide_blitz_games"),
+                ("blitz_k", "fide_blitz_k"),
+                ("w_title", "fide_w_title"),
+                ("o_title", "fide_o_title"),
+                ("foa_title", "fide_foa_title"),
+                ("flag", "fide_flag"),
+            ]
+            for fide_key, local_key in fide_fields_to_sync:
+                fide_val = fide_record.get(fide_key)
+                if fide_val is not None and fide_val != "" and fide_val != local_player.get(local_key):
+                    if "elo" in fide_key and fide_val == 0:
+                        continue
+                    updates[local_key] = fide_val
+                    stats["other_updates"] = stats.get("other_updates", 0) + 1
+
         if new_fide_id:
             stats["id_associations"] += 1
 
@@ -213,13 +235,13 @@ def sincronizza_db_personale():
     # Scelta Modalità (ESCAPE = Tutto, INVIO = Passo-passo)
     print(
         _(
-            "Premi ESCAPE per applicare TUTTI gli aggiornamenti non ambigui in automatico."
+            "Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."
         )
     )
-    print(_("Premi INVIO per decidere per ciascun aggiornamento passo-passo."))
+    print(_("Premi INVIO per confermare manualmente l'aggiornamento per ogni singolo giocatore."))
 
     step_by_step = enter_escape(
-        _("Scegli la modalità (INVIO = passo-passo | ESCAPE = applica tutti): ")
+        _("Scegli la modalità (INVIO = Conferma singola | ESCAPE = Aggiorna in massa): ")
     )
 
     changes_applied = False
@@ -275,6 +297,27 @@ def sincronizza_db_personale():
                     fide_birth_year = chosen_match.get("birth_year")
                     if fide_birth_year and not player.get("birth_date"):
                         updates["birth_date"] = f"{fide_birth_year}-01-01"
+
+                    # Nuovi campi FIDE
+                    fide_fields_to_sync = [
+                        ("elo_rapid", "fide_elo_rapid"),
+                        ("elo_blitz", "fide_elo_blitz"),
+                        ("games", "fide_games"),
+                        ("rapid_games", "fide_rapid_games"),
+                        ("rapid_k", "fide_rapid_k"),
+                        ("blitz_games", "fide_blitz_games"),
+                        ("blitz_k", "fide_blitz_k"),
+                        ("w_title", "fide_w_title"),
+                        ("o_title", "fide_o_title"),
+                        ("foa_title", "fide_foa_title"),
+                        ("flag", "fide_flag"),
+                    ]
+                    for fide_key, local_key in fide_fields_to_sync:
+                        fide_val = chosen_match.get(fide_key)
+                        if fide_val is not None and fide_val != "" and fide_val != player.get(local_key):
+                            if "elo" in fide_key and fide_val == 0:
+                                continue
+                            updates[local_key] = fide_val
                 else:
                     print(_("   Saltato."))
                     continue
@@ -326,6 +369,27 @@ def sincronizza_db_personale():
                     fide_birth_year = chosen_match.get("birth_year")
                     if fide_birth_year and not player.get("birth_date"):
                         updates["birth_date"] = f"{fide_birth_year}-01-01"
+
+                    # Nuovi campi FIDE
+                    fide_fields_to_sync = [
+                        ("elo_rapid", "fide_elo_rapid"),
+                        ("elo_blitz", "fide_elo_blitz"),
+                        ("games", "fide_games"),
+                        ("rapid_games", "fide_rapid_games"),
+                        ("rapid_k", "fide_rapid_k"),
+                        ("blitz_games", "fide_blitz_games"),
+                        ("blitz_k", "fide_blitz_k"),
+                        ("w_title", "fide_w_title"),
+                        ("o_title", "fide_o_title"),
+                        ("foa_title", "fide_foa_title"),
+                        ("flag", "fide_flag"),
+                    ]
+                    for fide_key, local_key in fide_fields_to_sync:
+                        fide_val = chosen_match.get(fide_key)
+                        if fide_val is not None and fide_val != "" and fide_val != player.get(local_key):
+                            if "elo" in fide_key and fide_val == 0:
+                                continue
+                            updates[local_key] = fide_val
                 else:
                     print(_("Saltato."))
                     continue
@@ -443,29 +507,7 @@ def aggiorna_db_fide_locale():
                 if fide_id_node is not None and fide_id_node.text:
                     fide_id_str = fide_id_node.text.strip()
 
-                    # Estrai i dati usando i nomi dei tag XML
-                    name = player_node.find("name").text
-
-                    # Per l'Elo, ora estraiamo tutte e 3 le cadenze + K-Factor e Flag
-                    rating_std_node = player_node.find("rating")
-                    rating_rap_node = player_node.find("rapid_rating")
-                    rating_blz_node = player_node.find("blitz_rating")
-                    k_factor_node = player_node.find("k")
-                    flag_node = player_node.find("flag")
-
-                    rating_std = (
-                        int(rating_std_node.text)
-                        if rating_std_node is not None and rating_std_node.text
-                        else 0
-                    )
-
-                    # Filtriamo i giocatori inattivi o senza rating standard, che sono meno rilevanti
-                    if rating_std == 0 and (
-                        flag_node is not None
-                        and flag_node.text
-                        and "i" in flag_node.text.lower()
-                    ):
-                        continue
+                    name = player_node.find("name").text if player_node.find("name") is not None and player_node.find("name").text else ""
 
                     last_name_fide, first_name_fide = name, ""
                     if "," in name:
@@ -473,30 +515,35 @@ def aggiorna_db_fide_locale():
                         last_name_fide = parts[0].strip()
                         first_name_fide = parts[1].strip()
 
+                    def get_text(tag, default=""):
+                        node = player_node.find(tag)
+                        return node.text if node is not None and node.text else default
+
+                    def get_int(tag, default=0):
+                        text = get_text(tag, "")
+                        return int(text) if text.lstrip('-').isdigit() else default
+
                     fide_players_db[fide_id_str] = {
                         "id_fide": int(fide_id_str),
                         "first_name": first_name_fide,
                         "last_name": last_name_fide,
-                        "federation": player_node.find("country").text,
-                        "title": player_node.find("title").text or "",
-                        "sex": player_node.find("sex").text or "",
-                        # Rinomino 'elo' per chiarezza e aggiungo gli altri
-                        "elo_standard": rating_std,
-                        "elo_rapid": int(rating_rap_node.text)
-                        if rating_rap_node is not None and rating_rap_node.text
-                        else 0,
-                        "elo_blitz": int(rating_blz_node.text)
-                        if rating_blz_node is not None and rating_blz_node.text
-                        else 0,
-                        "k_factor": int(k_factor_node.text)
-                        if k_factor_node is not None and k_factor_node.text
-                        else None,
-                        "flag": flag_node.text if flag_node is not None else None,
-                        "birth_year": int(b.text)
-                        if (b := player_node.find("birthday")) is not None
-                        and b.text
-                        and b.text.isdigit()
-                        else None,
+                        "federation": get_text("country"),
+                        "sex": get_text("sex"),
+                        "title": get_text("title"),
+                        "w_title": get_text("w_title"),
+                        "o_title": get_text("o_title"),
+                        "foa_title": get_text("foa_title"),
+                        "elo_standard": get_int("rating"),
+                        "games": get_int("games"),
+                        "k_factor": get_int("k", default=None),
+                        "elo_rapid": get_int("rapid_rating"),
+                        "rapid_games": get_int("rapid_games"),
+                        "rapid_k": get_int("rapid_k", default=None),
+                        "elo_blitz": get_int("blitz_rating"),
+                        "blitz_games": get_int("blitz_games"),
+                        "blitz_k": get_int("blitz_k", default=None),
+                        "birth_year": get_int("birthday", default=None),
+                        "flag": get_text("flag", default=None),
                     }
                     player_count += 1
                     if player_count % 500000 == 0:
@@ -641,17 +688,27 @@ def save_players_db_txt(players_db):
                 last_name_display = player.get("last_name", "N/D")
                 elo_display = player.get("current_elo", "N/D")
                 f.write(
-                    f"ID: {player_id_display}, {titolo_prefix}{first_name_display} {last_name_display}, Elo: {elo_display}\n"
+                    f"ID: {player_id_display}, {titolo_prefix}{first_name_display} {last_name_display}\n"
                 )
+                
+                extra_titles = [player.get(t) for t in ["fide_w_title", "fide_o_title", "fide_foa_title"] if player.get(t)]
+                extra_titles_str = f", Titoli Extra: {', '.join(extra_titles)}" if extra_titles else ""
+                
                 f.write(
                     _(
-                        "\tSesso: {sesso}, Federazione Giocatore: {federazione}, ID FIDE num: {fide_id}\n"
+                        "\tSesso: {sesso}, Federazione: {federazione}, ID FIDE: {fide_id}, Flag: {flag}{extra}\n"
                     ).format(
                         sesso=sesso,
                         federazione=federazione_giocatore,
                         fide_id=fide_id_numerico,
+                        flag=player.get("fide_flag") or "N/D",
+                        extra=extra_titles_str
                     )
                 )
+                f.write(f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_games', 'N/D')})\n")
+                f.write(f"\tElo Rapid: {player.get('fide_elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n")
+                f.write(f"\tElo Blitz: {player.get('fide_elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n")
+                
                 games_played_total = player.get("games_played", 0)
                 current_k_factor = get_k_factor(
                     player, current_date_iso
