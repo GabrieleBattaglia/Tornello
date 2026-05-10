@@ -101,18 +101,19 @@ Una delle caratteristiche fondamentali di `tornello.py` è la sua capacità di c
     * **Rating:** L'Elo corrente del giocatore, che viene aggiornato dopo ogni torneo FIDE-rated gestito.
     * **Dati di Registrazione e Contatto (Potenziali):** Data di iscrizione al DB.
     * **Dati Anagrafici Arricchiti (Nuovi):** Grazie agli ultimi sviluppi e allo script `arricchisci_db_giocatori.py`, ora il DB può contenere:
-        * **Titolo FIDE:** (es. FM, WIM, CM, o vuoto)
+        * **Titolo FIDE e Titoli Extra:** (es. FM, WIM, CM, ma anche titoli Women, Online o FOA).
         * **Sesso:** ('m' o 'w')
         * **Federazione del Giocatore:** (es. ITA, ENG, GER)
         * **ID FIDE Numerico:** L'identificativo ufficiale FIDE del giocatore (se conosciuto, altrimenti '0').
+        * **Flag FIDE:** (es. 'i' per inattivi).
         * **Data di Nascita:** Memorizzata preferibilmente nel formato `YYYY-MM-DD`.
-    * **Statistiche Globali:**
-        * Numero totale di partite valutate giocate.
+    * **Statistiche e Rating Completo (Novità):**
+        * **Elo FIDE:** Non solo Elo Standard, ma anche **Elo Rapid** ed **Elo Blitz**, con le relative quantità di partite FIDE riconosciute e fattori K per ciascuna cadenza. L'estrazione dal DB FIDE ora è totale e non esclude più i giocatori inattivi.
         * Un "medagliere" (Ori, Argenti, Bronzi, e anche "Legni" per i quarti posti!) accumulato nei tornei gestiti.
-    * **Storico Tornei:** Una lista dei tornei a cui il giocatore ha partecipito (gestiti da `tornello.py`), con la posizione ottenuta, il numero di partecipanti e le date.
+    * **Storico Tornei:** Una lista dei tornei a cui il giocatore ha partecipato (gestiti da `tornello.py`), con la posizione ottenuta, il numero di partecipanti e le date.
 
 * **A Cosa Serve e Perché è Utile:**
-    1.  **Velocità nell'Iscrizione ai Tornei:** Quando si crea un nuovo torneo, si possono rapidamente cercare e aggiungere giocatori già presenti nel DB, evitando di dover ridigitare ogni volta tutti i loro dati.
+    1.  **Velocità nell'Iscrizione ai Tornei:** Quando si crea un nuovo torneo, si possono rapidamente cercare e aggiungere giocatori già presenti nel DB, evitando di dover ridigitare ogni volta tutti i loro dati. La **ricerca è stata resa estremamente robusta**: ora supporta frammenti di nome o cognome in qualsiasi ordine, semplificando enormemente la vita all'organizzatore.
     2.  **Tracciamento della Performance:** Permette di seguire l'evoluzione dell'Elo di un giocatore nel tempo, vedere i suoi risultati passati e le sue performance nei vari tornei.
     3.  **Correttezza dei Dati per il TRF:** Fornire dati anagrafici accurati e completi (come Federazione, ID FIDE, Data Nascita, Titolo) è essenziale per generare file TRF che siano il più possibile conformi agli standard richiesti per l'omologazione o per l'invio a enti ufficiali. `bbpPairings` stesso, pur non usando tutti questi dati per il solo calcolo degli abbinamenti, si aspetta un file TRF ben formato.
     4.  **Calcolo K-Factor:** La data di nascita e l'Elo memorizzati sono usati da `tornello.py` per determinare il K-Factor corretto per il calcolo della variazione Elo a fine torneo, seguendo le normative FIDE.

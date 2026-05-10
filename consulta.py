@@ -75,24 +75,8 @@ def aggiorna_db_fide_locale():
                     fide_id_str = fide_id_node.text.strip()
 
                     # Estrae i dati che ci interessano
-                    name = player_node.find("name").text
-                    rating_std_node = player_node.find("rating")
-                    flag_node = player_node.find("flag")
-
-                    rating_std = (
-                        int(rating_std_node.text)
-                        if rating_std_node is not None and rating_std_node.text
-                        else 0
-                    )
-
-                    # Filtriamo i giocatori inattivi o senza rating standard, che sono meno rilevanti
-                    if rating_std == 0 and (
-                        flag_node is not None
-                        and flag_node.text
-                        and "i" in flag_node.text.lower()
-                    ):
-                        continue
-
+                    name = player_node.find("name").text if player_node.find("name") is not None and player_node.find("name").text else ""
+                    
                     # Separa il cognome dal nome
                     last_name_fide, first_name_fide = name, ""
                     if "," in name:
@@ -100,32 +84,37 @@ def aggiorna_db_fide_locale():
                         last_name_fide = parts[0].strip()
                         first_name_fide = parts[1].strip()
 
-                    # Costruisce il dizionario del giocatore
+                    # Funzione helper per ottenere il testo in modo sicuro
+                    def get_text(tag, default=""):
+                        node = player_node.find(tag)
+                        return node.text if node is not None and node.text else default
+                    
+                    def get_int(tag, default=0):
+                        text = get_text(tag, "")
+                        return int(text) if text.lstrip('-').isdigit() else default
+
+                    # Costruisce il dizionario del giocatore con tutti i campi XML
                     fide_players_db[fide_id_str] = {
                         "id_fide": int(fide_id_str),
                         "first_name": first_name_fide,
                         "last_name": last_name_fide,
-                        "federation": player_node.find("country").text,
-                        "title": player_node.find("title").text or "",
-                        "sex": player_node.find("sex").text or "",
-                        "elo_standard": rating_std,
-                        "elo_rapid": int(r.text)
-                        if (r := player_node.find("rapid_rating")) is not None
-                        and r.text
-                        else 0,
-                        "elo_blitz": int(b.text)
-                        if (b := player_node.find("blitz_rating")) is not None
-                        and b.text
-                        else 0,
-                        "k_factor": int(k.text)
-                        if (k := player_node.find("k")) is not None and k.text
-                        else None,
-                        "flag": flag_node.text if flag_node is not None else None,
-                        "birth_year": int(by.text)
-                        if (by := player_node.find("birthday")) is not None
-                        and by.text
-                        and by.text.isdigit()
-                        else None,
+                        "federation": get_text("country"),
+                        "sex": get_text("sex"),
+                        "title": get_text("title"),
+                        "w_title": get_text("w_title"),
+                        "o_title": get_text("o_title"),
+                        "foa_title": get_text("foa_title"),
+                        "elo_standard": get_int("rating"),
+                        "games": get_int("games"),
+                        "k_factor": get_int("k", default=None),
+                        "elo_rapid": get_int("rapid_rating"),
+                        "rapid_games": get_int("rapid_games"),
+                        "rapid_k": get_int("rapid_k", default=None),
+                        "elo_blitz": get_int("blitz_rating"),
+                        "blitz_games": get_int("blitz_games"),
+                        "blitz_k": get_int("blitz_k", default=None),
+                        "birth_year": get_int("birthday", default=None),
+                        "flag": get_text("flag", default=None),
                     }
                     player_count += 1
                     # Fornisce un feedback ogni 500.000 giocatori elaborati
@@ -172,18 +161,21 @@ def cerca_giocatore_fide(search_term):
         return []  # Errore di lettura, restituisce lista vuota
 
     matches = []
-    search_lower = search_term.strip().lower()
-    search_is_id = search_term.strip().isdigit()
+    search_term_stripped = search_term.strip()
+    search_lower = search_term_stripped.lower()
+    search_is_id = search_term_stripped.isdigit()
 
     # Se l'input è un numero e corrisponde a un ID FIDE, la ricerca è esatta e veloce
-    if search_is_id and search_term.strip() in fide_db:
-        matches.append(fide_db[search_term.strip()])
+    if search_is_id and search_term_stripped in fide_db:
+        matches.append(fide_db[search_term_stripped])
         return matches
+
+    search_words = search_lower.split()
 
     # Altrimenti, cerca il testo inserito nel nome completo di ogni giocatore
     for fide_id, player_data in fide_db.items():
         full_name = f"{player_data.get('first_name', '')} {player_data.get('last_name', '')}".lower()
-        if search_lower in full_name:
+        if all(word in full_name for word in search_words):
             matches.append(player_data)
 
     return matches
@@ -270,6 +262,7 @@ def main():
     """
     Funzione principale che orchestra il funzionamento dello script.
     """
+    print("Welcome - FIDE Player Checker v1.0.1 (Data: 10 Maggio 2026) by Gabriele")
     print("--- FIDE Player Checker ---")
     print("Verifica stato database FIDE locale...")
 

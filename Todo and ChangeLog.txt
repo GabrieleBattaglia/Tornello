@@ -25,6 +25,13 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.11.0
+	+ Feature: Migliorata la robustezza della ricerca dei giocatori (sia in Tornello che in consulta.py), che ora supporta parole in qualsiasi ordine e ricerche parziali.
+	+ Feature: Rimossi i filtri in fase di estrazione del DB FIDE XML; ora l'intero archivio viene estratto e salvato localmente, senza escludere i giocatori inattivi o senza Elo Standard.
+	+ Feature: Estrazione estesa a tutti i 19 campi previsti dall'XML FIDE (inclusi Elo Rapid, Elo Blitz, relative partite giocate, K-factor, flag e titoli aggiuntivi).
+	+ Feature: Ottimizzata la procedura di "Sincronizzazione DB Personale", con prompt più chiari per distinguere tra l'aggiornamento massivo e la verifica passo-passo.
+	+ Feature: Aggiornato il report testuale del DB Giocatori (`Tornello - Players_DB.txt`) per mostrare i nuovi campi acquisiti dalla FIDE.
+
 8.10.12
 	+ Feature: Nel file di testo del "Turno corrente", l'Elo di partenza dei giocatori è ora visualizzato tra parentesi tonde accanto ai loro nomi (inclusi i BYE).
 
