@@ -1039,7 +1039,54 @@ def update_match_result(torneo):
                     round_num=current_round_num
                 )
             )
-            # ... (la logica di cancellazione, che era già corretta, va qui)
+            for i, match in enumerate(completed_matches_to_cancel):
+                wp_data = players_dict.get(match.get('white_player_id'))
+                bp_data = players_dict.get(match.get('black_player_id'))
+                w_name = f"{wp_data.get('first_name', '?')} {wp_data.get('last_name', '?')}" if wp_data else "?"
+                b_name = f"{bp_data.get('first_name', '?')} {bp_data.get('last_name', '?')}" if bp_data else "?"
+                print(f"  {i+1}. IDG:{match.get('id')} - {w_name} vs {b_name} | Risultato: {match.get('result')}")
+            
+            cancel_choice = input(_("Inserisci il numero o l'ID Globale (IDG) della partita da cancellare (o vuoto per annullare): ")).strip()
+            if not cancel_choice:
+                continue
+
+            match_to_cancel = None
+            if cancel_choice.isdigit():
+                choice_num = int(cancel_choice)
+                if 1 <= choice_num <= len(completed_matches_to_cancel):
+                    match_to_cancel = completed_matches_to_cancel[choice_num - 1]
+                else:
+                    match_to_cancel = next((m for m in completed_matches_to_cancel if m.get("id") == choice_num), None)
+            
+            if not match_to_cancel:
+                print(_("Scelta non valida."))
+                continue
+            
+            wp_data_c = players_dict.get(match_to_cancel.get('white_player_id'))
+            bp_data_c = players_dict.get(match_to_cancel.get('black_player_id'))
+            
+            w_name_c = f"{wp_data_c.get('first_name', '?')} {wp_data_c.get('last_name', '?')}" if wp_data_c else "?"
+            b_name_c = f"{bp_data_c.get('first_name', '?')} {bp_data_c.get('last_name', '?')}" if bp_data_c else "?"
+            
+            if enter_escape(_("Confermi la CANCELLAZIONE del risultato per {w} vs {b}? (INVIO|ESCAPE): ").format(w=w_name_c, b=b_name_c)):
+                # Reset partita
+                match_to_cancel['result'] = None
+                match_to_cancel.pop('white_score', None)
+                match_to_cancel.pop('black_score', None)
+                
+                # Rimuovi da results_history
+                if wp_data_c and 'results_history' in wp_data_c:
+                    wp_data_c['results_history'] = [res for res in wp_data_c['results_history'] if res.get('round') != current_round_num]
+                if bp_data_c and 'results_history' in bp_data_c:
+                    bp_data_c['results_history'] = [res for res in bp_data_c['results_history'] if res.get('round') != current_round_num]
+                
+                from tournament import ricalcola_punti_tutti_giocatori
+                ricalcola_punti_tutti_giocatori(torneo)
+                any_changes_made_in_this_session = True
+                save_tournament(torneo)
+                print(_("Risultato cancellato e punteggi ricalcolati."))
+            else:
+                print(_("Cancellazione annullata."))
             continue
         elif user_input_str.isdigit():
             try:

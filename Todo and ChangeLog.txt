@@ -25,6 +25,9 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.11.1
+	+ Hotfix: Ripristinata e corretta la logica di cancellazione dei risultati ('cancella' al prompt della gestione del turno) che era stata inavvertitamente disattivata durante un precedente refactoring (chiude Issue #6).
+
 8.11.0
 	+ Feature: Migliorata la robustezza della ricerca dei giocatori (sia in Tornello che in consulta.py), che ora supporta parole in qualsiasi ordine e ricerche parziali.
 	+ Feature: Rimossi i filtri in fase di estrazione del DB FIDE XML; ora l'intero archivio viene estratto e salvato localmente, senza escludere i giocatori inattivi o senza Elo Standard.
