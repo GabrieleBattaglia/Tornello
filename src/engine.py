@@ -206,6 +206,10 @@ def genera_stringa_trf_per_bbpairings(
             history_sorted = sorted(
                 player_data.get("results_history", []), key=lambda x: x.get("round", 0)
             )
+            
+            # Teniamo traccia dei turni in cui il giocatore ha un risultato
+            turni_giocati = set()
+
             if current_round_being_paired > 1:
                 for res_entry in history_sorted:
                     round_of_this_entry = int(res_entry.get("round", 0))
@@ -214,6 +218,7 @@ def genera_stringa_trf_per_bbpairings(
                         round_of_this_entry > 0
                         and round_of_this_entry < current_round_being_paired
                     ):
+                        turni_giocati.add(round_of_this_entry)
                         opp_id_tornello = res_entry.get("opponent_id")
                         player_color_this_game = str(res_entry.get("color", "")).lower()
 
@@ -274,23 +279,27 @@ def genera_stringa_trf_per_bbpairings(
                         game_block = f"{opp_start_rank_str} {color_char_trf} {result_code_trf}  "[
                             :10
                         ]
+                        
+                        colonna = 92 + (round_of_this_entry - 1) * 10
                         write_to_char_list_local(
-                            p_line_chars, colonna_inizio_blocco_partita, game_block
+                            p_line_chars, colonna, game_block
                         )
-                        colonna_inizio_blocco_partita += 10
 
-            # Per il Round 1: NON aggiungiamo il blocco "0000 w   " se XXC white1 è presente.
-            # Le righe giocatore per il R1 finiranno dopo il campo Rank (col 89) o gli spazi successivi.
-            # rstrip() si occuperà di rimuovere gli spazi finali inutilizzati da p_line_chars.
             # Se il giocatore è ritirato, aggiungi un risultato "Sconfitta a 0 punti" (Z)
-            # per il turno corrente. Questo dice a bbpPairings di non abbinarlo.
+            # per tutti i turni mancanti fino al turno corrente compreso.
+            # Questo dice a bbpPairings di non abbinarlo nel turno corrente
+            # e di considerare assenti i turni precedenti che non ha giocato.
             if dati_torneo["players_dict"][player_data["id"]].get("withdrawn", False):
-                # L'avversario è 0000 (nessuno), il colore è '-' (non applicabile).
                 game_block_forfeit = f"{'0000':>4} {'-':<1} {'Z':<1}   "[:10]
-                # Scriviamo questo blocco nella prima colonna disponibile per lo storico
-                write_to_char_list_local(
-                    p_line_chars, colonna_inizio_blocco_partita, game_block_forfeit
-                )
+                
+                # Riempiamo i turni dal 1 fino al current_round_being_paired se non sono stati giocati
+                for r in range(1, current_round_being_paired + 1):
+                    if r not in turni_giocati:
+                        colonna = 92 + (r - 1) * 10
+                        write_to_char_list_local(
+                            p_line_chars, colonna, game_block_forfeit
+                        )
+                        
             final_line = "".join(p_line_chars).rstrip()
             trf_lines.append(final_line + "\n")
         return "".join(trf_lines)
