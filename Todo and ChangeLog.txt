@@ -25,6 +25,9 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.11.2
+	+ Hotfix: Risolta un'anomalia critica nella generazione del file TRF per i giocatori ritirati. Se un giocatore si ritirava, il suo status di "assente" (zero-point bye, Z) veniva registrato erroneamente nel turno sbagliato, facendolo riapparire come attivo negli abbinamenti dei turni successivi. Ora lo storico viene calcolato usando le posizioni di colonna assolute e i turni mancanti vengono correttamente riempiti con 'Z' (chiude Issue #8).
+
 8.11.1
 	+ Hotfix: Ripristinata e corretta la logica di cancellazione dei risultati ('cancella' al prompt della gestione del turno) che era stata inavvertitamente disattivata durante un precedente refactoring (chiude Issue #6).
 
