@@ -6,44 +6,44 @@ Arbitro Capo: Gabriele Battaglia
 Vice Arbitri: ASCID, Volontari
 Controllo Tempo: Standard 40+20
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Data Report: Giovedì 7 maggio 2026 19:28:09
+Data Report: Mercoledì 13 maggio 2026 20:30:47
 --------------------------------------------------------------------------------
 Classifica Parziale - Durante Turno 4
 --------------------------------------------------------------------------------
 Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO 
 -------------------------------------------------------------------------------------
   1 (+3)        Poli, Diego                 [1670]   3.0    7.50   8.50 1163
-  2 (+8)    3N  Battaglia, Gabriele         [1498]   3.0    6.50   7.50 1168
-  3 (+25)   NC  Brites Pereira Lima, Catia  [1365]   3.0    5.50   5.50 1559
-  4 (-2)        Caputi, Giuliano            [1767]   3.0    4.00   6.00 1502
-  5 (+9)        De Fazio, Monica            [1443]   3.0    4.00   5.00 1412
-  6 (-3)    2N  Vandelli, Jiazhuang         [1693]   3.0    4.00   4.50 1454
-  7 (+17)   NC  Calzolari, Valeria          [1385]   3.0    3.50   4.50 1502
-  8 (-7)    1N  Gasperoni, Claudio          [1844]   2.5    6.00   6.00 1528
-  9 (+22)   NC  Gori, Serena                [1220]   2.5    2.50   3.00  935
- 10 (-2)        Rivalta, Paolo              [1503]   2.0    7.00   8.00 1474
- 11 (+4)        Maccaferri, Massimo         [1443]   2.0    7.00   7.50 1471
- 12 (-3)    3N  Trapletti, Cosetta          [1501]   2.0    6.50   7.50 1408
- 13 (+12)   NC  Mereu, Alessia              [1385]   2.0    6.00   6.00 1443
- 14 (+3)    NC  Bernoni, Luca               [1399]   2.0    5.00   7.00 1556
- 15 (-3)    NC  Ventura, Luigi              [1461]   2.0    5.00   6.00 1487
- 16 (-11)       Zenini, Simone              [1620]   2.0    4.00   5.00 1055
- 17 (-6)    NC  Ionata, Lorenzo             [1488]   2.0    4.00   4.50 1051
- 18 (+4)    NC  Riccardi, Piero             [1399]   2.0    4.00   4.00 1433
- 19 (-6)    NC  Baratta, Giuseppe           [1450]   1.5    8.50  10.50 1368
- 20 (-1)        Delmonte, Davide            [   0]   1.0    8.50   9.00 1443
- 21 (+8)    NC  Testori, Alessandra         [1362]   1.0    7.00   9.00 1447
- 22 (-15)   3N  Colangelo, Michele          [1555]   1.0    6.00   8.00 1383
- 23 (-3)        Demaio, Gianni              [1399]   1.0    6.00   6.00 1516
- 24 (-1)    NC  Valleriani, Rita            [1399]   1.0    5.00   5.50 1448
- 25 (+2)    NC  Paglia, Giulia              [1382]   1.0    5.00   5.50 1434
- 26 (-5)        Demaio, Joshua              [   0]   1.0    4.00   4.00 1556
- 27 (-9)    NC  Cinque, Alessandra          [1399]   0.5    4.00   5.00 1491
- 28 (+2)    NC  Forte, Martina              [1355]   0.5    2.50   4.50 1332
- 29 (-3)    NC  Paglia, Virginio            [1385]   0.5    2.00   3.00  744
- 30 (-14)   NC  Di Bari, Vincenzo           [1415]   0.0    4.50   6.50 1543
- 31 (-25)   3N  Tolaro, Filippa             [1560]   0.0    4.00   5.00  921
+  2 (+15)   NC  Bernoni, Luca               [1399]   3.0    7.00   9.00 1539
+  3 (+25)   NC  Brites Pereira Lima, Catia  [1365]   3.0    6.50   7.50 1559
+  4 (+6)    3N  Battaglia, Gabriele         [1498]   3.0    6.50   7.50 1168
+  5 (-3)        Caputi, Giuliano            [1767]   3.0    5.00   7.00 1502
+  6 (+18)   NC  Calzolari, Valeria          [1385]   3.0    4.00   5.50 1502
+  7 (+7)        De Fazio, Monica            [1443]   3.0    4.00   5.00 1412
+  8 (-5)    2N  Vandelli, Jiazhuang         [1693]   3.0    4.00   4.50 1454
+  9 (-8)    1N  Gasperoni, Claudio          [1844]   2.5    6.00   6.00 1528
+ 10 (+21)   NC  Gori, Serena                [1220]   2.5    2.50   3.00  935
+ 11 (-4)    3N  Colangelo, Michele          [1555]   2.0    8.00   9.00 1387
+ 12 (-3)    3N  Trapletti, Cosetta          [1501]   2.0    7.50   8.50 1408
+ 13 (-2)    NC  Ionata, Lorenzo             [1488]   2.0    7.50   8.50 1138
+ 14 (-6)        Rivalta, Paolo              [1503]   2.0    7.00   8.00 1474
+ 15 (+0)        Maccaferri, Massimo         [1443]   2.0    7.00   7.50 1471
+ 16 (+9)    NC  Mereu, Alessia              [1385]   2.0    6.00   6.00 1443
+ 17 (+5)    NC  Riccardi, Piero             [1399]   2.0    6.00   6.00 1433
+ 18 (-6)    NC  Ventura, Luigi              [1461]   2.0    5.00   6.00 1487
+ 19 (-14)       Zenini, Simone              [1620]   2.0    4.00   5.00 1055
+ 20 (-7)    NC  Baratta, Giuseppe           [1450]   1.5    8.50  10.50 1368
+ 21 (+5)    NC  Paglia, Virginio            [1385]   1.5    3.00   3.50  948
+ 22 (-3)        Delmonte, Davide            [   0]   1.0    8.50  10.00 1443
+ 23 (+6)    NC  Testori, Alessandra         [1362]   1.0    7.00   9.00 1447
+ 24 (-1)    NC  Valleriani, Rita            [1399]   1.0    7.00   7.50 1475
+ 25 (-5)        Demaio, Gianni              [1399]   1.0    6.00   7.00 1516
+ 26 (+1)    NC  Paglia, Giulia              [1382]   1.0    5.00   5.50 1434
+ 27 (-21)   3N  Tolaro, Filippa             [1560]   1.0    5.00   5.00 1045
+ 28 (-7)        Demaio, Joshua              [   0]   1.0    4.00   5.00 1556
+ 29 (+1)    NC  Forte, Martina              [1355]   0.5    4.50   6.00 1349
+ 30 (-12)   NC  Cinque, Alessandra          [1399]   0.5    4.00   5.00 1491
+ 31 (-15)   NC  Di Bari, Vincenzo           [1415]   0.0    6.50   7.50 1547
 
 
-Tornello (8.10.12, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
+Tornello (8.11.1, 2026.05.10 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI

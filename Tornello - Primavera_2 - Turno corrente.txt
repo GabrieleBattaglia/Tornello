@@ -1,32 +1,31 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 4
  Periodo Turno: Lunedì 4 maggio 2026 - Domenica 17 maggio 2026
- Mancano 10 giorni e 4 ore al termine del periodo utile per questo turno.
+ Mancano 4 giorni e 3 ore al termine del periodo utile per questo turno.
  Partite già pianificate, da giocare (3):
-  Lunedì 11 maggio 2026
-   21:30 IDG:63, Vincenzo Di Bari (1415) vs Filippa Tolaro (1560), Canale: WhatsApp, Arbitro: Martina
-  Martedì 12 maggio 2026
-   21:30 IDG:62, Martina Forte (1355) vs Virginio Paglia (1385), Canale: WhatsApp, Arbitro: Ale & Vins
+  Venerdì 15 maggio 2026
+   21:30 IDG:50, Giuliano Caputi (1767) vs Claudio Gasperoni (1844), Canale: WhatsApp, Arbitro: Monica
   Domenica 17 maggio 2026
-   21:30 IDG:52, Luigi Ventura (1461) vs Simone Zenini (1620), Canale: WhatsApp, Arbitro: Ale & Vins
+   11:30 IDG:52, Luigi Ventura (1461) vs Simone Zenini (1620), Canale: WhatsApp, Arbitro: Claudio
+   15:00 IDG:49, Valeria Calzolari (1385) vs Jiazhuang Vandelli (1693), Canale: Lichess, Arbitro: Non necessario
 
-  Ancora non pianificate (5):
-   IDG:49 Valeria Calzolari (1385) - Jiazhuang Vandelli (1693)
-   IDG:50 Giuliano Caputi (1767) - Claudio Gasperoni (1844)
-   IDG:55 Luca Bernoni (1399) - Lorenzo Ionata (1488)
-   IDG:58 Rita Valleriani (1399) - Michele Colangelo (1555)
+  Ancora non pianificate (1):
    IDG:60 Joshua Demaio (0) - Giulia Paglia (1382)
 
-  Partite già giocate o con risultato convalidato (7):
+  Partite già giocate o con risultato convalidato (11):
   IDG:51 Diego Poli (1670) - Catia Susana Brites Pereira Lima (1365)  1/2-1/2
   IDG:53 Paolo Rivalta (1503) - Monica De Fazio (1443)  0-1
   IDG:54 Gabriele Battaglia (1498) - Massimo Maccaferri (1443)  1-0
+  IDG:55 Luca Bernoni (1399) - Lorenzo Ionata (1488)  1-0
   IDG:56 Cosetta Trapletti (1501) - Giuseppe Baratta (1450)  1-0
   IDG:57 Serena Gori (1220) - Davide Delmonte (0)  1-0
+  IDG:58 Rita Valleriani (1399) - Michele Colangelo (1555)  0-1
   IDG:59 Gianni Demaio (1399) - Alessia Mereu (1385)  F-1
   IDG:61 Alessandra Testori (1362) - Piero Riccardi (1399)  0-1
+  IDG:62 Martina Forte (1355) - Virginio Paglia (1385)  0-1
+  IDG:63 Vincenzo Di Bari (1415) - Filippa Tolaro (1560)  0-1
 
  Alessandra Cinque (1399) ha il BYE
 
 
-Tornello (8.10.12, 2026.04.22 by Gabriele Battaglia & Stella GeminiPro3.1
+Tornello (8.11.1, 2026.05.10 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
