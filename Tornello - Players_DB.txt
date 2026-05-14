@@ -1,36 +1,51 @@
-﻿Report Database Giocatori Tornello - Sabato 11 aprile 2026 12:34:34
+﻿Report Database Giocatori Tornello - Mercoledì 13 maggio 2026 20:30:21
 ========================================
 
-ID: ARICL001, Claudio Ariaudo, Elo: 1874
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 815535
+ID: ARICL001, Claudio Ariaudo
+	Sesso: M, Federazione: ITA, ID FIDE: 815535, Flag: N/D
+	Elo Standard: 1873 (Partite FIDE: 0)
+	Elo Rapid: 1979 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Domenica 1 gennaio 1961
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	5° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: ARIGI001, NC Giuliano Ariaudo, Elo: 1428
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 552011542
+ID: ARIGI001, NC Giuliano Ariaudo
+	Sesso: M, Federazione: ITA, ID FIDE: 552011542, Flag: N/D
+	Elo Standard: 1428 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 6, K-Factor Stimato: 40, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Lunedì 1 gennaio 2001
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	14° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: BADGI001, Giancarlo Badano, Elo: 1822
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 810495
+ID: BADGI001, Giancarlo Badano
+	Sesso: M, Federazione: ITA, ID FIDE: 810495, Flag: N/D
+	Elo Standard: 1802 (Partite FIDE: 7)
+	Elo Rapid: 1846 (Partite FIDE: 0, K: 20)
+	Elo Blitz: 1745 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Venerdì 1 gennaio 1960
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
 	2° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: BARGI001, NC Giuseppe Baratta, Elo: 1450
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28594010
+ID: BARGI001, NC Giuseppe Baratta
+	Sesso: M, Federazione: ITA, ID FIDE: 28594010, Flag: i
+	Elo Standard: 1450 (Partite FIDE: 0)
+	Elo Rapid: 1563 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1961
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	12° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: BATGA001, 3N Gabriele Battaglia, Elo: 1498
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 804495
+ID: BATGA001, 3N Gabriele Battaglia
+	Sesso: M, Federazione: ITA, ID FIDE: 804495, Flag: N/D
+	Elo Standard: 1498 (Partite FIDE: 0)
+	Elo Rapid: 1637 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 17, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Venerdì 13 settembre 1974
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -38,22 +53,31 @@ ID: BATGA001, 3N Gabriele Battaglia, Elo: 1498
 	12° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	6° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: BERLU001, NC Luca Bernoni, Elo: 1399
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: BERLU001, NC Luca Bernoni
+	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: BOSGI002, NC Giancarlo Bosetti, Elo: 1399
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2854584
+ID: BOSGI002, NC Giancarlo Bosetti
+	Sesso: M, Federazione: ITA, ID FIDE: 2854584, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1952
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	RIT su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1365
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 1990942
+ID: BRICA001, NC Catia Susana Brites Pereira Lima
+	Sesso: W, Federazione: ITA, ID FIDE: 1990942, Flag: w
+	Elo Standard: 1365 (Partite FIDE: 0)
+	Elo Rapid: 1542 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1978
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -61,8 +85,11 @@ ID: BRICA001, NC Catia Susana Brites Pereira Lima, Elo: 1365
 	20° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	2° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: CALVA001, NC Valeria Calzolari, Elo: 1385
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 552014193
+ID: CALVA001, NC Valeria Calzolari
+	Sesso: W, Federazione: ITA, ID FIDE: 552014193, Flag: w
+	Elo Standard: 1385 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 15, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Sabato 1 gennaio 1966
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (3) tornei:
@@ -70,94 +97,133 @@ ID: CALVA001, NC Valeria Calzolari, Elo: 1385
 	15° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	4° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: CAPGI001, Giuliano Caputi, Elo: 1768
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 821993
+ID: CAPGI001, Giuliano Caputi
+	Sesso: M, Federazione: ITA, ID FIDE: 821993, Flag: N/D
+	Elo Standard: 1768 (Partite FIDE: 0)
+	Elo Rapid: 1870 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: Domenica 1 gennaio 1967
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: CASMA002, Marco Casadei, Elo: 1991
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 847542
+ID: CASMA002, Marco Casadei
+	Sesso: M, Federazione: ITA, ID FIDE: 847542, Flag: N/D
+	Elo Standard: 1985 (Partite FIDE: 8)
+	Elo Rapid: 2028 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Venerdì 1 gennaio 1993
 	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	1° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: CASMA001, NC Mariangela Cassano, Elo: 1390
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 653009215
+ID: CASMA001, NC Mariangela Cassano
+	Sesso: W, Federazione: ITA, ID FIDE: 653009215, Flag: w
+	Elo Standard: 1390 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1958
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	22° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: CIBSI001, NC Silvia Cibin, Elo: 1341
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491124
+ID: CIBSI001, NC Silvia Cibin
+	Sesso: W, Federazione: ITA, ID FIDE: 23491124, Flag: w
+	Elo Standard: 1341 (Partite FIDE: 0)
+	Elo Rapid: 1451 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 11, K-Factor Stimato: 40, Data Iscrizione DB: Mercoledì 14 maggio 2025
 	Data Nascita: Giovedì 13 luglio 1978
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	16° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	5° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: CICMA001, NC Mathias Cicciarella, Elo: 1458
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 552013138
+ID: CICMA001, NC Mathias Cicciarella
+	Sesso: M, Federazione: ITA, ID FIDE: 552013138, Flag: N/D
+	Elo Standard: 1458 (Partite FIDE: 0)
+	Elo Rapid: 1671 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 2013
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (2) tornei:
 	4° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 	18° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: CINAL001, NC Alessandra Cinque, Elo: 1399
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: CINAL001, NC Alessandra Cinque
+	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: COLMI001, 3N Michele Colangelo, Elo: 1555
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23424087
+ID: COLMI001, 3N Michele Colangelo
+	Sesso: M, Federazione: ITA, ID FIDE: 23424087, Flag: N/D
+	Elo Standard: 1555 (Partite FIDE: 0)
+	Elo Rapid: 1563 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1959
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	19° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: DEFMO001, Monica De Fazio, Elo: 1444
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 28524853
+ID: DEFMO001, Monica De Fazio
+	Sesso: W, Federazione: ITA, ID FIDE: 28524853, Flag: w
+	Elo Standard: 1443 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: 1977
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: DELDA001, NC Davide Del Monte, Elo: 1416
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: DELDA001, NC Davide Del Monte
+	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1416 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 6, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	15° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: DELDA002, Davide Delmonte, Elo: 0
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2840761
+ID: DELDA002, Davide Delmonte
+	Sesso: M, Federazione: ITA, ID FIDE: 2840761, Flag: N/D
+	Elo Standard: 0 (Partite FIDE: 0)
+	Elo Rapid: 1579 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: Martedì 1 gennaio 1974
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: DEMGI001, Gianni Demaio, Elo: 1399
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: DEMGI001, Gianni Demaio
+	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: DEMJO001, Joshua Demaio, Elo: 0
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 552014215
+ID: DEMJO001, Joshua Demaio
+	Sesso: M, Federazione: ITA, ID FIDE: 552014215, Flag: N/D
+	Elo Standard: 0 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: Martedì 1 gennaio 2008
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1415
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 552035867
+ID: DIBVI001, NC Vincenzo Di Bari
+	Sesso: M, Federazione: ITA, ID FIDE: 552035867, Flag: N/D
+	Elo Standard: 1415 (Partite FIDE: 0)
+	Elo Rapid: 1493 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 15, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1986
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -165,8 +231,11 @@ ID: DIBVI001, NC Vincenzo Di Bari, Elo: 1415
 	14° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	10° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: FORMA001, NC Martina Forte, Elo: 1355
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: FORMA001, NC Martina Forte
+	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1355 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 14, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -174,8 +243,11 @@ ID: FORMA001, NC Martina Forte, Elo: 1355
 	27° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	7° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: GASCL001, 1N Claudio Gasperoni, Elo: 1844
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 825450
+ID: GASCL001, 1N Claudio Gasperoni
+	Sesso: M, Federazione: ITA, ID FIDE: 825450, Flag: N/D, Titoli Extra: NI
+	Elo Standard: 1844 (Partite FIDE: 0)
+	Elo Rapid: 1865 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 17, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1975
 	Medagliere: Oro: 2, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -183,15 +255,21 @@ ID: GASCL001, 1N Claudio Gasperoni, Elo: 1844
 	7° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	1° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: GERRO001, NC Roberta Gerini, Elo: 1399
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: GERRO001, NC Roberta Gerini
+	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: GORSE001, NC Serena Gori, Elo: 1220
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23491132
+ID: GORSE001, NC Serena Gori
+	Sesso: W, Federazione: ITA, ID FIDE: 23491132, Flag: w
+	Elo Standard: 1220 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 20, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1948
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (4) tornei:
@@ -200,8 +278,11 @@ ID: GORSE001, NC Serena Gori, Elo: 1220
 	28° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	12° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: IONLO001, NC Lorenzo Ionata, Elo: 1488
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28550404
+ID: IONLO001, NC Lorenzo Ionata
+	Sesso: M, Federazione: ITA, ID FIDE: 28550404, Flag: N/D
+	Elo Standard: 1488 (Partite FIDE: 0)
+	Elo Rapid: 1511 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 21, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1978
 	Medagliere: Oro: 1, Argento: 0, Bronzo: 0, Legno: 0 in (4) tornei:
@@ -210,22 +291,31 @@ ID: IONLO001, NC Lorenzo Ionata, Elo: 1488
 	7° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	1° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: MACMA001, Massimo Maccaferri, Elo: 1439
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28505859
+ID: MACMA001, Massimo Maccaferri
+	Sesso: M, Federazione: ITA, ID FIDE: 28505859, Flag: N/D
+	Elo Standard: 1439 (Partite FIDE: 0)
+	Elo Rapid: 1626 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: Martedì 1 gennaio 1957
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: MANFA001, 3N Fabrizio Manneschi, Elo: 1605
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2805761
+ID: MANFA001, 3N Fabrizio Manneschi
+	Sesso: M, Federazione: ITA, ID FIDE: 2805761, Flag: N/D
+	Elo Standard: 1605 (Partite FIDE: 0)
+	Elo Rapid: 1609 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1946
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	9° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: MERAL001, NC Alessia Mereu, Elo: 1385
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 552035875
+ID: MERAL001, NC Alessia Mereu
+	Sesso: W, Federazione: ITA, ID FIDE: 552035875, Flag: w
+	Elo Standard: 1385 (Partite FIDE: 0)
+	Elo Rapid: 1466 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 15, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1998
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (3) tornei:
@@ -233,23 +323,32 @@ ID: MERAL001, NC Alessia Mereu, Elo: 1385
 	25° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	3° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: NICFR001, 2N Francesco Nicolini, Elo: 1784
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23424109
+ID: NICFR001, 2N Francesco Nicolini
+	Sesso: M, Federazione: ITA, ID FIDE: 23424109, Flag: N/D
+	Elo Standard: 1784 (Partite FIDE: 0)
+	Elo Rapid: 1682 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Venerdì 1 gennaio 1965
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (1) tornei:
 	3° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: PAGGI001, NC Giulia Paglia, Elo: 1382
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 552014223
+ID: PAGGI001, NC Giulia Paglia
+	Sesso: W, Federazione: ITA, ID FIDE: 552014223, Flag: w
+	Elo Standard: 1382 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Lunedì 1 gennaio 2018
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	15° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 	17° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: PAGVI001, NC Virginio Paglia, Elo: 1385
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23470763
+ID: PAGVI001, NC Virginio Paglia
+	Sesso: M, Federazione: ITA, ID FIDE: 23470763, Flag: N/D
+	Elo Standard: 1385 (Partite FIDE: 0)
+	Elo Rapid: 1403 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 15, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1981
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -257,59 +356,83 @@ ID: PAGVI001, NC Virginio Paglia, Elo: 1385
 	23° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	6° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: PARLU001, 3N Luca Parravano, Elo: 1486
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28556666
+ID: PARLU001, 3N Luca Parravano
+	Sesso: M, Federazione: ITA, ID FIDE: 28556666, Flag: N/D
+	Elo Standard: 1487 (Partite FIDE: 0)
+	Elo Rapid: 1525 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 1 gennaio 1970
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	13° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: PEZER001, Erica Pezzolato, Elo: 1625
-	Sesso: F, Federazione Giocatore: ITA, ID FIDE num: 2888888
+ID: PEZER001, Erica Pezzolato
+	Sesso: F, Federazione: ITA, ID FIDE: 2888888, Flag: w
+	Elo Standard: 1625 (Partite FIDE: 0)
+	Elo Rapid: 1701 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 6, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Sabato 1 gennaio 1983
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	10° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: POLDI001, Diego Poli, Elo: 1661
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 865613
+ID: POLDI001, Diego Poli
+	Sesso: M, Federazione: ITA, ID FIDE: 865613, Flag: N/D
+	Elo Standard: 1667 (Partite FIDE: 7)
+	Elo Rapid: 1737 (Partite FIDE: 0, K: 20)
+	Elo Blitz: 1671 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Lunedì 1 gennaio 1973
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (1) tornei:
 	4° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: RICPI001, NC Piero Riccardi, Elo: 1399
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 0
+ID: RICPI001, NC Piero Riccardi
+	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: N/D)
+	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: RIVPA001, Paolo Rivalta, Elo: 1495
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 28515390
+ID: RIVPA001, Paolo Rivalta
+	Sesso: M, Federazione: ITA, ID FIDE: 28515390, Flag: N/D
+	Elo Standard: 1495 (Partite FIDE: 0)
+	Elo Rapid: 1479 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: Mercoledì 1 gennaio 1969
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
 	Nessuno
 	------------------------------
-ID: SCAVA001, NC Valeria Scapin, Elo: 1425
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 552013146
+ID: SCAVA001, NC Valeria Scapin
+	Sesso: W, Federazione: ITA, ID FIDE: 552013146, Flag: w
+	Elo Standard: 1425 (Partite FIDE: 0)
+	Elo Rapid: 1629 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Giovedì 9 febbraio 1984
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	6° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 	21° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: SOPMA001, 2N Maurizio Soppelsa, Elo: 1727
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 841439
+ID: SOPMA001, 2N Maurizio Soppelsa
+	Sesso: M, Federazione: ITA, ID FIDE: 841439, Flag: N/D
+	Elo Standard: 1727 (Partite FIDE: 0)
+	Elo Rapid: 1741 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 12, K-Factor Stimato: 20, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1956
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 1 in (2) tornei:
 	8° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	4° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: TESAL001, NC Alessandra Testori, Elo: 1362
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 552032140
+ID: TESAL001, NC Alessandra Testori
+	Sesso: W, Federazione: ITA, ID FIDE: 552032140, Flag: w
+	Elo Standard: 1362 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1950
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -317,24 +440,33 @@ ID: TESAL001, NC Alessandra Testori, Elo: 1362
 	26° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	11° su 12 in Sacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: TOLFI001, 3N Filippa Tolaro, Elo: 1515
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 28505867
+ID: TOLFI001, 3N Filippa Tolaro
+	Sesso: W, Federazione: ITA, ID FIDE: 28505867, Flag: w
+	Elo Standard: 1515 (Partite FIDE: 0)
+	Elo Rapid: 1499 (Partite FIDE: 0, K: 40)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 11, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Sabato 1 gennaio 1966
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	13° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	11° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: TRACO001, 3N Cosetta Trapletti, Elo: 1501
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 2817697
+ID: TRACO001, 3N Cosetta Trapletti
+	Sesso: W, Federazione: ITA, ID FIDE: 2817697, Flag: w
+	Elo Standard: 1501 (Partite FIDE: 0)
+	Elo Rapid: 1560 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Lunedì 1 gennaio 1968
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	7° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 	16° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: VALRI001, NC Rita Valleriani, Elo: 1399
-	Sesso: W, Federazione Giocatore: ITA, ID FIDE num: 23470798
+ID: VALRI001, NC Rita Valleriani
+	Sesso: W, Federazione: ITA, ID FIDE: 23470798, Flag: w
+	Elo Standard: 1399 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Mercoledì 1 gennaio 1986
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (3) tornei:
@@ -342,15 +474,21 @@ ID: VALRI001, NC Rita Valleriani, Elo: 1399
 	8° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	9° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: VANJI001, 2N Jiazhuang Vandelli, Elo: 1726
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 23449071
+ID: VANJI001, 2N Jiazhuang Vandelli
+	Sesso: M, Federazione: ITA, ID FIDE: 23449071, Flag: N/D
+	Elo Standard: 1726 (Partite FIDE: 0)
+	Elo Rapid: 1781 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 2002
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
 	2° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: VENLU001, NC Luigi Ventura, Elo: 1461
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 552016773
+ID: VENLU001, NC Luigi Ventura
+	Sesso: M, Federazione: ITA, ID FIDE: 552016773, Flag: N/D
+	Elo Standard: 1461 (Partite FIDE: 0)
+	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1974
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (3) tornei:
@@ -358,29 +496,41 @@ ID: VENLU001, NC Luigi Ventura, Elo: 1461
 	10° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	8° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 	------------------------------
-ID: VILGE001, Gennaro Vilone, Elo: 1506
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 2854606
+ID: VILGE001, Gennaro Vilone
+	Sesso: M, Federazione: ITA, ID FIDE: 2854606, Flag: N/D
+	Elo Standard: 1499 (Partite FIDE: 0)
+	Elo Rapid: 1687 (Partite FIDE: 0, K: 20)
+	Elo Blitz: 1451 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Venerdì 1 gennaio 1965
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	6° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: VRIBE001, Bersan Vrioni, Elo: 1922
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 805351
+ID: VRIBE001, Bersan Vrioni
+	Sesso: M, Federazione: ITA, ID FIDE: 805351, Flag: N/D
+	Elo Standard: 1939 (Partite FIDE: 8)
+	Elo Rapid: 1888 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Giovedì 1 gennaio 1970
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 1, Legno: 0 in (1) tornei:
 	3° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: ZAVFA001, 2N Fabrizio Zavan, Elo: 1671
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 876020
+ID: ZAVFA001, 2N Fabrizio Zavan
+	Sesso: M, Federazione: ITA, ID FIDE: 876020, Flag: i
+	Elo Standard: 1671 (Partite FIDE: 0)
+	Elo Rapid: 1662 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1963
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	5° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
-ID: ZENSI001, Simone Zenini, Elo: 1620
-	Sesso: M, Federazione Giocatore: ITA, ID FIDE num: 898210
+ID: ZENSI001, Simone Zenini
+	Sesso: M, Federazione: ITA, ID FIDE: 898210, Flag: N/D
+	Elo Standard: 1602 (Partite FIDE: 4)
+	Elo Rapid: 1639 (Partite FIDE: 0, K: 20)
+	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Giovedì 1 gennaio 1987
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:

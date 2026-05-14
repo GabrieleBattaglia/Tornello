@@ -44,7 +44,14 @@
   "federation": "ITA",
   "fide_id_num_str": "825450",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1865,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_o_title": "NI"
  },
  {
   "id": "NICFR001",
@@ -75,7 +82,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23424109",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1682,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "VANJI001",
@@ -106,7 +119,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23449071",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1781,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "ZAVFA001",
@@ -137,7 +156,14 @@
   "federation": "ITA",
   "fide_id_num_str": "876020",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1662,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "i"
  },
  {
   "id": "MANFA001",
@@ -168,7 +194,13 @@
   "federation": "ITA",
   "fide_id_num_str": "2805761",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1609,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "TRACO001",
@@ -207,7 +239,14 @@
   "federation": "ITA",
   "fide_id_num_str": "2817697",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1560,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "TOLFI001",
@@ -246,7 +285,14 @@
   "federation": "ITA",
   "fide_id_num_str": "28505867",
   "experienced": true,
-  "fide_k_factor": 40
+  "fide_k_factor": 40,
+  "fide_elo_rapid": 1499,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "COLMI001",
@@ -277,7 +323,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23424087",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1563,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "BATGA001",
@@ -324,13 +376,19 @@
   "federation": "ITA",
   "fide_id_num_str": "804495",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1637,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "PARLU001",
   "first_name": "Luca",
   "last_name": "Parravano",
-  "current_elo": 1486,
+  "current_elo": 1487,
   "registration_date": "2025-05-01",
   "birth_date": "1970-01-01",
   "games_played": 5,
@@ -355,7 +413,13 @@
   "federation": "ITA",
   "fide_id_num_str": "28556666",
   "experienced": true,
-  "fide_k_factor": 40
+  "fide_k_factor": 40,
+  "fide_elo_rapid": 1525,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "BARGI001",
@@ -386,7 +450,14 @@
   "federation": "ITA",
   "fide_id_num_str": "28594010",
   "experienced": true,
-  "fide_k_factor": 40
+  "fide_k_factor": 40,
+  "fide_elo_rapid": 1563,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "i"
  },
  {
   "id": "IONLO001",
@@ -441,7 +512,13 @@
   "federation": "ITA",
   "fide_id_num_str": "28550404",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1511,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "BOSGI002",
@@ -472,7 +549,12 @@
   "federation": "ITA",
   "fide_id_num_str": "2854584",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "CALVA001",
@@ -519,7 +601,13 @@
   "federation": "ITA",
   "fide_id_num_str": "552014193",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "CASMA001",
@@ -550,7 +638,13 @@
   "federation": "ITA",
   "fide_id_num_str": "653009215",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "CICMA001",
@@ -589,7 +683,13 @@
   "federation": "ITA",
   "fide_id_num_str": "552013138",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1671,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "FORMA001",
@@ -691,7 +791,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23491132",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "MERAL001",
@@ -738,7 +844,14 @@
   "federation": "ITA",
   "fide_id_num_str": "552035875",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1466,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "PAGGI001",
@@ -777,7 +890,13 @@
   "federation": "ITA",
   "fide_id_num_str": "552014223",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "PAGVI001",
@@ -824,7 +943,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23470763",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1403,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "SCAVA001",
@@ -863,7 +988,14 @@
   "federation": "ITA",
   "fide_id_num_str": "552013146",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1629,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "TESAL001",
@@ -910,7 +1042,13 @@
   "federation": "ITA",
   "fide_id_num_str": "552032140",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "VALRI001",
@@ -957,7 +1095,13 @@
   "federation": "ITA",
   "fide_id_num_str": "23470798",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "SOPMA001",
@@ -996,7 +1140,13 @@
   "federation": "ITA",
   "fide_id_num_str": "841439",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1741,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "VENLU001",
@@ -1043,7 +1193,12 @@
   "federation": "ITA",
   "fide_id_num_str": "552016773",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "BRICA001",
@@ -1090,7 +1245,14 @@
   "federation": "ITA",
   "fide_id_num_str": "1990942",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1542,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "DIBVI001",
@@ -1137,7 +1299,13 @@
   "federation": "ITA",
   "fide_id_num_str": "552035867",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1493,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "CIBSI001",
@@ -1176,13 +1344,20 @@
   "federation": "ITA",
   "fide_id_num_str": "23491124",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1451,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "CASMA002",
   "first_name": "Marco",
   "last_name": "Casadei",
-  "current_elo": 1991,
+  "current_elo": 1985,
   "registration_date": "2025-07-21",
   "birth_date": "1993-01-01",
   "games_played": 7,
@@ -1207,13 +1382,19 @@
   "federation": "ITA",
   "fide_id_num_str": "847542",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 2028,
+  "fide_games": 8,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "ARICL001",
   "first_name": "Claudio",
   "last_name": "Ariaudo",
-  "current_elo": 1874,
+  "current_elo": 1873,
   "registration_date": "2025-07-21",
   "birth_date": "1961-01-01",
   "games_played": 7,
@@ -1238,13 +1419,19 @@
   "federation": "ITA",
   "fide_id_num_str": "815535",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1979,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "VRIBE001",
   "first_name": "Bersan",
   "last_name": "Vrioni",
-  "current_elo": 1922,
+  "current_elo": 1939,
   "registration_date": "2025-07-21",
   "birth_date": "1970-01-01",
   "games_played": 7,
@@ -1269,13 +1456,19 @@
   "federation": "ITA",
   "fide_id_num_str": "805351",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1888,
+  "fide_games": 8,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "BADGI001",
   "first_name": "Giancarlo",
   "last_name": "Badano",
-  "current_elo": 1822,
+  "current_elo": 1802,
   "registration_date": "2025-07-21",
   "birth_date": "1960-01-01",
   "games_played": 7,
@@ -1300,13 +1493,20 @@
   "federation": "ITA",
   "fide_id_num_str": "810495",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1846,
+  "fide_elo_blitz": 1745,
+  "fide_games": 7,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 20
  },
  {
   "id": "POLDI001",
   "first_name": "Diego",
   "last_name": "Poli",
-  "current_elo": 1661,
+  "current_elo": 1667,
   "registration_date": "2025-07-21",
   "birth_date": "1973-01-01",
   "games_played": 7,
@@ -1331,7 +1531,14 @@
   "federation": "ITA",
   "fide_id_num_str": "865613",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1737,
+  "fide_elo_blitz": 1671,
+  "fide_games": 7,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 20
  },
  {
   "id": "PEZER001",
@@ -1362,13 +1569,20 @@
   "federation": "ITA",
   "fide_id_num_str": "2888888",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1701,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "ZENSI001",
   "first_name": "Simone",
   "last_name": "Zenini",
-  "current_elo": 1620,
+  "current_elo": 1602,
   "registration_date": "2025-07-21",
   "birth_date": "1987-01-01",
   "games_played": 7,
@@ -1393,13 +1607,19 @@
   "federation": "ITA",
   "fide_id_num_str": "898210",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1639,
+  "fide_games": 4,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "VILGE001",
   "first_name": "Gennaro",
   "last_name": "Vilone",
-  "current_elo": 1506,
+  "current_elo": 1499,
   "registration_date": "2025-07-21",
   "birth_date": "1965-01-01",
   "games_played": 7,
@@ -1424,7 +1644,14 @@
   "federation": "ITA",
   "fide_id_num_str": "2854606",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1687,
+  "fide_elo_blitz": 1451,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 20
  },
  {
   "id": "DELDA001",
@@ -1486,7 +1713,12 @@
   "federation": "ITA",
   "fide_id_num_str": "552011542",
   "experienced": false,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "GERRO001",
@@ -1552,7 +1784,12 @@
   "federation": "ITA",
   "fide_id_num_str": "552014215",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "CINAL001",
@@ -1640,13 +1877,19 @@
   "federation": "ITA",
   "fide_id_num_str": "2840761",
   "experienced": true,
-  "fide_k_factor": 0
+  "fide_k_factor": 0,
+  "fide_elo_rapid": 1579,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "DEFMO001",
   "first_name": "Monica",
   "last_name": "De Fazio",
-  "current_elo": 1444,
+  "current_elo": 1443,
   "registration_date": "2026-03-17",
   "birth_date": "1977",
   "games_played": 0,
@@ -1662,7 +1905,13 @@
   "federation": "ITA",
   "fide_id_num_str": "28524853",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 0,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0,
+  "fide_flag": "w"
  },
  {
   "id": "RIVPA001",
@@ -1684,7 +1933,13 @@
   "federation": "ITA",
   "fide_id_num_str": "28515390",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1479,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 40,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "CAPGI001",
@@ -1706,7 +1961,13 @@
   "federation": "ITA",
   "fide_id_num_str": "821993",
   "experienced": true,
-  "fide_k_factor": 20
+  "fide_k_factor": 20,
+  "fide_elo_rapid": 1870,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  },
  {
   "id": "MACMA001",
@@ -1728,6 +1989,12 @@
   "federation": "ITA",
   "fide_id_num_str": "28505859",
   "experienced": true,
-  "fide_k_factor": 40
+  "fide_k_factor": 40,
+  "fide_elo_rapid": 1626,
+  "fide_games": 0,
+  "fide_rapid_games": 0,
+  "fide_rapid_k": 20,
+  "fide_blitz_games": 0,
+  "fide_blitz_k": 0
  }
 ]
