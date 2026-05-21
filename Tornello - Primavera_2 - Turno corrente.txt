@@ -1,11 +1,13 @@
 ﻿Nome Torneo: Primavera 2 - Turno: 5
  Periodo Turno: Lunedì 18 maggio 2026 - Lunedì 1 giugno 2026
- Mancano 11 giorni e 16 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (6):
+ Mancano 11 giorni e 12 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (7):
   Giovedì 21 maggio 2026
    17:30 IDG:67, Monica De Fazio (1443) vs Diego Poli (1670), Canale: WhatsApp, Arbitro: Giuliano
   Venerdì 22 maggio 2026
    21:30 IDG:79, Alessandra Cinque (1399) vs Martina Forte (1355), Canale: WhatsApp, Arbitro: Vins
+  Lunedì 25 maggio 2026
+   17:30 IDG:74, Piero Riccardi (1399) vs Luigi Ventura (1461), Canale: WA, Arbitro: Giuseppe
   Martedì 26 maggio 2026
    21:15 IDG:75, Virginio Paglia (1385) vs Giuseppe Baratta (1450), Canale: WhatsApp, Arbitro: GabryB.
   Mercoledì 27 maggio 2026
@@ -14,12 +16,11 @@
   Giovedì 28 maggio 2026
    18:00 IDG:69, Catia Susana Brites Pereira Lima (1365) vs Gabriele Battaglia (1498), Canale: Lichess, Arbitro: Il cinese Li, Cess.
 
-  Ancora non pianificate (6):
+  Ancora non pianificate (5):
    IDG:65 Jiazhuang Vandelli (1693) - Giuliano Caputi (1767)
    IDG:66 Claudio Gasperoni (1844) - Luca Bernoni (1399)
    IDG:68 Simone Zenini (1620) - Valeria Calzolari (1385)
    IDG:71 Michele Colangelo (1555) - Joshua Demaio (0)
-   IDG:74 Piero Riccardi (1399) - Luigi Ventura (1461)
    IDG:76 Filippa Tolaro (1560) - Rita Valleriani (1399)
 
   Partite già giocate o con risultato convalidato (3):
