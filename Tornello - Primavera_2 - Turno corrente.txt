@@ -1,31 +1,34 @@
-﻿Nome Torneo: Primavera 2 - Turno: 4
- Periodo Turno: Lunedì 4 maggio 2026 - Domenica 17 maggio 2026
- Mancano 4 giorni e 3 ore al termine del periodo utile per questo turno.
- Partite già pianificate, da giocare (3):
-  Venerdì 15 maggio 2026
-   21:30 IDG:50, Giuliano Caputi (1767) vs Claudio Gasperoni (1844), Canale: WhatsApp, Arbitro: Monica
-  Domenica 17 maggio 2026
-   11:30 IDG:52, Luigi Ventura (1461) vs Simone Zenini (1620), Canale: WhatsApp, Arbitro: Claudio
-   15:00 IDG:49, Valeria Calzolari (1385) vs Jiazhuang Vandelli (1693), Canale: Lichess, Arbitro: Non necessario
+﻿Nome Torneo: Primavera 2 - Turno: 5
+ Periodo Turno: Lunedì 18 maggio 2026 - Lunedì 1 giugno 2026
+ Mancano 11 giorni e 16 ore al termine del periodo utile per questo turno.
+ Partite già pianificate, da giocare (6):
+  Giovedì 21 maggio 2026
+   17:30 IDG:67, Monica De Fazio (1443) vs Diego Poli (1670), Canale: WhatsApp, Arbitro: Giuliano
+  Venerdì 22 maggio 2026
+   21:30 IDG:79, Alessandra Cinque (1399) vs Martina Forte (1355), Canale: WhatsApp, Arbitro: Vins
+  Martedì 26 maggio 2026
+   21:15 IDG:75, Virginio Paglia (1385) vs Giuseppe Baratta (1450), Canale: WhatsApp, Arbitro: GabryB.
+  Mercoledì 27 maggio 2026
+   16:30 IDG:78, Gianni Demaio (1399) vs Alessandra Testori (1362), Canale: WhatsApp, Arbitro: GabryB.
+   18:15 IDG:77, Davide Delmonte (0) vs Giulia Paglia (1382), Canale: WhatsApp, Arbitro: Claudio
+  Giovedì 28 maggio 2026
+   18:00 IDG:69, Catia Susana Brites Pereira Lima (1365) vs Gabriele Battaglia (1498), Canale: Lichess, Arbitro: Il cinese Li, Cess.
 
-  Ancora non pianificate (1):
-   IDG:60 Joshua Demaio (0) - Giulia Paglia (1382)
+  Ancora non pianificate (6):
+   IDG:65 Jiazhuang Vandelli (1693) - Giuliano Caputi (1767)
+   IDG:66 Claudio Gasperoni (1844) - Luca Bernoni (1399)
+   IDG:68 Simone Zenini (1620) - Valeria Calzolari (1385)
+   IDG:71 Michele Colangelo (1555) - Joshua Demaio (0)
+   IDG:74 Piero Riccardi (1399) - Luigi Ventura (1461)
+   IDG:76 Filippa Tolaro (1560) - Rita Valleriani (1399)
 
-  Partite già giocate o con risultato convalidato (11):
-  IDG:51 Diego Poli (1670) - Catia Susana Brites Pereira Lima (1365)  1/2-1/2
-  IDG:53 Paolo Rivalta (1503) - Monica De Fazio (1443)  0-1
-  IDG:54 Gabriele Battaglia (1498) - Massimo Maccaferri (1443)  1-0
-  IDG:55 Luca Bernoni (1399) - Lorenzo Ionata (1488)  1-0
-  IDG:56 Cosetta Trapletti (1501) - Giuseppe Baratta (1450)  1-0
-  IDG:57 Serena Gori (1220) - Davide Delmonte (0)  1-0
-  IDG:58 Rita Valleriani (1399) - Michele Colangelo (1555)  0-1
-  IDG:59 Gianni Demaio (1399) - Alessia Mereu (1385)  F-1
-  IDG:61 Alessandra Testori (1362) - Piero Riccardi (1399)  0-1
-  IDG:62 Martina Forte (1355) - Virginio Paglia (1385)  0-1
-  IDG:63 Vincenzo Di Bari (1415) - Filippa Tolaro (1560)  0-1
+  Partite già giocate o con risultato convalidato (3):
+  IDG:70 Paolo Rivalta (1503) - Serena Gori (1220)  1-0
+  IDG:72 Massimo Maccaferri (1443) - Cosetta Trapletti (1501)  1-0
+  IDG:73 Lorenzo Ionata (1488) - Alessia Mereu (1385)  1-0
 
- Alessandra Cinque (1399) ha il BYE
+ Vincenzo Di Bari (1415) ha il BYE
 
 
-Tornello (8.11.1, 2026.05.10 by Gabriele Battaglia & Stella GeminiPro3.1
+Tornello (8.11.2, 2026.05.10 by Gabriele Battaglia & Stella GeminiPro3.1
 	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
