@@ -127,3 +127,283 @@ def parse_flexible_date(date_input_str):
             pass
             
     raise ValueError(f"Formato data '{date_str}' non riconosciuto.")
+
+
+def play_sound(event_name, torneo=None, sync=False):
+    """
+    Riproduce un effetto acustico per feedback utente.
+    event_name può essere: 'avvio', 'chiusura', 'errore', 'conferma', 'cancellato',
+    'salvato', 'nuovo_turno', 'aggiunta_giocatore', 'ritiro_giocatore',
+    'rimozione_giocatore', 'conclusione_turno', 'conclusione_torneo', 'time_machine',
+    'pianifica_crea', 'pianifica_modifica', 'pianifica_rimuovi',
+    'risultato_1-0', 'risultato_0-1', 'risultato_1/2-1/2', 'risultato_1-F', 'risultato_F-1', 'risultato_0-0F',
+    'notifica'.
+    """
+    import json
+    import os
+    import sys
+    
+    # Determina il volume base dal torneo
+    base_volume = 0.5
+    if torneo and isinstance(torneo, dict):
+        base_volume = torneo.get("base_volume", 0.5)
+
+    # Mappatura eventi su preset
+    event_presets = {
+        "avvio": "tornello_avvio",
+        "chiusura": "tornello_chiusura",
+        "errore": "rifiutato",
+        "conferma": "roger_cw_conferma",
+        "cancellato": "cancellato",
+        "salvato": "written_ok",
+        "nuovo_turno": "tornello_abbinamento",
+        "aggiunta_giocatore": "tornello_aggiunta_giocatore",
+        "ritiro_giocatore": "tornello_ritiro_giocatore",
+        "rimozione_giocatore": "tornello_rimozione_giocatore",
+        "conclusione_turno": "tornello_conclusione_turno",
+        "conclusione_torneo": "tornello_conclusione_torneo",
+        "time_machine": "tornello_time_machine",
+        "pianifica_crea": "tornello_pianifica_crea",
+        "pianifica_modifica": "tornello_pianifica_modifica",
+        "pianifica_rimuovi": "tornello_pianifica_rimuovi",
+        "risultato_1-0": "tornello_risultato_1_0",
+        "risultato_0-1": "tornello_risultato_0_1",
+        "risultato_1/2-1/2": "tornello_risultato_patta",
+        "risultato_1-F": "tornello_risultato_1_F",
+        "risultato_F-1": "tornello_risultato_F_1",
+        "risultato_0-0F": "tornello_risultato_0_0F",
+        "notifica": "notifica"
+    }
+
+    preset_name = event_presets.get(event_name, event_name)
+
+    try:
+        import GBUtils
+        from GBUtils import Acusticator
+        
+        gbutils_dir = os.path.dirname(GBUtils.__file__)
+        db_path = os.path.join(gbutils_dir, "Acu_Collection.json")
+
+        custom_presets = {
+            "tornello_avvio": {
+                "descrizione": "Suono di benvenuto per Tornello (arpeggio ascendente solare)",
+                "score": [
+                    ["c5", 0.1, -0.8, 0.0],
+                    ["e5", 0.1, -0.4, 0.0],
+                    ["g5", 0.1, 0.0, 0.0],
+                    ["c6", 0.2, 0.4, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.01]
+            },
+            "tornello_abbinamento": {
+                "descrizione": "Arpeggio rapido per generazione abbinamenti Tornello",
+                "score": [
+                    ["e5", 0.08, -0.5, 0.0],
+                    ["g5", 0.08, 0.0, 0.0],
+                    ["c6", 0.15, 0.5, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.01]
+            },
+            "tornello_chiusura": {
+                "descrizione": "Arpeggio discendente di chiusura per l'uscita da Tornello",
+                "score": [
+                    ["c6", 0.1, 0.4, 0.0],
+                    ["g5", 0.1, 0.0, 0.0],
+                    ["e5", 0.1, -0.4, 0.0],
+                    ["c5", 0.2, -0.8, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.01]
+            },
+            "tornello_time_machine": {
+                "descrizione": "Effetto rewind per Time Machine",
+                "score": [
+                    ["g4", 0.08, -0.5, 0.0],
+                    ["e4", 0.08, -0.2, 0.0],
+                    ["c4", 0.15, 0.2, 0.0],
+                    ["g3", 0.25, 0.5, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.02, 0.0, 100.0, 0.05]
+            },
+            "tornello_conclusione_turno": {
+                "descrizione": "Accordo di conclusione turno",
+                "score": [
+                    ["c5", 0.15, -0.3, 0.0],
+                    ["e5", 0.15, 0.3, 0.0],
+                    ["g5", 0.3, 0.0, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_conclusione_torneo": {
+                "descrizione": "Fanfara trionfale per la conclusione del torneo",
+                "score": [
+                    ["c5", 0.1, -0.5, 0.0],
+                    ["e5", 0.1, -0.2, 0.0],
+                    ["g5", 0.1, 0.2, 0.0],
+                    ["c6", 0.15, 0.5, 0.0],
+                    ["e6", 0.15, 0.0, 0.0],
+                    ["g6", 0.4, 0.0, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.05]
+            },
+            "tornello_aggiunta_giocatore": {
+                "descrizione": "Suono per aggiunta giocatore (due note ascendenti rapide)",
+                "score": [
+                    ["c5", 0.08, -0.5, 0.0],
+                    ["g5", 0.15, 0.5, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_ritiro_giocatore": {
+                "descrizione": "Suono per ritiro giocatore (due note discendenti tristi)",
+                "score": [
+                    ["f4", 0.15, 0.0, 0.0],
+                    ["c4", 0.3, 0.0, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.02, 0.0, 100.0, 0.05]
+            },
+            "tornello_rimozione_giocatore": {
+                "descrizione": "Suono per rimozione giocatore dalla lista",
+                "score": [
+                    ["g4", 0.1, -0.2, 0.0],
+                    ["d4", 0.2, 0.2, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_pianifica_crea": {
+                "descrizione": "Pianificazione partita creata",
+                "score": [
+                    ["d5", 0.08, -0.3, 0.0],
+                    ["f5", 0.08, 0.0, 0.0],
+                    ["a5", 0.15, 0.3, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_pianifica_modifica": {
+                "descrizione": "Pianificazione partita modificata",
+                "score": [
+                    ["f5", 0.08, -0.3, 0.0],
+                    ["d5", 0.08, 0.0, 0.0],
+                    ["f5", 0.15, 0.3, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_pianifica_rimuovi": {
+                "descrizione": "Pianificazione partita rimossa",
+                "score": [
+                    ["a5", 0.08, 0.3, 0.0],
+                    ["f5", 0.08, 0.0, 0.0],
+                    ["d5", 0.15, -0.3, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_risultato_1_0": {
+                "descrizione": "Risultato 1-0: Bianco vince (pan a sinistra, arpeggio brillante)",
+                "score": [
+                    ["c5", 0.08, -0.8, 0.0],
+                    ["e5", 0.08, -0.8, 0.0],
+                    ["g5", 0.15, -0.8, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.01]
+            },
+            "tornello_risultato_0_1": {
+                "descrizione": "Risultato 0-1: Nero vince (pan a destra, arpeggio brillante)",
+                "score": [
+                    ["c5", 0.08, 0.8, 0.0],
+                    ["e5", 0.08, 0.8, 0.0],
+                    ["g5", 0.15, 0.8, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.01]
+            },
+            "tornello_risultato_patta": {
+                "descrizione": "Risultato patta: accordo equilibrato centrato",
+                "score": [
+                    ["e5", 0.12, 0.0, 0.0],
+                    ["a5", 0.25, 0.0, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.03]
+            },
+            "tornello_risultato_1_F": {
+                "descrizione": "Risultato 1-F: forfait Nero (pan a sinistra, toni alterni)",
+                "score": [
+                    ["c5", 0.1, -0.8, 0.0],
+                    ["c4", 0.2, -0.8, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_risultato_F_1": {
+                "descrizione": "Risultato F-1: forfait Bianco (pan a destra, toni alterni)",
+                "score": [
+                    ["c5", 0.1, 0.8, 0.0],
+                    ["c4", 0.2, 0.8, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.01, 0.0, 100.0, 0.02]
+            },
+            "tornello_risultato_0_0F": {
+                "descrizione": "Risultato 0-0F: doppio forfait (toni discendenti cupi)",
+                "score": [
+                    ["c4", 0.12, 0.0, 0.0],
+                    ["b3", 0.12, 0.0, 0.0],
+                    ["bb3", 0.25, 0.0, 0.0]
+                ],
+                "kind": 1,
+                "adsr": [0.02, 0.0, 100.0, 0.04]
+            }
+        }
+
+        preset_data = None
+        if os.path.exists(db_path):
+            try:
+                with open(db_path, "r", encoding="utf-8") as f:
+                    collection = json.load(f)
+                
+                db_dirty = False
+                for k, v in custom_presets.items():
+                    if k not in collection:
+                        collection[k] = v
+                        db_dirty = True
+                
+                if db_dirty:
+                    with open(db_path, "w", encoding="utf-8") as f:
+                        json.dump(collection, f, indent=4, ensure_ascii=False)
+                
+                preset_data = collection.get(preset_name)
+            except Exception as e:
+                sys.stderr.write(f"Acusticator DB Error: {e}\n")
+
+        if not preset_data:
+            preset_data = custom_presets.get(preset_name)
+
+        if not preset_data:
+            return
+
+        score_flat = []
+        for q in preset_data.get('score', []):
+            note, dur, pan, vol_delta = q
+            vol = max(0.0, min(1.0, base_volume + vol_delta))
+            score_flat.extend([note, dur, pan, vol])
+        
+        Acusticator(
+            score_flat,
+            kind=preset_data.get('kind', 1),
+            adsr=preset_data.get('adsr', [0.005, 0.0, 100.0, 0.005]),
+            sync=sync
+        )
+    except Exception as e:
+        sys.stderr.write(f"Acusticator Play Error: {e}\n")

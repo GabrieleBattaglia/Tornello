@@ -1,3 +1,4 @@
+import os
 import traceback
 from datetime import datetime
 from config import *
@@ -36,6 +37,9 @@ def save_current_tournament_round_file(torneo):
         print(_("Salvataggio file turno corrente: Numero turno non definito."))
         return
     filename = _("Tornello - {name} - Turno corrente.txt").format(name=sanitized_name)
+    custom_path = torneo.get("custom_save_path")
+    if custom_path:
+        filename = os.path.join(custom_path, filename)
     round_data = None
     for rnd in torneo.get("rounds", []):
         if rnd.get("round") == current_round_num:
@@ -312,6 +316,9 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
     filename = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
         name=sanitized_name, round_num=completed_round_number
     )
+    custom_path = torneo.get("custom_save_path")
+    if custom_path:
+        filename = os.path.join(custom_path, filename)
 
     round_data = None
     for rnd in torneo.get("rounds", []):
@@ -635,6 +642,9 @@ def save_standings_text(torneo, final=False):
     tournament_name_file = torneo.get("name", "Torneo_Senza_Nome")
     sanitized_name_file = sanitize_filename(tournament_name_file)
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
+    custom_path = torneo.get("custom_save_path")
+    if custom_path:
+        filename = os.path.join(custom_path, filename)
 
     try:
         with open(filename, "w", encoding="utf-8-sig") as f:

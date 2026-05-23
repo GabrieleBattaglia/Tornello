@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from config import *
 from GBUtils import dgt, key
-from utils import enter_escape, format_date_locale, sanitize_filename, create_backup
+from utils import enter_escape, format_date_locale, sanitize_filename, create_backup, play_sound
 from db_players import (
     _cerca_giocatore_nel_db_fide,
     crea_nuovo_giocatore_nel_db,
@@ -141,6 +141,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                     )
                     if confirm_remove:
                         removed_player = torneo["players"].pop(idx_to_remove)
+                        play_sound("rimozione_giocatore", torneo)
                         print(
                             _("Giocatore '{first_name} {last_name}' rimosso.").format(
                                 first_name=removed_player.get("first_name"),
@@ -771,6 +772,7 @@ def input_players(
                 }
                 players_in_tournament.append(player_instance)
                 added_player_ids_to_tournament.add(player_id_to_add)
+                play_sound("aggiunta_giocatore", torneo_obj)
 
                 if was_newly_created:
                     print(
@@ -1014,6 +1016,7 @@ def update_match_result(torneo):
                 ).format(player_name=player_name_withdraw)
                 if enter_escape(confirm_prompt):
                     player_to_withdraw_obj["withdrawn"] = True
+                    play_sound("ritiro_giocatore", torneo)
                     print(
                         _("Giocatore {player_name} marcato come ritirato.").format(
                             player_name=player_name_withdraw
@@ -1084,6 +1087,7 @@ def update_match_result(torneo):
                 ricalcola_punti_tutti_giocatori(torneo)
                 any_changes_made_in_this_session = True
                 save_tournament(torneo)
+                play_sound("cancellato", torneo)
                 print(_("Risultato cancellato e punteggi ricalcolati."))
             else:
                 print(_("Cancellazione annullata."))
@@ -1245,6 +1249,7 @@ def update_match_result(torneo):
                             )
                             any_changes_made_in_this_session = True
                             save_tournament(torneo)
+                            play_sound("pianifica_modifica", torneo)
                             print(_("Pianificazione modificata."))
                     elif sub_action == "r":
                         if enter_escape(
@@ -1255,6 +1260,7 @@ def update_match_result(torneo):
                                 del selected_match_obj_for_processing["schedule_info"]
                             any_changes_made_in_this_session = True
                             save_tournament(torneo)
+                            play_sound("pianifica_rimuovi", torneo)
                             print(_("Pianificazione rimossa."))
                 else:
                     new_schedule_data = input_schedule_details()
@@ -1265,6 +1271,7 @@ def update_match_result(torneo):
                         selected_match_obj_for_processing["is_scheduled"] = True
                         any_changes_made_in_this_session = True
                         save_tournament(torneo)
+                        play_sound("pianifica_crea", torneo)
                         print(_("Partita pianificata con successo."))
                 continue
 
@@ -1298,6 +1305,18 @@ def update_match_result(torneo):
                     confirm_message_str = _(
                         "Confermi che {player1} e {player2} pattano? (INVIO|ESCAPE): "
                     ).format(player1=wp_name_match_disp, player2=bp_name_match_disp)
+                elif res_str == "1-F":
+                    confirm_message_str = _(
+                        "Confermi che {winner} vince per forfait contro {loser}? (INVIO|ESCAPE): "
+                    ).format(winner=wp_name_match_disp, loser=bp_name_match_disp)
+                elif res_str == "F-1":
+                    confirm_message_str = _(
+                        "Confermi che {winner} vince per forfait contro {loser}? (INVIO|ESCAPE): "
+                    ).format(winner=bp_name_match_disp, loser=wp_name_match_disp)
+                elif res_str == "0-0F":
+                    confirm_message_str = _(
+                        "Confermi doppio forfait tra {player1} e {player2}? (INVIO|ESCAPE): "
+                    ).format(player1=wp_name_match_disp, player2=bp_name_match_disp)
                 user_confirm_input = enter_escape(confirm_message_str)
                 if user_confirm_input:
                     _apply_match_result_to_players(
@@ -1309,6 +1328,7 @@ def update_match_result(torneo):
                     )
                     any_changes_made_in_this_session = True
                     save_tournament(torneo)
+                    play_sound(f"risultato_{res_str}", torneo)
                     if "F" in res_str:
                         forfeiting_players = []
                         if res_str == "1-F":
@@ -1327,6 +1347,7 @@ def update_match_result(torneo):
                             )
                             if withdraw_choice:
                                 f_player_obj["withdrawn"] = True
+                                play_sound("ritiro_giocatore", torneo)
                                 print(
                                     _(
                                         "Giocatore {player_name} marcato come ritirato."
@@ -1335,6 +1356,7 @@ def update_match_result(torneo):
                 else:
                     print(_("Operazione annullata dall'utente."))
             else:
+                play_sound("errore", torneo)
                 print(_("Input risultato non valido."))
     return any_changes_made_in_this_session
 
@@ -1614,66 +1636,79 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         )
         return False  # L'archiviazione è una parte importante della finalizzazione
 
-    files_to_move = []
-    # 1. File JSON principale del torneo
+    custom_path = torneo.get("custom_save_path")
+    
+    # 1. Trova il file JSON principale del torneo (locale)
+    local_json_filename = f"Tornello - {sanitized_tournament_name}.json"
     if current_tournament_filename and os.path.exists(current_tournament_filename):
-        files_to_move.append(current_tournament_filename)
+        local_json_path = current_tournament_filename
+    elif os.path.exists(local_json_filename):
+        local_json_path = local_json_filename
     else:
-        # Tentativo di ricostruire il nome del file JSON se non passato o non esistente, basato sul nome del torneo
-        # Questo è un fallback, current_tournament_filename dovrebbe essere corretto.
-        guessed_json_filename = f"Tornello - {sanitized_tournament_name}.json"  # Assicurati che "Tornello - " sia il tuo prefisso
-        if (
-            os.path.exists(guessed_json_filename)
-            and guessed_json_filename not in files_to_move
-        ):
-            files_to_move.append(guessed_json_filename)
-        else:
-            print(
-                _(
-                    " Warning: File JSON principale del torneo ('{current_filename}' o '{guessed_filename}') non trovato per l'archiviazione."
-                ).format(
-                    current_filename=current_tournament_filename,
-                    guessed_filename=guessed_json_filename,
-                )
-            )
+        local_json_path = None
+        print(
+            _(
+                " Warning: File JSON principale del torneo ('{current_filename}') non trovato per l'archiviazione."
+            ).format(current_filename=current_tournament_filename)
+        )
 
-    # 2. Altri file di testo (.txt) associati al torneo
-    # Il pattern usa il nome sanificato per trovare i file correlati.
-    # Assicurati che il prefisso "Tornello - " sia corretto e usato consistentemente.
-    file_pattern_prefix = f"Tornello - {sanitized_tournament_name}"
+    # 2. Trova gli altri file di testo (.txt) associati al torneo (nella cartella custom o in locale)
+    report_files = []
+    if custom_path:
+        file_pattern_prefix = os.path.join(custom_path, f"Tornello - {sanitized_tournament_name}")
+    else:
+        file_pattern_prefix = f"Tornello - {sanitized_tournament_name}"
 
-    for file_in_dir in glob.glob(
-        f"{file_pattern_prefix}*.*"
-    ):  # Prende tutti i file che iniziano così
-        if os.path.isfile(file_in_dir):  # Assicurati sia un file
-            # Evita di aggiungere nuovamente il file JSON principale se già presente
-            if file_in_dir not in files_to_move:
-                files_to_move.append(file_in_dir)
+    for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
+        if os.path.isfile(file_in_dir):
+            # Escludiamo il file JSON del torneo attivo da questa lista per gestirlo separatamente
+            if not local_json_path or os.path.abspath(file_in_dir) != os.path.abspath(local_json_path):
+                report_files.append(file_in_dir)
 
-    if not files_to_move:
-        print(_("  Warning: Nessun file specifico del torneo trovato da archiviare."))
     moved_files_count = 0
-    for filepath_to_move in files_to_move:
+    # Processa e copia/sposta i report di testo
+    for filepath in report_files:
         try:
-            filename_only = os.path.basename(filepath_to_move)
+            filename_only = os.path.basename(filepath)
             destination_path = os.path.join(full_archive_path, filename_only)
-            # Gestione della sovrascrittura (anche se improbabile per una nuova cartella di archivio)
             if os.path.exists(destination_path):
                 print(
                     _(
                         " Warning: File '{filename}' esiste già in '{path}'. Non verrà sovrascritto."
                     ).format(filename=filename_only, path=full_archive_path)
                 )
-                continue  # Salta lo spostamento di questo file
-            shutil.move(filepath_to_move, destination_path)
+                continue
+            if custom_path:
+                shutil.copy2(filepath, destination_path)  # Copia in archivio lasciando l'originale in Dropbox
+            else:
+                shutil.move(filepath, destination_path)  # Sposta direttamente in archivio
             moved_files_count += 1
         except Exception as e_move:
-            print(
-                f"  Errore durante lo spostamento di '{os.path.basename(filepath_to_move)}': {e_move}"
-            )
+            print(f"  Errore durante lo spostamento di '{os.path.basename(filepath)}': {e_move}")
+
+    # Processa e archivia il file JSON locale
+    if local_json_path:
+        try:
+            json_filename_only = os.path.basename(local_json_path)
+            destination_path = os.path.join(full_archive_path, json_filename_only)
+            if not os.path.exists(destination_path):
+                shutil.copy2(local_json_path, destination_path)
+                moved_files_count += 1
+            
+            # Se l'utente ha una cartella personalizzata, salva una copia del JSON concluso anche lì
+            if custom_path:
+                custom_json_dest = os.path.join(custom_path, json_filename_only)
+                if not os.path.exists(custom_json_dest):
+                    shutil.copy2(local_json_path, custom_json_dest)
+            
+            # Elimina il file JSON attivo locale
+            os.remove(local_json_path)
+        except Exception as e_json:
+            print(f"  Errore durante l'archiviazione del file JSON '{os.path.basename(local_json_path)}': {e_json}")
+
     if moved_files_count > 0:
         print(
-            _("Spostati {count} file del torneo in: '{path}'").format(
+            _("Spostati/Archiviati {count} file del torneo in: '{path}'").format(
                 count=moved_files_count, path=full_archive_path
             )
         )
@@ -1684,4 +1719,5 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             name=tournament_name_original
         )
     )
+    play_sound("conclusione_torneo", torneo)
     return True

@@ -25,6 +25,17 @@ FASE C: INTERFACCIA GRAFICA (GUI wxPython)
 	- Un esempio perfetto di interfaccia accessibile è quella usata da mine\terminal_beast. I suoi controlli possono essere presi ad esempio: Grandi ctrltext e tasti globali(per app) dove possibile.
 
 --- CHANGELOG ---
+8.12.1
+	+ Feature: Estensione capillare dei feedback acustici (Issue #5). Aggiunti suoni specifici per rimozione giocatore, ritiro giocatore, time machine, conclusione turno, conclusione torneo, modifiche/aggiunte/rimozioni di pianificazioni, e suoni personalizzati differenziati per ciascun risultato di gioco (1-0, 0-1, patta, forfait 1-F/F-1/0-0F) con panning spaziale sinistra/destra.
+	+ Feature: Implementata la riproduzione sincrona per il suono di chiusura all'uscita dal programma.
+	+ Version: Aggiornata la versione a 8.12.1.
+
+8.12.0
+	+ Feature: Integrazione dei feedback acustici con il modulo Acusticator da GBUtils per vari eventi dell'applicazione (avvio, errori, inserimento risultati, cancellazione, pianificazione, aggiunta giocatori, accoppiamenti). (Chiude Issue #5).
+	+ Feature: Aggiunta opzione per definire un percorso di salvataggio personalizzato all'atto della creazione di un nuovo torneo. Tutti i file del torneo vengono salvati in tale percorso e, a torneo concluso, viene preservata una copia degli stessi nella cartella personalizzata. (Chiude Issue #10).
+	+ Bugfix: Formattati in modo descrittivo i messaggi di conferma per l'inserimento dei risultati a forfait (1-F, F-1, 0-0F) (Chiude Issue #11).
+	+ Maintenance: Aggiornato l'anno di copyright all'avvio al 2026 (Chiude Issue #9) e aggiornata la versione dell'applicazione.
+
 8.11.2
 	+ Hotfix: Risolta un'anomalia critica nella generazione del file TRF per i giocatori ritirati. Se un giocatore si ritirava, il suo status di "assente" (zero-point bye, Z) veniva registrato erroneamente nel turno sbagliato, facendolo riapparire come attivo negli abbinamenti dei turni successivi. Ora lo storico viene calcolato usando le posizioni di colonna assolute e i turni mancanti vengono correttamente riempiti con 'Z' (chiude Issue #8).
 
