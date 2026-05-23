@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 
 # installazione percorsi relativi e i18n
 from config import *
-from utils import enter_escape, format_date_locale, sanitize_filename, parse_flexible_date
+from utils import enter_escape, format_date_locale, sanitize_filename, parse_flexible_date, play_sound
 from src.engine import handle_bbpairings_failure
 from src.version import VERSIONE
 from db_players import (
@@ -48,6 +48,10 @@ from ui import (
 )
 
 atexit.register(Donazione)
+
+def exit_program(code=0, torneo_obj=None):
+    play_sound("chiusura", torneo_obj, sync=True)
+    sys.exit(code)
 
 # QF
 
@@ -80,13 +84,14 @@ if __name__ == "__main__":
                 )
             )
             print(_("bbpPairings potrebbe non funzionare correttamente."))
-            sys.exit(1)
+            exit_program(1, None)
     players_db = load_players_db()
     torneo = None
     active_tournament_filename = None
     deve_creare_nuovo_torneo = False
     nome_nuovo_torneo_suggerito = None
     print(_("\nBENVENUTI! Sono Tornello {}").format(VERSIONE))
+    play_sound("avvio")
 
     # --- CONTROLLO AGGIORNAMENTI AUTOMATICI ---
     try:
@@ -117,7 +122,7 @@ if __name__ == "__main__":
                         )
                     )
                     if perform_update(dl_url, "tornello"):
-                        sys.exit(0)
+                        exit_program(0, torneo)
                     else:
                         print(
                             _(
@@ -216,7 +221,7 @@ if __name__ == "__main__":
             deve_creare_nuovo_torneo = True
         else:
             print(_("Uscita dal programma."))
-            sys.exit(0)
+            exit_program(0, torneo)
     elif len(potential_tournament_files) == 1:
         single_found_filepath = potential_tournament_files[0]
         single_tournament_name_guess = _("Torneo Sconosciuto")
@@ -282,8 +287,8 @@ if __name__ == "__main__":
                         )
                     else:
                         print(_("Uscita dal programma."))
-                        sys.exit(
-                            0
+                        exit_program(
+                            0, torneo
                         )  # Esce se il caricamento fallisce e non vuole creare
                 # Se torneo è stato caricato con successo (o se si è scelto di creare dopo fallimento), esci da questo loop
                 break
@@ -463,7 +468,7 @@ if __name__ == "__main__":
 
         if risultato_input is None:
             # Sospeso di nuovo
-            sys.exit(0)
+            exit_program(0, torneo)
 
         torneo["players"] = risultato_input
 
@@ -474,7 +479,7 @@ if __name__ == "__main__":
                     "Creazione torneo annullata a causa di problemi con la lista giocatori."
                 )
             )
-            sys.exit(0)
+            exit_program(0, torneo)
 
         torneo.pop("creation_suspended", None)
         torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
@@ -583,7 +588,7 @@ if __name__ == "__main__":
                             "Nome del torneo non definito correttamente. Creazione annullata."
                         )
                     )
-                    sys.exit(1)
+                    exit_program(1, torneo)
                 torneo["name"] = new_tournament_name_final
                 while True:
                     try:
@@ -718,7 +723,7 @@ if __name__ == "__main__":
                             "Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata."
                         )
                     )
-                    sys.exit(1)
+                    exit_program(1, torneo)
                 torneo["round_dates"] = round_dates
                 torneo["tournament_id"] = (
                     f"{sanitize_filename(torneo['name'])}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -733,7 +738,7 @@ if __name__ == "__main__":
                     )
                     if risultato_input is None:
                         # Utente ha sospeso la creazione
-                        sys.exit(0)
+                        exit_program(0, torneo)
                     torneo["players"] = risultato_input
                     if _conferma_lista_giocatori_torneo(torneo, players_db):
                         break
@@ -773,7 +778,7 @@ if __name__ == "__main__":
                     "Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni dopo la conferma. Torneo annullato."
                 ).format(num_players=num_giocatori, num_rounds=num_turni_totali)
             )
-            sys.exit(0)
+            exit_program(0, torneo)
         torneo["current_round"] = 1
         torneo["rounds"] = []
         torneo["next_match_id"] = 1
@@ -788,7 +793,8 @@ if __name__ == "__main__":
                     "ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non avviato."
                 )
             )
-            sys.exit(1)
+            exit_program(1, torneo)
+        play_sound("nuovo_turno", torneo)
         print(_("Registrazione risultati automatici per il Turno 1 (BYE)..."))
         valore_bye_torneo = torneo.get("bye_value", 1.0)
         for match in matches_r1:
@@ -812,7 +818,41 @@ if __name__ == "__main__":
                         ).format(name=player_obj.get("first_name"), id=bye_player_id)
                     )
         torneo["rounds"].append({"round": 1, "matches": matches_r1})
-        save_tournament(torneo)  # Salva sul nuovo active_tournament_filename
+        torneo["base_volume"] = 0.5
+        default_path = os.path.abspath(".")
+        prompt_path = _("\nVuoi che i dati vengano salvati in {}? (INVIO|ESCAPE): ").format(default_path)
+        if not enter_escape(prompt_path):
+            while True:
+                custom_path = input(_("Inserisci il percorso di salvataggio desiderato: ")).strip()
+                if not custom_path:
+                    print(_("Il percorso non può essere vuoto."))
+                    continue
+                try:
+                    if not os.path.exists(custom_path):
+                        os.makedirs(custom_path, exist_ok=True)
+                    test_file = os.path.join(custom_path, ".tornello_test")
+                    with open(test_file, "w") as f:
+                        f.write("test")
+                    os.remove(test_file)
+                    torneo["custom_save_path"] = custom_path
+                    if active_tournament_filename and os.path.exists(active_tournament_filename):
+                        sanitized_name = sanitize_filename(torneo["name"])
+                        new_path_filename = os.path.join(custom_path, f"Tornello - {sanitized_name}.json")
+                        if os.path.abspath(active_tournament_filename) != os.path.abspath(new_path_filename):
+                            try:
+                                os.remove(active_tournament_filename)
+                                old_base = os.path.splitext(active_tournament_filename)[0]
+                                old_summary = f"{old_base}_sospeso.txt"
+                                if os.path.exists(old_summary):
+                                    os.remove(old_summary)
+                            except Exception:
+                                pass
+                    sanitized_name = sanitize_filename(torneo["name"])
+                    active_tournament_filename = os.path.join(custom_path, f"Tornello - {sanitized_name}.json")
+                    break
+                except Exception as e:
+                    print(_("Percorso non valido o non scrivibile: {}").format(e))
+        save_tournament(torneo)
         save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False)
         print(
@@ -823,7 +863,7 @@ if __name__ == "__main__":
     # 3. Se nessun torneo è attivo a questo punto, esci.
     if not torneo or not active_tournament_filename:
         print(_("\nNessun torneo attivo. Uscita dal programma."))
-        sys.exit(0)
+        exit_program(0, torneo)
     # 4. Aggiorna launch_count se il torneo è stato caricato (non creato ora)
     if not deve_creare_nuovo_torneo:  # Implica che è stato caricato
         torneo["launch_count"] = torneo.get("launch_count", 0) + 1
@@ -837,7 +877,7 @@ if __name__ == "__main__":
             count=torneo.get("launch_count", 1)
         )
     )
-    print(_("Copyright 2025, dedicato all'ASCId e al gruppo Scacchierando."))
+    print(_("Copyright 2026, dedicato all'ASCId e al gruppo Scacchierando."))
     try:
         while True:
             current_round_num = torneo.get("current_round")
@@ -914,6 +954,7 @@ if __name__ == "__main__":
                         round_num=current_round_num
                     )
                 )
+                play_sound("conclusione_turno", torneo)
                 append_completed_round_to_history_file(torneo, current_round_num)
                 save_standings_text(torneo, final=False)
 
@@ -987,6 +1028,7 @@ if __name__ == "__main__":
                                 )
                                 save_tournament(torneo)
                                 break  # Esce dal ciclo principale
+                        play_sound("nuovo_turno", torneo)
                         # 3. Gestisci il BYE appena generato (se presente)
                         print(
                             _(
@@ -1062,7 +1104,7 @@ if __name__ == "__main__":
             if torneo.get("current_round") <= torneo.get("total_rounds", 0):
                 save_current_tournament_round_file(torneo)
         print(_("Stato salvato. Uscita."))
-        sys.exit(0)
+        exit_program(0, torneo)
     except Exception as e_main_loop:
         print(
             _("\nERRORE CRITICO NON GESTITO nel flusso principale: {error}").format(
@@ -1075,7 +1117,8 @@ if __name__ == "__main__":
                 f"Tentativo salvataggio stato torneo in '{active_tournament_filename}'..."
             )
             save_tournament(torneo)
-        sys.exit(1)
+        exit_program(1, torneo)
+    play_sound("chiusura", torneo, sync=True)
     if torneo is None and active_tournament_filename is None:
         print(_("\nProgramma Tornello terminato."))
     elif torneo and active_tournament_filename:

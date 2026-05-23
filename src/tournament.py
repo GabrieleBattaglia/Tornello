@@ -198,6 +198,8 @@ def time_machine_torneo(torneo):
         "Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei risultati."
     )
     print(prompt_template_5.format(target_round=target_round))
+    from utils import play_sound
+    play_sound("time_machine", torneo)
     return True
 
 
