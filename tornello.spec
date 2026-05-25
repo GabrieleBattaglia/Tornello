@@ -18,7 +18,7 @@ a = Analysis(
     hiddenimports=['unidecode'],
     hookspath=[],
     runtime_hooks=[],
-    excludes=['tkinter', 'unittest', 'doctest', 'pdb', 'PyQt5',
+    excludes=['tkinter', 'doctest', 'pdb', 'PyQt5',
               'PyQt6', 'PySide2', 'PySide6', 'wx', 'matplotlib', 'pandas'],
     cipher=None,
     noarchive=False,
