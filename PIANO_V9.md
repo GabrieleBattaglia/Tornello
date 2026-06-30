@@ -175,6 +175,11 @@ Fase 6: Rifinitura             ────────────────�
 - [x] Creare fixture con dati di tornei reali (dai JSON in `Closed Tournaments/`) *(Completato in conftest.py)*
 - [x] Aggiungere `requirements.txt` o `pyproject.toml` completo *(Completato in requirements.txt)*
 
+> [!TIP]
+> **🧪 Test Manuale 1 (Fondamenta)**:
+> 1. Eseguire `python main.py` in console.
+> 2. Verificare che l'avvio, il menù principale e la navigazione CLI rispondano esattamente come nella v8, senza crash dovuti al disaccoppiamento logica-UI.
+
 
 ---
 
@@ -203,6 +208,13 @@ Fase 6: Rifinitura             ────────────────�
 - [x] Implementare un meccanismo di versioning del DB (`"schema_version": 2`) *(Completato)*
 - [x] Al caricamento, migrare automaticamente i vecchi record aggiungendo i campi mancanti con valori di default *(Completato in load_players_db)*
 - [x] Validare il DB dopo la migrazione *(Completato con test di migrazione in test_db.py)*
+
+> [!TIP]
+> **🧪 Test Manuale 2 (Database Giocatori)**:
+> 1. Avviare `python Players_DB.py`.
+> 2. Provare ad aggiungere un nuovo giocatore e inserire un valore per `Elo Club` (es. `1450`).
+> 3. Modificare un giocatore esistente impostando il suo `Elo Club` a `1500`.
+> 4. Aprire `Tornello - Players_db.json` e verificare che sia presente la chiave `"schema_version": 2`, e che i record contengano i campi `"elo_club"`, `"elo_rapid"`, `"elo_blitz"` correttamente compilati.
 
 
 ---
@@ -244,6 +256,13 @@ Fase 6: Rifinitura             ────────────────�
   - Standard → `current_elo` (fallback → `elo_club` → DEFAULT)
 - [x] A fine torneo, aggiornare l'Elo della cadenza corretta nel DB giocatori *(Completato in TournamentController._finalize_tournament)*
 
+> [!TIP]
+> **🧪 Test Manuale 3 (Tempo e Cadenze)**:
+> 1. Avviare `python main.py` e creare tre diversi tornei finti.
+> 2. Per il primo inserire `90+30` (Standard), per il secondo `15+10` (Rapid), per il terzo `3+2` (Blitz).
+> 3. Verificare nei file `.json` generati nella cartella del torneo che la chiave `"tournament_category"` contenga rispettivamente `"standard"`, `"rapid"`, `"blitz"`.
+> 4. Verificare che all'importazione di un giocatore in un torneo Blitz/Rapid, l'Elo iniziale assegnato rispetti il valore specifico salvato nel DB o il corretto fallback.
+
 ---
 
 ### Fase 4 — Integrazione bbpPairings v6 ♟️
@@ -275,6 +294,14 @@ Fase 6: Rifinitura             ────────────────�
   - Scenari con floater e forte sbilanciamento colori
 - [x] Confrontare gli output tra v5 e v6 su tornei già giocati (file in `Closed Tournaments/`) *(Completato)*
 - [x] Test di regressione su tutti i tornei archiviati *(Completato via pytest su dati reali)*
+
+> [!TIP]
+> **🧪 Test Manuale 4 (Simulazione Torneo Finto con bbpPairings v6)**:
+> 1. Creare un finto torneo standard con 6 giocatori.
+> 2. Eseguire tutti i turni fino alla fine inserendo risultati inventati (es. patte, vittorie di bianco/nero e BYE).
+> 3. Verificare che al calcolo di ogni turno l'engine `bbpPairings.exe` risponda correttamente generando la lista degli abbinamenti.
+> 4. Ritirare un giocatore al turno 2 e verificare che al turno 3 non venga abbinato e gli venga assegnato il forfeit.
+> 5. Al termine (Finalizzazione torneo), verificare che gli Elo dei giocatori nel DB locale siano stati aggiornati solo ed esclusivamente nella colonna della cadenza corrispondente al torneo giocato.
 
 ---
 
