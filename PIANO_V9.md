@@ -313,7 +313,96 @@ Fase 6: Rifinitura             ────────────────�
 > [!IMPORTANT]
 > La GUI deve essere **accessibile al 100%** (screen reader, scorciatoie da tastiera). L'esempio da seguire è l'interfaccia di `mine\terminal_beast`.
 
+#### ♿ Linee Guida Accessibilità (da Terminal Beast)
+Per garantire la compatibilità al 100% con gli screen reader (es. NVDA) e l'usabilità da tastiera, implementeremo le seguenti tecniche mutuate da `Terminal Beast`:
+
+1. **Messaggi e Dialoghi Navigabili (`AccessibleMsgDialog`)**:
+   * Non useremo mai il classico `wx.MessageBox` per testi lunghi o complessi.
+   * Creeremo un dialogo personalizzato `AccessibleMsgDialog` basato su `wx.Dialog`.
+   * Il messaggio sarà visualizzato all'interno di un `wx.TextCtrl` multi-riga, in sola lettura (`wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2`) con font monospaziato (`wx.FONTFAMILY_TELETYPE`). Questo permette a NVDA di scorrere il testo riga per riga (o leggere tabelle ASCII) usando le frecce direzionali.
+   * I pulsanti del dialogo (es. Sì, No, OK) saranno posizionati sotto e associati a binding espliciti (`EndModal`).
+   * Metteremo il focus sul controllo di testo immediatamente all'apertura tramite `wx.CallAfter(self.msg_text.SetFocus)` per una lettura automatica e istantanea dello screen reader.
+
+2. **Aggiornamento di Testo Continuo e Focus (`append_text`)**:
+   * Quando viene aggiunto del testo a un controllo di testo principale (es. log di abbinamenti, classifiche), useremo la seguente sequenza per non disorientare lo screen reader:
+     1. Salvataggio della posizione di inserimento corrente: `insertion_point = self.text_ctrl.GetLastPosition()`
+     2. Inserimento del testo: `self.text_ctrl.AppendText(text)`
+     3. Ripristino del cursore all'inizio del nuovo testo inserito: `self.text_ctrl.SetInsertionPoint(insertion_point)`
+     4. Visibilità della posizione: `self.text_ctrl.ShowPosition(insertion_point)`
+     5. Richiesta di focus: `self.text_ctrl.SetFocus()`
+   * Questo consente all'utente non vedente di premere Freccia Giù e leggere subito il nuovo testo dall'inizio del blocco.
+
+3. **Feedbacks di Caricamento Accessibili (`wx.ProgressDialog`)**:
+   * Per le operazioni asincrone o che richiedono tempo (es. sincronizzazione del database giocatori, download FIDE, o calcolo degli abbinamenti), useremo `wx.ProgressDialog` che NVDA legge e aggiorna vocalmente in percentuale in modo nativo.
+
+4. **Struttura delle Finestre e Spostamento Rapido**:
+   * Utilizzeremo `wx.ScrolledWindow` per contenere form o configurazioni complesse che superano la dimensione dello schermo, prevenendo il troncamento dei controlli.
+   * Implementeremo "TAB Hacks" per consentire agli utenti di saltare rapidamente da controlli di filtro/ricerca direttamente alla lista dei risultati (es. intercettando il tasto Tab su un `wx.ComboBox` per spostare il focus su un `wx.ListBox` contenente i risultati).
+   * Useremo font monospaziati (`wx.Font(10, wx.FONTFAMILY_TELETYPE, ...)`) su tabelle e liste per garantire che i dati incolonnati siano letti con un allineamento logico anche dagli screen reader.
+
 #### 5.1 Pianificazione Interfaccia
+- [ ] Definire la struttura delle finestre principali (Sotto-Piano Dettagliato):
+
+##### 5.1.1 Dettaglio Sotto-Piano Interfaccia 📐
+
+###### A. Barra dei Menù (MenuBar)
+Tutte le voci del menù avranno lettere di scelta rapida (shortcut Alt) e acceleratori da tastiera (es. Ctrl+N) dichiarati esplicitamente per l'accessibilità:
+*   **File (Alt+F)**
+    *   *Nuovo Torneo... (Ctrl+N)*: Apre il Wizard di creazione torneo.
+    *   *Apri Torneo... (Ctrl+O)*: Apre una finestra di dialogo file per caricare un torneo JSON esistente.
+    *   *Salva Torneo (Ctrl+S)*: Salva il torneo corrente.
+    *   *Salva con nome...*: Salva una copia del torneo.
+    *   *Esci (Ctrl+Q)*: Chiude l'applicazione chiedendo conferma di salvataggio.
+*   **Torneo (Alt+T)**
+    *   *Iscrizione Giocatori... (Ctrl+I)*: Finestra di ricerca e inserimento dei partecipanti nel torneo.
+    *   *Visualizza Giocatori (Ctrl+G)*: Mostra l'elenco dei giocatori iscritti nel pannello principale.
+    *   *Abbinamenti / Turno Corrente (Ctrl+U)*: Mostra le scacchiere del turno attivo.
+    *   *Classifica Corrente (Ctrl+L)*: Calcola e visualizza la classifica del torneo.
+    *   *Time Machine (Annulla Turno) (Ctrl+Z)*: Torna indietro al turno precedente in caso di errori.
+    *   *Finalizza Torneo (Ctrl+F)*: Conclude il torneo, calcola i piazzamenti, aggiorna il DB giocatori locale e sposta il file in "Closed Tournaments".
+*   **Database (Alt+D)**
+    *   *Gestione Giocatori Locale (Ctrl+D)*: Pannello di inserimento/modifica dei singoli record del database locale (sostituisce la CLI di `Players_DB.py`).
+    *   *Sincronizza DB Locale con FIDE (Ctrl+Y)*: Avvia la sincronizzazione automatica del DB locale usando il file FIDE scaricato (sostituisce `Sync_DB.py`).
+*   **Strumenti (Alt+S)**
+    *   *Consulta FIDE (Ctrl+K)*: Pannello di ricerca diretta per ID FIDE o Cognome/Nome con download del record (sostituisce `consulta.py`).
+    *   *Opzioni/Impostazioni... (Ctrl+P)*: Dialogo per configurare lingua, volume audio, percorsi di backup e archivio.
+*   **Aiuto (Alt+H)**
+    *   *Guida Accessibile (F1)*: Mostra la guida in formato testuale navigabile con le frecce.
+    *   *Informazioni su Tornello*: Mostra la versione e i crediti del software.
+
+###### B. Barra di Stato (StatusBar)
+La barra di stato principale sarà suddivisa in 4 campi informativi aggiornati dinamicamente per dare feedback immediati:
+1.  **Stato Sistema (60%)**: Mostra messaggi di operazione in corso (es. "Pronto.", "Abbinamenti turno 3 generati con successo.", "Salvataggio completato.").
+2.  **Categoria Torneo (15%)**: Mostra la cadenza del torneo corrente (es. `Blitz`, `Rapid`, `Standard`).
+3.  **Turno (15%)**: Indica il turno corrente (es. `Turno 2 / 5`).
+4.  **Giocatori (10%)**: Mostra il numero di giocatori attivi (es. `Part.: 28`).
+
+###### C. Struttura e Contenuto delle Finestre Principali
+1.  **MainFrame (Finestra Principale)**
+    *   **Layout**: Un `wx.SplitterWindow` verticale.
+        *   *Pannello Sinistro*: L'area di visualizzazione principale basata su un grande `wx.TextCtrl` multi-riga, in sola lettura (`wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2`) con font monospaziato. Qui vengono stampati i report del turno, la classifica o i log delle azioni. Ogni volta che viene stampato un blocco di testo, il cursore viene riportato all'inizio del blocco (`append_text`) per permettere a NVDA di leggerlo premendo Freccia Giù.
+        *   *Pannello Destro (Opzionale/Collassabile)*: Una lista ad accesso rapido dei giocatori per controlli veloci.
+2.  **Wizard Nuovo Torneo (`NewTournamentDialog`)**
+    *   **Tipo**: `wx.Dialog` con `wx.ScrolledWindow`.
+    *   **Campi**:
+        *   Nome Torneo (`wx.TextCtrl`)
+        *   Luogo/Site (`wx.TextCtrl`)
+        *   Numero Turni (`wx.SpinCtrl`)
+        *   Controllo Tempo (`wx.TextCtrl`, es. "15+10", validato in tempo reale tramite `parse_time_control`)
+        *   Data Inizio/Fine (`wx.adv.DatePickerCtrl` o `wx.TextCtrl` validati)
+        *   Arbitro Capo / Vice Arbitri (`wx.TextCtrl`)
+        *   Assegnazione Colore Board 1 (Bottone a scelta esclusiva: Bianco / Nero)
+3.  **Iscrizione Giocatori (`PlayerEnrollmentDialog`)**
+    *   **Tipo**: `wx.Dialog`.
+    *   **Layout**:
+        *   Campo di ricerca testo (`wx.TextCtrl`) con autocompletamento o ricerca istantanea nel DB locale al variare del testo.
+        *   Una `wx.ListBox` monospaziata con i risultati della ricerca.
+        *   Un pulsante "Aggiungi al Torneo" (scorciatoia `Invio` quando si è sulla lista).
+        *   Un pulsante "Nuovo Giocatore" per creare al volo un anagrafico non presente nel DB.
+4.  **Gestione Turno e Inserimento Risultati (`RoundPanel` / `ResultDialog`)**
+    *   **Layout**: Una tabella (`wx.ListCtrl` o una griglia di pulsanti accessibili).
+    *   *Per l'accessibilità FIDE*: Una lista ordinata delle scacchiere. Premendo `Invio` su una scacchiera, si apre un dialogo accessibile che chiede il risultato (Bianco vince, Nero vince, Patta, Forfeit Bianco, Forfeit Nero, Doppia assenza) tramite una lista di pulsanti verticali ben distanziati, ognuno associato ad una scorciatoia da tastiera (es. `1` per Bianco vince, `2` per Nero vince, `3` per Patta).
+
 - [ ] Definire la struttura delle finestre principali:
 
   | Finestra | Contenuto |
