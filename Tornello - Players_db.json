@@ -3,12 +3,12 @@
   "id": "GASCL001",
   "first_name": "Claudio",
   "last_name": "Gasperoni",
-  "current_elo": 1844,
+  "current_elo": 1853,
   "registration_date": "2025-05-01",
   "birth_date": "1975-01-01",
-  "games_played": 17,
+  "games_played": 24,
   "medals": {
-   "gold": 2,
+   "gold": 3,
    "silver": 0,
    "bronze": 0,
    "wood": 0
@@ -37,6 +37,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 1,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "1N",
@@ -94,10 +102,10 @@
   "id": "VANJI001",
   "first_name": "Jiazhuang",
   "last_name": "Vandelli",
-  "current_elo": 1726,
+  "current_elo": 1727,
   "registration_date": "2025-05-01",
   "birth_date": "2002-01-01",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 0,
    "silver": 1,
@@ -112,6 +120,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 6,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "2N",
@@ -206,10 +222,10 @@
   "id": "TRACO001",
   "first_name": "Cosetta",
   "last_name": "Trapletti",
-  "current_elo": 1501,
+  "current_elo": 1497,
   "registration_date": "2025-05-01",
   "birth_date": "1968-01-01",
-  "games_played": 10,
+  "games_played": 17,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -232,6 +248,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 11,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "3N",
@@ -278,6 +302,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": "RIT",
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "3N",
@@ -298,10 +330,10 @@
   "id": "COLMI001",
   "first_name": "Michele",
   "last_name": "Colangelo",
-  "current_elo": 1555,
+  "current_elo": 1509,
   "registration_date": "2025-05-01",
   "birth_date": "1959-01-01",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -316,6 +348,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 18,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "3N",
@@ -335,15 +375,15 @@
   "id": "BATGA001",
   "first_name": "Gabriele",
   "last_name": "Battaglia",
-  "current_elo": 1498,
+  "current_elo": 1524,
   "registration_date": "2025-05-01",
   "birth_date": "1974-09-13",
-  "games_played": 17,
+  "games_played": 24,
   "medals": {
    "gold": 0,
    "silver": 1,
    "bronze": 0,
-   "wood": 0
+   "wood": 1
   },
   "tournaments_played": [
    {
@@ -369,6 +409,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 4,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "3N",
@@ -425,10 +473,10 @@
   "id": "BARGI001",
   "first_name": "Giuseppe",
   "last_name": "Baratta",
-  "current_elo": 1450,
+  "current_elo": 1426,
   "registration_date": "2025-05-01",
   "birth_date": "1961-01-01",
-  "games_played": 5,
+  "games_played": 12,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -443,6 +491,14 @@
     "total_players": 28,
     "date_started": "2025-05-04",
     "date_completed": "2025-06-15"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 17,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -463,10 +519,10 @@
   "id": "IONLO001",
   "first_name": "Lorenzo",
   "last_name": "Ionata",
-  "current_elo": 1488,
+  "current_elo": 1492,
   "registration_date": "2025-05-01",
   "birth_date": "1978-01-01",
-  "games_played": 21,
+  "games_played": 28,
   "medals": {
    "gold": 1,
    "silver": 0,
@@ -505,6 +561,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 8,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -560,10 +624,10 @@
   "id": "CALVA001",
   "first_name": "Valeria",
   "last_name": "Calzolari",
-  "current_elo": 1385,
+  "current_elo": 1442,
   "registration_date": "2025-05-01",
   "birth_date": "1966-01-01",
-  "games_played": 15,
+  "games_played": 22,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -594,6 +658,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 15,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -695,10 +767,10 @@
   "id": "FORMA001",
   "first_name": "Martina",
   "last_name": "Forte",
-  "current_elo": 1355,
+  "current_elo": 1302,
   "registration_date": "2025-05-01",
   "birth_date": null,
-  "games_played": 14,
+  "games_played": 20,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -729,6 +801,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 29,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -742,10 +822,10 @@
   "id": "GORSE001",
   "first_name": "Serena",
   "last_name": "Gori",
-  "current_elo": 1220,
+  "current_elo": 1189,
   "registration_date": "2025-05-01",
   "birth_date": "1948-01-01",
-  "games_played": 20,
+  "games_played": 26,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -784,6 +864,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 22,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -803,10 +891,10 @@
   "id": "MERAL001",
   "first_name": "Alessia",
   "last_name": "Mereu",
-  "current_elo": 1385,
+  "current_elo": 1350,
   "registration_date": "2025-05-01",
   "birth_date": "1998-01-01",
-  "games_played": 15,
+  "games_played": 22,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -837,6 +925,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 27,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -857,10 +953,10 @@
   "id": "PAGGI001",
   "first_name": "Giulia",
   "last_name": "Paglia",
-  "current_elo": 1382,
+  "current_elo": 1317,
   "registration_date": "2025-05-01",
   "birth_date": "2018-01-01",
-  "games_played": 10,
+  "games_played": 16,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -883,6 +979,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 25,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -902,10 +1006,10 @@
   "id": "PAGVI001",
   "first_name": "Virginio",
   "last_name": "Paglia",
-  "current_elo": 1385,
+  "current_elo": 1346,
   "registration_date": "2025-05-01",
   "birth_date": "1981-01-01",
-  "games_played": 15,
+  "games_played": 21,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -936,6 +1040,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 24,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1001,10 +1113,10 @@
   "id": "TESAL001",
   "first_name": "Alessandra",
   "last_name": "Testori",
-  "current_elo": 1362,
+  "current_elo": 1345,
   "registration_date": "2025-05-01",
   "birth_date": "1950-01-01",
-  "games_played": 14,
+  "games_played": 20,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -1035,6 +1147,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 23,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1054,10 +1174,10 @@
   "id": "VALRI001",
   "first_name": "Rita",
   "last_name": "Valleriani",
-  "current_elo": 1399,
+  "current_elo": 1438,
   "registration_date": "2025-05-01",
   "birth_date": "1986-01-01",
-  "games_played": 14,
+  "games_played": 21,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -1088,6 +1208,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 13,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1153,10 +1281,10 @@
   "id": "VENLU001",
   "first_name": "Luigi",
   "last_name": "Ventura",
-  "current_elo": 1461,
+  "current_elo": 1402,
   "registration_date": "2025-05-02",
   "birth_date": "1974-01-01",
-  "games_played": 14,
+  "games_played": 21,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -1187,6 +1315,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 26,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1205,10 +1341,10 @@
   "id": "BRICA001",
   "first_name": "Catia Susana",
   "last_name": "Brites Pereira Lima",
-  "current_elo": 1365,
+  "current_elo": 1463,
   "registration_date": "2025-05-02",
   "birth_date": "1978-01-01",
-  "games_played": 14,
+  "games_played": 21,
   "medals": {
    "gold": 0,
    "silver": 1,
@@ -1239,6 +1375,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 7,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1259,10 +1403,10 @@
   "id": "DIBVI001",
   "first_name": "Vincenzo",
   "last_name": "Di Bari",
-  "current_elo": 1415,
+  "current_elo": 1372,
   "registration_date": "2025-05-02",
   "birth_date": "1986-01-01",
-  "games_played": 15,
+  "games_played": 21,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -1293,6 +1437,14 @@
     "total_players": 17,
     "date_started": "2025-06-18",
     "date_completed": "2025-08-03"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 28,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "NC",
@@ -1507,14 +1659,14 @@
   "id": "POLDI001",
   "first_name": "Diego",
   "last_name": "Poli",
-  "current_elo": 1654,
+  "current_elo": 1675,
   "registration_date": "2025-07-21",
   "birth_date": "1973-01-01",
-  "games_played": 7,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
-   "bronze": 0,
+   "bronze": 1,
    "wood": 1
   },
   "tournaments_played": [
@@ -1525,6 +1677,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 3,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "",
@@ -1583,10 +1743,10 @@
   "id": "ZENSI001",
   "first_name": "Simone",
   "last_name": "Zenini",
-  "current_elo": 1602,
+  "current_elo": 1612,
   "registration_date": "2025-07-21",
   "birth_date": "1987-01-01",
-  "games_played": 7,
+  "games_played": 14,
   "medals": {
    "gold": 0,
    "silver": 0,
@@ -1601,6 +1761,14 @@
     "total_players": 17,
     "date_started": "2025-07-21",
     "date_completed": "2025-07-27"
+   },
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 5,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
    }
   ],
   "fide_title": "",
@@ -1747,17 +1915,26 @@
   "id": "DEMGI001",
   "first_name": "Gianni",
   "last_name": "Demaio",
-  "current_elo": 1399,
+  "current_elo": 1408,
   "registration_date": "2026-03-17",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 21,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "m",
   "federation": "ITA",
@@ -1769,17 +1946,26 @@
   "id": "DEMJO001",
   "first_name": "Joshua",
   "last_name": "Demaio",
-  "current_elo": 0,
+  "current_elo": 67,
   "registration_date": "2026-03-17",
   "birth_date": "2008-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 12,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
@@ -1797,17 +1983,26 @@
   "id": "CINAL001",
   "first_name": "Alessandra",
   "last_name": "Cinque",
-  "current_elo": 1399,
+  "current_elo": 1288,
   "registration_date": "2026-03-17",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 6,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 31,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "NC",
   "sex": "w",
   "federation": "ITA",
@@ -1819,17 +2014,26 @@
   "id": "BERLU001",
   "first_name": "Luca",
   "last_name": "Bernoni",
-  "current_elo": 1399,
+  "current_elo": 1479,
   "registration_date": "2026-03-17",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 9,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
@@ -1841,17 +2045,26 @@
   "id": "RICPI001",
   "first_name": "Piero",
   "last_name": "Riccardi",
-  "current_elo": 1399,
+  "current_elo": 1376,
   "registration_date": "2026-03-17",
   "birth_date": null,
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 20,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "NC",
   "sex": "m",
   "federation": "ITA",
@@ -1863,17 +2076,26 @@
   "id": "DELDA002",
   "first_name": "Davide",
   "last_name": "Delmonte",
-  "current_elo": 0,
+  "current_elo": 47,
   "registration_date": "2026-03-17",
   "birth_date": "1974-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 19,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
@@ -1901,7 +2123,16 @@
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": "RIT",
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "w",
   "federation": "ITA",
@@ -1919,17 +2150,26 @@
   "id": "RIVPA001",
   "first_name": "Paolo",
   "last_name": "Rivalta",
-  "current_elo": 1495,
+  "current_elo": 1479,
   "registration_date": "2026-03-17",
   "birth_date": "1969-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 16,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
@@ -1947,17 +2187,26 @@
   "id": "CAPGI001",
   "first_name": "Giuliano",
   "last_name": "Caputi",
-  "current_elo": 1768,
+  "current_elo": 1780,
   "registration_date": "2026-03-17",
   "birth_date": "1967-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
-   "silver": 0,
+   "silver": 1,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 2,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
@@ -1975,17 +2224,26 @@
   "id": "MACMA001",
   "first_name": "Massimo",
   "last_name": "Maccaferri",
-  "current_elo": 1439,
+  "current_elo": 1463,
   "registration_date": "2026-03-17",
   "birth_date": "1957-01-01",
-  "games_played": 0,
+  "games_played": 7,
   "medals": {
    "gold": 0,
    "silver": 0,
    "bronze": 0,
    "wood": 0
   },
-  "tournaments_played": [],
+  "tournaments_played": [
+   {
+    "tournament_name": "Primavera 2",
+    "tournament_id": "Primavera_2_20260317104332",
+    "rank": 10,
+    "total_players": 31,
+    "date_started": "2026-03-21",
+    "date_completed": "2026-06-30"
+   }
+  ],
   "fide_title": "",
   "sex": "M",
   "federation": "ITA",
