@@ -258,23 +258,23 @@ Fase 6: Rifinitura             ────────────────�
 - [x] Leggere la documentazione di bbpPairings v6 in `git\other\bbpairings\` *(Completato: analizzato README e trf.cpp)*
 - [x] Documentare le differenze tra TRF legacy e TRF-2026 *(Completato: identificate righe 142 per turni, 152 per colore iniziale, 192 per svizzero, 162 per punteggio)*
 - [x] Identificare i nuovi flag, codici e parametri richiesti *(Completato)*
-- [ ] Verificare le nuove regole FIDE 2026 per gli abbinamenti
+- [x] Verificare le nuove regole FIDE 2026 per gli abbinamenti *(Completato: verificate nel README del motore v6)*
 
 #### 4.2 Riscrittura Modulo Engine
-- [ ] Riscrivere `genera_stringa_trf_per_bbpairings()` per il formato TRF-2026
-- [ ] Aggiornare `run_bbpairings_engine()` per la nuova CLI di bbpPairings v6
-- [ ] Aggiornare `parse_bbpairings_couples_output()` per il nuovo formato di output
-- [ ] Gestire i nuovi codici di stato/errore del motore v6
+- [x] Riscrivere `genera_stringa_trf_per_bbpairings()` per il formato TRF-2026 *(Completato in engine.py)*
+- [x] Aggiornare `run_bbpairings_engine()` per la nuova CLI di bbpPairings v6 *(Completato: utilizzata la nuova sintassi swiss --dutch)*
+- [x] Aggiornare `parse_bbpairings_couples_output()` per il nuovo formato di output *(Completato: verificata corrispondenza dei formati e dei test)*
+- [x] Gestire i nuovi codici di stato/errore del motore v6 *(Completato: gestito il codice di errore 1 e 3 in tournament.py e run_bbpairings_engine)*
 - [x] Sostituire il binario `bbpPairings.exe` con la versione 6 *(Completato: copiato l'eseguibile v6.0.0 in bbppairings/)*
 
 #### 4.3 Test del Motore
-- [ ] Creare una suite di test con scenari noti:
+- [x] Creare una suite di test con scenari noti: *(Completato in test_engine.py)*
   - Torneo con numero pari/dispari di giocatori
   - Giocatori ritirati a vari turni
   - BYE con diverse configurazioni (0.5 / 1.0)
   - Scenari con floater e forte sbilanciamento colori
-- [ ] Confrontare gli output tra v5 e v6 su tornei già giocati (file in `Closed Tournaments/`)
-- [ ] Test di regressione su tutti i tornei archiviati
+- [x] Confrontare gli output tra v5 e v6 su tornei già giocati (file in `Closed Tournaments/`) *(Completato)*
+- [x] Test di regressione su tutti i tornei archiviati *(Completato via pytest su dati reali)*
 
 ---
 

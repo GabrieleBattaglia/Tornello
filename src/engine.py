@@ -93,9 +93,8 @@ def genera_stringa_trf_per_bbpairings(
         trf_lines.append(f"062 {number_of_players_val:03d}\n")  # Già calcolato
         trf_lines.append(f"072 {number_of_players_val:03d}\n")  # Già calcolato
         trf_lines.append("082 000\n")
-        trf_lines.append(
-            "092 Individual: Swiss-System\n"
-        )  # Potrebbe diventare configurabile
+        trf_lines.append("092 Individual: Swiss-System\n")
+        trf_lines.append("192 FIDE_DUTCH\n")  # TRF-2026 Swiss System identifier
         trf_lines.append(
             f"102 {str(dati_torneo.get('chief_arbiter', _('Arbitro Capo')))[:45]:<45}\n"
         )  # Usa 'chief_arbiter'
@@ -105,15 +104,32 @@ def genera_stringa_trf_per_bbpairings(
                 " "  # TRF vuole almeno uno spazio se la riga 112 è presente ma vuota
             )
         trf_lines.append(f"112 {deputy_str[:45]:<45}\n")
+        
+        # Gestione time control (sia stringa che dizionario v9)
+        tc_val = dati_torneo.get("time_control", "Standard")
+        if isinstance(tc_val, dict):
+            time_control_str = tc_val.get("raw", "Standard")
+        else:
+            time_control_str = str(tc_val)
         trf_lines.append(
-            f"122 {str(dati_torneo.get('time_control', 'Standard'))[:45]:<45}\n"
+            f"122 {time_control_str[:45]:<45}\n"
         )  # Usa 'time_control'
-        trf_lines.append(f"XXR {total_rounds_val:03d}\n")  # Già usa 'total_rounds'
+        
+        trf_lines.append(f"142 {total_rounds_val:03d}\n")  # TRF-2026 expected rounds
+        
         initial_color_setting = str(
             dati_torneo.get("initial_board1_color_setting", "white1")
         ).lower()
-        trf_lines.append(f"XXC {initial_color_setting}\n")
+        color_char = "W" if "white" in initial_color_setting else "B"
+        trf_lines.append(f"152 {color_char}\n")  # TRF-2026 initial color (length exactly 5)
+        
         valore_bye_formattato = f"{valore_bye_torneo:.1f}"
+        w_score = f"{1.0:>4.1f}"  # " 1.0"
+        d_score = f"{0.5:>4.1f}"  # " 0.5"
+        l_score = f"{0.0:>4.1f}"  # " 0.0"
+        z_score = f"{0.0:>4.1f}"  # " 0.0"
+        p_score = f"{valore_bye_torneo:>4.1f}"  # " 1.0" or " 0.5"
+        trf_lines.append(f"162  W{w_score}    D{d_score}    L{l_score}    Z{z_score}    P{p_score}\n")
         trf_lines.append(f"BBU {valore_bye_formattato:>4}\n")
 
         def write_to_char_list_local(target_list, start_col_1based, text_to_write):

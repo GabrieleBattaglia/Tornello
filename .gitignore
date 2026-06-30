@@ -176,3 +176,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 backup/
+bbppairings/input_bbp.trf
+bbppairings/output_coppie.txt
+bbppairings/output_checklist.txt
