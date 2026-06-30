@@ -64,7 +64,10 @@ def display_player_details(player_data):
     print(
         f"{_('Titolo FIDE'):<30}: {player_data.get('fide_title', 'N/D') if player_data.get('fide_title') else _('Nessuno')}"
     )
-    print(f"{_('Elo Corrente'):<30}: {player_data.get('current_elo', 'N/D')}")
+    print(f"{_('Elo Standard (FIDE)'):<30}: {player_data.get('current_elo', 'N/D')}")
+    print(f"{_('Elo Rapid (FIDE)'):<30}: {player_data.get('elo_rapid', 'N/D')}")
+    print(f"{_('Elo Blitz (FIDE)'):<30}: {player_data.get('elo_blitz', 'N/D')}")
+    print(f"{_('Elo Club'):<30}: {player_data.get('elo_club', 'N/D')}")
     print(f"{_('Sesso'):<30}: {str(player_data.get('sex', 'N/D')).upper()}")
     print(
         f"{_('Federazione'):<30}: {str(player_data.get('federation', 'N/D')).upper()}"
@@ -131,6 +134,13 @@ def add_new_player(players_db_main_dict):
         imin=500,
         imax=4000,
         default=int(DEFAULT_ELO),
+    )
+    elo_club_val = dgt(
+        f"{_('Elo Club')} (default 0)",
+        kind="i",
+        imin=0,
+        imax=4000,
+        default=0,
     )
     fide_title_new = get_input_with_default(
         _("Titolo FIDE (es. FM, o vuoto per nessuno):"), ""
@@ -200,6 +210,7 @@ def add_new_player(players_db_main_dict):
         birth_date_str_new,
         experienced_new_val,
         silent=False,
+        elo_club=float(elo_club_val),
     )
     if new_id:
         display_player_details(players_db_main_dict[new_id])
@@ -302,6 +313,18 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
         fmin=0.0,
         fmax=3500.0,
         default=current_elo_val,
+    )
+
+    try:
+        elo_club_val = float(player_data_ref.get("elo_club", 0.0))
+    except ValueError:
+        elo_club_val = 0.0
+    player_data_ref["elo_club"] = dgt(
+        _("Elo Club (range 0-3500)"),
+        kind="f",
+        fmin=0.0,
+        fmax=3500.0,
+        default=elo_club_val,
     )
 
     player_data_ref["fide_title"] = get_input_with_default(

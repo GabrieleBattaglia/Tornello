@@ -155,17 +155,17 @@ def sincronizza_db_personale():
 
             # Nuovi campi FIDE
             fide_fields_to_sync = [
-                ("elo_rapid", "fide_elo_rapid"),
-                ("elo_blitz", "fide_elo_blitz"),
-                ("games", "fide_games"),
+                ("elo_rapid", "elo_rapid"),
+                ("elo_blitz", "elo_blitz"),
+                ("games", "fide_standard_games"),
                 ("rapid_games", "fide_rapid_games"),
                 ("rapid_k", "fide_rapid_k"),
                 ("blitz_games", "fide_blitz_games"),
                 ("blitz_k", "fide_blitz_k"),
-                ("w_title", "fide_w_title"),
-                ("o_title", "fide_o_title"),
-                ("foa_title", "fide_foa_title"),
-                ("flag", "fide_flag"),
+                ("w_title", "w_title"),
+                ("o_title", "o_title"),
+                ("foa_title", "foa_title"),
+                ("flag", "flag"),
             ]
             for fide_key, local_key in fide_fields_to_sync:
                 fide_val = fide_record.get(fide_key)
@@ -603,23 +603,57 @@ def aggiorna_db_fide_locale():
 
 
 def load_players_db():
-    """Carica il database dei giocatori dal file JSON."""
+    """Carica il database dei giocatori dal file JSON, eseguendo la migrazione se necessario."""
     if os.path.exists(PLAYER_DB_FILE):
         try:
             with open(PLAYER_DB_FILE, "r", encoding="utf-8") as f:
-                db_list = json.load(f)
-                # Inizializza campi mancanti se necessario all'avvio
-                for p in db_list:
-                    medals_dict = p.setdefault("medals", {})
-                    medals_dict.setdefault("gold", 0)
-                    medals_dict.setdefault("silver", 0)
-                    medals_dict.setdefault("bronze", 0)
-                    medals_dict.setdefault(
-                        "wood", 0
-                    )  # <-- Aggiunto controllo specifico per 'wood'
-                    p.setdefault("tournaments_played", [])
-                    p.setdefault("fide_k_factor", None)
-                return {p["id"]: p for p in db_list}
+                raw_data = json.load(f)
+                
+            # Rileva schema
+            schema_version = 1
+            if isinstance(raw_data, dict):
+                schema_version = raw_data.get("schema_version", 1)
+                db_list = raw_data.get("players", [])
+            else:
+                db_list = raw_data
+                
+            # Esegui migrazione a schema_version 2 se necessario
+            needs_save = False
+            if schema_version < 2 or isinstance(raw_data, list):
+                print(_("\nInfo: Rilevato database giocatori in formato obsoleto. Avvio migrazione a schema v2..."))
+                needs_save = True
+                
+            for p in db_list:
+                # Campi base v1
+                medals_dict = p.setdefault("medals", {})
+                medals_dict.setdefault("gold", 0)
+                medals_dict.setdefault("silver", 0)
+                medals_dict.setdefault("bronze", 0)
+                medals_dict.setdefault("wood", 0)
+                p.setdefault("tournaments_played", [])
+                p.setdefault("fide_k_factor", None)
+                
+                # Nuovi campi v2 (Issue #14)
+                p.setdefault("elo_club", 0.0)
+                p.setdefault("elo_rapid", 0.0)
+                p.setdefault("elo_blitz", 0.0)
+                p.setdefault("fide_rapid_k", None)
+                p.setdefault("fide_blitz_k", None)
+                p.setdefault("fide_standard_games", 0)
+                p.setdefault("fide_rapid_games", 0)
+                p.setdefault("fide_blitz_games", 0)
+                p.setdefault("w_title", "")
+                p.setdefault("o_title", "")
+                p.setdefault("foa_title", "")
+                p.setdefault("flag", "")
+                
+            players_map = {p["id"]: p for p in db_list}
+            
+            if needs_save:
+                save_players_db(players_map)
+                print(_("Migrazione completata con successo."))
+                
+            return players_map
         except (json.JSONDecodeError, IOError) as e:
             print(
                 _(
@@ -636,8 +670,12 @@ def save_players_db(players_db):
     if not players_db:
         pass  # Procedi a salvare anche se vuoto
     try:
+        data_to_save = {
+            "schema_version": 2,
+            "players": list(players_db.values())
+        }
         with open(PLAYER_DB_FILE, "w", encoding="utf-8") as f:
-            json.dump(list(players_db.values()), f, indent=1, ensure_ascii=False)
+            json.dump(data_to_save, f, indent=1, ensure_ascii=False)
         save_players_db_txt(players_db)
     except IOError as e:
         print(
@@ -845,6 +883,19 @@ def crea_nuovo_giocatore_nel_db(
     birth_date,
     experienced,
     silent=False,
+    elo_club=0,
+    elo_rapid=0,
+    elo_blitz=0,
+    fide_k_factor=None,
+    fide_rapid_k=None,
+    fide_blitz_k=None,
+    fide_standard_games=0,
+    fide_rapid_games=0,
+    fide_blitz_games=0,
+    w_title="",
+    o_title="",
+    foa_title="",
+    flag=""
 ):
     """
     Crea SEMPRE un nuovo giocatore nel database principale (players_db),
@@ -894,6 +945,19 @@ def crea_nuovo_giocatore_nel_db(
         "federation": federation,
         "fide_id_num_str": fide_id_num_str,
         "experienced": experienced,
+        "elo_club": elo_club,
+        "elo_rapid": elo_rapid,
+        "elo_blitz": elo_blitz,
+        "fide_k_factor": fide_k_factor,
+        "fide_rapid_k": fide_rapid_k,
+        "fide_blitz_k": fide_blitz_k,
+        "fide_standard_games": fide_standard_games,
+        "fide_rapid_games": fide_rapid_games,
+        "fide_blitz_games": fide_blitz_games,
+        "w_title": w_title,
+        "o_title": o_title,
+        "foa_title": foa_title,
+        "flag": flag,
     }
     players_db[new_player_id] = new_player_data_for_db
     save_players_db(players_db)  # Salva immediatamente il DB principale aggiornato
@@ -908,19 +972,20 @@ def crea_nuovo_giocatore_nel_db(
     return new_player_id
 
 
-def allinea_giocatori_con_database(players_list, players_db):
+def allinea_giocatori_con_database(players_list, players_db, category="standard"):
     """
     Allinea gli initial_elo e i titoli dei giocatori in un torneo con
     l'ultimo stato presente nel database dei giocatori.
     Restituisce il numero di giocatori effettivamente aggiornati.
     """
+    from stats import get_initial_elo_for_tournament
     aggiornati = 0
     for tp in players_list:
         # Supporta sia dict (v8) che oggetti Player (v9)
         p_id = tp.get("id") if isinstance(tp, dict) else tp.id
         if p_id in players_db:
             db_p = players_db[p_id]
-            db_elo = db_p.get("current_elo", 0)
+            db_elo = get_initial_elo_for_tournament(db_p, category)
             if isinstance(tp, dict):
                 if db_elo > 0 and db_elo != tp.get("initial_elo"):
                     tp["initial_elo"] = db_elo

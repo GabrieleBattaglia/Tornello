@@ -24,6 +24,7 @@ from stats import (
     compute_aro,
     calculate_performance_rating,
     calculate_elo_change,
+    get_initial_elo_for_tournament,
 )
 from reports import save_standings_text, save_suspended_tournament_summary
 
@@ -100,7 +101,8 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
 
             # --- AGGIORNAMENTO SILENZIOSO DATI GIOCATORI ---
             # Allinea eventuali aggiornamenti del database (Elo, Titoli) prima di cristallizzare la lista
-            aggiornati = allinea_giocatori_con_database(torneo["players"], players_db)
+            category = torneo.get("tournament_category", "standard")
+            aggiornati = allinea_giocatori_con_database(torneo["players"], players_db, category)
 
             if aggiornati > 0:
                 print(
@@ -728,8 +730,9 @@ def input_players(
                     )
                 )
             else:
+                category = torneo_obj.get("tournament_category", "standard")
                 elo_per_torneo = int(
-                    player_data_from_db.get("current_elo", DEFAULT_ELO)
+                    get_initial_elo_for_tournament(player_data_from_db, category)
                 )
                 player_instance = {
                     "id": player_id_to_add,

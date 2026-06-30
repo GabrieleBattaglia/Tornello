@@ -22,7 +22,9 @@ from stats import (
     compute_buchholz_cut1,
     compute_aro,
     calculate_performance_rating,
-    calculate_elo_change
+    calculate_elo_change,
+    parse_time_control,
+    classify_tournament_category
 )
 from reports import (
     save_current_tournament_round_file,
@@ -377,7 +379,20 @@ class TournamentController:
         fed_code = fed_code[:3]
         chief_arbiter = self.ui.input_text(_("Arbitro Capo [Default: N/D]")).strip() or "N/D"
         deputy_chief_arbiters = self.ui.input_text(_("Vice Arbitri (separati da virgola) [Default: nessuno]")).strip() or ""
-        time_control = self.ui.input_text(_("Controllo del Tempo [Default: Standard]")).strip() or "Standard"
+        # Controllo del tempo
+        time_control_parsed = None
+        while not time_control_parsed:
+            time_control_entered = self.ui.input_text(
+                _("Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]"),
+                default="90+30"
+            ).strip()
+            time_control_parsed = parse_time_control(time_control_entered)
+            if not time_control_parsed:
+                self.ui.show_error(_("Formato non valido. Usa minuti+incremento o solo minuti."))
+
+        tournament_category = classify_tournament_category(
+            time_control_parsed["minutes"], time_control_parsed["increment"]
+        )
 
         initial_board1_color_setting = "white1"
         if not self.ui.confirm(_("Bianco alla prima scacchiera del Turno 1?")):
@@ -402,14 +417,15 @@ class TournamentController:
             federation_code=fed_code,
             chief_arbiter=chief_arbiter,
             deputy_chief_arbiters=deputy_chief_arbiters,
-            time_control=time_control,
+            time_control=time_control_parsed,
             initial_board1_color_setting=initial_board1_color_setting,
             round_dates=round_dates,
             players=[],
             rounds=[],
             next_match_id=1,
             bye_value=1.0,
-            launch_count=1
+            launch_count=1,
+            tournament_category=tournament_category
         )
 
         # Inserimento giocatori
@@ -745,10 +761,20 @@ class TournamentController:
                 continue
             if p.id in self.players_db:
                 local_p = self.players_db[p.id]
-                old_elo = local_p.get("current_elo", DEFAULT_ELO)
+                category_lower = self.tournament.tournament_category.lower()
                 change = p.elo_change if p.elo_change is not None else 0.0
-                local_p["current_elo"] = max(100.0, old_elo + change)
-                local_p["games_count"] = local_p.get("games_count", 0) + p.games_this_tournament
+                
+                if category_lower == "blitz":
+                    old_elo = local_p.get("elo_blitz", DEFAULT_ELO) or DEFAULT_ELO
+                    local_p["elo_blitz"] = max(100.0, old_elo + change)
+                elif category_lower == "rapid":
+                    old_elo = local_p.get("elo_rapid", DEFAULT_ELO) or DEFAULT_ELO
+                    local_p["elo_rapid"] = max(100.0, old_elo + change)
+                else:
+                    old_elo = local_p.get("current_elo", DEFAULT_ELO) or DEFAULT_ELO
+                    local_p["current_elo"] = max(100.0, old_elo + change)
+                
+                local_p["games_played"] = local_p.get("games_played", 0) + p.games_this_tournament
         save_players_db(self.players_db)
 
         # Archiviazione

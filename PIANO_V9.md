@@ -169,11 +169,12 @@ Fase 6: Rifinitura             ────────────────�
   - `Players_DB.py` deve importare da `db_players.py` anziché duplicare funzioni *(Completato per generate_player_id)*
 
 #### 1.4 Infrastruttura di Test
-- [ ] Creare `tests/` con pytest
-- [ ] Scrivere test per le funzioni pure già esistenti in `stats.py` (Buchholz, ARO, Elo change, K-factor)
-- [ ] Scrivere test per `engine.py` (generazione TRF, parsing output)
-- [ ] Creare fixture con dati di tornei reali (dai JSON in `Closed Tournaments/`)
-- [ ] Aggiungere `requirements.txt` o `pyproject.toml` completo
+- [x] Creare `tests/` con pytest *(Completato)*
+- [x] Scrivere test per le funzioni pure già esistenti in `stats.py` (Buchholz, ARO, Elo change, K-factor) *(Completato in test_stats.py)*
+- [x] Scrivere test per `engine.py` (generazione TRF, parsing output) *(Completato in test_engine.py)*
+- [x] Creare fixture con dati di tornei reali (dai JSON in `Closed Tournaments/`) *(Completato in conftest.py)*
+- [x] Aggiungere `requirements.txt` o `pyproject.toml` completo *(Completato in requirements.txt)*
+
 
 ---
 
@@ -183,25 +184,26 @@ Fase 6: Rifinitura             ────────────────�
 **Effort stimato**: MEDIO (1 settimana)
 
 #### 2.1 Completamento Record Locale
-- [ ] Aggiornare `crea_nuovo_giocatore_nel_db()` per includere TUTTI i campi FIDE:
+- [x] Aggiornare `crea_nuovo_giocatore_nel_db()` per includere TUTTI i campi FIDE: *(Completato)*
   - `elo_rapid`, `elo_blitz`
   - `fide_k_factor`, `fide_rapid_k`, `fide_blitz_k`
   - `fide_standard_games`, `fide_rapid_games`, `fide_blitz_games`
   - `w_title`, `o_title`, `foa_title`, `flag`
-- [ ] Verificare che `sincronizza_db_personale()` mappi correttamente tutti i campi
+- [x] Verificare che `sincronizza_db_personale()` mappi correttamente tutti i campi *(Completato: allineate le chiavi con il modello dati Player)*
 
 #### 2.2 Elo Club (Fallback Finale)
-- [ ] Aggiungere campo `elo_club` al modello `Player`
-- [ ] Implementare la gerarchia di fallback per la scelta dell'Elo:
+- [x] Aggiungere campo `elo_club` al modello `Player` *(Completato in models.py)*
+- [x] Implementare la gerarchia di fallback per la scelta dell'Elo: *(Completato: implementata get_initial_elo_for_tournament in stats.py)*
   ```
   Elo FIDE (cadenza specifica) → Elo FIDE Standard → Elo Club → DEFAULT_ELO (1399)
   ```
-- [ ] Permettere l'inserimento/modifica dell'Elo Club da UI
+- [x] Permettere l'inserimento/modifica dell'Elo Club da UI *(Completato in Players_DB.py per add ed edit)*
 
 #### 2.3 Schema Migration
-- [ ] Implementare un meccanismo di versioning del DB (`"schema_version": 2`)
-- [ ] Al caricamento, migrare automaticamente i vecchi record aggiungendo i campi mancanti con valori di default
-- [ ] Validare il DB dopo la migrazione
+- [x] Implementare un meccanismo di versioning del DB (`"schema_version": 2`) *(Completato)*
+- [x] Al caricamento, migrare automaticamente i vecchi record aggiungendo i campi mancanti con valori di default *(Completato in load_players_db)*
+- [x] Validare il DB dopo la migrazione *(Completato con test di migrazione in test_db.py)*
+
 
 ---
 
@@ -211,10 +213,10 @@ Fase 6: Rifinitura             ────────────────�
 **Effort stimato**: MEDIO (1 settimana)
 
 #### 3.1 Input Strutturato del Tempo (Issue #12)
-- [ ] Creare parser per il formato umano: `"15+10"`, `"90+30"`, `"3+2"`
-- [ ] Validazione: minuti ≥ 0, incremento ≥ 0
-- [ ] Conversione interna in formato PGN standard (secondi + incremento): `"900+10"`
-- [ ] Salvare nel JSON del torneo come oggetto strutturato:
+- [x] Creare parser per il formato umano: `"15+10"`, `"90+30"`, `"3+2"` *(Completato: parse_time_control)*
+- [x] Validazione: minuti ≥ 0, incremento ≥ 0 *(Completato)*
+- [x] Conversione interna in formato PGN standard (secondi + incremento): `"900+10"` *(Completato)*
+- [x] Salvare nel JSON del torneo come oggetto strutturato: *(Completato)*
   ```json
   "time_control": {
     "raw": "15+10",
@@ -223,24 +225,24 @@ Fase 6: Rifinitura             ────────────────�
     "pgn_format": "900+10"
   }
   ```
-- [ ] Retrocompatibilità: i tornei vecchi con `"time_control": "Standard"` continuano a funzionare
+- [x] Retrocompatibilità: i tornei vecchi con `"time_control": "Standard"` continuano a funzionare *(Completato: gestito come Any nel modello)*
 
 #### 3.2 Classificazione Automatica (Issue #13)
-- [ ] Implementare la formula FIDE:
+- [x] Implementare la formula FIDE: *(Completato: Tempo Totale = Minuti_Base + Incremento)*
   ```
   Tempo Totale Stimato = Minuti_Base + (Incremento_sec / 60) × 60
   ```
   *Nota: un incremento di X secondi per 60 mosse aggiunge X minuti*
-- [ ] Classificare automaticamente:
+- [x] Classificare automaticamente: *(Completato: Blitz <= 10m, Rapid < 60m, Standard >= 60m)*
   - **Blitz**: Tempo Totale ≤ 10 minuti
   - **Rapid**: 10 < Tempo Totale < 60 minuti
   - **Standard (Classical)**: Tempo Totale ≥ 60 minuti
-- [ ] Salvare `"tournament_category": "blitz|rapid|standard"` nel JSON del torneo
-- [ ] Usare l'Elo appropriato dei giocatori in base alla categoria:
+- [x] Salvare `"tournament_category": "blitz|rapid|standard"` nel JSON del torneo *(Completato)*
+- [x] Usare l'Elo appropriato dei giocatori in base alla categoria: *(Completato)*
   - Blitz → `elo_blitz` (fallback → `current_elo` → `elo_club` → DEFAULT)
   - Rapid → `elo_rapid` (fallback → `current_elo` → `elo_club` → DEFAULT)
   - Standard → `current_elo` (fallback → `elo_club` → DEFAULT)
-- [ ] A fine torneo, aggiornare l'Elo della cadenza corretta nel DB giocatori
+- [x] A fine torneo, aggiornare l'Elo della cadenza corretta nel DB giocatori *(Completato in TournamentController._finalize_tournament)*
 
 ---
 

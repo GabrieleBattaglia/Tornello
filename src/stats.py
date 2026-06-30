@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from config import DEFAULT_K_FACTOR, DEFAULT_ELO, DATE_FORMAT_ISO
@@ -77,7 +78,9 @@ def calculate_elo_change(player, tournament_players_dict):
     # --- USA IL K-FACTOR SPECIFICO DEL GIOCATORE ---
     # Questo K viene determinato in finalize_tournament e salvato in p['k_factor']
     # Usiamo DEFAULT_K_FACTOR come fallback se non trovato (non dovrebbe succedere)
-    k = player.get("k_factor", DEFAULT_K_FACTOR)
+    k = player.get("k_factor")
+    if k is None:
+        k = DEFAULT_K_FACTOR
     # --- FINE MODIFICA K-FACTOR ---
     total_expected_score = 0.0
     actual_score = 0.0
@@ -458,3 +461,85 @@ def compute_aro(player_id, torneo):
     # Calcola la media e arrotonda all'intero
     aro = sum(opponent_elos) / len(opponent_elos)
     return round(aro)
+
+
+def get_initial_elo_for_tournament(player_db_data: dict, category: str) -> float:
+    """
+    Risolve l'Elo iniziale di un giocatore per un torneo in base alla categoria.
+    Gerarchia:
+    - Blitz: elo_blitz -> current_elo -> elo_club -> DEFAULT_ELO (1399)
+    - Rapid: elo_rapid -> current_elo -> elo_club -> DEFAULT_ELO (1399)
+    - Standard: current_elo -> elo_club -> DEFAULT_ELO (1399)
+    """
+    category_lower = category.lower()
+    
+    # 1. Cerca elo specifico della cadenza
+    elo = 0
+    if category_lower == "blitz":
+        elo = player_db_data.get("elo_blitz", 0) or player_db_data.get("fide_elo_blitz", 0)
+    elif category_lower == "rapid":
+        elo = player_db_data.get("elo_rapid", 0) or player_db_data.get("fide_elo_rapid", 0)
+        
+    # 2. Cerca Elo Standard (current_elo)
+    if not elo:
+        elo = player_db_data.get("current_elo", 0) or player_db_data.get("elo", 0)
+        
+    # 3. Cerca Elo Club
+    if not elo:
+        elo = player_db_data.get("elo_club", 0)
+        
+    # 4. Fallback al default
+    if not elo:
+        elo = DEFAULT_ELO
+        
+    return float(elo)
+
+
+def parse_time_control(time_control_str: str) -> Optional[dict]:
+    """
+    Parsa una stringa di controllo del tempo (es. "15+10", "90+30", "3+2")
+    e restituisce un dizionario strutturato con minuti, incremento e valore PGN,
+    oppure None se non è valida.
+    """
+    import re
+    time_control_str = time_control_str.strip()
+    
+    # Riconosce formati tipo "15+10", "90 + 30", "15" (senza incremento)
+    match = re.match(r"^(\d+)(?:\s*\+\s*(\d+))?$", time_control_str)
+    if not match:
+        return None
+        
+    minutes = int(match.group(1))
+    increment = int(match.group(2)) if match.group(2) else 0
+    
+    if minutes < 0 or increment < 0:
+        return None
+        
+    # Conversione in secondi per il valore PGN
+    seconds = minutes * 60
+    pgn_value = f"{seconds}+{increment}"
+    
+    return {
+        "minutes": minutes,
+        "increment": increment,
+        "pgn_value": pgn_value
+    }
+
+
+def classify_tournament_category(minutes: int, increment: int) -> str:
+    """
+    Classifica il torneo in base al tempo di riflessione calcolato su 60 mosse:
+    Tempo Totale (in minuti) = minuti + incremento.
+    - Blitz: Tempo Totale <= 10 minuti
+    - Rapid: 10 < Tempo Totale < 60 minuti
+    - Standard (Classical): Tempo Totale >= 60 minuti
+    """
+    total_time = minutes + increment
+    if total_time <= 10:
+        return "blitz"
+    elif total_time < 60:
+        return "rapid"
+    else:
+        return "standard"
+
+
