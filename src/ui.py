@@ -3,13 +3,14 @@ import shutil
 import glob
 import traceback
 from datetime import datetime
-from config import *
+from config import DEFAULT_ELO, DATE_FORMAT_ISO, PLAYER_DB_FILE, DEFAULT_K_FACTOR, ARCHIVED_TOURNAMENTS_DIR
 from GBUtils import dgt, key
 from utils import enter_escape, format_date_locale, sanitize_filename, create_backup, play_sound
 from db_players import (
     _cerca_giocatore_nel_db_fide,
     crea_nuovo_giocatore_nel_db,
     save_players_db,
+    allinea_giocatori_con_database,
 )
 from tournament import (
     time_machine_torneo,
@@ -99,22 +100,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
 
             # --- AGGIORNAMENTO SILENZIOSO DATI GIOCATORI ---
             # Allinea eventuali aggiornamenti del database (Elo, Titoli) prima di cristallizzare la lista
-            aggiornati = 0
-            for tp in torneo["players"]:
-                p_id = tp.get("id")
-                if p_id in players_db:
-                    db_p = players_db[p_id]
-                    # Controllo Elo
-                    db_elo = db_p.get("current_elo", 0)
-                    if db_elo > 0 and db_elo != tp.get("initial_elo"):
-                        tp["initial_elo"] = db_elo
-                        if "elo" in tp:
-                            tp["elo"] = db_elo
-                        aggiornati += 1
-                    # Controllo Titolo FIDE
-                    db_title = db_p.get("fide_title", "")
-                    if db_title and db_title != tp.get("fide_title", ""):
-                        tp["fide_title"] = db_title
+            aggiornati = allinea_giocatori_con_database(torneo["players"], players_db)
 
             if aggiornati > 0:
                 print(

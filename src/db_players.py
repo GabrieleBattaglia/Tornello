@@ -7,7 +7,7 @@ import threading
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from config import *
+from config import FIDE_DB_LOCAL_FILE, PLAYER_DB_FILE, PLAYER_DB_TXT_FILE, DATE_FORMAT_ISO, FIDE_XML_DOWNLOAD_URL
 from utils import format_date_locale, enter_escape, format_rank_ordinal
 from stats import get_k_factor
 
@@ -800,6 +800,39 @@ def save_players_db_txt(players_db):
         traceback.print_exc()  # Stampa traceback per errori non gestiti
 
 
+def generate_player_id(first_name, last_name, players_db_dict):
+    """Genera ID univoco per un giocatore, gestendo gli omonimi (es. BATGA001, BATGA002, ecc.)."""
+    norm_first = first_name.strip().title()
+    norm_last = last_name.strip().title()
+    if not norm_first or not norm_last:
+        return None
+    last_initials = "".join(norm_last.split())[:3].upper().ljust(3, "X")
+    first_initials = "".join(norm_first.split())[:2].upper().ljust(2, "X")
+    base_id = f"{last_initials}{first_initials}"
+    if not base_id or base_id == "XXXXX":
+        base_id = "GIOCX"
+    count = 1
+    new_id = f"{base_id}{count:03d}"
+    max_attempts = 1000
+    current_attempt = 0
+    while new_id in players_db_dict and current_attempt < max_attempts:
+        count += 1
+        new_id = f"{base_id}{count:03d}"
+        current_attempt += 1
+        if count > 999:
+            timestamp_suffix = datetime.now().strftime("%S%f")
+            new_id = f"{base_id}{timestamp_suffix[-4:]}"
+            if new_id in players_db_dict:
+                # Estrema rarità, usa un ID con timestamp esteso
+                new_id = f"TEMP_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+                if new_id in players_db_dict:
+                    return None
+            break
+    if new_id in players_db_dict and current_attempt >= max_attempts:
+        return None
+    return new_id
+
+
 def crea_nuovo_giocatore_nel_db(
     players_db,
     first_name,
@@ -829,54 +862,16 @@ def crea_nuovo_giocatore_nel_db(
             )
         )
         return None
-    # Logica di Generazione ID (gestisce omonimi creando ID univoci come BATGA001, BATGA002, ecc.)
-    last_part_cleaned = "".join(norm_last.split())
-    first_part_cleaned = "".join(norm_first.split())
-    last_initials = last_part_cleaned[:3].upper().ljust(3, "X")
-    first_initials = first_part_cleaned[:2].upper().ljust(2, "X")
-    base_id = f"{last_initials}{first_initials}"
-    if (
-        not base_id or base_id == "XXXXX"
-    ):  # Fallback nel caso nome/cognome fossero invalidi (improbabile qui)
-        base_id = "GIOCX"
-    count = 1
-    new_player_id = f"{base_id}{count:03d}"
-    max_attempts_id_gen = 1000  # Numero massimo di tentativi per trovare un ID univoco
-    current_attempt_id_gen = 0
-    while new_player_id in players_db and current_attempt_id_gen < max_attempts_id_gen:
-        count += 1
-        new_player_id = f"{base_id}{count:03d}"
-        current_attempt_id_gen += 1
-        if count > 999:  # Se i 3 digit non bastano (molti omonimi)
-            # Prova con un suffisso basato su timestamp per maggiore unicità
-            timestamp_suffix = datetime.now().strftime("%S%f")[
-                -4:
-            ]  # Ultime 4 cifre da secondi+microsecondi
-            candidate_id = f"{base_id}{timestamp_suffix}"
-            if candidate_id not in players_db:
-                new_player_id = candidate_id
-                break
-            else:  # Estrema rarità, usa un ID quasi certamente univoco
-                new_player_id = f"TEMP_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-                if (
-                    new_player_id in players_db
-                ):  # Praticamente impossibile, ma per completezza
-                    print(
-                        _(
-                            "ERRORE CRITICO: Fallimento catastrofico generazione ID per {} {}."
-                        ).format(norm_first, norm_last)
-                    )
-                    return None
-                break
-    if new_player_id in players_db and current_attempt_id_gen >= max_attempts_id_gen:
+
+    new_player_id = generate_player_id(norm_first, norm_last, players_db)
+    if not new_player_id:
         print(
             _(
-                "ERRORE CRITICO: Impossibile generare ID univoco per {first_name} {last_name} dopo {attempts} tentativi."
-            ).format(
-                first_name=norm_first, last_name=norm_last, attempts=max_attempts_id_gen
-            )
+                "ERRORE CRITICO: Impossibile generare ID univoco per {first_name} {last_name}."
+            ).format(first_name=norm_first, last_name=norm_last)
         )
         return None
+
 
     if not silent:
         print(
@@ -911,3 +906,36 @@ def crea_nuovo_giocatore_nel_db(
             )
         )
     return new_player_id
+
+
+def allinea_giocatori_con_database(players_list, players_db):
+    """
+    Allinea gli initial_elo e i titoli dei giocatori in un torneo con
+    l'ultimo stato presente nel database dei giocatori.
+    Restituisce il numero di giocatori effettivamente aggiornati.
+    """
+    aggiornati = 0
+    for tp in players_list:
+        # Supporta sia dict (v8) che oggetti Player (v9)
+        p_id = tp.get("id") if isinstance(tp, dict) else tp.id
+        if p_id in players_db:
+            db_p = players_db[p_id]
+            db_elo = db_p.get("current_elo", 0)
+            if isinstance(tp, dict):
+                if db_elo > 0 and db_elo != tp.get("initial_elo"):
+                    tp["initial_elo"] = db_elo
+                    if "elo" in tp:
+                        tp["elo"] = db_elo
+                    aggiornati += 1
+                db_title = db_p.get("fide_title", "")
+                if db_title and db_title != tp.get("fide_title", ""):
+                    tp["fide_title"] = db_title
+            else:
+                if db_elo > 0 and db_elo != tp.initial_elo:
+                    tp.initial_elo = db_elo
+                    aggiornati += 1
+                db_title = db_p.get("fide_title", "")
+                if db_title and db_title != tp.fide_title:
+                    tp.fide_title = db_title
+    return aggiornati
+

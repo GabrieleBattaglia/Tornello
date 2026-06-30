@@ -407,3 +407,19 @@ def play_sound(event_name, torneo=None, sync=False):
         )
     except Exception as e:
         sys.stderr.write(f"Acusticator Play Error: {e}\n")
+
+
+def _ensure_players_dict(torneo):
+    """Assicura che il dizionario cache dei giocatori sia presente e aggiornato."""
+    if "players_dict" not in torneo or len(torneo["players_dict"]) != len(
+        torneo.get("players", [])
+    ):
+        torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
+    return torneo["players_dict"]
+
+
+def get_player_by_id(torneo, player_id):
+    """Restituisce i dati del giocatore nel torneo dato il suo ID, usando il dizionario interno."""
+    _ensure_players_dict(torneo)
+    return torneo["players_dict"].get(player_id)
+

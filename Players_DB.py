@@ -24,40 +24,12 @@ except ImportError:
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
 from utils import format_date_locale, format_rank_ordinal, sanitize_filename
 from ui import get_input_with_default
-from db_players import load_players_db, save_players_db, crea_nuovo_giocatore_nel_db
+from db_players import load_players_db, save_players_db, crea_nuovo_giocatore_nel_db, generate_player_id
 
 VERSION = "4.4.0 (Modulo Tornello)"
 
 
 # --- Helper specifici per lo script ---
-def generate_player_id(first_name, last_name, players_db_dict):
-    """Genera ID per il rinominamento, logica estratta dal vecchio script."""
-    norm_first = first_name.strip().title()
-    norm_last = last_name.strip().title()
-    if not norm_first or not norm_last:
-        return None
-    last_initials = "".join(norm_last.split())[:3].upper().ljust(3, "X")
-    first_initials = "".join(norm_first.split())[:2].upper().ljust(2, "X")
-    base_id = f"{last_initials}{first_initials}"
-    if not base_id or base_id == "XXXXX":
-        base_id = "GIOCX"
-    count = 1
-    new_id = f"{base_id}{count:03d}"
-    max_attempts = 1000
-    current_attempt = 0
-    while new_id in players_db_dict and current_attempt < max_attempts:
-        count += 1
-        new_id = f"{base_id}{count:03d}"
-        current_attempt += 1
-        if count > 999:
-            timestamp_suffix = datetime.now().strftime("%S%f")
-            new_id = f"{base_id}{timestamp_suffix[-4:]}"
-            if new_id in players_db_dict:
-                return None
-            break
-    if new_id in players_db_dict and current_attempt >= max_attempts:
-        return None
-    return new_id
 
 
 def find_players_partial(search_term, players_db_dict):
@@ -127,7 +99,7 @@ def display_player_details(player_data):
                 ),
                 reverse=True,
             )
-        except:
+        except Exception:
             tournaments_s_list = tournaments
         for i, t_rec_item in enumerate(tournaments_s_list):
             total_p_val = t_rec_item.get("total_players", "?")

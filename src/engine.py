@@ -2,7 +2,7 @@ import os
 import subprocess
 import traceback
 from datetime import datetime
-from config import *
+from config import BBP_SUBDIR, BBP_INPUT_TRF, BBP_EXE_PATH, BBP_OUTPUT_COUPLES, BBP_OUTPUT_CHECKLIST, DATE_FORMAT_ISO
 from GBUtils import key
 
 
@@ -201,7 +201,7 @@ def genera_stringa_trf_per_bbpairings(
             write_to_char_list_local(
                 p_line_chars, 86, f"{start_rank:>4}"
             )  # Campo Rank (col 86-89)
-            colonna_inizio_blocco_partita = 92
+
 
             history_sorted = sorted(
                 player_data.get("results_history", []), key=lambda x: x.get("round", 0)

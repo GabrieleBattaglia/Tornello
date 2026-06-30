@@ -2,8 +2,8 @@ import os
 import json
 import traceback
 from datetime import datetime, timedelta
-from config import *
-from utils import format_date_locale, sanitize_filename, create_backup
+from config import DATE_FORMAT_ISO, DEFAULT_ELO
+from utils import format_date_locale, sanitize_filename, create_backup, get_player_by_id, _ensure_players_dict
 from engine import (
     handle_bbpairings_failure,
     genera_stringa_trf_per_bbpairings,
@@ -289,21 +289,6 @@ def save_tournament(torneo):
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))
         traceback.print_exc()  # Stampa più dettagli in caso di errore non previsto
 
-
-def _ensure_players_dict(torneo):
-    """Assicura che il dizionario cache dei giocatori sia presente e aggiornato."""
-    if "players_dict" not in torneo or len(torneo["players_dict"]) != len(
-        torneo.get("players", [])
-    ):
-        torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
-    return torneo["players_dict"]
-
-
-def get_player_by_id(torneo, player_id):
-    """Restituisce i dati del giocatore nel torneo dato il suo ID, usando il dizionario interno."""
-    # Ricrea il dizionario se non esiste o sembra obsoleto
-    _ensure_players_dict(torneo)
-    return torneo["players_dict"].get(player_id)
 
 
 def calculate_dates(start_date_str, end_date_str, total_rounds):

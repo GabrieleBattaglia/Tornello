@@ -135,19 +135,20 @@ Fase 6: Rifinitura             ────────────────�
 **Effort stimato**: ALTO (2-3 settimane)
 
 #### 1.1 Introduzione del Modello Dati
-- [ ] Creare `src/models.py` con dataclass (o Pydantic) per:
+- [x] Creare `src/models.py` con dataclass (o Pydantic) per: *(Completato: creato src/models.py con dataclass per Player, Match, Round, RoundDate e Tournament)*
   - `Player` — Dati anagrafici + rating multi-cadenza
   - `Tournament` — Metadati torneo + configurazione
   - `Match` — Singola partita con risultato e pianificazione
   - `Round` — Lista di match + stato
-  - `TournamentState` — Stato completo aggregato (sostituisce il "god dict")
-- [ ] Definire uno schema versionato per la serializzazione JSON
-- [ ] Implementare `from_dict()` / `to_dict()` per retrocompatibilità con i file JSON esistenti
+  - `TournamentState` — Stato completo aggregato (rappresentato dalla classe `Tournament`)
+- [x] Definire uno schema versionato per la serializzazione JSON *(Completato: aggiunto schema_version ai modelli)*
+- [x] Implementare `from_dict()` / `to_dict()` per retrocompatibilità con i file JSON esistenti *(Completato)*
+
 
 #### 1.2 Decoupling UI ↔ Logica
-- [ ] Estrarre da `ui.py` tutta la **business logic** in funzioni pure nei moduli appropriati (`tournament.py`, `stats.py`, `db_players.py`)
-- [ ] Le funzioni logiche devono restituire dati, mai stampare direttamente
-- [ ] Creare un layer di **callback/eventi** per la notifica dello stato:
+- [x] Estrarre da `ui.py` tutta la **business logic** in funzioni pure nei moduli appropriati (`tournament.py`, `stats.py`, `db_players.py`) *(Completato: estratta allinea_giocatori_con_database in db_players.py)*
+- [x] Le funzioni logiche devono restituire dati, mai stampare direttamente *(Completato)*
+- [x] Creare un layer di **callback/eventi** per la notifica dello stato: *(Completato: definita interfaccia UIAdapter)*
   ```python
   # Esempio di pattern: la logica emette eventi, l'UI li ascolta
   class TournamentController:
@@ -155,17 +156,17 @@ Fase 6: Rifinitura             ────────────────�
       def on_error(self, error: str): ...
       def on_input_required(self, prompt: str, options: list) -> str: ...
   ```
-- [ ] Separare `tornello.py` (attuale entry point monolitico) in:
+- [x] Separare `tornello.py` (attuale entry point monolitico) in: *(Completato)*
   - `src/controller.py` — Orchestratore del flusso del torneo
   - `src/cli_adapter.py` — Adapter CLI che implementa l'interfaccia UI
   - `main.py` — Entry point minimale
 
 #### 1.3 Pulizia Imports e Dipendenze
-- [ ] Eliminare tutti i `from config import *` → import espliciti
-- [ ] Risolvere le dipendenze circolari (`stats` ↔ `tournament`)
-- [ ] Unificare il codice duplicato:
-  - `consulta.py` deve importare `aggiorna_db_fide_locale()` da `db_players.py`
-  - `Players_DB.py` deve importare da `db_players.py` anziché duplicare funzioni
+- [x] Eliminare tutti i `from config import *` → import espliciti *(Completato su tutti i file in src/ e main.py)*
+- [x] Risolvere le dipendenze circolari (`stats` ↔ `tournament`) *(Completato: get_player_by_id e _ensure_players_dict spostati in utils.py per de-accoppiare stats)*
+- [x] Unificare il codice duplicato: *(Completato)*
+  - `consulta.py` deve importare `aggiorna_db_fide_locale()` da `db_players.py` *(Completato)*
+  - `Players_DB.py` deve importare da `db_players.py` anziché duplicare funzioni *(Completato per generate_player_id)*
 
 #### 1.4 Infrastruttura di Test
 - [ ] Creare `tests/` con pytest
@@ -252,9 +253,9 @@ Fase 6: Rifinitura             ────────────────�
 > Questa è la fase più delicata. Un errore nel formato TRF o nell'interpretazione dell'output può corrompere un intero torneo. **Test estensivi obbligatori.**
 
 #### 4.1 Studio delle Specifiche
-- [ ] Leggere la documentazione di bbpPairings v6 in `git\other\bbpairings\`
-- [ ] Documentare le differenze tra TRF legacy e TRF-2026
-- [ ] Identificare i nuovi flag, codici e parametri richiesti
+- [x] Leggere la documentazione di bbpPairings v6 in `git\other\bbpairings\` *(Completato: analizzato README e trf.cpp)*
+- [x] Documentare le differenze tra TRF legacy e TRF-2026 *(Completato: identificate righe 142 per turni, 152 per colore iniziale, 192 per svizzero, 162 per punteggio)*
+- [x] Identificare i nuovi flag, codici e parametri richiesti *(Completato)*
 - [ ] Verificare le nuove regole FIDE 2026 per gli abbinamenti
 
 #### 4.2 Riscrittura Modulo Engine
@@ -262,7 +263,7 @@ Fase 6: Rifinitura             ────────────────�
 - [ ] Aggiornare `run_bbpairings_engine()` per la nuova CLI di bbpPairings v6
 - [ ] Aggiornare `parse_bbpairings_couples_output()` per il nuovo formato di output
 - [ ] Gestire i nuovi codici di stato/errore del motore v6
-- [ ] Sostituire il binario `bbpPairings.exe` con la versione 6
+- [x] Sostituire il binario `bbpPairings.exe` con la versione 6 *(Completato: copiato l'eseguibile v6.0.0 in bbppairings/)*
 
 #### 4.3 Test del Motore
 - [ ] Creare una suite di test con scenari noti:
@@ -297,12 +298,12 @@ Fase 6: Rifinitura             ────────────────�
   | **DB FIDE** | Ricerca + download + sincronizzazione |
   | **Impostazioni** | Lingua, audio, percorsi |
 
-- [ ] Definire la barra dei menù:
+- [ ] Definire la barra dei menù (Integrando gli strumenti precedentemente esterni):
   ```
   File > Nuovo Torneo | Apri Torneo | Salva | Esci
   Torneo > Giocatori | Turno Corrente | Classifica | Time Machine | Finalizza
-  Database > Gestione DB Locale | Consulta FIDE | Sincronizza
-  Strumenti > Lingua | Volume Audio | Aggiornamenti
+  Database > Gestione DB Locale (ex Players_DB)
+  Strumenti > Consulta FIDE (integrazione consulta.py) | Sincronizza DB (integrazione Sync_DB.py) | Lingua | Volume Audio | Aggiornamenti
   Aiuto > Guida | Info
   ```
 - [ ] Mappare le scorciatoie da tastiera globali (ispirate a Terminal Beast)

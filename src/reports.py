@@ -1,9 +1,9 @@
 import os
 import traceback
 from datetime import datetime
-from config import *
-from utils import format_date_locale, format_points, sanitize_filename
-from tournament import ricalcola_punti_tutti_giocatori, _ensure_players_dict
+from config import DATE_FORMAT_ISO, DEFAULT_ELO
+from utils import format_date_locale, format_points, sanitize_filename, _ensure_players_dict
+from tournament import ricalcola_punti_tutti_giocatori
 from stats import compute_buchholz, compute_buchholz_cut1, compute_aro
 from version import VERSIONE
 
