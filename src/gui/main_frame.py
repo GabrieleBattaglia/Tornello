@@ -93,30 +93,30 @@ class MainFrame(wx.Frame):
         
         # Database
         db_menu = wx.Menu()
-        db_menu.Append(wx.ID_ANY, _("&Gestione Giocatori Locale\tCtrl+D") if "_" in globals() else "&Gestione Giocatori Locale\tCtrl+D")
-        db_menu.Append(wx.ID_ANY, _("&Sincronizza DB Locale con FIDE\tCtrl+Y") if "_" in globals() else "&Sincronizza DB Locale con FIDE\tCtrl+Y")
-        self.menu_bar.Append(db_menu, _("&Database") if "_" in globals() else "&Database")
+        self.item_local_db = db_menu.Append(wx.ID_ANY, _("&Gestione Giocatori Locale\tCtrl+D"))
+        self.item_sync_db = db_menu.Append(wx.ID_ANY, _("&Sincronizza DB Locale con FIDE\tCtrl+Y"))
+        self.menu_bar.Append(db_menu, _("&Database"))
         
         # Visualizza
         view_menu = wx.Menu()
-        view_menu.Append(wx.ID_ANY, _("&Area Centrale\tF5") if "_" in globals() else "&Area Centrale\tF5")
-        view_menu.Append(wx.ID_ANY, _("Al&bero di Destra\tF6") if "_" in globals() else "Al&bero di Destra\tF6")
-        view_menu.Append(wx.ID_ANY, _("&Barra di Stato\tF7") if "_" in globals() else "&Barra di Stato\tF7")
-        self.menu_bar.Append(view_menu, _("&Visualizza") if "_" in globals() else "&Visualizza")
+        self.item_view_central = view_menu.Append(wx.ID_ANY, _("&Area Centrale\tF5"))
+        self.item_view_tree = view_menu.Append(wx.ID_ANY, _("Al&bero di Destra\tF6"))
+        self.item_view_status = view_menu.Append(wx.ID_ANY, _("&Barra di Stato\tF7"))
+        self.menu_bar.Append(view_menu, _("&Visualizza"))
         
         # Strumenti
         tools_menu = wx.Menu()
-        tools_menu.Append(wx.ID_ANY, _("&Consulta FIDE\tCtrl+K") if "_" in globals() else "&Consulta FIDE\tCtrl+K")
-        tools_menu.Append(wx.ID_ANY, _("&Verifica Aggiornamenti FIDE") if "_" in globals() else "&Verifica Aggiornamenti FIDE")
-        tools_menu.Append(wx.ID_PREFERENCES, _("&Impostazioni (Audio/Video/Lingua)...\tCtrl+P") if "_" in globals() else "&Impostazioni (Audio/Video/Lingua)...\tCtrl+P")
-        self.menu_bar.Append(tools_menu, _("&Strumenti") if "_" in globals() else "&Strumenti")
+        self.item_fide_query = tools_menu.Append(wx.ID_ANY, _("&Consulta FIDE\tCtrl+K"))
+        self.item_fide_update = tools_menu.Append(wx.ID_ANY, _("&Verifica Aggiornamenti FIDE"))
+        tools_menu.Append(wx.ID_PREFERENCES, _("&Impostazioni (Audio/Video/Lingua)...\tCtrl+P"))
+        self.menu_bar.Append(tools_menu, _("&Strumenti"))
         
         # Aiuto
         help_menu = wx.Menu()
-        help_menu.Append(wx.ID_HELP, _("&Guida Accessibile\tF1") if "_" in globals() else "&Guida Accessibile\tF1")
-        help_menu.Append(wx.ID_ANY, _("&Changelog\tF2") if "_" in globals() else "&Changelog\tF2")
-        help_menu.Append(wx.ID_ABOUT, _("C&rediti\tF3") if "_" in globals() else "C&rediti\tF3")
-        self.menu_bar.Append(help_menu, _("&Aiuto") if "_" in globals() else "&Aiuto")
+        help_menu.Append(wx.ID_HELP, _("&Guida Accessibile\tF1"))
+        self.item_changelog = help_menu.Append(wx.ID_ANY, _("&Changelog\tF2"))
+        self.item_credits = help_menu.Append(wx.ID_ABOUT, _("C&rediti\tF3"))
+        self.menu_bar.Append(help_menu, _("&Aiuto"))
         
         self.SetMenuBar(self.menu_bar)
         
@@ -124,6 +124,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_exit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_MENU, self.on_preferences, id=wx.ID_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
+        self.Bind(wx.EVT_MENU, self.on_fide_query, self.item_fide_query)
+        self.Bind(wx.EVT_MENU, self.on_changelog, self.item_changelog)
+        self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
 
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
@@ -369,14 +372,138 @@ class MainFrame(wx.Frame):
         if not data:
             return
             
+        field = data.get("field")
+        if field:
+            self.on_wizard_field_activated(field)
+            return
+            
         action = data.get("action")
         if action == "load_tournament":
             self.load_tournament(data["filepath"])
         elif action == "load_concluded":
-            # Visualizza il report del torneo concluso
             self.load_concluded_tournament_report(data["filepath"])
         elif action == "start_new_tournament":
             self.start_new_tournament_wizard()
+        elif action == "wizard_next":
+            self.on_wizard_next()
+
+    def on_wizard_field_activated(self, field):
+        if field == "name":
+            dlg = wx.TextEntryDialog(self, _("Inserisci il nome del torneo:"), _("Nome Torneo"), self.creation_data["name"])
+            if dlg.ShowModal() == wx.ID_OK:
+                self.creation_data["name"] = dlg.GetValue().strip()
+            dlg.Destroy()
+        elif field == "site":
+            dlg = wx.TextEntryDialog(self, _("Inserisci il luogo (Site):"), _("Luogo Torneo"), self.creation_data["site"])
+            if dlg.ShowModal() == wx.ID_OK:
+                self.creation_data["site"] = dlg.GetValue().strip()
+            dlg.Destroy()
+        elif field == "rounds":
+            dlg = wx.TextEntryDialog(self, _("Inserisci il numero di turni:"), _("Numero Turni"), str(self.creation_data["rounds"]))
+            if dlg.ShowModal() == wx.ID_OK:
+                val = dlg.GetValue().strip()
+                if val.isdigit():
+                    self.creation_data["rounds"] = int(val)
+                else:
+                    wx.MessageBox(_("Inserisci un numero intero valido."), _("Errore"), wx.ICON_ERROR)
+            dlg.Destroy()
+        elif field == "time_control":
+            dlg = wx.TextEntryDialog(self, _("Inserisci il tempo di riflessione (es. 15+10 o 90+30):"), _("Tempo di riflessione"), self.creation_data["time_control"])
+            if dlg.ShowModal() == wx.ID_OK:
+                self.creation_data["time_control"] = dlg.GetValue().strip()
+            dlg.Destroy()
+        elif field == "save_path":
+            dlg = wx.DirDialog(self, _("Seleziona la cartella di salvataggio per i report:"), self.creation_data["save_path"])
+            if dlg.ShowModal() == wx.ID_OK:
+                self.creation_data["save_path"] = dlg.GetPath()
+            dlg.Destroy()
+            
+        self.populate_new_tournament_wizard_tree()
+
+    def on_wizard_next(self):
+        from db_players import load_players_db
+        players_db = load_players_db()
+        
+        # Apri il dialogo di iscrizione giocatori
+        from gui.dialogs import PlayerEnrollmentDialog
+        dlg = PlayerEnrollmentDialog(self, players_db, [], self.settings)
+        if dlg.ShowModal() == wx.ID_OK:
+            enrolled = dlg.get_enrolled_players()
+            if len(enrolled) < 2:
+                wx.MessageBox(_("Sono necessari almeno 2 giocatori per avviare un torneo."), _("Errore"), wx.ICON_ERROR)
+                dlg.Destroy()
+                return
+                
+            self.create_tournament_from_wizard(enrolled)
+        dlg.Destroy()
+
+    def create_tournament_from_wizard(self, enrolled):
+        from models import Tournament, Player
+        from tournament import generate_pairings_for_round
+        from utils import sanitize_filename
+        
+        players = []
+        for p in enrolled:
+            players.append(Player.from_dict(p))
+            
+        from datetime import datetime
+        from config import DATE_FORMAT_ISO
+        oggi = datetime.now().strftime(DATE_FORMAT_ISO)
+        
+        save_dir = self.creation_data["save_path"]
+        if not os.path.exists(save_dir):
+            try:
+                os.makedirs(save_dir, exist_ok=True)
+            except Exception as e:
+                wx.MessageBox(f"Impossibile creare la cartella di salvataggio: {e}", "Errore", wx.ICON_ERROR)
+                return
+                
+        sanitized = sanitize_filename(self.creation_data["name"])
+        self.active_filename = f"Tornello - {sanitized}.json"
+        
+        t_dict = {
+            "name": self.creation_data["name"],
+            "tournament_id": sanitized.upper(),
+            "site": self.creation_data["site"] or "N/D",
+            "start_date": oggi,
+            "end_date": oggi,
+            "total_rounds": self.creation_data["rounds"],
+            "current_round": 1,
+            "time_control": self.creation_data["time_control"],
+            "players": [p.to_dict() for p in players],
+            "rounds": [],
+            "custom_save_path": save_dir,
+            "save_path": save_dir
+        }
+        
+        tournament = Tournament.from_dict(t_dict)
+        tournament.update_players_dict()
+        
+        # Genera accoppiamenti per il Turno 1
+        matches = generate_pairings_for_round(tournament.to_dict())
+        if matches is None:
+            wx.MessageBox(_("Errore nella generazione degli abbinamenti con bbpPairings."), _("Errore"), wx.ICON_ERROR)
+            return
+            
+        from models import Round, Match
+        round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
+        tournament.rounds.append(round_obj)
+        
+        self.current_tournament = tournament.to_dict()
+        
+        # Salva stato
+        self._save_state()
+        
+        self.creation_mode = False
+        self.load_tournament(self.active_filename)
+
+    def _save_state(self):
+        if self.current_tournament:
+            from tournament import save_tournament
+            from reports import save_current_tournament_round_file, save_standings_text
+            save_tournament(self.current_tournament)
+            save_current_tournament_round_file(self.current_tournament)
+            save_standings_text(self.current_tournament, final=False)
 
     def on_tree_key_down(self, event):
         key_code = event.GetKeyCode()
@@ -530,3 +657,11 @@ class MainFrame(wx.Frame):
             "Utilizza il motore di abbinamento svizzero bbpPairings di Bierema Boyz Programming.\n"
         )
         self.append_log(credits_str)
+
+    def on_fide_query(self, event):
+        from db_players import load_players_db
+        players_db = load_players_db()
+        from gui.dialogs.fide_query_dialog import FideQueryDialog
+        dlg = FideQueryDialog(self, players_db, self.settings)
+        dlg.ShowModal()
+        dlg.Destroy()
