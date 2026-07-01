@@ -370,38 +370,70 @@ Tutte le voci del menù avranno lettere di scelta rapida (shortcut Alt) e accele
     *   *Guida Accessibile (F1)*: Mostra la guida in formato testuale navigabile con le frecce.
     *   *Informazioni su Tornello*: Mostra la versione e i crediti del software.
 
-###### B. Barra di Stato (StatusBar)
-La barra di stato principale sarà suddivisa in 4 campi informativi aggiornati dinamicamente per dare feedback immediati:
-1.  **Stato Sistema (60%)**: Mostra messaggi di operazione in corso (es. "Pronto.", "Abbinamenti turno 3 generati con successo.", "Salvataggio completato.").
-2.  **Categoria Torneo (15%)**: Mostra la cadenza del torneo corrente (es. `Blitz`, `Rapid`, `Standard`).
-3.  **Turno (15%)**: Indica il turno corrente (es. `Turno 2 / 5`).
-4.  **Giocatori (10%)**: Mostra il numero di giocatori attivi (es. `Part.: 28`).
+###### B. Barra di Stato Personalizzata (Status TextCtrl) ⏱️
+Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA), utilizzeremo un **`wx.TextCtrl` multi-riga** posizionato sul fondo:
+*   **Caratteristiche**: In sola lettura (`wx.TE_READONLY | wx.TE_MULTILINE`), altezza limitata ad un massimo di **3 righe di testo**.
+*   **Accessibilità**: Raggiungibile premendo `Tab` o tramite una scorciatoia da tastiera rapida (es. `F2` o `Ctrl+Alt+S`).
+*   **Contenuto**: Mostrerà le informazioni del contesto attivo (es. turno attivo, cadenza, numero di giocatori totali, messaggi di stato, o istruzioni rapide d'aiuto per la schermata corrente).
 
 ###### C. Struttura e Contenuto delle Finestre Principali
+
 1.  **MainFrame (Finestra Principale)**
-    *   **Layout**: Un `wx.SplitterWindow` verticale.
-        *   *Pannello Sinistro*: L'area di visualizzazione principale basata su un grande `wx.TextCtrl` multi-riga, in sola lettura (`wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2`) con font monospaziato. Qui vengono stampati i report del turno, la classifica o i log delle azioni. Ogni volta che viene stampato un blocco di testo, il cursore viene riportato all'inizio del blocco (`append_text`) per permettere a NVDA di leggerlo premendo Freccia Giù.
-        *   *Pannello Destro (Opzionale/Collassabile)*: Una lista ad accesso rapido dei giocatori per controlli veloci.
-2.  **Wizard Nuovo Torneo (`NewTournamentDialog`)**
-    *   **Tipo**: `wx.Dialog` con `wx.ScrolledWindow`.
-    *   **Campi**:
-        *   Nome Torneo (`wx.TextCtrl`)
-        *   Luogo/Site (`wx.TextCtrl`)
-        *   Numero Turni (`wx.SpinCtrl`)
-        *   Controllo Tempo (`wx.TextCtrl`, es. "15+10", validato in tempo reale tramite `parse_time_control`)
-        *   Data Inizio/Fine (`wx.adv.DatePickerCtrl` o `wx.TextCtrl` validati)
-        *   Arbitro Capo / Vice Arbitri (`wx.TextCtrl`)
-        *   Assegnazione Colore Board 1 (Bottone a scelta esclusiva: Bianco / Nero)
-3.  **Iscrizione Giocatori (`PlayerEnrollmentDialog`)**
-    *   **Tipo**: `wx.Dialog`.
-    *   **Layout**:
-        *   Campo di ricerca testo (`wx.TextCtrl`) con autocompletamento o ricerca istantanea nel DB locale al variare del testo.
-        *   Una `wx.ListBox` monospaziata con i risultati della ricerca.
-        *   Un pulsante "Aggiungi al Torneo" (scorciatoia `Invio` quando si è sulla lista).
-        *   Un pulsante "Nuovo Giocatore" per creare al volo un anagrafico non presente nel DB.
-4.  **Gestione Turno e Inserimento Risultati (`RoundPanel` / `ResultDialog`)**
-    *   **Layout**: Una tabella (`wx.ListCtrl` o una griglia di pulsanti accessibili).
-    *   *Per l'accessibilità FIDE*: Una lista ordinata delle scacchiere. Premendo `Invio` su una scacchiera, si apre un dialogo accessibile che chiede il risultato (Bianco vince, Nero vince, Patta, Forfeit Bianco, Forfeit Nero, Doppia assenza) tramite una lista di pulsanti verticali ben distanziati, ognuno associato ad una scorciatoia da tastiera (es. `1` per Bianco vince, `2` per Nero vince, `3` per Patta).
+    *   **Titolo della finestra**: Contiene sempre il formato `"Tornello - Versione X.Y.Z - Data Rilascio GG/MM/AAAA - [Nome Torneo Caricato]"`
+    *   **Comportamento al Lancio**: 
+        *   Tornello scansiona i file di torneo in corso nella directory di lavoro.
+        *   Se è presente **un solo torneo in corso**, viene caricato automaticamente all'avvio.
+        *   Se non ci sono tornei in corso, oppure se ne è presente più di uno, non viene caricato nulla all'avvio.
+    *   **Layout**: Suddiviso in tre aree principali:
+        *   **Pannello Centrale (Sinistro - Area Principale)**:
+            *   *Se nessun torneo è caricato*: Mostra un testo introduttivo con la spiegazione di cos'è e cosa fa Tornello, versione, data di rilascio, autori, e l'invito esplicito a premere `Tab` per spostarsi sull'albero di destra e aprire o creare un torneo.
+            *   *Se un torneo è caricato*: Mostra il contenuto del report del turno (lo stesso testo precedentemente salvato nel file "Turno Corrente", con accoppiamenti, risultati e statistiche generali).
+        *   **Pannello Destro (Verticale - Albero `wx.TreeCtrl`)**:
+            *   *Caso A: Nessun torneo caricato*:
+                *   Mostra l'elenco di tutti i tornei trovati nella cartella, ciascuno contrassegnato dallo stato: `"avviato turno x/y"` o `"concluso (data)"`.
+                *   L'ultima voce dell'elenco è **"Nuovo torneo"**.
+                *   *Flusso di Creazione Nuovo Torneo*:
+                    1. Selezionando **"Nuovo torneo"** e premendo `Invio`, l'albero di destra viene ricostruito.
+                    2. Ogni voce dell'albero rappresenta un campo dati obbligatorio o facoltativo del torneo (Nome, Luogo, Numero Turni, Tempo di riflessione, ecc.).
+                    3. L'utente scorre queste voci con le frecce. Premendo `Invio` su una di esse, si apre un prompt/dialogo per l'inserimento del rispettivo valore.
+                    4. Solo quando tutti i dati obbligatori sono stati valorizzati, compare come ultima voce dell'albero il nodo **"Avanti"**.
+                    5. Premendo `Invio` su **"Avanti"**, si apre la finestra di iscrizione dei giocatori.
+            *   *Caso B: Torneo caricato*:
+                *   La radice dell'albero mostra il nome del torneo.
+                *   Sotto la radice sono disponibili i seguenti nodi espandibili/comprimibili con le frecce orizzontali:
+                    *   📁 **Dati**: Consente di scorrere e variare i parametri di configurazione del torneo (premendo `Invio` sulla voce specifica).
+                    *   📁 **Partecipanti**: Mostra la lista di tutti i giocatori iscritti.
+                    *   📁 **Partite**: Suddiviso a sua volta in:
+                        *   *Non pianificate*: Partite ancora da giocare.
+                        *   *Pianificate*: Partite con data/ora fissate.
+                        *   *Concluse*: Partite terminate.
+                        *   *Nota*: Premendo `Invio` su una partita in una di queste liste, si apre il dialogo di gestione partita (per inserire il risultato con pulsanti radio, modificare/rimuovere la programmazione, o ritirare il giocatore).
+                    *   🏁 **Inizia torneo** (voce finale visibile solo se il torneo non è ancora avviato).
+
+2.  **Iscrizione Giocatori (`PlayerEnrollmentDialog`)**
+    *   **Tipo**: `wx.Dialog` modale aperta dopo aver premuto "Avanti" nell'albero di creazione torneo.
+    *   **Composizione a 5 parti**:
+        1.  `wx.TextCtrl` (Filtro di ricerca per il Database locale).
+        2.  `wx.ListBox` (Elenco dei giocatori trovati nel DB locale, filtrati in tempo reale).
+        3.  `wx.TextCtrl` (Filtro di ricerca per il Database FIDE).
+        4.  `wx.ListBox` (Elenco dei giocatori trovati nel DB FIDE, filtrati in tempo reale).
+        5.  `wx.ListBox` (Elenco dei giocatori aggiunti al torneo corrente).
+    *   **Comportamento e Interazione**:
+        *   Premendo `Invio` su un giocatore dell'elenco locale (2) o FIDE (4), questo viene rimosso dalla ricerca e aggiunto alla lista dei giocatori iscritti (5).
+        *   Premendo `Invio` su un giocatore nella lista degli iscritti (5), questo viene rimosso dal torneo.
+        *   Un pulsante "Avanti" o "Salva" posizionato in fondo chiude la finestra e conferma l'iscrizione dei giocatori.
+
+3.  **Gestione Partite e Risultati (`ResultDialog`)**
+    *   **Tipo**: `wx.Dialog` accessibile.
+    *   **Comportamento**: Mostra i dettagli della partita e una serie di pulsanti radio verticali ben spaziati per selezionare il risultato:
+        *   `1 - 0` (Vince il Bianco)
+        *   `0 - 1` (Vince il Nero)
+        *   `1/2 - 1/2` (Patta)
+        *   `1 - 0 Forfeit` (Forfait Bianco)
+        *   `0 - 1 Forfeit` (Forfait Nero)
+        *   `0 - 0 Forfeit` (Assenza Doppia)
+    *   Fornisce pulsanti espliciti per rimuovere la partita da una categoria, pianificare la data/ora, o gestire il ritiro del giocatore dal torneo.
+
 
 - [ ] Definire la struttura delle finestre principali:
 
