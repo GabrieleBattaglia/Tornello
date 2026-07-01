@@ -260,5 +260,96 @@ class SyncDatabaseDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
     def on_step_sync(self, event):
-        """Avvia la valutazione passo-passo."""
-        self._resolve_ambiguous_changes(self.changes)
+        """Avvia la valutazione passo-passo dei cambiamenti."""
+        applied_count = 0
+        skipped_count = 0
+        
+        for change in self.changes:
+            player = change["local_player"]
+            name = f"{player.get('last_name', '')} {player.get('first_name', '')}".strip()
+            p_id = change["player_id"]
+            local_p = self.players_db[p_id]
+            
+            if change["is_ambiguous"]:
+                # Caso di omonimia multipla: presentiamo le opzioni
+                matches = change["matches"]
+                choices = []
+                for m in matches:
+                    choices.append(f"FIDE ID: {m['id_fide']} | FED: {m['federation']} | ELO: {m['elo_standard']} | Anno: {m.get('birth_year', 'N/D')}")
+                    
+                dlg = wx.SingleChoiceDialog(
+                    self,
+                    _("Seleziona il record FIDE corretto per {name} (Omonimia multipla):").format(name=name),
+                    _("Risoluzione Omonimia"),
+                    choices
+                )
+                
+                if dlg.ShowModal() == wx.ID_OK:
+                    sel = dlg.GetSelection()
+                    selected_match = matches[sel]
+                    
+                    # Associa ID e aggiorna
+                    local_p["fide_id_num_str"] = str(selected_match["id_fide"])
+                    if selected_match.get("elo_standard", 0) > 0:
+                        local_p["current_elo"] = selected_match["elo_standard"]
+                    if selected_match.get("birth_year"):
+                        local_p["birth_date"] = f"{selected_match['birth_year']}-01-01"
+                    if selected_match.get("title"):
+                        local_p["fide_title"] = selected_match["title"]
+                    # Altri campi FIDE
+                    for k_fide, k_local in [("elo_rapid", "elo_rapid"), ("elo_blitz", "elo_blitz")]:
+                        val_f = selected_match.get(k_fide)
+                        if val_f:
+                            local_p[k_local] = val_f
+                            
+                    applied_count += 1
+                else:
+                    skipped_count += 1
+                dlg.Destroy()
+                
+            else:
+                # Caso non ambiguo: presentiamo le modifiche proposte per conferma
+                summary = []
+                if change["new_fide_id"]:
+                    summary.append(_(" - Associazione ID FIDE: {id_val}").format(id_val=change["new_fide_id"]))
+                
+                field_names = {
+                    "current_elo": _("ELO Standard"),
+                    "fide_title": _("Titolo FIDE"),
+                    "birth_date": _("Data di nascita"),
+                    "fide_k_factor": _("K-Factor"),
+                    "elo_rapid": _("ELO Rapid"),
+                    "elo_blitz": _("ELO Blitz"),
+                }
+                
+                for k, v in change["updates"].items():
+                    old_val = local_p.get(k, "N/D")
+                    f_name = field_names.get(k, k)
+                    summary.append(f" - {f_name}: {old_val} -> {v}")
+                    
+                summary_str = "\n".join(summary)
+                msg = _("Vuoi applicare le seguenti modifiche per {name}?\n\n{summary}").format(
+                    name=name, summary=summary_str
+                )
+                
+                dlg = AccessibleMsgDialog(self, _("Conferma Aggiornamento"), msg, style=wx.YES_NO)
+                if dlg.ShowModal() == wx.ID_YES:
+                    # Applica associazione ID
+                    if change["new_fide_id"]:
+                        local_p["fide_id_num_str"] = change["new_fide_id"]
+                    # Applica modifiche campi
+                    for k, v in change["updates"].items():
+                        local_p[k] = v
+                    applied_count += 1
+                else:
+                    skipped_count += 1
+                dlg.Destroy()
+                
+        if applied_count > 0:
+            save_players_db(self.players_db)
+            
+        msg_fin = _("Sincronizzazione completata.\nApplicati: {app} | Saltati: {skp}").format(
+            app=applied_count, skp=skipped_count
+        )
+        wx.MessageBox(msg_fin, _("Sincronizzazione Terminata"), wx.ICON_INFORMATION)
+        self.EndModal(wx.ID_OK)

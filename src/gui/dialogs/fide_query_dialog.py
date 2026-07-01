@@ -8,6 +8,8 @@ from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 
 _ = getattr(builtins, "_", lambda s: s)
 
+from utils import match_player_query
+
 class FideQueryDialog(wx.Dialog):
     """
     Finestra di dialogo per la consultazione del Database FIDE locale.
@@ -38,6 +40,9 @@ class FideQueryDialog(wx.Dialog):
             except Exception:
                 pass
             progress.Destroy()
+            
+        self.all_fide_matches = []
+        self.fide_displayed_count = 0
                 
         self._init_ui()
         self.apply_theme()
@@ -104,45 +109,72 @@ class FideQueryDialog(wx.Dialog):
         query = self.search_input.GetValue().strip().lower()
         self.list_results.Clear()
         self.results_map = []
+        self.all_fide_matches = []
+        self.fide_displayed_count = 0
         self.detail_text.Clear()
         
         if len(query) < 3:
             return
             
-        search_terms = query.split()
         search_is_id = query.isdigit()
         
         # Cerca per ID FIDE
         if search_is_id and query in self.fide_db:
             p = self.fide_db[query]
+            self.all_fide_matches = [p]
+        else:
+            # Cerca per testo con match_player_query
+            matching_with_scores = []
+            for fide_id, p in self.fide_db.items():
+                score = match_player_query(p, query)
+                if score is not None:
+                    matching_with_scores.append((score, p))
+                    
+            # Ordina per rilevanza
+            matching_with_scores.sort(key=lambda x: x[0])
+            self.all_fide_matches = [p for score, p in matching_with_scores]
+            
+        self.load_more_results()
+        
+        if self.list_results.GetCount() > 0:
+            self.list_results.SetSelection(0)
+            self.on_item_selected(None)
+
+    def load_more_results(self):
+        # Rimuovi l'eventuale precedente item "Mostra altri..."
+        last_idx = self.list_results.GetCount() - 1
+        if last_idx >= 0 and self.list_results.GetString(last_idx).startswith("--"):
+            self.list_results.Delete(last_idx)
+            
+        start = self.fide_displayed_count
+        end = min(start + 100, len(self.all_fide_matches))
+        
+        for i in range(start, end):
+            p = self.all_fide_matches[i]
+            fide_id_str = str(p.get("id_fide"))
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            label = f"{name} (ELO: {p.get('elo_standard', 0)} - ID FIDE: {query} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
+            elo = p.get("elo_standard", 0)
+            label = f"{name} (ELO: {elo} - ID FIDE: {fide_id_str} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
             self.list_results.Append(label)
             self.results_map.append(p)
-            self.list_results.SetSelection(0)
-            self.on_item_selected(None)
-            return
             
-        # Cerca per testo
-        count = 0
-        for fide_id, p in self.fide_db.items():
-            full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
-            if all(t in full_name for t in search_terms):
-                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                label = f"{name} (ELO: {p.get('elo_standard', 0)} - ID FIDE: {fide_id} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
-                self.list_results.Append(label)
-                self.results_map.append(p)
-                count += 1
-                if count >= 100:
-                    break
-                    
-        if count > 0:
-            self.list_results.SetSelection(0)
-            self.on_item_selected(None)
+        self.fide_displayed_count = end
+        
+        # Se ci sono altri risultati, aggiungi la riga speciale
+        if self.fide_displayed_count < len(self.all_fide_matches):
+            total = len(self.all_fide_matches)
+            rem = total - self.fide_displayed_count
+            lbl = _("-- Mostra altri risultati ({rem} rimanenti su {total}) --").format(rem=rem, total=total)
+            self.list_results.Append(lbl)
 
     def on_item_selected(self, event):
         sel = self.list_results.GetSelection()
         if sel == wx.NOT_FOUND:
+            self.detail_text.Clear()
+            return
+            
+        # Ignora se è la riga speciale "Mostra altri..."
+        if self.list_results.GetString(sel).startswith("--"):
             self.detail_text.Clear()
             return
             
@@ -168,6 +200,15 @@ class FideQueryDialog(wx.Dialog):
     def on_import_player(self, event):
         sel = self.list_results.GetSelection()
         if sel == wx.NOT_FOUND:
+            return
+            
+        # Gestisci il click su "Mostra altri..."
+        if self.list_results.GetString(sel).startswith("--"):
+            self.load_more_results()
+            new_sel = sel
+            if new_sel < self.list_results.GetCount():
+                self.list_results.SetSelection(new_sel)
+                self.on_item_selected(None)
             return
             
         fide_player = self.results_map[sel]

@@ -7,6 +7,8 @@ from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
+from utils import match_player_query
+
 class PlayerEnrollmentDialog(wx.Dialog):
     """
     Finestra di dialogo modale per l'iscrizione dei giocatori al torneo.
@@ -39,6 +41,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
             except Exception:
                 pass
             progress.Destroy()
+            
+        self.all_fide_matches = []
+        self.fide_displayed_count = 0
                 
         self._init_ui()
         self.apply_theme()
@@ -58,8 +63,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
         left_vbox = wx.BoxSizer(wx.VERTICAL)
         
         # Sezione 1: DB Locale
-        sb_local = wx.StaticBox(panel, label=_("Ricerca nel Database Personale Locale"))
-        sbs_local = wx.StaticBoxSizer(sb_local, wx.VERTICAL)
+        self.sb_local = wx.StaticBox(panel, label=_("Ricerca nel Database Personale Locale"))
+        sbs_local = wx.StaticBoxSizer(self.sb_local, wx.VERTICAL)
         
         self.search_local = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
         self.search_local.Bind(wx.EVT_TEXT, self.on_search_local_changed)
@@ -73,8 +78,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
         left_vbox.Add(sbs_local, 1, wx.EXPAND | wx.ALL, 5)
         
         # Sezione 2: DB FIDE
-        sb_fide = wx.StaticBox(panel, label=_("Ricerca nel Database FIDE (min. 3 caratteri)"))
-        sbs_fide = wx.StaticBoxSizer(sb_fide, wx.VERTICAL)
+        self.sb_fide = wx.StaticBox(panel, label=_("Ricerca nel Database FIDE (min. 3 caratteri)"))
+        sbs_fide = wx.StaticBoxSizer(self.sb_fide, wx.VERTICAL)
         
         self.search_fide = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
         self.search_fide.Bind(wx.EVT_TEXT, self.on_search_fide_changed)
@@ -96,8 +101,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # --- COLONNA DESTRA: ISCRITTI ---
         right_vbox = wx.BoxSizer(wx.VERTICAL)
         
-        sb_enrolled = wx.StaticBox(panel, label=_("Giocatori Iscritti al Torneo"))
-        sbs_enrolled = wx.StaticBoxSizer(sb_enrolled, wx.VERTICAL)
+        self.sb_enrolled = wx.StaticBox(panel, label=_("Giocatori Iscritti al Torneo"))
+        sbs_enrolled = wx.StaticBoxSizer(self.sb_enrolled, wx.VERTICAL)
         
         self.list_enrolled = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
         self.list_enrolled.Bind(wx.EVT_LISTBOX_DCLICK, self.on_remove_enrolled)
@@ -130,22 +135,34 @@ class PlayerEnrollmentDialog(wx.Dialog):
         apply_visual_settings(self.btn_new_player, self.settings)
 
     def update_enrolled_list(self):
-        """Aggiorna il contenuto della lista dei giocatori iscritti."""
+        """Aggiorna il contenuto della lista dei giocatori iscritti, ordinati per ELO decrescente."""
+        # Ordina per ELO decrescente, poi per cognome, poi per nome
+        self.enrolled_players.sort(
+            key=lambda x: (
+                -(x.get("current_elo") or x.get("elo_standard") or 1399),
+                x.get("last_name", "").lower(),
+                x.get("first_name", "").lower()
+            )
+        )
+        
         self.list_enrolled.Clear()
         self.enrolled_data_map = []
         
         for idx, p in enumerate(self.enrolled_players):
-            name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+            last_name = p.get('last_name', '')
+            first_name = p.get('first_name', '')
             elo = p.get("current_elo") or p.get("elo_standard") or 1399
-            p_id = p.get("id") or p.get("fide_id_num_str") or "N/D"
-            label = f"{name} (ELO: {elo} - ID: {p_id})"
+            fed = p.get("federation") or "ITA"
+            label = f"{idx + 1}. {last_name} {first_name} ({fed}) {elo}"
             self.list_enrolled.Append(label)
             self.enrolled_data_map.append(p)
+            
+        total_enrolled = len(self.enrolled_players)
+        self.sb_enrolled.SetLabel(_("Giocatori Iscritti al Torneo ({total})").format(total=total_enrolled))
 
     def on_search_local_changed(self, event):
         """Filtra e aggiorna i risultati del DB locale in ordine di ELO decrescente."""
         query = self.search_local.GetValue().strip().lower()
-        search_terms = query.split()
         
         self.list_local_results.Clear()
         self.local_results_map = []
@@ -153,38 +170,56 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # Mappa per escludere omonimi già iscritti
         enrolled_ids = {p.get("id") for p in self.enrolled_players if p.get("id")}
         
-        matching = []
+        matching_with_scores = []
         for p_id, p in self.players_db.items():
             if p_id in enrolled_ids:
                 continue
                 
-            full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
-            if not search_terms or all(t in full_name for t in search_terms):
-                matching.append(p)
-                
-        # Ordina per ELO decrescente
-        matching_sorted = sorted(matching, key=lambda x: x.get("current_elo", 1399), reverse=True)
+            if not query:
+                # Se la query è vuota, ordiniamo solo alfabeticamente
+                score = (0, 0, p.get("last_name", "").lower(), p.get("first_name", "").lower())
+                matching_with_scores.append((score, p))
+            else:
+                score = match_player_query(p, query)
+                if score is not None:
+                    matching_with_scores.append((score, p))
+                    
+        # Ordina per rilevanza query, poi per ELO decrescente
+        matching_with_scores.sort(
+            key=lambda x: (
+                x[0][0],  # -matched_count
+                -(x[1].get("current_elo") or x[1].get("elo_standard") or 1399),
+                x[0][2],  # last_name
+                x[0][3]   # first_name
+            )
+        )
+        
+        matching_sorted = [p for score, p in matching_with_scores]
         
         for p in matching_sorted:
             p_id = p.get("id")
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo = p.get("current_elo", 1399)
+            elo = p.get("current_elo") or p.get("elo_standard") or 1399
             label = f"{name} (ELO: {elo} - ID: {p_id})"
             self.list_local_results.Append(label)
             self.local_results_map.append(p)
+            
+        total_found = len(matching_sorted)
+        self.sb_local.SetLabel(_("Ricerca nel Database Personale Locale ({total} risultati)").format(total=total_found))
 
     def on_search_fide_changed(self, event):
         """Filtra e aggiorna i risultati del DB FIDE."""
         query = self.search_fide.GetValue().strip().lower()
         self.list_fide_results.Clear()
         self.fide_results_map = []
+        self.all_fide_matches = []
+        self.fide_displayed_count = 0
         
         if len(query) < 3:
+            self.sb_fide.SetLabel(_("Ricerca nel Database FIDE (min. 3 caratteri) (0 risultati)"))
             return
             
-        search_terms = query.split()
         search_is_id = query.isdigit()
-        
         enrolled_fide_ids = {p.get("fide_id_num_str") for p in self.enrolled_players if p.get("fide_id_num_str")}
         
         # Ricerca per ID FIDE esatto
@@ -192,29 +227,53 @@ class PlayerEnrollmentDialog(wx.Dialog):
             p = self.fide_db[query]
             fide_id_str = str(p.get("id_fide"))
             if fide_id_str not in enrolled_fide_ids:
-                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                elo = p.get("elo_standard", 0)
-                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id_str} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
-                self.list_fide_results.Append(label)
-                self.fide_results_map.append(p)
-            return
+                self.all_fide_matches = [p]
+        else:
+            # Ricerca testuale con operatori
+            matching_with_scores = []
+            for fide_id, p in self.fide_db.items():
+                if fide_id in enrolled_fide_ids:
+                    continue
+                    
+                score = match_player_query(p, query)
+                if score is not None:
+                    matching_with_scores.append((score, p))
             
-        # Ricerca testuale
-        count = 0
-        for fide_id, p in self.fide_db.items():
-            if fide_id in enrolled_fide_ids:
-                continue
-                
-            full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
-            if all(t in full_name for t in search_terms):
-                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                elo = p.get("elo_standard", 0)
-                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
-                self.list_fide_results.Append(label)
-                self.fide_results_map.append(p)
-                count += 1
-                if count >= 100:  # Cap a 100 risultati per reattività
-                    break
+            # Ordina per rilevanza
+            matching_with_scores.sort(key=lambda x: x[0])
+            self.all_fide_matches = [p for score, p in matching_with_scores]
+            
+        self.load_more_fide_results()
+        
+        total_found = len(self.all_fide_matches)
+        self.sb_fide.SetLabel(_("Ricerca nel Database FIDE (min. 3 caratteri) ({total} risultati)").format(total=total_found))
+
+    def load_more_fide_results(self):
+        # Rimuovi l'eventuale precedente item "Mostra altri..."
+        last_idx = self.list_fide_results.GetCount() - 1
+        if last_idx >= 0 and self.list_fide_results.GetString(last_idx).startswith("--"):
+            self.list_fide_results.Delete(last_idx)
+            
+        start = self.fide_displayed_count
+        end = min(start + 100, len(self.all_fide_matches))
+        
+        for i in range(start, end):
+            p = self.all_fide_matches[i]
+            fide_id_str = str(p.get("id_fide"))
+            name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+            elo = p.get("elo_standard", 0)
+            label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id_str} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
+            self.list_fide_results.Append(label)
+            self.fide_results_map.append(p)
+            
+        self.fide_displayed_count = end
+        
+        # Se ci sono altri risultati, aggiungi la riga speciale
+        if self.fide_displayed_count < len(self.all_fide_matches):
+            total = len(self.all_fide_matches)
+            rem = total - self.fide_displayed_count
+            lbl = _("-- Mostra altri risultati ({rem} rimanenti su {total}) --").format(rem=rem, total=total)
+            self.list_fide_results.Append(lbl)
 
     def on_add_local(self, event):
         sel = self.list_local_results.GetSelection()
@@ -227,12 +286,27 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.update_enrolled_list()
         self.on_search_local_changed(None)
         
-        # Seleziona l'ultimo aggiunto per feedback acustico/visivo
-        self.list_enrolled.SetSelection(self.list_enrolled.GetCount() - 1)
+        # Trova l'indice del giocatore appena aggiunto nella lista iscritti (perché è stata riordinata)
+        new_idx = 0
+        for i, p in enumerate(self.enrolled_players):
+            if p.get("id") == player_data.get("id"):
+                new_idx = i
+                break
+                
+        self.list_enrolled.SetSelection(new_idx)
+        self.list_enrolled.SetFocus()
 
     def on_add_fide(self, event):
         sel = self.list_fide_results.GetSelection()
         if sel == wx.NOT_FOUND:
+            return
+            
+        # Controlla se è la riga speciale "Mostra altri..."
+        if self.list_fide_results.GetString(sel).startswith("--"):
+            self.load_more_fide_results()
+            new_sel = sel
+            if new_sel < self.list_fide_results.GetCount():
+                self.list_fide_results.SetSelection(new_sel)
             return
             
         fide_player = self.fide_results_map[sel]
@@ -254,8 +328,15 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.update_enrolled_list()
         self.on_search_fide_changed(None)
         
-        # Seleziona l'ultimo aggiunto
-        self.list_enrolled.SetSelection(self.list_enrolled.GetCount() - 1)
+        # Trova l'indice del giocatore appena aggiunto nella lista iscritti
+        new_idx = 0
+        for i, p in enumerate(self.enrolled_players):
+            if p.get("fide_id_num_str") == new_player.get("fide_id_num_str"):
+                new_idx = i
+                break
+                
+        self.list_enrolled.SetSelection(new_idx)
+        self.list_enrolled.SetFocus()
 
     def on_remove_enrolled(self, event):
         sel = self.list_enrolled.GetSelection()
@@ -268,6 +349,14 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.update_enrolled_list()
         self.on_search_local_changed(None)
         self.on_search_fide_changed(None)
+        
+        # Focus sulla lista iscritti se ci sono ancora elementi, altrimenti torna alla ricerca locale
+        if self.list_enrolled.GetCount() > 0:
+            new_sel = min(sel, self.list_enrolled.GetCount() - 1)
+            self.list_enrolled.SetSelection(new_sel)
+            self.list_enrolled.SetFocus()
+        else:
+            self.search_local.SetFocus()
 
     def on_local_key(self, event):
         key_code = event.GetKeyCode()

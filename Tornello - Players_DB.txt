@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Mercoledì 1 luglio 2026 12:25:59
+﻿Report Database Giocatori Tornello - Mercoledì 1 luglio 2026 17:07:27
 ========================================
 
 ID: ARICL001, Claudio Ariaudo
@@ -33,7 +33,7 @@ ID: BADGI001, Giancarlo Badano
 	------------------------------
 ID: BARGI001, NC Giuseppe Baratta
 	Sesso: M, Federazione: ITA, ID FIDE: 28594010, Flag: i
-	Elo Standard: 1426 (Partite FIDE: 0)
+	Elo Standard: 1450 (Partite FIDE: 0)
 	Elo Rapid: 1563 (Partite FIDE: 0, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 12, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -44,7 +44,7 @@ ID: BARGI001, NC Giuseppe Baratta
 	------------------------------
 ID: BATGA001, 3N Gabriele Battaglia
 	Sesso: M, Federazione: ITA, ID FIDE: 804495, Flag: N/D
-	Elo Standard: 1524 (Partite FIDE: 0)
+	Elo Standard: 1498 (Partite FIDE: 0)
 	Elo Rapid: 1635 (Partite FIDE: 3, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 24, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -103,7 +103,7 @@ ID: CALVA001, NC Valeria Calzolari
 	------------------------------
 ID: CAPGI001, Giuliano Caputi
 	Sesso: M, Federazione: ITA, ID FIDE: 821993, Flag: N/D
-	Elo Standard: 1780 (Partite FIDE: 0)
+	Elo Standard: 1768 (Partite FIDE: 0)
 	Elo Rapid: 1870 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -196,7 +196,7 @@ ID: DELDA001, NC Davide Del Monte
 	------------------------------
 ID: DELDA002, Davide Delmonte
 	Sesso: M, Federazione: ITA, ID FIDE: 2840761, Flag: N/D
-	Elo Standard: 47 (Partite FIDE: 0)
+	Elo Standard: 1446 (Partite FIDE: 0)
 	Elo Rapid: 1579 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -214,9 +214,9 @@ ID: DEMGI001, Gianni Demaio
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	21° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
 	------------------------------
-ID: DEMJO001, Joshua Demaio
+ID: DEMJO001, NC Joshua Demaio
 	Sesso: M, Federazione: ITA, ID FIDE: 552014215, Flag: N/D
-	Elo Standard: 67 (Partite FIDE: 0)
+	Elo Standard: 1466 (Partite FIDE: 0)
 	Elo Rapid: 1821 (Partite FIDE: 9, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -252,7 +252,7 @@ ID: FORMA001, NC Martina Forte
 	------------------------------
 ID: GASCL001, 1N Claudio Gasperoni
 	Sesso: M, Federazione: ITA, ID FIDE: 825450, Flag: N/D, Titoli Extra: NI
-	Elo Standard: 1853 (Partite FIDE: 0)
+	Elo Standard: 1844 (Partite FIDE: 0)
 	Elo Rapid: 1868 (Partite FIDE: 5, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 24, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -303,7 +303,7 @@ ID: IONLO001, NC Lorenzo Ionata
 	------------------------------
 ID: MACMA001, Massimo Maccaferri
 	Sesso: M, Federazione: ITA, ID FIDE: 28505859, Flag: N/D
-	Elo Standard: 1463 (Partite FIDE: 0)
+	Elo Standard: 1439 (Partite FIDE: 0)
 	Elo Rapid: 1626 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -391,7 +391,7 @@ ID: PEZER001, Erica Pezzolato
 	------------------------------
 ID: POLDI001, Diego Poli
 	Sesso: M, Federazione: ITA, ID FIDE: 865613, Flag: N/D
-	Elo Standard: 1675 (Partite FIDE: 2)
+	Elo Standard: 1654 (Partite FIDE: 2)
 	Elo Rapid: 1739 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 1671 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -412,7 +412,7 @@ ID: RICPI001, NC Piero Riccardi
 	------------------------------
 ID: RIVPA001, Paolo Rivalta
 	Sesso: M, Federazione: ITA, ID FIDE: 28515390, Flag: N/D
-	Elo Standard: 1479 (Partite FIDE: 0)
+	Elo Standard: 1495 (Partite FIDE: 0)
 	Elo Rapid: 1479 (Partite FIDE: 0, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -494,7 +494,7 @@ ID: VALRI001, NC Rita Valleriani
 	------------------------------
 ID: VANJI001, 2N Jiazhuang Vandelli
 	Sesso: M, Federazione: ITA, ID FIDE: 23449071, Flag: N/D
-	Elo Standard: 1727 (Partite FIDE: 0)
+	Elo Standard: 1726 (Partite FIDE: 0)
 	Elo Rapid: 1781 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 12, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -548,7 +548,7 @@ ID: ZAVFA001, 2N Fabrizio Zavan
 	------------------------------
 ID: ZENSI001, Simone Zenini
 	Sesso: M, Federazione: ITA, ID FIDE: 898210, Flag: N/D
-	Elo Standard: 1612 (Partite FIDE: 0)
+	Elo Standard: 1602 (Partite FIDE: 0)
 	Elo Rapid: 1639 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025

@@ -432,3 +432,109 @@ def get_player_by_id(torneo, player_id):
     _ensure_players_dict(torneo)
     return torneo["players_dict"].get(player_id)
 
+
+def get_relevance_score(player, query_terms):
+    last_name = player.get("last_name", "").lower()
+    first_name = player.get("first_name", "").lower()
+    first_term = query_terms[0] if query_terms else ""
+    if last_name.startswith(first_term):
+        return (1, last_name, first_name)
+    elif first_name.startswith(first_term):
+        return (2, last_name, first_name)
+    else:
+        return (3, last_name, first_name)
+
+
+def match_player_query(player, query):
+    """
+    Effettua una ricerca flessibile basata su operatori (+ per obbligatorio, - per escluso, = per frase esatta).
+    Cerca su Cognome, Nome, Anno di Nascita, Federazione e ID FIDE.
+    Ritorna None se non corrisponde, o una tupla (score, rel_score, last_name, first_name) per l'ordinamento.
+    """
+    first_name = player.get("first_name", "") or ""
+    last_name = player.get("last_name", "") or ""
+    
+    # Estrae l'anno di nascita (da birth_year o birth_date)
+    birth_yr = player.get("birth_year")
+    if not birth_yr and player.get("birth_date"):
+        birth_yr = player["birth_date"][:4]
+    birth = str(birth_yr or "")
+    
+    fed = player.get("federation", "") or ""
+    fide_id = str(player.get("id_fide") or player.get("fide_id_num_str") or "")
+    
+    search_text = f"{first_name} {last_name} {birth} {fed} {fide_id}".lower()
+    
+    exact_phrases = []
+    forbidden_terms = []
+    mandatory_terms = []
+    optional_terms = []
+    
+    temp_query = query.strip()
+    if temp_query.startswith("="):
+        phrase = temp_query.replace("=", " ").strip().lower()
+        if phrase:
+            exact_phrases.append(phrase)
+    else:
+        parts = temp_query.split()
+        for part in parts:
+            if part.startswith("+"):
+                term = part[1:].strip().lower()
+                if term:
+                    mandatory_terms.append(term)
+            elif part.startswith("-"):
+                term = part[1:].strip().lower()
+                if term:
+                    forbidden_terms.append(term)
+            else:
+                term = part.strip().lower()
+                if term:
+                    optional_terms.append(term)
+                    
+    # Verifiche
+    for term in forbidden_terms:
+        if term in search_text:
+            return None
+            
+    for phrase in exact_phrases:
+        if phrase not in search_text:
+            return None
+            
+    for term in mandatory_terms:
+        if term not in search_text:
+            return None
+            
+    matched_optionals = 0
+    for term in optional_terms:
+        if term in search_text:
+            matched_optionals += 1
+            
+    if not mandatory_terms and not exact_phrases and optional_terms and matched_optionals == 0:
+        return None
+        
+    total_matched = len(mandatory_terms) + matched_optionals + len(exact_phrases)
+    
+    # Primo termine per calcolo rilevanza starts-with
+    first_query_term = ""
+    if query.strip().startswith("="):
+        parts_seq = query.replace("=", " ").strip().split()
+        if parts_seq:
+            first_query_term = parts_seq[0].lower()
+    else:
+        for part in query.split():
+            clean = part.lstrip("+-").lower()
+            if clean:
+                first_query_term = clean
+                break
+                
+    rel_score = 3
+    last_name_l = last_name.lower()
+    first_name_l = first_name.lower()
+    if first_query_term:
+        if last_name_l.startswith(first_query_term):
+            rel_score = 1
+        elif first_name_l.startswith(first_query_term):
+            rel_score = 2
+            
+    return (-total_matched, rel_score, last_name_l, first_name_l)
+

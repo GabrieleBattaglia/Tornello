@@ -341,7 +341,7 @@ Per garantire la compatibilità al 100% con gli screen reader (es. NVDA) e l'usa
    * Useremo font monospaziati (`wx.Font(10, wx.FONTFAMILY_TELETYPE, ...)`) su tabelle e liste per garantire che i dati incolonnati siano letti con un allineamento logico anche dagli screen reader.
 
 #### 5.1 Pianificazione Interfaccia
-- [ ] Definire la struttura delle finestre principali (Sotto-Piano Dettagliato):
+- [x] Definire la struttura delle finestre principali (Sotto-Piano Dettagliato):
 
 ##### 5.1.1 Dettaglio Sotto-Piano Interfaccia 📐
 
@@ -526,7 +526,7 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
         *   All'avvio della vista, la classifica viene calcolata ed esposta usando l'ordinamento FIDE predefinito del torneo.
         *   L'utente può premere Tab per scorrere i pulsanti dei criteri e premerne uno per variare dinamicamente l'ordinamento. La classifica viene immediatamente ricalcolata e la TextCtrl centrale viene aggiornata riposizionando il cursore all'inizio per la rilettura immediata dello screen reader.
 
-- [ ] Definire la struttura delle finestre principali:
+- [x] Definire la struttura delle finestre principali:
 
   | Finestra | Contenuto |
   |----------|-----------|
@@ -539,7 +539,7 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
   | **DB FIDE** | Ricerca + download + sincronizzazione |
   | **Impostazioni** | Lingua, audio, percorsi |
 
-- [ ] Definire la barra dei menù (Integrando gli strumenti precedentemente esterni):
+- [x] Definire la barra dei menù (Integrando gli strumenti precedentemente esterni):
   ```
   File > Nuovo Torneo | Apri Torneo | Salva | Esci
   Torneo > Giocatori | Turno Corrente | Classifica | Time Machine | Finalizza
@@ -548,7 +548,7 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
   Strumenti > Consulta FIDE (integrazione consulta.py) | Verifica Aggiornamenti FIDE | Impostazioni (Volume Audio/Video/Lingua)
   Aiuto > Guida | Changelog | Crediti
   ```
-- [ ] Mappare le scorciatoie da tastiera globali:
+- [x] Mappare le scorciatoie da tastiera globali:
   * `F1` -> Apri Manuale (Guida)
   * `F2` -> Mostra Changelog
   * `F3` -> Mostra Crediti/Info
@@ -557,7 +557,7 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
   * `F7` -> Focus su Barra di Stato inferiore (`wx.TextCtrl`)
 
 #### 5.2 Implementazione Core GUI
-- [ ] Setup progetto wxPython con struttura:
+- [x] Setup progetto wxPython con struttura:
   ```
   src/gui/
   ├── app.py              # wx.App entry point
@@ -574,21 +574,21 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
   │   └── settings_dialog.py
   └── accessibility.py    # Helper per screen reader
   ```
-- [ ] Implementare il pattern Observer/MVC: il Controller (Fase 1.2) emette eventi → la GUI li cattura e aggiorna i pannelli
-- [ ] Ogni azione che prima era un `input()` diventa un dialogo o un campo nel pannello
+- [x] Implementare il pattern Observer/MVC: il Controller (Fase 1.2) emette eventi → la GUI li cattura e aggiorna i pannelli
+- [x] Ogni azione che prima era un `input()` diventa un dialogo o un campo nel pannello
 
 #### 5.3 Integrazione Tool Esterni
-- [ ] Integrare `Players_DB.py` come pannello "Gestione DB" nella GUI
-- [ ] Integrare `consulta.py` come pannello "Consulta FIDE"
-- [ ] Integrare `Sync_DB.py` come azione del menù "Database > Sincronizza"
-- [ ] Eliminare gli script standalone una volta integrati (o mantenerli come alias CLI)
+- [x] Integrare `Players_DB.py` come pannello "Gestione DB" nella GUI
+- [x] Integrare `consulta.py` come pannello "Consulta FIDE"
+- [x] Integrare `Sync_DB.py` come azione del menù "Database > Sincronizza"
+- [x] Eliminare gli script standalone una volta integrati (o mantenerli come alias CLI)
 
 #### 5.4 Accessibilità
-- [ ] Ogni controllo deve avere un `Label` o `AcceleratorTable` descrittivo
-- [ ] CtrlText grandi per leggibilità da screen reader
-- [ ] Tab order logico in ogni finestra
+- [x] Ogni controllo deve avere un `Label` o `AcceleratorTable` descrittivo
+- [x] CtrlText grandi per leggibilità da screen reader
+- [x] Tab order logico in ogni finestra
 - [ ] Annunci NVDA/JAWS per eventi importanti (risultato inserito, turno completato, errore)
-- [ ] Tasti globali per le azioni più frequenti (ispirati a Terminal Beast)
+- [x] Tasti globali per le azioni più frequenti (ispirati a Terminal Beast)
 
 ---
 

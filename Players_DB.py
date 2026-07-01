@@ -2,6 +2,8 @@
 # gestore Players_DB.py
 import os
 import sys
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 from datetime import datetime
 
 # --- Inizializzazione Ambiente e Moduli Tornello ---

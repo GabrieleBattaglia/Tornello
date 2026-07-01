@@ -2,6 +2,8 @@
 import os
 import sys
 import atexit
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # Aggiungi src a sys.path per lo sviluppo locale
 try:
