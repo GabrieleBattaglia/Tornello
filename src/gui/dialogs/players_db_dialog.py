@@ -1,0 +1,295 @@
+import wx
+import builtins
+from db_players import load_players_db, save_players_db, generate_player_id
+from gui.settings import apply_visual_settings
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+_ = getattr(builtins, "_", lambda s: s)
+
+class PlayersDbDialog(wx.Dialog):
+    """
+    Finestra di dialogo per la gestione del Database Giocatori Locale.
+    Usa un albero interattivo ed accessibile a destra e una lista con filtri a sinistra.
+    """
+    def __init__(self, parent, settings):
+        title = _("Gestione Database Giocatori Locale")
+        super().__init__(parent, title=title, size=(900, 600), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        
+        self.settings = settings
+        self.players_db = load_players_db()
+        self.selected_player_id = None
+        
+        self._init_ui()
+        self.apply_theme()
+        
+        self.on_search_changed(None)
+        self.Centre()
+
+    def _init_ui(self):
+        panel = wx.Panel(self)
+        main_hbox = wx.BoxSizer(wx.HORIZONTAL)
+        
+        # --- COLONNA SINISTRA: RICERCA E LISTA ---
+        left_vbox = wx.BoxSizer(wx.VERTICAL)
+        
+        left_vbox.Add(wx.StaticText(panel, label=_("Filtra Giocatori:")), 0, wx.ALL, 5)
+        self.search_input = wx.TextCtrl(panel)
+        self.search_input.Bind(wx.EVT_TEXT, self.on_search_changed)
+        left_vbox.Add(self.search_input, 0, wx.EXPAND | wx.ALL, 5)
+        
+        self.list_players = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        self.list_players.Bind(wx.EVT_LISTBOX, self.on_player_selected)
+        left_vbox.Add(self.list_players, 1, wx.EXPAND | wx.ALL, 5)
+        
+        btn_add = wx.Button(panel, label=_("Aggiungi Nuovo Giocatore"))
+        btn_add.Bind(wx.EVT_BUTTON, self.on_add_player)
+        left_vbox.Add(btn_add, 0, wx.EXPAND | wx.ALL, 5)
+        
+        main_hbox.Add(left_vbox, 1, wx.EXPAND | wx.ALL, 5)
+        
+        # --- COLONNA DESTRA: ALBERO GESTIONE DATI ---
+        right_vbox = wx.BoxSizer(wx.VERTICAL)
+        right_vbox.Add(wx.StaticText(panel, label=_("Scheda ed Albero Dati (Invio = Modifica | Canc = Elimina):")), 0, wx.ALL, 5)
+        
+        self.tree_ctrl = wx.TreeCtrl(panel, style=wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT)
+        self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_item_activated)
+        self.tree_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
+        right_vbox.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 5)
+        
+        btn_close = wx.Button(panel, wx.ID_CANCEL, _("Chiudi"))
+        right_vbox.Add(btn_close, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
+        
+        main_hbox.Add(right_vbox, 2, wx.EXPAND | wx.ALL, 5)
+        
+        panel.SetSizer(main_hbox)
+        main_hbox.Fit(self)
+
+    def apply_theme(self):
+        apply_visual_settings(self.search_input, self.settings)
+        apply_visual_settings(self.list_players, self.settings)
+        apply_visual_settings(self.tree_ctrl, self.settings)
+
+    def on_search_changed(self, event):
+        query = self.search_input.GetValue().strip().lower()
+        search_terms = query.split()
+        
+        self.list_players.Clear()
+        self.players_map = []
+        
+        for p_id, p in self.players_db.items():
+            full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
+            if not search_terms or all(t in full_name for t in search_terms):
+                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+                label = f"{name} (ID: {p_id})"
+                self.list_players.Append(label)
+                self.players_map.append(p_id)
+                
+        if self.players_map:
+            self.list_players.SetSelection(0)
+            self.on_player_selected(None)
+        else:
+            self.tree_ctrl.DeleteAllItems()
+            self.selected_player_id = None
+
+    def on_player_selected(self, event):
+        sel = self.list_players.GetSelection()
+        if sel == wx.NOT_FOUND:
+            self.tree_ctrl.DeleteAllItems()
+            self.selected_player_id = None
+            return
+            
+        self.selected_player_id = self.players_map[sel]
+        self.populate_player_tree()
+
+    def populate_player_tree(self):
+        self.tree_ctrl.DeleteAllItems()
+        if not self.selected_player_id:
+            return
+            
+        p = self.players_db[self.selected_player_id]
+        self.tree_root = self.tree_ctrl.AddRoot("Root")
+        
+        # Radice Visibile
+        p_name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip() or _("Senza Nome")
+        root_node = self.tree_ctrl.AppendItem(self.tree_root, p_name)
+        self.tree_ctrl.SetItemPyData(root_node, {"type": "player_root"})
+        
+        # 1. Anagrafica
+        node_bio = self.tree_ctrl.AppendItem(root_node, "📁 Anagrafica")
+        
+        item_ln = self.tree_ctrl.AppendItem(node_bio, f"Cognome: {p.get('last_name', '')}")
+        self.tree_ctrl.SetItemPyData(item_ln, {"type": "field", "key": "last_name"})
+        
+        item_fn = self.tree_ctrl.AppendItem(node_bio, f"Nome: {p.get('first_name', '')}")
+        self.tree_ctrl.SetItemPyData(item_fn, {"type": "field", "key": "first_name"})
+        
+        item_gd = self.tree_ctrl.AppendItem(node_bio, f"Sesso: {p.get('gender', 'M')}")
+        self.tree_ctrl.SetItemPyData(item_gd, {"type": "field", "key": "gender"})
+        
+        item_bd = self.tree_ctrl.AppendItem(node_bio, f"Anno Nascita: {p.get('birth_date', 'N/D')}")
+        self.tree_ctrl.SetItemPyData(item_bd, {"type": "field", "key": "birth_date"})
+        
+        item_fed = self.tree_ctrl.AppendItem(node_bio, f"Nazione (FED): {p.get('federation', 'ITA')}")
+        self.tree_ctrl.SetItemPyData(item_fed, {"type": "field", "key": "federation"})
+        
+        # 2. ELO
+        node_elo = self.tree_ctrl.AppendItem(root_node, "📁 ELO e Titoli")
+        
+        item_elo_std = self.tree_ctrl.AppendItem(node_elo, f"ELO Standard: {p.get('current_elo', 1399)}")
+        self.tree_ctrl.SetItemPyData(item_elo_std, {"type": "field", "key": "current_elo", "is_int": True})
+        
+        item_elo_rap = self.tree_ctrl.AppendItem(node_elo, f"ELO Rapid: {p.get('elo_rapid', 0)}")
+        self.tree_ctrl.SetItemPyData(item_elo_rap, {"type": "field", "key": "elo_rapid", "is_int": True})
+        
+        item_elo_blz = self.tree_ctrl.AppendItem(node_elo, f"ELO Blitz: {p.get('elo_blitz', 0)}")
+        self.tree_ctrl.SetItemPyData(item_elo_blz, {"type": "field", "key": "elo_blitz", "is_int": True})
+        
+        item_title = self.tree_ctrl.AppendItem(node_elo, f"Titolo FIDE: {p.get('fide_title', '')}")
+        self.tree_ctrl.SetItemPyData(item_title, {"type": "field", "key": "fide_title"})
+        
+        item_fid = self.tree_ctrl.AppendItem(node_elo, f"ID FIDE: {p.get('fide_id_num_str', '')}")
+        self.tree_ctrl.SetItemPyData(item_fid, {"type": "field", "key": "fide_id_num_str"})
+        
+        # 3. Storico Tornei
+        node_hist = self.tree_ctrl.AppendItem(root_node, "📁 Storico Tornei")
+        history = p.get("results_history", [])
+        for idx, entry in enumerate(history):
+            label = f"Turno {entry.get('round')}: vs {entry.get('opponent_id')} -> {entry.get('result')} (Punti: {entry.get('score')})"
+            item_h = self.tree_ctrl.AppendItem(node_hist, label)
+            self.tree_ctrl.SetItemPyData(item_h, {"type": "history_record", "index": idx})
+            
+        # 4. Medagliere
+        node_med = self.tree_ctrl.AppendItem(root_node, "📁 Medagliere")
+        medals = p.get("medals_history", [])
+        for idx, m in enumerate(medals):
+            label = f"{m.get('tournament_name', 'Torneo')}: {m.get('position', 'Posizione')} ({m.get('date', 'N/D')})"
+            item_m = self.tree_ctrl.AppendItem(node_med, label)
+            self.tree_ctrl.SetItemPyData(item_m, {"type": "medal_record", "index": idx})
+            
+        self.tree_ctrl.Expand(root_node)
+
+    def on_tree_item_activated(self, event):
+        item = event.GetItem()
+        data = self.tree_ctrl.GetItemPyData(item)
+        if not data or data.get("type") != "field":
+            return
+            
+        key = data["key"]
+        p = self.players_db[self.selected_player_id]
+        current_val = str(p.get(key, ""))
+        
+        dlg = wx.TextEntryDialog(self, _("Modifica valore per '{field}':").format(field=key), _("Modifica Campo"), current_val)
+        if dlg.ShowModal() == wx.ID_OK:
+            new_val = dlg.GetValue().strip()
+            if data.get("is_int"):
+                if new_val.isdigit():
+                    p[key] = int(new_val)
+                else:
+                    wx.MessageBox(_("Inserisci un valore numerico valido."), _("Errore"), wx.ICON_ERROR)
+                    dlg.Destroy()
+                    return
+            else:
+                p[key] = new_val
+                
+            save_players_db(self.players_db)
+            self.populate_player_tree()
+            
+        dlg.Destroy()
+
+    def on_tree_key_down(self, event):
+        key_code = event.GetKeyCode()
+        item = self.tree_ctrl.GetSelection()
+        if not item or not self.selected_player_id:
+            event.Skip()
+            return
+            
+        data = self.tree_ctrl.GetItemPyData(item)
+        if key_code == wx.WXK_DELETE and data:
+            dtype = data.get("type")
+            p = self.players_db[self.selected_player_id]
+            
+            if dtype == "player_root":
+                # Elimina l'intero giocatore
+                self.delete_player(self.selected_player_id)
+            elif dtype == "history_record":
+                # Rimuovi record dallo storico
+                idx = data["index"]
+                msg = _("Sei sicuro di voler rimuovere questo record dallo storico?")
+                dlg = AccessibleMsgDialog(self, _("Conferma Rimozione"), msg, style=wx.YES_NO)
+                if dlg.ShowModal() == wx.ID_YES:
+                    p["results_history"].pop(idx)
+                    save_players_db(self.players_db)
+                    self.populate_player_tree()
+                dlg.Destroy()
+            elif dtype == "medal_record":
+                # Rimuovi medaglia
+                idx = data["index"]
+                msg = _("Sei sicuro di voler rimuovere questa medaglia dal palmarès?")
+                dlg = AccessibleMsgDialog(self, _("Conferma Rimozione"), msg, style=wx.YES_NO)
+                if dlg.ShowModal() == wx.ID_YES:
+                    p.setdefault("medals_history", []).pop(idx)
+                    save_players_db(self.players_db)
+                    self.populate_player_tree()
+                dlg.Destroy()
+            return
+            
+        event.Skip()
+
+    def delete_player(self, player_id):
+        p = self.players_db[player_id]
+        name = f"{p.get('last_name')} {p.get('first_name')}"
+        msg = _("Sei sicuro di voler eliminare definitivamente il giocatore '{name}' dal database?").format(name=name)
+        dlg = AccessibleMsgDialog(self, _("Conferma Eliminazione Giocatore"), msg, style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            del self.players_db[player_id]
+            save_players_db(self.players_db)
+            self.on_search_changed(None)
+        dlg.Destroy()
+
+    def on_add_player(self, event):
+        dlg_ln = wx.TextEntryDialog(self, _("Inserisci Cognome:"), _("Nuovo Giocatore"))
+        if dlg_ln.ShowModal() != wx.ID_OK:
+            dlg_ln.Destroy()
+            return
+        last_name = dlg_ln.GetValue().strip()
+        dlg_ln.Destroy()
+        
+        dlg_fn = wx.TextEntryDialog(self, _("Inserisci Nome:"), _("Nuovo Giocatore"))
+        if dlg_fn.ShowModal() != wx.ID_OK:
+            dlg_fn.Destroy()
+            return
+        first_name = dlg_fn.GetValue().strip()
+        dlg_fn.Destroy()
+        
+        if not last_name or not first_name:
+            wx.MessageBox(_("Nome e Cognome sono obbligatori."), _("Errore"), wx.ICON_ERROR)
+            return
+            
+        new_id = generate_player_id(self.players_db)
+        new_player = {
+            "id": new_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "current_elo": 1399,
+            "fide_id_num_str": "",
+            "birth_date": "1990-01-01",
+            "gender": "M",
+            "federation": "ITA",
+            "fide_title": "",
+            "club": "",
+            "results_history": [],
+            "opponents": []
+        }
+        
+        self.players_db[new_id] = new_player
+        save_players_db(self.players_db)
+        
+        self.search_input.SetValue("")  # Resetta ricerca per mostrare il nuovo
+        self.on_search_changed(None)
+        
+        # Cerca ed evidenzia il nuovo giocatore aggiunto nella listbox
+        for idx, p_id in enumerate(self.players_map):
+            if p_id == new_id:
+                self.list_players.SetSelection(idx)
+                self.on_player_selected(None)
+                break

@@ -125,6 +125,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_preferences, id=wx.ID_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
         self.Bind(wx.EVT_MENU, self.on_fide_query, self.item_fide_query)
+        self.Bind(wx.EVT_MENU, self.on_local_db, self.item_local_db)
         self.Bind(wx.EVT_MENU, self.on_sync_db, self.item_sync_db)
         self.Bind(wx.EVT_MENU, self.on_changelog, self.item_changelog)
         self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
@@ -670,5 +671,11 @@ class MainFrame(wx.Frame):
     def on_sync_db(self, event):
         from gui.dialogs.sync_database_dialog import SyncDatabaseDialog
         dlg = SyncDatabaseDialog(self, self.settings)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def on_local_db(self, event):
+        from gui.dialogs.players_db_dialog import PlayersDbDialog
+        dlg = PlayersDbDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
