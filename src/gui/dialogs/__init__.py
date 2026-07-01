@@ -3,3 +3,4 @@ from .visual_settings_dialog import VisualSettingsDialog as VisualSettingsDialog
 from .player_enrollment_dialog import PlayerEnrollmentDialog as PlayerEnrollmentDialog
 from .result_dialog import ResultDialog as ResultDialog
 from .fide_query_dialog import FideQueryDialog as FideQueryDialog
+from .sync_database_dialog import SyncDatabaseDialog as SyncDatabaseDialog
