@@ -951,15 +951,34 @@ class MainFrame(wx.Frame):
         # Visualizza la guida accessibile
         self.main_text.Clear()
         guide_text = (
-            "MANUALE GUIDA DI TORNELLO v9.0\n"
-            "==============================\n\n"
+            "MANUALE GUIDA DI TORNELLO v9.0.2\n"
+            "================================\n\n"
             "Tornello è strutturato in modo da permettere ad un utente non vedente di muoversi\n"
             "agilmente tra le funzioni principali tramite tasti di scelta rapida ed acceleratori.\n\n"
             "NAVIGAZIONE DI BASE:\n"
             " - Premere F5 per andare all'Area Centrale per leggere i report.\n"
             " - Premere F6 per posizionarsi sull'Albero di Destra e scorrere i tornei e i dettagli.\n"
             " - Premere F7 per focalizzare la barra di stato inferiore.\n"
-            " - Usare le scorciatoie Alt + Lettera per accedere al Menu Principale in alto.\n"
+            " - Usare le scorciatoie Alt + Lettera per accedere al Menu Principale in alto.\n\n"
+            "RICERCA E OPERATORI NEI DATABASE (LOCALE E FIDE):\n"
+            "Nelle finestre di iscrizione giocatori o consultazione FIDE, puoi inserire termini semplici\n"
+            "o combinare i seguenti operatori per affinare la ricerca:\n"
+            " - Spazio: I termini sono cercati in modo non esclusivo per default. Se cerchi 'simona ita',\n"
+            "   Tornello troverà le giocatrici che contengono 'simona' e 'ita', ordinando prima chi le ha entrambe.\n"
+            " - Operatore '+' (Obbligatorio): Il termine preceduto da '+' deve essere presente nel record.\n"
+            "   Esempio: '+simona +ita' trova solo giocatrici di nome Simona della federazione italiana.\n"
+            " - Operatore '-' (Escluso): Il termine preceduto da '-' non deve essere presente nel record.\n"
+            "   Esempio: 'simona -ita' trova tutte le giocatrici di nome Simona che NON appartengono all'Italia.\n"
+            " - Operatore '=' (Frase Esatta): Cerca la sequenza esatta dei termini separati da '='.\n"
+            "   Esempio: '=gerasole=marco' trova solo i record che contengono esattamente la sequenza 'gerasole marco'.\n\n"
+            "ESEMPIO COMPLESSO COMBINATO:\n"
+            " Query: 'simona +ita -milano 1985'\n"
+            " Spiegazione:\n"
+            "  1. La giocatrice deve obbligatoriamente appartenere alla federazione italiana (+ita).\n"
+            "  2. La giocatrice non deve contenere la parola 'milano' nel record (-milano).\n"
+            "  3. Vengono cercate le giocatrici di nome 'simona' (termine opzionale di ricerca principale).\n"
+            "  4. Se una delle Simona trovate è nata nel '1985' (termine opzionale), verrà visualizzata in cima alla lista\n"
+            "     rispetto a chi è nata in altri anni, poiché soddisfa un termine opzionale in più.\n"
         )
         self.append_log(guide_text)
 
