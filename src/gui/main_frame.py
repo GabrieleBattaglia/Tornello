@@ -985,14 +985,29 @@ class MainFrame(wx.Frame):
     def on_changelog(self, event):
         self.main_text.Clear()
         changelog = (
-            "CHANGELOG TORNELLO v9.0\n"
-            "=======================\n\n"
-            " - Passaggio completo all'interfaccia grafica accessibile wxPython.\n"
-            " - Integrazione nativa con bbpPairings v6.0.0 (motore abbinamenti FIDE 2026).\n"
-            " - Formato TRF-2026 supportato nativamente.\n"
-            " - Gestione avanzata del database locale giocatori direttamente tramite albero.\n"
-            " - Sincronizzazione con file FIDE con modalità passo-passo o in blocco.\n"
+            "CHANGELOG TORNELLO v9.0.2\n"
+            "=========================\n\n"
+            " - Aggiunta ricerca FIDE avanzata con operatori (+ obbligatorio, - escluso, = frase esatta).\n"
+            " - Feedback vocale automatico (focus jump) all'iscrizione dei giocatori.\n"
+            " - Ordinamento automatico iscritti per ELO decrescente con numerazione e nazione.\n"
+            " - Mostra il numero dei risultati trovati/iscritti nei titoli delle liste.\n"
+            " - Paginazione automatica dei risultati FIDE ('Mostra altri...') per alte prestazioni ed accessibilità.\n"
+            " - Aggiornamento nodi dell'albero in-place per preservare il focus dello screen reader.\n"
+            " - Eliminazione completa di icone/emoji unicode grafiche disturbanti.\n"
+            " - Barra di progresso parlante per il caricamento del database FIDE.\n"
+            " - Silenziamento dei warning di deprecazione in console.\n\n"
+            "STORICO DELLE VERSIONI PRECEDENTI (v8.x):\n"
+            "=========================================\n"
         )
+        
+        changelog_path = "ChangeLog.txt"
+        if os.path.exists(changelog_path):
+            try:
+                with open(changelog_path, "r", encoding="utf-8") as f:
+                    changelog += f.read()
+            except Exception:
+                pass
+                
         self.append_log(changelog)
 
     def on_credits(self, event):
