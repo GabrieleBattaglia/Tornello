@@ -327,8 +327,8 @@ class MainFrame(wx.Frame):
                 pass
                 
         # 2. Cartella Tornei Conclusi
-        closed_item = self.tree_ctrl.AppendItem(self.tree_root, "📁 Tornei Conclusi")
-        closed_files = glob.glob(os.path.join("Closed Tournaments", "Tornello - *.json"))
+        closed_files = glob.glob(os.path.join("Closed Tournaments", "**", "Tornello - *.json"), recursive=True)
+        closed_item = self.tree_ctrl.AppendItem(self.tree_root, f"📁 Tornei Conclusi ({len(closed_files)})")
         for f in closed_files:
             try:
                 with open(f, "r", encoding="utf-8") as f_in:
@@ -353,15 +353,34 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemPyData(dati_item, {"action": "show_data"})
         
         # Partecipanti
-        part_item = self.tree_ctrl.AppendItem(root_item, "📁 Partecipanti")
+        num_players = len(self.current_tournament.get("players", []))
+        part_item = self.tree_ctrl.AppendItem(root_item, f"📁 Partecipanti ({num_players})")
         self.tree_ctrl.SetItemPyData(part_item, {"action": "show_players"})
         
         # Partite
-        partite_item = self.tree_ctrl.AppendItem(root_item, "📁 Partite")
+        curr_round = self.current_tournament.get("current_round", 1)
+        rounds = self.current_tournament.get("rounds", [])
+        round_data = next((r for r in rounds if r.get("round") == curr_round), None)
+        matches = round_data.get("matches", []) if round_data else []
+        
+        num_concluded = sum(1 for m in matches if m.get("result") is not None)
+        num_scheduled = sum(1 for m in matches if m.get("result") is None and m.get("is_scheduled") and m.get("schedule_info"))
+        num_unscheduled = len(matches) - num_concluded - num_scheduled
+        
+        partite_item = self.tree_ctrl.AppendItem(root_item, f"📁 Partite ({len(matches)})")
         self.tree_ctrl.SetItemPyData(partite_item, {"action": "show_matches"})
         
+        unsched_item = self.tree_ctrl.AppendItem(partite_item, f"Non pianificate ({num_unscheduled})")
+        self.tree_ctrl.SetItemPyData(unsched_item, {"action": "show_matches_unscheduled"})
+        
+        sched_item = self.tree_ctrl.AppendItem(partite_item, f"Pianificate ({num_scheduled})")
+        self.tree_ctrl.SetItemPyData(sched_item, {"action": "show_matches_scheduled"})
+        
+        conc_item = self.tree_ctrl.AppendItem(partite_item, f"Concluse ({num_concluded})")
+        self.tree_ctrl.SetItemPyData(conc_item, {"action": "show_matches_concluded"})
+        
         # Inizia torneo (se applicabile)
-        is_started = len(self.current_tournament.get("rounds", [])) > 0
+        is_started = len(rounds) > 0
         if not is_started:
             start_item = self.tree_ctrl.AppendItem(root_item, "🏁 Inizia torneo")
             self.tree_ctrl.SetItemPyData(start_item, {"action": "start_tournament_matchmaking"})
