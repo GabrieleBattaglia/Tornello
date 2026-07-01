@@ -363,6 +363,12 @@ Tutte le voci del menù avranno lettere di scelta rapida (shortcut Alt) e accele
 *   **Database (Alt+D)**
     *   *Gestione Giocatori Locale (Ctrl+D)*: Pannello di inserimento/modifica dei singoli record del database locale (sostituisce la CLI di `Players_DB.py`).
     *   *Sincronizza DB Locale con FIDE (Ctrl+Y)*: Avvia la sincronizzazione automatica del DB locale usando il file FIDE scaricato (sostituisce `Sync_DB.py`).
+*   **Visualizza (Alt+V)**
+    *   *Area Centrale (F5)*: Mette a fuoco l'Area Centrale principale (TextCtrl).
+    *   *Albero di Destra (F6)*: Mette a fuoco o mostra/nasconde l'Albero di navigazione.
+    *   *Barra di Stato (F7)*: Mette a fuoco la Barra di Stato personalizzata.
+    *   *Classifica Torneo (Ctrl+L)*: Visualizza la classifica corrente nel pannello centrale.
+    *   *Turno Corrente (Ctrl+U)*: Visualizza gli accoppiamenti e lo stato del turno attivo.
 *   **Strumenti (Alt+S)**
     *   *Consulta FIDE (Ctrl+K)*: Pannello di ricerca diretta per ID FIDE o Cognome/Nome con download del record (sostituisce `consulta.py`).
     *   *Opzioni/Impostazioni... (Ctrl+P)*: Dialogo per configurare lingua, volume audio, percorsi di backup e archivio.
@@ -384,18 +390,25 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
         *   Tornello scansiona i file di torneo in corso nella directory di lavoro.
         *   Se è presente **un solo torneo in corso**, viene caricato automaticamente all'avvio.
         *   Se non ci sono tornei in corso, oppure se ne è presente più di uno, non viene caricato nulla all'avvio.
+        *   *Verifica Database FIDE*: All'avvio, Tornello verifica se sono trascorsi più di 30 giorni dall'ultimo download/aggiornamento del database FIDE locale. In caso positivo, propone all'utente tramite una finestra modale `AccessibleMsgDialog` (Sì/No) di avviare il controllo e lo scaricamento degli aggiornamenti.
     *   **Layout**: Suddiviso in tre aree principali:
         *   **Pannello Centrale (Sinistro - Area Principale)**:
             *   *Se nessun torneo è caricato*: Mostra un testo introduttivo con la spiegazione di cos'è e cosa fa Tornello, versione, data di rilascio, autori, e l'invito esplicito a premere `Tab` per spostarsi sull'albero di destra e aprire o creare un torneo.
             *   *Se un torneo è caricato*: Mostra il contenuto del report del turno (lo stesso testo precedentemente salvato nel file "Turno Corrente", con accoppiamenti, risultati e statistiche generali).
         *   **Pannello Destro (Verticale - Albero `wx.TreeCtrl`)**:
             *   *Caso A: Nessun torneo caricato*:
-                *   Mostra l'elenco di tutti i tornei trovati nella cartella, ciascuno contrassegnato dallo stato: `"avviato turno x/y"` o `"concluso (data)"`.
-                *   L'ultima voce dell'elenco è **"Nuovo torneo"**.
+                *   Mostra l'elenco di tutti i tornei attivi trovati nella cartella.
+                *   Mostra la cartella speciale **📁 Tornei Conclusi** (espandibile):
+                    *   Sotto questa cartella vengono elencati tutti i tornei storici trovati nella cartella `Closed Tournaments` (es. `ASCId Primavera 1 - Giugno 2025`).
+                    *   Premendo `Invio` su un torneo concluso, la sua classifica finale ed i report vengono caricati nell'Area Centrale principale per la visualizzazione.
+                    *   Premendo `Canc` (Delete) su un torneo concluso, viene chiesta conferma (`AccessibleMsgDialog` Sì/No) per eliminarlo definitivamente dal disco.
+                *   L'ultima voce dell'elenco generale è **"Nuovo torneo"**.
                 *   *Flusso di Creazione Nuovo Torneo*:
                     1. Selezionando **"Nuovo torneo"** e premendo `Invio`, l'albero di destra viene ricostruito.
-                    2. Ogni voce dell'albero rappresenta un campo dati obbligatorio o facoltativo del torneo (Nome, Luogo, Numero Turni, Tempo di riflessione, ecc.).
-                    3. L'utente scorre queste voci con le frecce. Premendo `Invio` su una di esse, si apre un prompt/dialogo per l'inserimento del rispettivo valore.
+                    2. Ogni voce dell'albero rappresenta un campo dati obbligatorio o facoltativo del torneo (Nome, Luogo, Numero Turni, Tempo di riflessione, Cartella di Salvataggio, ecc.).
+                    3. L'utente scorre queste voci con le frecce. Premendo `Invio` su una di esse, si apre il prompt/dialogo per l'inserimento del valore:
+                       * Per i campi testuali/numerici, un prompt semplice in cui `Invio` equivale a premere OK.
+                       * Per la **Cartella di Salvataggio**, si apre il dialogo standard di sistema `wx.DirDialog` per scegliere la cartella condivisa/USB/cloud. I file generati per il torneo (classifiche, accoppiamenti, ecc.) saranno salvati in questa cartella per essere accessibili all'utente. Il file primario `.json` del torneo sarà comunque mantenuto e archiviato internamente da Tornello (e spostato in `Closed Tournaments` / `closed/` alla conclusione).
                     4. Solo quando tutti i dati obbligatori sono stati valorizzati, compare come ultima voce dell'albero il nodo **"Avanti"**.
                     5. Premendo `Invio` su **"Avanti"**, si apre la finestra di iscrizione dei giocatori.
             *   *Caso B: Torneo caricato*:
@@ -435,6 +448,84 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
     *   Fornisce pulsanti espliciti per rimuovere la partita da una categoria, pianificare la data/ora, o gestire il ritiro del giocatore dal torneo.
 
 
+4.  **Impostazioni Visuali e Audio (`VisualSettingsDialog`)**
+    *   **Tipo**: `wx.Dialog` modellato sulla base di `settings_gui.py` di `Terminal Beast`.
+    *   **Layout e Sezioni**:
+        *   *Anteprima Visuale*: Un `wx.TextCtrl` multi-riga, in sola lettura (`wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2`), che mostra una demo testuale in tempo reale per verificare colori e dimensioni applicati.
+        *   *Audio (Slider)*: Regolazione del volume master (0% - 100%). Al variare del valore viene emesso un bip di test (tramite il gestore audio).
+        *   *Testo (Colonna Sinistra)*:
+            *   Dimensione carattere (pt): `wx.SpinCtrl` da 8 a 72.
+            *   Colore Testo: Tre `wx.SpinCtrl` (Rosso, Verde, Blu in percentuale da 0 a 100) per comporre l'RGB del testo.
+        *   *Sfondo (Colonna Destra)*:
+            *   Colore Sfondo: Tre `wx.SpinCtrl` (Rosso, Verde, Blu in percentuale da 0 a 100) per comporre l'RGB dello sfondo.
+        *   *Pulsanti*: "Reset Default", "Annulla" e "OK". La pressione del tasto `Invio` equivale a premere "OK" (pulsante di default).
+
+5.  **Gestione Database Locale (`DatabasePanel` / `PlayersTree`)**
+    *   **Tipo**: Pannello principale o `wx.Dialog` dedicato accessibile tramite menu `Database > Gestione Giocatori Locale`.
+    *   **Struttura**:
+        *   *Filtro di Ricerca*: Un `wx.TextCtrl` posizionato in alto per filtrare per cognome, nome o ID FIDE. Riduce dinamicamente i giocatori visualizzati nell'albero per preservare le prestazioni.
+        *   *Albero dei Giocatori (`wx.TreeCtrl`)*:
+            *   Ciascun giocatore corrispondente alla ricerca è un nodo radice (es. `Rossi Mario (ID: GIO001)`).
+            *   Sotto ogni giocatore ci sono i seguenti nodi espandibili:
+                *   📁 **Dati Anagrafici**:
+                    *   *Sesso* (es. `m`)
+                    *   *Data di nascita* (es. `1990-01-01`)
+                    *   *Federazione* (es. `ITA`)
+                    *   *Titolo FIDE* (es. `FM`)
+                *   📁 **Punteggi ELO**:
+                    *   *FIDE Standard*: (es. `1850`)
+                    *   *FIDE Rapid*: (es. `1800`)
+                    *   *FIDE Blitz*: (es. `1750`)
+                    *   *Club*: (es. `1900`)
+                *   📁 **Storico Tornei**: Elenca tutti i tornei disputati registrati nel DB locale per quel giocatore, con data e punteggio ottenuto.
+                *   📁 **Medagliere**: Elenca le medaglie o i piazzamenti ottenuti.
+        *   **Interazione e Tastiera**:
+            *   Premendo `Invio` su un nodo modificabile (es. *Club* sotto ELO, o *Sesso* sotto anagrafica), si apre un dialogo di input veloce (con Enter per confermare) per aggiornare il valore nel DB.
+            *   Premendo `Canc` (Delete) su un nodo giocatore: elimina l'intero giocatore dal database personale (chiedendo conferma tramite `AccessibleMsgDialog` Sì/No).
+            *   Premendo `Canc` su un singolo elemento dello *Storico Tornei* o del *Medagliere*: permette di rimuovere selettivamente quel record (molto utile per pulire dati di test fittizi).
+
+6.  **Consulta FIDE (`FideQueryPanel`)**
+    *   **Tipo**: Pannello principale o finestra di dialogo accessibile tramite menu `Strumenti > Consulta FIDE (Ctrl+K)`.
+    *   **Struttura a Doppia Vista (ListBox + TextCtrl)**:
+        *   *Campo di ricerca*: Un `wx.TextCtrl` singolo in cui inserire Cognome/Nome o l'ID FIDE.
+        *   *Lista Risultati*: Una `wx.ListBox` monospaziata che visualizza l'elenco riassuntivo dei giocatori trovati (es. `1. Rossi Mario (ID: 12345 - ELO: 1800 - ITA)`). L'utente la naviga agevolmente con le frecce verticali e NVDA ne legge i contenuti.
+        *   *Area Dettaglio (Destra o Sotto)*: Un grande `wx.TextCtrl` multi-riga, in sola lettura, con font monospaziato. Quando l'utente scorre e seleziona un record nella ListBox dei risultati, questa TextCtrl mostra la scheda dettagliata e completa del giocatore (Anno di nascita, sesso, Elo Standard/Rapid/Blitz, tutti i titoli).
+        *   *Importazione*: Premendo `Invio` sul giocatore selezionato nella ListBox (o attivando il pulsante "Importa"), questo giocatore viene registrato istantaneamente nel database personale.
+
+7.  **Sincronizzazione DB Locale (`SyncDatabaseDialog`)**
+    *   **Tipo**: Finestra di dialogo guidata accessibile da menu `Database > Sincronizza DB Locale con FIDE (Ctrl+Y)`.
+    *   **Flusso e Comportamento**:
+        *   Carica il confronto tra il DB locale ed il DB FIDE.
+        *   Presenta una schermata iniziale di riepilogo delle differenze riscontrate (es. Nuovi ID da associare, aggiornamenti Elo, ecc.) con due opzioni principali:
+            *   **Pulsante "Aggiorna Tutto"**: Applica in blocco tutti gli aggiornamenti non ambigui automaticamente. Se ci sono omonimi multipli ambigui, aprirà una modale di risoluzione solo per quelli.
+            *   **Pulsante "Valuta Singolarmente"**: Avvia il confronto passo-passo.
+        *   *Modalità Passo-Passo*: Mostra una scheda di confronto per ogni giocatore modificato con:
+            *   I dati locali a sinistra ed i dati FIDE a destra evidenziando le differenze.
+            *   In caso di omonimia multipla (ambiguità), mostra una `wx.ListBox` per selezionare l'ID FIDE corretto tra quelli trovati.
+            *   Pulsanti accessibili posizionati in basso: "Accetta Aggiornamento" (`Invio`), "Salta Giocatore", "Aggiorna Rimanenti in Massa", "Annulla Sincronizzazione".
+        *   Tutta l'elaborazione dei dati ed il salvataggio finale sono accompagnati da una `wx.ProgressDialog` parlante.
+
+9.  **Aggiornamento/Scaricamento DB FIDE (`UpdateFideDatabaseDialog`)**
+    *   **Tipo**: Dialogo avviato dal menu `Strumenti > Verifica Aggiornamenti FIDE`.
+    *   **Comportamento**:
+        1.  Esegue una chiamata di verifica della disponibilità di un aggiornamento del database FIDE (confrontando le date o scaricando l'header HTTP).
+        2.  Se è presente un aggiornamento, chiede conferma all'utente.
+        3.  All'approvazione, avvia in sequenza le barre di progresso accessibili (`wx.ProgressDialog`) per:
+            *   *Download*: Scaricamento del file ZIP ratings (con indicatore di percentuale).
+            *   *Estrazione*: Estrazione del file XML dall'archivio in memoria.
+            *   *Conversione*: Parsing dell'XML e generazione del file database JSON locale.
+        4.  Mostra un messaggio finale di successo (`AccessibleMsgDialog`) a completamento avvenuto.
+
+
+8.  **Visualizzazione Classifica (`StandingsPanel`)**
+    *   **Tipo**: Visualizzato nell'Area Centrale principale (TextCtrl), accessibile da menu `Visualizza > Classifica Torneo (Ctrl+L)` o `Torneo > Classifica Corrente`.
+    *   **Struttura**:
+        *   *Area Testo Classifica*: Un grande `wx.TextCtrl` multi-riga, sola lettura, monospaziato, che contiene il testo della classifica generato con tutti gli spareggi (equivalente a `classifica.txt`).
+        *   *Pulsanti di Ordinamento (Barra Superiore o Laterale)*: Una serie di pulsanti accessibili (es. "Ordina per Punti", "Ordina per Buchholz", "Ordina per Sonneborn-Berger", "Ordina per ARO", ecc.).
+    *   **Comportamento**:
+        *   All'avvio della vista, la classifica viene calcolata ed esposta usando l'ordinamento FIDE predefinito del torneo.
+        *   L'utente può premere Tab per scorrere i pulsanti dei criteri e premerne uno per variare dinamicamente l'ordinamento. La classifica viene immediatamente ricalcolata e la TextCtrl centrale viene aggiornata riposizionando il cursore all'inizio per la rilettura immediata dello screen reader.
+
 - [ ] Definire la struttura delle finestre principali:
 
   | Finestra | Contenuto |
@@ -452,11 +543,18 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
   ```
   File > Nuovo Torneo | Apri Torneo | Salva | Esci
   Torneo > Giocatori | Turno Corrente | Classifica | Time Machine | Finalizza
-  Database > Gestione DB Locale (ex Players_DB)
-  Strumenti > Consulta FIDE (integrazione consulta.py) | Sincronizza DB (integrazione Sync_DB.py) | Lingua | Volume Audio | Aggiornamenti
-  Aiuto > Guida | Info
+  Database > Gestione DB Locale (ex Players_DB) | Sincronizza DB Locale con FIDE
+  Visualizza > Area Centrale | Albero Destra | Barra di Stato | Classifica Torneo | Turno Corrente
+  Strumenti > Consulta FIDE (integrazione consulta.py) | Verifica Aggiornamenti FIDE | Impostazioni (Volume Audio/Video/Lingua)
+  Aiuto > Guida | Changelog | Crediti
   ```
-- [ ] Mappare le scorciatoie da tastiera globali (ispirate a Terminal Beast)
+- [ ] Mappare le scorciatoie da tastiera globali:
+  * `F1` -> Apri Manuale (Guida)
+  * `F2` -> Mostra Changelog
+  * `F3` -> Mostra Crediti/Info
+  * `F5` -> Focus su Pannello Centrale (Grande area di testo principale)
+  * `F6` -> Focus su Albero Destro (`wx.TreeCtrl`)
+  * `F7` -> Focus su Barra di Stato inferiore (`wx.TextCtrl`)
 
 #### 5.2 Implementazione Core GUI
 - [ ] Setup progetto wxPython con struttura:
