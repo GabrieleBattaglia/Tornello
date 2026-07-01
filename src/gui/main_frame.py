@@ -31,6 +31,14 @@ class MainFrame(wx.Frame):
         self._check_fide_db_on_startup()
         self._scan_and_load_initial_tournament()
         self.Centre()
+        
+        # Gestione chiusura per riprodurre il suono
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+        
+        # Suono di avvio applicazione
+        from utils import play_sound
+        play_sound("avvio")
+
 
     def _init_ui(self):
         # Pannello principale di contenimento
@@ -129,6 +137,15 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_sync_db, self.item_sync_db)
         self.Bind(wx.EVT_MENU, self.on_changelog, self.item_changelog)
         self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
+        self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
+        self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
+        self.Bind(wx.EVT_MENU, self.on_save_tournament, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_MENU, self.on_enroll_players, self.item_enroll)
+        self.Bind(wx.EVT_MENU, self.on_view_players, self.item_players)
+        self.Bind(wx.EVT_MENU, self.on_view_current_round, self.item_round)
+        self.Bind(wx.EVT_MENU, self.on_view_standings, self.item_standings)
+        self.Bind(wx.EVT_MENU, self.on_rollback_round, self.item_rollback)
+        self.Bind(wx.EVT_MENU, self.on_finalize_tournament, self.item_finalize)
 
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
@@ -676,12 +693,12 @@ class MainFrame(wx.Frame):
             players.append(Player.from_dict(p))
             
         save_dir = self.creation_data["save_path"]
-        if not os.path.exists(save_dir):
-            try:
-                os.makedirs(save_dir, exist_ok=True)
-            except Exception as e:
-                wx.MessageBox(f"Impossibile creare la cartella di salvataggio: {e}", "Errore", wx.ICON_ERROR)
-                return
+        from utils import resolve_and_verify_save_path
+        resolved_save_dir, warning = resolve_and_verify_save_path(save_dir)
+        if warning:
+            wx.MessageBox(warning, _("Avviso Percorso") if "_" in globals() else "Avviso Percorso", wx.OK | wx.ICON_WARNING)
+        save_dir = resolved_save_dir
+
                 
         sanitized = sanitize_filename(self.creation_data["name"])
         self.active_filename = f"Tornello - {sanitized}.json"
@@ -969,31 +986,23 @@ class MainFrame(wx.Frame):
 
     def on_changelog(self, event):
         self.main_text.Clear()
-        changelog = (
-            "CHANGELOG TORNELLO v9.0.2\n"
-            "=========================\n\n"
-            " - Aggiunta ricerca FIDE avanzata con operatori (+ obbligatorio, - escluso, = frase esatta).\n"
-            " - Feedback vocale automatico (focus jump) all'iscrizione dei giocatori.\n"
-            " - Ordinamento automatico iscritti per ELO decrescente con numerazione e nazione.\n"
-            " - Mostra il numero dei risultati trovati/iscritti nei titoli delle liste.\n"
-            " - Paginazione automatica dei risultati FIDE ('Mostra altri...') per alte prestazioni ed accessibilità.\n"
-            " - Aggiornamento nodi dell'albero in-place per preservare il focus dello screen reader.\n"
-            " - Eliminazione completa di icone/emoji unicode grafiche disturbanti.\n"
-            " - Barra di progresso parlante per il caricamento del database FIDE.\n"
-            " - Silenziamento dei warning di deprecazione in console.\n\n"
-            "STORICO DELLE VERSIONI PRECEDENTI (v8.x):\n"
-            "=========================================\n"
-        )
-        
+        changelog_str = ""
         changelog_path = "ChangeLog.txt"
         if os.path.exists(changelog_path):
             try:
                 with open(changelog_path, "r", encoding="utf-8") as f:
-                    changelog += f.read()
+                    changelog_str = f.read()
             except Exception:
                 pass
                 
-        self.append_log(changelog)
+        if not changelog_str:
+            changelog_str = (
+                "CHANGELOG DI TORNELLO\n"
+                "=====================\n\n"
+                "File ChangeLog.txt non trovato. Consultare la guida online o ripristinare il file."
+            )
+        self.append_log(changelog_str)
+
 
     def on_credits(self, event):
         self.main_text.Clear()
@@ -1033,6 +1042,143 @@ class MainFrame(wx.Frame):
         dlg = PlayersDbDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
+
+
+    def on_close(self, event):
+        from utils import play_sound
+        play_sound("chiusura", self.current_tournament, sync=True)
+        event.Skip()
+
+    def on_new_tournament(self, event):
+        self.start_new_tournament_wizard()
+
+    def on_open_tournament(self, event):
+        dlg = wx.FileDialog(self, _("Apri Torneo"), wildcard="JSON files (*.json)|*.json", style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.load_tournament(dlg.GetPath())
+        dlg.Destroy()
+
+    def on_save_tournament(self, event):
+        if self.current_tournament:
+            self._save_state()
+            self.set_status(_("Torneo salvato con successo."))
+            from utils import play_sound
+            play_sound("salvato", self.current_tournament)
+        else:
+            wx.MessageBox(_("Nessun torneo attivo da salvare."), _("Info"), wx.ICON_INFORMATION)
+
+    def on_enroll_players(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        if len(self.current_tournament.get("rounds", [])) > 0:
+            wx.MessageBox(_("Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."), _("Errore"), wx.ICON_ERROR)
+            return
+        from db_players import load_players_db
+        players_db = load_players_db()
+        from gui.dialogs import PlayerEnrollmentDialog
+        
+        enrolled_raw = [p for p in self.current_tournament.get("players", [])]
+        dlg = PlayerEnrollmentDialog(self, players_db, enrolled_raw, self.settings)
+        if dlg.ShowModal() == wx.ID_OK:
+            enrolled = dlg.get_enrolled_players()
+            if len(enrolled) < 2:
+                wx.MessageBox(_("Sono necessari almeno 2 giocatori per il torneo."), _("Errore"), wx.ICON_ERROR)
+                dlg.Destroy()
+                return
+            
+            from models import Player
+            self.current_tournament["players"] = [Player.from_dict(p).to_dict() for p in enrolled]
+            self.current_tournament["players_dict"] = {p["id"]: p for p in self.current_tournament["players"]}
+            self._save_state()
+            self.populate_tree()
+            self.show_current_round_report()
+        dlg.Destroy()
+
+    def on_view_players(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        self.main_text.Clear()
+        report = _("Elenco Giocatori Iscritti:\n\n")
+        for i, p in enumerate(self.current_tournament.get("players", []), 1):
+            elo_str = f"({int(p.get('current_elo', 0))})" if p.get('current_elo') else ""
+            report += f"{i:2d}. {p.get('first_name', '')} {p.get('last_name', '')} {elo_str}\n"
+        self.append_log(report)
+
+    def on_view_current_round(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        self.show_current_round_report()
+
+    def on_view_standings(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        from reports import generate_standings_report_text
+        self.main_text.Clear()
+        standings_text = generate_standings_report_text(self.current_tournament, final=False)
+        self.append_log(standings_text)
+
+    def on_rollback_round(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        rounds = self.current_tournament.get("rounds", [])
+        if not rounds:
+            wx.MessageBox(_("Impossibile annullare il turno: nessun turno giocato."), _("Errore"), wx.ICON_ERROR)
+            return
+            
+        dlg = AccessibleMsgDialog(self, _("Annulla Turno"), _("Sei sicuro di voler annullare l'ultimo turno e tornare indietro? Questa azione è irreversibile."), style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            from tournament import rollback_to_previous_round
+            if rollback_to_previous_round(self.current_tournament):
+                self._save_state()
+                self.populate_tree()
+                self.show_current_round_report()
+                self.set_status(_("Time Machine attivata: tornati al turno precedente."))
+        dlg.Destroy()
+
+    def on_finalize_tournament(self, event):
+        if not self.current_tournament:
+            wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
+            return
+        
+        rounds = self.current_tournament.get("rounds", [])
+        if not rounds:
+            wx.MessageBox(_("Il torneo non è ancora iniziato."), _("Errore"), wx.ICON_ERROR)
+            return
+        
+        curr_round_num = self.current_tournament.get("current_round", 1)
+        total_rounds = self.current_tournament.get("total_rounds", 0)
+        
+        if curr_round_num < total_rounds:
+            wx.MessageBox(_("Impossibile finalizzare il torneo prima di aver completato tutti i turni previsti."), _("Errore"), wx.ICON_ERROR)
+            return
+            
+        last_round = rounds[-1]
+        for m in last_round.get("matches", []):
+            if m.get("result") is None:
+                wx.MessageBox(_("Impossibile finalizzare il torneo: ci sono ancora partite senza risultato nell'ultimo turno."), _("Errore"), wx.ICON_ERROR)
+                return
+                
+        dlg = AccessibleMsgDialog(self, _("Finalizza Torneo"), _("Sei sicuro di voler concludere definitivamente il torneo? Verranno calcolati i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database giocatori."), style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            from db_players import load_players_db
+            players_db = load_players_db()
+            
+            from ui import finalize_tournament
+            success = finalize_tournament(self.current_tournament, players_db, self.active_filename)
+            if success:
+                wx.MessageBox(_("Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."), _("Successo"), wx.ICON_INFORMATION)
+                self.current_tournament = None
+                self.active_filename = None
+                self.populate_tree()
+                self.show_intro_message()
+                self.set_status(_("Torneo concluso e archiviato."))
+        dlg.Destroy()
+
 
     def on_active_field_activated(self, item, field_active):
         from utils import format_date_locale
@@ -1233,6 +1379,23 @@ class MainFrame(wx.Frame):
         _apply_match_result_to_players(self.current_tournament, match, result_str, w_score, b_score)
         ricalcola_punti_tutti_giocatori(self.current_tournament)
         
+        # Salva lo stato dopo aver applicato il risultato
+        self._save_state()
+        
+        # Gestione suoni e completamento del turno
+        curr_round_num = self.current_tournament.get("current_round", 1)
+        round_data = next((r for r in self.current_tournament.get("rounds", []) if r.get("round") == curr_round_num), None)
+        if round_data and all(m.get("result") is not None for m in round_data.get("matches", [])):
+            # Turno concluso: salva il report dettagliato del turno e riproduci il suono conclusivo del turno
+            from reports import save_completed_round_report_file
+            save_completed_round_report_file(self.current_tournament, curr_round_num)
+            from utils import play_sound
+            play_sound("conclusione_turno", self.current_tournament)
+        else:
+            # Riproduci il suono specifico del risultato
+            from utils import play_sound
+            play_sound(f"risultato_{result_str}", self.current_tournament)
+        
         if "F" in result_str:
             forfeiting_name = f"{bp['first_name']} {bp['last_name']}" if result_str == "1-F" else (f"{wp['first_name']} {wp['last_name']}" if result_str == "F-1" else None)
             forfeiting_id = bp_id if result_str == "1-F" else (wp_id if result_str == "F-1" else None)
@@ -1252,6 +1415,8 @@ class MainFrame(wx.Frame):
             self._save_state()
             p_name = f"{player.get('last_name')} {player.get('first_name')}"
             self.set_status(_("Giocatore '{name}' ritirato con successo.").format(name=p_name))
+            from utils import play_sound
+            play_sound("ritiro_giocatore", self.current_tournament)
 
     def show_player_detail(self, player):
         self.main_text.Clear()

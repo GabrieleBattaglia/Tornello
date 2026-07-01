@@ -1,4 +1,31 @@
 --- CHANGELOG ---
+9.0.3
+	+ Feature: Estrapolati i preset audio da utils.py a src/audio_presets.py per una migliore pulizia del codice.
+	+ Feature: Collegati tutti i comandi di menù (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+I, Ctrl+Z, Ctrl+F, Ctrl+G, Ctrl+U, Ctrl+L) e la chiusura della finestra principale (suono chiusura sincrono).
+	+ Feature: Visualizzazione dinamica di manuale (F1), changelog (F2) e crediti (F3) caricati direttamente da file di testo anziché stringhe hardcoded.
+	+ Feature: Creata una suite di test end-to-end completa in tests/test_e2e.py per validare l'intero flusso del torneo.
+	+ Version: Aggiornata la versione a 9.0.3.
+
+9.0.2
+	+ Feature: Ricerca FIDE avanzata con operatori (+ obbligatorio, - escluso, = frase esatta).
+	+ Feature: Feedback vocale automatico (focus jump) all'iscrizione dei giocatori.
+	+ Feature: Ordinamento automatico degli iscritti per ELO decrescente, numerazione e nazione.
+	+ Feature: Visualizzazione del numero dei risultati trovati/iscritti nei titoli delle liste.
+	+ Feature: Paginazione automatica dei risultati FIDE ("Mostra altri...") per alte prestazioni ed accessibilità.
+	+ Feature: Aggiornamento dei nodi dell'albero in-place per preservare il focus dello screen reader.
+	+ Feature: Eliminazione completa di icone ed emoji unicode grafiche disturbanti.
+	+ Feature: Barra di progresso accessibile per il caricamento del database FIDE.
+	+ Version: Aggiornata la versione a 9.0.2.
+
+9.0.0
+	+ Feature: Nuova interfaccia grafica nativa in wxPython ottimizzata al 100% per screen reader (NVDA/JAWS).
+	+ Feature: Integrazione del nuovo motore bbpPairings v6.0.0 (regole FIDE 2026 e formato TRF-2026).
+	+ Feature: Architettura disaccoppiata logica-UI per garantire la compatibilità con l'interfaccia grafica.
+	+ Feature: Inserimento strutturato del tempo di riflessione e classificazione automatica del torneo (Blitz, Rapid, Standard).
+	+ Feature: Elo Club come fallback finale per gli abbinamenti.
+	+ Feature: Integrazione degli strumenti storici (Players_DB, consulta, Sync_DB) direttamente come pannelli ed eventi della GUI.
+	+ Version: Rilascio ufficiale di Tornello v9.0.0.
+
 8.12.2
 	+ Build: Rimosso unittest dagli esclusi di PyInstaller nel file tornello.spec.
 	+ Version: Aggiornata la versione a 8.12.2.

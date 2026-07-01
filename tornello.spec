@@ -19,7 +19,7 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[],
     excludes=['tkinter', 'doctest', 'pdb', 'PyQt5',
-              'PyQt6', 'PySide2', 'PySide6', 'wx', 'matplotlib', 'pandas'],
+              'PyQt6', 'PySide2', 'PySide6', 'matplotlib', 'pandas'],
     cipher=None,
     noarchive=False,
 )

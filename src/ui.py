@@ -1626,6 +1626,12 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         return False  # L'archiviazione è una parte importante della finalizzazione
 
     custom_path = torneo.get("custom_save_path")
+    if custom_path:
+        from utils import resolve_and_verify_save_path
+        custom_path, warning = resolve_and_verify_save_path(custom_path)
+        if warning:
+            print(warning)
+
     
     # 1. Trova il file JSON principale del torneo (locale)
     local_json_filename = f"Tornello - {sanitized_tournament_name}.json"

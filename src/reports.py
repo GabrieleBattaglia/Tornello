@@ -39,7 +39,11 @@ def save_current_tournament_round_file(torneo):
     filename = _("Tornello - {name} - Turno corrente.txt").format(name=sanitized_name)
     custom_path = torneo.get("custom_save_path")
     if custom_path:
-        filename = os.path.join(custom_path, filename)
+        from utils import resolve_and_verify_save_path
+        resolved_path, warning = resolve_and_verify_save_path(custom_path)
+        if warning:
+            print(warning)
+        filename = os.path.join(resolved_path, filename)
     round_data = None
     for rnd in torneo.get("rounds", []):
         if rnd.get("round") == current_round_num:
@@ -318,7 +322,11 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
     )
     custom_path = torneo.get("custom_save_path")
     if custom_path:
-        filename = os.path.join(custom_path, filename)
+        from utils import resolve_and_verify_save_path
+        resolved_path, warning = resolve_and_verify_save_path(custom_path)
+        if warning:
+            print(warning)
+        filename = os.path.join(resolved_path, filename)
 
     round_data = None
     for rnd in torneo.get("rounds", []):
@@ -644,7 +652,11 @@ def save_standings_text(torneo, final=False):
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
     custom_path = torneo.get("custom_save_path")
     if custom_path:
-        filename = os.path.join(custom_path, filename)
+        from utils import resolve_and_verify_save_path
+        resolved_path, warning = resolve_and_verify_save_path(custom_path)
+        if warning:
+            print(warning)
+        filename = os.path.join(resolved_path, filename)
 
     try:
         with open(filename, "w", encoding="utf-8-sig") as f:

@@ -193,188 +193,8 @@ def play_sound(event_name, torneo=None, sync=False):
         gbutils_dir = os.path.dirname(GBUtils.__file__)
         db_path = os.path.join(gbutils_dir, "Acu_Collection.json")
 
-        custom_presets = {
-            "tornello_avvio": {
-                "descrizione": "Suono di benvenuto per Tornello (arpeggio ascendente solare)",
-                "score": [
-                    ["c5", 0.1, -0.8, 0.0],
-                    ["e5", 0.1, -0.4, 0.0],
-                    ["g5", 0.1, 0.0, 0.0],
-                    ["c6", 0.2, 0.4, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.01]
-            },
-            "tornello_abbinamento": {
-                "descrizione": "Arpeggio rapido per generazione abbinamenti Tornello",
-                "score": [
-                    ["e5", 0.08, -0.5, 0.0],
-                    ["g5", 0.08, 0.0, 0.0],
-                    ["c6", 0.15, 0.5, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.01]
-            },
-            "tornello_chiusura": {
-                "descrizione": "Arpeggio discendente di chiusura per l'uscita da Tornello",
-                "score": [
-                    ["c6", 0.1, 0.4, 0.0],
-                    ["g5", 0.1, 0.0, 0.0],
-                    ["e5", 0.1, -0.4, 0.0],
-                    ["c5", 0.2, -0.8, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.01]
-            },
-            "tornello_time_machine": {
-                "descrizione": "Effetto rewind per Time Machine",
-                "score": [
-                    ["g4", 0.08, -0.5, 0.0],
-                    ["e4", 0.08, -0.2, 0.0],
-                    ["c4", 0.15, 0.2, 0.0],
-                    ["g3", 0.25, 0.5, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.02, 0.0, 100.0, 0.05]
-            },
-            "tornello_conclusione_turno": {
-                "descrizione": "Accordo di conclusione turno",
-                "score": [
-                    ["c5", 0.15, -0.3, 0.0],
-                    ["e5", 0.15, 0.3, 0.0],
-                    ["g5", 0.3, 0.0, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_conclusione_torneo": {
-                "descrizione": "Fanfara trionfale per la conclusione del torneo",
-                "score": [
-                    ["c5", 0.1, -0.5, 0.0],
-                    ["e5", 0.1, -0.2, 0.0],
-                    ["g5", 0.1, 0.2, 0.0],
-                    ["c6", 0.15, 0.5, 0.0],
-                    ["e6", 0.15, 0.0, 0.0],
-                    ["g6", 0.4, 0.0, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.05]
-            },
-            "tornello_aggiunta_giocatore": {
-                "descrizione": "Suono per aggiunta giocatore (due note ascendenti rapide)",
-                "score": [
-                    ["c5", 0.08, -0.5, 0.0],
-                    ["g5", 0.15, 0.5, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_ritiro_giocatore": {
-                "descrizione": "Suono per ritiro giocatore (due note discendenti tristi)",
-                "score": [
-                    ["f4", 0.15, 0.0, 0.0],
-                    ["c4", 0.3, 0.0, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.02, 0.0, 100.0, 0.05]
-            },
-            "tornello_rimozione_giocatore": {
-                "descrizione": "Suono per rimozione giocatore dalla lista",
-                "score": [
-                    ["g4", 0.1, -0.2, 0.0],
-                    ["d4", 0.2, 0.2, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_pianifica_crea": {
-                "descrizione": "Pianificazione partita creata",
-                "score": [
-                    ["d5", 0.08, -0.3, 0.0],
-                    ["f5", 0.08, 0.0, 0.0],
-                    ["a5", 0.15, 0.3, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_pianifica_modifica": {
-                "descrizione": "Pianificazione partita modificata",
-                "score": [
-                    ["f5", 0.08, -0.3, 0.0],
-                    ["d5", 0.08, 0.0, 0.0],
-                    ["f5", 0.15, 0.3, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_pianifica_rimuovi": {
-                "descrizione": "Pianificazione partita rimossa",
-                "score": [
-                    ["a5", 0.08, 0.3, 0.0],
-                    ["f5", 0.08, 0.0, 0.0],
-                    ["d5", 0.15, -0.3, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_risultato_1_0": {
-                "descrizione": "Risultato 1-0: Bianco vince (pan a sinistra, arpeggio brillante)",
-                "score": [
-                    ["c5", 0.08, -0.8, 0.0],
-                    ["e5", 0.08, -0.8, 0.0],
-                    ["g5", 0.15, -0.8, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.01]
-            },
-            "tornello_risultato_0_1": {
-                "descrizione": "Risultato 0-1: Nero vince (pan a destra, arpeggio brillante)",
-                "score": [
-                    ["c5", 0.08, 0.8, 0.0],
-                    ["e5", 0.08, 0.8, 0.0],
-                    ["g5", 0.15, 0.8, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.01]
-            },
-            "tornello_risultato_patta": {
-                "descrizione": "Risultato patta: accordo equilibrato centrato",
-                "score": [
-                    ["e5", 0.12, 0.0, 0.0],
-                    ["a5", 0.25, 0.0, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.03]
-            },
-            "tornello_risultato_1_F": {
-                "descrizione": "Risultato 1-F: forfait Nero (pan a sinistra, toni alterni)",
-                "score": [
-                    ["c5", 0.1, -0.8, 0.0],
-                    ["c4", 0.2, -0.8, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_risultato_F_1": {
-                "descrizione": "Risultato F-1: forfait Bianco (pan a destra, toni alterni)",
-                "score": [
-                    ["c5", 0.1, 0.8, 0.0],
-                    ["c4", 0.2, 0.8, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.01, 0.0, 100.0, 0.02]
-            },
-            "tornello_risultato_0_0F": {
-                "descrizione": "Risultato 0-0F: doppio forfait (toni discendenti cupi)",
-                "score": [
-                    ["c4", 0.12, 0.0, 0.0],
-                    ["b3", 0.12, 0.0, 0.0],
-                    ["bb3", 0.25, 0.0, 0.0]
-                ],
-                "kind": 1,
-                "adsr": [0.02, 0.0, 100.0, 0.04]
-            }
-        }
+        from audio_presets import custom_presets
+
 
         preset_data = None
         if os.path.exists(db_path):
@@ -537,4 +357,62 @@ def match_player_query(player, query):
             rel_score = 2
             
     return (-total_matched, rel_score, last_name_l, first_name_l)
+
+
+def resolve_and_verify_save_path(path, default_fallback="."):
+    """
+    Verifica se il percorso personalizzato è valido e accessibile.
+    - Se l'unità (drive letter) non è disponibile: fallback alla cartella di default + avviso.
+    - Se la cartella specificata non esiste: prova a crearla. Se fallisce, fallback + avviso.
+    - Logga l'operazione su console/stdout.
+    Restituisce una tupla (resolved_path, warning_message).
+    """
+    if not path:
+        return default_fallback, None
+
+    # Normalizza il percorso
+    path = os.path.abspath(path)
+    drive, tail = os.path.splitdrive(path)
+    
+    # 1. Verifica disponibilità dell'unità (drive letter)
+    if drive:
+        drive_root = drive + os.sep
+        if not os.path.exists(drive_root):
+            msg = _("L'unità '{drive}' non è disponibile. Uso la cartella di default: '{fallback}'.").format(
+                drive=drive, fallback=default_fallback
+            )
+            print(f"LOG: {msg}")
+            return default_fallback, msg
+
+    # 2. Verifica/creazione della cartella
+    if not os.path.exists(path):
+        try:
+            os.makedirs(path, exist_ok=True)
+            # Log dell'operazione di creazione
+            msg_log = _("Creata cartella di salvataggio inesistente: '{path}'").format(path=path)
+            print(f"LOG: {msg_log}")
+            msg_user = _("La cartella '{path}' non esisteva ed è stata creata.").format(path=path)
+            return path, msg_user
+        except Exception as e:
+            msg = _("Impossibile creare la cartella '{path}': {error}. Uso la cartella di default: '{fallback}'.").format(
+                path=path, error=e, fallback=default_fallback
+            )
+            print(f"LOG: {msg}")
+            return default_fallback, msg
+
+    # Verifica se la cartella esistente è scrivibile
+    try:
+        test_file = os.path.join(path, ".tornello_write_test")
+        with open(test_file, "w") as f:
+            f.write("test")
+        os.remove(test_file)
+    except Exception as e:
+        msg = _("La cartella '{path}' non è scrivibile: {error}. Uso la cartella di default: '{fallback}'.").format(
+            path=path, error=e, fallback=default_fallback
+        )
+        print(f"LOG: {msg}")
+        return default_fallback, msg
+
+    return path, None
+
 

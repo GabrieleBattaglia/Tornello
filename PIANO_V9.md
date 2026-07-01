@@ -598,23 +598,25 @@ Invece di una classica `wx.StatusBar` (difficile da leggere e tracciare per NVDA
 **Effort stimato**: BASSO (3-5 giorni)
 
 #### 6.1 Gestione Cartelle Personalizzate (Issue #18)
-- [ ] Se la cartella specificata non esiste → crearla con `os.makedirs(path, exist_ok=True)` + avviso utente
-- [ ] Se l'unità (drive letter) non è disponibile → rilevare con `os.path.exists(drive_root)` → fallback a cartella di default + avviso utente
-- [ ] Log dell'operazione
+- [x] Se la cartella specificata non esiste → crearla con `os.makedirs(path, exist_ok=True)` + avviso utente
+- [x] Se l'unità (drive letter) non è disponibile → rilevare con `os.path.exists(drive_root)` → fallback a cartella di default + avviso utente
+- [x] Log dell'operazione
+
 
 #### 6.2 Pulizia Finale
-- [ ] Estrapolare i preset audio da `play_sound()` (280 righe in `utils.py`) in un file di configurazione esterno
-- [ ] Aggiornare il README per la v9
-- [ ] Aggiornare il ChangeLog
-- [ ] Aggiornare le traduzioni con pybabel
-- [ ] Creare release notes
-- [ ] Aggiornare `tornello.spec` per includere wxPython e la nuova struttura
+- [x] Estrapolare i preset audio da `play_sound()` (280 righe in `utils.py`) in un file di configurazione esterno
+- [x] Aggiornare il README per la v9
+- [x] Aggiornare il ChangeLog
+- [x] Aggiornare le traduzioni con pybabel
+
+- [x] Creare release notes
+- [x] Aggiornare `tornello.spec` per includere wxPython e la nuova struttura
 
 #### 6.3 QA e Release
-- [ ] Test end-to-end completo: creare torneo → aggiungere giocatori → N turni → finalizzare
-- [ ] Test di regressione con tornei archiviati
+- [x] Test end-to-end completo: creare torneo → aggiungere giocatori → N turni → finalizzare
+- [x] Test di regressione con tornei archiviati
 - [ ] Test di accessibilità con screen reader
-- [ ] Build PyInstaller e test del pacchetto compilato
+- [x] Build PyInstaller e test del pacchetto compilato
 - [ ] Tagging e release su GitHub
 
 ---
