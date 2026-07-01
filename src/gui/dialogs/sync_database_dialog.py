@@ -25,11 +25,20 @@ class SyncDatabaseDialog(wx.Dialog):
         
         # Carica FIDE DB
         if os.path.exists(FIDE_DB_LOCAL_FILE):
+            progress = wx.ProgressDialog(
+                _("Caricamento Database FIDE"),
+                _("Caricamento del database FIDE locale in corso... Attendere."),
+                maximum=100,
+                parent=self,
+                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE
+            )
+            progress.Pulse()
             try:
                 with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
                     self.fide_db = json.load(f)
             except Exception:
                 pass
+            progress.Destroy()
                 
         self.changes = []
         self.stats = {

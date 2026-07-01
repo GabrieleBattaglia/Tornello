@@ -24,11 +24,20 @@ class FideQueryDialog(wx.Dialog):
         
         # Caricamento del DB FIDE in memoria
         if os.path.exists(FIDE_DB_LOCAL_FILE):
+            progress = wx.ProgressDialog(
+                _("Caricamento Database FIDE"),
+                _("Caricamento del database FIDE locale in corso... Attendere."),
+                maximum=100,
+                parent=self,
+                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE
+            )
+            progress.Pulse()
             try:
                 with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
                     self.fide_db = json.load(f)
             except Exception:
                 pass
+            progress.Destroy()
                 
         self._init_ui()
         self.apply_theme()
@@ -107,7 +116,7 @@ class FideQueryDialog(wx.Dialog):
         if search_is_id and query in self.fide_db:
             p = self.fide_db[query]
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            label = f"{name} (ID FIDE: {query})"
+            label = f"{name} (ELO: {p.get('elo_standard', 0)} - ID FIDE: {query} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
             self.list_results.Append(label)
             self.results_map.append(p)
             self.list_results.SetSelection(0)
@@ -120,7 +129,7 @@ class FideQueryDialog(wx.Dialog):
             full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
             if all(t in full_name for t in search_terms):
                 name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                label = f"{name} (ID FIDE: {fide_id})"
+                label = f"{name} (ELO: {p.get('elo_standard', 0)} - ID FIDE: {fide_id} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
                 self.list_results.Append(label)
                 self.results_map.append(p)
                 count += 1

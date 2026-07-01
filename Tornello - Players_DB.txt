@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Martedì 30 giugno 2026 12:50:00
+﻿Report Database Giocatori Tornello - Mercoledì 1 luglio 2026 12:25:59
 ========================================
 
 ID: ARICL001, Claudio Ariaudo
@@ -58,8 +58,8 @@ ID: BATGA001, 3N Gabriele Battaglia
 ID: BERLU001, NC Luca Bernoni
 	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1479 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 7, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
@@ -156,8 +156,8 @@ ID: CICMA001, NC Mathias Cicciarella
 ID: CINAL001, NC Alessandra Cinque
 	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1288 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 6, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
@@ -187,8 +187,8 @@ ID: DEFMO001, Monica De Fazio
 ID: DELDA001, NC Davide Del Monte
 	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1416 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 6, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
@@ -207,8 +207,8 @@ ID: DELDA002, Davide Delmonte
 ID: DEMGI001, Gianni Demaio
 	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1408 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 7, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
@@ -240,8 +240,8 @@ ID: DIBVI001, NC Vincenzo Di Bari
 ID: FORMA001, NC Martina Forte
 	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1302 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 20, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (4) tornei:
@@ -266,8 +266,8 @@ ID: GASCL001, 1N Claudio Gasperoni
 ID: GERRO001, NC Roberta Gerini
 	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1399 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
@@ -403,8 +403,8 @@ ID: POLDI001, Diego Poli
 ID: RICPI001, NC Piero Riccardi
 	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
 	Elo Standard: 1376 (Partite FIDE: N/D)
-	Elo Rapid: N/D (Partite FIDE: N/D, K: N/D)
-	Elo Blitz: N/D (Partite FIDE: N/D, K: N/D)
+	Elo Rapid: N/D (Partite FIDE: 0, K: None)
+	Elo Blitz: N/D (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 7, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:

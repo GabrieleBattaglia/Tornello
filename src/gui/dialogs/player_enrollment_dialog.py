@@ -25,11 +25,20 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # Carica il database FIDE locale in memoria per ricerche istantanee senza IO
         self.fide_db = {}
         if os.path.exists(FIDE_DB_LOCAL_FILE):
+            progress = wx.ProgressDialog(
+                _("Caricamento Database FIDE"),
+                _("Caricamento del database FIDE locale in corso... Attendere."),
+                maximum=100,
+                parent=self,
+                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE
+            )
+            progress.Pulse()
             try:
                 with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
                     self.fide_db = json.load(f)
             except Exception:
                 pass
+            progress.Destroy()
                 
         self._init_ui()
         self.apply_theme()
@@ -78,6 +87,10 @@ class PlayerEnrollmentDialog(wx.Dialog):
         
         left_vbox.Add(sbs_fide, 1, wx.EXPAND | wx.ALL, 5)
         
+        self.btn_new_player = wx.Button(panel, label=_("Nuovo Giocatore Da Zero (Principiante)"))
+        self.btn_new_player.Bind(wx.EVT_BUTTON, self.on_create_new_player)
+        left_vbox.Add(self.btn_new_player, 0, wx.EXPAND | wx.ALL, 5)
+        
         main_hbox.Add(left_vbox, 1, wx.EXPAND)
         
         # --- COLONNA DESTRA: ISCRITTI ---
@@ -114,6 +127,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         apply_visual_settings(self.search_fide, self.settings)
         apply_visual_settings(self.list_fide_results, self.settings)
         apply_visual_settings(self.list_enrolled, self.settings)
+        apply_visual_settings(self.btn_new_player, self.settings)
 
     def update_enrolled_list(self):
         """Aggiorna il contenuto della lista dei giocatori iscritti."""
@@ -129,7 +143,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
             self.enrolled_data_map.append(p)
 
     def on_search_local_changed(self, event):
-        """Filtra e aggiorna i risultati del DB locale."""
+        """Filtra e aggiorna i risultati del DB locale in ordine di ELO decrescente."""
         query = self.search_local.GetValue().strip().lower()
         search_terms = query.split()
         
@@ -139,17 +153,25 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # Mappa per escludere omonimi già iscritti
         enrolled_ids = {p.get("id") for p in self.enrolled_players if p.get("id")}
         
+        matching = []
         for p_id, p in self.players_db.items():
             if p_id in enrolled_ids:
                 continue
                 
             full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
             if not search_terms or all(t in full_name for t in search_terms):
-                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                elo = p.get("current_elo", 1399)
-                label = f"{name} (ELO: {elo} - ID: {p_id})"
-                self.list_local_results.Append(label)
-                self.local_results_map.append(p)
+                matching.append(p)
+                
+        # Ordina per ELO decrescente
+        matching_sorted = sorted(matching, key=lambda x: x.get("current_elo", 1399), reverse=True)
+        
+        for p in matching_sorted:
+            p_id = p.get("id")
+            name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+            elo = p.get("current_elo", 1399)
+            label = f"{name} (ELO: {elo} - ID: {p_id})"
+            self.list_local_results.Append(label)
+            self.local_results_map.append(p)
 
     def on_search_fide_changed(self, event):
         """Filtra e aggiorna i risultati del DB FIDE."""
@@ -172,7 +194,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
             if fide_id_str not in enrolled_fide_ids:
                 name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
                 elo = p.get("elo_standard", 0)
-                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id_str})"
+                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id_str} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
                 self.list_fide_results.Append(label)
                 self.fide_results_map.append(p)
             return
@@ -187,7 +209,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
             if all(t in full_name for t in search_terms):
                 name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
                 elo = p.get("elo_standard", 0)
-                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id})"
+                label = f"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id} - Anno: {p.get('birth_year', 'N/D')} - FED: {p.get('federation', 'N/D')})"
                 self.list_fide_results.Append(label)
                 self.fide_results_map.append(p)
                 count += 1
@@ -270,3 +292,55 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
     def get_enrolled_players(self):
         return self.enrolled_players
+
+    def on_create_new_player(self, event):
+        dlg_ln = wx.TextEntryDialog(self, _("Inserisci Cognome del nuovo giocatore:"), _("Crea Nuovo Giocatore"))
+        if dlg_ln.ShowModal() != wx.ID_OK:
+            dlg_ln.Destroy()
+            return
+        last_name = dlg_ln.GetValue().strip()
+        dlg_ln.Destroy()
+        
+        dlg_fn = wx.TextEntryDialog(self, _("Inserisci Nome del nuovo giocatore:"), _("Crea Nuovo Giocatore"))
+        if dlg_fn.ShowModal() != wx.ID_OK:
+            dlg_fn.Destroy()
+            return
+        first_name = dlg_fn.GetValue().strip()
+        dlg_fn.Destroy()
+        
+        if not last_name or not first_name:
+            wx.MessageBox(_("Nome e Cognome sono obbligatori."), _("Errore"), wx.ICON_ERROR)
+            return
+            
+        # Genera ID e crea nel DB locale
+        from db_players import generate_player_id, save_players_db
+        new_id = generate_player_id(self.players_db)
+        
+        new_player = {
+            "id": new_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "current_elo": 1399,
+            "fide_id_num_str": "",
+            "birth_date": "1990-01-01",
+            "gender": "M",
+            "federation": "ITA",
+            "fide_title": "",
+            "club": "",
+            "results_history": [],
+            "opponents": []
+        }
+        
+        # Salva nel DB giocatori
+        self.players_db[new_id] = new_player
+        save_players_db(self.players_db)
+        
+        # Iscrivi automaticamente al torneo corrente
+        self.enrolled_players.append(new_player)
+        self.update_enrolled_list()
+        
+        # Ripristina/pulisce ricerche
+        self.on_search_local_changed(None)
+        
+        # Seleziona l'ultimo aggiunto nella lista iscritti per feedback
+        self.list_enrolled.SetSelection(self.list_enrolled.GetCount() - 1)

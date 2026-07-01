@@ -76,13 +76,21 @@ class PlayersDbDialog(wx.Dialog):
         self.list_players.Clear()
         self.players_map = []
         
+        matching = []
         for p_id, p in self.players_db.items():
             full_name = f"{p.get('first_name', '')} {p.get('last_name', '')}".lower()
             if not search_terms or all(t in full_name for t in search_terms):
-                name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                label = f"{name} (ID: {p_id})"
-                self.list_players.Append(label)
-                self.players_map.append(p_id)
+                matching.append((p_id, p))
+                
+        # Ordina per ELO decrescente
+        matching_sorted = sorted(matching, key=lambda item: item[1].get("current_elo", 1399), reverse=True)
+        
+        for p_id, p in matching_sorted:
+            name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+            elo = p.get("current_elo", 1399)
+            label = f"{name} (ELO: {elo} - ID: {p_id})"
+            self.list_players.Append(label)
+            self.players_map.append(p_id)
                 
         if self.players_map:
             self.list_players.SetSelection(0)
@@ -115,7 +123,7 @@ class PlayersDbDialog(wx.Dialog):
         self.tree_ctrl.SetItemPyData(root_node, {"type": "player_root"})
         
         # 1. Anagrafica
-        node_bio = self.tree_ctrl.AppendItem(root_node, "📁 Anagrafica")
+        node_bio = self.tree_ctrl.AppendItem(root_node, "Anagrafica")
         
         item_ln = self.tree_ctrl.AppendItem(node_bio, f"Cognome: {p.get('last_name', '')}")
         self.tree_ctrl.SetItemPyData(item_ln, {"type": "field", "key": "last_name"})
@@ -133,7 +141,7 @@ class PlayersDbDialog(wx.Dialog):
         self.tree_ctrl.SetItemPyData(item_fed, {"type": "field", "key": "federation"})
         
         # 2. ELO
-        node_elo = self.tree_ctrl.AppendItem(root_node, "📁 ELO e Titoli")
+        node_elo = self.tree_ctrl.AppendItem(root_node, "ELO e Titoli")
         
         item_elo_std = self.tree_ctrl.AppendItem(node_elo, f"ELO Standard: {p.get('current_elo', 1399)}")
         self.tree_ctrl.SetItemPyData(item_elo_std, {"type": "field", "key": "current_elo", "is_int": True})
@@ -151,7 +159,7 @@ class PlayersDbDialog(wx.Dialog):
         self.tree_ctrl.SetItemPyData(item_fid, {"type": "field", "key": "fide_id_num_str"})
         
         # 3. Storico Tornei
-        node_hist = self.tree_ctrl.AppendItem(root_node, "📁 Storico Tornei")
+        node_hist = self.tree_ctrl.AppendItem(root_node, "Storico Tornei")
         history = p.get("results_history", [])
         for idx, entry in enumerate(history):
             label = f"Turno {entry.get('round')}: vs {entry.get('opponent_id')} -> {entry.get('result')} (Punti: {entry.get('score')})"
@@ -159,7 +167,7 @@ class PlayersDbDialog(wx.Dialog):
             self.tree_ctrl.SetItemPyData(item_h, {"type": "history_record", "index": idx})
             
         # 4. Medagliere
-        node_med = self.tree_ctrl.AppendItem(root_node, "📁 Medagliere")
+        node_med = self.tree_ctrl.AppendItem(root_node, "Medagliere")
         medals = p.get("medals_history", [])
         for idx, m in enumerate(medals):
             label = f"{m.get('tournament_name', 'Torneo')}: {m.get('position', 'Posizione')} ({m.get('date', 'N/D')})"
@@ -191,8 +199,37 @@ class PlayersDbDialog(wx.Dialog):
             else:
                 p[key] = new_val
                 
+            from db_players import save_players_db
             save_players_db(self.players_db)
-            self.populate_player_tree()
+            
+            # Aggiorna il testo del nodo in-place per preservare il focus dell'albero
+            prefix_map = {
+                "last_name": _("Cognome: "),
+                "first_name": _("Nome: "),
+                "gender": _("Sesso: "),
+                "birth_date": _("Anno Nascita: "),
+                "federation": _("Nazione (FED): "),
+                "current_elo": _("ELO Standard: "),
+                "elo_rapid": _("ELO Rapid: "),
+                "elo_blitz": _("ELO Blitz: "),
+                "fide_title": _("Titolo FIDE: "),
+                "fide_id_num_str": _("ID FIDE: ")
+            }
+            prefix = prefix_map.get(key, "")
+            self.tree_ctrl.SetItemText(item, f"{prefix}{p[key]}")
+            
+            # Se è cambiato il nome o il cognome, aggiorna la radice dell'albero e la listbox di sinistra
+            if key in ["last_name", "first_name"]:
+                root_item = self.tree_ctrl.GetFirstChild(self.tree_ctrl.GetRootItem())[0]
+                if root_item.IsOk():
+                    p_name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+                    self.tree_ctrl.SetItemText(root_item, p_name)
+                
+                sel = self.list_players.GetSelection()
+                if sel != wx.NOT_FOUND:
+                    p_id = self.players_map[sel]
+                    name_lbl = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+                    self.list_players.SetString(sel, f"{name_lbl} (ID: {p_id})")
             
         dlg.Destroy()
 

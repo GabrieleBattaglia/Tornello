@@ -1,4 +1,4 @@
-__version__ = "9.0.0"
+__version__ = "9.0.1"
 __date__ = "2026.07.01"
 __authors__ = "Gabriele Battaglia & Stella"
 __bbp_info__ = "using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming."

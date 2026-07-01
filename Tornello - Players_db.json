@@ -1,2260 +1,2691 @@
-[
- {
-  "id": "GASCL001",
-  "first_name": "Claudio",
-  "last_name": "Gasperoni",
-  "current_elo": 1853,
-  "registration_date": "2025-05-01",
-  "birth_date": "1975-01-01",
-  "games_played": 24,
-  "medals": {
-   "gold": 3,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+{
+ "schema_version": 2,
+ "players": [
+  {
+   "id": "GASCL001",
+   "first_name": "Claudio",
+   "last_name": "Gasperoni",
+   "current_elo": 1853,
+   "registration_date": "2025-05-01",
+   "birth_date": "1975-01-01",
+   "games_played": 24,
+   "medals": {
+    "gold": 3,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 1,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 7,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 1,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 1,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "1N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "825450",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1868,
+   "fide_games": 0,
+   "fide_rapid_games": 5,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_o_title": "NI",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 1,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "NICFR001",
+   "first_name": "Francesco",
+   "last_name": "Nicolini",
+   "current_elo": 1784,
+   "registration_date": "2025-05-01",
+   "birth_date": "1965-01-01",
+   "games_played": 5,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 7,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 1,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 1,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "1N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "825450",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1868,
-  "fide_games": 0,
-  "fide_rapid_games": 5,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_o_title": "NI"
- },
- {
-  "id": "NICFR001",
-  "first_name": "Francesco",
-  "last_name": "Nicolini",
-  "current_elo": 1784,
-  "registration_date": "2025-05-01",
-  "birth_date": "1965-01-01",
-  "games_played": 5,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 1,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 3,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "2N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "23424109",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1682,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 3,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "2N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "23424109",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1682,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "VANJI001",
-  "first_name": "Jiazhuang",
-  "last_name": "Vandelli",
-  "current_elo": 1727,
-  "registration_date": "2025-05-01",
-  "birth_date": "2002-01-01",
-  "games_played": 12,
-  "medals": {
-   "gold": 0,
-   "silver": 1,
-   "bronze": 0,
-   "wood": 0
+  {
+   "id": "VANJI001",
+   "first_name": "Jiazhuang",
+   "last_name": "Vandelli",
+   "current_elo": 1727,
+   "registration_date": "2025-05-01",
+   "birth_date": "2002-01-01",
+   "games_played": 12,
+   "medals": {
+    "gold": 0,
+    "silver": 1,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 2,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 6,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "2N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "23449071",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1781,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 2,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "ZAVFA001",
+   "first_name": "Fabrizio",
+   "last_name": "Zavan",
+   "current_elo": 1671,
+   "registration_date": "2025-05-01",
+   "birth_date": "1963-01-01",
+   "games_played": 5,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 6,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "2N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "23449071",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1781,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "ZAVFA001",
-  "first_name": "Fabrizio",
-  "last_name": "Zavan",
-  "current_elo": 1671,
-  "registration_date": "2025-05-01",
-  "birth_date": "1963-01-01",
-  "games_played": 5,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 5,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "2N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "876020",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1662,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "i",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 5,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "2N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "876020",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1662,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "i"
- },
- {
-  "id": "MANFA001",
-  "first_name": "Fabrizio",
-  "last_name": "Manneschi",
-  "current_elo": 1605,
-  "registration_date": "2025-05-01",
-  "birth_date": "1946-01-01",
-  "games_played": 5,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+  {
+   "id": "MANFA001",
+   "first_name": "Fabrizio",
+   "last_name": "Manneschi",
+   "current_elo": 1605,
+   "registration_date": "2025-05-01",
+   "birth_date": "1946-01-01",
+   "games_played": 5,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 9,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "2805761",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1609,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 9,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "2805761",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1609,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "TRACO001",
-  "first_name": "Cosetta",
-  "last_name": "Trapletti",
-  "current_elo": 1497,
-  "registration_date": "2025-05-01",
-  "birth_date": "1968-01-01",
-  "games_played": 17,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+  {
+   "id": "TRACO001",
+   "first_name": "Cosetta",
+   "last_name": "Trapletti",
+   "current_elo": 1497,
+   "registration_date": "2025-05-01",
+   "birth_date": "1968-01-01",
+   "games_played": 17,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 16,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 7,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 11,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "2817697",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1534,
+   "fide_games": 0,
+   "fide_rapid_games": 3,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 16,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "TOLFI001",
+   "first_name": "Filippa",
+   "last_name": "Tolaro",
+   "current_elo": 1515,
+   "registration_date": "2025-05-01",
+   "birth_date": "1966-01-01",
+   "games_played": 11,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 7,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 11,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "2817697",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1534,
-  "fide_games": 0,
-  "fide_rapid_games": 3,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "TOLFI001",
-  "first_name": "Filippa",
-  "last_name": "Tolaro",
-  "current_elo": 1515,
-  "registration_date": "2025-05-01",
-  "birth_date": "1966-01-01",
-  "games_played": 11,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 11,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 13,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": "RIT",
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "28505867",
+   "experienced": true,
+   "fide_k_factor": 40,
+   "fide_elo_rapid": 1499,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 11,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "COLMI001",
+   "first_name": "Michele",
+   "last_name": "Colangelo",
+   "current_elo": 1509,
+   "registration_date": "2025-05-01",
+   "birth_date": "1959-01-01",
+   "games_played": 12,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 13,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": "RIT",
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "28505867",
-  "experienced": true,
-  "fide_k_factor": 40,
-  "fide_elo_rapid": 1499,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "COLMI001",
-  "first_name": "Michele",
-  "last_name": "Colangelo",
-  "current_elo": 1509,
-  "registration_date": "2025-05-01",
-  "birth_date": "1959-01-01",
-  "games_played": 12,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 19,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 18,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "23424087",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1563,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 19,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "BATGA001",
+   "first_name": "Gabriele",
+   "last_name": "Battaglia",
+   "current_elo": 1524,
+   "registration_date": "2025-05-01",
+   "birth_date": "1974-09-13",
+   "games_played": 24,
+   "medals": {
+    "gold": 0,
+    "silver": 1,
+    "bronze": 0,
+    "wood": 1
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 18,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "23424087",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1563,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "BATGA001",
-  "first_name": "Gabriele",
-  "last_name": "Battaglia",
-  "current_elo": 1524,
-  "registration_date": "2025-05-01",
-  "birth_date": "1974-09-13",
-  "games_played": 24,
-  "medals": {
-   "gold": 0,
-   "silver": 1,
-   "bronze": 0,
-   "wood": 1
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 6,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 12,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 2,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 4,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "804495",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1635,
+   "fide_games": 0,
+   "fide_rapid_games": 3,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 6,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "PARLU001",
+   "first_name": "Luca",
+   "last_name": "Parravano",
+   "current_elo": 1487,
+   "registration_date": "2025-05-01",
+   "birth_date": "1970-01-01",
+   "games_played": 5,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 12,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 2,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 4,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "804495",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1635,
-  "fide_games": 0,
-  "fide_rapid_games": 3,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "PARLU001",
-  "first_name": "Luca",
-  "last_name": "Parravano",
-  "current_elo": 1487,
-  "registration_date": "2025-05-01",
-  "birth_date": "1970-01-01",
-  "games_played": 5,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 13,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "3N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "28556666",
+   "experienced": true,
+   "fide_k_factor": 40,
+   "fide_elo_rapid": 1525,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 13,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "3N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "28556666",
-  "experienced": true,
-  "fide_k_factor": 40,
-  "fide_elo_rapid": 1525,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "BARGI001",
-  "first_name": "Giuseppe",
-  "last_name": "Baratta",
-  "current_elo": 1426,
-  "registration_date": "2025-05-01",
-  "birth_date": "1961-01-01",
-  "games_played": 12,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+  {
+   "id": "BARGI001",
+   "first_name": "Giuseppe",
+   "last_name": "Baratta",
+   "current_elo": 1426,
+   "registration_date": "2025-05-01",
+   "birth_date": "1961-01-01",
+   "games_played": 12,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 12,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 17,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "28594010",
+   "experienced": true,
+   "fide_k_factor": 40,
+   "fide_elo_rapid": 1563,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "i",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 12,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "IONLO001",
+   "first_name": "Lorenzo",
+   "last_name": "Ionata",
+   "current_elo": 1492,
+   "registration_date": "2025-05-01",
+   "birth_date": "1978-01-01",
+   "games_played": 28,
+   "medals": {
+    "gold": 1,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 17,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "28594010",
-  "experienced": true,
-  "fide_k_factor": 40,
-  "fide_elo_rapid": 1563,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "i"
- },
- {
-  "id": "IONLO001",
-  "first_name": "Lorenzo",
-  "last_name": "Ionata",
-  "current_elo": 1492,
-  "registration_date": "2025-05-01",
-  "birth_date": "1978-01-01",
-  "games_played": 28,
-  "medals": {
-   "gold": 1,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 1,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 7,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 11,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 5,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 8,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "28550404",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1509,
+   "fide_games": 0,
+   "fide_rapid_games": 4,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 1,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "BOSGI002",
+   "first_name": "Giancarlo",
+   "last_name": "Bosetti",
+   "current_elo": 1399,
+   "registration_date": "2025-05-01",
+   "birth_date": "1952-01-01",
+   "games_played": 0,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 7,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 11,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 5,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 8,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "28550404",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1509,
-  "fide_games": 0,
-  "fide_rapid_games": 4,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "BOSGI002",
-  "first_name": "Giancarlo",
-  "last_name": "Bosetti",
-  "current_elo": 1399,
-  "registration_date": "2025-05-01",
-  "birth_date": "1952-01-01",
-  "games_played": 0,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": "RIT",
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "2854584",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": "RIT",
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "2854584",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "CALVA001",
-  "first_name": "Valeria",
-  "last_name": "Calzolari",
-  "current_elo": 1442,
-  "registration_date": "2025-05-01",
-  "birth_date": "1966-01-01",
-  "games_played": 22,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 1
+  {
+   "id": "CALVA001",
+   "first_name": "Valeria",
+   "last_name": "Calzolari",
+   "current_elo": 1442,
+   "registration_date": "2025-05-01",
+   "birth_date": "1966-01-01",
+   "games_played": 22,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 1
+   },
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 4,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 15,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 11,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 15,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "552014193",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 4,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "CASMA001",
+   "first_name": "Mariangela",
+   "last_name": "Cassano",
+   "current_elo": 1390,
+   "registration_date": "2025-05-01",
+   "birth_date": "1958-01-01",
+   "games_played": 5,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 15,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 11,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 15,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "552014193",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "CASMA001",
-  "first_name": "Mariangela",
-  "last_name": "Cassano",
-  "current_elo": 1390,
-  "registration_date": "2025-05-01",
-  "birth_date": "1958-01-01",
-  "games_played": 5,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 22,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "653009215",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 22,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "653009215",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "CICMA001",
-  "first_name": "Mathias",
-  "last_name": "Cicciarella",
-  "current_elo": 1458,
-  "registration_date": "2025-05-01",
-  "birth_date": "2013-01-01",
-  "games_played": 10,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 1
+  {
+   "id": "CICMA001",
+   "first_name": "Mathias",
+   "last_name": "Cicciarella",
+   "current_elo": 1458,
+   "registration_date": "2025-05-01",
+   "birth_date": "2013-01-01",
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 1
+   },
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 18,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 4,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "552013138",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1681,
+   "fide_games": 0,
+   "fide_rapid_games": 3,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 18,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "FORMA001",
+   "first_name": "Martina",
+   "last_name": "Forte",
+   "current_elo": 1302,
+   "registration_date": "2025-05-01",
+   "birth_date": null,
+   "games_played": 20,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 4,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "552013138",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1681,
-  "fide_games": 0,
-  "fide_rapid_games": 3,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "FORMA001",
-  "first_name": "Martina",
-  "last_name": "Forte",
-  "current_elo": 1302,
-  "registration_date": "2025-05-01",
-  "birth_date": null,
-  "games_played": 20,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 7,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 27,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 16,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 29,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 7,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "GORSE001",
+   "first_name": "Serena",
+   "last_name": "Gori",
+   "current_elo": 1189,
+   "registration_date": "2025-05-01",
+   "birth_date": "1948-01-01",
+   "games_played": 26,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 27,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
-   },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 16,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 29,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "GORSE001",
-  "first_name": "Serena",
-  "last_name": "Gori",
-  "current_elo": 1189,
-  "registration_date": "2025-05-01",
-  "birth_date": "1948-01-01",
-  "games_played": 26,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 12,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 28,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 17,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 17,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 22,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "23491132",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 12,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "MERAL001",
+   "first_name": "Alessia",
+   "last_name": "Mereu",
+   "current_elo": 1350,
+   "registration_date": "2025-05-01",
+   "birth_date": "1998-01-01",
+   "games_played": 22,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 28,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 3,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 25,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 10,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 27,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "552035875",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1466,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "PAGGI001",
+   "first_name": "Giulia",
+   "last_name": "Paglia",
+   "current_elo": 1317,
+   "registration_date": "2025-05-01",
+   "birth_date": "2018-01-01",
+   "games_played": 16,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 17,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 17,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 15,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 25,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "552014223",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "PAGVI001",
+   "first_name": "Virginio",
+   "last_name": "Paglia",
+   "current_elo": 1346,
+   "registration_date": "2025-05-01",
+   "birth_date": "1981-01-01",
+   "games_played": 21,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 17,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 6,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 23,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 11,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 24,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "23470763",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1403,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "SCAVA001",
+   "first_name": "Valeria",
+   "last_name": "Scapin",
+   "current_elo": 1425,
+   "registration_date": "2025-05-01",
+   "birth_date": "1984-02-09",
+   "games_played": 10,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 22,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "23491132",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "MERAL001",
-  "first_name": "Alessia",
-  "last_name": "Mereu",
-  "current_elo": 1350,
-  "registration_date": "2025-05-01",
-  "birth_date": "1998-01-01",
-  "games_played": 22,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 1,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 21,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 6,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "552013146",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1596,
+   "fide_games": 0,
+   "fide_rapid_games": 3,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 3,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "TESAL001",
+   "first_name": "Alessandra",
+   "last_name": "Testori",
+   "current_elo": 1345,
+   "registration_date": "2025-05-01",
+   "birth_date": "1950-01-01",
+   "games_played": 20,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 25,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualSacchierante120250322",
+     "tournament_name": "Sacchierante 1",
+     "rank": 11,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 26,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 14,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 23,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "552032140",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "VALRI001",
+   "first_name": "Rita",
+   "last_name": "Valleriani",
+   "current_elo": 1438,
+   "registration_date": "2025-05-01",
+   "birth_date": "1986-01-01",
+   "games_played": 21,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 10,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 9,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 8,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 8,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 13,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "23470798",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 9,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "fide_elo_rapid": 1559,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "SOPMA001",
+   "first_name": "Maurizio",
+   "last_name": "Soppelsa",
+   "current_elo": 1727,
+   "registration_date": "2025-05-02",
+   "birth_date": "1956-01-01",
+   "games_played": 12,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 1
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 27,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "552035875",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1466,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "PAGGI001",
-  "first_name": "Giulia",
-  "last_name": "Paglia",
-  "current_elo": 1317,
-  "registration_date": "2025-05-01",
-  "birth_date": "2018-01-01",
-  "games_played": 16,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 4,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 8,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "2N",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "841439",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1741,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 17,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "VENLU001",
+   "first_name": "Luigi",
+   "last_name": "Ventura",
+   "current_elo": 1402,
+   "registration_date": "2025-05-02",
+   "birth_date": "1974-01-01",
+   "games_played": 21,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 15,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 8,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 10,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 3,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 26,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "552016773",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "BRICA001",
+   "first_name": "Catia Susana",
+   "last_name": "Brites Pereira Lima",
+   "current_elo": 1463,
+   "registration_date": "2025-05-02",
+   "birth_date": "1978-01-01",
+   "games_played": 21,
+   "medals": {
+    "gold": 0,
+    "silver": 1,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 25,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "552014223",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "PAGVI001",
-  "first_name": "Virginio",
-  "last_name": "Paglia",
-  "current_elo": 1346,
-  "registration_date": "2025-05-01",
-  "birth_date": "1981-01-01",
-  "games_played": 21,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 2,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 20,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 13,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 7,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "1990942",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1478,
+   "fide_games": 0,
+   "fide_rapid_games": 3,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 6,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "DIBVI001",
+   "first_name": "Vincenzo",
+   "last_name": "Di Bari",
+   "current_elo": 1372,
+   "registration_date": "2025-05-02",
+   "birth_date": "1986-01-01",
+   "games_played": 21,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 23,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 10,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId Primavera 1",
+     "tournament_id": "ASCId_Primavera_1_20250528224120",
+     "rank": 14,
+     "total_players": 28,
+     "date_started": "2025-05-04",
+     "date_completed": "2025-06-15"
+    },
+    {
+     "tournament_name": "Estascacchi 1",
+     "tournament_id": "Estascacchi_1_20250626144822",
+     "rank": 9,
+     "total_players": 17,
+     "date_started": "2025-06-18",
+     "date_completed": "2025-08-03"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 28,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "552035867",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1493,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "CIBSI001",
+   "first_name": "Silvia",
+   "last_name": "Cibin",
+   "current_elo": 1341,
+   "registration_date": "2025-05-14",
+   "birth_date": "1978-07-13",
+   "games_played": 11,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 11,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_id": "manualScacchierante120250322",
+     "tournament_name": "Scacchierante 1",
+     "rank": 5,
+     "total_players": 12,
+     "date_started": "2025-03-22",
+     "date_completed": "2025-05-15"
+    },
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 16,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "23491124",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1451,
+   "fide_games": 0,
+   "fide_rapid_games": 4,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "CASMA002",
+   "first_name": "Marco",
+   "last_name": "Casadei",
+   "current_elo": 1985,
+   "registration_date": "2025-07-21",
+   "birth_date": "1993-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 1,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 24,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "23470763",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1403,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "SCAVA001",
-  "first_name": "Valeria",
-  "last_name": "Scapin",
-  "current_elo": 1425,
-  "registration_date": "2025-05-01",
-  "birth_date": "1984-02-09",
-  "games_played": 10,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 1,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "847542",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 2028,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 21,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "ARICL001",
+   "first_name": "Claudio",
+   "last_name": "Ariaudo",
+   "current_elo": 1873,
+   "registration_date": "2025-07-21",
+   "birth_date": "1961-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 6,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "552013146",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1596,
-  "fide_games": 0,
-  "fide_rapid_games": 3,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "TESAL001",
-  "first_name": "Alessandra",
-  "last_name": "Testori",
-  "current_elo": 1345,
-  "registration_date": "2025-05-01",
-  "birth_date": "1950-01-01",
-  "games_played": 20,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 5,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "815535",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1979,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualSacchierante120250322",
-    "tournament_name": "Sacchierante 1",
-    "rank": 11,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "VRIBE001",
+   "first_name": "Bersan",
+   "last_name": "Vrioni",
+   "current_elo": 1939,
+   "registration_date": "2025-07-21",
+   "birth_date": "1970-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 26,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 3,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "805351",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1888,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "BADGI001",
+   "first_name": "Giancarlo",
+   "last_name": "Badano",
+   "current_elo": 1802,
+   "registration_date": "2025-07-21",
+   "birth_date": "1960-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 1,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 14,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 2,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "810495",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1851,
+   "fide_elo_blitz": 1745,
+   "fide_games": 0,
+   "fide_rapid_games": 6,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 20,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "POLDI001",
+   "first_name": "Diego",
+   "last_name": "Poli",
+   "current_elo": 1675,
+   "registration_date": "2025-07-21",
+   "birth_date": "1973-01-01",
+   "games_played": 14,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 1,
+    "wood": 1
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 23,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "552032140",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "VALRI001",
-  "first_name": "Rita",
-  "last_name": "Valleriani",
-  "current_elo": 1438,
-  "registration_date": "2025-05-01",
-  "birth_date": "1986-01-01",
-  "games_played": 21,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 4,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 3,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "865613",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1739,
+   "fide_elo_blitz": 1671,
+   "fide_games": 2,
+   "fide_rapid_games": 6,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 20,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 9,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "PEZER001",
+   "first_name": "Erica",
+   "last_name": "Pezzolato",
+   "current_elo": 1625,
+   "registration_date": "2025-07-21",
+   "birth_date": "1983-01-01",
+   "games_played": 6,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 8,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 10,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "F",
+   "federation": "ITA",
+   "fide_id_num_str": "2888888",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1687,
+   "fide_games": 0,
+   "fide_rapid_games": 5,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "ZENSI001",
+   "first_name": "Simone",
+   "last_name": "Zenini",
+   "current_elo": 1612,
+   "registration_date": "2025-07-21",
+   "birth_date": "1987-01-01",
+   "games_played": 14,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 8,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 9,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    },
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 5,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "898210",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1639,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "VILGE001",
+   "first_name": "Gennaro",
+   "last_name": "Vilone",
+   "current_elo": 1499,
+   "registration_date": "2025-07-21",
+   "birth_date": "1965-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 13,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "23470798",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 9,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w",
-  "fide_elo_rapid": 1559
- },
- {
-  "id": "SOPMA001",
-  "first_name": "Maurizio",
-  "last_name": "Soppelsa",
-  "current_elo": 1727,
-  "registration_date": "2025-05-02",
-  "birth_date": "1956-01-01",
-  "games_played": 12,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 1
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 6,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "2854606",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1687,
+   "fide_elo_blitz": 1451,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 20,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 4,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+  {
+   "id": "DELDA001",
+   "first_name": "Davide",
+   "last_name": "Del Monte",
+   "current_elo": 1416,
+   "registration_date": "2025-07-21",
+   "birth_date": null,
+   "games_played": 6,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 8,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "2N",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "841439",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1741,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "VENLU001",
-  "first_name": "Luigi",
-  "last_name": "Ventura",
-  "current_elo": 1402,
-  "registration_date": "2025-05-02",
-  "birth_date": "1974-01-01",
-  "games_played": 21,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 1,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 15,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": true,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 8,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "ARIGI001",
+   "first_name": "Giuliano",
+   "last_name": "Ariaudo",
+   "current_elo": 1428,
+   "registration_date": "2025-07-21",
+   "birth_date": "2001-01-01",
+   "games_played": 6,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 10,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_name": "ASCId 52 Campionato Italiano",
+     "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
+     "rank": 14,
+     "total_players": 17,
+     "date_started": "2025-07-21",
+     "date_completed": "2025-07-27"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "552011542",
+   "experienced": false,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "GERRO001",
+   "first_name": "Roberta",
+   "last_name": "Gerini",
+   "current_elo": 1399,
+   "registration_date": "2026-03-17",
+   "birth_date": null,
+   "games_played": 0,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 3,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "DEMGI001",
+   "first_name": "Gianni",
+   "last_name": "Demaio",
+   "current_elo": 1408,
+   "registration_date": "2026-03-17",
+   "birth_date": null,
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 26,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "552016773",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "BRICA001",
-  "first_name": "Catia Susana",
-  "last_name": "Brites Pereira Lima",
-  "current_elo": 1463,
-  "registration_date": "2025-05-02",
-  "birth_date": "1978-01-01",
-  "games_played": 21,
-  "medals": {
-   "gold": 0,
-   "silver": 1,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 21,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 2,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "DEMJO001",
+   "first_name": "Joshua",
+   "last_name": "Demaio",
+   "current_elo": 67,
+   "registration_date": "2026-03-17",
+   "birth_date": "2008-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 20,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 12,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "552014215",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_games": 0,
+   "fide_rapid_games": 9,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_elo_rapid": 1821,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "CINAL001",
+   "first_name": "Alessandra",
+   "last_name": "Cinque",
+   "current_elo": 1288,
+   "registration_date": "2026-03-17",
+   "birth_date": null,
+   "games_played": 6,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 13,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 31,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "BERLU001",
+   "first_name": "Luca",
+   "last_name": "Bernoni",
+   "current_elo": 1479,
+   "registration_date": "2026-03-17",
+   "birth_date": null,
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 7,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "1990942",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1478,
-  "fide_games": 0,
-  "fide_rapid_games": 3,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "DIBVI001",
-  "first_name": "Vincenzo",
-  "last_name": "Di Bari",
-  "current_elo": 1372,
-  "registration_date": "2025-05-02",
-  "birth_date": "1986-01-01",
-  "games_played": 21,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 9,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 10,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "RICPI001",
+   "first_name": "Piero",
+   "last_name": "Riccardi",
+   "current_elo": 1376,
+   "registration_date": "2026-03-17",
+   "birth_date": null,
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId Primavera 1",
-    "tournament_id": "ASCId_Primavera_1_20250528224120",
-    "rank": 14,
-    "total_players": 28,
-    "date_started": "2025-05-04",
-    "date_completed": "2025-06-15"
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 20,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "NC",
+   "sex": "m",
+   "federation": "ITA",
+   "fide_id_num_str": "0",
+   "experienced": false,
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "DELDA002",
+   "first_name": "Davide",
+   "last_name": "Delmonte",
+   "current_elo": 47,
+   "registration_date": "2026-03-17",
+   "birth_date": "1974-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Estascacchi 1",
-    "tournament_id": "Estascacchi_1_20250626144822",
-    "rank": 9,
-    "total_players": 17,
-    "date_started": "2025-06-18",
-    "date_completed": "2025-08-03"
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 19,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "2840761",
+   "experienced": true,
+   "fide_k_factor": 0,
+   "fide_elo_rapid": 1579,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  },
+  {
+   "id": "DEFMO001",
+   "first_name": "Monica",
+   "last_name": "De Fazio",
+   "current_elo": 1443,
+   "registration_date": "2026-03-17",
+   "birth_date": "1977",
+   "games_played": 0,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 28,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "552035867",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1493,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "CIBSI001",
-  "first_name": "Silvia",
-  "last_name": "Cibin",
-  "current_elo": 1341,
-  "registration_date": "2025-05-14",
-  "birth_date": "1978-07-13",
-  "games_played": 11,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": "RIT",
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "w",
+   "federation": "ITA",
+   "fide_id_num_str": "28524853",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 0,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "fide_flag": "w",
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_id": "manualScacchierante120250322",
-    "tournament_name": "Scacchierante 1",
-    "rank": 5,
-    "total_players": 12,
-    "date_started": "2025-03-22",
-    "date_completed": "2025-05-15"
+  {
+   "id": "RIVPA001",
+   "first_name": "Paolo",
+   "last_name": "Rivalta",
+   "current_elo": 1479,
+   "registration_date": "2026-03-17",
+   "birth_date": "1969-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 16,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "23491124",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1451,
-  "fide_games": 0,
-  "fide_rapid_games": 4,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "CASMA002",
-  "first_name": "Marco",
-  "last_name": "Casadei",
-  "current_elo": 1985,
-  "registration_date": "2025-07-21",
-  "birth_date": "1993-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 1,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 16,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "28515390",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1479,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 40,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 1,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "847542",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 2028,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "ARICL001",
-  "first_name": "Claudio",
-  "last_name": "Ariaudo",
-  "current_elo": 1873,
-  "registration_date": "2025-07-21",
-  "birth_date": "1961-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 5,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "815535",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1979,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "VRIBE001",
-  "first_name": "Bersan",
-  "last_name": "Vrioni",
-  "current_elo": 1939,
-  "registration_date": "2025-07-21",
-  "birth_date": "1970-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 1,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 3,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "805351",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1888,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "BADGI001",
-  "first_name": "Giancarlo",
-  "last_name": "Badano",
-  "current_elo": 1802,
-  "registration_date": "2025-07-21",
-  "birth_date": "1960-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 1,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 2,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "810495",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1851,
-  "fide_elo_blitz": 1745,
-  "fide_games": 0,
-  "fide_rapid_games": 6,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 20
- },
- {
-  "id": "POLDI001",
-  "first_name": "Diego",
-  "last_name": "Poli",
-  "current_elo": 1675,
-  "registration_date": "2025-07-21",
-  "birth_date": "1973-01-01",
-  "games_played": 14,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 1,
-   "wood": 1
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 4,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
+  {
+   "id": "CAPGI001",
+   "first_name": "Giuliano",
+   "last_name": "Caputi",
+   "current_elo": 1780,
+   "registration_date": "2026-03-17",
+   "birth_date": "1967-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 1,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 3,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "865613",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1739,
-  "fide_elo_blitz": 1671,
-  "fide_games": 2,
-  "fide_rapid_games": 6,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 20
- },
- {
-  "id": "PEZER001",
-  "first_name": "Erica",
-  "last_name": "Pezzolato",
-  "current_elo": 1625,
-  "registration_date": "2025-07-21",
-  "birth_date": "1983-01-01",
-  "games_played": 6,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 2,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "821993",
+   "experienced": true,
+   "fide_k_factor": 20,
+   "fide_elo_rapid": 1870,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 10,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "F",
-  "federation": "ITA",
-  "fide_id_num_str": "2888888",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1687,
-  "fide_games": 0,
-  "fide_rapid_games": 5,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "ZENSI001",
-  "first_name": "Simone",
-  "last_name": "Zenini",
-  "current_elo": 1612,
-  "registration_date": "2025-07-21",
-  "birth_date": "1987-01-01",
-  "games_played": 14,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 9,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
+  {
+   "id": "MACMA001",
+   "first_name": "Massimo",
+   "last_name": "Maccaferri",
+   "current_elo": 1463,
+   "registration_date": "2026-03-17",
+   "birth_date": "1957-01-01",
+   "games_played": 7,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
    },
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 5,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "898210",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1639,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "VILGE001",
-  "first_name": "Gennaro",
-  "last_name": "Vilone",
-  "current_elo": 1499,
-  "registration_date": "2025-07-21",
-  "birth_date": "1965-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 6,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "2854606",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1687,
-  "fide_elo_blitz": 1451,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 20
- },
- {
-  "id": "DELDA001",
-  "first_name": "Davide",
-  "last_name": "Del Monte",
-  "current_elo": 1416,
-  "registration_date": "2025-07-21",
-  "birth_date": null,
-  "games_played": 6,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 15,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": true,
-  "fide_k_factor": null
- },
- {
-  "id": "ARIGI001",
-  "first_name": "Giuliano",
-  "last_name": "Ariaudo",
-  "current_elo": 1428,
-  "registration_date": "2025-07-21",
-  "birth_date": "2001-01-01",
-  "games_played": 6,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "ASCId 52 Campionato Italiano",
-    "tournament_id": "ASCId_52_Campionato_Italiano_20250731114759",
-    "rank": 14,
-    "total_players": 17,
-    "date_started": "2025-07-21",
-    "date_completed": "2025-07-27"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "552011542",
-  "experienced": false,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "GERRO001",
-  "first_name": "Roberta",
-  "last_name": "Gerini",
-  "current_elo": 1399,
-  "registration_date": "2026-03-17",
-  "birth_date": null,
-  "games_played": 0,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "DEMGI001",
-  "first_name": "Gianni",
-  "last_name": "Demaio",
-  "current_elo": 1408,
-  "registration_date": "2026-03-17",
-  "birth_date": null,
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 21,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "DEMJO001",
-  "first_name": "Joshua",
-  "last_name": "Demaio",
-  "current_elo": 67,
-  "registration_date": "2026-03-17",
-  "birth_date": "2008-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 12,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "552014215",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_games": 0,
-  "fide_rapid_games": 9,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_elo_rapid": 1821
- },
- {
-  "id": "CINAL001",
-  "first_name": "Alessandra",
-  "last_name": "Cinque",
-  "current_elo": 1288,
-  "registration_date": "2026-03-17",
-  "birth_date": null,
-  "games_played": 6,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 31,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "BERLU001",
-  "first_name": "Luca",
-  "last_name": "Bernoni",
-  "current_elo": 1479,
-  "registration_date": "2026-03-17",
-  "birth_date": null,
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 9,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "RICPI001",
-  "first_name": "Piero",
-  "last_name": "Riccardi",
-  "current_elo": 1376,
-  "registration_date": "2026-03-17",
-  "birth_date": null,
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 20,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "NC",
-  "sex": "m",
-  "federation": "ITA",
-  "fide_id_num_str": "0",
-  "experienced": false,
-  "fide_k_factor": null
- },
- {
-  "id": "DELDA002",
-  "first_name": "Davide",
-  "last_name": "Delmonte",
-  "current_elo": 47,
-  "registration_date": "2026-03-17",
-  "birth_date": "1974-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 19,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "2840761",
-  "experienced": true,
-  "fide_k_factor": 0,
-  "fide_elo_rapid": 1579,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "DEFMO001",
-  "first_name": "Monica",
-  "last_name": "De Fazio",
-  "current_elo": 1443,
-  "registration_date": "2026-03-17",
-  "birth_date": "1977",
-  "games_played": 0,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": "RIT",
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "w",
-  "federation": "ITA",
-  "fide_id_num_str": "28524853",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 0,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0,
-  "fide_flag": "w"
- },
- {
-  "id": "RIVPA001",
-  "first_name": "Paolo",
-  "last_name": "Rivalta",
-  "current_elo": 1479,
-  "registration_date": "2026-03-17",
-  "birth_date": "1969-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 16,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "28515390",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1479,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 40,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "CAPGI001",
-  "first_name": "Giuliano",
-  "last_name": "Caputi",
-  "current_elo": 1780,
-  "registration_date": "2026-03-17",
-  "birth_date": "1967-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 1,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 2,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "821993",
-  "experienced": true,
-  "fide_k_factor": 20,
-  "fide_elo_rapid": 1870,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- },
- {
-  "id": "MACMA001",
-  "first_name": "Massimo",
-  "last_name": "Maccaferri",
-  "current_elo": 1463,
-  "registration_date": "2026-03-17",
-  "birth_date": "1957-01-01",
-  "games_played": 7,
-  "medals": {
-   "gold": 0,
-   "silver": 0,
-   "bronze": 0,
-   "wood": 0
-  },
-  "tournaments_played": [
-   {
-    "tournament_name": "Primavera 2",
-    "tournament_id": "Primavera_2_20260317104332",
-    "rank": 10,
-    "total_players": 31,
-    "date_started": "2026-03-21",
-    "date_completed": "2026-06-30"
-   }
-  ],
-  "fide_title": "",
-  "sex": "M",
-  "federation": "ITA",
-  "fide_id_num_str": "28505859",
-  "experienced": true,
-  "fide_k_factor": 40,
-  "fide_elo_rapid": 1626,
-  "fide_games": 0,
-  "fide_rapid_games": 0,
-  "fide_rapid_k": 20,
-  "fide_blitz_games": 0,
-  "fide_blitz_k": 0
- }
-]
+   "tournaments_played": [
+    {
+     "tournament_name": "Primavera 2",
+     "tournament_id": "Primavera_2_20260317104332",
+     "rank": 10,
+     "total_players": 31,
+     "date_started": "2026-03-21",
+     "date_completed": "2026-06-30"
+    }
+   ],
+   "fide_title": "",
+   "sex": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "28505859",
+   "experienced": true,
+   "fide_k_factor": 40,
+   "fide_elo_rapid": 1626,
+   "fide_games": 0,
+   "fide_rapid_games": 0,
+   "fide_rapid_k": 20,
+   "fide_blitz_games": 0,
+   "fide_blitz_k": 0,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_standard_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
+  }
+ ]
+}
