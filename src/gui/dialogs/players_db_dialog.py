@@ -160,19 +160,27 @@ class PlayersDbDialog(wx.Dialog):
         
         # 3. Storico Tornei
         node_hist = self.tree_ctrl.AppendItem(root_node, "Storico Tornei")
-        history = p.get("results_history", [])
+        history = p.get("tournaments_played", [])
         for idx, entry in enumerate(history):
-            label = f"Turno {entry.get('round')}: vs {entry.get('opponent_id')} -> {entry.get('result')} (Punti: {entry.get('score')})"
+            label = f"{entry.get('tournament_name', 'Torneo')}: Pos. {entry.get('rank', 'N/D')}/{entry.get('total_players', 'N/D')} ({entry.get('date_completed', 'N/D')})"
             item_h = self.tree_ctrl.AppendItem(node_hist, label)
             self.tree_ctrl.SetItemPyData(item_h, {"type": "history_record", "index": idx})
             
         # 4. Medagliere
         node_med = self.tree_ctrl.AppendItem(root_node, "Medagliere")
-        medals = p.get("medals_history", [])
-        for idx, m in enumerate(medals):
-            label = f"{m.get('tournament_name', 'Torneo')}: {m.get('position', 'Posizione')} ({m.get('date', 'N/D')})"
-            item_m = self.tree_ctrl.AppendItem(node_med, label)
-            self.tree_ctrl.SetItemPyData(item_m, {"type": "medal_record", "index": idx})
+        medals = p.get("medals", {})
+        
+        item_g = self.tree_ctrl.AppendItem(node_med, f"Ori (Oro): {medals.get('gold', 0)}")
+        self.tree_ctrl.SetItemPyData(item_g, {"type": "field", "key_nested": ("medals", "gold"), "is_int": True})
+        
+        item_s = self.tree_ctrl.AppendItem(node_med, f"Argenti (Argento): {medals.get('silver', 0)}")
+        self.tree_ctrl.SetItemPyData(item_s, {"type": "field", "key_nested": ("medals", "silver"), "is_int": True})
+        
+        item_b = self.tree_ctrl.AppendItem(node_med, f"Bronzi (Bronzo): {medals.get('bronze', 0)}")
+        self.tree_ctrl.SetItemPyData(item_b, {"type": "field", "key_nested": ("medals", "bronze"), "is_int": True})
+        
+        item_w = self.tree_ctrl.AppendItem(node_med, f"Legni (Medaglia di legno): {medals.get('wood', 0)}")
+        self.tree_ctrl.SetItemPyData(item_w, {"type": "field", "key_nested": ("medals", "wood"), "is_int": True})
             
         self.tree_ctrl.Expand(root_node)
 
@@ -182,41 +190,71 @@ class PlayersDbDialog(wx.Dialog):
         if not data or data.get("type") != "field":
             return
             
-        key = data["key"]
         p = self.players_db[self.selected_player_id]
-        current_val = str(p.get(key, ""))
-        
-        dlg = wx.TextEntryDialog(self, _("Modifica valore per '{field}':").format(field=key), _("Modifica Campo"), current_val)
+        if "key_nested" in data:
+            parent_key, child_key = data["key_nested"]
+            parent_dict = p.setdefault(parent_key, {})
+            current_val = str(parent_dict.get(child_key, 0))
+            key_name = child_key
+        else:
+            key_name = data["key"]
+            current_val = str(p.get(key_name, ""))
+            
+        dlg = wx.TextEntryDialog(self, _("Modifica valore per '{field}':").format(field=key_name), _("Modifica Campo"), current_val)
         if dlg.ShowModal() == wx.ID_OK:
             new_val = dlg.GetValue().strip()
+            
+            # Validazione e inserimento del valore
             if data.get("is_int"):
                 if new_val.isdigit():
-                    p[key] = int(new_val)
+                    val = int(new_val)
                 else:
                     wx.MessageBox(_("Inserisci un valore numerico valido."), _("Errore"), wx.ICON_ERROR)
                     dlg.Destroy()
                     return
             else:
-                p[key] = new_val
+                val = new_val
+                
+            if "key_nested" in data:
+                parent_key, child_key = data["key_nested"]
+                p.setdefault(parent_key, {})[child_key] = val
+            else:
+                key = data["key"]
+                p[key] = val
                 
             from db_players import save_players_db
             save_players_db(self.players_db)
             
             # Aggiorna il testo del nodo in-place per preservare il focus dell'albero
-            prefix_map = {
-                "last_name": _("Cognome: "),
-                "first_name": _("Nome: "),
-                "gender": _("Sesso: "),
-                "birth_date": _("Anno Nascita: "),
-                "federation": _("Nazione (FED): "),
-                "current_elo": _("ELO Standard: "),
-                "elo_rapid": _("ELO Rapid: "),
-                "elo_blitz": _("ELO Blitz: "),
-                "fide_title": _("Titolo FIDE: "),
-                "fide_id_num_str": _("ID FIDE: ")
-            }
-            prefix = prefix_map.get(key, "")
-            self.tree_ctrl.SetItemText(item, f"{prefix}{p[key]}")
+            if "key_nested" in data:
+                parent_key, child_key = data["key_nested"]
+                prefix_map = {
+                    "gold": _("Ori (Oro): "),
+                    "silver": _("Argenti (Argento): "),
+                    "bronze": _("Bronzi (Bronzo): "),
+                    "wood": _("Legni (Medaglia di legno): ")
+                }
+                prefix = prefix_map.get(child_key, "")
+                val_updated = p.get(parent_key, {}).get(child_key, 0)
+                self.tree_ctrl.SetItemText(item, f"{prefix}{val_updated}")
+                # Impostiamo una chiave fittizia per evitare crash successivi
+                key = parent_key
+            else:
+                key = data["key"]
+                prefix_map = {
+                    "last_name": _("Cognome: "),
+                    "first_name": _("Nome: "),
+                    "gender": _("Sesso: "),
+                    "birth_date": _("Anno Nascita: "),
+                    "federation": _("Nazione (FED): "),
+                    "current_elo": _("ELO Standard: "),
+                    "elo_rapid": _("ELO Rapid: "),
+                    "elo_blitz": _("ELO Blitz: "),
+                    "fide_title": _("Titolo FIDE: "),
+                    "fide_id_num_str": _("ID FIDE: ")
+                }
+                prefix = prefix_map.get(key, "")
+                self.tree_ctrl.SetItemText(item, f"{prefix}{p[key]}")
             
             # Se è cambiato il nome o il cognome, aggiorna la radice dell'albero e la listbox di sinistra
             if key in ["last_name", "first_name"]:
