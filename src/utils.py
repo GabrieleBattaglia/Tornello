@@ -143,10 +143,19 @@ def play_sound(event_name, torneo=None, sync=False):
     import os
     import sys
     
-    # Determina il volume base dal torneo
+    # Determina il volume base dal file di impostazioni globali o dal torneo
     base_volume = 0.5
+    try:
+        settings_path = os.path.join(os.path.abspath("."), "Tornello - Settings.json")
+        if os.path.exists(settings_path):
+            with open(settings_path, "r", encoding="utf-8") as sf:
+                s_data = json.load(sf)
+                base_volume = s_data.get("volume", 50) / 100.0
+    except Exception:
+        pass
+
     if torneo and isinstance(torneo, dict):
-        base_volume = torneo.get("base_volume", 0.5)
+        base_volume = torneo.get("base_volume", base_volume)
 
     # Mappatura eventi su preset
     event_presets = {

@@ -159,10 +159,10 @@ Fase 6: Rifinitura             ────────────────�
 - [x] Separare `tornello.py` (attuale entry point monolitico) in: *(Completato)*
   - `src/controller.py` — Orchestratore del flusso del torneo
   - `src/cli_adapter.py` — Adapter CLI che implementa l'interfaccia UI
-  - `main.py` — Entry point minimale
+  - `tornello.py` — Entry point minimale
 
 #### 1.3 Pulizia Imports e Dipendenze
-- [x] Eliminare tutti i `from config import *` → import espliciti *(Completato su tutti i file in src/ e main.py)*
+- [x] Eliminare tutti i `from config import *` → import espliciti *(Completato su tutti i file in src/ e tornello.py)*
 - [x] Risolvere le dipendenze circolari (`stats` ↔ `tournament`) *(Completato: get_player_by_id e _ensure_players_dict spostati in utils.py per de-accoppiare stats)*
 - [x] Unificare il codice duplicato: *(Completato)*
   - `consulta.py` deve importare `aggiorna_db_fide_locale()` da `db_players.py` *(Completato)*
@@ -177,7 +177,7 @@ Fase 6: Rifinitura             ────────────────�
 
 > [!TIP]
 > **🧪 Test Manuale 1 (Fondamenta)**:
-> 1. Eseguire `python main.py` in console.
+> 1. Eseguire `python tornello.py` in console.
 > 2. Verificare che l'avvio, il menù principale e la navigazione CLI rispondano esattamente come nella v8, senza crash dovuti al disaccoppiamento logica-UI.
 
 
@@ -258,7 +258,7 @@ Fase 6: Rifinitura             ────────────────�
 
 > [!TIP]
 > **🧪 Test Manuale 3 (Tempo e Cadenze)**:
-> 1. Avviare `python main.py` e creare tre diversi tornei finti.
+> 1. Avviare `python tornello.py` e creare tre diversi tornei finti.
 > 2. Per il primo inserire `90+30` (Standard), per il secondo `15+10` (Rapid), per il terzo `3+2` (Blitz).
 > 3. Verificare nei file `.json` generati nella cartella del torneo che la chiave `"tournament_category"` contenga rispettivamente `"standard"`, `"rapid"`, `"blitz"`.
 > 4. Verificare che all'importazione di un giocatore in un torneo Blitz/Rapid, l'Elo iniziale assegnato rispetti il valore specifico salvato nel DB o il corretto fallback.
