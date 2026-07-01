@@ -1,0 +1,12 @@
+CREDITI DI TORNELLO
+===================
+
+Tornello è sviluppato da Gabriele Battaglia e Stella.
+Dedicato all'Associazione Scacchisti Italiani Ciechi e Ipovedenti (ASCId) e al gruppo di Scacchierando.
+
+Questo software integra:
+- Il motore di abbinamento svizzero bbpPairings v6.0.0 di Bierema Boyz Programming (regole FIDE 2026).
+- La libreria grafica accessibile wxPython per l'interfaccia utente.
+- Il pacchetto GBUtils con il modulo Acusticator per la riproduzione di suoni e feedback acustici spazializzati.
+
+Sviluppato con passione per rendere gli scacchi accessibili a tutti.

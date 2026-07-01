@@ -1,0 +1,95 @@
+MANUALE GUIDA DI TORNELLO v9.0.2
+================================
+
+Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero, progettato con una priorità assoluta per l'accessibilità da parte di utenti non vedenti o ipovedenti tramite screen reader (es. NVDA) e navigazione da tastiera.
+
+Tornello v9 unisce la flessibilità di gestione del database giocatori e dei tornei ad una veste grafica nativa wxPython e all'integrazione del motore di abbinamenti ufficiale bbpPairings v6 (conforme alle regole FIDE 2026).
+
+
+1. NAVIGAZIONE ED INTERFACCIA GRAFICA
+--------------------------------------
+L'interfaccia è divisa in tre aree principali navigabili rapidamente:
+- AREA CENTRALE (F5): Visualizza i report testuali del turno corrente, le classifiche, o le schede dei tornei conclusi. È un'area di testo monospaziata in sola lettura, navigabile riga per riga con le frecce dello screen reader.
+- ALBERO DI DESTRA (F6): Un controllo ad albero (TreeCtrl) che costituisce il pannello di controllo dinamico di Tornello. Consente di creare un torneo, caricare tornei esistenti, modificare i parametri di configurazione in tempo reale e gestire i turni e le partite.
+- BARRA DI STATO INFERIORE (F7): Una piccola area di testo che riporta informazioni rapide sul contesto corrente (es. turno attivo, cadenza o messaggi di aiuto).
+
+Scorciatoie da tastiera globali:
+- F1: Visualizza questo manuale nell'Area Centrale.
+- F2: Visualizza il ChangeLog completo delle versioni (storico compreso).
+- F3: Visualizza i Crediti e i dettagli degli autori.
+- F5: Sposta il focus sull'Area Centrale.
+- F6: Sposta il focus sull'Albero di Destra.
+- F7: Sposta il focus sulla Barra di Stato.
+
+
+2. CREAZIONE DI UN NUOVO TORNEO (WIZARD)
+----------------------------------------
+Per avviare un nuovo torneo:
+1. Spostarsi sull'Albero di Destra (F6), posizionarsi su "Nuovo torneo" e premere Invio.
+2. L'albero mostrerà una serie di parametri. Seleziona ciascun parametro con le frecce verticali e premi Invio per modificarlo in loco:
+   - Nome Torneo: Campo obbligatorio.
+   - Luogo (Site): Città in cui si gioca.
+   - Numero Turni: Numero totale dei turni di gioco.
+   - Tempo Riflessione: Cadenza di gioco in formato umano (es. 15+10, 60+0 o 90+30).
+   - Cartella Salvataggio: Cartella in cui salvare i report finali (es. chiavetta USB o cloud).
+   - Arbitro Capo / Collaboratori / Federazione Ospitante.
+   - Colore al giocatore più forte: Bianco, Nero o Casuale (se impostato su Casuale, Tornello lancerà una moneta al termine del wizard).
+   - Valore del BYE: Punteggio assegnato a chi riposa (0.5 o 1.0).
+3. Quando i parametri essenziali sono configurati, compare in fondo la voce "Avanti". Premendola, si aprirà la finestra di iscrizione.
+
+
+3. ISCRIZIONE GIOCATORI E RICERCA NEI DATABASE
+----------------------------------------------
+La finestra di iscrizione è strutturata a due colonne (Filtro di ricerca + Risultati per il Database Locale e per il Database FIDE), con a destra la lista dei "Giocatori Iscritti al Torneo".
+
+RICERCA FLUIDA CON OPERATORI:
+Nei campi di ricerca puoi inserire parole semplici (anche parziali e in qualsiasi ordine) o usare i seguenti operatori:
+- Spazio: Ricerca non esclusiva (default). Cercando "simona ita", verranno trovati i record contenenti sia "simona" che "ita", ordinando prima chi le ha entrambe.
+- Prefisso '+' (Obbligatorio): Il termine deve essere presente nel record (es. "+simona +ita" mostra solo le Simona italiane).
+- Prefisso '-' (Escluso): Il termine non deve essere presente nel record (es. "simona -ita" esclude le Simona italiane).
+- Delimitatore '=' (Frase Esatta): Cerca la sequenza esatta (es. "=gerasole=marco" trova la stringa esatta "gerasole marco").
+
+ESEMPIO COMPLESSO:
+Query: "simona +ita -milano 1985"
+Trova le giocatrici di nome "simona", che devono obbligatoriamente essere italiane (+ita), non devono risiedere o contenere "milano" (-milano), e posiziona in testa alla lista le nate nel "1985" se corrispondenti.
+
+PAGINAZIONE RISULTATI FIDE:
+Per preservare le prestazioni del sistema con il database FIDE (composto da centinaia di migliaia di record), Tornello mostra i primi 100 risultati ordinati per rilevanza, seguiti da una riga speciale: "-- Mostra altri risultati (X rimanenti) --". Premendo Invio o facendo doppio clic su questa riga, verranno caricati i successivi 100 elementi.
+
+FOCUS JUMP AUTOMATICO:
+Quando aggiungi un giocatore premendo Invio sui risultati locali o FIDE, il focus salta automaticamente sulla lista degli iscritti posizionando la selezione sul nuovo inserito, consentendo a NVDA di leggerlo immediatamente. Gli iscritti sono presentati ordinati per ELO decrescente e numerati (es. "1. Girasole Marco (ITA) 1673").
+
+
+4. GESTIONE DEI TURNI E RISULTATI
+---------------------------------
+Una volta iniziato il torneo, l'albero di destra si popolerà con il nome del torneo e le cartelle "Dati", "Partecipanti" e "Partite".
+Sotto "Partite" troverai l'elenco suddiviso per stato (Non pianificate, Pianificate, Concluse).
+
+Premendo Invio su una partita, si apre il dialogo dei risultati:
+- Scegliere il risultato tramite i pulsanti radio:
+  - 1 - 0 (Vittoria Bianco)
+  - 0 - 1 (Vittoria Nero)
+  - 1/2 - 1/2 (Patta)
+  - 1 - 0 Forfeit (Forfait Bianco, il Nero perde a tavolino)
+  - 0 - 1 Forfeit (Forfait Nero, il Bianco perde a tavolino)
+  - 0 - 0 Forfeit (Doppia assenza)
+- Pianifica Partita: Consente di inserire data e ora per spostare la partita sotto "Pianificate".
+- Ritira Giocatore: Consente di ritirare uno dei due giocatori dal torneo a partire dal turno corrente.
+
+A fine turno, una volta inseriti tutti i risultati, Tornello salverà lo storico e genererà gli abbinamenti del turno successivo avvalendosi del motore bbpPairings.
+
+
+5. FINALIZZAZIONE E CLASSIFICHE
+-------------------------------
+Al termine dell'ultimo turno, selezionando la voce "Finalizza Torneo" dal menu o dall'albero, Tornello esegue i seguenti calcoli:
+- Calcolo degli spareggi ufficiali (Buchholz Cut 1, Buchholz Totale, Sonneborn-Berger, ARO).
+- Calcolo della variazione di rating Elo multi-cadenza per ciascun partecipante (Blitz, Rapid o Standard in base alla cadenza del torneo).
+- Aggiornamento delle schede personali dei giocatori nel Database Locale (aggiornamento Elo, inserimento del torneo nello storico e aggiornamento del medagliere).
+- Archiviazione fisica del torneo in formato JSON all'interno della cartella "Closed Tornaments" e generazione della classifica finale testuale accessibile nell'Area Centrale.
+
+
+6. STRUMENTI AGGIUNTIVI (DATABASE E FIDE)
+-----------------------------------------
+- GESTIONE DATABASE LOCALE (Ctrl+D): Consente di esplorare l'albero dei giocatori salvati localmente, modificare le schede (es. l'Elo Club, utilizzato come fallback finale se mancano gli Elo FIDE) o eliminare record obsoleti.
+- CONSULTA DATABASE FIDE (Ctrl+K): Permette una ricerca rapida nel database FIDE ratings scaricato e l'eventuale importazione istantanea di un giocatore nel DB locale.
+- SINCRONIZZAZIONE DATABASE (Ctrl+Y): Consente di sincronizzare il DB locale con l'ultimo file FIDE. Può essere eseguita in blocco o passo-passo (in questa modalità il sistema chiederà conferma per ogni modifica e ti permetterà di selezionare manualmente la scheda corretta in caso di omonimie multiple).
