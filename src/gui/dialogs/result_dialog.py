@@ -12,7 +12,7 @@ class ResultDialog(wx.Dialog):
     e pulsanti aggiuntivi per la pianificazione o il ritiro di un giocatore.
     Include anche un campo per incollare e validare il PGN della partita.
     """
-    def __init__(self, parent, white_name, black_name, white_id, black_id, board_num, current_result, schedule_info, settings, pgn_text=""):
+    def __init__(self, parent, white_name, black_name, white_id, black_id, board_num, current_result, schedule_info, settings, pgn_text="", disable_result_change=False):
         title = _("Risultato Scacchiera {num}").format(num=board_num)
         super().__init__(parent, title=title, size=(550, 620), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         
@@ -25,6 +25,7 @@ class ResultDialog(wx.Dialog):
         self.current_result = current_result
         self.schedule_info = schedule_info or {}
         self.pgn_text = pgn_text or ""
+        self.disable_result_change = disable_result_change
         
         self.selected_action = None  # None (risultato), "schedule", "withdraw"
         self.withdrawn_player_id = None
@@ -106,13 +107,20 @@ class ResultDialog(wx.Dialog):
         # --- BOTTONI OK / ANNULLA ---
         btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
         btn_cancel = wx.Button(panel, wx.ID_CANCEL, _("Annulla"))
-        self.btn_ok = wx.Button(panel, wx.ID_OK, _("Conferma Risultato"))
+        ok_label = _("Salva PGN") if self.disable_result_change else _("Conferma Risultato")
+        self.btn_ok = wx.Button(panel, wx.ID_OK, ok_label)
         self.btn_ok.SetDefault()
         
         btn_sizer.Add(btn_cancel, 0, wx.RIGHT, 10)
         btn_sizer.Add(self.btn_ok, 0)
         
         vbox.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
+        
+        if self.disable_result_change:
+            for val, rb in self.radio_buttons:
+                rb.Enable(False)
+            self.btn_schedule.Enable(False)
+            self.btn_withdraw.Enable(False)
         
         panel.SetSizer(vbox)
         vbox.Fit(self)

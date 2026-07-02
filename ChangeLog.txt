@@ -1,4 +1,15 @@
 --- CHANGELOG ---
+9.0.30010
+	+ Feature: Suddivisione delle partite con PGN per turno sotto il ramo "partite" dell'albero (nodi intermedi T1, T2, ecc.) con visualizzazione filtrata nell'area centrale.
+	+ Feature: Ottimizzazione del focus e della selezione nelle liste dei risultati del DB locale e FIDE (mantenimento selezione su elemento vicino o focus su campo di testo).
+	+ Feature: Aggiunti segnali acustici asincroni ("fide_attesa" e "fide_pronto") per segnalare i tempi di attesa della CPU durante la ricerca nel DB FIDE.
+	+ Bugfix: Impedito il cambio di risultato nei turni conclusi e nei tornei chiusi. In questo caso l'unico campo utilizzabile è quello del PGN e il pulsante conferma diventa "Salva PGN".
+	+ Bugfix: Corretto il salvataggio dei tornei conclusi per preservare la cartella di provenienza originale (es. "Closed Tournaments").
+	+ Bugfix: Risolto il wxAssertionError causato dall'espansione della radice nascosta del wizard per la creazione del nuovo torneo.
+	+ Bugfix: Risolto l'ImportError importando parse_time_control e classify_tournament_category dal corretto modulo stats anziché utils.
+	+ Bugfix: Corretto l'aggiornamento in tempo reale del testo PGN e del contatore PGN della barra di stato operando sul corretto oggetto del torneo in memoria.
+
+
 9.0.21729
 	+ Note: La versione alpha è identificata dal formato 9.0.[giorno][ora] (es. 21729 indica il giorno 2 alle ore 17:29).
 	+ Feature: Avvio del programma con la finestra principale sempre massimizzata per ottimizzare lo spazio dello schermo.

@@ -454,6 +454,8 @@ class MainFrame(wx.Frame):
             try:
                 with open(f, "r", encoding="utf-8") as f_in:
                     data = json.load(f_in)
+                if data.get("concluded"):
+                    continue
                 if len(data.get("rounds", [])) == 0:
                     in_prep_files.append((f, data))
                 else:
@@ -732,8 +734,17 @@ class MainFrame(wx.Frame):
         for r in rounds:
             r_num = r.get("round")
             round_matches_sorted = sorted(r.get("matches", []), key=lambda x: x.get("id", 0))
+            
+            # Check if there is any match in this round with PGN
+            has_pgn_in_round = any(m.get("pgn") for m in round_matches_sorted)
+            if not has_pgn_in_round:
+                continue
+                
+            r_pgn_node = self.tree_ctrl.AppendItem(partite_pgn_node, f"T{r_num}")
+            self.tree_ctrl.SetItemData(r_pgn_node, {"action": "show_pgn_matches_list", "filepath": filepath, "round": r_num})
+            
             match_id_to_board = {m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)}
-            for m in r.get("matches", []):
+            for m in round_matches_sorted:
                 if m.get("pgn"):
                     w_id = m.get("white_player_id")
                     b_id = m.get("black_player_id")
@@ -744,10 +755,10 @@ class MainFrame(wx.Frame):
                     board_num = match_id_to_board.get(m.get("id"), 1)
                     if b_p:
                         b_name = f"{b_p.get('last_name', '')} {b_p.get('first_name', '')}".strip()
-                        label = f"T{r_num} Sc.{board_num}: {w_name} vs {b_name} [{res}]"
+                        label = f"Scacchiera {board_num}: {w_name} vs {b_name} [{res}]"
                     else:
-                        label = f"T{r_num} Sc.{board_num}: {w_name} - BYE [{res}]"
-                    m_node = self.tree_ctrl.AppendItem(partite_pgn_node, label)
+                        label = f"Scacchiera {board_num}: {w_name} - BYE [{res}]"
+                    m_node = self.tree_ctrl.AppendItem(r_pgn_node, label)
                     self.tree_ctrl.SetItemData(m_node, {"action": "show_single_pgn", "filepath": filepath, "match": m, "round": r_num, "board_num": board_num})
         
         return t_node
@@ -825,7 +836,7 @@ class MainFrame(wx.Frame):
         elif action == "activate_match":
             self.show_match_detail_verbose(data.get("match"), data.get("round"), data.get("board_num"))
         elif action == "show_pgn_matches_list":
-            self.show_pgn_matches_list_verbose()
+            self.show_pgn_matches_list_verbose(data.get("round"))
         elif action == "show_single_pgn":
             self.show_single_pgn_text(data.get("match"))
         elif action == "show_standings":
@@ -991,17 +1002,22 @@ class MainFrame(wx.Frame):
         else:
             self.append_log(_("Nessun PGN disponibile per questa partita."))
 
-    def show_pgn_matches_list_verbose(self):
+    def show_pgn_matches_list_verbose(self, round_num=None):
         if not self.current_tournament:
             return
         self.main_text.Clear()
         info = []
-        info.append(_("RACCOLTA PARTITE PGN"))
+        if round_num is not None:
+            info.append(_("RACCOLTA PARTITE PGN - TURNO {num}").format(num=round_num))
+        else:
+            info.append(_("RACCOLTA PARTITE PGN"))
         info.append("=" * 50)
         
         has_pgn = False
         for r in self.current_tournament.get("rounds", []):
             r_num = r.get("round")
+            if round_num is not None and r_num != round_num:
+                continue
             round_matches_sorted = sorted(r.get("matches", []), key=lambda x: x.get("id", 0))
             match_id_to_board = {m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)}
             
@@ -1023,7 +1039,10 @@ class MainFrame(wx.Frame):
                         info.append(f"  Turno {r_num} Scacchiera {board_num}: {w_name} - BYE [{res}]")
                         
         if not has_pgn:
-            info.append(_("Nessuna partita ha ancora un PGN inserito."))
+            if round_num is not None:
+                info.append(_("Nessuna partita ha ancora un PGN inserito in questo turno."))
+            else:
+                info.append(_("Nessuna partita ha ancora un PGN inserito."))
             
         self.append_log("\n".join(info))
 
@@ -1077,6 +1096,11 @@ class MainFrame(wx.Frame):
             info.append(f"  Data: {sched.get('date')}")
             info.append(f"  Ora: {sched.get('time')}")
             info.append(f"  Sala: {sched.get('room') or _('N/D')}")
+            
+        if m.get("pgn"):
+            info.append("")
+            info.append(_("Mosse della partita (PGN):"))
+            info.append(m.get("pgn"))
             
         self.append_log("\n".join(info))
 
@@ -1172,6 +1196,10 @@ class MainFrame(wx.Frame):
             self.on_activate_match(data.get("match"))
         elif action == "start_new_tournament":
             self.start_new_tournament_wizard()
+        elif action == "wizard_next":
+            self.on_wizard_next()
+        elif action == "wizard_back":
+            self.on_wizard_back()
 
     def on_wizard_field_activated(self, item, field):
         from utils import format_date_locale, play_sound
@@ -1311,7 +1339,8 @@ class MainFrame(wx.Frame):
             if not has_next:
                 next_item = self.tree_ctrl.AppendItem(self.tree_root, _("Avanti (Iscrizione Giocatori)"))
                 self.tree_ctrl.SetItemData(next_item, {"action": "wizard_next"})
-                self.tree_ctrl.Expand(self.tree_root)
+                if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
+                    self.tree_ctrl.Expand(self.tree_root)
 
     def on_wizard_next(self):
         from db_players import load_players_db
@@ -1363,7 +1392,7 @@ class MainFrame(wx.Frame):
         round_dates_raw = calculate_dates(self.creation_data["start_date"], self.creation_data["end_date"], self.creation_data["rounds"]) or []
         
         # Classificazione categoria Elo
-        from utils import parse_time_control, classify_tournament_category
+        from stats import parse_time_control, classify_tournament_category
         tc_parsed = parse_time_control(self.creation_data["time_control"]) or {"minutes": 60, "increment": 0}
         tournament_category = classify_tournament_category(tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0))
         
@@ -1430,7 +1459,7 @@ class MainFrame(wx.Frame):
         if self.current_tournament:
             from tournament import save_tournament
             from reports import save_current_tournament_round_file, save_standings_text
-            save_tournament(self.current_tournament)
+            save_tournament(self.current_tournament, filepath=self.active_filename)
             save_current_tournament_round_file(self.current_tournament)
             save_standings_text(self.current_tournament, final=False)
             
@@ -1660,7 +1689,8 @@ class MainFrame(wx.Frame):
             next_item = self.tree_ctrl.AppendItem(self.tree_root, "Avanti")
             self.tree_ctrl.SetItemData(next_item, {"action": "wizard_next"})
             
-        self.tree_ctrl.Expand(self.tree_root)
+        if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
+            self.tree_ctrl.Expand(self.tree_root)
 
         # Ripristina la selezione ed il focus sul campo modificato dopo 300 ms per lo screen reader
         if hasattr(self, "last_activated_field") and self.last_activated_field:
@@ -2021,7 +2051,7 @@ class MainFrame(wx.Frame):
             dlg = wx.TextEntryDialog(self, _("Inserisci il tempo di riflessione (es. 15+10 o 90+30 o 60+0):"), _("Tempo di riflessione"), tc_val)
             if dlg.ShowModal() == wx.ID_OK:
                 val = dlg.GetValue().strip()
-                from utils import parse_time_control, classify_tournament_category
+                from stats import parse_time_control, classify_tournament_category
                 tc_parsed = parse_time_control(val)
                 if tc_parsed:
                     self.current_tournament["time_control"] = tc_parsed
@@ -2091,8 +2121,25 @@ class MainFrame(wx.Frame):
             dlg.Destroy()
 
     def on_activate_match(self, match):
-        w_id = match.get("white_player_id")
-        b_id = match.get("black_player_id")
+        if not self.current_tournament or not match:
+            return
+
+        # Find the actual match in the currently loaded tournament to avoid referencing stale objects
+        match_id = match.get("id")
+        round_num = match.get("round", 1)
+        actual_match = None
+        for r in self.current_tournament.get("rounds", []):
+            if r.get("round") == round_num:
+                for m in r.get("matches", []):
+                    if m.get("id") == match_id:
+                        actual_match = m
+                        break
+                break
+        if not actual_match:
+            actual_match = match
+
+        w_id = actual_match.get("white_player_id")
+        b_id = actual_match.get("black_player_id")
         if not b_id or b_id == "BYE_PLAYER_ID":
             wx.MessageBox(_("La partita con BYE non richiede inserimento risultati."), _("Info"), wx.ICON_INFORMATION)
             return
@@ -2104,9 +2151,24 @@ class MainFrame(wx.Frame):
         w_name = f"{w_p.get('last_name', '')} {w_p.get('first_name', '')}".strip()
         b_name = f"{b_p.get('last_name', '')} {b_p.get('first_name', '')}".strip()
         
-        board_num = self.get_board_num(match, match.get("round", 1))
+        board_num = self.get_board_num(actual_match, actual_match.get("round", 1))
         
-        pgn_text = match.get("pgn", "")
+        pgn_text = actual_match.get("pgn", "")
+
+        # Determinazione se il turno è concluso o il torneo è closed/concluded
+        is_tournament_concluded = self.current_tournament.get("concluded", False)
+        is_round_concluded = False
+        round_obj = next((r for r in self.current_tournament.get("rounds", []) if r.get("round") == round_num), None)
+        if round_obj:
+            all_done = True
+            for m in round_obj.get("matches", []):
+                if m.get("result") is None and m.get("black_player_id") is not None and m.get("black_player_id") != "BYE_PLAYER_ID":
+                    all_done = False
+                    break
+            if all_done:
+                is_round_concluded = True
+                
+        disable_result_change = is_tournament_concluded or is_round_concluded
         
         from gui.dialogs.result_dialog import ResultDialog
         dlg = ResultDialog(
@@ -2116,17 +2178,18 @@ class MainFrame(wx.Frame):
             white_id=w_id,
             black_id=b_id,
             board_num=board_num,
-            current_result=match.get("result"),
-            schedule_info=match.get("schedule_info"),
+            current_result=actual_match.get("result"),
+            schedule_info=actual_match.get("schedule_info"),
             settings=self.settings,
-            pgn_text=pgn_text
+            pgn_text=pgn_text,
+            disable_result_change=disable_result_change
         )
         
         if dlg.ShowModal() == wx.ID_OK:
             from utils import format_date_locale
             if dlg.selected_action == "schedule":
-                match["is_scheduled"] = True
-                match["schedule_info"] = dlg.schedule_info
+                actual_match["is_scheduled"] = True
+                actual_match["schedule_info"] = dlg.schedule_info
                 self._save_state()
                 self.set_status(_("Partita pianificata per il {date} alle {time}.").format(
                     date=format_date_locale(dlg.schedule_info["date"]),
@@ -2149,7 +2212,7 @@ class MainFrame(wx.Frame):
                                 game.headers["Site"] = self.current_tournament.get("site", "N/D")
                                 
                                 # Date
-                                r_num = match.get("round", 1)
+                                r_num = actual_match.get("round", 1)
                                 date_val = "????.??.??"
                                 round_dates_info = self.current_tournament.get("round_dates", [])
                                 current_round_period_info = next((rd for rd in round_dates_info if rd.get("round") == r_num), None)
@@ -2189,20 +2252,29 @@ class MainFrame(wx.Frame):
                             print(f"Errore durante l'elaborazione PGN: {e}")
                     
                     if p_text:
-                        match["pgn"] = p_text
+                        actual_match["pgn"] = p_text
                     else:
-                        match.pop("pgn", None)
+                        actual_match.pop("pgn", None)
                         
-                    self.apply_match_result(match, res)
-                    self.set_status(_("Risultato registrato: {res}.").format(res=res))
+                    self.apply_match_result(actual_match, res, is_pgn_only=disable_result_change)
+                    if disable_result_change:
+                        self.set_status(_("Partita aggiornata con PGN."))
+                    else:
+                        self.set_status(_("Risultato registrato: {res}.").format(res=res))
             
-            # Rebuild tree with focus restoration on the "Partite" category
-            self.last_activated_action = "show_matches"
+            # Rebuild tree and refresh display
             self.populate_tree()
+            self.show_match_detail_verbose(actual_match, round_num, board_num)
             
         dlg.Destroy()
 
-    def apply_match_result(self, match, result_str):
+    def apply_match_result(self, match, result_str, is_pgn_only=False):
+        if is_pgn_only:
+            self._save_state()
+            from utils import play_sound
+            play_sound("conferma")
+            return
+
         result_map = {
             "1-0": (1.0, 0.0),
             "0-1": (0.0, 1.0),
@@ -2213,7 +2285,7 @@ class MainFrame(wx.Frame):
         }
         w_score, b_score = result_map.get(result_str, (0.0, 0.0))
         
-        curr_round = self.current_tournament.get("current_round", 1)
+        curr_round = match.get("round", self.current_tournament.get("current_round", 1))
         wp_id = match.get("white_player_id")
         bp_id = match.get("black_player_id")
         

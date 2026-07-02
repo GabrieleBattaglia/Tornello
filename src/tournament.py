@@ -253,7 +253,7 @@ def load_tournament(filename_to_load):
     return None
 
 
-def save_tournament(torneo):
+def save_tournament(torneo, filepath=None):
     """Salva lo stato corrente del torneo nel file JSON."""
     tournament_name_for_file = None  # Inizializza a None
     dynamic_tournament_filename = None  # Inizializza a None
@@ -263,7 +263,10 @@ def save_tournament(torneo):
             print(_("Errore: Nome del torneo non presente. Impossibile salvare."))
             return  # O gestisci diversamente, es. nome file di default
         sanitized_name = sanitize_filename(tournament_name_for_file)
-        dynamic_tournament_filename = f"Tornello - {sanitized_name}.json"
+        if filepath:
+            dynamic_tournament_filename = filepath
+        else:
+            dynamic_tournament_filename = f"Tornello - {sanitized_name}.json"
         torneo_to_save = torneo.copy()
         # Prepara i dati per il salvataggio JSON
         if "players" in torneo_to_save:

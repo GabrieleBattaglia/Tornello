@@ -4,10 +4,9 @@ import wx
 import builtins
 from config import FIDE_DB_LOCAL_FILE
 from gui.settings import apply_visual_settings
+from utils import match_player_query, play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
-
-from utils import match_player_query, play_sound
 
 class PlayerEnrollmentDialog(wx.Dialog):
     """
@@ -220,6 +219,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
             self.sb_fide.SetLabel(_("Ricerca nel Database FIDE (min. 3 caratteri) (0 risultati)"))
             return
             
+        if event is not None:
+            play_sound("fide_attesa")
+            
         search_is_id = query.isdigit()
         enrolled_fide_ids = {p.get("fide_id_num_str") for p in self.enrolled_players if p.get("fide_id_num_str")}
         
@@ -248,6 +250,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
         
         total_found = len(self.all_fide_matches)
         self.sb_fide.SetLabel(_("Ricerca nel Database FIDE (min. 3 caratteri) ({total} risultati)").format(total=total_found))
+        
+        if event is not None:
+            play_sound("fide_pronto")
 
     def load_more_fide_results(self):
         # Rimuovi l'eventuale precedente item "Mostra altri..."
@@ -298,6 +303,15 @@ class PlayerEnrollmentDialog(wx.Dialog):
                 break
                 
         self.list_enrolled.SetSelection(new_idx)
+        
+        # Ripristina la selezione e il focus sulla lista locale (o sul campo di ricerca se vuota)
+        new_count = self.list_local_results.GetCount()
+        if new_count > 0:
+            new_sel = min(sel, new_count - 1)
+            self.list_local_results.SetSelection(new_sel)
+            self.list_local_results.SetFocus()
+        else:
+            self.search_local.SetFocus()
 
     def on_add_fide(self, event):
         sel = self.list_fide_results.GetSelection()
@@ -342,6 +356,15 @@ class PlayerEnrollmentDialog(wx.Dialog):
                 break
                 
         self.list_enrolled.SetSelection(new_idx)
+        
+        # Ripristina la selezione e il focus sulla lista FIDE (o sul campo di ricerca se vuota)
+        new_count = self.list_fide_results.GetCount()
+        if new_count > 0:
+            new_sel = min(sel, new_count - 1)
+            self.list_fide_results.SetSelection(new_sel)
+            self.list_fide_results.SetFocus()
+        else:
+            self.search_fide.SetFocus()
 
     def on_remove_enrolled(self, event):
         sel = self.list_enrolled.GetSelection()

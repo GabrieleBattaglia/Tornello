@@ -181,5 +181,21 @@ custom_presets = {
         ],
         "kind": 1,
         "adsr": [0.02, 0.0, 100.0, 0.04]
+    },
+    "fide_attesa": {
+        "descrizione": "Segnale acustico basso di attesa per ricerca FIDE",
+        "score": [
+            ["g3", 0.08, 0.0, -0.1]
+        ],
+        "kind": 1,
+        "adsr": [0.01, 0.0, 100.0, 0.02]
+    },
+    "fide_pronto": {
+        "descrizione": "Segnale acustico acuto di fine ricerca FIDE",
+        "score": [
+            ["g6", 0.08, 0.0, 0.0]
+        ],
+        "kind": 1,
+        "adsr": [0.01, 0.0, 100.0, 0.01]
     }
 }
