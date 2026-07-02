@@ -257,7 +257,7 @@ class Tournament:
     players: List[Player] = field(default_factory=list)
     rounds: List[Round] = field(default_factory=list)
     next_match_id: int = 1
-    bye_value: float = 1.0
+    bye_value: float = 0.5
     launch_count: int = 0
     schema_version: int = 1
     tournament_category: str = "standard"  # Issue #13
@@ -321,7 +321,7 @@ class Tournament:
             players=players,
             rounds=rounds,
             next_match_id=int(d.get("next_match_id", 1)),
-            bye_value=float(d.get("bye_value", 1.0)),
+            bye_value=float(d.get("bye_value", 0.5)),
             launch_count=int(d.get("launch_count", 0)),
             schema_version=int(d.get("schema_version", 1)),
             tournament_category=d.get("tournament_category", "standard")

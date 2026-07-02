@@ -136,6 +136,7 @@ class TournamentController:
             f for f in glob.glob(tournament_files_pattern)
             if "- concluso_" not in os.path.basename(f).lower()
             and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
+            and os.path.basename(f) != "Tornello - Settings.json"
         ]
 
         deve_creare_nuovo_torneo = False
@@ -423,7 +424,7 @@ class TournamentController:
             players=[],
             rounds=[],
             next_match_id=1,
-            bye_value=1.0,
+            bye_value=0.5,
             launch_count=1,
             tournament_category=tournament_category
         )
@@ -445,8 +446,8 @@ class TournamentController:
                 existing_players = self.tournament.players
 
         num_giocatori = len(self.tournament.players)
-        valore_bye_suggerito = 0.5 if num_giocatori > (self.tournament.total_rounds * 2) else 1.0
-        valore_alternativo = 1.0 if valore_bye_suggerito == 0.5 else 0.5
+        valore_bye_suggerito = 0.5
+        valore_alternativo = 1.0
 
         self.ui.show_message("-" * 30)
         self.ui.show_message(_("Calcolo Valore del BYE secondo la regola FIDE"))

@@ -1,4 +1,20 @@
 --- CHANGELOG ---
+9.0.21645
+	+ Note: La versione alpha è identificata dal formato 9.0.[giorno][ora] (es. 21645 indica il giorno 2 alle ore 16:45).
+	+ Feature: Avvio del programma con la finestra principale sempre massimizzata per ottimizzare lo spazio dello schermo.
+	+ Feature: Riprogettata la finestra delle impostazioni visive in quattro schede/tabs ("Audio e Lingua", "Caratteri", "Colori di primo piano", "Colori di sfondo") tramite wx.Notebook.
+	+ Feature: Aggiunti controlli di accessibilità separati per regolare la dimensione dei caratteri e i colori (testo e sfondo) specifici per tutte le finestre di dialogo secondarie.
+	+ Feature: Aggiornamento automatico della barra di stato personalizzata con metriche avanzate (Progress. Giorno x/y, turno x/y, risult. x/y %, PGN count) e statistiche dettagliate delle vittorie (Bianco, patte, Nero, escludendo i bye).
+	+ Feature: Visualizzazione della classifica in formato completo (con colonne ARO, Performance ELO e Variazione ELO) abilitata automaticamente per tutti i tornei finalizzati e conclusi.
+	+ Feature: Disabilitazione dinamica della voce di menù "Finalizza Torneo" e della scorciatoia Ctrl+F se non ci si trova all'ultimo turno con tutte le partite completate.
+	+ Feature: Riorganizzazione dei rami dell'albero dei turni suddivisi in categorie "Completati (N)" e "Da completare (M)".
+	+ Feature: Sostituzione dinamica del ramo "da giocare" con le azioni contestuali immediate ("calcola il turno successivo" o "Finalizza il torneo") non appena tutte le partite del turno sono completate.
+	+ Feature: Integrazione, validazione real-time e iniezione automatica dei tag FIDE per le partite in formato PGN con generazione automatica del file di raccolta PGN del torneo.
+	+ Feature: Inserito il conteggio e la percentuale di completamento delle partite direttamente nell'etichetta del ramo "giocate" (es. giocate (X/Y, ZZ.Z%)).
+	+ Bugfix: Implementato il metodo generate_next_round e collegato alla selezione sull'albero per risolvere l'AttributeError.
+	+ Bugfix: Ristretto l'inserimento dell'azione "calcola il turno successivo" o "Finalizza il torneo" esclusivamente all'ultimo turno generato del torneo attivo, nascondendolo nei tornei conclusi e nei turni passati.
+	+ Bugfix: Evitato il RuntimeError ("TreeCtrl has been deleted") proteggendo gli event handler dell'albero con controlli di validità dei componenti C++.
+
 9.0.3
 	+ Feature: Estrapolati i preset audio da utils.py a src/audio_presets.py per una migliore pulizia del codice.
 	+ Feature: Collegati tutti i comandi di menù (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+I, Ctrl+Z, Ctrl+F, Ctrl+G, Ctrl+U, Ctrl+L) e la chiusura della finestra principale (suono chiusura sincrono).

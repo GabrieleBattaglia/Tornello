@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-01 21:39+0200\n"
+"POT-Creation-Date: 2026-07-02 10:41+0200\n"
 "PO-Revision-Date: 2026-04-13 22:12+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -595,7 +595,7 @@ msgstr "La valeur doit être au moins {min_val}."
 msgid "Il valore non può superare {max_val}."
 msgstr "La valeur suggérée est : {val}"
 
-#: src/cli_adapter.py:44 src/gui/main_frame.py:561
+#: src/cli_adapter.py:44 src/gui/main_frame.py:609
 msgid "Inserisci un numero intero valido."
 msgstr "Veuillez saisir un entier valide."
 
@@ -604,7 +604,7 @@ msgid "Scelta non valida."
 msgstr "Choix invalide."
 
 #: src/controller.py:89
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid ""
 "\n"
 "BENVENUTI! Sono Tornello V9"
@@ -682,7 +682,7 @@ msgid "Nessun torneo esistente trovato."
 msgstr "Aucun tournoi existant trouvé."
 
 #: src/controller.py:146 src/controller.py:196
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Vuoi creare un nuovo torneo?"
 msgstr "{num}. Créer un nouveau tournoi"
 
@@ -789,19 +789,19 @@ msgstr ""
 "pour les reprendre."
 
 #: src/controller.py:260
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Crea un nuovo torneo"
 msgstr "{num}. Créer un nouveau tournoi"
 
 #: src/controller.py:261
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Scegli un torneo da caricare o creane uno nuovo"
 msgstr ""
 "Choisissez un tournoi à charger (1-{max_num}) ou '{new_num}' pour en créer "
 "un nouveau :"
 
 #: src/controller.py:270
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Errore nel caricamento del torneo. Riprova."
 msgstr "Erreur fatale lors du chargement du tournoi '{filename}'."
 
@@ -881,7 +881,7 @@ msgid "Inserisci il numero totale dei turni"
 msgstr "Entrez le nombre total d'équipes :"
 
 #: src/controller.py:377
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Luogo del torneo [Default: Luogo Sconosciuto]"
 msgstr "Lieu du tournoi [Par défaut : {default_site}] :"
 
@@ -895,12 +895,12 @@ msgid "Federazione organizzante (codice 3 lettere) [Default: ITA]"
 msgstr "Fédération organisatrice (code à 3 lettres) [Par défaut : ITA] :"
 
 #: src/controller.py:380
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Arbitro Capo [Default: N/D]"
 msgstr "Arbitre en chef [Par défaut : {default_arbiter}] :"
 
 #: src/controller.py:381
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Vice Arbitri (separati da virgola) [Default: nessuno]"
 msgstr ""
 "Arbitres adjoints (séparés par des virgules) [Par défaut : "
@@ -911,8 +911,8 @@ msgid "Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]"
 msgstr ""
 "Contrôle du tempo (par exemple 15+10, 90+30, 3+2) [Par défaut : 90+30]"
 
-#: src/controller.py:391 src/gui/main_frame.py:1242
-#, fuzzy, python-brace-format
+#: src/controller.py:391 src/gui/main_frame.py:1341
+#, fuzzy
 msgid "Formato non valido. Usa minuti+incremento o solo minuti."
 msgstr "Format de date invalide. Utilisez {date_format}."
 
@@ -929,7 +929,7 @@ msgstr ""
 "tournoi annulée."
 
 #: src/controller.py:444
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid ""
 "\n"
 "Reindirizzamento all'inserimento giocatori..."
@@ -1615,7 +1615,7 @@ msgstr ""
 msgid "Scelta non valida. Inserisci 't' o 'u'."
 msgstr "Choix invalide. Entrez « t » ou « u »."
 
-#: src/engine.py:99 src/gui/main_frame.py:600 src/gui/main_frame.py:1245
+#: src/engine.py:99 src/gui/main_frame.py:652 src/gui/main_frame.py:1344
 msgid "Arbitro Capo"
 msgstr "Arbitre en chef"
 
@@ -3431,7 +3431,7 @@ msgid "&Consulta FIDE\tCtrl+K"
 msgstr "&Voir FIDE Ctrl+K"
 
 #: src/gui/main_frame.py:118
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "&Verifica Aggiornamenti FIDE"
 msgstr "- {num} met à jour les titres FIDE"
 
@@ -3459,203 +3459,310 @@ msgstr "C&recei F3"
 msgid "&Aiuto"
 msgstr "&Aide"
 
-#: src/gui/main_frame.py:542 src/gui/main_frame.py:1187
+#: src/gui/main_frame.py:232
+#, python-brace-format
+msgid ""
+"Il database FIDE locale è stato aggiornato {days} giorni fa.\n"
+"Si consiglia di verificare e scaricare l'aggiornamento più recente.\n"
+"Vuoi procedere con il controllo e lo scaricamento ora?"
+msgstr ""
+"La base de données locale FIDE a été mise à jour il y a {days} jours.\n"
+"Nous vous recommandons de vérifier et de télécharger la dernière mise à jour.\n"
+"Voulez-vous procéder à la vérification et au téléchargement maintenant ?"
+
+#: src/gui/dialogs/fide_update_dialog.py:29 src/gui/main_frame.py:236
+#, fuzzy
+msgid "Aggiornamento Database FIDE"
+msgstr "Vérifiez l'état de la base de données FIDE locale..."
+
+#: src/gui/main_frame.py:328
+#, fuzzy
+msgid "Nessun abbinamento generato per questo turno.\n"
+msgstr "Génération de paires pour le premier tour..."
+
+#: src/gui/main_frame.py:330
+msgid ""
+"\n"
+"Il torneo è in fase di preparazione.\n"
+"Puoi iscrivere altri giocatori premendo Ctrl+I (o dal menù Torneo -> Iscrizioni).\n"
+"Quando sei pronto ad iniziare il torneo, seleziona 'Inizia torneo' dall'albero a destra.\n"
+msgstr ""
+"Le tournoi est en phase de préparation.\n"
+"Vous pouvez inscrire d'autres joueurs en appuyant sur Ctrl+I (ou depuis le menu Tournoi -> Inscriptions).\n"
+"Lorsque vous êtes prêt à démarrer le tournoi, sélectionnez « Démarrer le tournoi » dans l'arborescence de droite."
+
+#: src/gui/main_frame.py:373
+#, fuzzy
+msgid "In Preparazione"
+msgstr "Fédération"
+
+#: src/gui/main_frame.py:391
+#, fuzzy, python-brace-format
+msgid "Tornei Conclusi ({count})"
+msgstr "Le tournoi est terminé."
+
+#: src/gui/main_frame.py:419
+#, fuzzy
+msgid "Nuovo torneo"
+msgstr "Nom du tournoi :"
+
+#: src/gui/main_frame.py:587 src/gui/main_frame.py:1286
 #, fuzzy
 msgid "Inserisci il nome del torneo:"
 msgstr "Saisissez le nom du nouveau tournoi :"
 
-#: src/gui/main_frame.py:542 src/gui/main_frame.py:1187
+#: src/gui/main_frame.py:587 src/gui/main_frame.py:1286
 #, fuzzy
 msgid "Nome Torneo"
 msgstr "Nom du tournoi :"
 
-#: src/gui/main_frame.py:548 src/gui/main_frame.py:1195
+#: src/gui/main_frame.py:594 src/gui/main_frame.py:1294
 #, fuzzy
 msgid "Inserisci il luogo (Site):"
 msgstr "Saisissez le nom du nouveau tournoi :"
 
-#: src/gui/main_frame.py:548 src/gui/main_frame.py:1195
+#: src/gui/main_frame.py:594 src/gui/main_frame.py:1294
 #, fuzzy
 msgid "Luogo Torneo"
 msgstr "Nom du tournoi :"
 
-#: src/gui/main_frame.py:554
+#: src/gui/main_frame.py:601
 #, fuzzy
 msgid "Inserisci il numero di turni:"
 msgstr "Entrez le nombre total d'équipes :"
 
-#: src/gui/main_frame.py:554
+#: src/gui/main_frame.py:601
 #, fuzzy
 msgid "Numero Turni"
 msgstr "Numéro d'équipe invalide."
 
-#: src/gui/dialogs/player_enrollment_dialog.py:401
+#: src/gui/dialogs/fide_update_dialog.py:86
+#: src/gui/dialogs/player_enrollment_dialog.py:412
 #: src/gui/dialogs/players_db_dialog.py:212
 #: src/gui/dialogs/players_db_dialog.py:340
 #: src/gui/dialogs/result_dialog.py:138 src/gui/dialogs/result_dialog.py:157
-#: src/gui/main_frame.py:561 src/gui/main_frame.py:585
-#: src/gui/main_frame.py:597 src/gui/main_frame.py:673
-#: src/gui/main_frame.py:747 src/gui/main_frame.py:1072
-#: src/gui/main_frame.py:1075 src/gui/main_frame.py:1086
-#: src/gui/main_frame.py:1100 src/gui/main_frame.py:1111
-#: src/gui/main_frame.py:1117 src/gui/main_frame.py:1126
-#: src/gui/main_frame.py:1130 src/gui/main_frame.py:1145
-#: src/gui/main_frame.py:1150 src/gui/main_frame.py:1157
-#: src/gui/main_frame.py:1163 src/gui/main_frame.py:1213
-#: src/gui/main_frame.py:1226 src/gui/main_frame.py:1242
-#: src/gui/main_frame.py:1446
+#: src/gui/main_frame.py:609 src/gui/main_frame.py:636
+#: src/gui/main_frame.py:649 src/gui/main_frame.py:734
+#: src/gui/main_frame.py:815 src/gui/main_frame.py:1171
+#: src/gui/main_frame.py:1174 src/gui/main_frame.py:1185
+#: src/gui/main_frame.py:1199 src/gui/main_frame.py:1210
+#: src/gui/main_frame.py:1216 src/gui/main_frame.py:1225
+#: src/gui/main_frame.py:1229 src/gui/main_frame.py:1244
+#: src/gui/main_frame.py:1249 src/gui/main_frame.py:1256
+#: src/gui/main_frame.py:1262 src/gui/main_frame.py:1312
+#: src/gui/main_frame.py:1325 src/gui/main_frame.py:1341
+#: src/gui/main_frame.py:1546
 msgid "Errore"
 msgstr "Erreur"
 
-#: src/gui/main_frame.py:564 src/gui/main_frame.py:1231
+#: src/gui/main_frame.py:612 src/gui/main_frame.py:1330
 msgid "Inserisci il tempo di riflessione (es. 15+10 o 90+30 o 60+0):"
 msgstr "Entrez le temps de réflexion (par exemple 15+10 ou 90+30 ou 60+0) :"
 
-#: src/gui/main_frame.py:564 src/gui/main_frame.py:1231
+#: src/gui/main_frame.py:612 src/gui/main_frame.py:1330
 msgid "Tempo di riflessione"
 msgstr "Le temps de la réflexion"
 
-#: src/gui/main_frame.py:570
+#: src/gui/main_frame.py:619
 msgid "Seleziona la cartella di salvataggio per i report:"
 msgstr "Sélectionnez le dossier de sauvegarde des rapports :"
 
-#: src/gui/main_frame.py:576 src/gui/main_frame.py:1203
+#: src/gui/main_frame.py:626 src/gui/main_frame.py:1302
 msgid "Inserisci la data di inizio (AAAA-MM-GG):"
 msgstr "Saisissez la date de début (AAAA-MM-JJ) :"
 
-#: src/gui/main_frame.py:576 src/gui/main_frame.py:1203
+#: src/gui/main_frame.py:626 src/gui/main_frame.py:1302
 #, fuzzy
 msgid "Data Inizio"
 msgstr "Date de naissance"
 
-#: src/gui/dialogs/result_dialog.py:138 src/gui/main_frame.py:585
-#: src/gui/main_frame.py:597 src/gui/main_frame.py:1213
-#: src/gui/main_frame.py:1226
-#, fuzzy, python-brace-format
+#: src/gui/dialogs/result_dialog.py:138 src/gui/main_frame.py:636
+#: src/gui/main_frame.py:649 src/gui/main_frame.py:1312
+#: src/gui/main_frame.py:1325
+#, fuzzy
 msgid "Formato data non valido. Usa AAAA-MM-GG."
 msgstr "Format de date invalide. Utilisez {date_format}."
 
-#: src/gui/main_frame.py:588 src/gui/main_frame.py:1216
+#: src/gui/main_frame.py:639 src/gui/main_frame.py:1315
 msgid "Inserisci la data di fine (AAAA-MM-GG):"
 msgstr "Saisissez la date de fin (AAAA-MM-JJ) :"
 
-#: src/gui/main_frame.py:588 src/gui/main_frame.py:1216
+#: src/gui/main_frame.py:639 src/gui/main_frame.py:1315
 #, fuzzy
 msgid "Data Fine"
 msgstr "Dates"
 
-#: src/gui/main_frame.py:600 src/gui/main_frame.py:1245
+#: src/gui/main_frame.py:652 src/gui/main_frame.py:1344
 #, fuzzy
 msgid "Inserisci il nome dell'Arbitro Capo:"
 msgstr "Saisissez le nom du nouveau tournoi :"
 
-#: src/gui/main_frame.py:606 src/gui/main_frame.py:1253
+#: src/gui/main_frame.py:659 src/gui/main_frame.py:1352
 msgid "Inserisci i collaboratori / vice arbitri (separati da virgola):"
 msgstr ""
 "Saisissez les collaborateurs/arbitres adjoints (séparés par des virgules) :"
 
-#: src/gui/main_frame.py:606 src/gui/main_frame.py:1253
+#: src/gui/main_frame.py:659 src/gui/main_frame.py:1352
 msgid "Collaboratori / Vice Arbitri"
 msgstr "Collaborateurs / Arbitres adjoints"
 
-#: src/gui/main_frame.py:612 src/gui/main_frame.py:1261
+#: src/gui/main_frame.py:666 src/gui/main_frame.py:1360
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"
 msgstr "Saisissez le code de la fédération hôte (par exemple ITA, FRA) :"
 
-#: src/gui/main_frame.py:612 src/gui/main_frame.py:1261
+#: src/gui/main_frame.py:666 src/gui/main_frame.py:1360
 #, fuzzy
 msgid "Codice Federazione"
 msgstr "Fédération"
 
-#: src/gui/main_frame.py:619 src/gui/main_frame.py:1270
+#: src/gui/main_frame.py:674 src/gui/main_frame.py:1369
 msgid ""
 "Seleziona il colore per il giocatore più forte (scacchiera 1, turno 1):"
 msgstr "Sélectionnez la couleur du joueur le plus fort (tableau 1, tour 1) :"
 
-#: src/gui/main_frame.py:619 src/gui/main_frame.py:1270
+#: src/gui/main_frame.py:674 src/gui/main_frame.py:1369
 msgid "Colore al giocatore più forte"
 msgstr "Couleur au joueur le plus fort"
 
-#: src/gui/main_frame.py:640 src/gui/main_frame.py:1292
+#: src/gui/main_frame.py:696 src/gui/main_frame.py:1391
 #, fuzzy
 msgid "Seleziona il valore del BYE secondo la regola FIDE:"
 msgstr "Calcul de la valeur BYE selon la règle FIDE"
 
-#: src/gui/main_frame.py:640 src/gui/main_frame.py:1292
+#: src/gui/main_frame.py:696 src/gui/main_frame.py:1391
 msgid "Valore del BYE"
 msgstr "Valeur BYE"
 
-#: src/gui/main_frame.py:673
+#: src/gui/main_frame.py:717
+#, fuzzy
+msgid "Avanti (Iscrizione Giocatori)"
+msgstr "Historique des tournois joués"
+
+#: src/gui/main_frame.py:734
 #, fuzzy
 msgid "Sono necessari almeno 2 giocatori per avviare un torneo."
 msgstr "--- Insérer des joueurs pour le tournoi ---"
 
-#: src/gui/main_frame.py:699
+#: src/gui/main_frame.py:760
 msgid "Avviso Percorso"
 msgstr "Avis d'itinéraire"
 
-#: src/gui/main_frame.py:747
+#: src/gui/main_frame.py:805
+msgid ""
+"Vuoi avviare il torneo generando subito gli abbinamenti per il Turno 1?\n"
+"\n"
+"Sì = Avvia il torneo generando il Turno 1\n"
+"No = Salva il torneo 'In preparazione' (potrai aggiungere altri giocatori ed avviarlo in seguito)"
+msgstr ""
+"Voulez-vous démarrer le tournoi en générant immédiatement les appariements du premier tour ?\n"
+"\n"
+"Oui = Commencer le tournoi en générant le Round 1\n"
+"Non = Sauvegarder le tournoi 'En préparation' (vous pouvez ajouter d'autres joueurs et le démarrer plus tard)"
+
+#: src/gui/main_frame.py:808
+#, fuzzy
+msgid "Avvio Torneo"
+msgstr "Nom du tournoi :"
+
+#: src/gui/main_frame.py:815
 #, fuzzy
 msgid "Errore nella generazione degli abbinamenti con bbpPairings."
 msgstr "ERREUR : échec de la génération de la chaîne TRF pour bbpPairings."
 
-#: src/gui/main_frame.py:1056
+#: src/gui/main_frame.py:825
+#, fuzzy
+msgid "Torneo avviato. Generati abbinamenti per il Turno 1."
+msgstr "Génération de paires pour le premier tour..."
+
+#: src/gui/main_frame.py:832
+msgid ""
+"Torneo creato in preparazione. Puoi completare l'inserimento in seguito."
+msgstr ""
+"Tournoi créé en préparation. Vous pourrez compléter l'entrée plus tard."
+
+#: src/gui/main_frame.py:1117
+#, fuzzy, python-brace-format
+msgid ""
+"Il database FIDE locale corrente è stato aggiornato {days} giorni fa.\n"
+"\n"
+msgstr "Base de données FIDE locale chargée de {} joueurs."
+
+#: src/gui/main_frame.py:1119
+#, fuzzy, python-brace-format
+msgid ""
+"Nessun database FIDE locale trovato.\n"
+"\n"
+msgstr "ERREUR : la base de données FIDE locale '{}' est introuvable."
+
+#: src/gui/main_frame.py:1121
+msgid ""
+"Desideri collegarti a ratings.fide.com e scaricare l'ultimo aggiornamento?"
+msgstr ""
+"Voulez-vous vous connecter à rating.fide.com et télécharger la dernière mise"
+" à jour ?"
+
+#: src/gui/main_frame.py:1123
+#, fuzzy
+msgid "Verifica Aggiornamenti FIDE"
+msgstr "- {num} met à jour les titres FIDE"
+
+#: src/gui/main_frame.py:1155
 #, fuzzy
 msgid "Apri Torneo"
 msgstr "Nom du tournoi :"
 
-#: src/gui/main_frame.py:1064
+#: src/gui/main_frame.py:1163
 #, fuzzy
 msgid "Torneo salvato con successo."
 msgstr "Résultat enregistré avec succès."
 
-#: src/gui/main_frame.py:1068
+#: src/gui/main_frame.py:1167
 #, fuzzy
 msgid "Nessun torneo attivo da salvare."
 msgstr "Aucun joueur actif à prendre sa retraite."
 
-#: src/gui/dialogs/fide_query_dialog.py:225 src/gui/main_frame.py:1068
-#: src/gui/main_frame.py:1307
+#: src/gui/dialogs/fide_query_dialog.py:225 src/gui/main_frame.py:1167
+#: src/gui/main_frame.py:1406
 #, fuzzy
 msgid "Info"
 msgstr "Non"
 
-#: src/gui/main_frame.py:1072 src/gui/main_frame.py:1100
-#: src/gui/main_frame.py:1111 src/gui/main_frame.py:1117
-#: src/gui/main_frame.py:1126 src/gui/main_frame.py:1145
+#: src/gui/main_frame.py:1171 src/gui/main_frame.py:1199
+#: src/gui/main_frame.py:1210 src/gui/main_frame.py:1216
+#: src/gui/main_frame.py:1225 src/gui/main_frame.py:1244
 #, fuzzy
 msgid "Nessun torneo attivo."
 msgstr "Aucun tournoi actif ni tournoi terminé."
 
-#: src/gui/main_frame.py:1075
+#: src/gui/main_frame.py:1174
 msgid ""
 "Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
 msgstr ""
 "Impossible de modifier l'inscription des joueurs : le tournoi a déjà "
 "commencé."
 
-#: src/gui/main_frame.py:1086
+#: src/gui/main_frame.py:1185
 #, fuzzy
 msgid "Sono necessari almeno 2 giocatori per il torneo."
 msgstr "--- Insérer des joueurs pour le tournoi ---"
 
-#: src/gui/main_frame.py:1103
+#: src/gui/main_frame.py:1202
 #, fuzzy
 msgid ""
 "Elenco Giocatori Iscritti:\n"
 "\n"
 msgstr "--- Récapitulatif des joueurs inscrits au tournoi ---"
 
-#: src/gui/main_frame.py:1130
+#: src/gui/main_frame.py:1229
 msgid "Impossibile annullare il turno: nessun turno giocato."
 msgstr "Impossible d'annuler le tour : aucun tour joué."
 
-#: src/gui/main_frame.py:1133
+#: src/gui/main_frame.py:1232
 #, fuzzy
 msgid "Annulla Turno"
 msgstr "Ramassage annulé."
 
-#: src/gui/main_frame.py:1133
+#: src/gui/main_frame.py:1232
 msgid ""
 "Sei sicuro di voler annullare l'ultimo turno e tornare indietro? Questa "
 "azione è irreversibile."
@@ -3663,18 +3770,18 @@ msgstr ""
 "Êtes-vous sûr de vouloir annuler le dernier quart de travail et revenir en "
 "arrière ? Cette action est irréversible."
 
-#: src/gui/main_frame.py:1140
+#: src/gui/main_frame.py:1239
 #, fuzzy
 msgid "Time Machine attivata: tornati al turno precedente."
 msgstr ""
 "Cette fonctionnalité restaure le statut du tournoi à un tour précédent."
 
-#: src/gui/main_frame.py:1150
+#: src/gui/main_frame.py:1249
 #, fuzzy
 msgid "Il torneo non è ancora iniziato."
 msgstr "Le tournoi est terminé."
 
-#: src/gui/main_frame.py:1157
+#: src/gui/main_frame.py:1256
 msgid ""
 "Impossibile finalizzare il torneo prima di aver completato tutti i turni "
 "previsti."
@@ -3682,7 +3789,7 @@ msgstr ""
 "Impossible de finaliser le tournoi avant d'avoir bouclé tous les tours "
 "prévus."
 
-#: src/gui/main_frame.py:1163
+#: src/gui/main_frame.py:1262
 msgid ""
 "Impossibile finalizzare il torneo: ci sono ancora partite senza risultato "
 "nell'ultimo turno."
@@ -3690,12 +3797,12 @@ msgstr ""
 "Impossible de finaliser le tournoi : il reste encore des matches sans "
 "résultat au dernier tour."
 
-#: src/gui/main_frame.py:1166
+#: src/gui/main_frame.py:1265
 #, fuzzy
 msgid "Finalizza Torneo"
 msgstr "(DÉJÀ DANS LE TOURNOI)"
 
-#: src/gui/main_frame.py:1166
+#: src/gui/main_frame.py:1265
 msgid ""
 "Sei sicuro di voler concludere definitivamente il torneo? Verranno calcolati"
 " i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database "
@@ -3705,70 +3812,70 @@ msgstr ""
 "classements finaux, les play-offs seront calculés et les ELO seront mis à "
 "jour dans la base de données des joueurs."
 
-#: src/gui/main_frame.py:1174
+#: src/gui/main_frame.py:1273
 msgid ""
 "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."
 msgstr ""
 "Tournoi finalisé avec succès ! Les données des joueurs ont été mises à jour."
 
-#: src/gui/main_frame.py:1174
+#: src/gui/dialogs/fide_update_dialog.py:82 src/gui/main_frame.py:1273
 #, fuzzy
 msgid "Successo"
 msgstr "Sexe"
 
-#: src/gui/main_frame.py:1179
-#, fuzzy, python-brace-format
+#: src/gui/main_frame.py:1278
+#, fuzzy
 msgid "Torneo concluso e archiviato."
 msgstr "Tournoi '{name}' finalisé et archivé."
 
-#: src/gui/main_frame.py:1307
+#: src/gui/main_frame.py:1406
 msgid "La partita con BYE non richiede inserimento risultati."
 msgstr "Le match avec BYE ne nécessite pas de saisie de résultats."
 
-#: src/gui/main_frame.py:1336
+#: src/gui/main_frame.py:1435
 #, fuzzy, python-brace-format
 msgid "Partita pianificata per il {date} alle {time}."
 msgstr "Prévu pour : {date} à {time}"
 
-#: src/gui/main_frame.py:1346
+#: src/gui/main_frame.py:1445
 #, fuzzy, python-brace-format
 msgid "Risultato registrato: {res}."
 msgstr "Résultat enregistré avec succès."
 
-#: src/gui/main_frame.py:1404
+#: src/gui/main_frame.py:1503
 #, fuzzy, python-brace-format
 msgid "Il giocatore {name} si ritira definitivamente dal torneo?"
 msgstr ""
 "Le joueur {player_name} se retire-t-il définitivement du tournoi ? (ENTRER |"
 " ÉCHAPPER)"
 
-#: src/gui/main_frame.py:1405
+#: src/gui/main_frame.py:1504
 msgid "Ritiro dopo Forfait"
 msgstr "Retrait après forfait"
 
-#: src/gui/main_frame.py:1417
+#: src/gui/main_frame.py:1516
 #, fuzzy, python-brace-format
 msgid "Giocatore '{name}' ritirato con successo."
 msgstr "Résultat enregistré avec succès."
 
-#: src/gui/main_frame.py:1440
+#: src/gui/main_frame.py:1539
 #, fuzzy, python-brace-format
 msgid "Visualizzazione scheda di {name}."
 msgstr "--- Finalisation du tournoi : {name} ---"
 
-#: src/gui/main_frame.py:1446
+#: src/gui/main_frame.py:1546
 #, fuzzy
 msgid "Errore nella generazione degli abbinamenti."
 msgstr "ERREUR : échec de la génération de la chaîne TRF pour bbpPairings."
 
-#: src/gui/main_frame.py:1455
+#: src/gui/main_frame.py:1557
 #, fuzzy
 msgid "Torneo iniziato. Generati abbinamenti per il Turno 1."
 msgstr "Génération de paires pour le premier tour..."
 
 #: src/gui/dialogs/accessible_msg_dialog.py:42
 #: src/gui/dialogs/player_enrollment_dialog.py:115
-#: src/gui/dialogs/visual_settings_dialog.py:156
+#: src/gui/dialogs/visual_settings_dialog.py:186
 msgid "OK"
 msgstr "D'ACCORD"
 
@@ -3809,13 +3916,14 @@ msgid "Importa nel DB Locale"
 msgstr "Importer dans la base de données locale"
 
 #: src/gui/dialogs/fide_query_dialog.py:94
+#: src/gui/dialogs/fide_update_dialog.py:77
 #: src/gui/dialogs/players_db_dialog.py:59
 #: src/gui/dialogs/sync_database_dialog.py:160
 msgid "Chiudi"
 msgstr "Fermer"
 
 #: src/gui/dialogs/fide_query_dialog.py:167
-#: src/gui/dialogs/player_enrollment_dialog.py:275
+#: src/gui/dialogs/player_enrollment_dialog.py:276
 #, python-brace-format
 msgid "-- Mostra altri risultati ({rem} rimanenti su {total}) --"
 msgstr "-- Afficher plus de résultats ({rem} restant sur {total}) --"
@@ -3837,6 +3945,40 @@ msgstr ""
 #, fuzzy
 msgid "Importazione Completata"
 msgstr "Opérations terminées."
+
+#: src/gui/dialogs/fide_update_dialog.py:43
+msgid "Download del file ZIP FIDE da ratings.fide.com in corso... Attendere."
+msgstr ""
+"Téléchargement du fichier FIDE ZIP depuis rating.fide.com... Veuillez "
+"patienter."
+
+#: src/gui/dialogs/fide_update_dialog.py:50
+#: src/gui/dialogs/player_enrollment_dialog.py:114
+#: src/gui/dialogs/result_dialog.py:93
+#: src/gui/dialogs/visual_settings_dialog.py:185
+msgid "Annulla"
+msgstr "Annuler"
+
+#: src/gui/dialogs/fide_update_dialog.py:81
+#: src/gui/dialogs/fide_update_dialog.py:82
+#, fuzzy
+msgid "Database FIDE locale aggiornato con successo!"
+msgstr "Base de données FIDE locale mise à jour avec succès."
+
+#: src/gui/dialogs/fide_update_dialog.py:85
+#, fuzzy, python-brace-format
+msgid "Errore durante l'aggiornamento del Database FIDE."
+msgstr ""
+"Une erreur inattendue s'est produite lors de la mise à jour de la base de "
+"données FIDE : {error}"
+
+#: src/gui/dialogs/fide_update_dialog.py:86
+msgid ""
+"Errore durante l'aggiornamento del Database FIDE. Controlla la connessione "
+"ad internet."
+msgstr ""
+"Erreur lors de la mise à jour de la base de données FIDE. Vérifiez votre "
+"connexion Internet."
 
 #: src/gui/dialogs/player_enrollment_dialog.py:19
 #, fuzzy
@@ -3862,52 +4004,46 @@ msgstr "Joueur manquant"
 msgid "Giocatori Iscritti al Torneo"
 msgstr "--- Récapitulatif des joueurs inscrits au tournoi ---"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:114
-#: src/gui/dialogs/result_dialog.py:93
-#: src/gui/dialogs/visual_settings_dialog.py:155
-msgid "Annulla"
-msgstr "Annuler"
-
-#: src/gui/dialogs/player_enrollment_dialog.py:161
+#: src/gui/dialogs/player_enrollment_dialog.py:162
 #, fuzzy, python-brace-format
 msgid "Giocatori Iscritti al Torneo ({total})"
 msgstr "--- Récapitulatif des joueurs inscrits au tournoi ---"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:208
+#: src/gui/dialogs/player_enrollment_dialog.py:209
 #, python-brace-format
 msgid "Ricerca nel Database Personale Locale ({total} risultati)"
 msgstr ""
 "Recherche dans la base de données du personnel local (résultats {total})"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:219
+#: src/gui/dialogs/player_enrollment_dialog.py:220
 msgid "Ricerca nel Database FIDE (min. 3 caratteri) (0 risultati)"
 msgstr ""
 "Recherche dans la base de données FIDE (min. 3 caractères) (0 résultats)"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:249
+#: src/gui/dialogs/player_enrollment_dialog.py:250
 #, python-brace-format
 msgid "Ricerca nel Database FIDE (min. 3 caratteri) ({total} risultati)"
 msgstr ""
 "Recherche dans la base de données FIDE (min. 3 caractères) (résultats "
 "{total})"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:386
+#: src/gui/dialogs/player_enrollment_dialog.py:397
 #, fuzzy
 msgid "Inserisci Cognome del nuovo giocatore:"
 msgstr "Saisissez le nom du nouveau tournoi :"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:386
-#: src/gui/dialogs/player_enrollment_dialog.py:393
+#: src/gui/dialogs/player_enrollment_dialog.py:397
+#: src/gui/dialogs/player_enrollment_dialog.py:404
 #, fuzzy
 msgid "Crea Nuovo Giocatore"
 msgstr "Nom du nouveau joueur :"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:393
+#: src/gui/dialogs/player_enrollment_dialog.py:404
 #, fuzzy
 msgid "Inserisci Nome del nuovo giocatore:"
 msgstr "Saisissez le nom du nouveau tournoi :"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:401
+#: src/gui/dialogs/player_enrollment_dialog.py:412
 #: src/gui/dialogs/players_db_dialog.py:340
 #, fuzzy
 msgid "Nome e Cognome sono obbligatori."
@@ -3992,7 +4128,7 @@ msgstr "ELO Rapide :"
 
 #: src/gui/dialogs/players_db_dialog.py:252
 msgid "ELO Blitz: "
-msgstr ""
+msgstr "ELO-Blitz :"
 
 #: src/gui/dialogs/players_db_dialog.py:253
 #, fuzzy
@@ -4054,7 +4190,7 @@ msgstr "Entrer:"
 #: src/gui/dialogs/result_dialog.py:15
 #, python-brace-format
 msgid "Risultato Scacchiera {num}"
-msgstr ""
+msgstr "Tableau des résultats {num}"
 
 #: src/gui/dialogs/result_dialog.py:42
 #, fuzzy, python-brace-format
@@ -4080,11 +4216,11 @@ msgstr "Confirmez-vous le résultat ?"
 
 #: src/gui/dialogs/result_dialog.py:57
 msgid "Vince il Bianco"
-msgstr ""
+msgstr "Les blancs gagnent"
 
 #: src/gui/dialogs/result_dialog.py:58
 msgid "Vince il Nero"
-msgstr ""
+msgstr "Les noirs gagnent"
 
 #: src/gui/dialogs/result_dialog.py:59
 msgid "Patta"
@@ -4139,7 +4275,7 @@ msgstr ""
 "15h30)."
 
 #: src/gui/dialogs/result_dialog.py:171
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "Seleziona il giocatore da ritirare definitivamente dal torneo:"
 msgstr ""
 "Le joueur {player_name} se retire-t-il définitivement du tournoi ? (ENTRER |"
@@ -4177,12 +4313,12 @@ msgid "Trovate modifiche disponibili per {num} giocatori:\n"
 msgstr "Trouvez les mods disponibles pour les joueurs {num} :"
 
 #: src/gui/dialogs/sync_database_dialog.py:136
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "nuovi ID FIDE da associare\n"
 msgstr "- {num} nouveaux identifiants FIDE à associer"
 
 #: src/gui/dialogs/sync_database_dialog.py:137
-#, fuzzy, python-brace-format
+#, fuzzy
 msgid "aggiornamenti di punteggio Elo\n"
 msgstr "- Mises à jour {num} Elo"
 
@@ -4321,57 +4457,57 @@ msgstr "Synchronisation terminée et base de données personnelle enregistrée 
 msgid "Sincronizzazione Terminata"
 msgstr "Synchronisation terminée"
 
-#: src/gui/dialogs/visual_settings_dialog.py:14
+#: src/gui/dialogs/visual_settings_dialog.py:17
 msgid "Impostazioni (Audio/Video/Lingua)"
 msgstr "Paramètres (Audio/Vidéo/Langue)"
 
-#: src/gui/dialogs/visual_settings_dialog.py:35
+#: src/gui/dialogs/visual_settings_dialog.py:62
 msgid "Anteprima Visuale"
 msgstr "Aperçu visuel"
 
-#: src/gui/dialogs/visual_settings_dialog.py:39
+#: src/gui/dialogs/visual_settings_dialog.py:66
 msgid "Sistema pronto ed accessibile."
 msgstr "Système prêt et accessible."
 
-#: src/gui/dialogs/visual_settings_dialog.py:47
+#: src/gui/dialogs/visual_settings_dialog.py:74
 msgid "Lingua (Language)"
 msgstr "Langue (Langue)"
 
-#: src/gui/dialogs/visual_settings_dialog.py:59
+#: src/gui/dialogs/visual_settings_dialog.py:89
 msgid "Audio"
 msgstr "Audio"
 
-#: src/gui/dialogs/visual_settings_dialog.py:64
+#: src/gui/dialogs/visual_settings_dialog.py:94
 msgid "Volume Master (%):"
 msgstr "Volume principal (%) :"
 
-#: src/gui/dialogs/visual_settings_dialog.py:78
+#: src/gui/dialogs/visual_settings_dialog.py:108
 #, fuzzy
 msgid "Testo"
 msgstr "Sexe"
 
-#: src/gui/dialogs/visual_settings_dialog.py:83
+#: src/gui/dialogs/visual_settings_dialog.py:113
 msgid "Dimensione (pt):"
 msgstr "Taille (pts) :"
 
-#: src/gui/dialogs/visual_settings_dialog.py:92
+#: src/gui/dialogs/visual_settings_dialog.py:122
 #, fuzzy
 msgid "Rosso (%):"
 msgstr "Sexe (h/f) :"
 
-#: src/gui/dialogs/visual_settings_dialog.py:93
+#: src/gui/dialogs/visual_settings_dialog.py:123
 msgid "Verde (%):"
 msgstr "Vert (%):"
 
-#: src/gui/dialogs/visual_settings_dialog.py:94
+#: src/gui/dialogs/visual_settings_dialog.py:124
 msgid "Blu (%):"
 msgstr "Bleu (%):"
 
-#: src/gui/dialogs/visual_settings_dialog.py:115
+#: src/gui/dialogs/visual_settings_dialog.py:145
 msgid "Sfondo"
 msgstr "Arrière-plan"
 
-#: src/gui/dialogs/visual_settings_dialog.py:148
+#: src/gui/dialogs/visual_settings_dialog.py:178
 msgid "Reset Default"
 msgstr "Réinitialiser les paramètres par défaut"
 

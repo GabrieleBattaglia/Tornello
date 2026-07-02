@@ -419,28 +419,19 @@ def sincronizza_db_personale():
                     print(_("Modifiche applicate."))
                 else:
                     print(_("Modifiche saltate."))
-
     if changes_applied:
         save_players_db(players_db)
         print(_("\nSincronizzazione completata e database personale salvato!"))
-    else:
-        print(_("\nNessuna modifica è stata apportata al database personale."))
-
-
 def aggiorna_db_fide_locale():
     """
     Scarica l'ultimo rating list FIDE (XML), estrae un set di dati arricchito
     e lo salva in un file JSON locale (fide_ratings_local.json).
     Restituisce True in caso di successo, False altrimenti.
     """
+    import time
     try:
         print(
             _("Download del file ZIP FIDE da: {url}").format(url=FIDE_XML_DOWNLOAD_URL)
-        )
-        print(
-            _(
-                "L'operazione potrebbe richiedere alcuni minuti a seconda della connessione..."
-            )
         )
         zip_response = requests.get(FIDE_XML_DOWNLOAD_URL, timeout=120)
         zip_response.raise_for_status()
@@ -459,8 +450,6 @@ def aggiorna_db_fide_locale():
                     filename=xml_filename
                 )
             )
-
-            xml_content = zf.read(xml_filename)
 
             # --- INIZIO MODIFICA 1: FEEDBACK PER PARSING XML ---
 
@@ -491,67 +480,68 @@ def aggiorna_db_fide_locale():
             parsing_thread.start()
 
             try:
-                # Parsing del file XML
+                # Parsing streaming del file XML usando iterparse per minimizzare RAM e rilasciare GIL
                 fide_players_db = {}
-                root = ET.fromstring(xml_content)
+                xml_file_obj = zf.open(xml_filename)
+                context = ET.iterparse(xml_file_obj, events=("end",))
+                
+                player_count = 0
+                for event, elem in context:
+                    if elem.tag == "player":
+                        fide_id_node = elem.find("fideid")
+                        if fide_id_node is not None and fide_id_node.text:
+                            fide_id_str = fide_id_node.text.strip()
+                            name = elem.find("name").text if elem.find("name") is not None and elem.find("name").text else ""
+                            
+                            last_name_fide, first_name_fide = name, ""
+                            if "," in name:
+                                parts = name.split(",", 1)
+                                last_name_fide = parts[0].strip()
+                                first_name_fide = parts[1].strip()
+                                
+                            def get_text(tag, default=""):
+                                node = elem.find(tag)
+                                return node.text if node is not None and node.text else default
+                                
+                            def get_int(tag, default=0):
+                                text = get_text(tag, "")
+                                return int(text) if text.lstrip('-').isdigit() else default
+                                
+                            fide_players_db[fide_id_str] = {
+                                "id_fide": int(fide_id_str),
+                                "first_name": first_name_fide,
+                                "last_name": last_name_fide,
+                                "federation": get_text("country"),
+                                "sex": get_text("sex"),
+                                "title": get_text("title"),
+                                "w_title": get_text("w_title"),
+                                "o_title": get_text("o_title"),
+                                "foa_title": get_text("foa_title"),
+                                "elo_standard": get_int("rating"),
+                                "games": get_int("games"),
+                                "k_factor": get_int("k", default=None),
+                                "elo_rapid": get_int("rapid_rating"),
+                                "rapid_games": get_int("rapid_games"),
+                                "rapid_k": get_int("rapid_k", default=None),
+                                "elo_blitz": get_int("blitz_rating"),
+                                "blitz_games": get_int("blitz_games"),
+                                "blitz_k": get_int("blitz_k", default=None),
+                                "birth_year": get_int("birthday", default=None),
+                                "flag": get_text("flag", default=None),
+                            }
+                            player_count += 1
+                            
+                            if player_count % 5000 == 0:
+                                time.sleep(0.001)
+                        
+                        # Pulisce l'elemento XML per non saturare la memoria RAM
+                        elem.clear()
             finally:
                 # Ferma il thread di feedback, che abbia funzionato o meno
                 stop_parsing_feedback.set()
 
             # --- FINE MODIFICA 1 ---
 
-            player_count = 0
-            for player_node in root.findall("player"):
-                fide_id_node = player_node.find("fideid")
-
-                if fide_id_node is not None and fide_id_node.text:
-                    fide_id_str = fide_id_node.text.strip()
-
-                    name = player_node.find("name").text if player_node.find("name") is not None and player_node.find("name").text else ""
-
-                    last_name_fide, first_name_fide = name, ""
-                    if "," in name:
-                        parts = name.split(",", 1)
-                        last_name_fide = parts[0].strip()
-                        first_name_fide = parts[1].strip()
-
-                    def get_text(tag, default=""):
-                        node = player_node.find(tag)
-                        return node.text if node is not None and node.text else default
-
-                    def get_int(tag, default=0):
-                        text = get_text(tag, "")
-                        return int(text) if text.lstrip('-').isdigit() else default
-
-                    fide_players_db[fide_id_str] = {
-                        "id_fide": int(fide_id_str),
-                        "first_name": first_name_fide,
-                        "last_name": last_name_fide,
-                        "federation": get_text("country"),
-                        "sex": get_text("sex"),
-                        "title": get_text("title"),
-                        "w_title": get_text("w_title"),
-                        "o_title": get_text("o_title"),
-                        "foa_title": get_text("foa_title"),
-                        "elo_standard": get_int("rating"),
-                        "games": get_int("games"),
-                        "k_factor": get_int("k", default=None),
-                        "elo_rapid": get_int("rapid_rating"),
-                        "rapid_games": get_int("rapid_games"),
-                        "rapid_k": get_int("rapid_k", default=None),
-                        "elo_blitz": get_int("blitz_rating"),
-                        "blitz_games": get_int("blitz_games"),
-                        "blitz_k": get_int("blitz_k", default=None),
-                        "birth_year": get_int("birthday", default=None),
-                        "flag": get_text("flag", default=None),
-                    }
-                    player_count += 1
-                    if player_count % 500000 == 0:
-                        print(
-                            _("  ... elaborati {count} giocatori...").format(
-                                count=player_count
-                            )
-                        )
             print(
                 _(
                     "Elaborazione completata. Trovati e salvati {count} giocatori FIDE."
@@ -573,8 +563,21 @@ def aggiorna_db_fide_locale():
             json_thread.daemon = True
             json_thread.start()
             try:
+                # Scrittura incrementale del dizionario
                 with open(FIDE_DB_LOCAL_FILE, "w", encoding="utf-8") as f_out:
-                    json.dump(fide_players_db, f_out, indent=1)
+                    f_out.write("{\n")
+                    is_first = True
+                    idx = 0
+                    for fide_id, p_data in fide_players_db.items():
+                        if not is_first:
+                            f_out.write(",\n")
+                        else:
+                            is_first = False
+                        f_out.write(f'  "{fide_id}": {json.dumps(p_data, ensure_ascii=False)}')
+                        idx += 1
+                        if idx % 5000 == 0:
+                            time.sleep(0.001)
+                    f_out.write("\n}\n")
             finally:
                 stop_json_feedback.set()
 

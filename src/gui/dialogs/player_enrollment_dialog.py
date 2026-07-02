@@ -7,7 +7,7 @@ from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
-from utils import match_player_query
+from utils import match_player_query, play_sound
 
 class PlayerEnrollmentDialog(wx.Dialog):
     """
@@ -114,6 +114,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         btn_cancel = wx.Button(panel, wx.ID_CANCEL, _("Annulla"))
         btn_ok = wx.Button(panel, wx.ID_OK, _("OK"))
         btn_ok.SetDefault()
+        btn_ok.Bind(wx.EVT_BUTTON, self.on_ok_clicked)
         
         btn_sizer.Add(btn_cancel, 0, wx.RIGHT, 10)
         btn_sizer.Add(btn_ok, 0)
@@ -286,6 +287,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.update_enrolled_list()
         self.on_search_local_changed(None)
         
+        # Riproduci suono di aggiunta
+        play_sound("aggiunta_giocatore")
+        
         # Trova l'indice del giocatore appena aggiunto nella lista iscritti (perché è stata riordinata)
         new_idx = 0
         for i, p in enumerate(self.enrolled_players):
@@ -294,7 +298,6 @@ class PlayerEnrollmentDialog(wx.Dialog):
                 break
                 
         self.list_enrolled.SetSelection(new_idx)
-        self.list_enrolled.SetFocus()
 
     def on_add_fide(self, event):
         sel = self.list_fide_results.GetSelection()
@@ -328,6 +331,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.update_enrolled_list()
         self.on_search_fide_changed(None)
         
+        # Riproduci suono di aggiunta
+        play_sound("aggiunta_giocatore")
+        
         # Trova l'indice del giocatore appena aggiunto nella lista iscritti
         new_idx = 0
         for i, p in enumerate(self.enrolled_players):
@@ -336,7 +342,6 @@ class PlayerEnrollmentDialog(wx.Dialog):
                 break
                 
         self.list_enrolled.SetSelection(new_idx)
-        self.list_enrolled.SetFocus()
 
     def on_remove_enrolled(self, event):
         sel = self.list_enrolled.GetSelection()
@@ -345,6 +350,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
             
         player_data = self.enrolled_data_map[sel]
         self.enrolled_players.remove(player_data)
+        
+        play_sound("rimozione_giocatore")
         
         self.update_enrolled_list()
         self.on_search_local_changed(None)
@@ -378,6 +385,10 @@ class PlayerEnrollmentDialog(wx.Dialog):
             self.on_remove_enrolled(None)
         else:
             event.Skip()
+
+    def on_ok_clicked(self, event):
+        play_sound("conferma")
+        event.Skip()
 
     def get_enrolled_players(self):
         return self.enrolled_players

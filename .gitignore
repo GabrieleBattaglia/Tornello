@@ -1,6 +1,7 @@
 # Gabry
 Closed Tournaments/
 fide_ratings_local.json
+Tornello - Settings.json
 *.xml
 # Byte-compiled / optimized / DLL files
 __pycache__/

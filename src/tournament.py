@@ -159,7 +159,7 @@ def time_machine_torneo(torneo):
         print("ERRORE CRITICO: fallita rigenerazione turno post time machine.")
         torneo["current_round"] = current_round
         return False
-    valore_bye_torneo = torneo.get("bye_value", 1.0)
+    valore_bye_torneo = torneo.get("bye_value", 0.5)
     for match in matches_new:
         if match.get("result") == "BYE":
             bye_player_id = match.get("white_player_id")
@@ -229,7 +229,7 @@ def load_tournament(filename_to_load):
                 torneo_data.setdefault("chief_arbiter", "N/D")
                 torneo_data.setdefault("deputy_chief_arbiters", "")
                 torneo_data.setdefault("time_control", "Standard")
-                torneo_data.setdefault("bye_value", 1.0)
+                torneo_data.setdefault("bye_value", 0.5)
                 if "players" in torneo_data:
                     for p in torneo_data["players"]:
                         p["opponents"] = set(p.get("opponents", []))

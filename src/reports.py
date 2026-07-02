@@ -3,14 +3,12 @@ import traceback
 from datetime import datetime
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
 from utils import format_date_locale, format_points, sanitize_filename, _ensure_players_dict
-from tournament import ricalcola_punti_tutti_giocatori
 from stats import compute_buchholz, compute_buchholz_cut1, compute_aro
 from version import VERSIONE
 
 
 def calcola_tempo_rimanente(end_date_str):
     from datetime import datetime, time
-    from config import DATE_FORMAT_ISO
 
     try:
         end_dt = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
@@ -22,41 +20,39 @@ def calcola_tempo_rimanente(end_date_str):
         return None
 
 
-def save_current_tournament_round_file(torneo):
+def get_current_round_report_text(torneo, round_num=None):
     """
-    Salva lo stato del turno corrente in un file TXT che viene sovrascritto.
+    Restituisce lo stato del turno specificato (o corrente) come stringa.
     Mostra intestazione, partite da giocare (pianificate e non), e partite giocate.
     I giocatori ritirati sono raggruppati in fondo a ciascuna sezione.
-    Utilizza 1 spazio per livello di indentazione.
     """
-    tournament_name_for_file = torneo.get("name", "Torneo_Senza_Nome")
-    sanitized_name = sanitize_filename(tournament_name_for_file)
-    current_round_num = torneo.get("current_round")
+    import io
+    from datetime import datetime
+    from utils import format_date_locale
 
-    if current_round_num is None:
-        print(_("Salvataggio file turno corrente: Numero turno non definito."))
-        return
-    filename = _("Tornello - {name} - Turno corrente.txt").format(name=sanitized_name)
-    custom_path = torneo.get("custom_save_path")
-    if custom_path:
-        from utils import resolve_and_verify_save_path
-        resolved_path, warning = resolve_and_verify_save_path(custom_path)
-        if warning:
-            print(warning)
-        filename = os.path.join(resolved_path, filename)
+    if round_num is None:
+        round_num = torneo.get("current_round")
+
+    if round_num is None:
+        return _("Numero turno non definito.")
+
+    tournament_name_for_file = torneo.get("name", "Torneo_Senza_Nome")
+
     round_data = None
     for rnd in torneo.get("rounds", []):
-        if rnd.get("round") == current_round_num:
+        if rnd.get("round") == round_num:
             round_data = rnd
             break
+
     if "players_dict" not in torneo or len(torneo["players_dict"]) != len(
         torneo.get("players", [])
     ):
         torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
     players_dict = torneo["players_dict"]
+
     round_dates_info = torneo.get("round_dates", [])
     current_round_period_info = next(
-        (rd for rd in round_dates_info if rd.get("round") == current_round_num), None
+        (rd for rd in round_dates_info if rd.get("round") == round_num), None
     )
     start_date_turn_display = (
         format_date_locale(current_round_period_info.get("start_date"))
@@ -78,7 +74,7 @@ def save_current_tournament_round_file(torneo):
             time_left_str = _(
                 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo turno."
             ).format(days=days, hours=hours)
-    # --- INIZIO MODIFICHE: Smistamento partite in liste separate per attivi e ritirati ---
+
     played_matches_active = []
     played_matches_withdrawn = []
     scheduled_pending_active = []
@@ -91,57 +87,41 @@ def save_current_tournament_round_file(torneo):
         all_matches_in_round = sorted(
             round_data.get("matches", []), key=lambda m: m.get("id", 0)
         )
-    # Gestione caso turno vuoto (invariata)
-    if not all_matches_in_round and round_data is None:
-        try:
-            with open(filename, "w", encoding="utf-8-sig") as f:
-                f.write(
-                    _("Nome Torneo: {name} - ").format(name=tournament_name_for_file)
-                )
-                f.write(_("Turno: {round_num}\n").format(round_num=current_round_num))
-                f.write(
-                    _(" Periodo Turno: {start} - {end}\n").format(
-                        start=start_date_turn_display, end=end_date_turn_display
-                    )
-                )
-                if time_left_str:
-                    f.write(time_left_str + "\n")
-                else:
-                    f.write("\n")
-                f.write(
-                    _(
-                        " (Nessuna partita ancora definita o caricata per questo turno)\n"
-                    )
-                )
-            print(
-                _(
-                    "File stato turno corrente '{filename}' aggiornato (turno non ancora popolato o vuoto)."
-                ).format(filename=filename)
-            )
-        except IOError as e:
-            print(
-                _(
-                    "Errore scrittura file stato turno corrente '{filename}': {error}"
-                ).format(filename=filename, error=e)
-            )
-        return
 
-    # Ciclo di smistamento modificato
+    if not all_matches_in_round and round_data is None:
+        out = io.StringIO()
+        out.write(
+            _("Nome Torneo: {name} - ").format(name=tournament_name_for_file)
+        )
+        out.write(_("Turno: {round_num}\n").format(round_num=round_num))
+        out.write(
+            _(" Periodo Turno: {start} - {end}\n").format(
+                start=start_date_turn_display, end=end_date_turn_display
+            )
+        )
+        if time_left_str:
+            out.write(time_left_str + "\n")
+        else:
+            out.write("\n")
+        out.write(
+            _(" (Nessuna partita ancora definita o caricata per questo turno)\n")
+        )
+        return out.getvalue()
+
     for match in all_matches_in_round:
         wp_obj = players_dict.get(match.get("white_player_id"))
         bp_obj = players_dict.get(match.get("black_player_id"))
 
-        if bp_obj is None and wp_obj is not None:  # È un BYE
+        if bp_obj is None and wp_obj is not None:
             bye_player_display_line = _(" {first_name} {last_name} ({elo}) ha il BYE").format(
                 first_name=wp_obj.get("first_name", "?"),
                 last_name=wp_obj.get("last_name", "?"),
                 elo=int(wp_obj.get("initial_elo", 0)),
             )
             continue
-        if bp_obj is None or wp_obj is None:  # Partita corrotta o invalida
+        if bp_obj is None or wp_obj is None:
             continue
 
-        # Aggiungi il flag [RIT] ai nomi dei giocatori ritirati
         wp_name = (
             f"{wp_obj.get('first_name', _('Bianco?'))} {wp_obj.get('last_name', '')} ({int(wp_obj.get('initial_elo', 0))})"
         )
@@ -209,88 +189,110 @@ def save_current_tournament_round_file(torneo):
                     else unscheduled_pending_active
                 ).append(line)
 
-    # Ordina entrambe le liste di partite pianificate
     scheduled_pending_active.sort(key=lambda x: x[0])
     scheduled_pending_withdrawn.sort(key=lambda x: x[0])
 
-    # Scrittura su file con la nuova logica di raggruppamento
-    try:
-        with open(filename, "w", encoding="utf-8-sig") as f:
-            # Intestazione (Livello 0)
-            f.write(f"Nome Torneo: {tournament_name_for_file} - ")
-            f.write(f"Turno: {current_round_num}\n")
-            f.write(
-                f" Periodo Turno: {start_date_turn_display} - {end_date_turn_display}\n"
-            )
-            if time_left_str:
-                f.write(time_left_str + "\n")
-            else:
-                f.write("\n")
+    out = io.StringIO()
+    out.write(f"Nome Torneo: {tournament_name_for_file} - ")
+    out.write(f"Turno: {round_num}\n")
+    out.write(
+        f" Periodo Turno: {start_date_turn_display} - {end_date_turn_display}\n"
+    )
+    if time_left_str:
+        out.write(time_left_str + "\n")
+    else:
+        out.write("\n")
 
-            # --- Partite Pianificate ---
-            current_printed_date_str = None
-            if scheduled_pending_active:
-                f.write(
-                    _(" Partite già pianificate, da giocare ({count}):\n").format(
-                        count=len(scheduled_pending_active)
-                    )
-                )
-                for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_active:
-                    match_date_iso = schedule.get("date")
-                    if match_date_iso != current_printed_date_str:
-                        f.write(f"  {format_date_locale(match_date_iso)}\n")
-                        current_printed_date_str = match_date_iso
-                    time_str = schedule.get("time", "HH:MM")
-                    f.write(
-                        f"   {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
-                    )
-            # --- Partite Non Pianificate ---
-            if unscheduled_pending_active:
-                f.write(
-                    _("\n  Ancora non pianificate ({count}):\n").format(
-                        count=len(unscheduled_pending_active)
-                    )
-                )
-                for line in unscheduled_pending_active:
-                    f.write(f"   {line.strip()}\n")
-            # --- Sezione Ritirati (se presente) ---
-            if scheduled_pending_withdrawn or unscheduled_pending_withdrawn:
-                f.write(_("\n  -- Partite da giocare con giocatori ritirati --\n"))
-                current_printed_date_withdrawn = None
-                for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_withdrawn:
-                    match_date_iso = schedule.get("date")
-                    if match_date_iso != current_printed_date_withdrawn:
-                        f.write(f"   {format_date_locale(match_date_iso)}\n")
-                        current_printed_date_withdrawn = match_date_iso
-                    time_str = schedule.get("time", "HH:MM")
-                    f.write(
-                        f"    {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
-                    )
-                if unscheduled_pending_withdrawn:
-                    f.write(_("   Non pianificate (con ritirati):\n"))
-                    for line in unscheduled_pending_withdrawn:
-                        f.write(
-                            f"   {line.strip()}\n"
-                        )  # Rimuovi e ri-applica indentazione per coerenza
-            # Sezione Partite Giocate (Titolo Livello 1)
-            f.write(
-                _(
-                    "\n  Partite già giocate o con risultato convalidato ({count}):\n"
-                ).format(count=len(played_matches_active))
+    current_printed_date_str = None
+    if scheduled_pending_active:
+        out.write(
+            _(" Partite già pianificate, da giocare ({count}):\n").format(
+                count=len(scheduled_pending_active)
             )
-            if played_matches_active:
-                for line in played_matches_active:
-                    f.write(f"{line}\n")
-            else:
-                f.write(_("  Ancora nessun risultato assegnato\n"))
-            if played_matches_withdrawn:
-                f.write(_("  -- Partite giocate con giocatori ritirati --\n"))
-                for line in played_matches_withdrawn:
-                    f.write(f"{line}\n")
-            if bye_player_display_line:
-                f.write(f"\n{bye_player_display_line}\n")
-                
-            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+        )
+        for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_active:
+            match_date_iso = schedule.get("date")
+            if match_date_iso != current_printed_date_str:
+                out.write(f"  {format_date_locale(match_date_iso)}\n")
+                current_printed_date_str = match_date_iso
+            time_str = schedule.get("time", "HH:MM")
+            out.write(
+                f"   {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
+            )
+
+    if unscheduled_pending_active:
+        out.write(
+            _("\n  Ancora non pianificate ({count}):\n").format(
+                count=len(unscheduled_pending_active)
+            )
+        )
+        for line in unscheduled_pending_active:
+            out.write(f"   {line.strip()}\n")
+
+    if scheduled_pending_withdrawn or unscheduled_pending_withdrawn:
+        out.write(_("\n  -- Partite da giocare con giocatori ritirati --\n"))
+        current_printed_date_withdrawn = None
+        for dt_obj, match, schedule, wp_n, bp_n in scheduled_pending_withdrawn:
+            match_date_iso = schedule.get("date")
+            if match_date_iso != current_printed_date_withdrawn:
+                out.write(f"   {format_date_locale(match_date_iso)}\n")
+                current_printed_date_withdrawn = match_date_iso
+            time_str = schedule.get("time", "HH:MM")
+            out.write(
+                f"    {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
+            )
+        if unscheduled_pending_withdrawn:
+            out.write(_("   Non pianificate (con ritirati):\n"))
+            for line in unscheduled_pending_withdrawn:
+                out.write(f"   {line.strip()}\n")
+
+    out.write(
+        _("\n  Partite già giocate o con risultato convalidato ({count}):\n").format(
+            count=len(played_matches_active)
+        )
+    )
+    if played_matches_active:
+        for line in played_matches_active:
+            out.write(f"{line}\n")
+    else:
+        out.write(_("  Ancora nessun risultato assegnato\n"))
+
+    if played_matches_withdrawn:
+        out.write(_("  -- Partite giocate con giocatori ritirati --\n"))
+        for line in played_matches_withdrawn:
+            out.write(f"{line}\n")
+
+    if bye_player_display_line:
+        out.write(f"\n{bye_player_display_line}\n")
+
+    out.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+    return out.getvalue()
+
+
+def save_current_tournament_round_file(torneo):
+    """
+    Salva lo stato del turno corrente in un file TXT che viene sovrascritto.
+    """
+    current_round_num = torneo.get("current_round")
+    if current_round_num is None:
+        print(_("Salvataggio file turno corrente: Numero turno non definito."))
+        return
+
+    tournament_name_for_file = torneo.get("name", "Torneo_Senza_Nome")
+    sanitized_name = sanitize_filename(tournament_name_for_file)
+    filename = _("Tornello - {name} - Turno corrente.txt").format(name=sanitized_name)
+    custom_path = torneo.get("custom_save_path")
+    if custom_path:
+        from utils import resolve_and_verify_save_path
+        resolved_path, warning = resolve_and_verify_save_path(custom_path)
+        if warning:
+            print(warning)
+        filename = os.path.join(resolved_path, filename)
+
+    try:
+        text = get_current_round_report_text(torneo, current_round_num)
+        with open(filename, "w", encoding="utf-8-sig") as f:
+            f.write(text)
         print(
             _("File {filename} aggiornato con raggruppamento ritirati.").format(
                 filename=filename
@@ -500,17 +502,21 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
         traceback.print_exc()
 
 
-def save_standings_text(torneo, final=False):
+def get_standings_text(torneo, final=False):
     """
-    Salva/Sovrascrive la classifica (parziale o finale) in un unico file TXT.
+    Genera la classifica (parziale o finale) del torneo come stringa.
     Mostra sempre gli spareggi, incluso ARO. Mostra Perf/Var Elo solo alla fine.
     Include la variazione rispetto alla posizione iniziale in tabellone (Seed).
     """
+    import io
+    from datetime import datetime
+    from tournament import ricalcola_punti_tutti_giocatori
+    from utils import format_date_locale
+    
     ricalcola_punti_tutti_giocatori(torneo)
     players = torneo.get("players", [])
     if not players:
-        print(_("Attenzione: Nessun giocatore per generare la classifica."))
-        return
+        return _("Attenzione: Nessun giocatore per generare la classifica.")
 
     if "players_dict" not in torneo or len(torneo["players_dict"]) != len(players):
         torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
@@ -531,7 +537,6 @@ def save_standings_text(torneo, final=False):
     seeding_map = {p["id"]: i + 1 for i, p in enumerate(players_for_seeding)}
     # --------------------------------------------
 
-    print(_("Calcolo/Aggiornamento spareggi per classifica..."))
     for p in players:
         p_id = p.get("id")
         if not p_id:
@@ -555,7 +560,6 @@ def save_standings_text(torneo, final=False):
             player_item.get("aro", 0.0) if player_item.get("aro") is not None else 0.0
         )
 
-        # Se Elo è 0, usa DEFAULT_ELO per lo spareggio
         elo_initial_raw = float(player_item.get("initial_elo", 0))
         elo_initial_val = elo_initial_raw if elo_initial_raw > 0 else DEFAULT_ELO
 
@@ -647,6 +651,137 @@ def save_standings_text(torneo, final=False):
         traceback.print_exc()
         players_sorted = players
 
+    out = io.StringIO()
+    out.write(_("Nome Torneo: {name}\n").format(name=torneo.get("name", "N/D")))
+    out.write(_("Luogo: {site}\n").format(site=torneo.get("site", "N/D")))
+    out.write(
+        _("Date: {start_date} - {end_date}\n").format(
+            start_date=format_date_locale(torneo.get("start_date")),
+            end_date=format_date_locale(torneo.get("end_date")),
+        )
+    )
+    out.write(
+        _("Federazione Organizzante: {fed}\n").format(
+            fed=torneo.get("federation_code", "N/D")
+        )
+    )
+    out.write(
+        _("Arbitro Capo: {arbiter}\n").format(
+            arbiter=torneo.get("chief_arbiter", "N/D")
+        )
+    )
+    deputy_arbiters_str = torneo.get("deputy_chief_arbiters", "")
+    if deputy_arbiters_str and deputy_arbiters_str.strip():
+        out.write(
+            _("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str)
+        )
+    out.write(
+        _("Controllo Tempo: {time_control}\n").format(
+            time_control=torneo.get("time_control", "N/D")
+        )
+    )
+    out.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
+    out.write(
+        _("Data Report: {date} {time}\n").format(
+            date=format_date_locale(datetime.now().date()),
+            time=datetime.now().strftime("%H:%M:%S"),
+        )
+    )
+    out.write("-" * 80 + "\n")
+    out.write(f"{status_line}\n")
+    out.write("-" * 80 + "\n")
+
+    # --- HEADER TABELLA ---
+    header_table = _(
+        "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO "
+    )
+    if final:
+        header_table += " Perf  Elo Var."
+    out.write(header_table + "\n")
+    out.write("-" * len(header_table) + "\n")
+
+    for player in players_sorted:
+        rank_to_show = player.get("display_rank", "?")
+
+        p_id = player.get("id")
+        starting_rank = seeding_map.get(p_id, 0)
+        delta_str = ""
+        if isinstance(rank_to_show, (int, float)):
+            delta = starting_rank - int(rank_to_show)
+            delta_str = f"({delta:+})"
+            rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
+        else:
+            rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
+
+        fide_title = str(player.get("fide_title", "")).strip().upper()
+        player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
+
+        title_display_str = f"{fide_title:<3}"
+        name_display_str = f"{player_name_str:<27.27}"
+        elo_ini_str = f"[{int(player.get('initial_elo', DEFAULT_ELO)):4d}]"
+        points_str = f"{float(player.get('points', 0.0)):5.1f}"
+
+        bucch_c1_val = player.get("buchholz_cut1")
+        bucch_c1_str = (
+            f"{float(bucch_c1_val):7.2f}"
+            if bucch_c1_val is not None and not player.get("withdrawn")
+            else "   ----"
+        )
+
+        bucch_tot_val = player.get("buchholz")
+        bucch_tot_str = (
+            f"{float(bucch_tot_val):6.2f}"
+            if bucch_tot_val is not None and not player.get("withdrawn")
+            else "  ----"
+        )
+
+        aro_val = player.get("aro")
+        aro_str = (
+            f"{int(aro_val):4d}"
+            if aro_val is not None and not player.get("withdrawn")
+            else " ---"
+        )
+
+        # --- MODIFICA RIGA DATI ---
+        line = (
+            f"{rank_display_str} {title_display_str} {name_display_str} "
+            f"{elo_ini_str} {points_str} {bucch_c1_str} {bucch_tot_str} {aro_str}"
+        )
+
+        if final:
+            if player.get("withdrawn", False):
+                perf_str, elo_change_str = "----", " ---"
+            else:
+                perf_val = player.get("performance_rating")
+                perf_str = (
+                    f"{int(perf_val):4d}" if perf_val is not None else "----"
+                )
+                elo_change_val = player.get("elo_change")
+                elo_change_str = (
+                    f"{int(elo_change_val):+4d}"
+                    if elo_change_val is not None
+                    else " ---"
+                )
+            line += f" {perf_str} {elo_change_str}"
+
+        if player.get("withdrawn", False):
+            line = f"{line.ljust(90)} [RITIRATO]"
+
+        out.write(line + "\n")
+
+    out.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+    return out.getvalue()
+
+
+def save_standings_text(torneo, final=False):
+    """
+    Salva/Sovrascrive la classifica (parziale o finale) in un unico file TXT.
+    """
+    players = torneo.get("players", [])
+    if not players:
+        print(_("Attenzione: Nessun giocatore per generare la classifica."))
+        return
+
     tournament_name_file = torneo.get("name", "Torneo_Senza_Nome")
     sanitized_name_file = sanitize_filename(tournament_name_file)
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
@@ -659,132 +794,14 @@ def save_standings_text(torneo, final=False):
         filename = os.path.join(resolved_path, filename)
 
     try:
+        text = get_standings_text(torneo, final)
         with open(filename, "w", encoding="utf-8-sig") as f:
-            # ... (la scrittura dell'header del file rimane la stessa) ...
-            f.write(_("Nome Torneo: {name}\n").format(name=torneo.get("name", "N/D")))
-            f.write(_("Luogo: {site}\n").format(site=torneo.get("site", "N/D")))
-            f.write(
-                _("Date: {start_date} - {end_date}\n").format(
-                    start_date=format_date_locale(torneo.get("start_date")),
-                    end_date=format_date_locale(torneo.get("end_date")),
-                )
+            f.write(text)
+        print(
+            _("File classifica '{filename}' salvato/sovrascritto.").format(
+                filename=filename
             )
-            f.write(
-                _("Federazione Organizzante: {fed}\n").format(
-                    fed=torneo.get("federation_code", "N/D")
-                )
-            )
-            f.write(
-                _("Arbitro Capo: {arbiter}\n").format(
-                    arbiter=torneo.get("chief_arbiter", "N/D")
-                )
-            )
-            deputy_arbiters_str = torneo.get("deputy_chief_arbiters", "")
-            if deputy_arbiters_str and deputy_arbiters_str.strip():
-                f.write(
-                    _("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str)
-                )
-            f.write(
-                _("Controllo Tempo: {time_control}\n").format(
-                    time_control=torneo.get("time_control", "N/D")
-                )
-            )
-            f.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
-            f.write(
-                _("Data Report: {date} {time}\n").format(
-                    date=format_date_locale(datetime.now().date()),
-                    time=datetime.now().strftime("%H:%M:%S"),
-                )
-            )
-            f.write("-" * 80 + "\n")
-            f.write(f"{status_line}\n")
-            f.write("-" * 80 + "\n")
-
-            # --- MODIFICA HEADER TABELLA ---
-            header_table = _(
-                "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO "
-            )
-            if final:
-                header_table += " Perf  Elo Var."
-            f.write(header_table + "\n")
-            f.write("-" * len(header_table) + "\n")
-
-            for player in players_sorted:
-                rank_to_show = player.get("display_rank", "?")
-
-                # Calcolo Delta Posizione
-                p_id = player.get("id")
-                starting_rank = seeding_map.get(p_id, 0)
-                delta_str = ""
-                if isinstance(rank_to_show, (int, float)):
-                    delta = starting_rank - int(rank_to_show)
-                    delta_str = f"({delta:+})"
-                    rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
-                else:
-                    rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
-
-                fide_title = str(player.get("fide_title", "")).strip().upper()
-                player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
-
-                title_display_str = f"{fide_title:<3}"
-                name_display_str = f"{player_name_str:<27.27}"
-                elo_ini_str = f"[{int(player.get('initial_elo', DEFAULT_ELO)):4d}]"
-                points_str = f"{float(player.get('points', 0.0)):5.1f}"
-
-                bucch_c1_val = player.get("buchholz_cut1")
-                bucch_c1_str = (
-                    f"{float(bucch_c1_val):7.2f}"
-                    if bucch_c1_val is not None and not player.get("withdrawn")
-                    else "   ----"
-                )
-
-                bucch_tot_val = player.get("buchholz")
-                bucch_tot_str = (
-                    f"{float(bucch_tot_val):6.2f}"
-                    if bucch_tot_val is not None and not player.get("withdrawn")
-                    else "  ----"
-                )
-
-                aro_val = player.get("aro")
-                aro_str = (
-                    f"{int(aro_val):4d}"
-                    if aro_val is not None and not player.get("withdrawn")
-                    else " ---"
-                )
-
-                # --- MODIFICA RIGA DATI ---
-                line = (
-                    f"{rank_display_str} {title_display_str} {name_display_str} "
-                    f"{elo_ini_str} {points_str} {bucch_c1_str} {bucch_tot_str} {aro_str}"
-                )
-
-                if final:
-                    if player.get("withdrawn", False):
-                        perf_str, elo_change_str = "----", " ---"
-                    else:
-                        perf_val = player.get("performance_rating")
-                        perf_str = (
-                            f"{int(perf_val):4d}" if perf_val is not None else "----"
-                        )
-                        elo_change_val = player.get("elo_change")
-                        elo_change_str = (
-                            f"{int(elo_change_val):+4d}"
-                            if elo_change_val is not None
-                            else " ---"
-                        )
-                    line += f" {perf_str} {elo_change_str}"
-
-                if player.get("withdrawn", False):
-                    line = f"{line.ljust(90)} [RITIRATO]"
-
-                f.write(line + "\n")
-
-            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
-            print(
-                _("File classifica '{filename}' salvato/sovrascritto.").format(
-                    filename=filename
-                )
-            )
+        )
     except IOError as e:
         print(
             _(

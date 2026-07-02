@@ -1,15 +1,23 @@
 import os
 import json
 import wx
-import config
 
-SETTINGS_FILE = config.resource_path("Tornello - Settings.json")
+import sys
+
+if getattr(sys, 'frozen', False):
+    app_dir = os.path.dirname(sys.executable)
+else:
+    app_dir = os.path.abspath(".")
+SETTINGS_FILE = os.path.join(app_dir, "Tornello - Settings.json")
 
 DEFAULT_SETTINGS = {
     "font_size": 12,
+    "dialog_font_size": 12,
     "volume": 50,
     "rgb_text": [0, 100, 0],   # Percentaggi (0-100)
+    "dialog_rgb_text": [0, 100, 0],
     "rgb_back": [0, 0, 0],     # Percentaggi (0-100)
+    "dialog_rgb_back": [0, 0, 0],
     "language": "it"
 }
 
@@ -41,9 +49,23 @@ def pct_to_byte(pct):
 
 def apply_visual_settings(control, settings):
     """Applica font, colore di testo e colore di sfondo a un controllo wxPython per l'accessibilità."""
-    fs = settings.get("font_size", 12)
-    rgb_text = settings.get("rgb_text", [0, 100, 0])
-    rgb_back = settings.get("rgb_back", [0, 0, 0])
+    # Rileva automaticamente se il controllo fa parte di una finestra di dialogo
+    is_dialog = False
+    p = control
+    while p:
+        if isinstance(p, wx.Dialog):
+            is_dialog = True
+            break
+        p = p.GetParent()
+
+    if is_dialog:
+        fs = settings.get("dialog_font_size", settings.get("font_size", 12))
+        rgb_text = settings.get("dialog_rgb_text", settings.get("rgb_text", [0, 100, 0]))
+        rgb_back = settings.get("dialog_rgb_back", settings.get("rgb_back", [0, 0, 0]))
+    else:
+        fs = settings.get("font_size", 12)
+        rgb_text = settings.get("rgb_text", [0, 100, 0])
+        rgb_back = settings.get("rgb_back", [0, 0, 0])
     
     fg_col = wx.Colour(pct_to_byte(rgb_text[0]), pct_to_byte(rgb_text[1]), pct_to_byte(rgb_text[2]))
     bg_col = wx.Colour(pct_to_byte(rgb_back[0]), pct_to_byte(rgb_back[1]), pct_to_byte(rgb_back[2]))
@@ -57,7 +79,6 @@ def apply_visual_settings(control, settings):
     if isinstance(control, wx.TextCtrl):
         attr = wx.TextAttr(fg_col, bg_col, font)
         control.SetDefaultStyle(attr)
-        # Se c'è del testo, riapplica lo stile su tutta la lunghezza
         if control.GetValue():
             control.SetStyle(0, control.GetLastPosition(), attr)
         
