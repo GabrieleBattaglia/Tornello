@@ -16,7 +16,6 @@ from config import BBP_SUBDIR
 from cli_adapter import CLIAdapter
 from controller import TournamentController
 
-atexit.register(Donazione)
 
 def check_updates():
     try:
@@ -89,6 +88,7 @@ if __name__ == "__main__":
 
     # Avvia controller con CLI adapter se --cli è presente, altrimenti avvia la GUI
     if "--cli" in sys.argv:
+        atexit.register(Donazione)
         adapter = CLIAdapter()
         controller = TournamentController(adapter)
         controller.start()

@@ -190,24 +190,51 @@ class MainFrame(wx.Frame):
         
         if self.current_tournament:
             # 1. Progress. Giorno x/y (zz.z%), turno x/y, risult.x/y (zz.z%), PGN x.
-            round_dates = self.current_tournament.get("round_dates", [])
-            dates = sorted(list(set(rd.get("start_date") for rd in round_dates if rd.get("start_date"))))
+            t_start_str = self.current_tournament.get("start_date")
+            t_end_str = self.current_tournament.get("end_date")
             
-            y_days = len(dates)
+            y_days = 1
             x_day = 1
-            if y_days == 0:
-                y_days = 1
-                x_day = 1
-                day_pct = 100.0
-            else:
-                curr_round = self.current_tournament.get("current_round", 1)
-                curr_rd_data = next((rd for rd in round_dates if rd.get("round") == curr_round), None)
-                curr_date = curr_rd_data.get("start_date") if curr_rd_data else None
-                if curr_date in dates:
-                    x_day = dates.index(curr_date) + 1
+            day_pct = 100.0
+            
+            is_concluded = self.current_tournament.get("concluded", False)
+            
+            try:
+                from datetime import datetime
+                from config import DATE_FORMAT_ISO
+                dt_start = datetime.strptime(t_start_str, DATE_FORMAT_ISO)
+                dt_end = datetime.strptime(t_end_str, DATE_FORMAT_ISO)
+                y_days = (dt_end - dt_start).days + 1
+                if y_days <= 0:
+                    y_days = 1
+                
+                if is_concluded:
+                    x_day = y_days
                 else:
-                    x_day = min(curr_round, y_days)
+                    curr_round = self.current_tournament.get("current_round", 1)
+                    round_dates = self.current_tournament.get("round_dates", [])
+                    curr_rd_data = next((rd for rd in round_dates if rd.get("round") == curr_round), None)
+                    curr_date_str = curr_rd_data.get("start_date") if curr_rd_data else None
+                    
+                    if curr_date_str:
+                        dt_curr = datetime.strptime(curr_date_str, DATE_FORMAT_ISO)
+                        x_day = (dt_curr - dt_start).days + 1
+                    else:
+                        x_day = 1
+                    
+                    if x_day < 1:
+                        x_day = 1
+                    if x_day > y_days:
+                        x_day = y_days
+                        
                 day_pct = (x_day / y_days) * 100.0
+            except Exception:
+                round_dates = self.current_tournament.get("round_dates", [])
+                dates = sorted(list(set(rd.get("start_date") for rd in round_dates if rd.get("start_date"))))
+                y_days = len(dates) if len(dates) > 0 else 1
+                curr_round = self.current_tournament.get("current_round", 1)
+                x_day = min(curr_round, y_days)
+                day_pct = (x_day / y_days) * 100.0 if y_days > 0 else 100.0
                 
             curr_round = self.current_tournament.get("current_round", 1)
             tot_rounds = self.current_tournament.get("total_rounds", 5)
@@ -663,7 +690,7 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemData(turni_node, {"action": "show_rounds", "filepath": filepath})
         
         players_dict = {p["id"]: p for p in players}
-        is_concluded = "- concluso_" in os.path.basename(filepath).lower() or data.get("concluded", False)
+        is_concluded = data.get("concluded", False)
         
         if len(rounds) > 0:
             completed_rounds = []
@@ -1070,11 +1097,7 @@ class MainFrame(wx.Frame):
         rounds = self.current_tournament.get("rounds", [])
         is_started = len(rounds) > 0
         
-        is_concluded = False
-        if self.active_filename:
-            is_concluded = "- concluso_" in os.path.basename(self.active_filename).lower()
-        if self.current_tournament.get("concluded", False):
-            is_concluded = True
+        is_concluded = self.current_tournament.get("concluded", False) if self.current_tournament else False
             
         # Iscrizione abilitata solo se non iniziato e non concluso
         self.item_enroll.Enable(not is_started and not is_concluded)
@@ -1110,11 +1133,7 @@ class MainFrame(wx.Frame):
         from reports import get_standings_text
         self.main_text.Clear()
         
-        is_concluded = False
-        if self.active_filename:
-            is_concluded = "- concluso_" in os.path.basename(self.active_filename).lower()
-        if self.current_tournament.get("concluded", False):
-            is_concluded = True
+        is_concluded = self.current_tournament.get("concluded", False) if self.current_tournament else False
             
         text = get_standings_text(self.current_tournament, final=is_concluded)
         self.append_log(text)
@@ -1795,6 +1814,28 @@ class MainFrame(wx.Frame):
     def on_close(self, event):
         from utils import play_sound
         play_sound("chiusura", self.current_tournament, sync=True)
+        
+        try:
+            import sys
+            import io
+            from GBUtils import Donazione
+            
+            old_stdout = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                Donazione()
+                donation_msg = sys.stdout.getvalue().strip()
+            finally:
+                sys.stdout = old_stdout
+                
+            if donation_msg:
+                from gui.dialogs.donation_dialog import DonationDialog
+                dlg = DonationDialog(self, _("Offri un caffè"), donation_msg, self.settings)
+                dlg.ShowModal()
+                dlg.Destroy()
+        except Exception:
+            pass
+            
         event.Skip()
 
     def on_new_tournament(self, event):
@@ -1888,11 +1929,7 @@ class MainFrame(wx.Frame):
             wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
             return
             
-        is_concluded = False
-        if self.active_filename:
-            is_concluded = "- concluso_" in os.path.basename(self.active_filename).lower()
-        if self.current_tournament.get("concluded", False):
-            is_concluded = True
+        is_concluded = self.current_tournament.get("concluded", False) if self.current_tournament else False
             
         if is_concluded:
             wx.MessageBox(_("Il torneo è già concluso e finalizzato."), _("Errore"), wx.ICON_ERROR)

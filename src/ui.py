@@ -1485,8 +1485,10 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             if current_sort_key_tuple_for_rank != last_sort_key_tuple_for_rank:
                 current_visual_rank = i + 1
             p_item["final_rank"] = current_visual_rank
-            last_sort_key_tuple_for_rank = current_sort_key_tuple_for_rank
         torneo["players"] = players_sorted
+        # Segna il torneo come concluso e salva lo stato su file prima di archiviarlo
+        torneo["concluded"] = True
+        save_tournament(torneo)
     except Exception as e_sort:
         print(
             _(
