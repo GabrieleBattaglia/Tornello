@@ -1,9 +1,42 @@
+# ruff: noqa: E402
 # Entry point per Tornello v9
 import os
 import sys
 import atexit
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+def install_excepthook():
+    def custom_excepthook(exctype, value, traceback_obj):
+        import traceback
+        from datetime import datetime
+        
+        err_msg = "".join(traceback.format_exception(exctype, value, traceback_obj))
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_line = f"=== UNHANDLED EXCEPTION {timestamp} ===\n{err_msg}\n"
+        
+        try:
+            with open("error.log", "a", encoding="utf-8") as f:
+                f.write(log_line)
+        except Exception:
+            pass
+            
+        try:
+            import wx
+            if wx.GetApp():
+                wx.MessageBox(
+                    f"Si è verificato un errore imprevisto.\n\nDettagli:\n{value}\n\nI dettagli completi sono stati salvati in error.log.",
+                    "Errore Imprevisto",
+                    wx.ICON_ERROR | wx.OK
+                )
+        except Exception:
+            pass
+            
+        sys.__excepthook__(exctype, value, traceback_obj)
+        
+    sys.excepthook = custom_excepthook
+
+install_excepthook()
 
 # Aggiungi src a sys.path per lo sviluppo locale
 try:

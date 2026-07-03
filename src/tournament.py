@@ -203,6 +203,66 @@ def time_machine_torneo(torneo):
     return True
 
 
+def rollback_to_previous_round(torneo):
+    """
+    Annulla l'ultimo turno (current_round) del torneo, eliminando tutti i risultati
+    e gli abbinamenti del turno corrente e ripristinando lo stato del turno precedente.
+    Ritorna True se il rollback ha avuto successo, False altrimenti.
+    """
+    current_round = torneo.get("current_round", 1)
+    
+    # 1. Se il torneo ha rounds, rimuoviamo l'ultimo round
+    rounds = torneo.get("rounds", [])
+    if not rounds:
+        return False
+        
+    # Crea un backup prima dell'operazione
+    if "name" in torneo:
+        current_filename = f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        create_backup(current_filename, "pre_rollback")
+
+    # Rimuovi l'ultimo round
+    last_round_obj = rounds.pop()
+    last_round_num = last_round_obj.get("round", current_round)
+    
+    # 2. Rimuovi le partite dell'ultimo round dallo storico di ciascun giocatore
+    for player in torneo.get("players", []):
+        player["results_history"] = [
+            res
+            for res in player.get("results_history", [])
+            if res.get("round", 0) != last_round_num
+        ]
+        # Ripristina lo stato di ritirato se avvenuto in questo turno
+        if player.get("withdrawn", False):
+            player["withdrawn"] = False
+            
+        # Ricalcola i punti e lo stato del giocatore dallo storico rimanente
+        _ricalcola_stato_giocatore_da_storico(player)
+        
+    # 3. Aggiorna il numero del turno corrente
+    if rounds:
+        torneo["current_round"] = last_round_num
+    else:
+        torneo["current_round"] = 1
+        
+    torneo["concluded"] = False
+
+    # 4. Ricalcola il prossimo ID partita
+    max_id = 0
+    for r in rounds:
+        for m in r.get("matches", []):
+            if m.get("id", 0) > max_id:
+                max_id = m.get("id", 0)
+    torneo["next_match_id"] = max_id + 1
+    
+    # Ricostruisci il dizionario cache per coerenza
+    torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
+    
+    from utils import play_sound
+    play_sound("time_machine", torneo)
+    return True
+
+
 def load_tournament(filename_to_load):
     """Carica lo stato del torneo corrente dal file JSON."""
     if os.path.exists(filename_to_load):
@@ -391,8 +451,7 @@ def generate_pairings_for_round(torneo):
     """
     round_number = torneo.get("current_round")
     if round_number is None:
-        print(_("ERRORE: Numero turno corrente non definito nel torneo."))
-        return None
+        raise ValueError(_("Numero turno corrente non definito nel torneo."))
     print(
         _("\n--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---").format(
             round_num=round_number

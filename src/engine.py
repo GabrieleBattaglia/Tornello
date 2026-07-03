@@ -11,6 +11,21 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
     Gestisce i fallimenti di bbpPairings. Stampa un messaggio e chiede all'utente cosa fare.
     Restituisce una stringa che indica l'azione scelta dall'utente ('time_machine' o 'terminate').
     """
+    is_gui = False
+    try:
+        import wx
+        if wx.GetApp() is not None:
+            is_gui = True
+    except ImportError:
+        pass
+
+    if is_gui:
+        raise RuntimeError(
+            _("Fallimento generazione abbinamenti automatici (Turno {round_num}):\n{error}").format(
+                round_num=round_number, error=error_message
+            )
+        )
+
     print(
         _(
             "\n--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---"

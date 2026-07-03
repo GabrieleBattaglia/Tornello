@@ -1,4 +1,14 @@
 --- CHANGELOG ---
+9.0.31239
+	+ Feature: Uniformati i contatori di badge in tutti i nodi padre dell'albero dei tornei (In Preparazione, Tornei Conclusi, iscritti, turni, da giocare, partite e nodi T1/T2 PGN), escludendo i nodi di comando (es. "aggiungi giocatore" o "genera turno") dal conteggio complessivo.
+	+ Feature: Implementato il gestore globale di eccezioni sys.excepthook in tornello.py per scrivere qualsiasi crash imprevisto nel file "error.log" locale e mostrare un avviso MessageBox grafico all'utente.
+	+ Feature: Espansa la suite di test end-to-end con una simulazione avanzata di 29 giocatori, 7 turni, BYE automatici, ritiri multipli (turno 4 e 5) e finalizzazione.
+	+ Bugfix: Risolta la perdita di dati (PGN delle partite, pianificazione incontri, sesso e Elo standard dei giocatori, cartelle personalizzate di salvataggio) al caricamento/salvataggio dei tornei ripristinando la serializzazione dei rispettivi campi in src/models.py.
+	+ Bugfix: Implementata la funzione rollback_to_previous_round in src/tournament.py per correggere l'ImportError del comando "Time Machine" (Annulla Turno) della GUI.
+	+ Bugfix: Corretto il crash automatico all'inserimento dell'ultimo risultato del turno mappando il corretto nome di funzione append_completed_round_to_history_file in main_frame.py.
+	+ Bugfix: Corretto il crash del menu "Classifica Corrente" mappando il corretto nome di funzione get_standings_text in main_frame.py.
+	+ Bugfix: Impedito al gestore di errori del motore bbPairings di bloccarsi su input da terminale (key prompt) durante l'uso da GUI, sollevando invece una corretta eccezione intercettata dal logger.
+
 9.0.30010
 	+ Feature: Suddivisione delle partite con PGN per turno sotto il ramo "partite" dell'albero (nodi intermedi T1, T2, ecc.) con visualizzazione filtrata nell'area centrale.
 	+ Feature: Ottimizzazione del focus e della selezione nelle liste dei risultati del DB locale e FIDE (mantenimento selezione su elemento vicino o focus su campo di testo).

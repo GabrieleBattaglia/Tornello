@@ -74,6 +74,8 @@ class Player:
     o_title: str = ""
     foa_title: str = ""
     flag: str = ""
+    current_elo: float = 1399.0
+    gender: str = "M"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -83,6 +85,7 @@ class Player:
             "initial_elo": self.initial_elo,
             "fide_title": self.fide_title,
             "sex": self.sex,
+            "gender": self.gender,
             "federation": self.federation,
             "fide_id_num_str": self.fide_id_num_str,
             "birth_date": self.birth_date,
@@ -118,7 +121,8 @@ class Player:
             "w_title": self.w_title,
             "o_title": self.o_title,
             "foa_title": self.foa_title,
-            "flag": self.flag
+            "flag": self.flag,
+            "current_elo": self.current_elo
         }
 
     @classmethod
@@ -127,13 +131,21 @@ class Player:
         results_history = [ResultEntry.from_dict(h) for h in history_list]
         opponents = set(d.get("opponents", []))
         
+        raw_sex = d.get("sex") or d.get("gender") or "m"
+        sex_val = str(raw_sex).strip().lower()
+        if sex_val not in ("m", "w", "f"):
+            sex_val = "m"
+        gender_val = "W" if sex_val in ("w", "f") else "M"
+        sex_val = "w" if gender_val == "W" else "m"
+
         return cls(
             id=d.get("id", ""),
             first_name=d.get("first_name", ""),
             last_name=d.get("last_name", ""),
             initial_elo=float(d.get("initial_elo", 1399.0)),
             fide_title=d.get("fide_title", ""),
-            sex=d.get("sex", "m"),
+            sex=sex_val,
+            gender=gender_val,
             federation=d.get("federation", "ITA"),
             fide_id_num_str=d.get("fide_id_num_str", "0"),
             birth_date=d.get("birth_date", "1900-01-01"),
@@ -169,7 +181,8 @@ class Player:
             w_title=d.get("w_title", ""),
             o_title=d.get("o_title", ""),
             foa_title=d.get("foa_title", ""),
-            flag=d.get("flag", "")
+            flag=d.get("flag", ""),
+            current_elo=float(d.get("current_elo") or d.get("initial_elo") or 1399.0)
         )
 
 @dataclass
@@ -179,15 +192,24 @@ class Match:
     white_player_id: str
     black_player_id: Optional[str]  # None if BYE
     result: Optional[str] = None    # "1-0", "0-1", "1/2-1/2", "1-F", "F-1", "0-0F", "BYE", or None
+    is_scheduled: bool = False
+    schedule_info: Optional[Dict[str, Any]] = None
+    pgn: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d = {
             "id": self.id,
             "round": self.round,
             "white_player_id": self.white_player_id,
             "black_player_id": self.black_player_id,
-            "result": self.result
+            "result": self.result,
+            "is_scheduled": self.is_scheduled
         }
+        if self.schedule_info is not None:
+            d["schedule_info"] = self.schedule_info
+        if self.pgn is not None:
+            d["pgn"] = self.pgn
+        return d
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> 'Match':
@@ -196,7 +218,10 @@ class Match:
             round=d.get("round", 0),
             white_player_id=d.get("white_player_id", ""),
             black_player_id=d.get("black_player_id"),
-            result=d.get("result")
+            result=d.get("result"),
+            is_scheduled=d.get("is_scheduled", False),
+            schedule_info=d.get("schedule_info"),
+            pgn=d.get("pgn")
         )
 
 @dataclass
@@ -261,6 +286,10 @@ class Tournament:
     launch_count: int = 0
     schema_version: int = 1
     tournament_category: str = "standard"  # Issue #13
+    current_round: int = 1
+    concluded: bool = False
+    custom_save_path: str = ""
+    save_path: str = ""
 
     # players_dict is a cache of player objects, not saved directly to file
     players_dict: Dict[str, Player] = field(default_factory=dict, init=False, repr=False)
@@ -291,7 +320,11 @@ class Tournament:
             "next_match_id": self.next_match_id,
             "bye_value": self.bye_value,
             "schema_version": self.schema_version,
-            "tournament_category": self.tournament_category
+            "tournament_category": self.tournament_category,
+            "current_round": self.current_round,
+            "concluded": self.concluded,
+            "custom_save_path": self.custom_save_path,
+            "save_path": self.save_path
         }
 
     @classmethod
@@ -324,5 +357,9 @@ class Tournament:
             bye_value=float(d.get("bye_value", 0.5)),
             launch_count=int(d.get("launch_count", 0)),
             schema_version=int(d.get("schema_version", 1)),
-            tournament_category=d.get("tournament_category", "standard")
+            tournament_category=d.get("tournament_category", "standard"),
+            current_round=int(d.get("current_round", 1)),
+            concluded=bool(d.get("concluded", False)),
+            custom_save_path=d.get("custom_save_path", ""),
+            save_path=d.get("save_path", "")
         )

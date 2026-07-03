@@ -487,7 +487,7 @@ class MainFrame(wx.Frame):
                 
         # 2. TORNEI IN PREPARAZIONE
         if in_prep_files:
-            prep_parent = self.tree_ctrl.AppendItem(self.tree_root, _("In Preparazione"))
+            prep_parent = self.tree_ctrl.AppendItem(self.tree_root, f"{_('In Preparazione')} ({len(in_prep_files)})")
             self.tree_ctrl.SetItemData(prep_parent, {"action": "category_prep"})
             for f, data in in_prep_files:
                 t_node = self.add_tournament_node(prep_parent, f, data)
@@ -497,7 +497,7 @@ class MainFrame(wx.Frame):
                     
         # 3. TORNEI CONCLUSI
         if concluded_files:
-            closed_parent = self.tree_ctrl.AppendItem(self.tree_root, _("Tornei Conclusi"))
+            closed_parent = self.tree_ctrl.AppendItem(self.tree_root, f"{_('Tornei Conclusi')} ({len(concluded_files)})")
             self.tree_ctrl.SetItemData(closed_parent, {"action": "category_closed"})
             for f, data in concluded_files:
                 end_date_str = data.get("end_date")
@@ -600,7 +600,7 @@ class MainFrame(wx.Frame):
             self.tree_ctrl.SetItemData(m_node, {"action": "activate_match", "filepath": filepath, "match": m, "round": r_num, "board_num": board_num})
             
         if matches_to_play:
-            da_giocare_parent = self.tree_ctrl.AppendItem(r_node, _("da giocare"))
+            da_giocare_parent = self.tree_ctrl.AppendItem(r_node, f"{_('da giocare')} ({len(matches_to_play)})")
             self.tree_ctrl.SetItemData(da_giocare_parent, {"action": "category_da_giocare", "filepath": filepath, "round": r_num})
             for m in matches_to_play:
                 w_id = m.get("white_player_id")
@@ -672,9 +672,8 @@ class MainFrame(wx.Frame):
 
         bye_item = self.tree_ctrl.AppendItem(dati_node, f"Valore del BYE: {data.get('bye_value', 0.5)}")
         self.tree_ctrl.SetItemData(bye_item, {"action": "show_data", "filepath": filepath, "field_active": "bye_value"})
-        
         players = data.get("players", [])
-        iscritti_node = self.tree_ctrl.AppendItem(t_node, _("iscritti"))
+        iscritti_node = self.tree_ctrl.AppendItem(t_node, f"{_('iscritti')} ({len(players)})")
         self.tree_ctrl.SetItemData(iscritti_node, {"action": "show_players", "filepath": filepath})
         
         for p in players:
@@ -688,7 +687,7 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemData(add_p_node, {"action": "add_player_action", "filepath": filepath})
         
         rounds = data.get("rounds", [])
-        turni_node = self.tree_ctrl.AppendItem(t_node, _("turni"))
+        turni_node = self.tree_ctrl.AppendItem(t_node, f"{_('turni')} ({len(rounds)})")
         self.tree_ctrl.SetItemData(turni_node, {"action": "show_rounds", "filepath": filepath})
         
         players_dict = {p["id"]: p for p in players}
@@ -723,13 +722,14 @@ class MainFrame(wx.Frame):
             if not is_concluded:
                 node_act = self.tree_ctrl.AppendItem(turni_node, _("genera turno"))
                 self.tree_ctrl.SetItemData(node_act, {"action": "start_tournament_matchmaking_action", "filepath": filepath})
-
+ 
         # Sotto-nodo: Classifica
         classifica_node = self.tree_ctrl.AppendItem(t_node, _("Classifica"))
         self.tree_ctrl.SetItemData(classifica_node, {"action": "show_standings", "filepath": filepath})
         
         # Sotto-nodo: partite
-        partite_pgn_node = self.tree_ctrl.AppendItem(t_node, _("partite"))
+        total_pgn_matches = sum(1 for r in rounds for m in r.get("matches", []) if m.get("pgn"))
+        partite_pgn_node = self.tree_ctrl.AppendItem(t_node, f"{_('partite')} ({total_pgn_matches})")
         self.tree_ctrl.SetItemData(partite_pgn_node, {"action": "show_pgn_matches_list", "filepath": filepath})
         for r in rounds:
             r_num = r.get("round")
@@ -740,7 +740,8 @@ class MainFrame(wx.Frame):
             if not has_pgn_in_round:
                 continue
                 
-            r_pgn_node = self.tree_ctrl.AppendItem(partite_pgn_node, f"T{r_num}")
+            pgn_count_in_round = sum(1 for m in round_matches_sorted if m.get("pgn"))
+            r_pgn_node = self.tree_ctrl.AppendItem(partite_pgn_node, f"T{r_num} ({pgn_count_in_round})")
             self.tree_ctrl.SetItemData(r_pgn_node, {"action": "show_pgn_matches_list", "filepath": filepath, "round": r_num})
             
             match_id_to_board = {m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)}
@@ -1929,9 +1930,9 @@ class MainFrame(wx.Frame):
         if not self.current_tournament:
             wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
             return
-        from reports import generate_standings_report_text
+        from reports import get_standings_text
         self.main_text.Clear()
-        standings_text = generate_standings_report_text(self.current_tournament, final=False)
+        standings_text = get_standings_text(self.current_tournament, final=False)
         self.append_log(standings_text)
         self.main_text.SetFocus()
 
@@ -2007,43 +2008,47 @@ class MainFrame(wx.Frame):
             dlg = wx.TextEntryDialog(self, _("Inserisci il nome del torneo:"), _("Nome Torneo"), self.current_tournament["name"])
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip()
-                self.current_tournament["name"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Nome torneo: {new_val}")
-                self._save_state()
+                if new_val != self.current_tournament.get("name"):
+                    self.current_tournament["name"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Nome torneo: {new_val}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "site":
             dlg = wx.TextEntryDialog(self, _("Inserisci il luogo (Site):"), _("Luogo Torneo"), self.current_tournament["site"])
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip()
-                self.current_tournament["site"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Luogo (Site): {new_val}")
-                self._save_state()
+                if new_val != self.current_tournament.get("site"):
+                    self.current_tournament["site"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Luogo (Site): {new_val}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "start_date":
             dlg = wx.TextEntryDialog(self, _("Inserisci la data di inizio (AAAA-MM-GG):"), _("Data Inizio"), self.current_tournament["start_date"])
             if dlg.ShowModal() == wx.ID_OK:
                 val = dlg.GetValue().strip()
-                try:
-                    from datetime import datetime
-                    datetime.strptime(val, "%Y-%m-%d")
-                    self.current_tournament["start_date"] = val
-                    self.tree_ctrl.SetItemText(item, f"Data inizio: {format_date_locale(val)}")
-                    self._save_state()
-                except ValueError:
-                    wx.MessageBox(_("Formato data non valido. Usa AAAA-MM-GG."), _("Errore"), wx.ICON_ERROR)
+                if val != self.current_tournament.get("start_date"):
+                    try:
+                        from datetime import datetime
+                        datetime.strptime(val, "%Y-%m-%d")
+                        self.current_tournament["start_date"] = val
+                        self.tree_ctrl.SetItemText(item, f"Data inizio: {format_date_locale(val)}")
+                        self._save_state()
+                    except ValueError:
+                        wx.MessageBox(_("Formato data non valido. Usa AAAA-MM-GG."), _("Errore"), wx.ICON_ERROR)
             dlg.Destroy()
         elif field_active == "end_date":
             dlg = wx.TextEntryDialog(self, _("Inserisci la data di fine (AAAA-MM-GG):"), _("Data Fine"), self.current_tournament["end_date"])
             if dlg.ShowModal() == wx.ID_OK:
                 val = dlg.GetValue().strip()
-                try:
-                    from datetime import datetime
-                    datetime.strptime(val, "%Y-%m-%d")
-                    self.current_tournament["end_date"] = val
-                    self.tree_ctrl.SetItemText(item, f"Data fine: {format_date_locale(val)}")
-                    self._save_state()
-                except ValueError:
-                    wx.MessageBox(_("Formato data non valido. Usa AAAA-MM-GG."), _("Errore"), wx.ICON_ERROR)
+                if val != self.current_tournament.get("end_date"):
+                    try:
+                        from datetime import datetime
+                        datetime.strptime(val, "%Y-%m-%d")
+                        self.current_tournament["end_date"] = val
+                        self.tree_ctrl.SetItemText(item, f"Data fine: {format_date_locale(val)}")
+                        self._save_state()
+                    except ValueError:
+                        wx.MessageBox(_("Formato data non valido. Usa AAAA-MM-GG."), _("Errore"), wx.ICON_ERROR)
             dlg.Destroy()
         elif field_active == "time_control":
             tc = self.current_tournament.get("time_control", {})
@@ -2054,10 +2059,12 @@ class MainFrame(wx.Frame):
                 from stats import parse_time_control, classify_tournament_category
                 tc_parsed = parse_time_control(val)
                 if tc_parsed:
-                    self.current_tournament["time_control"] = tc_parsed
-                    self.current_tournament["tournament_category"] = classify_tournament_category(tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0))
-                    self.tree_ctrl.SetItemText(item, f"Tempo riflessione: {val}")
-                    self._save_state()
+                    old_tc = self.current_tournament.get("time_control", {})
+                    if tc_parsed != old_tc:
+                        self.current_tournament["time_control"] = tc_parsed
+                        self.current_tournament["tournament_category"] = classify_tournament_category(tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0))
+                        self.tree_ctrl.SetItemText(item, f"Tempo riflessione: {val}")
+                        self._save_state()
                 else:
                     wx.MessageBox(_("Formato non valido. Usa minuti+incremento o solo minuti."), _("Errore"), wx.ICON_ERROR)
             dlg.Destroy()
@@ -2065,25 +2072,28 @@ class MainFrame(wx.Frame):
             dlg = wx.TextEntryDialog(self, _("Inserisci il nome dell'Arbitro Capo:"), _("Arbitro Capo"), self.current_tournament["chief_arbiter"])
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip()
-                self.current_tournament["chief_arbiter"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Arbitro Capo: {new_val}")
-                self._save_state()
+                if new_val != self.current_tournament.get("chief_arbiter"):
+                    self.current_tournament["chief_arbiter"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Arbitro Capo: {new_val}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "deputy_chief_arbiters":
             dlg = wx.TextEntryDialog(self, _("Inserisci i collaboratori / vice arbitri (separati da virgola):"), _("Collaboratori / Vice Arbitri"), self.current_tournament.get("deputy_chief_arbiters", ""))
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip()
-                self.current_tournament["deputy_chief_arbiters"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Collaboratori: {new_val or 'Nessuno'}")
-                self._save_state()
+                if new_val != self.current_tournament.get("deputy_chief_arbiters"):
+                    self.current_tournament["deputy_chief_arbiters"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Collaboratori: {new_val or 'Nessuno'}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "federation_code":
             dlg = wx.TextEntryDialog(self, _("Inserisci il codice della federazione ospitante (es. ITA, FRA):"), _("Codice Federazione"), self.current_tournament["federation_code"])
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip().upper()
-                self.current_tournament["federation_code"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Codice Federazione: {new_val}")
-                self._save_state()
+                if new_val != self.current_tournament.get("federation_code"):
+                    self.current_tournament["federation_code"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Codice Federazione: {new_val}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "color_board1":
             choices = ["Bianco", "Nero", "Casuale"]
@@ -2102,10 +2112,11 @@ class MainFrame(wx.Frame):
                     val_raw = "black1"
                 elif sel == 2:
                     val_raw = "random"
-                self.current_tournament["initial_board1_color_setting"] = val_raw
-                col_disp = choices[sel]
-                self.tree_ctrl.SetItemText(item, f"Colore al giocatore più forte: {col_disp}")
-                self._save_state()
+                if val_raw != self.current_tournament.get("initial_board1_color_setting"):
+                    self.current_tournament["initial_board1_color_setting"] = val_raw
+                    col_disp = choices[sel]
+                    self.tree_ctrl.SetItemText(item, f"Colore al giocatore più forte: {col_disp}")
+                    self._save_state()
             dlg.Destroy()
         elif field_active == "bye_value":
             choices = ["0.0", "0.5", "1.0"]
@@ -2115,9 +2126,10 @@ class MainFrame(wx.Frame):
                 dlg.SetSelection(choices.index(curr_str))
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = float(dlg.GetStringSelection())
-                self.current_tournament["bye_value"] = new_val
-                self.tree_ctrl.SetItemText(item, f"Valore del BYE: {new_val}")
-                self._save_state()
+                if new_val != float(self.current_tournament.get("bye_value", 0.5)):
+                    self.current_tournament["bye_value"] = new_val
+                    self.tree_ctrl.SetItemText(item, f"Valore del BYE: {new_val}")
+                    self._save_state()
             dlg.Destroy()
 
     def on_activate_match(self, match):
@@ -2188,79 +2200,88 @@ class MainFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             from utils import format_date_locale
             if dlg.selected_action == "schedule":
-                actual_match["is_scheduled"] = True
-                actual_match["schedule_info"] = dlg.schedule_info
-                self._save_state()
-                self.set_status(_("Partita pianificata per il {date} alle {time}.").format(
-                    date=format_date_locale(dlg.schedule_info["date"]),
-                    time=dlg.schedule_info["time"]
-                ))
+                old_sched = actual_match.get("schedule_info", {})
+                if not actual_match.get("is_scheduled") or old_sched != dlg.schedule_info:
+                    actual_match["is_scheduled"] = True
+                    actual_match["schedule_info"] = dlg.schedule_info
+                    self._save_state()
+                    self.set_status(_("Partita pianificata per il {date} alle {time}.").format(
+                        date=format_date_locale(dlg.schedule_info["date"]),
+                        time=dlg.schedule_info["time"]
+                    ))
+                else:
+                    self.set_status(_("Nessuna modifica alla pianificazione."))
             elif dlg.selected_action == "withdraw":
                 self.withdraw_player(dlg.withdrawn_player_id)
             else:
                 res = dlg.get_selected_result()
                 if res:
                     p_text = dlg.txt_pgn.GetValue().strip()
-                    if p_text:
-                        import chess.pgn
-                        import io
-                        pgn_io = io.StringIO(p_text)
-                        try:
-                            game = chess.pgn.read_game(pgn_io)
-                            if game:
-                                game.headers["Event"] = self.current_tournament.get("name", "Torneo")
-                                game.headers["Site"] = self.current_tournament.get("site", "N/D")
-                                
-                                # Date
-                                r_num = actual_match.get("round", 1)
-                                date_val = "????.??.??"
-                                round_dates_info = self.current_tournament.get("round_dates", [])
-                                current_round_period_info = next((rd for rd in round_dates_info if rd.get("round") == r_num), None)
-                                raw_date = None
-                                if current_round_period_info and current_round_period_info.get("start_date"):
-                                    raw_date = current_round_period_info.get("start_date")
-                                elif self.current_tournament.get("start_date"):
-                                    raw_date = self.current_tournament.get("start_date")
-                                if raw_date:
-                                    date_val = raw_date.replace("-", ".")
-                                game.headers["Date"] = date_val
-                                game.headers["Round"] = str(r_num)
-                                
-                                # Players
-                                w_name_pgn = f"{w_p.get('last_name', '')}, {w_p.get('first_name', '')}".strip(", ")
-                                b_name_pgn = f"{b_p.get('last_name', '')}, {b_p.get('first_name', '')}".strip(", ")
-                                game.headers["White"] = w_name_pgn
-                                game.headers["Black"] = b_name_pgn
-                                
-                                # Result
-                                res_map = {
-                                    "1-0": "1-0",
-                                    "1-F": "1-0",
-                                    "0-1": "0-1",
-                                    "F-1": "0-1",
-                                    "1/2-1/2": "1/2-1/2",
-                                }
-                                game.headers["Result"] = res_map.get(res, "*")
-                                
-                                # Elos
-                                game.headers["WhiteElo"] = str(int(w_p.get("initial_elo", 1399)))
-                                game.headers["BlackElo"] = str(int(b_p.get("initial_elo", 1399)))
-                                
-                                exporter = chess.pgn.StringExporter(headers=True, comments=True, variations=True)
-                                p_text = game.accept(exporter)
-                        except Exception as e:
-                            print(f"Errore durante l'elaborazione PGN: {e}")
-                    
-                    if p_text:
-                        actual_match["pgn"] = p_text
-                    else:
-                        actual_match.pop("pgn", None)
+                    old_res = actual_match.get("result")
+                    old_pgn = actual_match.get("pgn", "").strip()
+                    if res != old_res or p_text != old_pgn:
+                        if p_text:
+                            import chess.pgn
+                            import io
+                            pgn_io = io.StringIO(p_text)
+                            try:
+                                game = chess.pgn.read_game(pgn_io)
+                                if game:
+                                    game.headers["Event"] = self.current_tournament.get("name", "Torneo")
+                                    game.headers["Site"] = self.current_tournament.get("site", "N/D")
+                                    
+                                    # Date
+                                    r_num = actual_match.get("round", 1)
+                                    date_val = "????.??.??"
+                                    round_dates_info = self.current_tournament.get("round_dates", [])
+                                    current_round_period_info = next((rd for rd in round_dates_info if rd.get("round") == r_num), None)
+                                    raw_date = None
+                                    if current_round_period_info and current_round_period_info.get("start_date"):
+                                        raw_date = current_round_period_info.get("start_date")
+                                    elif self.current_tournament.get("start_date"):
+                                        raw_date = self.current_tournament.get("start_date")
+                                    if raw_date:
+                                        date_val = raw_date.replace("-", ".")
+                                    game.headers["Date"] = date_val
+                                    game.headers["Round"] = str(r_num)
+                                    
+                                    # Players
+                                    w_name_pgn = f"{w_p.get('last_name', '')}, {w_p.get('first_name', '')}".strip(", ")
+                                    b_name_pgn = f"{b_p.get('last_name', '')}, {b_p.get('first_name', '')}".strip(", ")
+                                    game.headers["White"] = w_name_pgn
+                                    game.headers["Black"] = b_name_pgn
+                                    
+                                    # Result
+                                    res_map = {
+                                        "1-0": "1-0",
+                                        "1-F": "1-0",
+                                        "0-1": "0-1",
+                                        "F-1": "0-1",
+                                        "1/2-1/2": "1/2-1/2",
+                                    }
+                                    game.headers["Result"] = res_map.get(res, "*")
+                                    
+                                    # Elos
+                                    game.headers["WhiteElo"] = str(int(w_p.get("initial_elo", 1399)))
+                                    game.headers["BlackElo"] = str(int(b_p.get("initial_elo", 1399)))
+                                    
+                                    exporter = chess.pgn.StringExporter(headers=True, comments=True, variations=True)
+                                    p_text = game.accept(exporter)
+                            except Exception as e:
+                                print(f"Errore durante l'elaborazione PGN: {e}")
                         
-                    self.apply_match_result(actual_match, res, is_pgn_only=disable_result_change)
-                    if disable_result_change:
-                        self.set_status(_("Partita aggiornata con PGN."))
+                        if p_text:
+                            actual_match["pgn"] = p_text
+                        else:
+                            actual_match.pop("pgn", None)
+                            
+                        self.apply_match_result(actual_match, res, is_pgn_only=disable_result_change)
+                        if disable_result_change:
+                            self.set_status(_("Partita aggiornata con PGN."))
+                        else:
+                            self.set_status(_("Risultato registrato: {res}.").format(res=res))
                     else:
-                        self.set_status(_("Risultato registrato: {res}.").format(res=res))
+                        self.set_status(_("Nessuna modifica apportata alla partita."))
             
             # Rebuild tree and refresh display
             self.populate_tree()
@@ -2310,8 +2331,8 @@ class MainFrame(wx.Frame):
         round_data = next((r for r in self.current_tournament.get("rounds", []) if r.get("round") == curr_round_num), None)
         if round_data and all(m.get("result") is not None for m in round_data.get("matches", [])):
             # Turno concluso: salva il report dettagliato del turno e riproduci il suono conclusivo del turno
-            from reports import save_completed_round_report_file
-            save_completed_round_report_file(self.current_tournament, curr_round_num)
+            from reports import append_completed_round_to_history_file
+            append_completed_round_to_history_file(self.current_tournament, curr_round_num)
             from utils import play_sound
             play_sound("conclusione_turno", self.current_tournament)
         else:
