@@ -51,9 +51,11 @@ class MainFrame(wx.Frame):
         
         # Area Sinistra: Grande controllo di testo multi-riga per i report
         self.main_text = wx.TextCtrl(self.splitter, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
+        self.main_text.SetName(_("Area report principale"))
         
         # Area Destra: Albero di navigazione
         self.tree_ctrl = wx.TreeCtrl(self.splitter, style=wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT)
+        self.tree_ctrl.SetName(_("Albero di navigazione del torneo"))
         self.tree_ctrl.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_selection_changed)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_item_activated)
         self.tree_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
@@ -66,6 +68,7 @@ class MainFrame(wx.Frame):
         
         # Barra di Stato personalizzata in basso (TextCtrl accessibile a 3 righe)
         self.status_text = wx.TextCtrl(self.top_panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 60))
+        self.status_text.SetName(_("Barra di stato e statistiche"))
         main_layout.Add(self.status_text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         
         self.top_panel.SetSizer(main_layout)
@@ -431,10 +434,88 @@ class MainFrame(wx.Frame):
             
         self.append_log(report)
 
+    def _get_tree_expansion_state(self, parent_node, expanded_actions):
+        if not parent_node.IsOk():
+            return
+        child, cookie = self.tree_ctrl.GetFirstChild(parent_node)
+        while child.IsOk():
+            if self.tree_ctrl.IsExpanded(child):
+                data = self.tree_ctrl.GetItemData(child)
+                if data and isinstance(data, dict) and "action" in data:
+                    key = (data.get("action"), data.get("filepath"), data.get("round"))
+                    expanded_actions.add(key)
+            self._get_tree_expansion_state(child, expanded_actions)
+            child, cookie = self.tree_ctrl.GetNextChild(parent_node, cookie)
+
+    def _restore_tree_expansion_state(self, parent_node, expanded_actions):
+        if not parent_node.IsOk():
+            return
+        child, cookie = self.tree_ctrl.GetFirstChild(parent_node)
+        while child.IsOk():
+            data = self.tree_ctrl.GetItemData(child)
+            if data and isinstance(data, dict) and "action" in data:
+                key = (data.get("action"), data.get("filepath"), data.get("round"))
+                if key in expanded_actions:
+                    self.tree_ctrl.Expand(child)
+            self._restore_tree_expansion_state(child, expanded_actions)
+            child, cookie = self.tree_ctrl.GetNextChild(parent_node, cookie)
+
+    def _find_matching_item(self, parent_node, saved_data):
+        if not parent_node.IsOk():
+            return None
+            
+        child, cookie = self.tree_ctrl.GetFirstChild(parent_node)
+        while child.IsOk():
+            child_data = self.tree_ctrl.GetItemData(child)
+            if child_data and isinstance(child_data, dict) and isinstance(saved_data, dict):
+                match = True
+                for k in ["action", "filepath", "field_active", "round", "board_num"]:
+                    if saved_data.get(k) != child_data.get(k):
+                        match = False
+                        break
+                if match:
+                    if "player" in saved_data and "player" in child_data:
+                        if saved_data["player"].get("id") != child_data["player"].get("id"):
+                            match = False
+                    elif "match" in saved_data and "match" in child_data:
+                        if saved_data["match"].get("id") != child_data["match"].get("id"):
+                            match = False
+                            
+                if match:
+                    return child
+                    
+            res = self._find_matching_item(child, saved_data)
+            if res:
+                return res
+                
+            child, cookie = self.tree_ctrl.GetNextChild(parent_node, cookie)
+        return None
+
     def populate_tree(self):
         """Costruisce e popola l'albero TreeCtrl destro con la struttura unificata di tutti i tornei."""
         if self.creation_mode:
             return
+            
+        expanded_actions = set()
+        saved_data = None
+        
+        # Gestione override target per il focus
+        if hasattr(self, "_tree_restore_target") and self._tree_restore_target:
+            saved_data = self._tree_restore_target
+            self._tree_restore_target = None
+        else:
+            try:
+                selected_item = self.tree_ctrl.GetSelection()
+                if selected_item.IsOk():
+                    saved_data = self.tree_ctrl.GetItemData(selected_item)
+            except Exception:
+                pass
+                
+        try:
+            if self.tree_root and self.tree_root.IsOk():
+                self._get_tree_expansion_state(self.tree_root, expanded_actions)
+        except Exception:
+            pass
             
         self.tree_ctrl.DeleteAllItems()
         self.tree_root = self.tree_ctrl.AddRoot("Root")
@@ -476,14 +557,15 @@ class MainFrame(wx.Frame):
         # 1. TORNEI IN CORSO (Attivi)
         for f, data in started_files:
             t_node = self.add_tournament_node(self.tree_root, f, data)
-            if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
-                self.tree_ctrl.Expand(t_node)
-                child, cookie = self.tree_ctrl.GetFirstChild(t_node)
-                while child.IsOk():
-                    lbl = self.tree_ctrl.GetItemText(child)
-                    if lbl.startswith(_("iscritti")) or lbl.startswith(_("turni")):
-                        self.tree_ctrl.Expand(child)
-                    child, cookie = self.tree_ctrl.GetNextChild(t_node, cookie)
+            if not expanded_actions:
+                if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
+                    self.tree_ctrl.Expand(t_node)
+                    child, cookie = self.tree_ctrl.GetFirstChild(t_node)
+                    while child.IsOk():
+                        lbl = self.tree_ctrl.GetItemText(child)
+                        if lbl.startswith(_("iscritti")) or lbl.startswith(_("turni")):
+                            self.tree_ctrl.Expand(child)
+                        child, cookie = self.tree_ctrl.GetNextChild(t_node, cookie)
                 
         # 2. TORNEI IN PREPARAZIONE
         if in_prep_files:
@@ -491,9 +573,10 @@ class MainFrame(wx.Frame):
             self.tree_ctrl.SetItemData(prep_parent, {"action": "category_prep"})
             for f, data in in_prep_files:
                 t_node = self.add_tournament_node(prep_parent, f, data)
-                if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
-                    self.tree_ctrl.Expand(t_node)
-                    self.tree_ctrl.Expand(prep_parent)
+                if not expanded_actions:
+                    if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
+                        self.tree_ctrl.Expand(t_node)
+                        self.tree_ctrl.Expand(prep_parent)
                     
         # 3. TORNEI CONCLUSI
         if concluded_files:
@@ -514,14 +597,25 @@ class MainFrame(wx.Frame):
                         pass
                 label_suffix = month_year
                 t_node = self.add_tournament_node(closed_parent, f, data, label_suffix=label_suffix)
-                if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
-                    self.tree_ctrl.Expand(t_node)
-                    self.tree_ctrl.Expand(closed_parent)
+                if not expanded_actions:
+                    if self.active_filename and os.path.abspath(f) == os.path.abspath(self.active_filename):
+                        self.tree_ctrl.Expand(t_node)
+                        self.tree_ctrl.Expand(closed_parent)
                     
         # 4. NUOVO TORNEO
         new_item = self.tree_ctrl.AppendItem(self.tree_root, _("Nuovo torneo"))
         self.tree_ctrl.SetItemData(new_item, {"action": "start_new_tournament"})
         
+        if expanded_actions:
+            self._restore_tree_expansion_state(self.tree_root, expanded_actions)
+            
+        if saved_data:
+            target_item = self._find_matching_item(self.tree_root, saved_data)
+            if target_item and target_item.IsOk():
+                self.tree_ctrl.SelectItem(target_item)
+                self.tree_ctrl.EnsureVisible(target_item)
+                self.tree_ctrl.SetFocus()
+                
         self.update_menu_states()
         self.update_status_display()
 
@@ -538,7 +632,7 @@ class MainFrame(wx.Frame):
                     all_done = False
                     break
             if not all_done:
-                r_label += f" ({_('Corrente')})"
+                r_label = f"Turno corrente ({r_num}/{tot_rounds})"
                 
         r_node = self.tree_ctrl.AppendItem(parent_node, r_label)
         self.tree_ctrl.SetItemData(r_node, {"action": "show_round_report", "filepath": filepath, "round": r_num})
@@ -620,14 +714,7 @@ class MainFrame(wx.Frame):
                     match_label = f"Scacchiera {board_num}: {w_name} vs {b_name} (Non pianificata)"
                 m_node = self.tree_ctrl.AppendItem(da_giocare_parent, match_label)
                 self.tree_ctrl.SetItemData(m_node, {"action": "activate_match", "filepath": filepath, "match": m, "round": r_num, "board_num": board_num})
-        else:
-            if not is_concluded and r_num == len(data.get("rounds", [])):
-                if r_num < tot_rounds:
-                    action_node = self.tree_ctrl.AppendItem(r_node, _("calcola il turno successivo"))
-                    self.tree_ctrl.SetItemData(action_node, {"action": "generate_next_round_action", "filepath": filepath})
-                elif r_num == tot_rounds:
-                    action_node = self.tree_ctrl.AppendItem(r_node, _("Finalizza il torneo"))
-                    self.tree_ctrl.SetItemData(action_node, {"action": "finalize_tournament_action", "filepath": filepath})
+
 
     def add_tournament_node(self, parent, filepath, data, label_suffix=""):
         t_name = data.get("name", os.path.basename(filepath))
@@ -665,8 +752,12 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemData(fed_item, {"action": "show_data", "filepath": filepath, "field_active": "federation_code"})
 
         col_raw = data.get("initial_board1_color_setting", "white1")
-        col_disp_map = {"white1": _("Bianco"), "black1": _("Nero"), "random": _("Casuale")}
-        col_val = col_disp_map.get(col_raw, _("Bianco"))
+        col_disp_map = {
+            "white1": _("Bianco (scelto dall'arbitro)"),
+            "black1": _("Nero (scelto dall'arbitro)"),
+            "random": _("Casuale (scelto da Tornello)")
+        }
+        col_val = col_disp_map.get(col_raw, _("Bianco (scelto dall'arbitro)"))
         col_item = self.tree_ctrl.AppendItem(dati_node, f"Colore al giocatore più forte: {col_val}")
         self.tree_ctrl.SetItemData(col_item, {"action": "show_data", "filepath": filepath, "field_active": "color_board1"})
 
@@ -695,7 +786,7 @@ class MainFrame(wx.Frame):
         
         if len(rounds) > 0:
             completed_rounds = []
-            pending_rounds = []
+            pending_round = None
             for r in rounds:
                 all_done = True
                 for m in r.get("matches", []):
@@ -705,7 +796,7 @@ class MainFrame(wx.Frame):
                 if all_done:
                     completed_rounds.append(r)
                 else:
-                    pending_rounds.append(r)
+                    pending_round = r
             
             if completed_rounds:
                 completati_parent = self.tree_ctrl.AppendItem(turni_node, f"{_('Completati')} ({len(completed_rounds)})")
@@ -713,11 +804,17 @@ class MainFrame(wx.Frame):
                 for r in completed_rounds:
                     self.add_round_subnodes(completati_parent, r, data, filepath, players_dict, is_concluded)
             
-            if pending_rounds:
-                da_completare_parent = self.tree_ctrl.AppendItem(turni_node, f"{_('Da completare')} ({len(pending_rounds)})")
-                self.tree_ctrl.SetItemData(da_completare_parent, {"action": "show_rounds", "filepath": filepath})
-                for r in pending_rounds:
-                    self.add_round_subnodes(da_completare_parent, r, data, filepath, players_dict, is_concluded)
+            if pending_round:
+                self.add_round_subnodes(turni_node, pending_round, data, filepath, players_dict, is_concluded)
+            elif not is_concluded:
+                tot_rounds = data.get("total_rounds", 5)
+                last_r_num = len(rounds)
+                if last_r_num < tot_rounds:
+                    action_node = self.tree_ctrl.AppendItem(turni_node, _("calcola il turno successivo"))
+                    self.tree_ctrl.SetItemData(action_node, {"action": "generate_next_round_action", "filepath": filepath})
+                elif last_r_num == tot_rounds:
+                    action_node = self.tree_ctrl.AppendItem(turni_node, _("Finalizza il torneo"))
+                    self.tree_ctrl.SetItemData(action_node, {"action": "finalize_tournament_action", "filepath": filepath})
         else:
             if not is_concluded:
                 node_act = self.tree_ctrl.AppendItem(turni_node, _("genera turno"))
@@ -891,8 +988,12 @@ class MainFrame(wx.Frame):
         info.append(_("Codice Federazione: {fed}").format(fed=t.get('federation_code', 'ITA')))
         
         col_raw = t.get("initial_board1_color_setting", "white1")
-        col_disp_map = {"white1": _("Bianco"), "black1": _("Nero"), "random": _("Casuale")}
-        info.append(_("Colore assegnato al giocatore più forte in scacchiera 1: {color}").format(color=col_disp_map.get(col_raw, _('Bianco'))))
+        col_disp_map = {
+            "white1": _("Bianco (scelto dall'arbitro)"),
+            "black1": _("Nero (scelto dall'arbitro)"),
+            "random": _("Casuale (scelto da Tornello)")
+        }
+        info.append(_("Colore assegnato al giocatore più forte in scacchiera 1: {color}").format(color=col_disp_map.get(col_raw, _("Bianco (scelto dall'arbitro)"))))
         info.append(_("Valore del BYE: {val}").format(val=t.get('bye_value', 0.5)))
         info.append(_("Categoria Elo Torneo: {cat}").format(cat=t.get('tournament_category', 'Standard')))
         info.append(_("Numero totale di turni: {rounds}").format(rounds=t.get('total_rounds', 5)))
@@ -1094,9 +1195,11 @@ class MainFrame(wx.Frame):
         if m.get("is_scheduled") and m.get("schedule_info"):
             sched = m["schedule_info"]
             info.append(_("Pianificazione Partita:"))
-            info.append(f"  Data: {sched.get('date')}")
-            info.append(f"  Ora: {sched.get('time')}")
-            info.append(f"  Sala: {sched.get('room') or _('N/D')}")
+            from utils import format_date_locale
+            info.append(f"  {_('Data')}: {format_date_locale(sched.get('date'))}")
+            info.append(f"  {_('Ora')}: {sched.get('time')}")
+            info.append(f"  {_('Sala/URL')}: {sched.get('channel') or _('N/D')}")
+            info.append(f"  {_('Arbitro')}: {sched.get('arbiter') or _('N/D')}")
             
         if m.get("pgn"):
             info.append("")
@@ -1294,7 +1397,11 @@ class MainFrame(wx.Frame):
                 self.tree_ctrl.SetItemText(item, f"Codice Federazione: {self.creation_data['federation_code']}")
             dlg.Destroy()
         elif field == "color_board1":
-            choices = ["Bianco", "Nero", "Casuale"]
+            choices = [
+                _("Bianco (scelto dall'arbitro)"),
+                _("Nero (scelto dall'arbitro)"),
+                _("Casuale (scelto da Tornello)")
+            ]
             dlg = wx.SingleChoiceDialog(self, _("Seleziona il colore per il giocatore più forte (scacchiera 1, turno 1):"), _("Colore al giocatore più forte"), choices)
             curr_raw = self.creation_data["color_board1"]
             curr_idx = 0
@@ -1641,11 +1748,11 @@ class MainFrame(wx.Frame):
         
         col_raw = self.creation_data["color_board1"]
         col_disp_map = {
-            "white1": "Bianco",
-            "black1": "Nero",
-            "random": "Casuale"
+            "white1": "Bianco (scelto dall'arbitro)",
+            "black1": "Nero (scelto dall'arbitro)",
+            "random": "Casuale (scelto da Tornello)"
         }
-        col_val = col_disp_map.get(col_raw, "Bianco")
+        col_val = col_disp_map.get(col_raw, "Bianco (scelto dall'arbitro)")
         
         bye_val = str(self.creation_data["bye_value"])
         
@@ -2096,7 +2203,11 @@ class MainFrame(wx.Frame):
                     self._save_state()
             dlg.Destroy()
         elif field_active == "color_board1":
-            choices = ["Bianco", "Nero", "Casuale"]
+            choices = [
+                _("Bianco (scelto dall'arbitro)"),
+                _("Nero (scelto dall'arbitro)"),
+                _("Casuale (scelto da Tornello)")
+            ]
             dlg = wx.SingleChoiceDialog(self, _("Seleziona il colore per il giocatore più forte (scacchiera 1, turno 1):"), _("Colore al giocatore più forte"), choices)
             curr_raw = self.current_tournament.get("initial_board1_color_setting", "white1")
             curr_idx = 0
@@ -2280,6 +2391,44 @@ class MainFrame(wx.Frame):
                             self.set_status(_("Partita aggiornata con PGN."))
                         else:
                             self.set_status(_("Risultato registrato: {res}.").format(res=res))
+                            
+                            # Ricalcola la posizione ottimale per il focus
+                            if round_obj:
+                                round_matches = round_obj.get("matches", [])
+                                round_matches_sorted = sorted(round_matches, key=lambda x: x.get("id", 0))
+                                remaining_unplayed = [m for m in round_matches_sorted if m.get("result") is None and m.get("black_player_id") is not None]
+                                
+                                if remaining_unplayed:
+                                    next_match = next((m for m in remaining_unplayed if m.get("id", 0) > actual_match.get("id", 0)), remaining_unplayed[0])
+                                    board_num_next = round_matches_sorted.index(next_match) + 1
+                                    self._tree_restore_target = {
+                                        "action": "activate_match",
+                                        "filepath": self.active_filename,
+                                        "match": next_match,
+                                        "round": round_num,
+                                        "board_num": board_num_next
+                                    }
+                                else:
+                                    # Turno completato
+                                    tot_rounds = self.current_tournament.get("total_rounds", 5)
+                                    last_r_num = len(self.current_tournament.get("rounds", []))
+                                    if round_num == last_r_num:
+                                        if round_num < tot_rounds:
+                                            self._tree_restore_target = {
+                                                "action": "generate_next_round_action",
+                                                "filepath": self.active_filename
+                                            }
+                                        else:
+                                            self._tree_restore_target = {
+                                                "action": "finalize_tournament_action",
+                                                "filepath": self.active_filename
+                                            }
+                                    else:
+                                        self._tree_restore_target = {
+                                            "action": "show_round_report",
+                                            "filepath": self.active_filename,
+                                            "round": round_num
+                                        }
                     else:
                         self.set_status(_("Nessuna modifica apportata alla partita."))
             
@@ -2397,6 +2546,10 @@ class MainFrame(wx.Frame):
         self._save_state()
         
         play_sound("nuovo_turno", self.current_tournament)
+        
+        # Imposta il target per ripristinare il focus del cursore sul nuovo turno
+        self._tree_restore_target = {"action": "show_round_report", "filepath": self.active_filename, "round": 1}
+        
         self.populate_tree()
         self.show_current_round_report()
         self.set_status(_("Torneo iniziato. Generati abbinamenti per il Turno 1."))
@@ -2422,43 +2575,43 @@ class MainFrame(wx.Frame):
                     return
 
         next_round_num = curr_round + 1
+        filepath = self.active_filename
         
-        dlg = AccessibleMsgDialog(self, _("Genera Turno"), _("Vuoi procedere e generare gli abbinamenti per il Turno {num}?").format(num=next_round_num), style=wx.YES_NO)
-        if dlg.ShowModal() == wx.ID_YES:
-            from tournament import generate_pairings_for_round
-            from utils import play_sound
+        from tournament import generate_pairings_for_round
+        from utils import play_sound
+        
+        self.current_tournament["current_round"] = next_round_num
+        
+        next_matches = generate_pairings_for_round(self.current_tournament)
+        if next_matches is None:
+            self.current_tournament["current_round"] = curr_round
+            wx.MessageBox(_("Errore durante la generazione degli abbinamenti."), _("Errore"), wx.ICON_ERROR)
+            return
             
-            self.current_tournament["current_round"] = next_round_num
-            
-            next_matches = generate_pairings_for_round(self.current_tournament)
-            if next_matches is None:
-                self.current_tournament["current_round"] = curr_round
-                wx.MessageBox(_("Errore durante la generazione degli abbinamenti."), _("Errore"), wx.ICON_ERROR)
-                dlg.Destroy()
-                return
+        players_dict = self.current_tournament.get("players_dict", {})
+        for p_id, p in players_dict.items():
+            if p.get("withdrawn"):
+                p.setdefault("results_history", []).append({
+                    "round": next_round_num,
+                    "opponent_id": "BYE_PLAYER_ID",
+                    "color": None,
+                    "result": "BYE",
+                    "score": 0.0
+                })
                 
-            players_dict = self.current_tournament.get("players_dict", {})
-            for p_id, p in players_dict.items():
-                if p.get("withdrawn"):
-                    p.setdefault("results_history", []).append({
-                        "round": next_round_num,
-                        "opponent_id": "BYE_PLAYER_ID",
-                        "color": None,
-                        "result": "BYE",
-                        "score": 0.0
-                    })
-                    
-            from models import Round, Match
-            round_obj = Round(round=next_round_num, matches=[Match.from_dict(m) for m in next_matches])
-            self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
-            self._save_state()
-            
-            play_sound("nuovo_turno", self.current_tournament)
-            self.populate_tree()
-            self.show_current_round_report()
-            self.set_status(_("Generati abbinamenti per il Turno {num}.").format(num=next_round_num))
-            
-        dlg.Destroy()
+        from models import Round, Match
+        round_obj = Round(round=next_round_num, matches=[Match.from_dict(m) for m in next_matches])
+        self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
+        self._save_state()
+        
+        play_sound("nuovo_turno", self.current_tournament)
+        
+        # Imposta il target per ripristinare il focus del cursore sul nuovo turno
+        self._tree_restore_target = {"action": "show_round_report", "filepath": filepath, "round": next_round_num}
+        
+        self.populate_tree()
+        self.show_current_round_report()
+        self.set_status(_("Generati abbinamenti per il Turno {num}.").format(num=next_round_num))
 
     def find_active_tree_item_by_action(self, action):
         action_map = {

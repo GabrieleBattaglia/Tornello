@@ -1,4 +1,16 @@
 --- CHANGELOG ---
+9.0.32341
+	+ Feature: Introdotta la nuova dialog ScheduleDialog per pianificare gli incontri con pulsanti radio per le date estese in italiano, selettori ora/minuti (step di 5), Sala/URL (canale) e Arbitro designato, con visualizzazione completa dei dettagli della partita.
+	+ Feature: Implementato il tracciamento e il ripristino automatico dello stato di selezione ed espansione dell'albero dei tornei, evitando perdite di focus e salti indesiderati.
+	+ Feature: Flusso di navigazione intelligente dopo l'impostazione di un risultato: il focus si sposta automaticamente alla partita successiva da giocare o, se il turno è completato, direttamente sull'azione di calcolo/finalizzazione turno.
+	+ Feature: Semplificata la struttura del ramo turni nell'albero rimuovendo il nodo "Da completare" e posizionando il turno corrente "Turno corrente (X/Y)" e le azioni di generazione del turno successivo direttamente sotto "turni".
+	+ Feature: Mostra i nomi reali dei giocatori nei radio button di impostazione del risultato (es. "Vince Catia") e seleziona le opzioni automaticamente al passaggio del focus, fornendo un feedback sonoro coerente.
+	+ Feature: Aggiunta dell'intercettazione dei tasti rapidi Invio (conferma) ed Esc (annulla) a livello di dialog dei risultati e di pianificazione.
+	+ Feature: Aggiunte etichette di accessibilità personalizzate (.SetName) su albero, area report principale e barra di stato per migliorare l'esperienza con screen reader come NVDA.
+	+ Feature: Aggiornate le diciture del colore prima scacchiera per specificare la fonte della decisione (arbitro o Tornello).
+	+ Bugfix: Corretto il bug del Time Machine Rollback che bloccava il calcolo del turno successivo impostando correttamente current_round al numero di turni rimasti.
+	+ Bugfix: Formattata in modo leggibile ("X min + Y sec") la cadenza di gioco nella classifica parziale.
+
 9.0.31239
 	+ Feature: Uniformati i contatori di badge in tutti i nodi padre dell'albero dei tornei (In Preparazione, Tornei Conclusi, iscritti, turni, da giocare, partite e nodi T1/T2 PGN), escludendo i nodi di comando (es. "aggiungi giocatore" o "genera turno") dal conteggio complessivo.
 	+ Feature: Implementato il gestore globale di eccezioni sys.excepthook in tornello.py per scrivere qualsiasi crash imprevisto nel file "error.log" locale e mostrare un avviso MessageBox grafico all'utente.

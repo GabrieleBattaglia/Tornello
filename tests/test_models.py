@@ -36,13 +36,13 @@ def test_rollback_to_previous_round(sample_tournament_dict):
     success = rollback_to_previous_round(t_dict)
     assert success is True
     assert len(t_dict.get("rounds", [])) == 4
-    assert t_dict["current_round"] == 5
+    assert t_dict["current_round"] == 4
     
     # Rollback round 4
     success = rollback_to_previous_round(t_dict)
     assert success is True
     assert len(t_dict.get("rounds", [])) == 3
-    assert t_dict["current_round"] == 4
+    assert t_dict["current_round"] == 3
     
     # Rollback until empty
     for _ in range(3):

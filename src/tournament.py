@@ -241,7 +241,7 @@ def rollback_to_previous_round(torneo):
         
     # 3. Aggiorna il numero del turno corrente
     if rounds:
-        torneo["current_round"] = last_round_num
+        torneo["current_round"] = len(rounds)
     else:
         torneo["current_round"] = 1
         

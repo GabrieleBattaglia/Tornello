@@ -675,9 +675,15 @@ def get_standings_text(torneo, final=False):
         out.write(
             _("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str)
         )
+    tc = torneo.get("time_control")
+    tc_str = "N/D"
+    if isinstance(tc, dict):
+        tc_str = f"{tc.get('minutes', 0)} min + {tc.get('increment', 0)} sec"
+    elif isinstance(tc, str):
+        tc_str = tc
     out.write(
         _("Controllo Tempo: {time_control}\n").format(
-            time_control=torneo.get("time_control", "N/D")
+            time_control=tc_str
         )
     )
     out.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
