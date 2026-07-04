@@ -177,3 +177,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 backup/
+
+# Compiled archives
+*.zip
+Tornello.zip

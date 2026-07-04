@@ -329,6 +329,10 @@ class PlayerEnrollmentDialog(wx.Dialog):
         fide_player = self.fide_results_map[sel]
         
         # Mappa il giocatore FIDE nello schema giocatore di Tornello
+        raw_sex = fide_player.get("sex", "M")
+        sex_val = "w" if str(raw_sex).strip().lower() in ("w", "f") else "m"
+        gender_val = sex_val.upper()
+        
         new_player = {
             "id": f"FIDE_{fide_player.get('id_fide')}",
             "first_name": fide_player.get("first_name", ""),
@@ -336,7 +340,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
             "current_elo": fide_player.get("elo_standard") or 1399,
             "fide_id_num_str": str(fide_player.get("id_fide")),
             "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
-            "gender": fide_player.get("sex", "M"),
+            "sex": sex_val,
+            "gender": gender_val,
             "federation": fide_player.get("federation", "ITA"),
             "fide_title": fide_player.get("title", "")
         }
@@ -446,6 +451,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
             "current_elo": 1399,
             "fide_id_num_str": "",
             "birth_date": "1990-01-01",
+            "sex": "m",
             "gender": "M",
             "federation": "ITA",
             "fide_title": "",

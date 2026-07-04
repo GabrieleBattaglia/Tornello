@@ -1,84 +1,24 @@
 --- CHANGELOG ---
-9.0.32341
-	+ Feature: Introdotta la nuova dialog ScheduleDialog per pianificare gli incontri con pulsanti radio per le date estese in italiano, selettori ora/minuti (step di 5), Sala/URL (canale) e Arbitro designato, con visualizzazione completa dei dettagli della partita.
-	+ Feature: Implementato il tracciamento e il ripristino automatico dello stato di selezione ed espansione dell'albero dei tornei, evitando perdite di focus e salti indesiderati.
+9.0.0
+	+ Feature: Rilascio ufficiale di Tornello v9.0.0 con interfaccia grafica nativa in wxPython, ottimizzata al 100% per screen reader (NVDA/JAWS).
+	+ Feature: Integrazione del nuovo motore bbpPairings v6.0.0 (regole FIDE 2026 e formato TRF-2026).
+	+ Feature: Localizzazione e traduzione completa in 5 lingue (Italiano, Inglese, Spagnolo, Francese, Portoghese) con copertura del 100%.
+	+ Feature: Nuova dialog ScheduleDialog per pianificare gli incontri con pulsanti radio per le date estese in italiano, selettori ora/minuti (step di 5), Sala/URL (canale) e Arbitro designato, con visualizzazione completa dei dettagli della partita.
+	+ Feature: Nuova funzione "Esporta partite pianificate" (Ctrl+Shift+E) per salvare un file iCalendar (.ics) standard con tutti gli incontri pianificati.
+	+ Feature: Ottimizzazione completa dell'accessibilità tramite la tecnica delle etichette StaticText precedenti per i controlli principali ("Vista principale", "Centro comandi", "Barra di stato"), garantendo l'annuncio corretto in NVDA senza alterare la navigazione nativa dell'albero dei turni.
 	+ Feature: Flusso di navigazione intelligente dopo l'impostazione di un risultato: il focus si sposta automaticamente alla partita successiva da giocare o, se il turno è completato, direttamente sull'azione di calcolo/finalizzazione turno.
 	+ Feature: Semplificata la struttura del ramo turni nell'albero rimuovendo il nodo "Da completare" e posizionando il turno corrente "Turno corrente (X/Y)" e le azioni di generazione del turno successivo direttamente sotto "turni".
 	+ Feature: Mostra i nomi reali dei giocatori nei radio button di impostazione del risultato (es. "Vince Catia") e seleziona le opzioni automaticamente al passaggio del focus, fornendo un feedback sonoro coerente.
-	+ Feature: Aggiunta dell'intercettazione dei tasti rapidi Invio (conferma) ed Esc (annulla) a livello di dialog dei risultati e di pianificazione.
-	+ Feature: Aggiunte etichette di accessibilità personalizzate (.SetName) su albero, area report principale e barra di stato per migliorare l'esperienza con screen reader come NVDA.
-	+ Feature: Aggiornate le diciture del colore prima scacchiera per specificare la fonte della decisione (arbitro o Tornello).
-	+ Bugfix: Corretto il bug del Time Machine Rollback che bloccava il calcolo del turno successivo impostando correttamente current_round al numero di turni rimasti.
-	+ Bugfix: Formattata in modo leggibile ("X min + Y sec") la cadenza di gioco nella classifica parziale.
-
-9.0.31239
-	+ Feature: Uniformati i contatori di badge in tutti i nodi padre dell'albero dei tornei (In Preparazione, Tornei Conclusi, iscritti, turni, da giocare, partite e nodi T1/T2 PGN), escludendo i nodi di comando (es. "aggiungi giocatore" o "genera turno") dal conteggio complessivo.
-	+ Feature: Implementato il gestore globale di eccezioni sys.excepthook in tornello.py per scrivere qualsiasi crash imprevisto nel file "error.log" locale e mostrare un avviso MessageBox grafico all'utente.
-	+ Feature: Espansa la suite di test end-to-end con una simulazione avanzata di 29 giocatori, 7 turni, BYE automatici, ritiri multipli (turno 4 e 5) e finalizzazione.
-	+ Bugfix: Risolta la perdita di dati (PGN delle partite, pianificazione incontri, sesso e Elo standard dei giocatori, cartelle personalizzate di salvataggio) al caricamento/salvataggio dei tornei ripristinando la serializzazione dei rispettivi campi in src/models.py.
-	+ Bugfix: Implementata la funzione rollback_to_previous_round in src/tournament.py per correggere l'ImportError del comando "Time Machine" (Annulla Turno) della GUI.
-	+ Bugfix: Corretto il crash automatico all'inserimento dell'ultimo risultato del turno mappando il corretto nome di funzione append_completed_round_to_history_file in main_frame.py.
-	+ Bugfix: Corretto il crash del menu "Classifica Corrente" mappando il corretto nome di funzione get_standings_text in main_frame.py.
-	+ Bugfix: Impedito al gestore di errori del motore bbPairings di bloccarsi su input da terminale (key prompt) durante l'uso da GUI, sollevando invece una corretta eccezione intercettata dal logger.
-
-9.0.30010
-	+ Feature: Suddivisione delle partite con PGN per turno sotto il ramo "partite" dell'albero (nodi intermedi T1, T2, ecc.) con visualizzazione filtrata nell'area centrale.
-	+ Feature: Ottimizzazione del focus e della selezione nelle liste dei risultati del DB locale e FIDE (mantenimento selezione su elemento vicino o focus su campo di testo).
-	+ Feature: Aggiunti segnali acustici asincroni ("fide_attesa" e "fide_pronto") per segnalare i tempi di attesa della CPU durante la ricerca nel DB FIDE.
-	+ Bugfix: Impedito il cambio di risultato nei turni conclusi e nei tornei chiusi. In questo caso l'unico campo utilizzabile è quello del PGN e il pulsante conferma diventa "Salva PGN".
-	+ Bugfix: Corretto il salvataggio dei tornei conclusi per preservare la cartella di provenienza originale (es. "Closed Tournaments").
-	+ Bugfix: Risolto il wxAssertionError causato dall'espansione della radice nascosta del wizard per la creazione del nuovo torneo.
-	+ Bugfix: Risolto l'ImportError importando parse_time_control e classify_tournament_category dal corretto modulo stats anziché utils.
-	+ Bugfix: Corretto l'aggiornamento in tempo reale del testo PGN e del contatore PGN della barra di stato operando sul corretto oggetto del torneo in memoria.
-
-
-9.0.21729
-	+ Note: La versione alpha è identificata dal formato 9.0.[giorno][ora] (es. 21729 indica il giorno 2 alle ore 17:29).
-	+ Feature: Avvio del programma con la finestra principale sempre massimizzata per ottimizzare lo spazio dello schermo.
-	+ Feature: Riprogettata la finestra delle impostazioni visive in quattro schede/tabs ("Audio e Lingua", "Caratteri", "Colori di primo piano", "Colori di sfondo") tramite wx.Notebook.
-	+ Feature: Aggiunti controlli di accessibilità separati per regolare la dimensione dei caratteri e i colori (testo e sfondo) specifici per tutte le finestre di dialogo secondarie.
-	+ Feature: Aggiornamento automatico della barra di stato personalizzata con metriche avanzate (Progress. Giorno x/y, turno x/y, risult. x/y %, PGN count) e statistiche dettagliate delle vittorie (Bianco, patte, Nero, escludendo i bye).
-	+ Feature: Visualizzazione della classifica in formato completo (con colonne ARO, Performance ELO e Variazione ELO) abilitata automaticamente per tutti i tornei finalizzati e conclusi.
-	+ Feature: Disabilitazione dinamica della voce di menù "Finalizza Torneo" e della scorciatoia Ctrl+F se non ci si trova all'ultimo turno con tutte le partite completate.
-	+ Feature: Riorganizzazione dei rami dell'albero dei turni suddivisi in categorie "Completati (N)" e "Da completare (M)".
-	+ Feature: Sostituzione dinamica del ramo "da giocare" con le azioni contestuali immediate ("calcola il turno successivo" o "Finalizza il torneo") non appena tutte le partite del turno sono completate.
-	+ Feature: Integrazione, validazione real-time e iniezione automatica dei tag FIDE per le partite in formato PGN con generazione automatica del file di raccolta PGN del torneo.
-	+ Feature: Inserito il conteggio e la percentuale di completamento delle partite direttamente nell'etichetta del ramo "giocate" (es. giocate (X/Y, ZZ.Z%)).
-	+ Feature: Mostra una DonationDialog accessibile alla chiusura della finestra principale (intercettando il messaggio casuale di Donazione di GBUtils) con pulsante integrato per reindirizzamento sicuro PayPal.
-	+ Feature: Progresso dei giorni sulla barra di stato calcolato ora sui giorni solari effettivi del torneo, forzato al 100% per i tornei già conclusi.
-	+ Bugfix: Implementato il metodo generate_next_round e collegato alla selezione sull'albero per risolvere l'AttributeError.
-	+ Bugfix: Ristretto l'inserimento dell'azione "calcola il turno successivo" o "Finalizza il torneo" esclusivamente all'ultimo turno generato del torneo attivo, nascondendolo nei tornei conclusi e nei turni passati.
-	+ Bugfix: Evitato il RuntimeError ("TreeCtrl has been deleted") proteggendo gli event handler dell'albero con controlli di validità dei componenti C++.
-	+ Bugfix: Semplificato il controllo dello stato concluso dei tornei rimuovendo i fragili controlli basati sul percorso del file ed affidandosi al 100% alla chiave concluded memorizzata nel JSON.
-	+ Bugfix: Forzato il salvataggio definitivo del JSON del torneo all'archiviazione durante la finalizzazione, garantendo la memorizzazione immutabile di K-Factor, Performance Rating e Elo Change dei giocatori.
-
-
-9.0.3
-	+ Feature: Estrapolati i preset audio da utils.py a src/audio_presets.py per una migliore pulizia del codice.
-	+ Feature: Collegati tutti i comandi di menù (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+I, Ctrl+Z, Ctrl+F, Ctrl+G, Ctrl+U, Ctrl+L) e la chiusura della finestra principale (suono chiusura sincrono).
-	+ Feature: Visualizzazione dinamica di manuale (F1), changelog (F2) e crediti (F3) caricati direttamente da file di testo anziché stringhe hardcoded.
-	+ Feature: Creata una suite di test end-to-end completa in tests/test_e2e.py per validare l'intero flusso del torneo.
-	+ Version: Aggiornata la versione a 9.0.3.
-
-9.0.2
-	+ Feature: Ricerca FIDE avanzata con operatori (+ obbligatorio, - escluso, = frase esatta).
-	+ Feature: Feedback vocale automatico (focus jump) all'iscrizione dei giocatori.
-	+ Feature: Ordinamento automatico degli iscritti per ELO decrescente, numerazione e nazione.
-	+ Feature: Visualizzazione del numero dei risultati trovati/iscritti nei titoli delle liste.
-	+ Feature: Paginazione automatica dei risultati FIDE ("Mostra altri...") per alte prestazioni ed accessibilità.
-	+ Feature: Aggiornamento dei nodi dell'albero in-place per preservare il focus dello screen reader.
-	+ Feature: Eliminazione completa di icone ed emoji unicode grafiche disturbanti.
-	+ Feature: Barra di progresso accessibile per il caricamento del database FIDE.
-	+ Version: Aggiornata la versione a 9.0.2.
-
-9.0.0
-	+ Feature: Nuova interfaccia grafica nativa in wxPython ottimizzata al 100% per screen reader (NVDA/JAWS).
-	+ Feature: Integrazione del nuovo motore bbpPairings v6.0.0 (regole FIDE 2026 e formato TRF-2026).
-	+ Feature: Architettura disaccoppiata logica-UI per garantire la compatibilità con l'interfaccia grafica.
-	+ Feature: Inserimento strutturato del tempo di riflessione e classificazione automatica del torneo (Blitz, Rapid, Standard).
-	+ Feature: Elo Club come fallback finale per gli abbinamenti.
-	+ Feature: Integrazione degli strumenti storici (Players_DB, consulta, Sync_DB) direttamente come pannelli ed eventi della GUI.
-	+ Version: Rilascio ufficiale di Tornello v9.0.0.
+	+ Feature: Iniezione automatica e validazione dei tag FIDE per le partite in formato PGN con generazione automatica del file di raccolta PGN del torneo.
+	+ Feature: Gestione dei temi di accessibilità visiva (dimensione caratteri e alto contrasto per testo/sfondo) estesa in modo uniforme a tutte le finestre di dialogo secondarie e di conferma.
+	+ Feature: Sincronizzazione automatica del medagliere (Ori, Argenti, Bronzi, Legni) del giocatore nel database locale in caso di cancellazione o modifica dello storico tornei.
+	+ Feature: Mostra una DonationDialog accessibile alla chiusura della finestra principale con link PayPal.
+	+ Feature: Visualizzazione della classifica in formato completo (ARO, Performance, Variazione ELO) abilitata automaticamente per tutti i tornei finalizzati.
+	+ Bugfix: Risolta la perdita di dati (PGN, pianificazione, sesso, Elo) al salvataggio/caricamento ripristinando la corretta serializzazione in src/models.py.
+	+ Bugfix: Corretto il bug del Time Machine Rollback che bloccava il calcolo del turno successivo ripristinando correttamente current_round.
+	+ Bugfix: Risolto l'errore KeyError (results_history) durante l'eliminazione dei tornei dallo storico dei giocatori.
+	+ Bugfix: Allineate le chiavi anagrafiche "sex" e "gender" tra database giocatori ed iscrizioni.
+	+ Bugfix: Formattati gli ELO nella visualizzazione albero del database giocatori come numeri interi anziché decimali.
 
 8.12.2
 	+ Build: Rimosso unittest dagli esclusi di PyInstaller nel file tornello.spec.

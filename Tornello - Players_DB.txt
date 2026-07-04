@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Mercoledì 1 luglio 2026 17:07:27
+﻿Report Database Giocatori Tornello - Sabato 4 luglio 2026 11:52:30
 ========================================
 
 ID: ARICL001, Claudio Ariaudo
@@ -21,12 +21,12 @@ ID: ARIGI001, NC Giuliano Ariaudo
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	14° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 	------------------------------
-ID: BADGI001, Giancarlo Badano
+ID: BADGI001, 1N Giancarlo Badano
 	Sesso: M, Federazione: ITA, ID FIDE: 810495, Flag: N/D
-	Elo Standard: 1802 (Partite FIDE: 0)
+	Elo Standard: 1812 (Partite FIDE: 0)
 	Elo Rapid: 1851 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 1745 (Partite FIDE: 0, K: 20)
-	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
+	Partite Valutate Totali: 12, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
 	Data Nascita: Venerdì 1 gennaio 1960
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (1) tornei:
 	2° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
@@ -36,7 +36,7 @@ ID: BARGI001, NC Giuseppe Baratta
 	Elo Standard: 1450 (Partite FIDE: 0)
 	Elo Rapid: 1563 (Partite FIDE: 0, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
-	Partite Valutate Totali: 12, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 17, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1961
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	17° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
@@ -44,10 +44,10 @@ ID: BARGI001, NC Giuseppe Baratta
 	------------------------------
 ID: BATGA001, 3N Gabriele Battaglia
 	Sesso: M, Federazione: ITA, ID FIDE: 804495, Flag: N/D
-	Elo Standard: 1498 (Partite FIDE: 0)
+	Elo Standard: 1518 (Partite FIDE: 0)
 	Elo Rapid: 1635 (Partite FIDE: 3, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
-	Partite Valutate Totali: 24, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 29, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Venerdì 13 settembre 1974
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 1 in (4) tornei:
 	4° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
@@ -57,30 +57,30 @@ ID: BATGA001, 3N Gabriele Battaglia
 	------------------------------
 ID: BERLU001, NC Luca Bernoni
 	Sesso: M, Federazione: ITA, ID FIDE: 0, Flag: N/D
-	Elo Standard: 1479 (Partite FIDE: N/D)
+	Elo Standard: 1539 (Partite FIDE: N/D)
 	Elo Rapid: N/D (Partite FIDE: 0, K: None)
 	Elo Blitz: N/D (Partite FIDE: 0, K: None)
-	Partite Valutate Totali: 7, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
+	Partite Valutate Totali: 12, K-Factor Stimato: 40, Data Iscrizione DB: Martedì 17 marzo 2026
 	Data Nascita: N/D
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	9° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
 	------------------------------
 ID: BOSGI002, NC Giancarlo Bosetti
 	Sesso: M, Federazione: ITA, ID FIDE: 2854584, Flag: N/D
-	Elo Standard: 1399 (Partite FIDE: 0)
+	Elo Standard: 1389 (Partite FIDE: 0)
 	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
-	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
+	Partite Valutate Totali: 5, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
 	Data Nascita: Martedì 1 gennaio 1952
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (1) tornei:
 	RIT su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	------------------------------
 ID: BRICA001, NC Catia Susana Brites Pereira Lima
 	Sesso: W, Federazione: ITA, ID FIDE: 1990942, Flag: w
-	Elo Standard: 1463 (Partite FIDE: 0)
+	Elo Standard: 1483 (Partite FIDE: 0)
 	Elo Rapid: 1478 (Partite FIDE: 3, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
-	Partite Valutate Totali: 21, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
+	Partite Valutate Totali: 26, K-Factor Stimato: 40, Data Iscrizione DB: Venerdì 2 maggio 2025
 	Data Nascita: Domenica 1 gennaio 1978
 	Medagliere: Oro: 0, Argento: 1, Bronzo: 0, Legno: 0 in (4) tornei:
 	7° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026

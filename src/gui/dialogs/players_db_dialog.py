@@ -131,8 +131,10 @@ class PlayersDbDialog(wx.Dialog):
         item_fn = self.tree_ctrl.AppendItem(node_bio, f"Nome: {p.get('first_name', '')}")
         self.tree_ctrl.SetItemPyData(item_fn, {"type": "field", "key": "first_name"})
         
-        item_gd = self.tree_ctrl.AppendItem(node_bio, f"Sesso: {p.get('gender', 'M')}")
-        self.tree_ctrl.SetItemPyData(item_gd, {"type": "field", "key": "gender"})
+        raw_sex = p.get("sex") or p.get("gender") or "M"
+        sex_display = "W" if str(raw_sex).strip().lower() in ("w", "f") else "M"
+        item_gd = self.tree_ctrl.AppendItem(node_bio, f"Sesso: {sex_display}")
+        self.tree_ctrl.SetItemPyData(item_gd, {"type": "field", "key": "sex"})
         
         item_bd = self.tree_ctrl.AppendItem(node_bio, f"Anno Nascita: {p.get('birth_date', 'N/D')}")
         self.tree_ctrl.SetItemPyData(item_bd, {"type": "field", "key": "birth_date"})
@@ -143,13 +145,19 @@ class PlayersDbDialog(wx.Dialog):
         # 2. ELO
         node_elo = self.tree_ctrl.AppendItem(root_node, "ELO e Titoli")
         
-        item_elo_std = self.tree_ctrl.AppendItem(node_elo, f"ELO Standard: {p.get('current_elo', 1399)}")
+        elo_std_val = p.get('current_elo')
+        elo_std = int(float(elo_std_val)) if elo_std_val is not None else 1399
+        item_elo_std = self.tree_ctrl.AppendItem(node_elo, f"ELO Standard: {elo_std}")
         self.tree_ctrl.SetItemPyData(item_elo_std, {"type": "field", "key": "current_elo", "is_int": True})
         
-        item_elo_rap = self.tree_ctrl.AppendItem(node_elo, f"ELO Rapid: {p.get('elo_rapid', 0)}")
+        elo_rap_val = p.get('elo_rapid')
+        elo_rap = int(float(elo_rap_val)) if elo_rap_val is not None else 0
+        item_elo_rap = self.tree_ctrl.AppendItem(node_elo, f"ELO Rapid: {elo_rap}")
         self.tree_ctrl.SetItemPyData(item_elo_rap, {"type": "field", "key": "elo_rapid", "is_int": True})
         
-        item_elo_blz = self.tree_ctrl.AppendItem(node_elo, f"ELO Blitz: {p.get('elo_blitz', 0)}")
+        elo_blz_val = p.get('elo_blitz')
+        elo_blz = int(float(elo_blz_val)) if elo_blz_val is not None else 0
+        item_elo_blz = self.tree_ctrl.AppendItem(node_elo, f"ELO Blitz: {elo_blz}")
         self.tree_ctrl.SetItemPyData(item_elo_blz, {"type": "field", "key": "elo_blitz", "is_int": True})
         
         item_title = self.tree_ctrl.AppendItem(node_elo, f"Titolo FIDE: {p.get('fide_title', '')}")
@@ -220,7 +228,16 @@ class PlayersDbDialog(wx.Dialog):
                 p.setdefault(parent_key, {})[child_key] = val
             else:
                 key = data["key"]
-                p[key] = val
+                if key == "sex":
+                    val_clean = str(val).strip().lower()
+                    if val_clean in ("w", "f", "femmina"):
+                        p["sex"] = "w"
+                        p["gender"] = "W"
+                    else:
+                        p["sex"] = "m"
+                        p["gender"] = "M"
+                else:
+                    p[key] = val
                 
             from db_players import save_players_db
             save_players_db(self.players_db)
@@ -244,6 +261,7 @@ class PlayersDbDialog(wx.Dialog):
                 prefix_map = {
                     "last_name": _("Cognome: "),
                     "first_name": _("Nome: "),
+                    "sex": _("Sesso: "),
                     "gender": _("Sesso: "),
                     "birth_date": _("Anno Nascita: "),
                     "federation": _("Nazione (FED): "),
@@ -254,7 +272,15 @@ class PlayersDbDialog(wx.Dialog):
                     "fide_id_num_str": _("ID FIDE: ")
                 }
                 prefix = prefix_map.get(key, "")
-                self.tree_ctrl.SetItemText(item, f"{prefix}{p[key]}")
+                disp_val = p[key]
+                if key == "sex":
+                    disp_val = "W" if p["sex"] == "w" else "M"
+                elif key in ("current_elo", "elo_rapid", "elo_blitz"):
+                    try:
+                        disp_val = int(float(disp_val))
+                    except (ValueError, TypeError):
+                        disp_val = 0
+                self.tree_ctrl.SetItemText(item, f"{prefix}{disp_val}")
             
             # Se è cambiato il nome o il cognome, aggiorna la radice dell'albero e la listbox di sinistra
             if key in ["last_name", "first_name"]:
@@ -290,19 +316,22 @@ class PlayersDbDialog(wx.Dialog):
                 # Rimuovi record dallo storico
                 idx = data["index"]
                 msg = _("Sei sicuro di voler rimuovere questo record dallo storico?")
-                dlg = AccessibleMsgDialog(self, _("Conferma Rimozione"), msg, style=wx.YES_NO)
+                dlg = AccessibleMsgDialog(self, _("Conferma Rimozione"), msg, style=wx.YES_NO, settings=self.settings)
                 if dlg.ShowModal() == wx.ID_YES:
-                    p["results_history"].pop(idx)
-                    save_players_db(self.players_db)
-                    self.populate_player_tree()
-                dlg.Destroy()
-            elif dtype == "medal_record":
-                # Rimuovi medaglia
-                idx = data["index"]
-                msg = _("Sei sicuro di voler rimuovere questa medaglia dal palmarès?")
-                dlg = AccessibleMsgDialog(self, _("Conferma Rimozione"), msg, style=wx.YES_NO)
-                if dlg.ShowModal() == wx.ID_YES:
-                    p.setdefault("medals_history", []).pop(idx)
+                    history = p.get("tournaments_played", [])
+                    if 0 <= idx < len(history):
+                        removed_entry = history.pop(idx)
+                        rank = removed_entry.get("rank")
+                        try:
+                            rank_int = int(rank)
+                        except (ValueError, TypeError):
+                            rank_int = None
+                        if rank_int in [1, 2, 3, 4]:
+                            medals = p.setdefault("medals", {"gold": 0, "silver": 0, "bronze": 0, "wood": 0})
+                            medal_map = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
+                            medal_key = medal_map.get(rank_int)
+                            if medal_key and medals.get(medal_key, 0) > 0:
+                                medals[medal_key] -= 1
                     save_players_db(self.players_db)
                     self.populate_player_tree()
                 dlg.Destroy()
@@ -314,7 +343,7 @@ class PlayersDbDialog(wx.Dialog):
         p = self.players_db[player_id]
         name = f"{p.get('last_name')} {p.get('first_name')}"
         msg = _("Sei sicuro di voler eliminare definitivamente il giocatore '{name}' dal database?").format(name=name)
-        dlg = AccessibleMsgDialog(self, _("Conferma Eliminazione Giocatore"), msg, style=wx.YES_NO)
+        dlg = AccessibleMsgDialog(self, _("Conferma Eliminazione Giocatore"), msg, style=wx.YES_NO, settings=self.settings)
         if dlg.ShowModal() == wx.ID_YES:
             del self.players_db[player_id]
             save_players_db(self.players_db)

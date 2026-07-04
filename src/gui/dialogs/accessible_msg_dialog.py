@@ -8,17 +8,22 @@ class AccessibleMsgDialog(wx.Dialog):
     Usa una TextCtrl per il messaggio invece di una StaticText,
     permettendo la navigazione con le frecce (screen reader friendly).
     """
-    def __init__(self, parent, title, message, style=wx.OK):
+    def __init__(self, parent, title, message, style=wx.OK, settings=None):
         super().__init__(parent, title=title, size=(600, 450), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        
+        if settings is None:
+            if parent and hasattr(parent, "settings") and parent.settings:
+                settings = parent.settings
+            else:
+                from gui.settings import load_settings
+                settings = load_settings()
+        self.settings = settings
         
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
         
         # Area Messaggio (Navigabile con screen reader)
         self.msg_text = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, value=message)
-        # Utilizza un font monospaziato per preservare l'allineamento di tabelle ASCII
-        font = wx.Font(11, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        self.msg_text.SetFont(font)
         
         vbox.Add(self.msg_text, 1, wx.EXPAND | wx.ALL, 10)
         
@@ -47,6 +52,18 @@ class AccessibleMsgDialog(wx.Dialog):
         vbox.Add(btn_sizer, 0, wx.ALIGN_CENTER | wx.BOTTOM, 15)
 
         panel.SetSizer(vbox)
+        
+        # Applica impostazioni visive di accessibilità
+        from gui.settings import apply_visual_settings
+        apply_visual_settings(self, self.settings)
+        apply_visual_settings(panel, self.settings)
+        apply_visual_settings(self.msg_text, self.settings)
+        if style & wx.YES_NO:
+            apply_visual_settings(btn_yes, self.settings)
+            apply_visual_settings(btn_no, self.settings)
+        else:
+            apply_visual_settings(btn_ok, self.settings)
+            
         self.Centre()
 
         # Sposta il focus sul controllo di testo all'avvio per attivare la lettura automatica di NVDA

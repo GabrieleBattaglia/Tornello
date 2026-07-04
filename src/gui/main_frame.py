@@ -9,6 +9,19 @@ from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 
 _ = getattr(builtins, "_", lambda s: s)
 
+
+class CustomAccessible(wx.Accessible):
+    """Classe custom per MSAA per esporre il nome corretto del controllo ai lettori dello schermo."""
+    def __init__(self, win, name):
+        super().__init__(win)
+        self.name = name
+
+    def GetName(self, childId):
+        if childId == wx.ACC_SELF:
+            return wx.ACC_OK, self.name
+        return wx.ACC_NOT_SUPPORTED, ""
+
+
 class MainFrame(wx.Frame):
     """
     Finestra principale (MainFrame) di Tornello v9.0.
@@ -49,26 +62,40 @@ class MainFrame(wx.Frame):
         # Splitter per dividere l'area centrale e l'albero a destra
         self.splitter = wx.SplitterWindow(self.top_panel, style=wx.SP_3D | wx.SP_LIVE_UPDATE)
         
-        # Area Sinistra: Grande controllo di testo multi-riga per i report
-        self.main_text = wx.TextCtrl(self.splitter, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
-        self.main_text.SetName(_("Area report principale"))
+        # Area Sinistra Pane (Panel + Sizer con etichetta adiacente precedente)
+        self.left_pane = wx.Panel(self.splitter)
+        left_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.lbl_main = wx.StaticText(self.left_pane, label=_("Vista principale"))
+        self.main_text = wx.TextCtrl(self.left_pane, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2)
+        self.main_text.SetName(_("Vista principale"))
+        left_sizer.Add(self.lbl_main, 0, wx.LEFT | wx.TOP | wx.BOTTOM, 2)
+        left_sizer.Add(self.main_text, 1, wx.EXPAND)
+        self.left_pane.SetSizer(left_sizer)
         
-        # Area Destra: Albero di navigazione
-        self.tree_ctrl = wx.TreeCtrl(self.splitter, style=wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT)
-        self.tree_ctrl.SetName(_("Albero di navigazione del torneo"))
+        # Area Destra Pane (Panel + Sizer con etichetta adiacente precedente)
+        self.right_pane = wx.Panel(self.splitter)
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.lbl_tree = wx.StaticText(self.right_pane, label=_("Centro comandi"))
+        self.tree_ctrl = wx.TreeCtrl(self.right_pane, style=wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT)
+        self.tree_ctrl.SetName(_("Centro comandi"))
         self.tree_ctrl.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_selection_changed)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_item_activated)
         self.tree_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
+        right_sizer.Add(self.lbl_tree, 0, wx.LEFT | wx.TOP | wx.BOTTOM, 2)
+        right_sizer.Add(self.tree_ctrl, 1, wx.EXPAND)
+        self.right_pane.SetSizer(right_sizer)
         
         # Configurazione splitter
-        self.splitter.SplitVertically(self.main_text, self.tree_ctrl, 700)
+        self.splitter.SplitVertically(self.left_pane, self.right_pane, 700)
         self.splitter.SetMinimumPaneSize(150)
         
         main_layout.Add(self.splitter, 1, wx.EXPAND | wx.ALL, 5)
         
-        # Barra di Stato personalizzata in basso (TextCtrl accessibile a 3 righe)
+        # Barra di Stato personalizzata in basso (con etichetta adiacente precedente)
+        self.lbl_status = wx.StaticText(self.top_panel, label=_("Barra di stato"))
         self.status_text = wx.TextCtrl(self.top_panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 60))
-        self.status_text.SetName(_("Barra di stato e statistiche"))
+        self.status_text.SetName(_("Barra di stato"))
+        main_layout.Add(self.lbl_status, 0, wx.LEFT | wx.RIGHT, 5)
         main_layout.Add(self.status_text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         
         self.top_panel.SetSizer(main_layout)
@@ -88,6 +115,7 @@ class MainFrame(wx.Frame):
         file_menu = wx.Menu()
         file_menu.Append(wx.ID_NEW, _("&Nuovo Torneo...\tCtrl+N") if "_" in globals() else "&Nuovo Torneo...\tCtrl+N")
         file_menu.Append(wx.ID_OPEN, _("&Apri Torneo...\tCtrl+O") if "_" in globals() else "&Apri Torneo...\tCtrl+O")
+        self.item_export_ics = file_menu.Append(wx.ID_ANY, _("&Esporta partite pianificate...\tCtrl+Shift+E") if "_" in globals() else "&Esporta partite pianificate...\tCtrl+Shift+E")
         file_menu.AppendSeparator()
         file_menu.Append(wx.ID_EXIT, _("&Esci\tCtrl+Q") if "_" in globals() else "&Esci\tCtrl+Q")
         self.menu_bar.Append(file_menu, _("&File") if "_" in globals() else "&File")
@@ -143,6 +171,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
         self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
+        self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
         self.Bind(wx.EVT_MENU, self.on_enroll_players, self.item_enroll)
         self.Bind(wx.EVT_MENU, self.on_view_players, self.item_players)
         self.Bind(wx.EVT_MENU, self.on_view_current_round, self.item_round)
@@ -176,6 +205,18 @@ class MainFrame(wx.Frame):
         apply_visual_settings(self.main_text, self.settings)
         apply_visual_settings(self.tree_ctrl, self.settings)
         apply_visual_settings(self.status_text, self.settings)
+        
+        # Applica il tema anche ai sotto-pannelli e alle etichette adiacenti
+        if hasattr(self, 'left_pane') and self.left_pane:
+            apply_visual_settings(self.left_pane, self.settings)
+        if hasattr(self, 'right_pane') and self.right_pane:
+            apply_visual_settings(self.right_pane, self.settings)
+        if hasattr(self, 'lbl_main') and self.lbl_main:
+            apply_visual_settings(self.lbl_main, self.settings)
+        if hasattr(self, 'lbl_tree') and self.lbl_tree:
+            apply_visual_settings(self.lbl_tree, self.settings)
+        if hasattr(self, 'lbl_status') and self.lbl_status:
+            apply_visual_settings(self.lbl_status, self.settings)
 
     def set_status(self, text):
         """Aggiorna il contenuto della barra di stato personalizzata in basso."""
@@ -304,6 +345,7 @@ class MainFrame(wx.Frame):
             f" - F7: Sposta il focus sulla barra di stato inferiore\n"
             f" - Ctrl+N: Nuovo Torneo (Wizard)\n"
             f" - Ctrl+O: Apri Torneo esistente\n"
+            f" - Ctrl+Shift+E: Esporta le partite pianificate in formato calendario (.ics)\n"
             f" - Ctrl+S: Salva lo stato del torneo corrente\n"
             f" - Ctrl+I: Finestra di iscrizione e registrazione giocatori\n"
             f" - Ctrl+G: Mostra l'elenco dei giocatori iscritti\n"
@@ -738,7 +780,17 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemData(end_item, {"action": "show_data", "filepath": filepath, "field_active": "end_date"})
 
         tc = data.get("time_control", "Standard")
-        tc_disp = tc if isinstance(tc, str) else f"{tc.get('minutes', 60)}+{tc.get('increment', 0)}"
+        cat = data.get("tournament_category")
+        if not cat and isinstance(tc, dict):
+            from stats import classify_tournament_category
+            cat = classify_tournament_category(tc.get("minutes", 60), tc.get("increment", 0))
+        if not cat:
+            cat = "standard"
+        cat_disp = cat.capitalize()
+        if isinstance(tc, dict):
+            tc_disp = f"{tc.get('minutes', 60)} min + {tc.get('increment', 0)} sec ({cat_disp})"
+        else:
+            tc_disp = f"{tc} ({cat_disp})"
         tc_item = self.tree_ctrl.AppendItem(dati_node, f"Tempo riflessione: {tc_disp}")
         self.tree_ctrl.SetItemData(tc_item, {"action": "show_data", "filepath": filepath, "field_active": "time_control"})
 
@@ -981,7 +1033,17 @@ class MainFrame(wx.Frame):
         info.append(_("Data Fine: {end_date}").format(end_date=t.get('end_date', 'N/D')))
         
         tc = t.get('time_control', {})
-        tc_str = f"{tc.get('minutes', 60)} min + {tc.get('increment', 0)} sec" if isinstance(tc, dict) else str(tc)
+        cat = t.get('tournament_category')
+        if not cat and isinstance(tc, dict):
+            from stats import classify_tournament_category
+            cat = classify_tournament_category(tc.get('minutes', 60), tc.get('increment', 0))
+        if not cat:
+            cat = "standard"
+        cat_disp = cat.capitalize()
+        if isinstance(tc, dict):
+            tc_str = f"{tc.get('minutes', 60)} min + {tc.get('increment', 0)} sec ({cat_disp})"
+        else:
+            tc_str = f"{tc} ({cat_disp})"
         info.append(_("Tempo di Riflessione: {tc}").format(tc=tc_str))
         info.append(_("Arbitro Capo: {arbiter}").format(arbiter=t.get('chief_arbiter', 'N/D')))
         info.append(_("Collaboratori / Vice Arbitri: {arbiters}").format(arbiters=t.get('deputy_chief_arbiters') or _('Nessuno')))
@@ -1217,6 +1279,7 @@ class MainFrame(wx.Frame):
             self.item_standings.Enable(False)
             self.item_rollback.Enable(False)
             self.item_finalize.Enable(False)
+            self.item_export_ics.Enable(False)
             return
             
         self.item_players.Enable(True)
@@ -1226,6 +1289,19 @@ class MainFrame(wx.Frame):
         is_started = len(rounds) > 0
         
         is_concluded = self.current_tournament.get("concluded", False) if self.current_tournament else False
+        
+        # Gestione abilitazione esportazione ICS
+        has_scheduled = False
+        for r in rounds:
+            for m in r.get("matches", []):
+                if m.get("is_scheduled") and m.get("schedule_info"):
+                    sched = m["schedule_info"]
+                    if sched.get("date") and sched.get("time"):
+                        has_scheduled = True
+                        break
+            if has_scheduled:
+                break
+        self.item_export_ics.Enable(has_scheduled)
             
         # Iscrizione abilitata solo se non iniziato e non concluso
         self.item_enroll.Enable(not is_started and not is_concluded)
@@ -2169,8 +2245,11 @@ class MainFrame(wx.Frame):
                     old_tc = self.current_tournament.get("time_control", {})
                     if tc_parsed != old_tc:
                         self.current_tournament["time_control"] = tc_parsed
-                        self.current_tournament["tournament_category"] = classify_tournament_category(tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0))
-                        self.tree_ctrl.SetItemText(item, f"Tempo riflessione: {val}")
+                        cat = classify_tournament_category(tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0))
+                        self.current_tournament["tournament_category"] = cat
+                        cat_disp = cat.capitalize()
+                        tc_disp = f"{tc_parsed.get('minutes', 60)} min + {tc_parsed.get('increment', 0)} sec ({cat_disp})"
+                        self.tree_ctrl.SetItemText(item, f"Tempo riflessione: {tc_disp}")
                         self._save_state()
                 else:
                     wx.MessageBox(_("Formato non valido. Usa minuti+incremento o solo minuti."), _("Errore"), wx.ICON_ERROR)
@@ -2612,6 +2691,49 @@ class MainFrame(wx.Frame):
         self.populate_tree()
         self.show_current_round_report()
         self.set_status(_("Generati abbinamenti per il Turno {num}.").format(num=next_round_num))
+
+    def on_export_ics(self, event):
+        if not self.current_tournament:
+            return
+            
+        # Controlla se ci sono partite pianificate
+        has_scheduled = False
+        for r in self.current_tournament.get("rounds", []):
+            for m in r.get("matches", []):
+                if m.get("is_scheduled") and m.get("schedule_info"):
+                    sched = m["schedule_info"]
+                    if sched.get("date") and sched.get("time"):
+                        has_scheduled = True
+                        break
+            if has_scheduled:
+                break
+                
+        if not has_scheduled:
+            wx.MessageBox(_("Non ci sono partite pianificate in questo torneo."), _("Esporta Calendario"), wx.OK | wx.ICON_INFORMATION)
+            return
+            
+        default_filename = f"Tornello - {self.current_tournament.get('name', 'Torneo')} - Calendario.ics"
+        dlg = wx.FileDialog(
+            self,
+            _("Salva file iCalendar (.ics)"),
+            wildcard="iCalendar files (*.ics)|*.ics",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+            defaultFile=default_filename
+        )
+        
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            from reports import generate_ics_content
+            try:
+                ics_content = generate_ics_content(self.current_tournament)
+                with open(path, "w", encoding="utf-8", newline="\r\n") as f:
+                    f.write(ics_content)
+                self.set_status(_("Calendario esportato con successo in '{path}'.").format(path=os.path.basename(path)))
+                from utils import play_sound
+                play_sound("conferma")
+            except Exception as e:
+                wx.MessageBox(_("Errore durante l'esportazione: {e}").format(e=e), _("Errore"), wx.ICON_ERROR)
+        dlg.Destroy()
 
     def find_active_tree_item_by_action(self, action):
         action_map = {

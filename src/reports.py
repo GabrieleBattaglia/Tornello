@@ -265,7 +265,7 @@ def get_current_round_report_text(torneo, round_num=None):
     if bye_player_display_line:
         out.write(f"\n{bye_player_display_line}\n")
 
-    out.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+    out.write(f"\n\nTornello ({VERSIONE})\n")
     return out.getvalue()
 
 
@@ -481,7 +481,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                     ).format(dashes="---", match_id=match_id, player_id=white_p_id)
                     f.write(f"\t{line}\n")
             
-            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+            f.write(f"\n\nTornello ({VERSIONE})\n")
         print(
             _(
                 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
@@ -676,11 +676,19 @@ def get_standings_text(torneo, final=False):
             _("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str)
         )
     tc = torneo.get("time_control")
+    cat = torneo.get("tournament_category")
+    if not cat and isinstance(tc, dict):
+        from stats import classify_tournament_category
+        cat = classify_tournament_category(tc.get("minutes", 60), tc.get("increment", 0))
+    if not cat:
+        cat = "standard"
+    cat_disp = cat.capitalize()
+
     tc_str = "N/D"
     if isinstance(tc, dict):
-        tc_str = f"{tc.get('minutes', 0)} min + {tc.get('increment', 0)} sec"
+        tc_str = f"{tc.get('minutes', 0)} min + {tc.get('increment', 0)} sec ({cat_disp})"
     elif isinstance(tc, str):
-        tc_str = tc
+        tc_str = f"{tc} ({cat_disp})"
     out.write(
         _("Controllo Tempo: {time_control}\n").format(
             time_control=tc_str
@@ -775,7 +783,7 @@ def get_standings_text(torneo, final=False):
 
         out.write(line + "\n")
 
-    out.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+    out.write(f"\n\nTornello ({VERSIONE})\n")
     return out.getvalue()
 
 
@@ -974,7 +982,7 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
                     f.write(
                         f"{idx:02d}. {nome_cognome} (ID: {id_player}, Elo: {elo})\n"
                     )
-            f.write(f"\n\nTornello ({VERSIONE}) - Gabriele Battaglia & AI\n")
+            f.write(f"\n\nTornello ({VERSIONE})\n")
         print(
             _("Riepilogo promemoria salvato in: '{report}'").format(
                 report=report_filename
@@ -982,3 +990,84 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
         )
     except Exception as e:
         print(_("Errore nel salvataggio del riepilogo sospeso: {e}").format(e=e))
+
+
+def generate_ics_content(torneo):
+    """
+    Genera il contenuto di un file iCalendar (.ics) con tutte le partite
+    pianificate del torneo.
+    """
+    rounds = torneo.get("rounds", [])
+    name = torneo.get("name", "Torneo")
+    t_id = torneo.get("tournament_id", "TEST")
+    
+    tc = torneo.get("time_control", {})
+    if isinstance(tc, dict):
+        minutes = tc.get("minutes", 60)
+        inc = tc.get("increment", 0)
+        # Supponiamo 60 mosse di durata media per calcolare la fine stimata
+        game_duration = int(minutes * 2 + (inc * 60) / 60)
+    else:
+        game_duration = 180 # 3 ore di default
+        
+    from datetime import datetime, timedelta
+    
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Tornello//Chess Tournament Calendar//IT",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH"
+    ]
+    
+    players_dict = torneo.get("players_dict", {})
+    if not players_dict:
+        players_dict = {p["id"]: p for p in torneo.get("players", [])}
+        
+    for r in rounds:
+        r_num = r.get("round", 1)
+        matches = r.get("matches", [])
+        matches_sorted = sorted(matches, key=lambda x: x.get("id", 0))
+        for m in matches:
+            if m.get("is_scheduled") and m.get("schedule_info"):
+                sched = m["schedule_info"]
+                date_str = sched.get("date")
+                time_str = sched.get("time")
+                if not date_str or not time_str:
+                    continue
+                    
+                w_id = m.get("white_player_id")
+                b_id = m.get("black_player_id")
+                w_p = players_dict.get(w_id, {})
+                b_p = players_dict.get(b_id, {}) if b_id else None
+                w_name = f"{w_p.get('last_name', '')} {w_p.get('first_name', '')}".strip()
+                b_name = f"{b_p.get('last_name', '')} {b_p.get('first_name', '')}".strip() if b_p else "BYE"
+                
+                try:
+                    dt_start = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                    dt_end = dt_start + timedelta(minutes=game_duration)
+                except Exception:
+                    continue
+                    
+                board_num = matches_sorted.index(m) + 1
+                uid = f"Tornello_{t_id}_R{r_num}_M{m.get('id', 0)}@tornello"
+                summary = f"Turno {r_num} - Scacchiera {board_num}: {w_name} vs {b_name}"
+                
+                arbiter = sched.get("arbiter") or torneo.get("chief_arbiter") or "N/D"
+                channel = sched.get("channel") or "N/D"
+                
+                description = f"Torneo: {name}\\nTurno: {r_num}\\nScacchiera: {board_num}\\nArbitro: {arbiter}"
+                
+                lines.extend([
+                    "BEGIN:VEVENT",
+                    f"UID:{uid}",
+                    f"DTSTART:{dt_start.strftime('%Y%m%dT%H%M%S')}",
+                    f"DTEND:{dt_end.strftime('%Y%m%dT%H%M%S')}",
+                    f"SUMMARY:{summary}",
+                    f"DESCRIPTION:{description}",
+                    f"LOCATION:{channel}",
+                    "END:VEVENT"
+                ])
+                
+    lines.append("END:VCALENDAR")
+    return "\r\n".join(lines) + "\r\n"
