@@ -1,95 +1,318 @@
-MANUALE GUIDA DI TORNELLO v9.0.2
+MANUALE GUIDA DI TORNELLO v9.0.1
 ================================
 
-Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero, progettato con una priorità assoluta per l'accessibilità da parte di utenti non vedenti o ipovedenti tramite screen reader (es. NVDA) e navigazione da tastiera.
+Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
 
-Tornello v9 unisce la flessibilità di gestione del database giocatori e dei tornei ad una veste grafica nativa wxPython e all'integrazione del motore di abbinamenti ufficiale bbpPairings v6 (conforme alle regole FIDE 2026).
-
-
-1. NAVIGAZIONE ED INTERFACCIA GRAFICA
---------------------------------------
-L'interfaccia è divisa in tre aree principali navigabili rapidamente:
-- AREA CENTRALE (F5): Visualizza i report testuali del turno corrente, le classifiche, o le schede dei tornei conclusi. È un'area di testo monospaziata in sola lettura, navigabile riga per riga con le frecce dello screen reader.
-- ALBERO DI DESTRA (F6): Un controllo ad albero (TreeCtrl) che costituisce il pannello di controllo dinamico di Tornello. Consente di creare un torneo, caricare tornei esistenti, modificare i parametri di configurazione in tempo reale e gestire i turni e le partite.
-- BARRA DI STATO INFERIORE (F7): Una piccola area di testo che riporta informazioni rapide sul contesto corrente (es. turno attivo, cadenza o messaggi di aiuto).
-
-Scorciatoie da tastiera globali:
-- F1: Visualizza questo manuale nell'Area Centrale.
-- F2: Visualizza il ChangeLog completo delle versioni (storico compreso).
-- F3: Visualizza i Crediti e i dettagli degli autori.
-- F5: Sposta il focus sull'Area Centrale.
-- F6: Sposta il focus sull'Albero di Destra.
-- F7: Sposta il focus sulla Barra di Stato.
+Tornello è stato progettato con una priorità assoluta per l'accessibilità da parte di utenti non vedenti o ipovedenti, offrendo piena compatibilità con gli screen reader (es. NVDA e JAWS) e una navigazione interamente gestibile da tastiera.
 
 
-2. CREAZIONE DI UN NUOVO TORNEO (WIZARD)
-----------------------------------------
-Per avviare un nuovo torneo:
-1. Spostarsi sull'Albero di Destra (F6), posizionarsi su "Nuovo torneo" e premere Invio.
-2. L'albero mostrerà una serie di parametri. Seleziona ciascun parametro con le frecce verticali e premi Invio per modificarlo in loco:
-   - Nome Torneo: Campo obbligatorio.
-   - Luogo (Site): Città in cui si gioca.
-   - Numero Turni: Numero totale dei turni di gioco.
-   - Tempo Riflessione: Cadenza di gioco in formato umano (es. 15+10, 60+0 o 90+30).
-   - Cartella Salvataggio: Cartella in cui salvare i report finali (es. chiavetta USB o cloud).
-   - Arbitro Capo / Collaboratori / Federazione Ospitante.
-   - Colore al giocatore più forte: Bianco, Nero o Casuale (se impostato su Casuale, Tornello lancerà una moneta al termine del wizard).
-   - Valore del BYE: Punteggio assegnato a chi riposa (0.5 o 1.0).
-3. Quando i parametri essenziali sono configurati, compare in fondo la voce "Avanti". Premendola, si aprirà la finestra di iscrizione.
+========================================================================
+1. INTRODUZIONE E STORIA DEL PROGETTO
+========================================================================
+
+1.1 LA FILOSOFIA DI TORNELLO
+Tornello nasce dall'esigenza reale di semplificare la gestione dei tornei di scacchi all'interno dei circoli, eliminando il carico di lavoro manuale che spesso rallenta le competizioni. Il progetto è dedicato in modo particolare all'Associazione Scacchisti Italiani Ciechi e Ipovedenti (ASCId) e alla comunità di Scacchierando, ponendo l'inclusione e l'accessibilità digitale come pilastri fondanti. Lo sviluppo, guidato da Gabriele Battaglia (Gabry) con la collaborazione dell'intelligenza artificiale Stella, punta a fornire uno strumento che sia al contempo potente per gli arbitri esperti e semplice da usare per i principianti.
+
+1.2 L'EVOLUZIONE DA CLI A INTERFACCIA GRAFICA (GUI)
+Nelle sue prime versioni, Tornello era un'applicazione a riga di comando (CLI). Con la versione 9, il software ha compiuto un salto generazionale adottando un'interfaccia grafica (GUI) nativa sviluppata in wxPython. 
+Questa transizione è stata progettata per non compromettere l'accessibilità: invece di affidarsi a elementi grafici complessi e non standard, Tornello utilizza controlli standard ottimizzati per i lettori di schermo, garantendo che ogni etichetta, dialogo e messaggio venga annunciato vocalmente in modo chiaro.
+
+1.3 LA STORIA DELL'ALGORITMO E L'INTEGRAZIONE DI BBPPAIRINGS
+Durante le prime fasi di sviluppo, si tentò di scrivere da zero un algoritmo interno per generare gli abbinamenti del sistema svizzero. Il sistema svizzero (in particolare il sistema Olandese regolamentato dalla FIDE) è estremamente complesso: deve evitare che i giocatori si scontrino più di una volta, garantire un bilanciamento ottimale dei colori (Bianco e Nero) e gestire i riposi (BYE) e i cosiddetti "floaters" (giocatori che vengono spostati di fascia di punteggio per rendere possibili gli abbinamenti).
+Dopo un inizio ambizioso, il tentativo di creare un algoritmo proprietario si rivelò un "nobile fallimento": coprire tutti i casi limite e garantire la conformità assoluta ai regolamenti internazionali era un compito titanico.
+La svolta è avvenuta con l'integrazione nativa del motore ufficiale "bbpPairings v6.0.0" (conforme alle regole FIDE 2026 e al formato TRF-2026).
+Oggi, Tornello funge da interfaccia e gestore dei dati, mentre delega il calcolo matematico degli abbinamenti a bbpPairings tramite il seguente flusso:
+1. Tornello raccoglie i dati del torneo (giocatori, punteggi, storia dei colori e dei risultati).
+2. Genera un file standardizzato chiamato "input_bbp.trf", inserendo i codici FIDE corretti.
+3. Invoca silenziosamente il motore bbpPairings passandogli questo file.
+4. Legge il file di output generato dal motore e aggiorna istantaneamente i tavoli all'interno del programma.
 
 
-3. ISCRIZIONE GIOCATORI E RICERCA NEI DATABASE
-----------------------------------------------
-La finestra di iscrizione è strutturata a due colonne (Filtro di ricerca + Risultati per il Database Locale e per il Database FIDE), con a destra la lista dei "Giocatori Iscritti al Torneo".
+========================================================================
+2. ARCHITETTURA DELL'INTERFACCIA E NAVIGAZIONE ACCESSIBILE
+========================================================================
 
-RICERCA FLUIDA CON OPERATORI:
-Nei campi di ricerca puoi inserire parole semplici (anche parziali e in qualsiasi ordine) o usare i seguenti operatori:
-- Spazio: Ricerca non esclusiva (default). Cercando "simona ita", verranno trovati i record contenenti sia "simona" che "ita", ordinando prima chi le ha entrambe.
-- Prefisso '+' (Obbligatorio): Il termine deve essere presente nel record (es. "+simona +ita" mostra solo le Simona italiane).
-- Prefisso '-' (Escluso): Il termine non deve essere presente nel record (es. "simona -ita" esclude le Simona italiane).
-- Delimitatore '=' (Frase Esatta): Cerca la sequenza esatta (es. "=gerasole=marco" trova la stringa esatta "gerasole marco").
+Per consentire una navigazione rapida e intuitiva, la finestra principale di Tornello è suddivisa in tre grandi aree logiche. Ciascuna area è associata a un tasto funzione (F5, F6, F7) che sposta immediatamente il focus su di essa.
 
-ESEMPIO COMPLESSO:
-Query: "simona +ita -milano 1985"
-Trova le giocatrici di nome "simona", che devono obbligatoriamente essere italiane (+ita), non devono risiedere o contenere "milano" (-milano), e posiziona in testa alla lista le nate nel "1985" se corrispondenti.
+2.1 L'AREA CENTRALE (Tasto F5)
+È una grande area di testo monospaziata in sola lettura. In questo spazio vengono mostrati tutti i report testuali del torneo: abbinamenti del turno, classifiche, dettagli dei giocatori iscritti, ChangeLog e questa stessa guida.
+- Come si usa: Premendo F5, il focus si sposta su quest'area. L'utente non vedente può navigare il testo riga per riga o parola per parola utilizzando le frecce direzionali della tastiera, permettendo al lettore dello schermo di leggere con il proprio ritmo.
 
-PAGINAZIONE RISULTATI FIDE:
-Per preservare le prestazioni del sistema con il database FIDE (composto da centinaia di migliaia di record), Tornello mostra i primi 100 risultati ordinati per rilevanza, seguiti da una riga speciale: "-- Mostra altri risultati (X rimanenti) --". Premendo Invio o facendo doppio clic su questa riga, verranno caricati i successivi 100 elementi.
+2.2 L'ALBERO DI NAVIGAZIONE DI DESTRA (Tasto F6)
+Costituisce il vero e proprio "pannello di controllo" di Tornello. Si tratta di una struttura ad albero (TreeCtrl) che si popola dinamicamente in base allo stato del programma.
+- Prima dell'inizio del torneo: Contiene opzioni come "Nuovo torneo" e "Apri torneo".
+- Durante il torneo: Contiene il nome del torneo attivo, sotto il quale si sviluppano le cartelle "Dati", "Partecipanti" e "Partite".
+- Come si usa: Premendo F6, il focus si sposta sull'albero. Si usano le frecce verticali per scorrere le voci e le frecce orizzontali per espandere o comprimere i rami dell'albero. Premendo INVIO su una voce, viene attivata l'azione corrispondente (es. si apre il wizard di configurazione o il dialogo dei risultati).
 
-FOCUS JUMP AUTOMATICO:
-Quando aggiungi un giocatore premendo Invio sui risultati locali o FIDE, il focus salta automaticamente sulla lista degli iscritti posizionando la selezione sul nuovo inserito, consentendo a NVDA di leggerlo immediatamente. Gli iscritti sono presentati ordinati per ELO decrescente e numerati (es. "1. Girasole Marco (ITA) 1673").
+2.3 LA BARRA DI STATO INFERIORE (Tasto F7)
+È una riga di testo situata in fondo alla finestra. Mostra informazioni rapide sul contesto corrente, come il turno attivo, la cadenza di gioco impostata o messaggi di aiuto contestuali.
+- Come si usa: Premendo F7, il focus si sposta sulla barra per consentire allo screen reader di rileggere l'ultimo messaggio di stato.
 
-
-4. GESTIONE DEI TURNI E RISULTATI
----------------------------------
-Una volta iniziato il torneo, l'albero di destra si popolerà con il nome del torneo e le cartelle "Dati", "Partecipanti" e "Partite".
-Sotto "Partite" troverai l'elenco suddiviso per stato (Non pianificate, Pianificate, Concluse).
-
-Premendo Invio su una partita, si apre il dialogo dei risultati:
-- Scegliere il risultato tramite i pulsanti radio:
-  - 1 - 0 (Vittoria Bianco)
-  - 0 - 1 (Vittoria Nero)
-  - 1/2 - 1/2 (Patta)
-  - 1 - 0 Forfeit (Forfait Bianco, il Nero perde a tavolino)
-  - 0 - 1 Forfeit (Forfait Nero, il Bianco perde a tavolino)
-  - 0 - 0 Forfeit (Doppia assenza)
-- Pianifica Partita: Consente di inserire data e ora per spostare la partita sotto "Pianificate".
-- Ritira Giocatore: Consente di ritirare uno dei due giocatori dal torneo a partire dal turno corrente.
-
-A fine turno, una volta inseriti tutti i risultati, Tornello salverà lo storico e genererà gli abbinamenti del turno successivo avvalendosi del motore bbpPairings.
+2.4 ACCESSIBILITÀ DEI DIALOGHI
+Tutti i dialoghi di Tornello (messaggi di errore, conferme, avvisi) evitano l'uso di controlli nativi inaccessibili. Al loro posto, viene utilizzata una finestra di dialogo personalizzata con un controllo di testo multilinee in sola lettura per il messaggio. All'apertura, il focus viene spostato automaticamente sul testo, permettendo allo screen reader di leggere subito l'avviso e all'utente di esplorarlo con le frecce.
 
 
-5. FINALIZZAZIONE E CLASSIFICHE
--------------------------------
-Al termine dell'ultimo turno, selezionando la voce "Finalizza Torneo" dal menu o dall'albero, Tornello esegue i seguenti calcoli:
-- Calcolo degli spareggi ufficiali (Buchholz Cut 1, Buchholz Totale, Sonneborn-Berger, ARO).
-- Calcolo della variazione di rating Elo multi-cadenza per ciascun partecipante (Blitz, Rapid o Standard in base alla cadenza del torneo).
-- Aggiornamento delle schede personali dei giocatori nel Database Locale (aggiornamento Elo, inserimento del torneo nello storico e aggiornamento del medagliere).
-- Archiviazione fisica del torneo in formato JSON all'interno della cartella "Closed Tornaments" e generazione della classifica finale testuale accessibile nell'Area Centrale.
+========================================================================
+3. SCORCIATOIE DA TASTIERA GLOBALI
+========================================================================
+
+Tornello può essere controllato interamente tramite tastiera. Di seguito viene riportata la lista completa dei tasti di scelta rapida:
+
+Tasti Funzione (Focus e Guida):
+- F1: Visualizza questa Guida / Manuale completo nell'Area Centrale.
+- F2: Visualizza il ChangeLog completo (lo storico delle modifiche del software).
+- F3: Visualizza la schermata dei Crediti e dei ringraziamenti.
+- F5: Sposta il focus sull'Area Centrale (visualizzatore dei report).
+- F6: Sposta il focus sull'Albero di Destra (pannello di controllo).
+- F7: Sposta il focus sulla Barra di Stato inferiore.
+
+Tasti di Gestione Torneo:
+- Ctrl+N: Avvia il Wizard per creare un Nuovo Torneo.
+- Ctrl+O: Apre un torneo esistente caricando il relativo file JSON.
+- Ctrl+S: Esegue un salvataggio manuale istantaneo del torneo corrente.
+- Ctrl+I: Apre la finestra di Iscrizione dei giocatori (attiva prima dell'inizio del turno 1).
+- Ctrl+G: Mostra l'elenco dei giocatori iscritti nell'Area Centrale.
+- Ctrl+U: Mostra gli abbinamenti del turno corrente nell'Area Centrale.
+- Ctrl+L: Mostra la classifica corrente nell'Area Centrale.
+- Ctrl+Z: Time Machine (annulla l'ultimo turno generato per correggere errori).
+- Ctrl+F: Finalizza il torneo (calcola spareggi, aggiorna database locale e archivia).
+- Ctrl+Shift+E: Esporta le partite pianificate in formato calendario standard (.ics).
+
+Tasti per la Gestione dei Database:
+- Ctrl+D: Gestione del Database Locale dei giocatori del circolo.
+- Ctrl+K: Finestra di consultazione rapida del Database Ratings FIDE.
+- Ctrl+Y: Sincronizzazione del Database locale con l'ultimo file FIDE scaricato.
 
 
-6. STRUMENTI AGGIUNTIVI (DATABASE E FIDE)
------------------------------------------
-- GESTIONE DATABASE LOCALE (Ctrl+D): Consente di esplorare l'albero dei giocatori salvati localmente, modificare le schede (es. l'Elo Club, utilizzato come fallback finale se mancano gli Elo FIDE) o eliminare record obsoleti.
-- CONSULTA DATABASE FIDE (Ctrl+K): Permette una ricerca rapida nel database FIDE ratings scaricato e l'eventuale importazione istantanea di un giocatore nel DB locale.
-- SINCRONIZZAZIONE DATABASE (Ctrl+Y): Consente di sincronizzare il DB locale con l'ultimo file FIDE. Può essere eseguita in blocco o passo-passo (in questa modalità il sistema chiederà conferma per ogni modifica e ti permetterà di selezionare manualmente la scheda corretta in caso di omonimie multiple).
+========================================================================
+4. CREAZIONE DI UN NUOVO TORNEO (IL WIZARD)
+========================================================================
+
+4.1 SPIEGAZIONE TEORICA DEI PARAMETRI
+La creazione di un torneo avviene tramite una procedura guidata (Wizard) integrata direttamente nell'Albero di Destra. Questo evita l'apertura di finestre sovrapposte e permette di configurare ogni aspetto passo-passo. I parametri da definire sono:
+
+1. Nome Torneo (Obbligatorio): Il titolo del torneo.
+2. Luogo (Site): La città in cui si svolge l'evento.
+3. Numero Turni: Quanti turni di gioco sono previsti.
+4. Tempo Riflessione (Cadenza): Il tempo a disposizione per ciascun giocatore, inserito in formato umano (es. "15+10" significa 15 minuti iniziali più 10 secondi di abbuono per mossa). In base alla cadenza inserita, Tornello classifica automaticamente il torneo in:
+   - Blitz: Se il tempo stimato per 60 mosse è inferiore a 10 minuti.
+   - Rapid: Se il tempo stimato è compreso tra 10 e 60 minuti.
+   - Standard: Se il tempo stimato è superiore a 60 minuti.
+5. Cartella Salvataggio: La cartella in cui verranno salvati i file del torneo e i report finali. Se si specifica una chiavetta USB che viene accidentalmente disconnessa, il sistema rileva l'errore e devia automaticamente il salvataggio nella cartella di installazione del programma per evitare perdite di dati.
+6. Arbitro Capo / Collaboratori / Federazione Ospitante: Informazioni accessorie utili per i report ufficiali.
+7. Colore al Giocatore più Forte: Determina chi avrà il Bianco al tavolo 1 nel primo turno. Può essere impostato su "Bianco", "Nero" o "Casuale" (in quest'ultimo caso il software lancerà una moneta virtuale per decidere).
+8. Valore del BYE: Punteggio assegnato al giocatore che riposa qualora il numero dei partecipanti sia dispari. Può essere 0.5 punti (patta tecnica) o 1.0 punti (vittoria tecnica).
+
+4.2 GUIDA PRATICA PASSO-PASSO
+1. Premi Ctrl+N oppure spostati sull'albero di destra (F6), posizionati su "Nuovo torneo" e premi INVIO.
+2. L'albero mostrerà l'elenco dei parametri. Usa le frecce verticali per scorrere i parametri.
+3. Per modificare un parametro, posizionati su di esso e premi INVIO. Inserisci il valore nel campo di testo che appare (o seleziona l'opzione desiderata) e premi INVIO per confermare.
+4. Una volta configurati i parametri, comparirà in fondo alla lista la voce "Avanti". Posizionati su di essa e premi INVIO per accedere alla finestra di iscrizione dei giocatori.
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Configurazione di un torneo sociale Rapid
+Vogliamo organizzare il "Torneo Sociale di Primavera" del nostro club.
+- Nome: Torneo Sociale di Primavera
+- Luogo: Milano
+- Turni: 5
+- Tempo: 15+10 (Tornello calcolerà 15 min + (10 sec * 60 mosse) = 25 minuti. Il torneo verrà classificato come RAPID).
+- Cartella Salvataggio: Lasciamo il valore predefinito (verrà creata una cartella sul computer dell'utente).
+- Colore al più forte: Casuale.
+- Valore BYE: 1.0.
+Dopo aver inserito questi dati nell'albero di destra, scendiamo con le frecce fino a "Avanti" e premiamo INVIO. Il torneo è pronto per ricevere gli iscritti.
+------------------------------------------------------------------------
+
+
+========================================================================
+5. ISCRIZIONE GIOCATORI E RICERCA NEI DATABASE (LOCAL E FIDE)
+========================================================================
+
+La finestra di iscrizione (attivabile anche con Ctrl+I prima dell'inizio del torneo) consente di registrare i partecipanti cercandoli all'interno del Database Locale del circolo o nel Database Ratings FIDE globale (che contiene oltre 1 milione di record).
+
+5.1 FUNZIONAMENTO DELLA FINESTRA DI ISCRIZIONE
+La finestra è divisa in tre sezioni principali:
+- A sinistra: Campi di ricerca filtro per il database locale e i relativi risultati.
+- Al centro: Campi di ricerca filtro per il database FIDE e i relativi risultati.
+- A destra: Lista dei giocatori già iscritti al torneo corrente, ordinati per Elo decrescente.
+
+5.2 LA RICERCA CON OPERATORI
+Per trovare rapidamente un giocatore in mezzo a centinaia di migliaia di record, Tornello implementa un potente motore di ricerca basato su operatori testuali. È possibile digitare parti del nome, dell'anno di nascita o della nazione, combinandole con i seguenti simboli:
+
+- Spazio (Operatore AND implicito): Trova record che contengono tutti i termini indicati, in qualsiasi ordine.
+  * Esempio: "rossi ita" trova i giocatori che contengono sia "rossi" che "ita".
+- Prefisso "+" (Termine Obbligatorio): Il termine preceduto dal "+" deve essere tassativamente presente nel record.
+  * Esempio: "+mario +ita" esclude tutti i "mario" che non hanno "ita" nel record.
+- Prefisso "-" (Termine Escluso): Il termine preceduto dal "-" non deve essere presente nel record.
+  * Esempio: "rossi -ita" trova tutti i "rossi" stranieri, escludendo gli italiani.
+- Delimitatore "=" (Frase Esatta): Cerca la sequenza esatta di caratteri inseriti tra due simboli "=" o all'inizio di una parola.
+  * Esempio: "=rossi=mario" trova esattamente "rossi mario", evitando di mostrare "rossi francesco mario".
+
+5.3 PAGINAZIONE DEL DATABASE FIDE E FOCUS JUMP AUTOMATICO
+- Paginazione: Per evitare di rallentare il sistema e lo screen reader con ricerche che restituiscono migliaia di risultati, i dati FIDE vengono mostrati a blocchi di 100. Se ci sono più di 100 risultati, in fondo alla lista compare la riga "-- Mostra altri risultati (X rimanenti) --". Premendo INVIO su questa riga, verranno caricati i 100 record successivi.
+- Focus Jump: Quando si seleziona un giocatore dai risultati e si preme INVIO per iscriverlo, il programma esegue un "salto di focus" automatico spostando la selezione sulla lista dei "Giocatori Iscritti al Torneo" e posizionando il cursore esattamente sul giocatore appena inserito. Lo screen reader annuncerà immediatamente il nome del giocatore iscritto e la sua posizione in tabellone (es. "1. Rossi Mario (ITA) 1850").
+
+------------------------------------------------------------------------
+ESEMPI PRATICI DI RICERCA
+- Scenario A: Cerchiamo una giocatrice italiana di nome Simona, nata nel 1985, ma vogliamo escludere le giocatrici che vivono o sono registrate a Milano.
+  * Query di ricerca: "simona +ita -milano 1985"
+  * Risultato: Il sistema mostrerà le giocatrici di nome Simona, che hanno obbligatoriamente il tag "ita", non contengono la parola "milano", e metterà in cima quelle nate nel 1985.
+
+- Scenario B: Vogliamo iscrivere un giocatore cercandolo nel Database FIDE.
+  1. Spostati sul campo di ricerca FIDE (usa TAB).
+  2. Digita "+girasole +ita" e premi INVIO.
+  3. Scorri la lista dei risultati con le frecce. Trovato "Girasole Marco (1673 ELO)", premi INVIO.
+  4. Il focus salta a destra sulla lista degli iscritti. Sentirai il lettore di schermo dire: "1. Girasole Marco (ITA) 1673".
+  5. Per aggiungere un altro giocatore, premi di nuovo TAB per tornare al campo di ricerca.
+------------------------------------------------------------------------
+
+
+========================================================================
+6. GESTIONE DEI TURNI E INSERIMENTO RISULTATI
+========================================================================
+
+Una volta completata l'iscrizione dei giocatori, premendo INVIO sulla voce "Avvia Turno 1" nell'albero di destra (F6), Tornello genera gli abbinamenti del primo turno.
+
+6.1 LA STRUTTURA DELLE PARTITE NELL'ALBERO
+Nell'albero di destra compare la cartella "Partite" del turno corrente, suddivisa in tre sotto-cartelle:
+1. Partite Non Pianificate: Le partite appena abbinate di cui non è ancora stato inserito il risultato.
+2. Partite Pianificate: Partite per cui l'arbitro ha impostato una data e un'ora specifiche (utile per tornei a turni settimanali).
+3. Partite Concluse: Partite di cui è già stato registrato il risultato.
+
+6.2 REGISTRAZIONE DEI RISULTATI
+Per inserire il risultato di una partita, selezionala dall'elenco "Non pianificate" (o "Pianificate") e premi INVIO. Si aprirà il dialogo dei risultati, dove potrai scegliere tra le seguenti opzioni tramite pulsanti radio:
+- 1 - 0: Vittoria del Bianco.
+- 0 - 1: Vittoria del Nero.
+- 1/2 - 1/2: Partita patta (pareggio).
+- 1 - 0 Forfeit (1 - 0F): Il Nero è assente o perde a tavolino; il Bianco ottiene il punto intero ma la partita non viene considerata per la variazione Elo.
+- 0 - 1 Forfeit (0F - 1): Il Bianco è assente o perde a tavolino; il Nero ottiene il punto.
+- 0 - 0 Forfeit (0F - 0F): Entrambi i giocatori sono assenti (doppia sconfitta a tavolino).
+
+Altre opzioni nel dialogo:
+- Pianifica Partita: Consente di inserire data e ora. La partita verrà spostata nella cartella "Pianificate".
+- Ritira Giocatore: Consente di ritirare uno dei due contendenti dal torneo a partire dal turno successivo. Il giocatore non verrà più abbinato nei turni rimanenti.
+
+6.3 CHIUSURA DEL TURNO E GENERAZIONE DEL TURNO SUCCESSIVO
+Quando tutte le partite del turno corrente sono nella cartella "Concluse", sull'albero di destra compare la voce "Genera Turno X" (dove X è il turno successivo). Premendo INVIO, Tornello invoca bbpPairings per calcolare i nuovi abbinamenti. I nuovi accoppiamenti vengono immediatamente visualizzati nell'Area Centrale (F5).
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Inserimento di un risultato e ritiro
+Al tavolo 3 giocano Bianchi (Bianco) contro Neri (Nero). Neri non si presenta entro il tempo massimo di tolleranza (tempo di caduta).
+1. Sull'albero di destra (F6), espandi "Partite", poi "Non pianificate".
+2. Seleziona la riga "Tavolo 3: Bianchi - Neri" e premi INVIO.
+3. Nel dialogo, usa le frecce per selezionare il pulsante radio "1 - 0 Forfeit".
+4. Poiché sappiamo che Neri ha deciso di abbandonare il torneo e non giocherà i turni successivi, premiamo TAB fino al pulsante "Ritira Giocatore" e premiamo SPAZIO o INVIO. Selezioniamo il giocatore Neri dal menu e confermiamo.
+5. Premiamo TAB fino al pulsante "OK" del dialogo dei risultati e premiamo INVIO.
+6. La partita si sposta sotto "Partite Concluse", il punto va a Bianchi e Neri viene rimosso dai futuri abbinamenti.
+------------------------------------------------------------------------
+
+
+========================================================================
+7. IL SISTEMA DI FEEDBACK ACUSTICI (ACUSTICATOR)
+========================================================================
+
+Tornello v9 integra il modulo "Acusticator" per fornire feedback acustici in tempo reale. Questo sistema è pensato per dare conferma immediata delle operazioni effettuate anche senza leggere lo schermo.
+
+7.1 SPAZIALIZZAZIONE STEREO DEI RISULTATI
+I suoni dei risultati delle partite utilizzano la spazializzazione audio stereo per indicare chi ha vinto:
+- Vittoria del Bianco (1-0): Un arpeggio ascendente riprodotto interamente sul canale SINISTRO.
+- Vittoria del Nero (0-1): Un arpeggio ascendente riprodotto interamente sul canale DESTRO.
+- Pareggio (1/2-1/2): Un accordo armonioso e bilanciato riprodotto al CENTRO (entrambi i canali).
+- Forfeit (a tavolino): Toni alternati e discordanti che indicano l'irregolarità del risultato.
+
+7.2 ELENCO DEGLI EVENTI SONORI
+Nel file di configurazione "Acu_Collection.json" sono mappati tutti i suoni di sistema:
+- Avvio applicazione: Suono di benvenuto ("tornello_avvio").
+- Chiusura applicazione: Suono di saluto ("tornello_chiusura").
+- Iscrizione giocatore: Tono acuto di conferma.
+- Rimozione/Ritiro giocatore: Tono discendente.
+- Partita pianificata/modificata: Segnale acustico di transizione.
+- Fine Turno: Suono celebrativo ("conclusione_turno") quando si inserisce l'ultimo risultato.
+- Fine Torneo: Una melodia complessa ("conclusione_torneo") all'atto della finalizzazione.
+- Time Machine: Un caratteristico suono di "riavvolgimento del nastro" ("time_machine").
+
+
+========================================================================
+8. LA MACCHINA DEL TEMPO (TIME MACHINE - Ctrl+Z)
+========================================================================
+
+8.1 SPIEGAZIONE TEORICA
+Durante la conduzione di un torneo, può capitare di commettere un errore grave, come inserire un risultato errato al turno precedente o accorgersi che un giocatore iscritto in ritardo doveva essere inserito prima di generare il turno corrente.
+Il comando "Time Machine" (attivabile premendo Ctrl+Z o selezionando "Time Machine" dall'albero) consente di annullare l'ultimo turno generato e riportare il torneo allo stato immediatamente precedente alla chiusura del turno precedente. Tutti i risultati inseriti nel turno annullato verranno persi, consentendo all'arbitro di correggere i dati e rigenerare gli abbinamenti in modo corretto.
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Uso della Time Machine
+Abbiamo appena generato gli abbinamenti per il Turno 3. Ci accorgiamo che al Turno 2 abbiamo inserito per errore una vittoria del Bianco al tavolo 1, mentre la partita era finita patta.
+1. Premiamo Ctrl+Z.
+2. Un dialogo di conferma accessibile ci chiederà: "Sei sicuro di voler annullare il turno corrente e tornare al turno precedente?".
+3. Confermiamo premendo INVIO su "Sì".
+4. Il sistema riproduce il suono di rollback ("time_machine"), elimina gli abbinamenti del Turno 3 appena creati e riapre il Turno 2.
+5. Sull'albero di destra (F6), andiamo su "Partite Concluse", selezioniamo il tavolo 1 e premiamo INVIO.
+6. Cambiamo il risultato in "1/2 - 1/2" e premiamo OK.
+7. Selezioniamo "Genera Turno 3" e premiamo INVIO. I nuovi abbinamenti del Turno 3 verranno ricalcolati da bbpPairings tenendo conto del risultato corretto del Turno 2.
+------------------------------------------------------------------------
+
+
+========================================================================
+9. CONCLUSIONE E FINALIZZAZIONE DEL TORNEO (Ctrl+F)
+========================================================================
+
+Al termine dell'ultimo turno, dopo aver inserito tutti i risultati, compare la voce "Finalizza Torneo" (attivabile anche premendo Ctrl+F). Questa operazione chiude ufficialmente il torneo ed esegue una serie di operazioni matematiche ed archivistiche.
+
+9.1 LE FORMULE DI SPAREGGIO APPLICATE
+Tornello calcola automaticamente i quattro criteri di spareggio ufficiali previsti dai regolamenti FIDE per stabilire la classifica finale in caso di parità di punteggio:
+1. Buchholz Cut 1 (Buchholz ridotto): La somma dei punti totalizzati dagli avversari incontrati, escludendo il giocatore con il punteggio più basso.
+2. Buchholz Totale: La somma dei punti totalizzati da tutti gli avversari incontrati, senza alcuna esclusione.
+3. Sonneborn-Berger: La somma dei punti totalizzati dagli avversari contro cui si è vinto, più la metà dei punti degli avversari con cui si è pattato.
+4. ARO (Average Rating of Opponents): La media Elo degli avversari affrontati durante il torneo.
+
+9.2 CALCOLO DELLE VARIAZIONI ELO E AGGIORNAMENTO DEL DATABASE LOCALE
+In base alla cadenza impostata per il torneo, Tornello determina la tipologia di Elo da aggiornare (Standard, Rapid o Blitz).
+- Formula FIDE: Il programma calcola la variazione Elo (il cosiddetto "Delta Elo") per ciascun giocatore in base ai risultati ottenuti e all'Elo degli avversari affrontati, applicando le formule ufficiali FIDE.
+- Aggiornamento delle schede: Al termine del calcolo, le schede dei giocatori nel Database Locale vengono aggiornate automaticamente:
+  * Viene sommata o sottratta la variazione Elo.
+  * Il torneo viene inserito nello storico delle partecipazioni del giocatore.
+  * Viene aggiornato il medagliere personale (conteggio dei primi, secondi e terzi posti).
+
+9.3 ARCHIVIAZIONE E CLASSIFICA
+Il torneo viene salvato in modo permanente come file JSON all'interno della cartella "Closed Tournaments". Contemporaneamente, la classifica finale ufficiale viene stampata in formato testuale leggibile nell'Area Centrale (F5), pronta per essere copiata, stampata o inviata ai partecipanti.
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Chiusura del torneo e verifica dei dati
+Il torneo Rapid a 5 turni è terminato. Tutti i risultati del turno 5 sono stati inseriti.
+1. Premiamo Ctrl+F (o selezioniamo "Finalizza Torneo" dall'albero).
+2. Viene riprodotto il suono celebrativo di fine torneo.
+3. Nell'Area Centrale (F5) appare la classifica finale con colonne dedicate a Punti, Buchholz Cut 1, Buchholz Totale, Sonneborn-Berger e ARO.
+4. Se apriamo la gestione del Database Locale (Ctrl+D) e selezioniamo il vincitore del torneo, vedremo che nel suo storico è presente il "Torneo Sociale di Primavera", il suo Elo Rapid locale è stato aggiornato con il delta calcolato, e nel suo medagliere è stata aggiunta una medaglia d'oro.
+------------------------------------------------------------------------
+
+
+========================================================================
+10. STRUMENTI E MANUTENZIONE DEI DATABASE
+========================================================================
+
+Tornello offre tre strumenti avanzati per la gestione dell'anagrafica dei giocatori, accessibili in qualunque momento tramite scorciatoie da tastiera dedicate.
+
+10.1 GESTIONE DATABASE LOCALE (Ctrl+D)
+Consente di consultare l'elenco dei giocatori del circolo registrati localmente sul computer. 
+- Elo Club: Nelle schede locali è presente il campo "Elo Club". Questo valore viene inserito manualmente dall'amministratore ed è fondamentale: se un giocatore non ha un Elo FIDE ufficiale, Tornello utilizzerà l'Elo Club come punteggio di partenza per gli abbinamenti del torneo, evitando che giocatori esperti senza rating internazionale vengano considerati come principianti assoluti (con Elo pari a 0 o 999).
+- Modifica ed Eliminazione: Da questo pannello è possibile correggere i dati anagrafici, cambiare la federazione di appartenenza o eliminare le schede obsolete.
+
+10.2 CONSULTA DATABASE FIDE (Ctrl+K)
+Apre una finestra di ricerca rapida collegata al database globale FIDE Ratings memorizzato localmente. Consente di cercare qualunque giocatore tesserato nel mondo e, premendo INVIO sulla sua scheda, di importarlo istantaneamente nel Database Locale del proprio circolo, completo di codice FIDE, anno di nascita, nazione ed Elo ufficiale.
+
+10.3 SINCRONIZZAZIONE DATABASE (Ctrl+Y)
+Permette di tenere aggiornato il Database Locale confrontandolo con l'ultimo file ufficiale FIDE scaricato dal sito della Federazione Internazionale. Offre due modalità operative:
+- Modalità Massiva (In Blocco): Il software analizza tutti i giocatori del database locale e aggiorna automaticamente i loro Elo FIDE all'ultimo valore pubblicato, senza richiedere interventi.
+- Modalità Passo-Passo (Consigliata): Il programma mostra a schermo ogni giocatore locale e la corrispondente scheda FIDE trovata per conferma. Questa modalità è cruciale in caso di omonimie: se nel database FIDE sono presenti più giocatori con lo stesso nome e cognome (es. due giocatori di nome "Rossi Mario"), il sistema mostra l'elenco di tutte le corrispondenze trovate con il relativo anno di nascita e nazione, permettendo all'arbitro di selezionare manualmente la persona corretta prima di procedere all'aggiornamento.
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Risoluzione di un'omonimia durante la sincronizzazione
+Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
+1. Il sistema incontra il giocatore locale "Bianchi Giovanni" (anno di nascita 1990).
+2. Nel database FIDE vengono trovati due record:
+   - Bianchi Giovanni (ITA, Elo 1420, nato nel 1975)
+   - Bianchi Giovanni (ITA, Elo 1750, nato nel 1990)
+3. Il programma apre una finestra di dialogo accessibile elencando i due record FIDE trovati e chiedendo di selezionare quello corretto.
+4. Utilizzando le frecce verticali, ci posizioniamo sul secondo record (anno 1990) e premiamo INVIO.
+5. Il sistema aggiorna la scheda locale di "Bianchi Giovanni" con l'Elo corretto di 1750 e passa al giocatore successivo della lista.
+------------------------------------------------------------------------

@@ -1,4 +1,41 @@
 --- CHANGELOG ---
+RILASCIO DI TORNELLO v9.0.2 - NOTE DI RILASCIO
+=============================================
+
+Siamo lieti di presentare Tornello v9.0.2, una delle release più importanti nella storia del progetto.
+Tornello è ora un'applicazione desktop a interfaccia grafica (GUI) nativa, pur mantenendo al 100% l'accessibilità da tastiera e tramite screen reader (NVDA/JAWS) per gli utenti non vedenti e ipovedenti.
+
+Novità principali di Tornello v9.0:
+----------------------------------
+1. INTERFACCIA GRAFICA NATIVA:
+   - Sviluppata in wxPython, con focus jump automatici e navigazione ottimizzata tramite scorciatoie dedicate.
+   - Struttura a tre pannelli: Area Report (F5), Albero dei Comandi (F6) e Barra di Stato (F7).
+   - Comandi e scorciatoie per tutte le azioni del menù (Nuovo, Apri, Salva, Iscrizioni, Annulla Turno, Finalizza).
+
+2. MOTORE DI ABBINAMENTO SVIZZERO FIDE 2026:
+   - Integrazione ufficiale del motore bbpPairings v6.0.0 per la generazione di abbinamenti svizzeri olandesi sicuri e conformi.
+
+3. RICERCA AVANZATA CON OPERATORI:
+   - Supporto per operatori fluidi (+ obbligatorio, - escluso, = frase esatta) nel Database Locale e nel Database FIDE Ratings.
+   - Paginazione intelligente a blocchi di 100 elementi per non sovraccaricare gli screen reader.
+
+4. COMPLETO DESIGN ACUSTICO:
+   - Feedback acustici spazializzati per ogni evento (avvio, chiusura, vittorie, patte, forfait a sinistra/destra, fine turno, rollback, ritiri).
+   - Regolazione del volume master dell'applicazione rispettata con calcolo dei delta dei suoni letti da file JSON.
+   - I preset audio sono caricati dinamicamente da file esterno (Acu_Collection.json) con fallback automatico e pulizia totale del codice di utils.py.
+
+5. STRUMENTI INTEGRATI:
+   - Dialogo di gestione dei giocatori locali (Ctrl+D), consultazione database FIDE (Ctrl+K), e sincronizzazione anagrafiche (Ctrl+Y).
+
+Requisiti:
+----------
+- Python 3.10+
+- Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
+- Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
+9.0.1
+	+ Documentation: Unificato il manuale utente (MANUALE.txt) fondendolo con il file README.md, descrivendo in dettaglio ogni funzionalità sia a livello teorico che pratico con esempi.
+	+ Documentation: Eliminato il file README.md ridondante.
+
 9.0.0
 	+ Feature: Rilascio ufficiale di Tornello v9.0.0 con interfaccia grafica nativa in wxPython, ottimizzata al 100% per screen reader (NVDA/JAWS).
 	+ Feature: Integrazione del nuovo motore bbpPairings v6.0.0 (regole FIDE 2026 e formato TRF-2026).
