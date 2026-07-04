@@ -32,6 +32,9 @@ Requisiti:
 - Python 3.10+
 - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
 - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
+9.0.2
+	+ Bugfix: Corretto il bug nella finestra Ricerca FIDE (FideQueryDialog) dove il pannello dei dettagli del giocatore non rispettava le dimensioni e i caratteri impostati nelle preferenze utente a causa della chiamata a SetValue.
+
 9.0.1
 	+ Documentation: Unificato il manuale utente (MANUALE.txt) fondendolo con il file README.md, descrivendo in dettaglio ogni funzionalità sia a livello teorico che pratico con esempi.
 	+ Documentation: Eliminato il file README.md ridondante.

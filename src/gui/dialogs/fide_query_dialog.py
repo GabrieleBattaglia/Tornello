@@ -196,6 +196,7 @@ class FideQueryDialog(wx.Dialog):
             f"Partite Blitz: {p.get('blitz_games', 0)}\n"
         )
         self.detail_text.SetValue(details)
+        apply_visual_settings(self.detail_text, self.settings)
 
     def on_import_player(self, event):
         sel = self.list_results.GetSelection()
