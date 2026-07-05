@@ -1,7 +1,7 @@
-# Tornello v9.1 - Piano di Sviluppo
+# Tornello v9.1.0 - Piano di Sviluppo
 ## Gestione Dinamica delle Regole di Spareggio FIDE/FSI
 
-Questo documento descrive il piano di sviluppo per integrare in Tornello v9.1 la configurazione dinamica e personalizzata dei criteri di spareggio tecnico per la stesura delle classifiche, in conformità con il documento ufficiale delle regole federali ed internazionali.
+Questo documento descrive il piano di sviluppo per integrare in Tornello v9.1.0 la configurazione dinamica e personalizzata dei criteri di spareggio tecnico per la stesura delle classifiche, in conformità con il documento ufficiale delle regole federali ed internazionali.
 
 ---
 
@@ -30,7 +30,7 @@ Tornello v9.1 implementerà tutte le regole di spareggio previste dal regolament
 | `number_of_wins` | Maggior Numero di Vittorie | Numero totale di vittorie conseguite nel torneo. | **Da implementare** |
 | `number_of_blacks` | Incontri col Nero | Maggior numero di partite disputate con il colore Nero. | **Da implementare** |
 | `cumulative` | Punteggio Progressivo | Somma dei punteggi progressivi turno per turno (criterio cumulativo). | **Da implementare** |
-
+Nota Bene: verifica che questo documento riporti fedelmente **tutte** le regole indicate nel documento di riferimento, anche al di fuori dei paragrafi specificati. Assicurarsi altresì che il documento non sia in contraddizione con questo piano, per quanto riguarda i metodi con cui calcolare le diverse tipologie di spareggio.
 ---
 
 ### 3. Logica di Ordinamento Dinamico Classifica (`src/reports.py`)
@@ -53,17 +53,24 @@ Attualmente la classifica ordina i giocatori tramite una tupla statica definita 
 
 ### 4. Integrazione della GUI (`src/gui/main_frame.py`)
 * **Nuovo Elemento nell'Albero**:
-  Nel ramo **Dati** del torneo verrà aggiunto il sotto-nodo **regole di spareggio** (accanto a Nome, Luogo, Date, ecc.).
+  All'interno del ramo **Torneo** verrà aggiunto il sotto-nodo **regole di spareggio** (accanto a turni, classifica, partite, ecc.).
+  * Quando questa voce sarà focalizzata, come succede con gli altri controlli, l'area di testo principale riporterà le regole applicate ed il loro esatto ordine di priorità
   * Attivando questa voce (doppio clic o Invio), si aprirà una finestra di dialogo accessibile: `TiebreakConfigDialog`.
+  * Anche le classifiche, sia quelle parziali che quella finale avranno negli headers assieme agli altri dati, la lista ordinata per importanza, dei criteri di spareggio attivi.
 
 * **Struttura della Finestra `TiebreakConfigDialog`**:
   Per garantire massima usabilità e compatibilità con gli screen reader (accessibilità), la finestra di dialogo userà i controlli nativi wxWidgets configurati con font e colori conformi alle impostazioni visive globali di Tornello:
   1. **Lista Sinistra ("Regole disponibili")**: Mostra l'elenco dei criteri non ancora applicati.
-  2. **Lista Destra ("Regole applicate")**: Mostra l'elenco ordinato delle regole attive, ciascuna numerata rigorosamente a partire da 1 (es. `1. Punti`, `2. Buchholz Cut-1`, `3. ARO`).
-  3. **Pulsanti di Movimento Laterale**:
+  2. **ctrltext read_only ("Spiegazione regola")**: visualizza una spiegazione della regola selezionata nel prossimo controllo.
+  3. **Lista Destra ("Regole applicate")**: Mostra l'elenco ordinato delle regole attive, ciascuna numerata rigorosamente a partire da 1 (es. `1. Punti`, `2. Buchholz Cut-1`, `3. ARO`).
+  4. **Pulsanti di Movimento Laterale**:
      * Premendo **Invio** o facendo doppio clic su un elemento nelle *Regole disponibili*, questo si sposterà in fondo all'elenco delle *Regole applicate*.
      * Premendo **Invio** o facendo doppio clic su un elemento nelle *Regole applicate*, questo verrà rimosso e tornerà tra quelle *Disponibili*.
-  4. **Pulsanti di Riordino (Verticali)**:
+  5. **Pulsanti di Riordino (Verticali)**:
      * Pulsanti **Sposta Su** (Up) e **Sposta Giù** (Down) a fianco della lista destra per cambiare la priorità delle regole attive.
-  5. **Pulsanti di Conferma**:
+  6. **Pulsanti di Conferma**:
      * Pulsanti **Conferma** (OK) e **Annulla** (Cancel) in basso, posizionati in ordine di tabulazione standard.
+  7. La lista di destra sarà popolata con le regole che tornello utilizza ora, numerate come detto per priorità, che faranno da scelta di default, se l'arbitro non desidera modificarle.
+  8. Associare eventi audio originali a tutti i controlli ed i movimenti/operazioni presenti e compiuti in questa finestra, usando play_sound come in tutto il resto di Tornello
+  9. Assicurarsi di aver seguito le regole di accessibilità indicate nelle istruzioni utente al modello, affinché gli screen readers siano in grado di leggere le caption dei controlli quando ricevono il focus di sistema.
+  10. Laddove necessario, creare moduli .py nuovi per evitare appesantimento di quelli esistenti soprattutto laddove questi presentino già una cospicua quantità di righe di codice.

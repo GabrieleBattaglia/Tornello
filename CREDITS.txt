@@ -7,10 +7,15 @@ Dedicato all'Associazione Scacchisti Italiani Ciechi e Ipovedenti (ASCId) e al g
 Ringraziamenti speciali a:
 - Luca Parravano, per i test e il supporto sulla versione CLI.
 - Lucia Micocci, per aver creduto per prima in questo progetto.
+- Ginevra Di Modica, per i test sul pulsante donazione.
+- Claudio Gasperoni, per la richiesta di inserire i criteri di spareggio.
+
+Supporter Club. Un ringraziamento di cuore va a tutti coloro che hanno deciso di supportare il progetto con una piccola donazione affinché possa crescere ed essere utile a più persone possibile.
+- Ginevra Di Modica
 
 Questo software integra:
 - Il motore di abbinamento svizzero bbpPairings v6.0.0 di Bierema Boyz Programming (regole FIDE 2026).
 - La libreria grafica accessibile wxPython per l'interfaccia utente.
-- Il pacchetto GBUtils con il modulo Acusticator per la riproduzione di suoni e feedback acustici spazializzati.
+- Il pacchetto GBUtils con il modulo Acusticator per la riproduzione di suoni e feedback acustici spazializzati, di Gabriele Battaglia.
 
 Sviluppato con passione per rendere gli scacchi accessibili a tutti.

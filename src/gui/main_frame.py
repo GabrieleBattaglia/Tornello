@@ -116,6 +116,7 @@ class MainFrame(wx.Frame):
         file_menu.Append(wx.ID_NEW, _("&Nuovo Torneo...\tCtrl+N") if "_" in globals() else "&Nuovo Torneo...\tCtrl+N")
         file_menu.Append(wx.ID_OPEN, _("&Apri Torneo...\tCtrl+O") if "_" in globals() else "&Apri Torneo...\tCtrl+O")
         self.item_export_ics = file_menu.Append(wx.ID_ANY, _("&Esporta partite pianificate...\tCtrl+Shift+E") if "_" in globals() else "&Esporta partite pianificate...\tCtrl+Shift+E")
+        self.item_delete_tournament = file_menu.Append(wx.ID_ANY, _("&Elimina Torneo Attivo...\tDelete") if "_" in globals() else "&Elimina Torneo Attivo...\tDelete")
         file_menu.AppendSeparator()
         file_menu.Append(wx.ID_EXIT, _("&Esci\tCtrl+Q") if "_" in globals() else "&Esci\tCtrl+Q")
         self.menu_bar.Append(file_menu, _("&File") if "_" in globals() else "&File")
@@ -172,6 +173,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
+        self.Bind(wx.EVT_MENU, self.on_delete_active_tournament_menu, self.item_delete_tournament)
         self.Bind(wx.EVT_MENU, self.on_enroll_players, self.item_enroll)
         self.Bind(wx.EVT_MENU, self.on_view_players, self.item_players)
         self.Bind(wx.EVT_MENU, self.on_view_current_round, self.item_round)
@@ -876,6 +878,11 @@ class MainFrame(wx.Frame):
         classifica_node = self.tree_ctrl.AppendItem(t_node, _("Classifica"))
         self.tree_ctrl.SetItemData(classifica_node, {"action": "show_standings", "filepath": filepath})
         
+        # Sotto-nodo: regole di spareggio
+        tiebreaks_node = self.tree_ctrl.AppendItem(t_node, _("regole di spareggio"))
+        self.tree_ctrl.SetItemData(tiebreaks_node, {"action": "show_tiebreaks", "filepath": filepath})
+
+        
         # Sotto-nodo: partite
         total_pgn_matches = sum(1 for r in rounds for m in r.get("matches", []) if m.get("pgn"))
         partite_pgn_node = self.tree_ctrl.AppendItem(t_node, f"{_('partite')} ({total_pgn_matches})")
@@ -991,6 +998,8 @@ class MainFrame(wx.Frame):
             self.show_single_pgn_text(data.get("match"))
         elif action == "show_standings":
             self.show_standings_verbose()
+        elif action == "show_tiebreaks":
+            self.show_tiebreaks_verbose()
         elif action == "category_prep":
             self.main_text.Clear()
             self.append_log(_("Tornei In Preparazione\n\nIn questa sezione trovi i tornei creati ma non ancora avviati (ossia per cui non sono ancora stati generati gli abbinamenti del primo turno)."))
@@ -1061,8 +1070,60 @@ class MainFrame(wx.Frame):
         info.append(_("Numero totale di turni: {rounds}").format(rounds=t.get('total_rounds', 5)))
         info.append(_("Turno corrente: {round}").format(round=t.get('current_round', 1)))
         info.append(_("Giocatori iscritti: {count}").format(count=len(t.get('players', []))))
-        
         self.append_log("\n".join(info))
+
+    def show_tiebreaks_verbose(self):
+        if not self.current_tournament:
+            return
+        self.main_text.Clear()
+        
+        # Ottieni la priorità dei tiebreaks (default se non presente)
+        tiebreak_order = self.current_tournament.get(
+            "tiebreaks",
+            ["points", "withdrawn", "buchholz_cut1", "buchholz", "aro", "initial_elo"]
+        )
+        
+        criteri_nomi = {
+            "points": _("Punti Totali"),
+            "withdrawn": _("Ritirato"),
+            "buchholz_cut1": _("Buchholz Cut-1"),
+            "buchholz": _("Buchholz Totale"),
+            "aro": _("ARO (Average Rating of Opponents)"),
+            "initial_elo": _("Elo Iniziale (Seed)"),
+            "sonneborn_berger": _("Sonneborn-Berger"),
+            "direct_encounter": _("Scontro Diretto"),
+            "played_rounds_rep": _("Turni Giocati (REP)"),
+            "number_of_wins": _("Maggior Numero di Vittorie"),
+            "number_of_blacks": _("Incontri col Nero"),
+            "cumulative": _("Punteggio Progressivo")
+        }
+        
+        lines = []
+        lines.append(_("REGOLE DI SPAREGGIO CONFIGURATE"))
+        lines.append("=" * 50)
+        lines.append(_("Ordine di priorità dei criteri di spareggio attivi:\n"))
+        
+        for idx, crit in enumerate(tiebreak_order, 1):
+            nome = criteri_nomi.get(crit, crit)
+            lines.append(f"  {idx}. {nome}")
+            
+        lines.append("\n" + "=" * 50)
+        lines.append(_("Fai doppio clic o premi Invio su questa voce per modificare le regole di spareggio."))
+        
+        self.append_log("\n".join(lines))
+        self.main_text.SetInsertionPoint(0)
+        self.main_text.ShowPosition(0)
+
+    def on_configure_tiebreaks(self):
+        from gui.dialogs import TiebreakConfigDialog
+        from utils import play_sound
+        
+        play_sound("apertura", self.current_tournament)
+        dlg = TiebreakConfigDialog(self, self.current_tournament)
+        if dlg.ShowModal() == wx.ID_OK:
+            self._save_state()
+            self.show_tiebreaks_verbose()
+        dlg.Destroy()
 
     def show_players_list_verbose(self):
         if not self.current_tournament:
@@ -1374,6 +1435,8 @@ class MainFrame(wx.Frame):
             self.on_finalize_tournament(None)
         elif action == "activate_match":
             self.on_activate_match(data.get("match"))
+        elif action == "show_tiebreaks":
+            self.on_configure_tiebreaks()
         elif action == "start_new_tournament":
             self.start_new_tournament_wizard()
         elif action == "wizard_next":
@@ -1693,8 +1756,14 @@ class MainFrame(wx.Frame):
                 player_data = data.get("player")
                 self.delete_player_from_tournament(item, player_data)
                 return
-            elif action == "select_tournament" and filepath and "closed tournaments" in filepath.lower():
-                self.delete_concluded_tournament(item, filepath)
+            elif action == "select_tournament" and filepath:
+                parent = self.tree_ctrl.GetItemParent(item)
+                parent_data = self.tree_ctrl.GetItemData(parent) if parent else None
+                is_closed = "closed tournaments" in filepath.lower() or (parent_data and parent_data.get("action") == "category_closed")
+                if not is_closed:
+                    self.delete_active_tournament(item, filepath)
+                else:
+                    self.delete_concluded_tournament(item, filepath)
                 return
             elif action == "load_concluded":
                 self.delete_concluded_tournament(item, data["filepath"])
@@ -1769,6 +1838,109 @@ class MainFrame(wx.Frame):
             except Exception as e:
                 wx.MessageBox(f"Impossibile eliminare il file: {e}", "Errore", wx.ICON_ERROR)
         dlg.Destroy()
+
+    def delete_active_tournament(self, item, filepath):
+        """Rimuove fisicamente dal disco un torneo attivo dopo conferma."""
+        import json
+        import os
+        from utils import play_sound
+        
+        t_label = self.tree_ctrl.GetItemText(item)
+        
+        try:
+            with open(filepath, "r", encoding="utf-8") as f_in:
+                data = json.load(f_in)
+        except Exception as e:
+            wx.MessageBox(f"Impossibile leggere il file del torneo: {e}", "Errore", wx.ICON_ERROR)
+            return
+
+        t_name = data.get("name", t_label)
+        if not t_name:
+            t_name = t_label
+
+        msg = f"Sei sicuro di voler eliminare definitivamente il torneo attivo '{t_name}'?\nQuesta azione rimuoverà il file JSON centrale e TUTTI i report generati per questo torneo, sia nella cartella principale che nella cartella di salvataggio custom."
+        dlg = AccessibleMsgDialog(self, "Conferma Eliminazione Torneo Attivo", msg, style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            try:
+                # 1. Rimuove il file JSON centrale
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+
+                # 2. Ottiene i percorsi di salvataggio
+                paths_to_clean = [os.path.dirname(filepath)]
+                custom_path = data.get("custom_save_path") or data.get("save_path")
+                if custom_path:
+                    from utils import resolve_and_verify_save_path
+                    resolved_path, _ = resolve_and_verify_save_path(custom_path)
+                    if resolved_path and os.path.exists(resolved_path):
+                        paths_to_clean.append(resolved_path)
+
+                paths_to_clean = list(set([os.path.abspath(p) for p in paths_to_clean if p]))
+
+                # 3. Nome sanificato per trovare i file correlati
+                from tournament import sanitize_filename
+                sanitized_name = sanitize_filename(t_name)
+                prefix_to_match = f"Tornello - {sanitized_name}"
+
+                deleted_count = 0
+                for folder in paths_to_clean:
+                    if os.path.exists(folder):
+                        for f_name in os.listdir(folder):
+                            if f_name.startswith(prefix_to_match):
+                                f_path = os.path.join(folder, f_name)
+                                if os.path.isfile(f_path):
+                                    try:
+                                        os.remove(f_path)
+                                        deleted_count += 1
+                                    except Exception:
+                                        pass
+
+                # 4. Rimuove il nodo dall'albero
+                self.tree_ctrl.Delete(item)
+                
+                if self.active_filename and os.path.abspath(filepath) == os.path.abspath(self.active_filename):
+                    self.current_tournament = None
+                    self.active_filename = None
+                    self.show_intro_message()
+
+                play_sound("cancellato", self.current_tournament)
+                self.set_status(f"Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati.")
+            except Exception as e:
+                wx.MessageBox(f"Errore durante l'eliminazione del torneo: {e}", "Errore", wx.ICON_ERROR)
+        dlg.Destroy()
+
+    def on_delete_active_tournament_menu(self, event):
+        item = self.tree_ctrl.GetSelection()
+        if not item or not item.IsOk():
+            from utils import play_sound
+            play_sound("errore", self.current_tournament)
+            wx.MessageBox(_("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."), _("Avviso"), wx.ICON_WARNING)
+            return
+        
+        data = self.tree_ctrl.GetItemData(item)
+        if not data or data.get("action") != "select_tournament":
+            from utils import play_sound
+            play_sound("errore", self.current_tournament)
+            wx.MessageBox(_("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."), _("Avviso"), wx.ICON_WARNING)
+            return
+            
+        filepath = data.get("filepath")
+        if not filepath:
+            from utils import play_sound
+            play_sound("errore", self.current_tournament)
+            wx.MessageBox(_("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."), _("Avviso"), wx.ICON_WARNING)
+            return
+            
+        parent = self.tree_ctrl.GetItemParent(item)
+        parent_data = self.tree_ctrl.GetItemData(parent) if parent else None
+        is_closed = "closed tournaments" in filepath.lower() or (parent_data and parent_data.get("action") == "category_closed")
+        
+        if not is_closed:
+            self.delete_active_tournament(item, filepath)
+        else:
+            from utils import play_sound
+            play_sound("errore", self.current_tournament)
+            wx.MessageBox(_("Il nodo selezionato rappresenta un torneo già concluso."), _("Avviso"), wx.ICON_WARNING)
 
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""

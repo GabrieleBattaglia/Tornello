@@ -6,3 +6,5 @@ from .fide_query_dialog import FideQueryDialog as FideQueryDialog
 from .sync_database_dialog import SyncDatabaseDialog as SyncDatabaseDialog
 from .players_db_dialog import PlayersDbDialog as PlayersDbDialog
 from .donation_dialog import DonationDialog as DonationDialog
+from .tiebreak_config_dialog import TiebreakConfigDialog as TiebreakConfigDialog
+

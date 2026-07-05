@@ -32,6 +32,14 @@ Requisiti:
 - Python 3.10+
 - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
 - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
+
+9.1.0 (2026.07.05)
+	+ Feature: Configurazione dinamica dei criteri di spareggio tecnico per il calcolo della classifica (Buchholz, Buchholz Cut-1, ARO, Sonneborn-Berger, Scontro Diretto, REP, Vittorie, Neri, Cumulative) con ordinamento dinamico e prioritario da sinistra a destra delle colonne dei report.
+	+ Feature: Dialogo dedicato GUI in wxPython per la configurazione delle regole di spareggio con navigazione tramite screen reader ottimizzata (tab order corretto, auto-selezione al focus, visualizzazione dinamica della spiegazione).
+	+ Feature: Utilizzo di preset acustici originali ("successivo", "cancellato", "menu_triplicato_su_2", "menu_triplicato_verso_il_basso_3") per i controlli ed eventi della finestra configurazione spareggi.
+	+ Feature: Scorciatoia da tastiera (Enter su disponibili, Delete/Canc o Enter su applicate) per lo spostamento delle regole di spareggio senza forzare la chiusura della finestra.
+	+ Feature: Eliminazione definitiva dal disco di un torneo attivo e di tutti i relativi file correlati (JSON, report .txt, calendari .ics) generati sia nella directory radice che in quella custom configurata, accessibile tramite menù File ed il tasto rapido Canc/Delete sul nodo del torneo attivo nell'albero (gestito con dialogo di conferma accessibile).
+
 9.0.2
 	+ Bugfix: Corretto il bug nella finestra Ricerca FIDE (FideQueryDialog) dove il pannello dei dettagli del giocatore non rispettava le dimensioni e i caratteri impostati nelle preferenze utente a causa della chiamata a SetValue.
 

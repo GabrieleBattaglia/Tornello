@@ -3,7 +3,18 @@ import traceback
 from datetime import datetime
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
 from utils import format_date_locale, format_points, sanitize_filename, _ensure_players_dict
-from stats import compute_buchholz, compute_buchholz_cut1, compute_aro
+from stats import (
+    compute_buchholz,
+    compute_buchholz_cut1,
+    compute_aro,
+    compute_sonneborn_berger,
+    compute_direct_encounter,
+    compute_played_rounds_rep,
+    compute_number_of_wins,
+    compute_number_of_blacks,
+    compute_cumulative
+)
+
 from version import VERSIONE
 
 
@@ -502,6 +513,87 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
         traceback.print_exc()
 
 
+def get_criterion_value(player_item, criterion, torneo):
+    p_id = player_item.get("id")
+    if criterion == "points":
+        try:
+            return float(player_item.get("points", 0.0))
+        except (ValueError, TypeError):
+            return 0.0
+    elif criterion == "withdrawn":
+        return 1 if not player_item.get("withdrawn", False) else 0
+    elif criterion == "buchholz_cut1":
+        return compute_buchholz_cut1(p_id, torneo)
+    elif criterion == "buchholz":
+        return compute_buchholz(p_id, torneo)
+    elif criterion == "aro":
+        val = compute_aro(p_id, torneo)
+        return val if val is not None else 0.0
+    elif criterion == "initial_elo":
+        elo_initial_raw = float(player_item.get("initial_elo", 0))
+        return elo_initial_raw if elo_initial_raw > 0 else DEFAULT_ELO
+    elif criterion == "sonneborn_berger":
+        return compute_sonneborn_berger(p_id, torneo)
+    elif criterion == "direct_encounter":
+        return compute_direct_encounter(p_id, torneo)
+    elif criterion == "played_rounds_rep":
+        return compute_played_rounds_rep(p_id, torneo)
+    elif criterion == "number_of_wins":
+        return compute_number_of_wins(p_id, torneo)
+    elif criterion == "number_of_blacks":
+        return compute_number_of_blacks(p_id, torneo)
+    elif criterion == "cumulative":
+        return compute_cumulative(p_id, torneo)
+    return 0.0
+
+
+def get_column_data(criterion, player, torneo):
+    p_id = player.get("id")
+    is_rit = player.get("withdrawn", False)
+    
+    if criterion == "points":
+        hdr = _("Punti")
+        val = f"{float(player.get('points', 0.0)):5.1f}"
+    elif criterion == "buchholz_cut1":
+        hdr = _("Bucch-1")
+        val = f"{float(compute_buchholz_cut1(p_id, torneo)):7.2f}" if not is_rit else "   ----"
+    elif criterion == "buchholz":
+        hdr = _("Bucch")
+        val = f"{float(compute_buchholz(p_id, torneo)):5.1f}" if not is_rit else " ----"
+    elif criterion == "aro":
+        hdr = _(" ARO")
+        aro_val = compute_aro(p_id, torneo)
+        val = f"{int(aro_val):4d}" if aro_val is not None and not is_rit else " ---"
+    elif criterion == "sonneborn_berger":
+        hdr = _("Sonn-B")
+        sb_val = compute_sonneborn_berger(p_id, torneo)
+        val = f"{float(sb_val):6.2f}" if not is_rit else "  ----"
+    elif criterion == "direct_encounter":
+        hdr = _("ScrDir")
+        de_val = compute_direct_encounter(p_id, torneo)
+        val = f"{float(de_val):6.1f}" if not is_rit else "  ----"
+    elif criterion == "played_rounds_rep":
+        hdr = _("REP")
+        rep_val = compute_played_rounds_rep(p_id, torneo)
+        val = f"{int(rep_val):3d}" if not is_rit else "  -"
+    elif criterion == "number_of_wins":
+        hdr = _("Vitt")
+        wins_val = compute_number_of_wins(p_id, torneo)
+        val = f"{int(wins_val):4d}" if not is_rit else "   -"
+    elif criterion == "number_of_blacks":
+        hdr = _("Neri")
+        blacks_val = compute_number_of_blacks(p_id, torneo)
+        val = f"{int(blacks_val):4d}" if not is_rit else "   -"
+    elif criterion == "cumulative":
+        hdr = _("Cumul")
+        cum_val = compute_cumulative(p_id, torneo)
+        val = f"{float(cum_val):5.1f}" if not is_rit else "    -"
+    else:
+        return None
+        
+    return hdr, val
+
+
 def get_standings_text(torneo, final=False):
     """
     Genera la classifica (parziale o finale) del torneo come stringa.
@@ -548,29 +640,17 @@ def get_standings_text(torneo, final=False):
             p["final_rank"] = "RIT"
 
     def sort_key_standings(player_item):
-        points_val = float(player_item.get("points", -999))
-        status_val = 1 if not player_item.get("withdrawn", False) else 0
-        bucch_c1_val = float(
-            player_item.get("buchholz_cut1", -1.0)
-            if player_item.get("buchholz_cut1") is not None
-            else -1.0
+        tiebreak_order = torneo.get(
+            "tiebreaks",
+            ["points", "withdrawn", "buchholz_cut1", "buchholz", "aro", "initial_elo"]
         )
-        bucch_tot_val = float(player_item.get("buchholz", 0.0))
-        aro_val = float(
-            player_item.get("aro", 0.0) if player_item.get("aro") is not None else 0.0
-        )
+        sort_tuple = []
+        for criterion in tiebreak_order:
+            val = get_criterion_value(player_item, criterion, torneo)
+            # Aggiunge il valore invertito per l'ordinamento decrescente
+            sort_tuple.append(-val)
+        return tuple(sort_tuple)
 
-        elo_initial_raw = float(player_item.get("initial_elo", 0))
-        elo_initial_val = elo_initial_raw if elo_initial_raw > 0 else DEFAULT_ELO
-
-        return (
-            -points_val,
-            -status_val,
-            -bucch_c1_val,
-            -bucch_tot_val,
-            -aro_val,
-            -elo_initial_val,
-        )
 
     # --- DETERMINAZIONE STATO E TITOLO REPORT ---
     current_round_in_state = torneo.get("current_round", 0)
@@ -695,28 +775,66 @@ def get_standings_text(torneo, final=False):
         )
     )
     out.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
+    
+    # Lista ordinata per importanza dei criteri di spareggio attivi negli headers
+    tiebreak_order = torneo.get(
+        "tiebreaks",
+        ["points", "withdrawn", "buchholz_cut1", "buchholz", "aro", "initial_elo"]
+    )
+    criteri_nomi = {
+        "points": _("Punti"),
+        "withdrawn": _("Ritirato"),
+        "buchholz_cut1": _("Buchholz Cut-1"),
+        "buchholz": _("Buchholz Totale"),
+        "aro": _("ARO"),
+        "initial_elo": _("Elo Iniziale"),
+        "sonneborn_berger": _("Sonneborn-Berger"),
+        "direct_encounter": _("Scontro Diretto"),
+        "played_rounds_rep": _("REP (Turni Giocati)"),
+        "number_of_wins": _("Vittorie"),
+        "number_of_blacks": _("Neri"),
+        "cumulative": _("Cumulativo")
+    }
+    criteri_display = [criteri_nomi.get(c, c) for c in tiebreak_order]
+    out.write(_("Criteri di Spareggio: {tiebreaks}\n").format(
+        tiebreaks=", ".join(criteri_display)
+    ))
+    
     out.write(
         _("Data Report: {date} {time}\n").format(
             date=format_date_locale(datetime.now().date()),
             time=datetime.now().strftime("%H:%M:%S"),
         )
     )
+
     out.write("-" * 80 + "\n")
     out.write(f"{status_line}\n")
     out.write("-" * 80 + "\n")
 
-    # --- HEADER TABELLA ---
-    header_table = _(
-        "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO "
-    )
+    # --- HEADER TABELLA DINAMICO ---
+    header_table = _("Pos. (Tab)   Titolo Nome Cognome               [EloIni]")
+    
+    # Filtriamo i criteri che non hanno una colonna numerica separata
+    dynamic_cols = [c for c in tiebreak_order if c not in ["withdrawn", "initial_elo"]]
+    
+    headers_list = []
+    for crit in dynamic_cols:
+        col_res = get_column_data(crit, {}, torneo)
+        if col_res:
+            headers_list.append(col_res[0])
+            
+    if headers_list:
+        header_table += " " + " ".join(headers_list)
+        
     if final:
-        header_table += " Perf  Elo Var."
+        header_table += " " + _("Perf") + " " + _("Elo Var.")
+        
     out.write(header_table + "\n")
     out.write("-" * len(header_table) + "\n")
-
+ 
     for player in players_sorted:
         rank_to_show = player.get("display_rank", "?")
-
+ 
         p_id = player.get("id")
         starting_rank = seeding_map.get(p_id, 0)
         delta_str = ""
@@ -726,42 +844,26 @@ def get_standings_text(torneo, final=False):
             rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
         else:
             rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
-
+ 
         fide_title = str(player.get("fide_title", "")).strip().upper()
         player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
-
+ 
         title_display_str = f"{fide_title:<3}"
         name_display_str = f"{player_name_str:<27.27}"
         elo_ini_str = f"[{int(player.get('initial_elo', DEFAULT_ELO)):4d}]"
-        points_str = f"{float(player.get('points', 0.0)):5.1f}"
-
-        bucch_c1_val = player.get("buchholz_cut1")
-        bucch_c1_str = (
-            f"{float(bucch_c1_val):7.2f}"
-            if bucch_c1_val is not None and not player.get("withdrawn")
-            else "   ----"
-        )
-
-        bucch_tot_val = player.get("buchholz")
-        bucch_tot_str = (
-            f"{float(bucch_tot_val):6.2f}"
-            if bucch_tot_val is not None and not player.get("withdrawn")
-            else "  ----"
-        )
-
-        aro_val = player.get("aro")
-        aro_str = (
-            f"{int(aro_val):4d}"
-            if aro_val is not None and not player.get("withdrawn")
-            else " ---"
-        )
-
-        # --- MODIFICA RIGA DATI ---
-        line = (
-            f"{rank_display_str} {title_display_str} {name_display_str} "
-            f"{elo_ini_str} {points_str} {bucch_c1_str} {bucch_tot_str} {aro_str}"
-        )
-
+ 
+        # Costruzione dinamica della riga dati
+        line = f"{rank_display_str} {title_display_str} {name_display_str} {elo_ini_str}"
+        
+        vals_list = []
+        for crit in dynamic_cols:
+            col_res = get_column_data(crit, player, torneo)
+            if col_res:
+                vals_list.append(col_res[1])
+                
+        if vals_list:
+            line += " " + " ".join(vals_list)
+ 
         if final:
             if player.get("withdrawn", False):
                 perf_str, elo_change_str = "----", " ---"
@@ -777,10 +879,10 @@ def get_standings_text(torneo, final=False):
                     else " ---"
                 )
             line += f" {perf_str} {elo_change_str}"
-
+ 
         if player.get("withdrawn", False):
             line = f"{line.ljust(90)} [RITIRATO]"
-
+ 
         out.write(line + "\n")
 
     out.write(f"\n\nTornello ({VERSIONE})\n")

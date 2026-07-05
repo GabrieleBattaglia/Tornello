@@ -543,3 +543,176 @@ def classify_tournament_category(minutes: int, increment: int) -> str:
         return "standard"
 
 
+def compute_sonneborn_berger(player_id, torneo):
+    """Calcola il punteggio Sonneborn-Berger per un giocatore."""
+    sb_score = 0.0
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+    opponent_ids_encountered = set()
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if (
+            opponent_id
+            and opponent_id != "BYE_PLAYER_ID"
+            and opponent_id not in opponent_ids_encountered
+        ):
+            opponent = players_dict.get(opponent_id)
+            if opponent:
+                try:
+                    opponent_points = float(opponent.get("points", 0.0))
+                except (ValueError, TypeError):
+                    opponent_points = 0.0
+                score = result_entry.get("score")
+                if score is not None:
+                    try:
+                        score_val = float(score)
+                    except (ValueError, TypeError):
+                        score_val = 0.0
+                    
+                    if score_val == 1.0:
+                        sb_score += opponent_points
+                    elif score_val == 0.5:
+                        sb_score += opponent_points * 0.5
+                opponent_ids_encountered.add(opponent_id)
+    return float(format_points(sb_score))
+
+
+def compute_direct_encounter(player_id, torneo):
+    """Calcola il punteggio dello scontro diretto contro i giocatori a pari punti."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+    
+    try:
+        player_points = float(player.get("points", 0.0))
+    except (ValueError, TypeError):
+        player_points = 0.0
+        
+    players = torneo.get("players", [])
+    # Trova gli ID dei giocatori a pari punti (escluso se stesso)
+    tied_player_ids = set()
+    for p in players:
+        if p.get("id") != player_id:
+            try:
+                p_pts = float(p.get("points", 0.0))
+            except (ValueError, TypeError):
+                p_pts = 0.0
+            if p_pts == player_points:
+                tied_player_ids.add(p.get("id"))
+                
+    if not tied_player_ids:
+        return 0.0
+        
+    de_score = 0.0
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if opponent_id in tied_player_ids:
+            score = result_entry.get("score")
+            if score is not None:
+                try:
+                    de_score += float(score)
+                except (ValueError, TypeError):
+                    pass
+    return float(format_points(de_score))
+
+
+def compute_played_rounds_rep(player_id, torneo):
+    """Calcola i turni in cui il giocatore ha effettivamente giocato (REP)."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+        
+    played_count = 0
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+        
+        result_str = result_entry.get("result")
+        if not result_str:
+            continue
+            
+        result_upper = str(result_str).upper()
+        if "F" in result_upper or "BYE" in result_upper:
+            continue
+            
+        played_count += 1
+        
+    return played_count
+
+
+def compute_number_of_wins(player_id, torneo):
+    """Calcola il maggior numero di vittorie conseguite (incluse a tavolino/forfeit)."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+        
+    wins = 0
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if opponent_id == "BYE_PLAYER_ID":
+            continue
+            
+        score = result_entry.get("score")
+        if score is not None:
+            try:
+                score_val = float(score)
+            except (ValueError, TypeError):
+                score_val = 0.0
+            
+            if score_val == 1.0:
+                wins += 1
+    return wins
+
+
+def compute_number_of_blacks(player_id, torneo):
+    """Calcola il maggior numero di partite effettivamente disputate con il Nero."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+        
+    blacks = 0
+    for result_entry in player.get("results_history", []):
+        if result_entry.get("color") == "black":
+            opponent_id = result_entry.get("opponent_id")
+            if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+                continue
+                
+            result_str = result_entry.get("result")
+            if result_str:
+                result_upper = str(result_str).upper()
+                if "F" in result_upper or "BYE" in result_upper:
+                    continue
+            blacks += 1
+    return blacks
+
+
+def compute_cumulative(player_id, torneo):
+    """Calcola la somma dei punteggi progressivi turno per turno (criterio cumulativo)."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+        
+    history_sorted = sorted(
+        player.get("results_history", []), key=lambda x: x.get("round", 0)
+    )
+    
+    cumulative_sum = 0.0
+    running_total = 0.0
+    for result in history_sorted:
+        score = result.get("score")
+        if score is not None:
+            try:
+                running_total += float(score)
+            except (ValueError, TypeError):
+                pass
+        cumulative_sum += running_total
+        
+    return float(format_points(cumulative_sum))
+
+
+
