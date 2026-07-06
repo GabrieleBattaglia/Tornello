@@ -1870,7 +1870,7 @@ class MainFrame(wx.Frame):
                 custom_path = data.get("custom_save_path") or data.get("save_path")
                 if custom_path:
                     from utils import resolve_and_verify_save_path
-                    resolved_path, _ = resolve_and_verify_save_path(custom_path)
+                    resolved_path, _discard = resolve_and_verify_save_path(custom_path)
                     if resolved_path and os.path.exists(resolved_path):
                         paths_to_clean.append(resolved_path)
 
