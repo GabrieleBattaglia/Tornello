@@ -118,5 +118,5 @@ Sono previsti 4 modificatori (Cut-1, Cut-2, Median-1, Median-2), ma attenzione: 
 • Sonneborn-Berger (SB): SOLO Cut-1.
 • Average Rating of Opponents (ARO): SOLO Cut-1.
 • (Sum of) Progressive Scores (PS): SOLO Cut-1.
-
+Ora attendi che effettui una serie di test manuali.
 Grazie e buon lavoro.

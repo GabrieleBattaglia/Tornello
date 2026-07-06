@@ -383,17 +383,47 @@
  "custom_save_path": "e:\\git\\mine\\Tornello",
  "save_path": "e:\\git\\mine\\Tornello",
  "tiebreaks": [
-  "points",
-  "withdrawn",
-  "buchholz_cut1",
-  "buchholz",
-  "aro",
-  "initial_elo",
-  "played_rounds_rep",
-  "number_of_wins",
-  "number_of_blacks",
-  "direct_encounter",
-  "cumulative",
-  "sonneborn_berger"
+  {
+   "key": "BH",
+   "modifiers": {
+    "cut1": true
+   }
+  },
+  {
+   "key": "BH",
+   "modifiers": {}
+  },
+  {
+   "key": "ARO",
+   "modifiers": {}
+  },
+  {
+   "key": "RTNG",
+   "modifiers": {}
+  },
+  {
+   "key": "REP",
+   "modifiers": {}
+  },
+  {
+   "key": "WIN",
+   "modifiers": {}
+  },
+  {
+   "key": "BPG",
+   "modifiers": {}
+  },
+  {
+   "key": "DE",
+   "modifiers": {}
+  },
+  {
+   "key": "PS",
+   "modifiers": {}
+  },
+  {
+   "key": "SB",
+   "modifiers": {}
+  }
  ]
 }

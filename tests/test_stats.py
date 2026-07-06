@@ -159,15 +159,15 @@ def test_dynamic_standings_sorting():
     torneo["tiebreaks"] = ["points", "buchholz", "aro"]
     text_cols1 = get_standings_text(torneo)
     header_line1 = [line for line in text_cols1.split("\n") if "Pos. (Tab)" in line][0]
-    assert header_line1.find("Punti") < header_line1.find("Bucch")
-    assert header_line1.find("Bucch") < header_line1.find("ARO")
+    assert header_line1.find("Punti") < header_line1.find("BH")
+    assert header_line1.find("BH") < header_line1.find("ARO")
     
     # Swap order: points, aro, buchholz
     torneo["tiebreaks"] = ["points", "aro", "buchholz"]
     text_cols2 = get_standings_text(torneo)
     header_line2 = [line for line in text_cols2.split("\n") if "Pos. (Tab)" in line][0]
     assert header_line2.find("Punti") < header_line2.find("ARO")
-    assert header_line2.find("ARO") < header_line2.find("Bucch")
+    assert header_line2.find("ARO") < header_line2.find("BH")
 
 
 

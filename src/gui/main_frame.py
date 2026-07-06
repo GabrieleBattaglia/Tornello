@@ -1077,34 +1077,43 @@ class MainFrame(wx.Frame):
             return
         self.main_text.Clear()
         
-        # Ottieni la priorità dei tiebreaks (default se non presente)
-        tiebreak_order = self.current_tournament.get(
-            "tiebreaks",
-            ["points", "withdrawn", "buchholz_cut1", "buchholz", "aro", "initial_elo"]
+        from tiebreak_criteria import (
+            get_criterion_display_name, get_default_tiebreaks,
+            migrate_old_tiebreaks,
         )
         
-        criteri_nomi = {
-            "points": _("Punti Totali"),
-            "withdrawn": _("Ritirato"),
-            "buchholz_cut1": _("Buchholz Cut-1"),
-            "buchholz": _("Buchholz Totale"),
-            "aro": _("ARO (Average Rating of Opponents)"),
-            "initial_elo": _("Elo Iniziale (Seed)"),
-            "sonneborn_berger": _("Sonneborn-Berger"),
-            "direct_encounter": _("Scontro Diretto"),
-            "played_rounds_rep": _("Turni Giocati (REP)"),
-            "number_of_wins": _("Maggior Numero di Vittorie"),
-            "number_of_blacks": _("Incontri col Nero"),
-            "cumulative": _("Punteggio Progressivo")
-        }
+        # Ottieni la priorità dei tiebreaks con retrocompatibilità
+        raw_tiebreaks = self.current_tournament.get("tiebreaks", None)
+        if raw_tiebreaks is None:
+            tiebreak_entries = get_default_tiebreaks()
+        elif raw_tiebreaks and isinstance(raw_tiebreaks[0], str):
+            tiebreak_entries = migrate_old_tiebreaks(raw_tiebreaks)
+        else:
+            tiebreak_entries = raw_tiebreaks
         
         lines = []
         lines.append(_("REGOLE DI SPAREGGIO CONFIGURATE"))
         lines.append("=" * 50)
         lines.append(_("Ordine di priorità dei criteri di spareggio attivi:\n"))
         
-        for idx, crit in enumerate(tiebreak_order, 1):
-            nome = criteri_nomi.get(crit, crit)
+        for idx, entry in enumerate(tiebreak_entries, 1):
+            if isinstance(entry, dict):
+                nome = get_criterion_display_name(entry.get("key", ""), entry.get("modifiers"))
+            else:
+                # Retrocompatibilità vecchio formato stringa
+                criteri_nomi = {
+                    "points": _("Punti Totali"), "withdrawn": _("Ritirato"),
+                    "buchholz_cut1": _("Buchholz Cut-1"), "buchholz": _("Buchholz Totale"),
+                    "aro": _("ARO (Average Rating of Opponents)"),
+                    "initial_elo": _("Elo Iniziale (Seed)"),
+                    "sonneborn_berger": _("Sonneborn-Berger"),
+                    "direct_encounter": _("Scontro Diretto"),
+                    "played_rounds_rep": _("Turni Giocati (REP)"),
+                    "number_of_wins": _("Maggior Numero di Vittorie"),
+                    "number_of_blacks": _("Incontri col Nero"),
+                    "cumulative": _("Punteggio Progressivo"),
+                }
+                nome = criteri_nomi.get(entry, entry)
             lines.append(f"  {idx}. {nome}")
             
         lines.append("\n" + "=" * 50)

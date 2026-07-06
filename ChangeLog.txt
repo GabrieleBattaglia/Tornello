@@ -33,6 +33,12 @@ Requisiti:
 - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
 - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
 
+9.2.0 (2026.07.06)
+	+ Feature: Integrazione completa dei 19 criteri di spareggio FIDE ufficiali (Marzo 2026) con supporto avanzato ai 4 modificatori (Cut-1, Cut-2, Median-1, Median-2) e logica di esclusione prioritaria per forfeit (Art. 14/16).
+	+ Feature: Interfaccia utente di configurazione degli spareggi migliorata in wxPython: supporto a istanze multiple dello stesso criterio, visualizzazione dei modificatori inline (es. [Cut-1]) e menu contestuale accessibile (tramite tasto Applicazioni o click destro) per attivare/disattivare i modificatori supportati.
+	+ Feature: Integrazione dinamica dei criteri configurati nel calcolo della classifica per la generazione dei report (reports.py) e nella finalizzazione del torneo (controller.py), rimuovendo i sort parziali hardcoded legacy.
+	+ Feature: Risoluzione di tutti i warning e degli errori logici/variabili inutilizzate rilevati mediante analisi con Ruff.
+
 9.1.0 (2026.07.05)
 	+ Feature: Configurazione dinamica dei criteri di spareggio tecnico per il calcolo della classifica (Buchholz, Buchholz Cut-1, ARO, Sonneborn-Berger, Scontro Diretto, REP, Vittorie, Neri, Cumulative) con ordinamento dinamico e prioritario da sinistra a destra delle colonne dei report.
 	+ Feature: Dialogo dedicato GUI in wxPython per la configurazione delle regole di spareggio con navigazione tramite screen reader ottimizzata (tab order corretto, auto-selezione al focus, visualizzazione dinamica della spiegazione).

@@ -24,7 +24,11 @@ from stats import (
     calculate_performance_rating,
     calculate_elo_change,
     parse_time_control,
-    classify_tournament_category
+    classify_tournament_category,
+    compute_tiebreak_value,
+)
+from tiebreak_criteria import (
+    get_default_tiebreaks, migrate_old_tiebreaks,
 )
 from reports import (
     save_current_tournament_round_file,
@@ -445,7 +449,6 @@ class TournamentController:
                 self.ui.show_message(_("\nReindirizzamento all'inserimento giocatori..."))
                 existing_players = self.tournament.players
 
-        num_giocatori = len(self.tournament.players)
         valore_bye_suggerito = 0.5
         valore_alternativo = 1.0
 
@@ -726,16 +729,35 @@ class TournamentController:
                 p.to_dict(), torneo_dict["players_dict"]
             )
 
-        # Fase 3: Ordinamento
+        # Fase 3: Ordinamento dinamico basato sui criteri di spareggio configurati
         self.ui.show_message(_("Ordinamento classifica finale..."))
+        
+        # Leggi i criteri di spareggio dal torneo con retrocompatibilità
+        raw_tiebreaks = torneo_dict.get("tiebreaks", None)
+        if raw_tiebreaks is None:
+            tiebreak_entries = get_default_tiebreaks()
+        elif raw_tiebreaks and isinstance(raw_tiebreaks[0], str):
+            tiebreak_entries = migrate_old_tiebreaks(raw_tiebreaks)
+        else:
+            tiebreak_entries = raw_tiebreaks
+        
         def sort_key_final(player: Player):
             points = float(player.points)
             status_val = 0 if player.withdrawn else 1
-            bucch_c1 = float(player.buchholz_cut1 if player.buchholz_cut1 is not None else -1.0)
-            bucch_tot = float(player.buchholz)
-            performance = int(player.performance_rating if player.performance_rating is not None else -1)
-            elo_initial = int(player.initial_elo)
-            return (-points, -status_val, -bucch_c1, -bucch_tot, -performance, -elo_initial)
+            sort_tuple = [-points, -status_val]
+            
+            # Applica dinamicamente ogni criterio di spareggio configurato
+            for entry in tiebreak_entries:
+                if isinstance(entry, dict):
+                    key = entry.get("key", "")
+                    modifiers = entry.get("modifiers", {})
+                else:
+                    key = str(entry)
+                    modifiers = {}
+                val = compute_tiebreak_value(player.id, torneo_dict, key, modifiers)
+                sort_tuple.append(-(float(val) if val is not None else 0.0))
+            
+            return tuple(sort_tuple)
 
         players_sorted = sorted(self.tournament.players, key=sort_key_final)
         current_visual_rank = 0

@@ -5,20 +5,20 @@ Federazione Organizzante: ITA
 Arbitro Capo: N/D
 Controllo Tempo: 60 min + 0 sec (Standard)
 Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
-Criteri di Spareggio: Punti, Ritirato, Buchholz Cut-1, Buchholz Totale, ARO, Elo Iniziale, REP (Turni Giocati), Vittorie, Neri, Scontro Diretto, Cumulativo, Sonneborn-Berger
-Data Report: Domenica 5 luglio 2026 15:06:27
+Criteri di Spareggio: Buchholz [Cut-1], Buchholz, Media Rating Avversari, Rating, Round Scelti per il Gioco, Numero di Vittorie, Partite Giocate col Nero, Incontro Diretto, Punteggi Progressivi, Sonneborn-Berger
+Data Report: Lunedì 6 luglio 2026 13:27:26
 --------------------------------------------------------------------------------
 Elenco Iniziale Partecipanti (Prima del Turno 1)
 --------------------------------------------------------------------------------
-Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti Bucch-1 Bucch  ARO REP Vitt Neri ScrDir Cumul Sonn-B
-------------------------------------------------------------------------------------------------------------------
-  1 (+0)        Maria, Adrian Gabriel Viebr [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  2 (+0)        Maria, Afram                [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  3 (+0)        Maria, Alex Andrei Udila    [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  4 (+0)        Maria, Antoine              [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  5 (+0)        Maria, Eduarda Da Silva Cas [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  6 (+0)        Maria, Emmanuel             [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
-  7 (+0)        Maria, Goncalo Filipe Guerr [1399]   0.0    0.00   0.0  ---   0    0    0    0.0   0.0   0.00
+Pos. (Tab)   Titolo Nome Cognome               [EloIni] BH-C1 BH ARO RTNG REP WIN BPG DE PS SB
+----------------------------------------------------------------------------------------------
+  1 (+0)        Maria, Adrian Gabriel Viebr [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  2 (+0)        Maria, Afram                [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  3 (+0)        Maria, Alex Andrei Udila    [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  4 (+0)        Maria, Antoine              [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  5 (+0)        Maria, Eduarda Da Silva Cas [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  6 (+0)        Maria, Emmanuel             [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
+  7 (+0)        Maria, Goncalo Filipe Guerr [1399]   0.0   0.0    0 1399    0    0    0   0.0   0.0   0.0
 
 
 Tornello (9.1.0, 2026.07.05 by Gabriele Battaglia & Stella (AI)

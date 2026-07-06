@@ -122,6 +122,45 @@ Vogliamo organizzare il "Torneo Sociale di Primavera" del nostro club.
 Dopo aver inserito questi dati nell'albero di destra, scendiamo con le frecce fino a "Avanti" e premiamo INVIO. Il torneo è pronto per ricevere gli iscritti.
 ------------------------------------------------------------------------
 
+4.3 CONFIGURAZIONE DEI CRITERI DI SPAREGGIO TECNICO
+Gli spareggi tecnici sono fondamentali per stabilire la classifica finale quando più giocatori terminano il torneo a pari punti. In conformità con le direttive FIDE Handbook, Tornello offre un sistema di configurazione altamente flessibile.
+- Come accedere alla configurazione: Nell'Albero di Destra (F6), sotto la cartella "Dati" del torneo attivo, è presente la voce "Spareggi". Premendo INVIO su di essa, si aprirà il dialogo di configurazione degli spareggi.
+- Le due liste: Il dialogo presenta a sinistra le "Regole disponibili" (l'intero set di tutti i 19 criteri ufficiali FIDE) e a destra le "Regole applicate" (l'ordine di priorità attivo per il torneo corrente).
+  * Aggiungere una regola: Seleziona una regola a sinistra e premi INVIO (o fai doppio clic, o premi il pulsante "->"). La regola rimane disponibile a sinistra: questo ti consente di aggiungere lo stesso criterio più volte (ad esempio, un Buchholz con modificatori diversi).
+  * Rimuovere una regola: Seleziona la regola nella lista di destra e premi INVIO, CANC/DELETE o il pulsante "<-".
+  * Ordinamento: Seleziona una regola a destra e usa i pulsanti "Sposta Su" o "Sposta Giù" per definirne la priorità in classifica (da sinistra a destra nei report delle classifiche).
+
+- Gestione dei Modificatori: Alcuni criteri supportano dei modificatori per escludere determinati incontri (ad esempio, gli avversari più deboli). I modificatori disponibili sono:
+  * Cut-1: Esclude l'avversario con il punteggio più basso.
+  * Cut-2: Esclude i due avversari con il punteggio più basso.
+  * Median-1: Esclude il punteggio più basso e quello più alto.
+  * Median-2: Esclude i due punteggi più bassi e i due più alti.
+  Per attivare o disattivare un modificatore su una regola nella lista "Regole applicate":
+  1. Seleziona la regola a destra (es. "Buchholz").
+  2. Premi il tasto Applicazioni (Menu Windows) sulla tastiera, oppure fai click destro con il mouse, oppure premi il pulsante "Modificatori" in basso a destra.
+  3. Si aprirà un menu contestuale che elenca solo i modificatori compatibili con quel criterio (es. per il Buchholz vedrai tutti e quattro, per Sonneborn-Berger solo Cut-1).
+  4. Ciascun modificatore mostrerà l'etichetta "- attivo" o "- disattivo". Premi INVIO o clicca per effettuarne il toggle (accensione/spegnimento). La lista si aggiornerà mostrando la regola modificata (es. "1. Buchholz [Cut-1]").
+  5. Il pannello informativo in fondo mostrerà la spiegazione teorica dettagliata del criterio selezionato con i relativi modificatori attivi.
+
+------------------------------------------------------------------------
+ESEMPIO PRATICO: Configurazione di uno spareggio FIDE Standard
+Vogliamo impostare come criteri per il nostro torneo standard l'ordine consigliato dalla FIDE:
+1. Scontro Diretto (Direct Encounter - DE)
+2. Buchholz Cut-1 (BH con modificatore Cut-1)
+3. Buchholz Totale (BH senza modificatori)
+4. ARO (Average Rating of Opponents)
+Passaggi per l'arbitro:
+1. Apri la finestra degli spareggi premendo INVIO sulla voce "Spareggi" nell'albero.
+2. Svuota la lista applicata a destra selezionando le regole e premendo CANC fino a lasciarla vuota.
+3. Seleziona "Scontro Diretto" a sinistra e premi INVIO. Apparirà a destra come "1. Scontro Diretto".
+4. Seleziona "Buchholz" a sinistra e premi INVIO. Apparirà a destra come "2. Buchholz".
+5. Posizionati su "2. Buchholz" nella lista a destra, premi il tasto Applicazioni (o click destro) e seleziona "Cut-1 - disattivo". Diventerà "Cut-1 - attivo" e la lista mostrerà "2. Buchholz [Cut-1]".
+6. Seleziona nuovamente "Buchholz" a sinistra e premi INVIO. Apparirà a destra come "3. Buchholz" (senza modificatori).
+7. Seleziona "ARO" a sinistra e premi INVIO. Apparirà a destra come "4. ARO".
+8. Premi INVIO su "Conferma" (pulsante OK). Le regole sono attive.
+------------------------------------------------------------------------
+
+
 
 ========================================================================
 5. ISCRIZIONE GIOCATORI E RICERCA NEI DATABASE (LOCAL E FIDE)
@@ -205,6 +244,10 @@ Al tavolo 3 giocano Bianchi (Bianco) contro Neri (Nero). Neri non si presenta en
 6. La partita si sposta sotto "Partite Concluse", il punto va a Bianchi e Neri viene rimosso dai futuri abbinamenti.
 ------------------------------------------------------------------------
 
+6.4 ESPORTAZIONE ICS E PIANIFICAZIONE CALENDARI
+Dalla cartella "Partite" nell'albero, o premendo Ctrl+Shift+E, è possibile esportare tutte le partite pianificate in un file di formato standard iCalendar (.ics). Questo file può essere importato in applicazioni esterne (Google Calendar, Outlook, Apple Calendar) per consentire ai giocatori e agli arbitri di visualizzare i propri turni direttamente sui propri dispositivi mobili o PC.
+
+
 
 ========================================================================
 7. IL SISTEMA DI FEEDBACK ACUSTICI (ACUSTICATOR)
@@ -259,11 +302,25 @@ Abbiamo appena generato gli abbinamenti per il Turno 3. Ci accorgiamo che al Tur
 Al termine dell'ultimo turno, dopo aver inserito tutti i risultati, compare la voce "Finalizza Torneo" (attivabile anche premendo Ctrl+F). Questa operazione chiude ufficialmente il torneo ed esegue una serie di operazioni matematiche ed archivistiche.
 
 9.1 LE FORMULE DI SPAREGGIO APPLICATE
-Tornello calcola automaticamente i quattro criteri di spareggio ufficiali previsti dai regolamenti FIDE per stabilire la classifica finale in caso di parità di punteggio:
-1. Buchholz Cut 1 (Buchholz ridotto): La somma dei punti totalizzati dagli avversari incontrati, escludendo il giocatore con il punteggio più basso.
-2. Buchholz Totale: La somma dei punti totalizzati da tutti gli avversari incontrati, senza alcuna esclusione.
-3. Sonneborn-Berger: La somma dei punti totalizzati dagli avversari contro cui si è vinto, più la metà dei punti degli avversari con cui si è pattato.
-4. ARO (Average Rating of Opponents): La media Elo degli avversari affrontati durante il torneo.
+Tornello supporta l'applicazione dinamica di tutti i 19 criteri di spareggio previsti dai regolamenti FIDE correnti:
+1. Scontro Diretto (DE): Valuta i punti ottenuti negli scontri diretti tra i giocatori a pari punti (applicabile solo se tutti si sono affrontati).
+2. Vittorie Totali (WIN): Conta tutte le vittorie, incluse quelle a tavolino (forfeit) e i riposi (BYE).
+3. Vittorie sulla Scacchiera (WON): Conta solo le vittorie effettivamente giocate (esclude BYE e forfeit).
+4. Vittorie col Nero sulla Scacchiera (BWG): Conta le vittorie ottenute giocando con i pezzi neri.
+5. Punti Progressivi (PS): La somma dei punteggi progressivi turno dopo turno. Supporta il modificatore Cut-1 (esclude il punteggio del primo turno).
+6. Punti Standard (STD): Assegna 1 punto se si è superato il punteggio dell'avversario in quel turno, 0.5 in caso di parità, 0 se inferiore.
+7. Numero di Sorteggio (TPN): Posizione di partenza nel tabellone (seeding).
+8. Buchholz Generico (BH): Somma dei punti degli avversari. Supporta Cut-1, Cut-2, Median-1, Median-2.
+   * Gestione Forfeit (Art.14/16): Se il giocatore ha sconfitte per forfeit (non si è presentato), il taglio Cut-1 esclude in via prioritaria il contributo più basso derivante da quel turno non giocato, purché non sia inferiore al minimo assoluto.
+9. Media Buchholz Avversari (AOB): La media dei punteggi Buchholz degli avversari giocati.
+10. Fore Buchholz (FB): Calcola il Buchholz assumendo che tutte le partite dell'ultimo turno si siano concluse con una patta. Supporta Cut-1.
+11. Sonneborn-Berger (SB): Somma dei punti degli avversari battuti più la metà di quelli con cui si è pattato. Supporta Cut-1 (in questo caso esclude il contributo del prodotto più basso).
+12. ARO (Average Rating of Opponents): Media dei rating Elo degli avversari. Supporta Cut-1.
+13. TPR (Tournament Performance Rating): Performance Elo basata sul punteggio percentuale e le formule FIDE.
+14. PTP (Perfect Tournament Performance): Calcolo dell'Elo teorico minimo per cui il punteggio atteso è pari a quello ottenuto (senza il cap ±400).
+15. APRO: Media della performance Elo (TPR) degli avversari.
+16. APPO: Media della performance teorica (PTP) degli avversari.
+17. Elo Iniziale (RTNG): Il rating Elo di inizio torneo del giocatore.
 
 9.2 CALCOLO DELLE VARIAZIONI ELO E AGGIORNAMENTO DEL DATABASE LOCALE
 In base alla cadenza impostata per il torneo, Tornello determina la tipologia di Elo da aggiornare (Standard, Rapid o Blitz).
@@ -276,12 +333,15 @@ In base alla cadenza impostata per il torneo, Tornello determina la tipologia di
 9.3 ARCHIVIAZIONE E CLASSIFICA
 Il torneo viene salvato in modo permanente come file JSON all'interno della cartella "Closed Tournaments". Contemporaneamente, la classifica finale ufficiale viene stampata in formato testuale leggibile nell'Area Centrale (F5), pronta per essere copiata, stampata o inviata ai partecipanti.
 
+9.4 ELIMINAZIONE DI UN TORNEO ATTIVO
+Se si desidera eliminare definitivamente un torneo e tutti i suoi report dal disco, è possibile farlo in due modi: selezionando il menù File -> Elimina Torneo Attivo, oppure posizionandosi sul nodo del torneo attivo nell'albero di destra (F6) e premendo il tasto CANC/DELETE. Verrà mostrato un dialogo di conferma accessibile che elenca tutti i file che saranno rimossi (incluso il JSON del torneo, i report .txt della classifica e dei turni, e i calendari .ics). Se confermato, Tornello ripulirà completamente le directory del disco e riporterà l'albero allo stato iniziale.
+
 ------------------------------------------------------------------------
 ESEMPIO PRATICO: Chiusura del torneo e verifica dei dati
 Il torneo Rapid a 5 turni è terminato. Tutti i risultati del turno 5 sono stati inseriti.
 1. Premiamo Ctrl+F (o selezioniamo "Finalizza Torneo" dall'albero).
 2. Viene riprodotto il suono celebrativo di fine torneo.
-3. Nell'Area Centrale (F5) appare la classifica finale con colonne dedicate a Punti, Buchholz Cut 1, Buchholz Totale, Sonneborn-Berger e ARO.
+3. Nell'Area Centrale (F5) appare la classifica finale con colonne dedicate a Punti e ai criteri di spareggio ordinati come impostato (es. Scontro Diretto, Buchholz [Cut-1], Buchholz Totale, ARO).
 4. Se apriamo la gestione del Database Locale (Ctrl+D) e selezioniamo il vincitore del torneo, vedremo che nel suo storico è presente il "Torneo Sociale di Primavera", il suo Elo Rapid locale è stato aggiornato con il delta calcolato, e nel suo medagliere è stata aggiunta una medaglia d'oro.
 ------------------------------------------------------------------------
 

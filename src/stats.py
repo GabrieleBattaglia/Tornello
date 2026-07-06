@@ -715,4 +715,743 @@ def compute_cumulative(player_id, torneo):
     return float(format_points(cumulative_sum))
 
 
+# ---------------------------------------------------------------------------
+# FIDE Tiebreak Criteria – Additional Compute Functions
+# ---------------------------------------------------------------------------
+
+
+def compute_buchholz_generic(player_id, torneo, cut1=False, cut2=False,
+                             median1=False, median2=False):
+    """Buchholz generico con supporto ai modificatori FIDE (Cut-1/2, Median-1/2).
+
+    Raccoglie i punti di tutti gli avversari, poi applica i modificatori:
+      - cut1: rimuove 1 punteggio più basso
+      - cut2: rimuove 2 punteggi più bassi
+      - median1: rimuove 1 più basso + 1 più alto
+      - median2: rimuove 2 più bassi + 2 più alti
+
+    Per forfeit handling con Cut-1 (Art.14/16): se il giocatore ha sconfitte
+    per forfeit, il taglio deve escludere prioritariamente il contributo più
+    basso derivante da quei turni non giocati, purché tale valore non sia
+    inferiore al valore assoluto più basso.
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    opponent_scores = []
+    forfeit_scores = []  # Punteggi avversari da turni con sconfitta per forfeit
+
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if not opponent:
+            continue
+
+        try:
+            opp_pts = float(opponent.get("points", 0.0))
+        except (ValueError, TypeError):
+            opp_pts = 0.0
+
+        opponent_scores.append(opp_pts)
+
+        # Controlla se il giocatore ha perso per forfeit in questo turno
+        result_str = str(result_entry.get("result", "")).upper()
+        score_val = 0.0
+        try:
+            score_val = float(result_entry.get("score", 0.0))
+        except (ValueError, TypeError):
+            pass
+        if "F" in result_str and score_val == 0.0:
+            forfeit_scores.append(opp_pts)
+
+    if not opponent_scores:
+        return 0.0
+
+    scores = sorted(opponent_scores)
+
+    # Applica i modificatori
+    if cut1 and len(scores) > 1:
+        if forfeit_scores:
+            # Art.14/16: priorità a escludere il contributo forfeit più basso,
+            # ma solo se non è inferiore al minimo assoluto
+            min_forfeit = min(forfeit_scores)
+            min_absolute = scores[0]
+            if min_forfeit >= min_absolute:
+                scores.remove(min_forfeit)
+            else:
+                scores.pop(0)
+        else:
+            scores.pop(0)
+    elif cut2 and len(scores) > 2:
+        scores = scores[2:]
+    elif median1 and len(scores) > 2:
+        scores = scores[1:-1]
+    elif median2 and len(scores) > 4:
+        scores = scores[2:-2]
+
+    return float(format_points(sum(scores)))
+
+
+def compute_wins_all(player_id, torneo):
+    """WIN: conta TUTTE le vittorie (score == 1.0), inclusi BYE e forfeit."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    wins = 0
+    for result_entry in player.get("results_history", []):
+        score = result_entry.get("score")
+        if score is not None:
+            try:
+                if float(score) == 1.0:
+                    wins += 1
+            except (ValueError, TypeError):
+                pass
+    return wins
+
+
+def compute_wins_otb(player_id, torneo):
+    """WON: conta le vittorie 'over the board' (no BYE, no forfeit)."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    wins = 0
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        result_str = str(result_entry.get("result", "")).upper()
+        if "F" in result_str or "BYE" in result_str:
+            continue
+
+        score = result_entry.get("score")
+        if score is not None:
+            try:
+                if float(score) == 1.0:
+                    wins += 1
+            except (ValueError, TypeError):
+                pass
+    return wins
+
+
+def compute_black_wins(player_id, torneo):
+    """BWG: conta le vittorie OTB con il Nero (esclude forfeit)."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    wins = 0
+    for result_entry in player.get("results_history", []):
+        if result_entry.get("color") != "black":
+            continue
+
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        result_str = str(result_entry.get("result", "")).upper()
+        if "F" in result_str:
+            continue
+
+        score = result_entry.get("score")
+        if score is not None:
+            try:
+                if float(score) == 1.0:
+                    wins += 1
+            except (ValueError, TypeError):
+                pass
+    return wins
+
+
+def compute_progressive_scores(player_id, torneo, cut1=False):
+    """PS: punteggio progressivo (cumulativo) con supporto Cut-1.
+
+    Quando cut1=True, si sottrae il punteggio del primo turno dal running
+    total prima di sommare (equivale a escludere il progressivo dopo il
+    primo turno).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+
+    history_sorted = sorted(
+        player.get("results_history", []), key=lambda x: x.get("round", 0)
+    )
+
+    cumulative_sum = 0.0
+    running_total = 0.0
+    first_round_score = 0.0
+
+    for i, result in enumerate(history_sorted):
+        score = result.get("score")
+        if score is not None:
+            try:
+                score_val = float(score)
+                running_total += score_val
+                if i == 0:
+                    first_round_score = score_val
+            except (ValueError, TypeError):
+                pass
+        cumulative_sum += running_total
+
+    if cut1:
+        # Sottrai il contributo del primo turno a tutti i turni successivi
+        # Il progressivo del turno 1 = first_round_score
+        # Ogni turno successivo include first_round_score nel running_total
+        # Quindi sottraiamo first_round_score * len(history_sorted) dalla somma
+        # e poi riaggiungiamo il progressivo del turno 1 originale
+        # perché quello viene escluso interamente.
+        # In pratica: escludiamo il contributo del R1 dal cumulativo.
+        num_rounds = len(history_sorted)
+        if num_rounds > 0:
+            cumulative_sum -= first_round_score * num_rounds
+
+    return float(format_points(cumulative_sum))
+
+
+def compute_standard_points(player_id, torneo):
+    """STD: punti standard basati sul confronto diretto turno per turno.
+
+    Per ogni turno: se il giocatore ha ottenuto PIÙ dell'avversario -> +1,
+    se UGUALE -> +0.5, se MENO o nessun avversario -> 0.
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+
+    std_score = 0.0
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        player_score = result_entry.get("score")
+        if player_score is None:
+            continue
+
+        try:
+            ps = float(player_score)
+        except (ValueError, TypeError):
+            continue
+
+        # Cerchiamo il punteggio dell'avversario nello stesso turno
+        opp_score = 1.0 - ps  # Complemento (W=1->L=0, D=0.5->D=0.5)
+
+        if ps > opp_score:
+            std_score += 1.0
+        elif ps == opp_score:
+            std_score += 0.5
+        # else: 0
+
+    return float(format_points(std_score))
+
+
+def compute_tournament_pairing_number(player_id, torneo):
+    """TPN: numero di abbinamento (seeding) del giocatore.
+
+    Ordina tutti i giocatori per (-initial_elo, cognome, nome) e restituisce
+    la posizione 1-based.
+    """
+    players = torneo.get("players", [])
+    if not players:
+        return 0
+
+    def sort_key(p):
+        try:
+            elo = float(p.get("initial_elo", 0))
+        except (ValueError, TypeError):
+            elo = 0.0
+        last = str(p.get("last_name", "")).lower()
+        first = str(p.get("first_name", "")).lower()
+        return (-elo, last, first)
+
+    sorted_players = sorted(players, key=sort_key)
+
+    for idx, p in enumerate(sorted_players, start=1):
+        if p.get("id") == player_id:
+            return idx
+
+    return 0
+
+
+def compute_average_opponent_buchholz(player_id, torneo):
+    """AOB: media del Buchholz degli avversari giocati OTB.
+
+    Per ogni avversario reale (no BYE, no forfeit), calcola il suo Buchholz
+    e fa la media. Arrotondamento: 0.5 arrotonda per eccesso.
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    opp_buchholz_values = []
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        result_str = str(result_entry.get("result", "")).upper()
+        if "F" in result_str or "BYE" in result_str:
+            continue
+
+        # Calcola il Buchholz dell'avversario
+        opp_bh = compute_buchholz(opponent_id, torneo)
+        opp_buchholz_values.append(opp_bh)
+
+    if not opp_buchholz_values:
+        return 0
+
+    avg = sum(opp_buchholz_values) / len(opp_buchholz_values)
+    return math.floor(avg + 0.5)
+
+
+def compute_fore_buchholz(player_id, torneo, cut1=False):
+    """FB: Fore-Buchholz – Buchholz calcolato come se tutte le partite
+    dell'ultimo turno fossero terminate in parità.
+
+    Per ogni avversario: se ha giocato nell'ultimo turno, il suo punteggio
+    viene ricalcolato come (punti - punteggio_ultimo_turno + 0.5).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    # Determina il turno corrente
+    current_round = torneo.get("current_round", 1)
+
+    opponent_scores = []
+    forfeit_scores = []
+
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if not opponent:
+            continue
+
+        try:
+            opp_pts = float(opponent.get("points", 0.0))
+        except (ValueError, TypeError):
+            opp_pts = 0.0
+
+        # Verifica se l'avversario ha giocato nell'ultimo turno
+        opp_last_round_score = None
+        for opp_result in opponent.get("results_history", []):
+            if opp_result.get("round") == current_round:
+                try:
+                    opp_last_round_score = float(opp_result.get("score", 0.0))
+                except (ValueError, TypeError):
+                    opp_last_round_score = 0.0
+                break
+
+        if opp_last_round_score is not None:
+            # Ricalcola come se l'ultimo turno fosse un pareggio
+            modified_pts = opp_pts - opp_last_round_score + 0.5
+        else:
+            modified_pts = opp_pts
+
+        opponent_scores.append(modified_pts)
+
+        # Controlla forfeit per Cut-1
+        result_str = str(result_entry.get("result", "")).upper()
+        score_val = 0.0
+        try:
+            score_val = float(result_entry.get("score", 0.0))
+        except (ValueError, TypeError):
+            pass
+        if "F" in result_str and score_val == 0.0:
+            forfeit_scores.append(modified_pts)
+
+    if not opponent_scores:
+        return 0.0
+
+    scores = sorted(opponent_scores)
+
+    if cut1 and len(scores) > 1:
+        if forfeit_scores:
+            min_forfeit = min(forfeit_scores)
+            min_absolute = scores[0]
+            if min_forfeit >= min_absolute:
+                scores.remove(min_forfeit)
+            else:
+                scores.pop(0)
+        else:
+            scores.pop(0)
+
+    return float(format_points(sum(scores)))
+
+
+def compute_sonneborn_berger_generic(player_id, torneo, cut1=False):
+    """SB con supporto modificatore Cut-1.
+
+    Raccoglie tutti i contributi (punti_avversario * score_contro_di_lui).
+    Se cut1, rimuove il CONTRIBUTO più basso (il prodotto più piccolo).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0.0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    contributions = []
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if not opponent:
+            continue
+
+        try:
+            opponent_points = float(opponent.get("points", 0.0))
+        except (ValueError, TypeError):
+            opponent_points = 0.0
+
+        score = result_entry.get("score")
+        if score is None:
+            continue
+
+        try:
+            score_val = float(score)
+        except (ValueError, TypeError):
+            score_val = 0.0
+
+        contributions.append(opponent_points * score_val)
+
+    if not contributions:
+        return 0.0
+
+    if cut1 and len(contributions) > 1:
+        contributions.remove(min(contributions))
+
+    return float(format_points(sum(contributions)))
+
+
+def compute_aro_generic(player_id, torneo, cut1=False):
+    """ARO con supporto modificatore Cut-1.
+
+    Raccoglie gli Elo iniziali degli avversari. Se cut1, rimuove il più basso
+    prima di calcolare la media. Arrotondamento: 0.5 per eccesso.
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    opponent_elos = []
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if opponent and "initial_elo" in opponent:
+            try:
+                opponent_elos.append(float(opponent["initial_elo"]))
+            except (ValueError, TypeError):
+                pass
+
+    if not opponent_elos:
+        return 0
+
+    if cut1 and len(opponent_elos) > 1:
+        opponent_elos.remove(min(opponent_elos))
+
+    avg = sum(opponent_elos) / len(opponent_elos)
+    return math.floor(avg + 0.5)
+
+
+def _get_dp_map():
+    """Restituisce la mappa FIDE p -> dp usata per TPR."""
+    return {
+        1.0: 800, 0.99: 677, 0.98: 589, 0.97: 538, 0.96: 501,
+        0.95: 470, 0.94: 444, 0.93: 422, 0.92: 401, 0.91: 383,
+        0.90: 366, 0.89: 351, 0.88: 336, 0.87: 322, 0.86: 309,
+        0.85: 296, 0.84: 284, 0.83: 273, 0.82: 262, 0.81: 251,
+        0.80: 240, 0.79: 230, 0.78: 220, 0.77: 211, 0.76: 202,
+        0.75: 193, 0.74: 184, 0.73: 175, 0.72: 166, 0.71: 158,
+        0.70: 149, 0.69: 141, 0.68: 133, 0.67: 125, 0.66: 117,
+        0.65: 110, 0.64: 102, 0.63: 95, 0.62: 87, 0.61: 80,
+        0.60: 72, 0.59: 65, 0.58: 57, 0.57: 50, 0.56: 43,
+        0.55: 36, 0.54: 29, 0.53: 21, 0.52: 14, 0.51: 7,
+        0.50: 0,
+        0.49: -7, 0.48: -14, 0.47: -21, 0.46: -29, 0.45: -36,
+        0.44: -43, 0.43: -50, 0.42: -57, 0.41: -65, 0.40: -72,
+        0.39: -80, 0.38: -87, 0.37: -95, 0.36: -102, 0.35: -110,
+        0.34: -117, 0.33: -125, 0.32: -133, 0.31: -141, 0.30: -149,
+        0.29: -158, 0.28: -166, 0.27: -175, 0.26: -184, 0.25: -193,
+        0.24: -202, 0.23: -211, 0.22: -220, 0.21: -230, 0.20: -240,
+        0.19: -251, 0.18: -262, 0.17: -273, 0.16: -284, 0.15: -296,
+        0.14: -309, 0.13: -322, 0.12: -336, 0.11: -351, 0.10: -366,
+        0.09: -383, 0.08: -401, 0.07: -422, 0.06: -444, 0.05: -470,
+        0.04: -501, 0.03: -538, 0.02: -589, 0.01: -677, 0.0: -800,
+    }
+
+
+def compute_tpr(player_id, torneo):
+    """TPR: Tournament Performance Rating = ARO + dp(score_percentage).
+
+    Stessa logica di calculate_performance_rating ma esposta come funzione
+    di spareggio con la firma standard (player_id, torneo).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    try:
+        initial_elo = float(player.get("initial_elo", DEFAULT_ELO))
+    except (ValueError, TypeError):
+        initial_elo = DEFAULT_ELO
+
+    opponent_elos = []
+    total_score = 0.0
+    games_played = 0
+
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        score = result_entry.get("score")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if not opponent or "initial_elo" not in opponent:
+            continue
+
+        try:
+            opp_elo = float(opponent["initial_elo"])
+            total_score += float(score)
+            opponent_elos.append(opp_elo)
+            games_played += 1
+        except (ValueError, TypeError):
+            continue
+
+    if games_played == 0:
+        return round(initial_elo)
+
+    avg_opponent_elo = sum(opponent_elos) / games_played
+    score_percentage = total_score / games_played
+
+    dp_map = _get_dp_map()
+    lookup_p = round(score_percentage, 2)
+    lookup_p = max(0.0, min(1.0, lookup_p))
+    dp = dp_map.get(lookup_p, 800 if lookup_p > 0.5 else -800)
+
+    return round(avg_opponent_elo + dp)
+
+
+def compute_ptp(player_id, torneo):
+    """PTP: Perfect Tournament Performance.
+
+    Trova il più basso intero R tale che il punteggio atteso (calcolato con
+    la formula di probabilità FIDE SENZA cap ±400) >= punteggio reale.
+    Ricerca binaria nell'intervallo 0-4000.
+
+    E = sum(1 / (1 + 10^((Ri - R) / 400))) per ogni Elo avversario Ri.
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    players_dict = torneo.get(
+        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    )
+
+    opponent_elos = []
+    total_score = 0.0
+
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        score = result_entry.get("score")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+            continue
+
+        opponent = players_dict.get(opponent_id)
+        if not opponent or "initial_elo" not in opponent:
+            continue
+
+        try:
+            opp_elo = float(opponent["initial_elo"])
+            total_score += float(score)
+            opponent_elos.append(opp_elo)
+        except (ValueError, TypeError):
+            continue
+
+    if not opponent_elos:
+        try:
+            return round(float(player.get("initial_elo", DEFAULT_ELO)))
+        except (ValueError, TypeError):
+            return DEFAULT_ELO
+
+    def expected_score_for_rating(r):
+        """Punteggio atteso senza cap ±400."""
+        return sum(1.0 / (1.0 + 10.0 ** ((ri - r) / 400.0))
+                   for ri in opponent_elos)
+
+    # Ricerca binaria: trova il più basso R dove E(R) >= actual_score
+    lo, hi = 0, 4000
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if expected_score_for_rating(mid) >= total_score:
+            hi = mid
+        else:
+            lo = mid + 1
+
+    return lo
+
+
+def compute_apro(player_id, torneo):
+    """APRO: media del TPR di tutti gli avversari giocati OTB.
+
+    Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    opp_tpr_values = []
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        result_str = str(result_entry.get("result", "")).upper()
+        if "F" in result_str or "BYE" in result_str:
+            continue
+
+        opp_tpr = compute_tpr(opponent_id, torneo)
+        opp_tpr_values.append(opp_tpr)
+
+    if not opp_tpr_values:
+        return 0
+
+    avg = sum(opp_tpr_values) / len(opp_tpr_values)
+    return math.floor(avg + 0.5)
+
+
+def compute_appo(player_id, torneo):
+    """APPO: media del PTP di tutti gli avversari giocati OTB.
+
+    Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    """
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    opp_ptp_values = []
+    for result_entry in player.get("results_history", []):
+        opponent_id = result_entry.get("opponent_id")
+        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+            continue
+
+        result_str = str(result_entry.get("result", "")).upper()
+        if "F" in result_str or "BYE" in result_str:
+            continue
+
+        opp_ptp = compute_ptp(opponent_id, torneo)
+        opp_ptp_values.append(opp_ptp)
+
+    if not opp_ptp_values:
+        return 0
+
+    avg = sum(opp_ptp_values) / len(opp_ptp_values)
+    return math.floor(avg + 0.5)
+
+
+def compute_rating_tiebreak(player_id, torneo):
+    """RTNG: restituisce l'Elo iniziale del giocatore come criterio di spareggio."""
+    player = get_player_by_id(torneo, player_id)
+    if not player:
+        return 0
+
+    try:
+        return round(float(player.get("initial_elo", 0)))
+    except (ValueError, TypeError):
+        return 0
+
+
+# ---------------------------------------------------------------------------
+# Dispatcher
+# ---------------------------------------------------------------------------
+
+
+def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
+    """Dispatcher: calcola il valore di un criterio di spareggio con modificatori."""
+    if modifiers is None:
+        modifiers = {}
+
+    if criterion_key == 'DE':
+        return compute_direct_encounter(player_id, torneo)
+    elif criterion_key == 'WIN':
+        return compute_wins_all(player_id, torneo)
+    elif criterion_key == 'WON':
+        return compute_wins_otb(player_id, torneo)
+    elif criterion_key == 'BPG':
+        return compute_number_of_blacks(player_id, torneo)
+    elif criterion_key == 'BWG':
+        return compute_black_wins(player_id, torneo)
+    elif criterion_key == 'PS':
+        return compute_progressive_scores(player_id, torneo,
+                                          cut1=modifiers.get('cut1', False))
+    elif criterion_key == 'REP':
+        return compute_played_rounds_rep(player_id, torneo)
+    elif criterion_key == 'STD':
+        return compute_standard_points(player_id, torneo)
+    elif criterion_key == 'TPN':
+        return compute_tournament_pairing_number(player_id, torneo)
+    elif criterion_key == 'BH':
+        return compute_buchholz_generic(
+            player_id, torneo,
+            cut1=modifiers.get('cut1', False),
+            cut2=modifiers.get('cut2', False),
+            median1=modifiers.get('median1', False),
+            median2=modifiers.get('median2', False))
+    elif criterion_key == 'AOB':
+        return compute_average_opponent_buchholz(player_id, torneo)
+    elif criterion_key == 'FB':
+        return compute_fore_buchholz(player_id, torneo,
+                                     cut1=modifiers.get('cut1', False))
+    elif criterion_key == 'SB':
+        return compute_sonneborn_berger_generic(player_id, torneo,
+                                                cut1=modifiers.get('cut1', False))
+    elif criterion_key == 'ARO':
+        return compute_aro_generic(player_id, torneo,
+                                   cut1=modifiers.get('cut1', False))
+    elif criterion_key == 'TPR':
+        return compute_tpr(player_id, torneo)
+    elif criterion_key == 'PTP':
+        return compute_ptp(player_id, torneo)
+    elif criterion_key == 'APRO':
+        return compute_apro(player_id, torneo)
+    elif criterion_key == 'APPO':
+        return compute_appo(player_id, torneo)
+    elif criterion_key == 'RTNG':
+        return compute_rating_tiebreak(player_id, torneo)
+    return 0.0
+
 
