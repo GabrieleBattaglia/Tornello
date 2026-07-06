@@ -1,0 +1,17 @@
+﻿Torneo: test910
+Sito: Online, Data Inizio Torneo: Domenica 5 luglio 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Venerdì 17 luglio 2026 - Martedì 28 luglio 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 5   | Afram Maria              [1399.0] (2   ) - Adrian Gabriel Viebrantz Maria [1399.0] (1   ) | 1-0
+	2  | 6   | Antoine Maria            [1399.0] (1   ) - Alex Andrei Udila Maria  [1399.0] (1   ) | 1-0
+	3  | 7   | Goncalo Filipe Guerreiro Maria [1399.0] (0   ) - Eduarda Da Silva Castelo Maria [1399.0] (1   ) | 0-1
+	---| 8   | Emmanuel Maria           [1399.0] (0   ) - BYE                             | BYE
+
+
+Tornello (9.2.0, 2026.07.06 by Gabriele Battaglia & Stella (AI)
+	using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming.)

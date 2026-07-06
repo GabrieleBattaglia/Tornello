@@ -1765,17 +1765,8 @@ class MainFrame(wx.Frame):
                 player_data = data.get("player")
                 self.delete_player_from_tournament(item, player_data)
                 return
-            elif action == "select_tournament" and filepath:
-                parent = self.tree_ctrl.GetItemParent(item)
-                parent_data = self.tree_ctrl.GetItemData(parent) if parent else None
-                is_closed = "closed tournaments" in filepath.lower() or (parent_data and parent_data.get("action") == "category_closed")
-                if not is_closed:
-                    self.delete_active_tournament(item, filepath)
-                else:
-                    self.delete_concluded_tournament(item, filepath)
-                return
-            elif action == "load_concluded":
-                self.delete_concluded_tournament(item, data["filepath"])
+            elif action in ["select_tournament", "load_concluded"] and filepath:
+                self.delete_tournament_completely(item, filepath)
                 return
                 
         event.Skip()
@@ -1833,29 +1824,28 @@ class MainFrame(wx.Frame):
         except Exception as e:
             wx.MessageBox(f"Impossibile leggere il report: {e}", "Errore", wx.ICON_ERROR)
 
-    def delete_concluded_tournament(self, item, filepath):
-        """Rimuove fisicamente dal disco un torneo concluso dopo conferma."""
-        t_label = self.tree_ctrl.GetItemText(item)
-        msg = f"Sei sicuro di voler eliminare definitivamente il torneo concluso '{t_label}'?\nQuesta azione rimuoverà il file dal disco in modo permanente."
-        dlg = AccessibleMsgDialog(self, "Conferma Eliminazione Torneo", msg, style=wx.YES_NO)
-        if dlg.ShowModal() == wx.ID_YES:
-            try:
-                os.remove(filepath)
-                self.tree_ctrl.Delete(item)
-                self.show_intro_message()
-                self.set_status(f"Torneo '{t_label}' eliminato con successo.")
-            except Exception as e:
-                wx.MessageBox(f"Impossibile eliminare il file: {e}", "Errore", wx.ICON_ERROR)
-        dlg.Destroy()
-
-    def delete_active_tournament(self, item, filepath):
-        """Rimuove fisicamente dal disco un torneo attivo dopo conferma."""
+    def delete_tournament_completely(self, item, filepath):
+        """Rimuove fisicamente dal disco un torneo (attivo, concluso o in preparazione) e tutti i file correlati."""
         import json
         import os
         from utils import play_sound
         
         t_label = self.tree_ctrl.GetItemText(item)
         
+        # Determina la categoria del torneo per un messaggio di conferma dettagliato
+        parent = self.tree_ctrl.GetItemParent(item)
+        parent_data = self.tree_ctrl.GetItemData(parent) if parent else None
+        
+        is_closed = "closed tournaments" in filepath.lower() or (parent_data and parent_data.get("action") == "category_closed")
+        is_prep = parent_data and parent_data.get("action") == "category_prep"
+        
+        if is_closed:
+            t_type = _("concluso")
+        elif is_prep:
+            t_type = _("in preparazione")
+        else:
+            t_type = _("attivo")
+            
         try:
             with open(filepath, "r", encoding="utf-8") as f_in:
                 data = json.load(f_in)
@@ -1867,15 +1857,15 @@ class MainFrame(wx.Frame):
         if not t_name:
             t_name = t_label
 
-        msg = f"Sei sicuro di voler eliminare definitivamente il torneo attivo '{t_name}'?\nQuesta azione rimuoverà il file JSON centrale e TUTTI i report generati per questo torneo, sia nella cartella principale che nella cartella di salvataggio custom."
-        dlg = AccessibleMsgDialog(self, "Conferma Eliminazione Torneo Attivo", msg, style=wx.YES_NO)
+        msg = _("Sei sicuro di voler eliminare definitivamente il torneo {t_type} '{t_name}'?\nQuesta azione rimuoverà il file JSON centrale e TUTTI i report generati per questo torneo, sia nella cartella principale che nella cartella di salvataggio custom.").format(t_type=t_type, t_name=t_name)
+        dlg = AccessibleMsgDialog(self, _("Conferma Eliminazione Torneo"), msg, style=wx.YES_NO)
         if dlg.ShowModal() == wx.ID_YES:
             try:
                 # 1. Rimuove il file JSON centrale
                 if os.path.exists(filepath):
                     os.remove(filepath)
 
-                # 2. Ottiene i percorsi di salvataggio
+                # 2. Ottiene i percorsi di salvataggio per ripulire i file correlati
                 paths_to_clean = [os.path.dirname(filepath)]
                 custom_path = data.get("custom_save_path") or data.get("save_path")
                 if custom_path:
@@ -1907,13 +1897,14 @@ class MainFrame(wx.Frame):
                 # 4. Rimuove il nodo dall'albero
                 self.tree_ctrl.Delete(item)
                 
+                # Se è stato cancellato il torneo attivo corrente, ripristina lo stato a vuoto
                 if self.active_filename and os.path.abspath(filepath) == os.path.abspath(self.active_filename):
                     self.current_tournament = None
                     self.active_filename = None
                     self.show_intro_message()
 
                 play_sound("cancellato", self.current_tournament)
-                self.set_status(f"Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati.")
+                self.set_status(_("Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati.").format(t_name=t_name, deleted_count=deleted_count))
             except Exception as e:
                 wx.MessageBox(f"Errore durante l'eliminazione del torneo: {e}", "Errore", wx.ICON_ERROR)
         dlg.Destroy()
@@ -1927,7 +1918,7 @@ class MainFrame(wx.Frame):
             return
         
         data = self.tree_ctrl.GetItemData(item)
-        if not data or data.get("action") != "select_tournament":
+        if not data or data.get("action") not in ["select_tournament", "load_concluded"]:
             from utils import play_sound
             play_sound("errore", self.current_tournament)
             wx.MessageBox(_("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."), _("Avviso"), wx.ICON_WARNING)
@@ -1940,16 +1931,7 @@ class MainFrame(wx.Frame):
             wx.MessageBox(_("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."), _("Avviso"), wx.ICON_WARNING)
             return
             
-        parent = self.tree_ctrl.GetItemParent(item)
-        parent_data = self.tree_ctrl.GetItemData(parent) if parent else None
-        is_closed = "closed tournaments" in filepath.lower() or (parent_data and parent_data.get("action") == "category_closed")
-        
-        if not is_closed:
-            self.delete_active_tournament(item, filepath)
-        else:
-            from utils import play_sound
-            play_sound("errore", self.current_tournament)
-            wx.MessageBox(_("Il nodo selezionato rappresenta un torneo già concluso."), _("Avviso"), wx.ICON_WARNING)
+        self.delete_tournament_completely(item, filepath)
 
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""
