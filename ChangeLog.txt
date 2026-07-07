@@ -33,6 +33,10 @@ Requisiti:
 - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
 - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
 
+9.2.2 (2026.07.07)
+	+ Bugfix: Risolto un crash critico (TypeError) causato da argomenti mancanti nella chiamata a generate_player_id() durante l'iscrizione di nuovi giocatori locali, l'aggiunta di record nel database giocatori o l'importazione da FIDE.
+	+ Feature: Allineamento e completamento dei dizionari dei nuovi giocatori creati da GUI con tutti i campi standard attesi dal database di Tornello (data di registrazione, statistiche di gioco, medaglie e corrispondenza di genere sex/gender).
+
 9.2.0 (2026.07.06)
 	+ Feature: Integrazione completa dei 19 criteri di spareggio FIDE ufficiali (Marzo 2026) con supporto avanzato ai 4 modificatori (Cut-1, Cut-2, Median-1, Median-2) e logica di esclusione prioritaria per forfeit (Art. 14/16).
 	+ Feature: Interfaccia utente di configurazione degli spareggi migliorata in wxPython: supporto a istanze multiple dello stesso criterio, visualizzazione dei modificatori inline (es. [Cut-1]) e menu contestuale accessibile (tramite tasto Applicazioni o click destro) per attivare/disattivare i modificatori supportati.
