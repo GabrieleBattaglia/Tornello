@@ -228,19 +228,33 @@ class FideQueryDialog(wx.Dialog):
             
         # Genera ID locale per il giocatore
         from db_players import generate_player_id, save_players_db
-        new_id = generate_player_id(self.players_db)
+        first_name = fide_player.get("first_name", "")
+        last_name = fide_player.get("last_name", "")
+        new_id = generate_player_id(first_name, last_name, self.players_db)
+        
+        from datetime import datetime
+        from config import DATE_FORMAT_ISO
+        
+        fide_sex = fide_player.get("sex", "M")
+        sex_val = "w" if str(fide_sex).strip().upper() in ("W", "F") else "m"
+        gender_val = "W" if sex_val == "w" else "M"
         
         new_player = {
             "id": new_id,
-            "first_name": fide_player.get("first_name", ""),
-            "last_name": fide_player.get("last_name", ""),
+            "first_name": first_name,
+            "last_name": last_name,
             "current_elo": fide_player.get("elo_standard") or 1399,
-            "fide_id_num_str": fide_id_str,
+            "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
             "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
-            "gender": fide_player.get("sex", "M"),
+            "sex": sex_val,
+            "gender": gender_val,
             "federation": fide_player.get("federation", "ITA"),
             "fide_title": fide_player.get("title", ""),
             "club": "",
+            "games_played": 0,
+            "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
+            "tournaments_played": [],
+            "fide_id_num_str": fide_id_str,
             "results_history": [],
             "opponents": []
         }

@@ -369,18 +369,25 @@ class PlayersDbDialog(wx.Dialog):
             wx.MessageBox(_("Nome e Cognome sono obbligatori."), _("Errore"), wx.ICON_ERROR)
             return
             
-        new_id = generate_player_id(self.players_db)
+        new_id = generate_player_id(first_name, last_name, self.players_db)
+        from datetime import datetime
+        from config import DATE_FORMAT_ISO
         new_player = {
             "id": new_id,
             "first_name": first_name,
             "last_name": last_name,
             "current_elo": 1399,
-            "fide_id_num_str": "",
+            "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
             "birth_date": "1990-01-01",
+            "sex": "m",
             "gender": "M",
             "federation": "ITA",
             "fide_title": "",
             "club": "",
+            "games_played": 0,
+            "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
+            "tournaments_played": [],
+            "fide_id_num_str": "",
             "results_history": [],
             "opponents": []
         }
