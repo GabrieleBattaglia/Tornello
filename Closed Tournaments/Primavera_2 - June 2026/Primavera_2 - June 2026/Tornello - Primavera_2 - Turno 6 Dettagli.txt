@@ -1,0 +1,29 @@
+﻿Torneo: Primavera 2
+Sito: online, Data Inizio Torneo: Sabato 21 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 6 CONCLUSO ==========================
+	Periodo del Turno: Martedì 2 giugno 2026 - Lunedì 15 giugno 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 82  | Simone Zenini            [1620] (4   ) - Claudio Gasperoni        [1844] (5   ) | 0-1
+	2  | 81  | Diego Poli               [1670] (5   ) - Jiazhuang Vandelli       [1693] (4.5 ) | 1-0
+	3  | 83  | Giuliano Caputi          [1767] (5   ) - Gabriele Battaglia       [1498] (4   ) | 1-0
+	4  | 90  | Michele Colangelo        [1555] (3   ) - Davide Delmonte          [   0] (2   ) | 1-0
+	5  | 93  | Filippa Tolaro           [1560] (2   ) - Virginio Paglia          [1385] (1.5 ) | 1-0
+	6  | 84  | Luca Bernoni             [1399] (4   ) - Paolo Rivalta            [1503] (3   ) | 1-0
+	7  | 91  | Alessia Mereu            [1385] (2   ) - Cosetta Trapletti        [1501] (3   ) | 0-1
+	8  | 85  | Valeria Calzolari        [1385] (3   ) - Lorenzo Ionata           [1488] (4   ) | 0-1
+	9  | 92  | Luigi Ventura            [1461] (2   ) - Rita Valleriani          [1399] (3   ) | 0-1
+	10 | 88  | Giuseppe Baratta         [1450] (3.5 ) - Gianni Demaio            [1399] (2   ) | 1-0
+	11 | 86  | Monica De Fazio          [1443] (4   ) - Piero Riccardi           [1399] (3   ) | 1-0
+	12 | 95  | Alessandra Cinque        [1399] (0.5 ) - Vincenzo Di Bari         [1415] (1.5 ) | 0-1
+	13 | 87  | Catia Susana Brites Pereira Lima [1365] (4   ) - Massimo Maccaferri       [1443] (3   ) | 1-0
+	14 | 94  | Giulia Paglia            [1382] (2   ) - Martina Forte            [1355] (1.5 ) | 1-0
+	15 | 89  | Serena Gori              [1220] (2.5 ) - Joshua Demaio            [   0] (3   ) | 0-1
+	---| 96  | Alessandra Testori       [1362] (1.5 ) - BYE                             | BYE
+
+
+Tornello (8.12.2, 2026.05.25 by Gabriele Battaglia & Stella
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI

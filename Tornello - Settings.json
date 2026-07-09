@@ -1,0 +1,26 @@
+{
+    "font_size": 8,
+    "dialog_font_size": 12,
+    "volume": 35,
+    "rgb_text": [
+        14,
+        90,
+        36
+    ],
+    "dialog_rgb_text": [
+        92,
+        88,
+        22
+    ],
+    "rgb_back": [
+        0,
+        17,
+        30
+    ],
+    "dialog_rgb_back": [
+        52,
+        0,
+        0
+    ],
+    "language": "it"
+}

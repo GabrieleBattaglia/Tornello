@@ -1,0 +1,25 @@
+﻿Torneo: Primavera 2
+Sito: online, Data Inizio Torneo: Sabato 21 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Domenica 5 aprile 2026 - Sabato 18 aprile 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 17  | Gabriele Battaglia       [1498] (1   ) - Claudio Gasperoni        [1844] (2   ) | 0-1
+	2  | 18  | Giuliano Caputi          [1767] (2   ) - Lorenzo Ionata           [1488] (1   ) | 1-0
+	3  | 21  | Joshua Demaio            [   0] (1   ) - Simone Zenini            [1620] (2   ) | 0-1
+	4  | 19  | Luigi Ventura            [1461] (1   ) - Jiazhuang Vandelli       [1693] (2   ) | 0-1
+	5  | 20  | Diego Poli               [1670] (2   ) - Massimo Maccaferri       [1443] (1   ) | 1-0
+	6  | 22  | Valeria Calzolari        [1385] (2   ) - Michele Colangelo        [1555] (1   ) | 1-0
+	7  | 25  | Catia Susana Brites Pereira Lima [1365] (1.5 ) - Filippa Tolaro           [1560] (0   ) | 1-0
+	8  | 26  | Gianni Demaio            [1399] (0   ) - Cosetta Trapletti        [1501] (1   ) | 0-1
+	9  | 23  | Paolo Rivalta            [1503] (2   ) - Alessandra Testori       [1362] (1   ) | 1-0
+	10 | 27  | Monica De Fazio          [1443] (1   ) - Rita Valleriani          [1399] (0   ) | 1-0
+	11 | 28  | Vincenzo Di Bari         [1415] (0   ) - Alessia Mereu            [1385] (1   ) | 0-1
+	12 | 29  | Piero Riccardi           [1399] (0   ) - Luca Bernoni             [1399] (1   ) | 0-1
+	13 | 30  | Alessandra Cinque        [1399] (0   ) - Giulia Paglia            [1382] (1   ) | 0-1
+	14 | 31  | Virginio Paglia          [1385] (0   ) - Davide Delmonte          [   0] (1   ) | 0-1
+	15 | 24  | Serena Gori              [1220] (0.5 ) - Giuseppe Baratta         [1450] (1.5 ) | 0-1
+	---| 32  | Martina Forte            [1355] (0.5 ) - BYE                             | BYE

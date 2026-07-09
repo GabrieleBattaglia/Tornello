@@ -1,0 +1,49 @@
+﻿Nome Torneo: Primavera 2
+Luogo: online
+Date: Sabato 21 marzo 2026 - Martedì 30 giugno 2026
+Federazione Organizzante: ITA
+Arbitro Capo: Gabriele Battaglia
+Vice Arbitri: ASCID, Volontari
+Controllo Tempo: Standard 40+20
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Martedì 30 giugno 2026 12:50:00
+--------------------------------------------------------------------------------
+CLASSIFICA FINALE
+--------------------------------------------------------------------------------
+Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO  Perf  Elo Var.
+----------------------------------------------------------------------------------------------------
+  1 (+0)    1N  Gasperoni, Claudio          [1844]   6.0   29.50  31.50 1580 1889   +9
+  2 (+0)        Caputi, Giuliano            [1767]   5.5   30.50  34.50 1602 1832  +12
+  3 (+1)        Poli, Diego                 [1670]   5.5   28.50  31.50 1365 1595  +21
+  4 (+6)    3N  Battaglia, Gabriele         [1498]   5.0   27.00  29.00 1321 1479  +26
+  5 (+0)        Zenini, Simone              [1620]   5.0   26.00  28.00 1322 1480  +10
+  6 (-3)    2N  Vandelli, Jiazhuang         [1693]   4.5   26.00  26.50 1576 1678   +1
+  7 (+21)   NC  Brites Pereira Lima, Catia  [1365]   4.5   25.50  27.50 1523 1625  +98
+  8 (+3)    NC  Ionata, Lorenzo             [1488]   4.5   24.00  26.00 1241 1343   +4
+  9 (+8)    NC  Bernoni, Luca               [1399]   4.0   28.50  31.50 1589 1639  +80
+ 10 (+5)        Maccaferri, Massimo         [1443]   4.0   25.00  27.00 1457 1507  +24
+ 11 (-2)    3N  Trapletti, Cosetta          [1501]   4.0   21.00  23.00 1431 1481   -4
+ 12 (+9)        Demaio, Joshua              [   0]   4.0   20.50  22.50 1461 1511  +67
+ 13 (+10)   NC  Valleriani, Rita            [1399]   4.0   17.00  17.50 1449 1499  +39
+RIT             De Fazio, Monica            [1443]   4.0    ----   ----  --- ----  ---     [RITIRATO]
+ 15 (+9)    NC  Calzolari, Valeria          [1385]   3.5   25.00  28.00 1544 1544  +57
+ 16 (-8)        Rivalta, Paolo              [1503]   3.5   22.50  25.00 1414 1414  -16
+ 17 (-4)    NC  Baratta, Giuseppe           [1450]   3.5   21.50  24.00 1385 1385  -24
+ 18 (-11)   3N  Colangelo, Michele          [1555]   3.0   23.00  26.00 1007  957  -46
+ 19 (+0)        Delmonte, Davide            [   0]   3.0   21.00  23.00 1467 1417  +47
+ 20 (+2)    NC  Riccardi, Piero             [1399]   3.0   19.50  21.50 1234 1184  -23
+ 21 (-1)        Demaio, Gianni              [1399]   3.0   19.00  21.00 1477 1427   +9
+ 22 (+9)    NC  Gori, Serena                [1220]   2.5   18.00  20.00  951  826  -31
+ 23 (+6)    NC  Testori, Alessandra         [1362]   2.5   17.50  18.00 1431 1306  -17
+ 24 (+2)    NC  Paglia, Virginio            [1385]   2.5   15.00  17.00 1206 1081  -39
+ 25 (+2)    NC  Paglia, Giulia              [1382]   2.5   15.00  15.50  943  818  -65
+ 26 (-14)   NC  Ventura, Luigi              [1461]   2.0   22.00  24.00 1468 1310  -59
+ 27 (-2)    NC  Mereu, Alessia              [1385]   2.0   21.00  23.00 1450 1292  -35
+ 28 (-12)   NC  Di Bari, Vincenzo           [1415]   2.0   15.00  15.50 1490 1297  -43
+ 29 (+1)    NC  Forte, Martina              [1355]   2.0   13.50  14.00 1374 1181  -53
+RIT         3N  Tolaro, Filippa             [1560]   2.0    ----   ----  --- ----  ---     [RITIRATO]
+ 31 (-13)   NC  Cinque, Alessandra          [1399]   0.5   15.50  17.50 1434  634 -111
+
+
+Tornello (8.12.2, 2026.05.25 by Gabriele Battaglia & Stella
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI

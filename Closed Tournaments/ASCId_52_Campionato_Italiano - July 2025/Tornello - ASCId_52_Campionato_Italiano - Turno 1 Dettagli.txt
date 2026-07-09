@@ -1,0 +1,18 @@
+﻿Torneo: ASCId 52 Campionato Italiano
+Sito: Galatina (LE), Data Inizio Torneo: Lunedì 21 luglio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 1 CONCLUSO ==========================
+	Periodo del Turno: Lunedì 21 luglio 2025 - Lunedì 21 luglio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 1   | Simone Zenini            [1613] (0   ) - Marco Casadei            [1994] (1   ) | 0-1
+	2  | 2   | Claudio Ariaudo          [1983] (1   ) - Gabriele Battaglia       [1513] (0   ) | 1-0
+	3  | 3   | Gennaro Vilone           [1478] (0.5 ) - Bersan Vrioni            [1944] (0.5 ) | 1/2-1/2
+	4  | 4   | Claudio Gasperoni        [1874] (1   ) - Lorenzo Ionata           [1446] (0   ) | 1-0
+	5  | 5   | Davide Del Monte         [1418] (0   ) - Giancarlo Badano         [1840] (1   ) | 0-1
+	6  | 6   | Maurizio Soppelsa        [1731] (0.5 ) - Giuliano Ariaudo         [1399] (0.5 ) | 1/2-1/2
+	7  | 7   | Silvia Cibin             [1399] (0   ) - Diego Poli               [1686] (1   ) | 0-1
+	8  | 8   | Erica Pezzolato          [1621] (1   ) - Serena Gori              [1399] (0   ) | 1-0
+	---| 9   | Filippa Tolaro           [1399] (0.5 ) - BYE                             | BYE

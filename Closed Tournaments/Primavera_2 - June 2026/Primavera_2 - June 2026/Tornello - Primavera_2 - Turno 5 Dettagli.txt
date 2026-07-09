@@ -1,0 +1,29 @@
+﻿Torneo: Primavera 2
+Sito: online, Data Inizio Torneo: Sabato 21 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 5 CONCLUSO ==========================
+	Periodo del Turno: Lunedì 18 maggio 2026 - Lunedì 1 giugno 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 65  | Jiazhuang Vandelli       [1693] (4.5 ) - Giuliano Caputi          [1767] (4   ) | 1/2-1/2
+	2  | 66  | Claudio Gasperoni        [1844] (4   ) - Luca Bernoni             [1399] (3   ) | 1-0
+	3  | 67  | Monica De Fazio          [1443] (3   ) - Diego Poli               [1670] (4   ) | 0-1
+	4  | 71  | Michele Colangelo        [1555] (2   ) - Joshua Demaio            [   0] (2   ) | 0-0F
+	5  | 68  | Simone Zenini            [1620] (4   ) - Valeria Calzolari        [1385] (3   ) | 1-0
+	6  | 76  | Filippa Tolaro           [1560] (1   ) - Rita Valleriani          [1399] (2   ) | 0-1
+	7  | 72  | Massimo Maccaferri       [1443] (3   ) - Cosetta Trapletti        [1501] (2   ) | 1-0
+	8  | 73  | Lorenzo Ionata           [1488] (3   ) - Alessia Mereu            [1385] (2   ) | 1-0
+	9  | 69  | Catia Susana Brites Pereira Lima [1365] (3   ) - Gabriele Battaglia       [1498] (4   ) | 0-1
+	10 | 74  | Piero Riccardi           [1399] (3   ) - Luigi Ventura            [1461] (2   ) | 1-0
+	11 | 75  | Virginio Paglia          [1385] (1.5 ) - Giuseppe Baratta         [1450] (2.5 ) | 0-1
+	12 | 77  | Davide Delmonte          [   0] (2   ) - Giulia Paglia            [1382] (1   ) | 1-0
+	13 | 78  | Gianni Demaio            [1399] (2   ) - Alessandra Testori       [1362] (1   ) | 1-0
+	14 | 79  | Alessandra Cinque        [1399] (0.5 ) - Martina Forte            [1355] (1.5 ) | 0-1
+	15 | 70  | Paolo Rivalta            [1503] (3   ) - Serena Gori              [1220] (2.5 ) | 1-0
+	---| 80  | Vincenzo Di Bari         [1415] (0.5 ) - BYE                             | BYE
+
+
+Tornello (8.12.2, 2026.05.25 by Gabriele Battaglia & Stella
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI

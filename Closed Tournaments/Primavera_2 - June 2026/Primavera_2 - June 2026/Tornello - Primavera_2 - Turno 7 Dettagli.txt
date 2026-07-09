@@ -1,0 +1,29 @@
+﻿Torneo: Primavera 2
+Sito: online, Data Inizio Torneo: Sabato 21 marzo 2026
+================================================================================
+
+============================== DETTAGLIO TURNO 7 CONCLUSO ==========================
+	Periodo del Turno: Martedì 16 giugno 2026 - Martedì 30 giugno 2026
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 98  | Claudio Gasperoni        [1844] (6   ) - Jiazhuang Vandelli       [1693] (4.5 ) | 1-F
+	2  | 97  | Diego Poli               [1670] (5.5 ) - Giuliano Caputi          [1767] (5.5 ) | 1/2-1/2
+	3  | 107 | Davide Delmonte          [   0] (3   ) - Filippa Tolaro           [1560] (2   ) | 1-F
+	4  | 103 | Cosetta Trapletti        [1501] (4   ) - Michele Colangelo        [1555] (3   ) | 1-F
+	5  | 99  | Luca Bernoni             [1399] (4   ) - Simone Zenini            [1620] (5   ) | 0-1
+	6  | 100 | Gabriele Battaglia       [1498] (5   ) - Monica De Fazio          [1443] (4   ) | 1-F
+	7  | 102 | Massimo Maccaferri       [1443] (4   ) - Giuseppe Baratta         [1450] (3.5 ) | 1-0
+	8  | 104 | Paolo Rivalta            [1503] (3.5 ) - Valeria Calzolari        [1385] (3.5 ) | 1/2-1/2
+	9  | 108 | Gianni Demaio            [1399] (3   ) - Luigi Ventura            [1461] (2   ) | 1-0
+	10 | 101 | Lorenzo Ionata           [1488] (4.5 ) - Catia Susana Brites Pereira Lima [1365] (4.5 ) | 1/2-1/2
+	11 | 105 | Piero Riccardi           [1399] (3   ) - Joshua Demaio            [   0] (4   ) | 0-1
+	12 | 109 | Virginio Paglia          [1385] (2.5 ) - Alessia Mereu            [1385] (2   ) | 1-0
+	13 | 110 | Martina Forte            [1355] (2   ) - Vincenzo Di Bari         [1415] (2   ) | 1/2-1/2
+	14 | 111 | Alessandra Testori       [1362] (2.5 ) - Alessandra Cinque        [1399] (0.5 ) | 1-0
+	15 | 106 | Rita Valleriani          [1399] (4   ) - Serena Gori              [1220] (2.5 ) | 1-0
+	---| 112 | Giulia Paglia            [1382] (2.5 ) - BYE                             | BYE
+
+
+Tornello (8.12.2, 2026.05.25 by Gabriele Battaglia & Stella
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI

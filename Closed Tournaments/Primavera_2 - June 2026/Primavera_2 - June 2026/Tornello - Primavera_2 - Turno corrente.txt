@@ -1,0 +1,27 @@
+﻿Nome Torneo: Primavera 2 - Turno: 7
+ Periodo Turno: Martedì 16 giugno 2026 - Martedì 30 giugno 2026
+ Mancano 0 giorni e 11 ore al termine del periodo utile per questo turno.
+
+  Partite già giocate o con risultato convalidato (13):
+  IDG:97 Diego Poli (1670) - Giuliano Caputi (1767)  1/2-1/2
+  IDG:98 Claudio Gasperoni (1844) - Jiazhuang Vandelli (1693)  1-F
+  IDG:99 Luca Bernoni (1399) - Simone Zenini (1620)  0-1
+  IDG:101 Lorenzo Ionata (1488) - Catia Susana Brites Pereira Lima (1365)  1/2-1/2
+  IDG:102 Massimo Maccaferri (1443) - Giuseppe Baratta (1450)  1-0
+  IDG:103 Cosetta Trapletti (1501) - Michele Colangelo (1555)  1-F
+  IDG:104 Paolo Rivalta (1503) - Valeria Calzolari (1385)  1/2-1/2
+  IDG:105 Piero Riccardi (1399) - Joshua Demaio (0)  0-1
+  IDG:106 Rita Valleriani (1399) - Serena Gori (1220)  1-0
+  IDG:108 Gianni Demaio (1399) - Luigi Ventura (1461)  1-0
+  IDG:109 Virginio Paglia (1385) - Alessia Mereu (1385)  1-0
+  IDG:110 Martina Forte (1355) - Vincenzo Di Bari (1415)  1/2-1/2
+  IDG:111 Alessandra Testori (1362) - Alessandra Cinque (1399)  1-0
+  -- Partite giocate con giocatori ritirati --
+  IDG:100 Gabriele Battaglia (1498) - Monica De Fazio (1443) [RIT]  1-F
+  IDG:107 Davide Delmonte (0) - Filippa Tolaro (1560) [RIT]  1-F
+
+ Giulia Paglia (1382) ha il BYE
+
+
+Tornello (8.12.2, 2026.05.25 by Gabriele Battaglia & Stella
+	using BBP Pairings, a Swiss-system chess tournament engine created by Bierema Boyz Programming.) - Gabriele Battaglia & AI
