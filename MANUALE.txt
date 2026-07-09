@@ -1,4 +1,4 @@
-MANUALE GUIDA DI TORNELLO v9.0.2
+MANUALE GUIDA DI TORNELLO v9.3.0
 ================================
 
 Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
@@ -376,3 +376,15 @@ Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
 4. Utilizzando le frecce verticali, ci posizioniamo sul secondo record (anno 1990) e premiamo INVIO.
 5. Il sistema aggiorna la scheda locale di "Bianchi Giovanni" con l'Elo corretto di 1750 e passa al giocatore successivo della lista.
 ------------------------------------------------------------------------
+
+10.4 PULIZIA E MANUTENZIONE DEI BACKUP
+Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, Tornello v9.3.0 include un sistema intelligente di gestione e pulizia dei backup.
+- Controllo automatico all'avvio: Ogni volta che l'applicazione viene avviata, scansiona in background la cartella "backup/". Se rileva file modificati più di 18 mesi fa, mostra una notifica all'utente proponendo di procedere alla pulizia:
+  * Scegliendo "Sì", viene aperta immediatamente la finestra di gestione dei backup.
+  * Scegliendo "No", la data di ultima modifica di questi file obsoleti viene automaticamente aggiornata ad oggi. In questo modo il programma non riproporrà il controllo per altri 18 mesi.
+- Finestra di pulizia dei backup: Accessibile tramite il menù File -> Pulisci backup. Presenta un'interfaccia interamente accessibile divisa in tre sezioni:
+  1. Statistiche generali (in alto): Un'area di testo navigabile che indica il numero totale e la dimensione (in MB) di tutti i backup e dei soli file obsoleti consigliati per la cancellazione (> 18 mesi).
+  2. Elenco dei backup (al centro): Una lista ordinata cronologicamente (dal più vecchio in alto al più recente in basso) con il nome del file, la data di modifica e l'età calcolata con precisione in mesi e giorni.
+  3. Pulsanti d'azione (in basso): Consentono di eliminare il singolo file selezionato (azione attivabile anche premendo il tasto CANC/DELETE sulla tastiera), eliminare solo i file più vecchi di 18 mesi ("Elimina consigliati"), oppure svuotare interamente la cartella.
+- Integrazione Cestino: Per evitare perdite accidentali di dati storici dei tornei, l'eliminazione dei file non è diretta, ma tenta di spostarli nel Cestino del sistema operativo dell'utente.
+

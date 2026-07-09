@@ -33,6 +33,15 @@ Requisiti:
 - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
 - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
 
+9.3.0 (2026.07.09)
+	+ Feature: Implementata la funzionalità di pulizia e gestione automatica dei backup.
+	  - Aggiunta della voce "Pulisci backup..." nel menù File.
+	  - Scansione automatica all'avvio della cartella backup/ per rilevare file più vecchi di 18 mesi.
+	  - Aggiornamento della data di modifica all'odierna in caso l'utente scelga di non procedere, per rinviare il controllo.
+	  - Nuovo dialogo di gestione con statistiche dettagliate su file e dimensioni, elenco ordinato cronologicamente con età calcolata in mesi e giorni, eliminazione singola (con supporto al tasto Canc), rimozione in blocco e svuotamento.
+	  - Invio sicuro dei file eliminati nel Cestino del sistema operativo tramite API native di Windows, con fallback su send2trash o rimozione diretta.
+	  - Feedback acustico integrato per ogni operazione di eliminazione e conferma.
+
 9.2.2 (2026.07.07)
 	+ Bugfix: Risolto un crash critico (TypeError) causato da argomenti mancanti nella chiamata a generate_player_id() durante l'iscrizione di nuovi giocatori locali, l'aggiunta di record nel database giocatori o l'importazione da FIDE.
 	+ Feature: Allineamento e completamento dei dizionari dei nuovi giocatori creati da GUI con tutti i campi standard attesi dal database di Tornello (data di registrazione, statistiche di gioco, medaglie e corrispondenza di genere sex/gender).

@@ -43,6 +43,7 @@ class MainFrame(wx.Frame):
         self._init_ui()
         self._setup_shortcuts()
         self._check_fide_db_on_startup()
+        self._check_backup_on_startup()
         self._scan_and_load_initial_tournament()
         self.Maximize(True)
         
@@ -117,6 +118,7 @@ class MainFrame(wx.Frame):
         file_menu.Append(wx.ID_OPEN, _("&Apri Torneo...\tCtrl+O") if "_" in globals() else "&Apri Torneo...\tCtrl+O")
         self.item_export_ics = file_menu.Append(wx.ID_ANY, _("&Esporta partite pianificate...\tCtrl+Shift+E") if "_" in globals() else "&Esporta partite pianificate...\tCtrl+Shift+E")
         self.item_delete_tournament = file_menu.Append(wx.ID_ANY, _("&Elimina Torneo Attivo...\tDelete") if "_" in globals() else "&Elimina Torneo Attivo...\tDelete")
+        self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Pulisci backup...") if "_" in globals() else "&Pulisci backup...")
         file_menu.AppendSeparator()
         file_menu.Append(wx.ID_EXIT, _("&Esci\tCtrl+Q") if "_" in globals() else "&Esci\tCtrl+Q")
         self.menu_bar.Append(file_menu, _("&File") if "_" in globals() else "&File")
@@ -174,6 +176,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
         self.Bind(wx.EVT_MENU, self.on_delete_active_tournament_menu, self.item_delete_tournament)
+        self.Bind(wx.EVT_MENU, self.on_backup_cleanup, self.item_backup_cleanup)
         self.Bind(wx.EVT_MENU, self.on_enroll_players, self.item_enroll)
         self.Bind(wx.EVT_MENU, self.on_view_players, self.item_players)
         self.Bind(wx.EVT_MENU, self.on_view_current_round, self.item_round)
@@ -333,12 +336,47 @@ class MainFrame(wx.Frame):
 
     def show_intro_message(self):
         self.main_text.Clear()
+        
+        from datetime import datetime
+        birth_date = datetime(2025, 6, 10, 0, 34)
+        now = datetime.now()
+        
+        try:
+            from dateutil.relativedelta import relativedelta
+            delta = relativedelta(now, birth_date)
+            y, m, d, h, mi = delta.years, delta.months, delta.days, delta.hours, delta.minutes
+        except Exception:
+            diff = now - birth_date
+            y = diff.days // 365
+            rem_days = diff.days % 365
+            m = rem_days // 30
+            d = rem_days % 30
+            h = diff.seconds // 3600
+            mi = (diff.seconds % 3600) // 60
+            
+        age_parts = []
+        if y > 0:
+            age_parts.append(f"{y} anno" if y == 1 else f"{y} anni")
+        if m > 0:
+            age_parts.append(f"{m} mese" if m == 1 else f"{m} mesi")
+        if d > 0:
+            age_parts.append(f"{d} giorno" if d == 1 else f"{d} giorni")
+        if h > 0:
+            age_parts.append(f"{h} ora" if h == 1 else f"{h} ore")
+        if mi > 0 or not age_parts:
+            age_parts.append(f"{mi} minuto" if mi == 1 else f"{mi} minuti")
+            
+        age_str = ", ".join(age_parts)
+        
         intro = (
-            f"Tornello v{__version__} - Gestione Tornei di Scacchi Accessibile\n"
-            f"Sviluppato da {__authors__} (Rilascio: {__date__})\n\n"
-            f"Tornello è progettato per essere utilizzabile al 100% con screen reader (NVDA/JAWS).\n"
-            f"Premere il tasto TAB (o F6) per spostarsi sull'albero a destra e selezionare o creare un torneo.\n\n"
-            f"Scorciatoie da tastiera globali:\n"
+            f"Ciao! Benvenuto, sono Tornello v{__version__} - Sviluppato da Gabriele Battaglia (IZ4APU) & Stella (AI)\n"
+            f"  sono nato il 10/06/2025 alle 00:34 e oggi ho {age_str} e sarò felicissimo di aiutarti\n"
+            f"  a gestire i tuoi tornei con sistema svizzero/olandese.\n\n"
+            f"La data del mio ultimo rilascio è {__date__}\n\n"
+            f"Sono progettato con orgoglio per essere utilizzabile al 100% con screen reader (NVDA/JAWS).\n"
+            f"Premi tab, shift+tab o f5, f6 e f7 per esplorare le mie 3 sezioni principali\n"
+            f"  ma soprattutto presta attenzione a f6, il centro magico dei comandi, si fa quasi tutto da lì, è la tua plancia, capitano!\n\n"
+            f"Ed ora un po di tasti rapidi:\n"
             f" - F1: Guida / Manuale completo\n"
             f" - F2: Visualizza il ChangeLog completo\n"
             f" - F3: Visualizza i Crediti e Ringraziamenti\n"
@@ -387,6 +425,63 @@ class MainFrame(wx.Frame):
                         dlg.Destroy()
             except Exception:
                 pass
+
+    def _check_backup_on_startup(self):
+        """Scansiona la cartella backup/ alla ricerca di file più vecchi di 18 mesi."""
+        backup_dir = "backup"
+        if not os.path.exists(backup_dir):
+            return
+        
+        from datetime import datetime
+        try:
+            from dateutil.relativedelta import relativedelta
+            has_dateutil = True
+        except ImportError:
+            has_dateutil = False
+            
+        today = datetime.now()
+        if has_dateutil:
+            limit_date = today - relativedelta(months=18)
+        else:
+            limit_date = today - datetime.timedelta(days=548) # ~18 mesi
+            
+        old_files = []
+        try:
+            for item in os.listdir(backup_dir):
+                filepath = os.path.join(backup_dir, item)
+                if os.path.isfile(filepath):
+                    mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
+                    if mtime < limit_date:
+                        old_files.append((filepath, mtime))
+        except Exception:
+            return
+            
+        if not old_files:
+            return
+            
+        old_count = len(old_files)
+        msg = _(
+            "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
+            "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
+            "Vuoi aprire la finestra di pulizia dei backup adesso?\n\n"
+            "Nota: Scegliendo 'No', la data di modifica di questi file verrà aggiornata a oggi "
+            "e non ti verrà riproposto questo controllo per altri 18 mesi."
+        ).format(count=old_count)
+        
+        dlg = AccessibleMsgDialog(self, _("Pulizia Backup Consigliata"), msg, style=wx.YES_NO)
+        res = dlg.ShowModal()
+        dlg.Destroy()
+        
+        if res == wx.ID_YES:
+            # Mostra la finestra di pulizia
+            self.on_backup_cleanup(None)
+        else:
+            # Aggiorna mtime a oggi per non riproporlo
+            for filepath, _ in old_files:
+                try:
+                    os.utime(filepath, None) # imposta mtime e atime a oggi/ora
+                except Exception:
+                    pass
 
     def _scan_and_load_initial_tournament(self):
         """Scansiona i file torneo in corso ed effettua il caricamento automatico se ce n'è solo uno."""
@@ -2147,6 +2242,12 @@ class MainFrame(wx.Frame):
         players_db = load_players_db()
         from gui.dialogs.fide_query_dialog import FideQueryDialog
         dlg = FideQueryDialog(self, players_db, self.settings)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def on_backup_cleanup(self, event):
+        from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+        dlg = BackupCleanupDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
 
