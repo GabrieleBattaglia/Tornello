@@ -1,45 +1,34 @@
 
-ID	Pts	-------	Pref	C2	C12	C14	  Cur		R1	R2	R3	R4	R5	R6	
+ID	Pts	--	Pref	C2	C14	C16	  Cur		R1	
 
- 1	5.0	 WBWBWB	  w 	 Y	   	   	 (3W)		16	10	 4	 2	17	 5	
- 2	5.0	 BWBWBW	  b 	 Y	   	  U	 (4B)		17	11	 5	 1	 3	10	
- 4	5.0	 BWBWBW	  b 	 Y	  U	   	 (2W)		19	15	 1	28	14	 3	
+ 1	1.0	 W	 (B)	 Y	   	   	 (8B)		15	
+ 2	1.0	 B	 (W)	 Y	   	   	 (9W)		16	
+ 3	1.0	 W	 (B)	 Y	   	   	(10B)		18	
+ 4	1.0	 B	 (W)	 Y	   	   	(11W)		17	
+ 5	1.0	 W	 (B)	 Y	   	   	(12B)		19	
+ 6	1.0	 B	 (W)	 Y	   	   	(13W)		20	
+ 7	1.0	 W	 (B)	 Y	   	   	(28B)		21	
+ 8	1.0	 B	 (W)	 Y	   	   	 (1W)		22	
+ 9	1.0	 W	 (B)	 Y	   	   	 (2B)		23	
+10	1.0	 B	 (W)	 Y	   	   	 (3W)		24	
+11	1.0	 W	 (B)	 Y	   	   	 (4B)		25	
+12	1.0	 B	 (W)	 Y	   	   	 (5W)		26	
+13	1.0	 W	 (B)	 Y	   	   	 (6B)		27	
+28	1.0	 W	 (B)	 Y	   	   	 (7W)		14	
 
- 3	4.5	 WBWBWB	  w 	 Y	  D	  D	 (1B)		18	12	 8	24	 2	 4	
-
- 5	4.0	 WBWBWW	  B 	 Y	   	   	(17B)		20	21	 2	12	24	 1	
-10	4.0	 BWBWBB	  W 	 Y	   	   	(14W)		25	 1	19	15	28	 2	
-11	4.0	 WBWBWB	  w 	 Y	   	   	(28W)		26	 2	21	17	25	24	
-14	4.0	 BWBBWW	  B 	 Y	   	   	(10B)		29	23	27	 8	 4	22	
-17	4.0	 WBBWBW	  b 	 Y	   	   	 (5W)		 2	22	 9	11	 1	 8	
-28	4.0	 BWBBWW	  B 	 Y	   	   	(11B)		13	 6	 7	 4	10	15	
-
-13	3.5	 WBWBBW	  b 	 Y	  D	   	(15B)		28	31	24	 9	26	20	
-
- 7	3.0	  WBWBW	 (B)	 Y	   	  D	 (9B)		22	24	28	23	  	19	
- 8	3.0	 BWBWWB	  w 	 Y	   	  U	(24W)		23	29	 3	14	31	17	
- 9	3.0	 WBWWBB	  W 	 Y	   	   	 (7W)		24	20	17	13	15	25	
-15	3.0	 WBWBWB	  w 	 Y	   	   	(13W)		30	 4	29	10	 9	28	
-21	3.0	  WWBWB	 (B)	 Y	  U	  D	(22B)		 6	 5	11	27	  	31	
-22	3.0	 BWWBWB	  w 	 Y	   	   	(21W)		 7	17	16	29	12	14	
-23	3.0	 WBWWBB	  W 	 Y	   	   	(31W)		 8	14	18	 7	 6	12	
-24	3.0	 BWBWBW	  b 	 Y	   	   	 (8B)		 9	 7	13	 3	 5	11	
-
-31	2.5	  WBWBW	 (B)	 N	  D	  D	(23B)		  	13	30	19	 8	21	
-
- 6	2.0	 BBWBWW	  B 	 Y	  U	   	(19B)		21	28	20	16	23	26	
-12	2.0	 BWBWBW	  b 	 Y	   	   	(20B)		27	 3	25	 5	22	23	
-19	2.0	 WBWBWB	  w 	 Y	   	   	 (6W)		 4	26	10	31	27	 7	
-20	2.0	  BWBWB	 (W)	 Y	  U	   	(12W)		 5	 9	 6	  	29	13	
-25	2.0	  WBWBW	 (B)	 N	   	   	(26B)		10	16	12	  	11	 9	
-27	2.0	 WBWBBW	  b 	 Y	  U	   	(bye)		12	18	14	21	19	30	
-
-16	1.5	  BWBWB	 (W)	 N	   	  D	(30B)		 1	25	22	 6	  	18	
-26	1.5	  BWBWB	 (W)	 N	  D	   	(25W)		11	19	  	30	13	 6	
-29	1.5	  WBBWB	 (W)	 N	  D	   	(18W)		14	 8	15	22	20	  	
-30	1.5	  BWWBB	  W 	 N	  D	   	(16W)		15	  	31	26	18	27	
-
-18	0.5	  BWBWW	  B 	 N	   	   	(29B)		 3	27	23	  	30	16	
+15	0.0	 B	 (W)	 Y	   	   	(22W)		 1	
+16	0.0	 W	 (B)	 Y	   	   	(21B)		 2	
+17	0.0	 W	 (B)	 Y	   	   	(23B)		 4	
+18	0.0	 B	 (W)	 Y	   	   	(24W)		 3	
+19	0.0	 B	 (W)	 Y	   	   	(26W)		 5	
+20	0.0	 W	 (B)	 Y	   	   	(25B)		 6	
+21	0.0	 B	 (W)	 Y	   	   	(16W)		 7	
+22	0.0	 W	 (B)	 Y	   	   	(15B)		 8	
+23	0.0	 B	 (W)	 Y	   	   	(17W)		 9	
+24	0.0	 W	 (B)	 Y	   	   	(18B)		10	
+25	0.0	 B	 (W)	 Y	   	   	(20W)		11	
+26	0.0	 W	 (B)	 Y	   	   	(19B)		12	
+27	0.0	 B	 (W)	 Y	   	   	(bye)		13	
 
 
-BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v5.0.1 (Built Feb 25 2023 21:04:47)
+BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v6.0.0 (Built Feb  1 2026 17:49:01)
