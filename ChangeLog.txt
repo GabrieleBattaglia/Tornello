@@ -1,37 +1,9 @@
---- CHANGELOG ---
-RILASCIO DI TORNELLO v9.0.2 - NOTE DI RILASCIO
-=============================================
+--- CHANGELOG DI TORNELLO ---
+=============================
 
-Siamo lieti di presentare Tornello v9.0.2, una delle release più importanti nella storia del progetto.
-Tornello è ora un'applicazione desktop a interfaccia grafica (GUI) nativa, pur mantenendo al 100% l'accessibilità da tastiera e tramite screen reader (NVDA/JAWS) per gli utenti non vedenti e ipovedenti.
-
-Novità principali di Tornello v9.0:
-----------------------------------
-1. INTERFACCIA GRAFICA NATIVA:
-   - Sviluppata in wxPython, con focus jump automatici e navigazione ottimizzata tramite scorciatoie dedicate.
-   - Struttura a tre pannelli: Area Report (F5), Albero dei Comandi (F6) e Barra di Stato (F7).
-   - Comandi e scorciatoie per tutte le azioni del menù (Nuovo, Apri, Salva, Iscrizioni, Annulla Turno, Finalizza).
-
-2. MOTORE DI ABBINAMENTO SVIZZERO FIDE 2026:
-   - Integrazione ufficiale del motore bbpPairings v6.0.0 per la generazione di abbinamenti svizzeri olandesi sicuri e conformi.
-
-3. RICERCA AVANZATA CON OPERATORI:
-   - Supporto per operatori fluidi (+ obbligatorio, - escluso, = frase esatta) nel Database Locale e nel Database FIDE Ratings.
-   - Paginazione intelligente a blocchi di 100 elementi per non sovraccaricare gli screen reader.
-
-4. COMPLETO DESIGN ACUSTICO:
-   - Feedback acustici spazializzati per ogni evento (avvio, chiusura, vittorie, patte, forfait a sinistra/destra, fine turno, rollback, ritiri).
-   - Regolazione del volume master dell'applicazione rispettata con calcolo dei delta dei suoni letti da file JSON.
-   - I preset audio sono caricati dinamicamente da file esterno (Acu_Collection.json) con fallback automatico e pulizia totale del codice di utils.py.
-
-5. STRUMENTI INTEGRATI:
-   - Dialogo di gestione dei giocatori locali (Ctrl+D), consultazione database FIDE (Ctrl+K), e sincronizzazione anagrafiche (Ctrl+Y).
-
-Requisiti:
-----------
-- Python 3.10+
-- Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
-- Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
+9.3.1 (2026.07.10)
+	+ Bugfix: Corretto il caricamento di ChangeLog.txt, MANUALE.txt e CREDITS.txt per utilizzare il percorso dinamico corretto delle risorse.
+	+ Maintenance: Riorganizzata la struttura del changelog per mostrare la versione più recente direttamente all'apertura del visualizzatore (F2).
 
 9.3.0 (2026.07.09)
 	+ Feature: Implementata la funzionalità di pulizia e gestione automatica dei backup.
@@ -60,6 +32,32 @@ Requisiti:
 	+ Feature: Eliminazione definitiva dal disco di un torneo attivo e di tutti i relativi file correlati (JSON, report .txt, calendari .ics) generati sia nella directory radice che in quella custom configurata, accessibile tramite menù File ed il tasto rapido Canc/Delete sul nodo del torneo attivo nell'albero (gestito con dialogo di conferma accessibile).
 
 9.0.2
+	+ NOTE DI RILASCIO v9.0:
+	  Siamo lieti di presentare Tornello v9.0, una delle release più importanti nella storia del progetto.
+	  Tornello è ora un'applicazione desktop a interfaccia grafica (GUI) nativa, pur mantenendo al 100% l'accessibilità da tastiera e tramite screen reader (NVDA/JAWS) per gli utenti non vedenti e ipovedenti.
+
+	  Novità principali di Tornello v9.0:
+	  1. INTERFACCIA GRAFICA NATIVA:
+	     - Sviluppata in wxPython, con focus jump automatici e navigazione ottimizzata tramite scorciatoie dedicate.
+	     - Struttura a tre pannelli: Area Report (F5), Albero dei Comandi (F6) e Barra di Stato (F7).
+	     - Comandi e scorciatoie per tutte le azioni del menù (Nuovo, Apri, Salva, Iscrizioni, Annulla Turno, Finalizza).
+	  2. MOTORE DI ABBINAMENTO SVIZZERO FIDE 2026:
+	     - Integrazione ufficiale del motore bbpPairings v6.0.0 per la generazione di abbinamenti svizzeri olandesi sicuri e conformi.
+	  3. RICERCA AVANZATA CON OPERATORI:
+	     - Supporto per operatori fluidi (+ obbligatorio, - escluso, = frase esatta) nel Database Locale e nel Database FIDE Ratings.
+	     - Paginazione intelligente a blocchi di 100 elementi per non sovraccaricare gli screen reader.
+	  4. COMPLETO DESIGN ACUSTICO:
+	     - Feedback acustici spazializzati per ogni evento (avvio, chiusura, vittorie, patte, forfait a sinistra/destra, fine turno, rollback, ritiri).
+	     - Regolazione del volume master dell'applicazione rispettata con calcolo dei delta dei suoni letti da file JSON.
+	     - I preset audio sono caricati dinamicamente da file esterno (Acu_Collection.json) con fallback automatico e pulizia totale del codice di utils.py.
+	  5. STRUMENTI INTEGRATI:
+	     - Dialogo di gestione dei giocatori locali (Ctrl+D), consultazione database FIDE (Ctrl+K), e sincronizzazione anagrafiche (Ctrl+Y).
+
+	  Requisiti:
+	  - Python 3.10+
+	  - Dipendenze installabili con: `pip install wxPython sounddevice scipy numpy polib deep-translator`
+	  - Motore `bbpPairings.exe` posizionato nella cartella `bbppairings/` del progetto.
+
 	+ Bugfix: Corretto il bug nella finestra Ricerca FIDE (FideQueryDialog) dove il pannello dei dettagli del giocatore non rispettava le dimensioni e i caratteri impostati nelle preferenze utente a causa della chiamata a SetValue.
 
 9.0.1

@@ -6,9 +6,9 @@ from config import FIDE_DB_LOCAL_FILE
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 
-_ = getattr(builtins, "_", lambda s: s)
-
 from utils import match_player_query
+
+_ = getattr(builtins, "_", lambda s: s)
 
 class FideQueryDialog(wx.Dialog):
     """

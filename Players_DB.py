@@ -1,5 +1,4 @@
-# Data concepimento 27 aprile 2025 by Gemini 2.5 (Refactored per Tornello 8.8)
-# gestore Players_DB.py
+# ruff: noqa: E402
 import os
 import sys
 import warnings

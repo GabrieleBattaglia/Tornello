@@ -3,7 +3,7 @@ import glob
 import json
 import wx
 import builtins
-from version import __version__, __date__, __authors__
+from version import __version__, __date__
 from gui.settings import apply_visual_settings, save_settings
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 
@@ -477,7 +477,7 @@ class MainFrame(wx.Frame):
             self.on_backup_cleanup(None)
         else:
             # Aggiorna mtime a oggi per non riproporlo
-            for filepath, _ in old_files:
+            for filepath, _discard in old_files:
                 try:
                     os.utime(filepath, None) # imposta mtime e atime a oggi/ora
                 except Exception:
@@ -2179,7 +2179,8 @@ class MainFrame(wx.Frame):
         # Visualizza la guida accessibile caricandola da file
         self.main_text.Clear()
         guide_text = ""
-        guide_path = "MANUALE.txt"
+        from config import resource_path
+        guide_path = resource_path("MANUALE.txt")
         if os.path.exists(guide_path):
             try:
                 with open(guide_path, "r", encoding="utf-8") as f:
@@ -2189,7 +2190,7 @@ class MainFrame(wx.Frame):
                 
         if not guide_text:
             guide_text = (
-                "MANUALE GUIDA DI TORNELLO v9.0.2\n"
+                "MANUALE GUIDA DI TORNELLO v9.3.0\n"
                 "================================\n\n"
                 "File MANUALE.txt non trovato. Consultare la guida online o ripristinare il file."
             )
@@ -2199,7 +2200,8 @@ class MainFrame(wx.Frame):
     def on_changelog(self, event):
         self.main_text.Clear()
         changelog_str = ""
-        changelog_path = "ChangeLog.txt"
+        from config import resource_path
+        changelog_path = resource_path("ChangeLog.txt")
         if os.path.exists(changelog_path):
             try:
                 with open(changelog_path, "r", encoding="utf-8") as f:
@@ -2220,7 +2222,8 @@ class MainFrame(wx.Frame):
     def on_credits(self, event):
         self.main_text.Clear()
         credits_str = ""
-        credits_path = "CREDITS.txt"
+        from config import resource_path
+        credits_path = resource_path("CREDITS.txt")
         if os.path.exists(credits_path):
             try:
                 with open(credits_path, "r", encoding="utf-8") as f:

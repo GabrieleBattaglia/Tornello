@@ -2,9 +2,6 @@ import os
 import sys
 import tempfile
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import pytest
-
 # Add src folder to path just in case
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 

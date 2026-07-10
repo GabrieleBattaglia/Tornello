@@ -1,7 +1,5 @@
 import os
-import shutil
 import tempfile
-import pytest
 from utils import resolve_and_verify_save_path
 
 def test_resolve_and_verify_save_path_empty():
