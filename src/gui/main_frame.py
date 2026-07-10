@@ -2167,12 +2167,27 @@ class MainFrame(wx.Frame):
         self.Close()
 
     def on_preferences(self, event):
+        old_lang = self.settings.get("language", "it")
         dlg = VisualSettingsDialog(self, self.settings)
         if dlg.ShowModal() == wx.ID_OK:
-            self.settings = dlg.get_settings()
+            new_settings = dlg.get_settings()
+            new_lang = new_settings.get("language", "it")
+            self.settings = new_settings
             save_settings(self.settings)
             self.apply_theme()
             self.set_status("Impostazioni salvate ed applicate.")
+            
+            if old_lang != new_lang:
+                msg = _("La lingua è stata cambiata. Riavvia l'applicazione affinché le modifiche abbiano effetto.")
+                dlg_msg = AccessibleMsgDialog(
+                    self,
+                    _("Riavvio Richiesto"),
+                    msg,
+                    style=wx.OK,
+                    settings=self.settings
+                )
+                dlg_msg.ShowModal()
+                dlg_msg.Destroy()
         dlg.Destroy()
 
     def on_help(self, event):

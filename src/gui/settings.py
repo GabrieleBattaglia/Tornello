@@ -42,6 +42,27 @@ def save_settings(settings):
     except Exception:
         pass
 
+    # Sincronizza selected_language.json con il codice lingua delle impostazioni
+    try:
+        lang_code = settings.get("language", "it")
+        selected_lang_file = os.path.join(app_dir, "selected_language.json")
+        data = {}
+        if os.path.exists(selected_lang_file):
+            try:
+                with open(selected_lang_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                pass
+        
+        data["language_code"] = lang_code
+        if "available_languages" not in data:
+            data["available_languages"] = ["en", "es", "fr", "it", "pt"]
+            
+        with open(selected_lang_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+    except Exception:
+        pass
+
 def pct_to_byte(pct):
     """Converte un valore percentuale (0-100) in byte (0-255)."""
     val = int((pct / 100) * 255)

@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.2 (2026.07.10)
+	+ Bugfix: Risolto un bug per cui il cambio lingua della GUI non veniva allineato con il file caricato all'avvio (selected_language.json), lasciando il programma bloccato in italiano.
+	+ Feature: Introdotto un pop-up di avviso accessibile per notificare l'utente che è necessario riavviare l'applicazione per applicare la nuova lingua.
+
 9.3.1 (2026.07.10)
 	+ Bugfix: Corretto il caricamento di ChangeLog.txt, MANUALE.txt e CREDITS.txt per utilizzare il percorso dinamico corretto delle risorse.
 	+ Maintenance: Riorganizzata la struttura del changelog per mostrare la versione più recente direttamente all'apertura del visualizzatore (F2).
