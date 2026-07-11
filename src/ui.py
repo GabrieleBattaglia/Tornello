@@ -3,9 +3,21 @@ import shutil
 import glob
 import traceback
 from datetime import datetime
-from config import DEFAULT_ELO, DATE_FORMAT_ISO, PLAYER_DB_FILE, DEFAULT_K_FACTOR, ARCHIVED_TOURNAMENTS_DIR
+from config import (
+    DEFAULT_ELO,
+    DATE_FORMAT_ISO,
+    PLAYER_DB_FILE,
+    DEFAULT_K_FACTOR,
+    ARCHIVED_TOURNAMENTS_DIR,
+)
 from GBUtils import dgt, key
-from utils import enter_escape, format_date_locale, sanitize_filename, create_backup, play_sound
+from utils import (
+    enter_escape,
+    format_date_locale,
+    sanitize_filename,
+    create_backup,
+    play_sound,
+)
 from db_players import (
     _cerca_giocatore_nel_db_fide,
     crea_nuovo_giocatore_nel_db,
@@ -96,13 +108,19 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                         rounds=torneo.get("total_rounds"),
                     )
                 )
-                print(_("Non puoi procedere finché non inserisci un numero sufficiente di giocatori, oppure modifichi i parametri del torneo."))
+                print(
+                    _(
+                        "Non puoi procedere finché non inserisci un numero sufficiente di giocatori, oppure modifichi i parametri del torneo."
+                    )
+                )
                 return False
 
             # --- AGGIORNAMENTO SILENZIOSO DATI GIOCATORI ---
             # Allinea eventuali aggiornamenti del database (Elo, Titoli) prima di cristallizzare la lista
             category = torneo.get("tournament_category", "standard")
-            aggiornati = allinea_giocatori_con_database(torneo["players"], players_db, category)
+            aggiornati = allinea_giocatori_con_database(
+                torneo["players"], players_db, category
+            )
 
             if aggiornati > 0:
                 print(
@@ -198,6 +216,7 @@ def input_schedule_details(existing_details=None):
                 parsed_date_obj = datetime(now.year, now.month, day)
             else:
                 from utils import parse_flexible_date
+
                 parsed_date_obj = parse_flexible_date(date_input_str)
 
             details["date"] = parsed_date_obj.strftime(DATE_FORMAT_ISO)
@@ -678,7 +697,7 @@ def input_players(
             fide_id_new_db = get_input_with_default(
                 _("  ID FIDE Numerico ('0' se N/D)"), "0"
             ).strip()
-            
+
             while True:
                 bdate_input = get_input_with_default(
                     _("  Data Nascita ({date_format} o vuoto o AAAAMMGG)").format(
@@ -689,6 +708,7 @@ def input_players(
                 if bdate_input:
                     try:
                         from utils import parse_flexible_date
+
                         parsed_dt = parse_flexible_date(bdate_input)
                         birth_date_new_db = parsed_dt.strftime(DATE_FORMAT_ISO)
                         break
@@ -697,7 +717,7 @@ def input_players(
                 else:
                     birth_date_new_db = None
                     break
-                    
+
             exp_new_db = enter_escape(
                 _(" Esperienza pregressa significativa? (INVIO|ESCAPE)")
             )
@@ -836,7 +856,7 @@ def update_match_result(torneo):
                 bp_name_disp = (
                     f"{bp_obj.get('first_name', 'N/A')} {bp_obj.get('last_name', '')}"
                     if bp_obj
-                    else "Giocatore Mancante"
+                    else _("Giocatore Mancante")
                 )
                 pending_matches_info_list.append(
                     (round_board_idx_counter, match_obj, wp_name_disp, bp_name_disp)
@@ -893,7 +913,16 @@ def update_match_result(torneo):
                         match_dict_disp["black_player_id"], {}
                     ).get("initial_elo", "?")
                     print(
-                        f"    Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]"
+                        _(
+                            "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"
+                        ).format(
+                            board=displayed_board_num,
+                            match_id=match_dict_disp.get("id"),
+                            white=w_name_disp,
+                            w_elo=wp_elo_disp,
+                            black=b_name_disp,
+                            b_elo=bp_elo_disp,
+                        )
                     )
                     schedule = match_dict_disp.get("schedule_info", {})
                     date_str = (
@@ -905,7 +934,9 @@ def update_match_result(torneo):
                     channel_str = schedule.get("channel", "")
                     arbiter_str = schedule.get("arbiter", "")
 
-                    plan_info = f"      Pianificata per: {date_str} alle {time_str}"
+                    plan_info = _("      Pianificata per: {date} alle {time}").format(
+                        date=date_str, time=time_str
+                    )
                     if channel_str:
                         plan_info += f", {channel_str}"
                     if arbiter_str:
@@ -928,7 +959,16 @@ def update_match_result(torneo):
                         match_dict_disp["black_player_id"], {}
                     ).get("initial_elo", "?")
                     print(
-                        f"    Sc. {displayed_board_num:<2} (IDG:{match_dict_disp.get('id')}) - {w_name_disp:<20} [{wp_elo_disp:>4}] vs {b_name_disp:<20} [{bp_elo_disp:>4}]"
+                        _(
+                            "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"
+                        ).format(
+                            board=displayed_board_num,
+                            match_id=match_dict_disp.get("id"),
+                            white=w_name_disp,
+                            w_elo=wp_elo_disp,
+                            black=b_name_disp,
+                            b_elo=bp_elo_disp,
+                        )
                     )
         else:
             print(
@@ -1032,13 +1072,35 @@ def update_match_result(torneo):
                 )
             )
             for i, match in enumerate(completed_matches_to_cancel):
-                wp_data = players_dict.get(match.get('white_player_id'))
-                bp_data = players_dict.get(match.get('black_player_id'))
-                w_name = f"{wp_data.get('first_name', '?')} {wp_data.get('last_name', '?')}" if wp_data else "?"
-                b_name = f"{bp_data.get('first_name', '?')} {bp_data.get('last_name', '?')}" if bp_data else "?"
-                print(f"  {i+1}. IDG:{match.get('id')} - {w_name} vs {b_name} | Risultato: {match.get('result')}")
-            
-            cancel_choice = input(_("Inserisci il numero o l'ID Globale (IDG) della partita da cancellare (o vuoto per annullare): ")).strip()
+                wp_data = players_dict.get(match.get("white_player_id"))
+                bp_data = players_dict.get(match.get("black_player_id"))
+                w_name = (
+                    f"{wp_data.get('first_name', '?')} {wp_data.get('last_name', '?')}"
+                    if wp_data
+                    else "?"
+                )
+                b_name = (
+                    f"{bp_data.get('first_name', '?')} {bp_data.get('last_name', '?')}"
+                    if bp_data
+                    else "?"
+                )
+                print(
+                    _(
+                        "  {num}. IDG:{match_id} - {white} vs {black} | Risultato: {result}"
+                    ).format(
+                        num=i + 1,
+                        match_id=match.get("id"),
+                        white=w_name,
+                        black=b_name,
+                        result=match.get("result"),
+                    )
+                )
+
+            cancel_choice = input(
+                _(
+                    "Inserisci il numero o l'ID Globale (IDG) della partita da cancellare (o vuoto per annullare): "
+                )
+            ).strip()
             if not cancel_choice:
                 continue
 
@@ -1048,31 +1110,59 @@ def update_match_result(torneo):
                 if 1 <= choice_num <= len(completed_matches_to_cancel):
                     match_to_cancel = completed_matches_to_cancel[choice_num - 1]
                 else:
-                    match_to_cancel = next((m for m in completed_matches_to_cancel if m.get("id") == choice_num), None)
-            
+                    match_to_cancel = next(
+                        (
+                            m
+                            for m in completed_matches_to_cancel
+                            if m.get("id") == choice_num
+                        ),
+                        None,
+                    )
+
             if not match_to_cancel:
                 print(_("Scelta non valida."))
                 continue
-            
-            wp_data_c = players_dict.get(match_to_cancel.get('white_player_id'))
-            bp_data_c = players_dict.get(match_to_cancel.get('black_player_id'))
-            
-            w_name_c = f"{wp_data_c.get('first_name', '?')} {wp_data_c.get('last_name', '?')}" if wp_data_c else "?"
-            b_name_c = f"{bp_data_c.get('first_name', '?')} {bp_data_c.get('last_name', '?')}" if bp_data_c else "?"
-            
-            if enter_escape(_("Confermi la CANCELLAZIONE del risultato per {w} vs {b}? (INVIO|ESCAPE): ").format(w=w_name_c, b=b_name_c)):
+
+            wp_data_c = players_dict.get(match_to_cancel.get("white_player_id"))
+            bp_data_c = players_dict.get(match_to_cancel.get("black_player_id"))
+
+            w_name_c = (
+                f"{wp_data_c.get('first_name', '?')} {wp_data_c.get('last_name', '?')}"
+                if wp_data_c
+                else "?"
+            )
+            b_name_c = (
+                f"{bp_data_c.get('first_name', '?')} {bp_data_c.get('last_name', '?')}"
+                if bp_data_c
+                else "?"
+            )
+
+            if enter_escape(
+                _(
+                    "Confermi la CANCELLAZIONE del risultato per {w} vs {b}? (INVIO|ESCAPE): "
+                ).format(w=w_name_c, b=b_name_c)
+            ):
                 # Reset partita
-                match_to_cancel['result'] = None
-                match_to_cancel.pop('white_score', None)
-                match_to_cancel.pop('black_score', None)
-                
+                match_to_cancel["result"] = None
+                match_to_cancel.pop("white_score", None)
+                match_to_cancel.pop("black_score", None)
+
                 # Rimuovi da results_history
-                if wp_data_c and 'results_history' in wp_data_c:
-                    wp_data_c['results_history'] = [res for res in wp_data_c['results_history'] if res.get('round') != current_round_num]
-                if bp_data_c and 'results_history' in bp_data_c:
-                    bp_data_c['results_history'] = [res for res in bp_data_c['results_history'] if res.get('round') != current_round_num]
-                
+                if wp_data_c and "results_history" in wp_data_c:
+                    wp_data_c["results_history"] = [
+                        res
+                        for res in wp_data_c["results_history"]
+                        if res.get("round") != current_round_num
+                    ]
+                if bp_data_c and "results_history" in bp_data_c:
+                    bp_data_c["results_history"] = [
+                        res
+                        for res in bp_data_c["results_history"]
+                        if res.get("round") != current_round_num
+                    ]
+
                 from tournament import ricalcola_punti_tutti_giocatori
+
                 ricalcola_punti_tutti_giocatori(torneo)
                 any_changes_made_in_this_session = True
                 save_tournament(torneo)
@@ -1154,7 +1244,16 @@ def update_match_result(torneo):
                         match_d_multi["black_player_id"], {}
                     ).get("initial_elo", "?")
                     print(
-                        f"  Sc. {disp_b_num_multi:<2} (IDG:{match_d_multi.get('id')}) - {w_n_multi:<20} [{wp_elo_m_disp:>4}] vs {b_n_multi:<20} [{bp_elo_m_disp:>4}]"
+                        _(
+                            "  Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"
+                        ).format(
+                            board=disp_b_num_multi,
+                            match_id=match_d_multi.get("id"),
+                            white=w_n_multi,
+                            w_elo=wp_elo_m_disp,
+                            black=b_n_multi,
+                            b_elo=bp_elo_m_disp,
+                        )
                     )
                 try:
                     specific_board_input = input(
@@ -1326,7 +1425,7 @@ def update_match_result(torneo):
                             forfeiting_players.append(wp_data_obj)
                         elif res_str == "0-0F":
                             forfeiting_players.extend([wp_data_obj, bp_data_obj])
-                            
+
                         for f_player_obj in forfeiting_players:
                             player_name_forfeit = f"{f_player_obj.get('first_name', '?')} {f_player_obj.get('last_name', '?')}"
                             withdraw_choice = enter_escape(
@@ -1630,11 +1729,11 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     custom_path = torneo.get("custom_save_path")
     if custom_path:
         from utils import resolve_and_verify_save_path
+
         custom_path, warning = resolve_and_verify_save_path(custom_path)
         if warning:
             print(warning)
 
-    
     # 1. Trova il file JSON principale del torneo (locale)
     local_json_filename = f"Tornello - {sanitized_tournament_name}.json"
     if current_tournament_filename and os.path.exists(current_tournament_filename):
@@ -1652,14 +1751,18 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     # 2. Trova gli altri file di testo (.txt) associati al torneo (nella cartella custom o in locale)
     report_files = []
     if custom_path:
-        file_pattern_prefix = os.path.join(custom_path, f"Tornello - {sanitized_tournament_name}")
+        file_pattern_prefix = os.path.join(
+            custom_path, f"Tornello - {sanitized_tournament_name}"
+        )
     else:
         file_pattern_prefix = f"Tornello - {sanitized_tournament_name}"
 
     for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
         if os.path.isfile(file_in_dir):
             # Escludiamo il file JSON del torneo attivo da questa lista per gestirlo separatamente
-            if not local_json_path or os.path.abspath(file_in_dir) != os.path.abspath(local_json_path):
+            if not local_json_path or os.path.abspath(file_in_dir) != os.path.abspath(
+                local_json_path
+            ):
                 report_files.append(file_in_dir)
 
     moved_files_count = 0
@@ -1676,12 +1779,18 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                 )
                 continue
             if custom_path:
-                shutil.copy2(filepath, destination_path)  # Copia in archivio lasciando l'originale in Dropbox
+                shutil.copy2(
+                    filepath, destination_path
+                )  # Copia in archivio lasciando l'originale in Dropbox
             else:
-                shutil.move(filepath, destination_path)  # Sposta direttamente in archivio
+                shutil.move(
+                    filepath, destination_path
+                )  # Sposta direttamente in archivio
             moved_files_count += 1
         except Exception as e_move:
-            print(f"  Errore durante lo spostamento di '{os.path.basename(filepath)}': {e_move}")
+            print(
+                f"  Errore durante lo spostamento di '{os.path.basename(filepath)}': {e_move}"
+            )
 
     # Processa e archivia il file JSON locale
     if local_json_path:
@@ -1691,17 +1800,19 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             if not os.path.exists(destination_path):
                 shutil.copy2(local_json_path, destination_path)
                 moved_files_count += 1
-            
+
             # Se l'utente ha una cartella personalizzata, salva una copia del JSON concluso anche lì
             if custom_path:
                 custom_json_dest = os.path.join(custom_path, json_filename_only)
                 if not os.path.exists(custom_json_dest):
                     shutil.copy2(local_json_path, custom_json_dest)
-            
+
             # Elimina il file JSON attivo locale
             os.remove(local_json_path)
         except Exception as e_json:
-            print(f"  Errore durante l'archiviazione del file JSON '{os.path.basename(local_json_path)}': {e_json}")
+            print(
+                f"  Errore durante l'archiviazione del file JSON '{os.path.basename(local_json_path)}': {e_json}"
+            )
 
     if moved_files_count > 0:
         print(

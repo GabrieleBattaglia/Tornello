@@ -14,7 +14,10 @@ except AttributeError:
     sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "src"))
 
 from config import FIDE_DB_LOCAL_FILE
-from db_players import aggiorna_db_fide_locale, _cerca_giocatore_nel_db_fide as cerca_giocatore_fide
+from db_players import (
+    aggiorna_db_fide_locale,
+    _cerca_giocatore_nel_db_fide as cerca_giocatore_fide,
+)
 
 
 # --- NUOVE FUNZIONI DI VISUALIZZAZIONE ---

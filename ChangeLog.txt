@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.3 (2026.07.10)
+	+ Feature: Internazionalizzazione (i18n) completa e sistematica dell'intera interfaccia utente.
+	  - Incapsulamento in gettext _() di tutte le stringhe residue dei menu, della barra di stato e dell'albero comandi.
+	  - Traduzione automatica simultanea di tutti i nuovi testi per le lingue en, es, fr e pt.
+	  - Rimossi i condizionali ridondanti sul marcatore gettext.
+
 9.3.2 (2026.07.10)
 	+ Bugfix: Risolto un bug per cui il cambio lingua della GUI non veniva allineato con il file caricato all'avvio (selected_language.json), lasciando il programma bloccato in italiano.
 	+ Feature: Introdotto un pop-up di avviso accessibile per notificare l'utente che è necessario riavviare l'applicazione per applicare la nuova lingua.

@@ -25,7 +25,6 @@ from db_players import sincronizza_db_personale, aggiorna_db_fide_locale
 from utils import enter_escape
 
 
-
 def main():
     print(_("\n--- Sincronizzatore Database Tornello ---"))
     print(_("Questo tool confronta il tuo database giocatori personale"))

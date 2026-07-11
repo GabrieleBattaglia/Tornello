@@ -1,7 +1,9 @@
 import wx
 
+
 class CustomAccessible(wx.Accessible):
     """Classe custom per MSAA per esporre il nome corretto del controllo ai lettori dello schermo."""
+
     def __init__(self, win, name):
         super().__init__(win)
         self.name = name
@@ -13,6 +15,7 @@ class CustomAccessible(wx.Accessible):
             return wx.ACC_OK, self.name
         return wx.ACC_NOT_SUPPORTED, ""
 
+
 def announce_text_to_screen_reader(text):
     """
     Invia un annuncio testuale allo screen reader se supportato.
@@ -20,6 +23,7 @@ def announce_text_to_screen_reader(text):
     Per semplicità ed elevata compatibilità, ci affidiamo anche al focus dei controlli.
     """
     pass
+
 
 def set_accessibility_label(control, label_text):
     """
@@ -30,4 +34,3 @@ def set_accessibility_label(control, label_text):
     # Imposta comunque lo HelpText ed il ToolTip che NVDA legge come descrizione alternativa
     control.SetHelpText(label_text)
     control.SetToolTip(wx.ToolTip(label_text))
-

@@ -3,6 +3,7 @@ Registro centrale dei criteri di spareggio FIDE per tornei svizzeri individuali.
 In conformità al FIDE Handbook 07 (Play-Off and Tie-Break Regulations)
 efficaci dal 1° Marzo 2026.
 """
+
 import builtins
 
 _ = getattr(builtins, "_", lambda s: s)
@@ -53,11 +54,11 @@ MODIFIERS = {
 # (Articolo 14, tabella ufficiale FIDE)
 # ---------------------------------------------------------------------------
 CRITERION_MODIFIERS = {
-    "BH":  ["cut1", "cut2", "median1", "median2"],   # Tutti e 4
-    "FB":  ["cut1"],                                   # Solo Cut-1
-    "SB":  ["cut1"],                                   # Solo Cut-1
-    "ARO": ["cut1"],                                   # Solo Cut-1
-    "PS":  ["cut1"],                                   # Solo Cut-1
+    "BH": ["cut1", "cut2", "median1", "median2"],  # Tutti e 4
+    "FB": ["cut1"],  # Solo Cut-1
+    "SB": ["cut1"],  # Solo Cut-1
+    "ARO": ["cut1"],  # Solo Cut-1
+    "PS": ["cut1"],  # Solo Cut-1
 }
 
 
@@ -106,7 +107,7 @@ CRITERIA = {
             "tramite lo svolgimento della partita sulla scacchiera."
         ),
         "formula": _(
-            "Conteggio totale delle partite vinte \"over the board\" (Articolo 7.2)."
+            'Conteggio totale delle partite vinte "over the board" (Articolo 7.2).'
         ),
     },
     "BPG": {
@@ -129,7 +130,7 @@ CRITERIA = {
             "partecipante conduceva i pezzi neri."
         ),
         "formula": _(
-            "Numero di partite vinte \"over the board\" giocando con il colore nero "
+            'Numero di partite vinte "over the board" giocando con il colore nero '
             "(Articolo 7.4)."
         ),
     },
@@ -142,7 +143,7 @@ CRITERIA = {
         ),
         "formula": _(
             "Somma dei punteggi parziali ottenuti dal partecipante dopo ogni round. "
-            "È prevista la variante \"Cut-1\" (PS-C1) che esclude il punteggio "
+            'È prevista la variante "Cut-1" (PS-C1) che esclude il punteggio '
             "ottenuto dopo il primo turno (Articolo 7.5, 14.1.1)."
         ),
     },
@@ -194,7 +195,7 @@ CRITERIA = {
         ),
         "formula": _(
             "Somma dei punteggi finali di tutti gli avversari affrontati. È "
-            "prevista la variante principale \"Cut-1\" (BH-C1), che esclude il "
+            'prevista la variante principale "Cut-1" (BH-C1), che esclude il '
             "punteggio dell'avversario con il risultato più basso "
             "(Articolo 8.1, 14.1.1)."
         ),
@@ -221,7 +222,7 @@ CRITERIA = {
         ),
         "formula": _(
             "Punteggio Buchholz calcolato ipotizzando patte per tutti gli incontri "
-            "accoppiati nell'ultimo turno. È applicabile la variante \"Cut-1\" "
+            'accoppiati nell\'ultimo turno. È applicabile la variante "Cut-1" '
             "(Articolo 8.3, 5)."
         ),
     },
@@ -235,7 +236,7 @@ CRITERIA = {
         "formula": _(
             "Somma dei valori ottenuti moltiplicando il punteggio finale di ogni "
             "avversario per i punti ottenuti contro di esso. È prevista la variante "
-            "\"Cut-1\" (SB-C1), che esclude il contributo associato all'avversario "
+            '"Cut-1" (SB-C1), che esclude il contributo associato all\'avversario '
             "con il punteggio più basso (Articolo 9.1, 14.1.1)."
         ),
     },
@@ -252,7 +253,7 @@ CRITERIA = {
         "formula": _(
             "Media dei rating degli avversari incontrati sulla scacchiera, "
             "arrotondata all'intero più vicino (con 0,5 arrotondato per eccesso). "
-            "È prevista la variante \"Cut-1\" (ARO-C1), che esclude il rating "
+            'È prevista la variante "Cut-1" (ARO-C1), che esclude il rating '
             "dell'avversario più debole (Articolo 10.1, 14.1.1)."
         ),
     },
@@ -331,24 +332,25 @@ CRITERIA = {
 # Mappatura retrocompatibilità: vecchie chiavi → nuovo formato
 # ---------------------------------------------------------------------------
 OLD_TO_NEW_MAPPING = {
-    "points":            None,   # Implicito, non è uno spareggio
-    "withdrawn":         None,   # Implicito
-    "buchholz_cut1":     {"key": "BH",   "modifiers": {"cut1": True}},
-    "buchholz":          {"key": "BH",   "modifiers": {}},
-    "aro":               {"key": "ARO",  "modifiers": {}},
-    "initial_elo":       {"key": "RTNG", "modifiers": {}},
-    "sonneborn_berger":  {"key": "SB",   "modifiers": {}},
-    "direct_encounter":  {"key": "DE",   "modifiers": {}},
-    "played_rounds_rep": {"key": "REP",  "modifiers": {}},
-    "number_of_wins":    {"key": "WIN",  "modifiers": {}},
-    "number_of_blacks":  {"key": "BPG",  "modifiers": {}},
-    "cumulative":        {"key": "PS",   "modifiers": {}},
+    "points": None,  # Implicito, non è uno spareggio
+    "withdrawn": None,  # Implicito
+    "buchholz_cut1": {"key": "BH", "modifiers": {"cut1": True}},
+    "buchholz": {"key": "BH", "modifiers": {}},
+    "aro": {"key": "ARO", "modifiers": {}},
+    "initial_elo": {"key": "RTNG", "modifiers": {}},
+    "sonneborn_berger": {"key": "SB", "modifiers": {}},
+    "direct_encounter": {"key": "DE", "modifiers": {}},
+    "played_rounds_rep": {"key": "REP", "modifiers": {}},
+    "number_of_wins": {"key": "WIN", "modifiers": {}},
+    "number_of_blacks": {"key": "BPG", "modifiers": {}},
+    "cumulative": {"key": "PS", "modifiers": {}},
 }
 
 
 # ---------------------------------------------------------------------------
 # Funzioni di utilità
 # ---------------------------------------------------------------------------
+
 
 def get_supported_modifiers(criterion_key):
     """Restituisce la lista di chiavi modificatore supportate da un criterio."""
@@ -456,9 +458,9 @@ def get_default_tiebreaks():
     Corrisponde all'attuale default di Tornello: BH-C1, BH, ARO, RTNG.
     """
     return [
-        {"key": "BH",   "modifiers": {"cut1": True}},
-        {"key": "BH",   "modifiers": {}},
-        {"key": "ARO",  "modifiers": {}},
+        {"key": "BH", "modifiers": {"cut1": True}},
+        {"key": "BH", "modifiers": {}},
+        {"key": "ARO", "modifiers": {}},
         {"key": "RTNG", "modifiers": {}},
     ]
 
@@ -482,10 +484,12 @@ def migrate_old_tiebreaks(old_list):
             mapped = OLD_TO_NEW_MAPPING[old_key]
             if mapped is not None:
                 # Deep copy per evitare mutazioni
-                new_list.append({
-                    "key": mapped["key"],
-                    "modifiers": dict(mapped.get("modifiers", {})),
-                })
+                new_list.append(
+                    {
+                        "key": mapped["key"],
+                        "modifiers": dict(mapped.get("modifiers", {})),
+                    }
+                )
         # Voci non mappate vengono ignorate silenziosamente
 
     return new_list if new_list else get_default_tiebreaks()
@@ -504,7 +508,10 @@ def normalize_tiebreak_entry(entry):
     if isinstance(entry, str):
         mapped = OLD_TO_NEW_MAPPING.get(entry)
         if mapped:
-            return {"key": mapped["key"], "modifiers": dict(mapped.get("modifiers", {}))}
+            return {
+                "key": mapped["key"],
+                "modifiers": dict(mapped.get("modifiers", {})),
+            }
         # Potrebbe essere già una chiave del nuovo formato
         if entry in CRITERIA:
             return {"key": entry, "modifiers": {}}

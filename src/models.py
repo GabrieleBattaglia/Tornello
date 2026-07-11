@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Set
 
+
 @dataclass
 class ResultEntry:
     round: int
     opponent_id: str
     color: Optional[str]  # "white", "black", or None (for BYE)
-    result: str           # "1-0", "0-1", "1/2-1/2", etc.
+    result: str  # "1-0", "0-1", "1/2-1/2", etc.
     score: float
 
     def to_dict(self) -> Dict[str, Any]:
@@ -15,18 +16,19 @@ class ResultEntry:
             "opponent_id": self.opponent_id,
             "color": self.color,
             "result": self.result,
-            "score": self.score
+            "score": self.score,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'ResultEntry':
+    def from_dict(cls, d: Dict[str, Any]) -> "ResultEntry":
         return cls(
             round=d.get("round", 0),
             opponent_id=d.get("opponent_id", ""),
             color=d.get("color"),
             result=d.get("result", ""),
-            score=float(d.get("score", 0.0))
+            score=float(d.get("score", 0.0)),
         )
+
 
 @dataclass
 class Player:
@@ -59,7 +61,7 @@ class Player:
     final_rank: Optional[int] = None
     withdrawn: bool = False
     display_rank: Optional[int] = None
-    
+
     # Issue #14: Fallback Elo and complete FIDE fields
     elo_club: Optional[float] = None
     elo_rapid: Optional[float] = None
@@ -122,15 +124,15 @@ class Player:
             "o_title": self.o_title,
             "foa_title": self.foa_title,
             "flag": self.flag,
-            "current_elo": self.current_elo
+            "current_elo": self.current_elo,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'Player':
+    def from_dict(cls, d: Dict[str, Any]) -> "Player":
         history_list = d.get("results_history", [])
         results_history = [ResultEntry.from_dict(h) for h in history_list]
         opponents = set(d.get("opponents", []))
-        
+
         raw_sex = d.get("sex") or d.get("gender") or "m"
         sex_val = str(raw_sex).strip().lower()
         if sex_val not in ("m", "w", "f"):
@@ -182,8 +184,9 @@ class Player:
             o_title=d.get("o_title", ""),
             foa_title=d.get("foa_title", ""),
             flag=d.get("flag", ""),
-            current_elo=float(d.get("current_elo") or d.get("initial_elo") or 1399.0)
+            current_elo=float(d.get("current_elo") or d.get("initial_elo") or 1399.0),
         )
+
 
 @dataclass
 class Match:
@@ -191,7 +194,9 @@ class Match:
     round: int
     white_player_id: str
     black_player_id: Optional[str]  # None if BYE
-    result: Optional[str] = None    # "1-0", "0-1", "1/2-1/2", "1-F", "F-1", "0-0F", "BYE", or None
+    result: Optional[str] = (
+        None  # "1-0", "0-1", "1/2-1/2", "1-F", "F-1", "0-0F", "BYE", or None
+    )
     is_scheduled: bool = False
     schedule_info: Optional[Dict[str, Any]] = None
     pgn: Optional[str] = None
@@ -203,7 +208,7 @@ class Match:
             "white_player_id": self.white_player_id,
             "black_player_id": self.black_player_id,
             "result": self.result,
-            "is_scheduled": self.is_scheduled
+            "is_scheduled": self.is_scheduled,
         }
         if self.schedule_info is not None:
             d["schedule_info"] = self.schedule_info
@@ -212,7 +217,7 @@ class Match:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'Match':
+    def from_dict(cls, d: Dict[str, Any]) -> "Match":
         return cls(
             id=d.get("id", 0),
             round=d.get("round", 0),
@@ -221,8 +226,9 @@ class Match:
             result=d.get("result"),
             is_scheduled=d.get("is_scheduled", False),
             schedule_info=d.get("schedule_info"),
-            pgn=d.get("pgn")
+            pgn=d.get("pgn"),
         )
+
 
 @dataclass
 class RoundDate:
@@ -234,16 +240,17 @@ class RoundDate:
         return {
             "round": self.round,
             "start_date": self.start_date,
-            "end_date": self.end_date
+            "end_date": self.end_date,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'RoundDate':
+    def from_dict(cls, d: Dict[str, Any]) -> "RoundDate":
         return cls(
             round=d.get("round", 0),
             start_date=d.get("start_date", ""),
-            end_date=d.get("end_date", "")
+            end_date=d.get("end_date", ""),
         )
+
 
 @dataclass
 class Round:
@@ -251,19 +258,14 @@ class Round:
     matches: List[Match] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "round": self.round,
-            "matches": [m.to_dict() for m in self.matches]
-        }
+        return {"round": self.round, "matches": [m.to_dict() for m in self.matches]}
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'Round':
+    def from_dict(cls, d: Dict[str, Any]) -> "Round":
         matches_list = d.get("matches", [])
         matches = [Match.from_dict(m) for m in matches_list]
-        return cls(
-            round=d.get("round", 0),
-            matches=matches
-        )
+        return cls(round=d.get("round", 0), matches=matches)
+
 
 @dataclass
 class Tournament:
@@ -292,7 +294,9 @@ class Tournament:
     save_path: str = ""
 
     # players_dict is a cache of player objects, not saved directly to file
-    players_dict: Dict[str, Player] = field(default_factory=dict, init=False, repr=False)
+    players_dict: Dict[str, Player] = field(
+        default_factory=dict, init=False, repr=False
+    )
 
     def __post_init__(self):
         self.update_players_dict()
@@ -324,11 +328,11 @@ class Tournament:
             "current_round": self.current_round,
             "concluded": self.concluded,
             "custom_save_path": self.custom_save_path,
-            "save_path": self.save_path
+            "save_path": self.save_path,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'Tournament':
+    def from_dict(cls, d: Dict[str, Any]) -> "Tournament":
         rd_list = d.get("round_dates", [])
         round_dates = [RoundDate.from_dict(rd) for rd in rd_list]
 
@@ -349,7 +353,9 @@ class Tournament:
             chief_arbiter=d.get("chief_arbiter", "N/D"),
             deputy_chief_arbiters=d.get("deputy_chief_arbiters", ""),
             time_control=d.get("time_control", "Standard"),
-            initial_board1_color_setting=d.get("initial_board1_color_setting", "white1"),
+            initial_board1_color_setting=d.get(
+                "initial_board1_color_setting", "white1"
+            ),
             round_dates=round_dates,
             players=players,
             rounds=rounds,
@@ -361,5 +367,5 @@ class Tournament:
             current_round=int(d.get("current_round", 1)),
             concluded=bool(d.get("concluded", False)),
             custom_save_path=d.get("custom_save_path", ""),
-            save_path=d.get("save_path", "")
+            save_path=d.get("save_path", ""),
         )

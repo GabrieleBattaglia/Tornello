@@ -2,7 +2,12 @@ import os
 import traceback
 from datetime import datetime
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
-from utils import format_date_locale, format_points, sanitize_filename, _ensure_players_dict
+from utils import (
+    format_date_locale,
+    format_points,
+    sanitize_filename,
+    _ensure_players_dict,
+)
 from stats import (
     compute_buchholz,
     compute_buchholz_cut1,
@@ -16,8 +21,10 @@ from stats import (
     compute_tiebreak_value,
 )
 from tiebreak_criteria import (
-    get_column_header, get_criterion_display_name,
-    migrate_old_tiebreaks, get_default_tiebreaks,
+    get_column_header,
+    get_criterion_display_name,
+    migrate_old_tiebreaks,
+    get_default_tiebreaks,
     normalize_tiebreak_entry,
 )
 
@@ -107,9 +114,7 @@ def get_current_round_report_text(torneo, round_num=None):
 
     if not all_matches_in_round and round_data is None:
         out = io.StringIO()
-        out.write(
-            _("Nome Torneo: {name} - ").format(name=tournament_name_for_file)
-        )
+        out.write(_("Nome Torneo: {name} - ").format(name=tournament_name_for_file))
         out.write(_("Turno: {round_num}\n").format(round_num=round_num))
         out.write(
             _(" Periodo Turno: {start} - {end}\n").format(
@@ -120,9 +125,7 @@ def get_current_round_report_text(torneo, round_num=None):
             out.write(time_left_str + "\n")
         else:
             out.write("\n")
-        out.write(
-            _(" (Nessuna partita ancora definita o caricata per questo turno)\n")
-        )
+        out.write(_(" (Nessuna partita ancora definita o caricata per questo turno)\n"))
         return out.getvalue()
 
     for match in all_matches_in_round:
@@ -130,7 +133,9 @@ def get_current_round_report_text(torneo, round_num=None):
         bp_obj = players_dict.get(match.get("black_player_id"))
 
         if bp_obj is None and wp_obj is not None:
-            bye_player_display_line = _(" {first_name} {last_name} ({elo}) ha il BYE").format(
+            bye_player_display_line = _(
+                " {first_name} {last_name} ({elo}) ha il BYE"
+            ).format(
                 first_name=wp_obj.get("first_name", "?"),
                 last_name=wp_obj.get("last_name", "?"),
                 elo=int(wp_obj.get("initial_elo", 0)),
@@ -139,14 +144,10 @@ def get_current_round_report_text(torneo, round_num=None):
         if bp_obj is None or wp_obj is None:
             continue
 
-        wp_name = (
-            f"{wp_obj.get('first_name', _('Bianco?'))} {wp_obj.get('last_name', '')} ({int(wp_obj.get('initial_elo', 0))})"
-        )
+        wp_name = f"{wp_obj.get('first_name', _('Bianco?'))} {wp_obj.get('last_name', '')} ({int(wp_obj.get('initial_elo', 0))})"
         if wp_obj.get("withdrawn"):
             wp_name += " [RIT]"
-        bp_name = (
-            f"{bp_obj.get('first_name', _('Nero?'))} {bp_obj.get('last_name', '')} ({int(bp_obj.get('initial_elo', 0))})"
-        )
+        bp_name = f"{bp_obj.get('first_name', _('Nero?'))} {bp_obj.get('last_name', '')} ({int(bp_obj.get('initial_elo', 0))})"
         if bp_obj.get("withdrawn"):
             bp_name += " [RIT]"
 
@@ -210,10 +211,12 @@ def get_current_round_report_text(torneo, round_num=None):
     scheduled_pending_withdrawn.sort(key=lambda x: x[0])
 
     out = io.StringIO()
-    out.write(f"Nome Torneo: {tournament_name_for_file} - ")
-    out.write(f"Turno: {round_num}\n")
+    out.write(_("Nome Torneo: {} - ").format(tournament_name_for_file))
+    out.write(_("Turno: {}\n").format(round_num))
     out.write(
-        f" Periodo Turno: {start_date_turn_display} - {end_date_turn_display}\n"
+        _(" Periodo Turno: {} - {}\n").format(
+            start_date_turn_display, end_date_turn_display
+        )
     )
     if time_left_str:
         out.write(time_left_str + "\n")
@@ -234,7 +237,16 @@ def get_current_round_report_text(torneo, round_num=None):
                 current_printed_date_str = match_date_iso
             time_str = schedule.get("time", "HH:MM")
             out.write(
-                f"   {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
+                _(
+                    "   {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: {arbiter}\n"
+                ).format(
+                    time=time_str,
+                    match_id=match.get("id", "?"),
+                    white=wp_n,
+                    black=bp_n,
+                    channel=schedule.get("channel", _("N/D")),
+                    arbiter=schedule.get("arbiter", _("N/D")),
+                )
             )
 
     if unscheduled_pending_active:
@@ -256,7 +268,16 @@ def get_current_round_report_text(torneo, round_num=None):
                 current_printed_date_withdrawn = match_date_iso
             time_str = schedule.get("time", "HH:MM")
             out.write(
-                f"    {time_str} IDG:{match.get('id', '?')}, {wp_n} vs {bp_n}, Canale: {schedule.get('channel', 'N/D')}, Arbitro: {schedule.get('arbiter', 'N/D')}\n"
+                _(
+                    "    {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: {arbiter}\n"
+                ).format(
+                    time=time_str,
+                    match_id=match.get("id", "?"),
+                    white=wp_n,
+                    black=bp_n,
+                    channel=schedule.get("channel", _("N/D")),
+                    arbiter=schedule.get("arbiter", _("N/D")),
+                )
             )
         if unscheduled_pending_withdrawn:
             out.write(_("   Non pianificate (con ritirati):\n"))
@@ -301,6 +322,7 @@ def save_current_tournament_round_file(torneo):
     custom_path = torneo.get("custom_save_path")
     if custom_path:
         from utils import resolve_and_verify_save_path
+
         resolved_path, warning = resolve_and_verify_save_path(custom_path)
         if warning:
             print(warning)
@@ -342,6 +364,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
     custom_path = torneo.get("custom_save_path")
     if custom_path:
         from utils import resolve_and_verify_save_path
+
         resolved_path, warning = resolve_and_verify_save_path(custom_path)
         if warning:
             print(warning)
@@ -497,7 +520,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                         "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
                     ).format(dashes="---", match_id=match_id, player_id=white_p_id)
                     f.write(f"\t{line}\n")
-            
+
             f.write(f"\n\nTornello ({VERSIONE})\n")
         print(
             _(
@@ -521,12 +544,12 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
 
 def get_criterion_value(player_item, criterion, torneo):
     """Calcola il valore di un criterio per l'ordinamento della classifica.
-    
+
     Supporta sia il vecchio formato stringa sia il nuovo formato dizionario
     con chiavi FIDE e modificatori.
     """
     p_id = player_item.get("id")
-    
+
     # Supporto retrocompatibilità: criterio come stringa (vecchio formato)
     if isinstance(criterion, str):
         if criterion == "points":
@@ -539,7 +562,9 @@ def get_criterion_value(player_item, criterion, torneo):
         # Prova a normalizzare la vecchia chiave al nuovo formato
         entry = normalize_tiebreak_entry(criterion)
         if entry:
-            val = compute_tiebreak_value(p_id, torneo, entry["key"], entry.get("modifiers"))
+            val = compute_tiebreak_value(
+                p_id, torneo, entry["key"], entry.get("modifiers")
+            )
             return float(val) if val is not None else 0.0
         # Fallback per chiavi legacy dirette
         if criterion == "buchholz_cut1":
@@ -565,42 +590,56 @@ def get_criterion_value(player_item, criterion, torneo):
         elif criterion == "cumulative":
             return compute_cumulative(p_id, torneo)
         return 0.0
-    
+
     # Nuovo formato: criterio come dizionario {"key": "BH", "modifiers": {...}}
     if isinstance(criterion, dict):
         key = criterion.get("key", "")
         modifiers = criterion.get("modifiers", {})
         val = compute_tiebreak_value(p_id, torneo, key, modifiers)
         return float(val) if val is not None else 0.0
-    
+
     return 0.0
 
 
 def get_column_data(criterion, player, torneo):
     """Restituisce (header, valore_formattato) per una colonna della classifica.
-    
+
     Supporta sia il vecchio formato stringa sia il nuovo formato dizionario.
     """
     p_id = player.get("id")
     is_rit = player.get("withdrawn", False)
-    
+
     # Nuovo formato dizionario con chiavi FIDE
     if isinstance(criterion, dict):
         key = criterion.get("key", "")
         modifiers = criterion.get("modifiers", {})
         hdr = get_column_header(key, modifiers)
-        
+
         if is_rit:
             val = " " * max(0, len(hdr) - 4) + "----"
             return hdr, val
-        
+
         raw_val = compute_tiebreak_value(p_id, torneo, key, modifiers)
         if raw_val is None:
             val = " " * max(0, len(hdr) - 3) + "---"
         else:
             # Criteri che restituiscono interi
-            int_criteria = {"WIN", "WON", "BPG", "BWG", "REP", "STD", "TPN",
-                           "ARO", "TPR", "PTP", "APRO", "APPO", "RTNG", "AOB"}
+            int_criteria = {
+                "WIN",
+                "WON",
+                "BPG",
+                "BWG",
+                "REP",
+                "STD",
+                "TPN",
+                "ARO",
+                "TPR",
+                "PTP",
+                "APRO",
+                "APPO",
+                "RTNG",
+                "AOB",
+            }
             if key in int_criteria:
                 width = max(len(hdr), 4)
                 val = f"{int(raw_val):{width}d}"
@@ -609,7 +648,7 @@ def get_column_data(criterion, player, torneo):
                 width = max(len(hdr), 5)
                 val = f"{float(raw_val):{width}.1f}"
         return hdr, val
-    
+
     # Retrocompatibilità: vecchio formato stringa
     if isinstance(criterion, str):
         if criterion == "points":
@@ -617,10 +656,18 @@ def get_column_data(criterion, player, torneo):
             val = f"{float(player.get('points', 0.0)):5.1f}"
         elif criterion == "buchholz_cut1":
             hdr = _("Bucch-1")
-            val = f"{float(compute_buchholz_cut1(p_id, torneo)):7.2f}" if not is_rit else "   ----"
+            val = (
+                f"{float(compute_buchholz_cut1(p_id, torneo)):7.2f}"
+                if not is_rit
+                else "   ----"
+            )
         elif criterion == "buchholz":
             hdr = _("Bucch")
-            val = f"{float(compute_buchholz(p_id, torneo)):5.1f}" if not is_rit else " ----"
+            val = (
+                f"{float(compute_buchholz(p_id, torneo)):5.1f}"
+                if not is_rit
+                else " ----"
+            )
         elif criterion == "aro":
             hdr = _(" ARO")
             aro_val = compute_aro(p_id, torneo)
@@ -652,7 +699,7 @@ def get_column_data(criterion, player, torneo):
         else:
             return None
         return hdr, val
-    
+
     return None
 
 
@@ -666,7 +713,7 @@ def get_standings_text(torneo, final=False):
     from datetime import datetime
     from tournament import ricalcola_punti_tutti_giocatori
     from utils import format_date_locale
-    
+
     ricalcola_punti_tutti_giocatori(torneo)
     players = torneo.get("players", [])
     if not players:
@@ -709,7 +756,7 @@ def get_standings_text(torneo, final=False):
             pts = 0.0
         withdrawn_val = 1 if not player_item.get("withdrawn", False) else 0
         sort_tuple = [-pts, -withdrawn_val]
-        
+
         # Criteri di spareggio configurati
         raw_tiebreaks = torneo.get("tiebreaks", None)
         if raw_tiebreaks is None:
@@ -718,13 +765,12 @@ def get_standings_text(torneo, final=False):
             tiebreak_order = migrate_old_tiebreaks(raw_tiebreaks)
         else:
             tiebreak_order = raw_tiebreaks
-        
+
         for criterion in tiebreak_order:
             val = get_criterion_value(player_item, criterion, torneo)
             # Aggiunge il valore invertito per l'ordinamento decrescente
             sort_tuple.append(-val)
         return tuple(sort_tuple)
-
 
     # --- DETERMINAZIONE STATO E TITOLO REPORT ---
     current_round_in_state = torneo.get("current_round", 0)
@@ -826,30 +872,29 @@ def get_standings_text(torneo, final=False):
     )
     deputy_arbiters_str = torneo.get("deputy_chief_arbiters", "")
     if deputy_arbiters_str and deputy_arbiters_str.strip():
-        out.write(
-            _("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str)
-        )
+        out.write(_("Vice Arbitri: {arbiters}\n").format(arbiters=deputy_arbiters_str))
     tc = torneo.get("time_control")
     cat = torneo.get("tournament_category")
     if not cat and isinstance(tc, dict):
         from stats import classify_tournament_category
-        cat = classify_tournament_category(tc.get("minutes", 60), tc.get("increment", 0))
+
+        cat = classify_tournament_category(
+            tc.get("minutes", 60), tc.get("increment", 0)
+        )
     if not cat:
         cat = "standard"
     cat_disp = cat.capitalize()
 
     tc_str = "N/D"
     if isinstance(tc, dict):
-        tc_str = f"{tc.get('minutes', 0)} min + {tc.get('increment', 0)} sec ({cat_disp})"
+        tc_str = (
+            f"{tc.get('minutes', 0)} min + {tc.get('increment', 0)} sec ({cat_disp})"
+        )
     elif isinstance(tc, str):
         tc_str = f"{tc} ({cat_disp})"
-    out.write(
-        _("Controllo Tempo: {time_control}\n").format(
-            time_control=tc_str
-        )
-    )
+    out.write(_("Controllo Tempo: {time_control}\n").format(time_control=tc_str))
     out.write(_("Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"))
-    
+
     # Lista ordinata per importanza dei criteri di spareggio attivi negli headers
     raw_tiebreaks = torneo.get("tiebreaks", None)
     if raw_tiebreaks is None:
@@ -858,27 +903,37 @@ def get_standings_text(torneo, final=False):
         tiebreak_order_display = migrate_old_tiebreaks(raw_tiebreaks)
     else:
         tiebreak_order_display = raw_tiebreaks
-    
+
     # Genera la stringa dei nomi dei criteri per il report
     criteri_display = []
     for entry in tiebreak_order_display:
         if isinstance(entry, dict):
-            criteri_display.append(get_criterion_display_name(entry.get("key", ""), entry.get("modifiers")))
+            criteri_display.append(
+                get_criterion_display_name(entry.get("key", ""), entry.get("modifiers"))
+            )
         elif isinstance(entry, str):
             # Retrocompatibilità vecchie chiavi stringa
             criteri_nomi_legacy = {
-                "points": _("Punti"), "withdrawn": _("Ritirato"),
-                "buchholz_cut1": _("Buchholz Cut-1"), "buchholz": _("Buchholz Totale"),
-                "aro": _("ARO"), "initial_elo": _("Elo Iniziale"),
-                "sonneborn_berger": _("Sonneborn-Berger"), "direct_encounter": _("Scontro Diretto"),
-                "played_rounds_rep": _("REP (Turni Giocati)"), "number_of_wins": _("Vittorie"),
-                "number_of_blacks": _("Neri"), "cumulative": _("Cumulativo"),
+                "points": _("Punti"),
+                "withdrawn": _("Ritirato"),
+                "buchholz_cut1": _("Buchholz Cut-1"),
+                "buchholz": _("Buchholz Totale"),
+                "aro": _("ARO"),
+                "initial_elo": _("Elo Iniziale"),
+                "sonneborn_berger": _("Sonneborn-Berger"),
+                "direct_encounter": _("Scontro Diretto"),
+                "played_rounds_rep": _("REP (Turni Giocati)"),
+                "number_of_wins": _("Vittorie"),
+                "number_of_blacks": _("Neri"),
+                "cumulative": _("Cumulativo"),
             }
             criteri_display.append(criteri_nomi_legacy.get(entry, entry))
-    out.write(_("Criteri di Spareggio: {tiebreaks}\n").format(
-        tiebreaks=", ".join(criteri_display)
-    ))
-    
+    out.write(
+        _("Criteri di Spareggio: {tiebreaks}\n").format(
+            tiebreaks=", ".join(criteri_display)
+        )
+    )
+
     out.write(
         _("Data Report: {date} {time}\n").format(
             date=format_date_locale(datetime.now().date()),
@@ -892,7 +947,7 @@ def get_standings_text(torneo, final=False):
 
     # --- HEADER TABELLA DINAMICO ---
     header_table = _("Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti")
-    
+
     # Filtriamo i criteri che non hanno una colonna numerica separata
     dynamic_cols = []
     for crit in tiebreak_order_display:
@@ -903,25 +958,25 @@ def get_standings_text(torneo, final=False):
         elif isinstance(crit, str):
             if crit not in ["points", "withdrawn", "initial_elo"]:
                 dynamic_cols.append(crit)
-    
+
     headers_list = []
     for crit in dynamic_cols:
         col_res = get_column_data(crit, {}, torneo)
         if col_res:
             headers_list.append(col_res[0])
-            
+
     if headers_list:
         header_table += " " + " ".join(headers_list)
-        
+
     if final:
         header_table += " " + _("Perf") + " " + _("Elo Var.")
-        
+
     out.write(header_table + "\n")
     out.write("-" * len(header_table) + "\n")
- 
+
     for player in players_sorted:
         rank_to_show = player.get("display_rank", "?")
- 
+
         p_id = player.get("id")
         starting_rank = seeding_map.get(p_id, 0)
         delta_str = ""
@@ -931,35 +986,35 @@ def get_standings_text(torneo, final=False):
             rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
         else:
             rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
- 
+
         fide_title = str(player.get("fide_title", "")).strip().upper()
-        player_name_str = f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
- 
+        player_name_str = (
+            f"{player.get('last_name', 'N/D')}, {player.get('first_name', 'N/D')}"
+        )
+
         title_display_str = f"{fide_title:<3}"
         name_display_str = f"{player_name_str:<27.27}"
         elo_ini_str = f"[{int(player.get('initial_elo', DEFAULT_ELO)):4d}]"
- 
+
         # Costruzione dinamica della riga dati
         pts_val = float(player.get("points", 0.0))
         line = f"{rank_display_str} {title_display_str} {name_display_str} {elo_ini_str} {pts_val:5.1f}"
-        
+
         vals_list = []
         for crit in dynamic_cols:
             col_res = get_column_data(crit, player, torneo)
             if col_res:
                 vals_list.append(col_res[1])
-                
+
         if vals_list:
             line += " " + " ".join(vals_list)
- 
+
         if final:
             if player.get("withdrawn", False):
                 perf_str, elo_change_str = "----", " ---"
             else:
                 perf_val = player.get("performance_rating")
-                perf_str = (
-                    f"{int(perf_val):4d}" if perf_val is not None else "----"
-                )
+                perf_str = f"{int(perf_val):4d}" if perf_val is not None else "----"
                 elo_change_val = player.get("elo_change")
                 elo_change_str = (
                     f"{int(elo_change_val):+4d}"
@@ -967,10 +1022,10 @@ def get_standings_text(torneo, final=False):
                     else " ---"
                 )
             line += f" {perf_str} {elo_change_str}"
- 
+
         if player.get("withdrawn", False):
             line = f"{line.ljust(90)} [RITIRATO]"
- 
+
         out.write(line + "\n")
 
     out.write(f"\n\nTornello ({VERSIONE})\n")
@@ -992,6 +1047,7 @@ def save_standings_text(torneo, final=False):
     custom_path = torneo.get("custom_save_path")
     if custom_path:
         from utils import resolve_and_verify_save_path
+
         resolved_path, warning = resolve_and_verify_save_path(custom_path)
         if warning:
             print(warning)
@@ -1147,21 +1203,32 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
         report_filename = f"{filename_base}_sospeso.txt"
         with open(report_filename, "w", encoding="utf-8") as f:
             f.write(
-                f"--- RIEPILOGO TORNEO IN PREPARAZIONE: {torneo_obj.get('name', 'Senza Nome')} ---\n\n"
+                _("--- RIEPILOGO TORNEO IN PREPARAZIONE: {} ---\n\n").format(
+                    torneo_obj.get("name", _("Senza Nome"))
+                )
             )
-            f.write(f"Luogo: {torneo_obj.get('site', 'N/D')}\n")
+            f.write(_("Luogo: {}\n").format(torneo_obj.get("site", _("N/D"))))
             f.write(
-                f"Date: {torneo_obj.get('start_date', 'N/D')} - {torneo_obj.get('end_date', 'N/D')}\n"
+                _("Date: {} - {}\n").format(
+                    torneo_obj.get("start_date", _("N/D")),
+                    torneo_obj.get("end_date", _("N/D")),
+                )
             )
-            f.write(f"Turni previsti: {torneo_obj.get('total_rounds', 'N/D')}\n")
             f.write(
-                f"Tempo di riflessione: {torneo_obj.get('time_control', 'N/D')}\n\n"
+                _("Turni previsti: {}\n").format(
+                    torneo_obj.get("total_rounds", _("N/D"))
+                )
+            )
+            f.write(
+                _("Tempo di riflessione: {}\n\n").format(
+                    torneo_obj.get("time_control", _("N/D"))
+                )
             )
 
             players = torneo_obj.get("players", [])
-            f.write(f"--- GIOCATORI INSERITI ({len(players)}) ---\n")
+            f.write(_("--- GIOCATORI INSERITI ({}) ---\n").format(len(players)))
             if not players:
-                f.write("Nessun giocatore inserito finora.\n")
+                f.write(_("Nessun giocatore inserito finora.\n"))
             else:
                 for idx, p in enumerate(players, 1):
                     nome_cognome = (
@@ -1170,7 +1237,9 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
                     id_player = p.get("id", "")
                     elo = p.get("initial_elo", p.get("elo_standard", 0))
                     f.write(
-                        f"{idx:02d}. {nome_cognome} (ID: {id_player}, Elo: {elo})\n"
+                        _("{idx:02d}. {name} (ID: {id}, Elo: {elo})\n").format(
+                            idx=idx, name=nome_cognome, id=id_player, elo=elo
+                        )
                     )
             f.write(f"\n\nTornello ({VERSIONE})\n")
         print(
@@ -1190,7 +1259,7 @@ def generate_ics_content(torneo):
     rounds = torneo.get("rounds", [])
     name = torneo.get("name", "Torneo")
     t_id = torneo.get("tournament_id", "TEST")
-    
+
     tc = torneo.get("time_control", {})
     if isinstance(tc, dict):
         minutes = tc.get("minutes", 60)
@@ -1198,22 +1267,22 @@ def generate_ics_content(torneo):
         # Supponiamo 60 mosse di durata media per calcolare la fine stimata
         game_duration = int(minutes * 2 + (inc * 60) / 60)
     else:
-        game_duration = 180 # 3 ore di default
-        
+        game_duration = 180  # 3 ore di default
+
     from datetime import datetime, timedelta
-    
+
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
         "PRODID:-//Tornello//Chess Tournament Calendar//IT",
         "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH"
+        "METHOD:PUBLISH",
     ]
-    
+
     players_dict = torneo.get("players_dict", {})
     if not players_dict:
         players_dict = {p["id"]: p for p in torneo.get("players", [])}
-        
+
     for r in rounds:
         r_num = r.get("round", 1)
         matches = r.get("matches", [])
@@ -1225,39 +1294,51 @@ def generate_ics_content(torneo):
                 time_str = sched.get("time")
                 if not date_str or not time_str:
                     continue
-                    
+
                 w_id = m.get("white_player_id")
                 b_id = m.get("black_player_id")
                 w_p = players_dict.get(w_id, {})
                 b_p = players_dict.get(b_id, {}) if b_id else None
-                w_name = f"{w_p.get('last_name', '')} {w_p.get('first_name', '')}".strip()
-                b_name = f"{b_p.get('last_name', '')} {b_p.get('first_name', '')}".strip() if b_p else "BYE"
-                
+                w_name = (
+                    f"{w_p.get('last_name', '')} {w_p.get('first_name', '')}".strip()
+                )
+                b_name = (
+                    f"{b_p.get('last_name', '')} {b_p.get('first_name', '')}".strip()
+                    if b_p
+                    else "BYE"
+                )
+
                 try:
-                    dt_start = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                    dt_start = datetime.strptime(
+                        f"{date_str} {time_str}", "%Y-%m-%d %H:%M"
+                    )
                     dt_end = dt_start + timedelta(minutes=game_duration)
                 except Exception:
                     continue
-                    
+
                 board_num = matches_sorted.index(m) + 1
                 uid = f"Tornello_{t_id}_R{r_num}_M{m.get('id', 0)}@tornello"
-                summary = f"Turno {r_num} - Scacchiera {board_num}: {w_name} vs {b_name}"
-                
+                summary = (
+                    f"Turno {r_num} - Scacchiera {board_num}: {w_name} vs {b_name}"
+                )
+
                 arbiter = sched.get("arbiter") or torneo.get("chief_arbiter") or "N/D"
                 channel = sched.get("channel") or "N/D"
-                
+
                 description = f"Torneo: {name}\\nTurno: {r_num}\\nScacchiera: {board_num}\\nArbitro: {arbiter}"
-                
-                lines.extend([
-                    "BEGIN:VEVENT",
-                    f"UID:{uid}",
-                    f"DTSTART:{dt_start.strftime('%Y%m%dT%H%M%S')}",
-                    f"DTEND:{dt_end.strftime('%Y%m%dT%H%M%S')}",
-                    f"SUMMARY:{summary}",
-                    f"DESCRIPTION:{description}",
-                    f"LOCATION:{channel}",
-                    "END:VEVENT"
-                ])
-                
+
+                lines.extend(
+                    [
+                        "BEGIN:VEVENT",
+                        f"UID:{uid}",
+                        f"DTSTART:{dt_start.strftime('%Y%m%dT%H%M%S')}",
+                        f"DTEND:{dt_end.strftime('%Y%m%dT%H%M%S')}",
+                        f"SUMMARY:{summary}",
+                        f"DESCRIPTION:{description}",
+                        f"LOCATION:{channel}",
+                        "END:VEVENT",
+                    ]
+                )
+
     lines.append("END:VCALENDAR")
     return "\r\n".join(lines) + "\r\n"

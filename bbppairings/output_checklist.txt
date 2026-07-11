@@ -1,34 +1,15 @@
 
-ID	Pts	--	Pref	C2	C14	C16	  Cur		R1	
+ID	Pts	-	Pref	C2	C14	C16	  Cur		
 
- 1	1.0	 W	 (B)	 Y	   	   	 (8B)		15	
- 2	1.0	 B	 (W)	 Y	   	   	 (9W)		16	
- 3	1.0	 W	 (B)	 Y	   	   	(10B)		18	
- 4	1.0	 B	 (W)	 Y	   	   	(11W)		17	
- 5	1.0	 W	 (B)	 Y	   	   	(12B)		19	
- 6	1.0	 B	 (W)	 Y	   	   	(13W)		20	
- 7	1.0	 W	 (B)	 Y	   	   	(28B)		21	
- 8	1.0	 B	 (W)	 Y	   	   	 (1W)		22	
- 9	1.0	 W	 (B)	 Y	   	   	 (2B)		23	
-10	1.0	 B	 (W)	 Y	   	   	 (3W)		24	
-11	1.0	 W	 (B)	 Y	   	   	 (4B)		25	
-12	1.0	 B	 (W)	 Y	   	   	 (5W)		26	
-13	1.0	 W	 (B)	 Y	   	   	 (6B)		27	
-28	1.0	 W	 (B)	 Y	   	   	 (7W)		14	
-
-15	0.0	 B	 (W)	 Y	   	   	(22W)		 1	
-16	0.0	 W	 (B)	 Y	   	   	(21B)		 2	
-17	0.0	 W	 (B)	 Y	   	   	(23B)		 4	
-18	0.0	 B	 (W)	 Y	   	   	(24W)		 3	
-19	0.0	 B	 (W)	 Y	   	   	(26W)		 5	
-20	0.0	 W	 (B)	 Y	   	   	(25B)		 6	
-21	0.0	 B	 (W)	 Y	   	   	(16W)		 7	
-22	0.0	 W	 (B)	 Y	   	   	(15B)		 8	
-23	0.0	 B	 (W)	 Y	   	   	(17W)		 9	
-24	0.0	 W	 (B)	 Y	   	   	(18B)		10	
-25	0.0	 B	 (W)	 Y	   	   	(20W)		11	
-26	0.0	 W	 (B)	 Y	   	   	(19B)		12	
-27	0.0	 B	 (W)	 Y	   	   	(bye)		13	
+ 1	0.0	 	  A 	 Y	   	   	 (5W)		
+ 2	0.0	 	  A 	 Y	   	   	 (6B)		
+ 3	0.0	 	  A 	 Y	   	   	 (7W)		
+ 4	0.0	 	  A 	 Y	   	   	 (8B)		
+ 5	0.0	 	  A 	 Y	   	   	 (1B)		
+ 6	0.0	 	  A 	 Y	   	   	 (2W)		
+ 7	0.0	 	  A 	 Y	   	   	 (3B)		
+ 8	0.0	 	  A 	 Y	   	   	 (4W)		
+ 9	0.0	 	  A 	 Y	   	   	(bye)		
 
 
 BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v6.0.0 (Built Feb  1 2026 17:49:01)

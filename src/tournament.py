@@ -3,7 +3,13 @@ import json
 import traceback
 from datetime import datetime, timedelta
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
-from utils import format_date_locale, sanitize_filename, create_backup, get_player_by_id, _ensure_players_dict
+from utils import (
+    format_date_locale,
+    sanitize_filename,
+    create_backup,
+    get_player_by_id,
+    _ensure_players_dict,
+)
 from engine import (
     handle_bbpairings_failure,
     genera_stringa_trf_per_bbpairings,
@@ -199,6 +205,7 @@ def time_machine_torneo(torneo):
     )
     print(prompt_template_5.format(target_round=target_round))
     from utils import play_sound
+
     play_sound("time_machine", torneo)
     return True
 
@@ -210,12 +217,12 @@ def rollback_to_previous_round(torneo):
     Ritorna True se il rollback ha avuto successo, False altrimenti.
     """
     current_round = torneo.get("current_round", 1)
-    
+
     # 1. Se il torneo ha rounds, rimuoviamo l'ultimo round
     rounds = torneo.get("rounds", [])
     if not rounds:
         return False
-        
+
     # Crea un backup prima dell'operazione
     if "name" in torneo:
         current_filename = f"Tornello - {sanitize_filename(torneo['name'])}.json"
@@ -224,7 +231,7 @@ def rollback_to_previous_round(torneo):
     # Rimuovi l'ultimo round
     last_round_obj = rounds.pop()
     last_round_num = last_round_obj.get("round", current_round)
-    
+
     # 2. Rimuovi le partite dell'ultimo round dallo storico di ciascun giocatore
     for player in torneo.get("players", []):
         player["results_history"] = [
@@ -235,16 +242,16 @@ def rollback_to_previous_round(torneo):
         # Ripristina lo stato di ritirato se avvenuto in questo turno
         if player.get("withdrawn", False):
             player["withdrawn"] = False
-            
+
         # Ricalcola i punti e lo stato del giocatore dallo storico rimanente
         _ricalcola_stato_giocatore_da_storico(player)
-        
+
     # 3. Aggiorna il numero del turno corrente
     if rounds:
         torneo["current_round"] = len(rounds)
     else:
         torneo["current_round"] = 1
-        
+
     torneo["concluded"] = False
 
     # 4. Ricalcola il prossimo ID partita
@@ -254,11 +261,12 @@ def rollback_to_previous_round(torneo):
             if m.get("id", 0) > max_id:
                 max_id = m.get("id", 0)
     torneo["next_match_id"] = max_id + 1
-    
+
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
-    
+
     from utils import play_sound
+
     play_sound("time_machine", torneo)
     return True
 
@@ -351,7 +359,6 @@ def save_tournament(torneo, filepath=None):
     except Exception as e:
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))
         traceback.print_exc()  # Stampa più dettagli in caso di errore non previsto
-
 
 
 def calculate_dates(start_date_str, end_date_str, total_rounds):

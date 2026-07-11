@@ -99,6 +99,7 @@ def sanitize_filename(name):
         name = "Torneo_Senza_Nome"
     return name
 
+
 def parse_flexible_date(date_input_str):
     """
     Tenta di parsare una data da vari formati, incluso ISO (YYYY-MM-DD)
@@ -107,17 +108,17 @@ def parse_flexible_date(date_input_str):
     """
     from config import DATE_FORMAT_ISO
     from datetime import datetime
-    
+
     date_str = date_input_str.strip()
     if not date_str:
         raise ValueError("Data vuota")
-        
+
     # Tentativo ISO standard
     try:
         return datetime.strptime(date_str, DATE_FORMAT_ISO)
     except ValueError:
         pass
-        
+
     # Tentativo AAAAMMGG compatto (lunghezza 8, solo numeri)
     if len(date_str) == 8 and date_str.isdigit():
         try:
@@ -125,7 +126,7 @@ def parse_flexible_date(date_input_str):
             return datetime(year, month, day)
         except ValueError:
             pass
-            
+
     raise ValueError(f"Formato data '{date_str}' non riconosciuto.")
 
 
@@ -142,11 +143,13 @@ def play_sound(event_name, torneo=None, sync=False):
     import json
     import os
     import sys
-    
+
     # Determina il volume base dal file di impostazioni globali o dal torneo
     base_volume = 0.5
     try:
-        settings_path = os.path.join(os.path.abspath("."), "Tornello - Settings.json")
+        from config import user_data_path
+
+        settings_path = user_data_path("Tornello - Settings.json")
         if os.path.exists(settings_path):
             with open(settings_path, "r", encoding="utf-8") as sf:
                 s_data = json.load(sf)
@@ -181,7 +184,7 @@ def play_sound(event_name, torneo=None, sync=False):
         "risultato_1-F": "tornello_risultato_1_F",
         "risultato_F-1": "tornello_risultato_F_1",
         "risultato_0-0F": "tornello_risultato_0_0F",
-        "notifica": "notifica"
+        "notifica": "notifica",
     }
 
     preset_name = event_presets.get(event_name, event_name)
@@ -189,29 +192,28 @@ def play_sound(event_name, torneo=None, sync=False):
     try:
         import GBUtils
         from GBUtils import Acusticator
-        
+
         gbutils_dir = os.path.dirname(GBUtils.__file__)
         db_path = os.path.join(gbutils_dir, "Acu_Collection.json")
 
         from audio_presets import custom_presets
-
 
         preset_data = None
         if os.path.exists(db_path):
             try:
                 with open(db_path, "r", encoding="utf-8") as f:
                     collection = json.load(f)
-                
+
                 db_dirty = False
                 for k, v in custom_presets.items():
                     if k not in collection:
                         collection[k] = v
                         db_dirty = True
-                
+
                 if db_dirty:
                     with open(db_path, "w", encoding="utf-8") as f:
                         json.dump(collection, f, indent=4, ensure_ascii=False)
-                
+
                 preset_data = collection.get(preset_name)
             except Exception as e:
                 sys.stderr.write(f"Acusticator DB Error: {e}\n")
@@ -223,16 +225,16 @@ def play_sound(event_name, torneo=None, sync=False):
             return
 
         score_flat = []
-        for q in preset_data.get('score', []):
+        for q in preset_data.get("score", []):
             note, dur, pan, vol_delta = q
             vol = max(0.0, min(1.0, base_volume + vol_delta))
             score_flat.extend([note, dur, pan, vol])
-        
+
         Acusticator(
             score_flat,
-            kind=preset_data.get('kind', 1),
-            adsr=preset_data.get('adsr', [0.005, 0.0, 100.0, 0.005]),
-            sync=sync
+            kind=preset_data.get("kind", 1),
+            adsr=preset_data.get("adsr", [0.005, 0.0, 100.0, 0.005]),
+            sync=sync,
         )
     except Exception as e:
         sys.stderr.write(f"Acusticator Play Error: {e}\n")
@@ -273,23 +275,23 @@ def match_player_query(player, query):
     """
     first_name = player.get("first_name", "") or ""
     last_name = player.get("last_name", "") or ""
-    
+
     # Estrae l'anno di nascita (da birth_year o birth_date)
     birth_yr = player.get("birth_year")
     if not birth_yr and player.get("birth_date"):
         birth_yr = player["birth_date"][:4]
     birth = str(birth_yr or "")
-    
+
     fed = player.get("federation", "") or ""
     fide_id = str(player.get("id_fide") or player.get("fide_id_num_str") or "")
-    
+
     search_text = f"{first_name} {last_name} {birth} {fed} {fide_id}".lower()
-    
+
     exact_phrases = []
     forbidden_terms = []
     mandatory_terms = []
     optional_terms = []
-    
+
     temp_query = query.strip()
     if temp_query.startswith("="):
         phrase = temp_query.replace("=", " ").strip().lower()
@@ -310,30 +312,35 @@ def match_player_query(player, query):
                 term = part.strip().lower()
                 if term:
                     optional_terms.append(term)
-                    
+
     # Verifiche
     for term in forbidden_terms:
         if term in search_text:
             return None
-            
+
     for phrase in exact_phrases:
         if phrase not in search_text:
             return None
-            
+
     for term in mandatory_terms:
         if term not in search_text:
             return None
-            
+
     matched_optionals = 0
     for term in optional_terms:
         if term in search_text:
             matched_optionals += 1
-            
-    if not mandatory_terms and not exact_phrases and optional_terms and matched_optionals == 0:
+
+    if (
+        not mandatory_terms
+        and not exact_phrases
+        and optional_terms
+        and matched_optionals == 0
+    ):
         return None
-        
+
     total_matched = len(mandatory_terms) + matched_optionals + len(exact_phrases)
-    
+
     # Primo termine per calcolo rilevanza starts-with
     first_query_term = ""
     if query.strip().startswith("="):
@@ -346,7 +353,7 @@ def match_player_query(player, query):
             if clean:
                 first_query_term = clean
                 break
-                
+
     rel_score = 3
     last_name_l = last_name.lower()
     first_name_l = first_name.lower()
@@ -355,7 +362,7 @@ def match_player_query(player, query):
             rel_score = 1
         elif first_name_l.startswith(first_query_term):
             rel_score = 2
-            
+
     return (-total_matched, rel_score, last_name_l, first_name_l)
 
 
@@ -373,14 +380,14 @@ def resolve_and_verify_save_path(path, default_fallback="."):
     # Normalizza il percorso
     path = os.path.abspath(path)
     drive, tail = os.path.splitdrive(path)
-    
+
     # 1. Verifica disponibilità dell'unità (drive letter)
     if drive:
         drive_root = drive + os.sep
         if not os.path.exists(drive_root):
-            msg = _("L'unità '{drive}' non è disponibile. Uso la cartella di default: '{fallback}'.").format(
-                drive=drive, fallback=default_fallback
-            )
+            msg = _(
+                "L'unità '{drive}' non è disponibile. Uso la cartella di default: '{fallback}'."
+            ).format(drive=drive, fallback=default_fallback)
             print(f"LOG: {msg}")
             return default_fallback, msg
 
@@ -389,14 +396,18 @@ def resolve_and_verify_save_path(path, default_fallback="."):
         try:
             os.makedirs(path, exist_ok=True)
             # Log dell'operazione di creazione
-            msg_log = _("Creata cartella di salvataggio inesistente: '{path}'").format(path=path)
+            msg_log = _("Creata cartella di salvataggio inesistente: '{path}'").format(
+                path=path
+            )
             print(f"LOG: {msg_log}")
-            msg_user = _("La cartella '{path}' non esisteva ed è stata creata.").format(path=path)
+            msg_user = _("La cartella '{path}' non esisteva ed è stata creata.").format(
+                path=path
+            )
             return path, msg_user
         except Exception as e:
-            msg = _("Impossibile creare la cartella '{path}': {error}. Uso la cartella di default: '{fallback}'.").format(
-                path=path, error=e, fallback=default_fallback
-            )
+            msg = _(
+                "Impossibile creare la cartella '{path}': {error}. Uso la cartella di default: '{fallback}'."
+            ).format(path=path, error=e, fallback=default_fallback)
             print(f"LOG: {msg}")
             return default_fallback, msg
 
@@ -407,12 +418,10 @@ def resolve_and_verify_save_path(path, default_fallback="."):
             f.write("test")
         os.remove(test_file)
     except Exception as e:
-        msg = _("La cartella '{path}' non è scrivibile: {error}. Uso la cartella di default: '{fallback}'.").format(
-            path=path, error=e, fallback=default_fallback
-        )
+        msg = _(
+            "La cartella '{path}' non è scrivibile: {error}. Uso la cartella di default: '{fallback}'."
+        ).format(path=path, error=e, fallback=default_fallback)
         print(f"LOG: {msg}")
         return default_fallback, msg
 
     return path, None
-
-

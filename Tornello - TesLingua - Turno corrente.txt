@@ -1,0 +1,18 @@
+﻿Nome Torneo: TesLingua - Turno: 1
+ Periodo Turno: Venerdì 10 luglio 2026 - Martedì 21 luglio 2026
+ Mancano 11 giorni e 0 ore al termine del periodo utile per questo turno.
+
+  Ancora non pianificate (4):
+   IDG:1 Cristina Alvarez Puerto (1399) - Cristina-Maria Andras (1399)
+   IDG:2 Cristina Aponte Ramos (1399) - Cristina Alvarez Rodriguez (1399)
+   IDG:3 Cristina Amil Insua (1399) - Cristina-Crina Arnautu (1399)
+   IDG:4 Cristina Arstomyan (1399) - Cristina Valentina Ananca Pariona (1399)
+
+  Partite già giocate o con risultato convalidato (0):
+  Ancora nessun risultato assegnato
+
+ Cristina Assuncao Ocampo (1399) ha il BYE
+
+
+Tornello (9.3.3, 2026.07.10 by Gabriele Battaglia & Stella (AI)
+	using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming.)

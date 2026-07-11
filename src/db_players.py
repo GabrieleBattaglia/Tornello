@@ -7,7 +7,13 @@ import threading
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from config import FIDE_DB_LOCAL_FILE, PLAYER_DB_FILE, PLAYER_DB_TXT_FILE, DATE_FORMAT_ISO, FIDE_XML_DOWNLOAD_URL
+from config import (
+    FIDE_DB_LOCAL_FILE,
+    PLAYER_DB_FILE,
+    PLAYER_DB_TXT_FILE,
+    DATE_FORMAT_ISO,
+    FIDE_XML_DOWNLOAD_URL,
+)
 from utils import format_date_locale, enter_escape, format_rank_ordinal
 from stats import get_k_factor
 
@@ -169,7 +175,11 @@ def sincronizza_db_personale():
             ]
             for fide_key, local_key in fide_fields_to_sync:
                 fide_val = fide_record.get(fide_key)
-                if fide_val is not None and fide_val != "" and fide_val != local_player.get(local_key):
+                if (
+                    fide_val is not None
+                    and fide_val != ""
+                    and fide_val != local_player.get(local_key)
+                ):
                     if "elo" in fide_key and fide_val == 0:
                         continue
                     updates[local_key] = fide_val
@@ -233,15 +243,17 @@ def sincronizza_db_personale():
     print("-" * 42)
 
     # Scelta Modalità (ESCAPE = Tutto, INVIO = Passo-passo)
+    print(_("Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."))
     print(
         _(
-            "Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."
+            "Premi INVIO per confermare manualmente l'aggiornamento per ogni singolo giocatore."
         )
     )
-    print(_("Premi INVIO per confermare manualmente l'aggiornamento per ogni singolo giocatore."))
 
     step_by_step = enter_escape(
-        _("Scegli la modalità (INVIO = Conferma singola | ESCAPE = Aggiorna in massa): ")
+        _(
+            "Scegli la modalità (INVIO = Conferma singola | ESCAPE = Aggiorna in massa): "
+        )
     )
 
     changes_applied = False
@@ -314,7 +326,11 @@ def sincronizza_db_personale():
                     ]
                     for fide_key, local_key in fide_fields_to_sync:
                         fide_val = chosen_match.get(fide_key)
-                        if fide_val is not None and fide_val != "" and fide_val != player.get(local_key):
+                        if (
+                            fide_val is not None
+                            and fide_val != ""
+                            and fide_val != player.get(local_key)
+                        ):
                             if "elo" in fide_key and fide_val == 0:
                                 continue
                             updates[local_key] = fide_val
@@ -386,7 +402,11 @@ def sincronizza_db_personale():
                     ]
                     for fide_key, local_key in fide_fields_to_sync:
                         fide_val = chosen_match.get(fide_key)
-                        if fide_val is not None and fide_val != "" and fide_val != player.get(local_key):
+                        if (
+                            fide_val is not None
+                            and fide_val != ""
+                            and fide_val != player.get(local_key)
+                        ):
                             if "elo" in fide_key and fide_val == 0:
                                 continue
                             updates[local_key] = fide_val
@@ -422,6 +442,8 @@ def sincronizza_db_personale():
     if changes_applied:
         save_players_db(players_db)
         print(_("\nSincronizzazione completata e database personale salvato!"))
+
+
 def aggiorna_db_fide_locale():
     """
     Scarica l'ultimo rating list FIDE (XML), estrae un set di dati arricchito
@@ -429,6 +451,7 @@ def aggiorna_db_fide_locale():
     Restituisce True in caso di successo, False altrimenti.
     """
     import time
+
     try:
         print(
             _("Download del file ZIP FIDE da: {url}").format(url=FIDE_XML_DOWNLOAD_URL)
@@ -484,29 +507,40 @@ def aggiorna_db_fide_locale():
                 fide_players_db = {}
                 xml_file_obj = zf.open(xml_filename)
                 context = ET.iterparse(xml_file_obj, events=("end",))
-                
+
                 player_count = 0
                 for event, elem in context:
                     if elem.tag == "player":
                         fide_id_node = elem.find("fideid")
                         if fide_id_node is not None and fide_id_node.text:
                             fide_id_str = fide_id_node.text.strip()
-                            name = elem.find("name").text if elem.find("name") is not None and elem.find("name").text else ""
-                            
+                            name = (
+                                elem.find("name").text
+                                if elem.find("name") is not None
+                                and elem.find("name").text
+                                else ""
+                            )
+
                             last_name_fide, first_name_fide = name, ""
                             if "," in name:
                                 parts = name.split(",", 1)
                                 last_name_fide = parts[0].strip()
                                 first_name_fide = parts[1].strip()
-                                
+
                             def get_text(tag, default=""):
                                 node = elem.find(tag)
-                                return node.text if node is not None and node.text else default
-                                
+                                return (
+                                    node.text
+                                    if node is not None and node.text
+                                    else default
+                                )
+
                             def get_int(tag, default=0):
                                 text = get_text(tag, "")
-                                return int(text) if text.lstrip('-').isdigit() else default
-                                
+                                return (
+                                    int(text) if text.lstrip("-").isdigit() else default
+                                )
+
                             fide_players_db[fide_id_str] = {
                                 "id_fide": int(fide_id_str),
                                 "first_name": first_name_fide,
@@ -530,10 +564,10 @@ def aggiorna_db_fide_locale():
                                 "flag": get_text("flag", default=None),
                             }
                             player_count += 1
-                            
+
                             if player_count % 5000 == 0:
                                 time.sleep(0.001)
-                        
+
                         # Pulisce l'elemento XML per non saturare la memoria RAM
                         elem.clear()
             finally:
@@ -573,7 +607,9 @@ def aggiorna_db_fide_locale():
                             f_out.write(",\n")
                         else:
                             is_first = False
-                        f_out.write(f'  "{fide_id}": {json.dumps(p_data, ensure_ascii=False)}')
+                        f_out.write(
+                            f'  "{fide_id}": {json.dumps(p_data, ensure_ascii=False)}'
+                        )
                         idx += 1
                         if idx % 5000 == 0:
                             time.sleep(0.001)
@@ -611,7 +647,7 @@ def load_players_db():
         try:
             with open(PLAYER_DB_FILE, "r", encoding="utf-8") as f:
                 raw_data = json.load(f)
-                
+
             # Rileva schema
             schema_version = 1
             if isinstance(raw_data, dict):
@@ -619,13 +655,17 @@ def load_players_db():
                 db_list = raw_data.get("players", [])
             else:
                 db_list = raw_data
-                
+
             # Esegui migrazione a schema_version 2 se necessario
             needs_save = False
             if schema_version < 2 or isinstance(raw_data, list):
-                print(_("\nInfo: Rilevato database giocatori in formato obsoleto. Avvio migrazione a schema v2..."))
+                print(
+                    _(
+                        "\nInfo: Rilevato database giocatori in formato obsoleto. Avvio migrazione a schema v2..."
+                    )
+                )
                 needs_save = True
-                
+
             for p in db_list:
                 # Campi base v1
                 medals_dict = p.setdefault("medals", {})
@@ -635,7 +675,7 @@ def load_players_db():
                 medals_dict.setdefault("wood", 0)
                 p.setdefault("tournaments_played", [])
                 p.setdefault("fide_k_factor", None)
-                
+
                 # Nuovi campi v2 (Issue #14)
                 p.setdefault("elo_club", 0.0)
                 p.setdefault("elo_rapid", 0.0)
@@ -649,13 +689,13 @@ def load_players_db():
                 p.setdefault("o_title", "")
                 p.setdefault("foa_title", "")
                 p.setdefault("flag", "")
-                
+
             players_map = {p["id"]: p for p in db_list}
-            
+
             if needs_save:
                 save_players_db(players_map)
                 print(_("Migrazione completata con successo."))
-                
+
             return players_map
         except (json.JSONDecodeError, IOError) as e:
             print(
@@ -673,10 +713,7 @@ def save_players_db(players_db):
     if not players_db:
         pass  # Procedi a salvare anche se vuoto
     try:
-        data_to_save = {
-            "schema_version": 2,
-            "players": list(players_db.values())
-        }
+        data_to_save = {"schema_version": 2, "players": list(players_db.values())}
         with open(PLAYER_DB_FILE, "w", encoding="utf-8") as f:
             json.dump(data_to_save, f, indent=1, ensure_ascii=False)
         save_players_db_txt(players_db)
@@ -731,10 +768,16 @@ def save_players_db_txt(players_db):
                 f.write(
                     f"ID: {player_id_display}, {titolo_prefix}{first_name_display} {last_name_display}\n"
                 )
-                
-                extra_titles = [player.get(t) for t in ["fide_w_title", "fide_o_title", "fide_foa_title"] if player.get(t)]
-                extra_titles_str = f", Titoli Extra: {', '.join(extra_titles)}" if extra_titles else ""
-                
+
+                extra_titles = [
+                    player.get(t)
+                    for t in ["fide_w_title", "fide_o_title", "fide_foa_title"]
+                    if player.get(t)
+                ]
+                extra_titles_str = (
+                    f", Titoli Extra: {', '.join(extra_titles)}" if extra_titles else ""
+                )
+
                 f.write(
                     _(
                         "\tSesso: {sesso}, Federazione: {federazione}, ID FIDE: {fide_id}, Flag: {flag}{extra}\n"
@@ -743,13 +786,19 @@ def save_players_db_txt(players_db):
                         federazione=federazione_giocatore,
                         fide_id=fide_id_numerico,
                         flag=player.get("fide_flag") or "N/D",
-                        extra=extra_titles_str
+                        extra=extra_titles_str,
                     )
                 )
-                f.write(f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_games', 'N/D')})\n")
-                f.write(f"\tElo Rapid: {player.get('fide_elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n")
-                f.write(f"\tElo Blitz: {player.get('fide_elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n")
-                
+                f.write(
+                    f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_games', 'N/D')})\n"
+                )
+                f.write(
+                    f"\tElo Rapid: {player.get('fide_elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n"
+                )
+                f.write(
+                    f"\tElo Blitz: {player.get('fide_elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n"
+                )
+
                 games_played_total = player.get("games_played", 0)
                 current_k_factor = get_k_factor(
                     player, current_date_iso
@@ -898,7 +947,7 @@ def crea_nuovo_giocatore_nel_db(
     w_title="",
     o_title="",
     foa_title="",
-    flag=""
+    flag="",
 ):
     """
     Crea SEMPRE un nuovo giocatore nel database principale (players_db),
@@ -925,7 +974,6 @@ def crea_nuovo_giocatore_nel_db(
             ).format(first_name=norm_first, last_name=norm_last)
         )
         return None
-
 
     if not silent:
         print(
@@ -982,6 +1030,7 @@ def allinea_giocatori_con_database(players_list, players_db, category="standard"
     Restituisce il numero di giocatori effettivamente aggiornati.
     """
     from stats import get_initial_elo_for_tournament
+
     aggiornati = 0
     for tp in players_list:
         # Supporta sia dict (v8) che oggetti Player (v9)
@@ -1006,4 +1055,3 @@ def allinea_giocatori_con_database(players_list, players_db, category="standard"
                 if db_title and db_title != tp.fide_title:
                     tp.fide_title = db_title
     return aggiornati
-

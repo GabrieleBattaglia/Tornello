@@ -4,10 +4,14 @@ from gui.accessibility import CustomAccessible
 from gui.settings import apply_visual_settings
 from utils import play_sound
 from tiebreak_criteria import (
-    CRITERIA, MODIFIERS,
-    get_supported_modifiers, get_criterion_display_name,
-    get_criterion_explanation, get_default_tiebreaks,
-    migrate_old_tiebreaks, get_all_criteria_keys,
+    CRITERIA,
+    MODIFIERS,
+    get_supported_modifiers,
+    get_criterion_display_name,
+    get_criterion_explanation,
+    get_default_tiebreaks,
+    migrate_old_tiebreaks,
+    get_all_criteria_keys,
 )
 
 _ = getattr(builtins, "_", lambda s: s)
@@ -39,6 +43,7 @@ class TiebreakConfigDialog(wx.Dialog):
             self.settings = parent.settings
         else:
             from gui.settings import load_settings
+
             self.settings = load_settings()
 
         # Lista completa delle chiavi disponibili (sempre tutti i 19 criteri)
@@ -81,17 +86,23 @@ class TiebreakConfigDialog(wx.Dialog):
             panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 100)
         )
         self.text_expl.SetName(_("Spiegazione regola"))
-        self.text_expl.SetAccessible(CustomAccessible(self.text_expl, _("Spiegazione regola")))
+        self.text_expl.SetAccessible(
+            CustomAccessible(self.text_expl, _("Spiegazione regola"))
+        )
 
         # 3. Bottone Aggiungi
         self.btn_add = wx.Button(panel, label="->", style=wx.BU_EXACTFIT)
         self.btn_add.SetName(_("Aggiungi regola selezionata"))
-        self.btn_add.SetAccessible(CustomAccessible(self.btn_add, _("Aggiungi regola selezionata")))
+        self.btn_add.SetAccessible(
+            CustomAccessible(self.btn_add, _("Aggiungi regola selezionata"))
+        )
 
         # 4. Bottone Rimuovi
         self.btn_remove = wx.Button(panel, label="<-", style=wx.BU_EXACTFIT)
         self.btn_remove.SetName(_("Rimuovi regola selezionata"))
-        self.btn_remove.SetAccessible(CustomAccessible(self.btn_remove, _("Rimuovi regola selezionata")))
+        self.btn_remove.SetAccessible(
+            CustomAccessible(self.btn_remove, _("Rimuovi regola selezionata"))
+        )
 
         # 5. Lista applicate
         self.lbl_applied = wx.StaticText(panel, label=_("Regole applicate"))
@@ -101,18 +112,26 @@ class TiebreakConfigDialog(wx.Dialog):
         self.btn_modifiers = wx.Button(panel, label=_("Modificatori"))
         self.btn_modifiers.SetName(_("Modificatori della regola selezionata"))
         self.btn_modifiers.SetAccessible(
-            CustomAccessible(self.btn_modifiers, _("Modificatori della regola selezionata"))
+            CustomAccessible(
+                self.btn_modifiers, _("Modificatori della regola selezionata")
+            )
         )
 
         # 7. Bottone Sposta Su
         self.btn_up = wx.Button(panel, label=_("Sposta Su"))
         self.btn_up.SetName(_("Sposta regola selezionata verso l'alto"))
-        self.btn_up.SetAccessible(CustomAccessible(self.btn_up, _("Sposta regola selezionata verso l'alto")))
+        self.btn_up.SetAccessible(
+            CustomAccessible(self.btn_up, _("Sposta regola selezionata verso l'alto"))
+        )
 
         # 8. Bottone Sposta Giù
         self.btn_down = wx.Button(panel, label=_("Sposta Giù"))
         self.btn_down.SetName(_("Sposta regola selezionata verso il basso"))
-        self.btn_down.SetAccessible(CustomAccessible(self.btn_down, _("Sposta regola selezionata verso il basso")))
+        self.btn_down.SetAccessible(
+            CustomAccessible(
+                self.btn_down, _("Sposta regola selezionata verso il basso")
+            )
+        )
 
         # 9. Bottone Conferma
         self.btn_ok = wx.Button(panel, wx.ID_OK, _("Conferma"))
@@ -204,14 +223,21 @@ class TiebreakConfigDialog(wx.Dialog):
 
         # Applicazione temi e stili a tutti i controlli
         for ctrl in [
-            self, panel,
-            self.lbl_available, self.list_available,
-            self.lbl_applied, self.list_applied,
-            self.lbl_expl, self.text_expl,
-            self.btn_add, self.btn_remove,
+            self,
+            panel,
+            self.lbl_available,
+            self.list_available,
+            self.lbl_applied,
+            self.list_applied,
+            self.lbl_expl,
+            self.text_expl,
+            self.btn_add,
+            self.btn_remove,
             self.btn_modifiers,
-            self.btn_up, self.btn_down,
-            self.btn_ok, self.btn_cancel,
+            self.btn_up,
+            self.btn_down,
+            self.btn_ok,
+            self.btn_cancel,
         ]:
             apply_visual_settings(ctrl, self.settings)
 
@@ -480,9 +506,13 @@ class TiebreakConfigDialog(wx.Dialog):
                 self.move_to_available()
                 return  # Consuma l'evento
             elif focused in [
-                self.btn_ok, self.btn_cancel, self.btn_add,
-                self.btn_remove, self.btn_modifiers,
-                self.btn_up, self.btn_down,
+                self.btn_ok,
+                self.btn_cancel,
+                self.btn_add,
+                self.btn_remove,
+                self.btn_modifiers,
+                self.btn_up,
+                self.btn_down,
             ]:
                 event.Skip()
                 return

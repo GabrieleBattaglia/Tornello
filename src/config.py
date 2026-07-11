@@ -6,30 +6,47 @@ from GBUtils import polipo
 
 def resource_path(relative_path):
     """
-    Restituisce il percorso assoluto a una risorsa, funzionante sia in sviluppo
+    Restituisce il percorso assoluto a una risorsa (sola lettura), funzionante sia in sviluppo
     che per un eseguibile compilato con PyInstaller (anche con la cartella _internal).
     """
-    try:
-        # PyInstaller crea una cartella temporanea e ci salva il percorso in _MEIPASS
-        # Questo è il percorso base per le risorse quando l'app è "congelata"
+    if getattr(sys, "frozen", False):
         base_path = sys._MEIPASS
-    except Exception:
-        # Se _MEIPASS non esiste, non siamo in un eseguibile PyInstaller
-        # o siamo in una build onedir, il percorso base è la cartella dello script
-        base_path = os.path.abspath(".")
+    else:
+        # In sviluppo, la radice del progetto è la cartella superiore a 'src'
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     return os.path.join(base_path, relative_path)
 
 
-lingua_rilevata, _ = polipo(source_language="it")
+def user_data_path(relative_path):
+    """
+    Restituisce il percorso assoluto a un file di dati utente (scrittura), funzionante sia in sviluppo
+    che per un eseguibile compilato con PyInstaller. I file vengono salvati nella cartella
+    dell'eseguibile, garantendo la persistenza anche in configurazione onefile.
+    """
+    if getattr(sys, "frozen", False):
+        base_path = os.path.dirname(sys.executable)
+    else:
+        # In sviluppo, la radice del progetto è la cartella superiore a 'src'
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    return os.path.join(base_path, relative_path)
+
+
+locales_dir = resource_path("locales")
+project_root = user_data_path("")
+
+lingua_rilevata, _ = polipo(
+    localedir=locales_dir, config_path=project_root, source_language="it"
+)
 builtins._ = _
 
 
-# File e Directory Principali (relativi all'eseguibile)
-PLAYER_DB_FILE = resource_path("Tornello - Players_db.json")
-PLAYER_DB_TXT_FILE = resource_path("Tornello - Players_db.txt")
-ARCHIVED_TOURNAMENTS_DIR = resource_path("Closed Tournaments")
-FIDE_DB_LOCAL_FILE = resource_path("fide_ratings_local.json")
+# File e Directory Principali (relativi all'eseguibile/radice)
+PLAYER_DB_FILE = user_data_path("Tornello - Players_db.json")
+PLAYER_DB_TXT_FILE = user_data_path("Tornello - Players_db.txt")
+ARCHIVED_TOURNAMENTS_DIR = user_data_path("Closed Tournaments")
+FIDE_DB_LOCAL_FILE = user_data_path("fide_ratings_local.json")
 
 # Costanti per l'integrazione con bbpPairings
 BBP_SUBDIR = resource_path("bbppairings")

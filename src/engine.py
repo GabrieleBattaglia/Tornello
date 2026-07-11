@@ -2,7 +2,14 @@ import os
 import subprocess
 import traceback
 from datetime import datetime
-from config import BBP_SUBDIR, BBP_INPUT_TRF, BBP_EXE_PATH, BBP_OUTPUT_COUPLES, BBP_OUTPUT_CHECKLIST, DATE_FORMAT_ISO
+from config import (
+    BBP_SUBDIR,
+    BBP_INPUT_TRF,
+    BBP_EXE_PATH,
+    BBP_OUTPUT_COUPLES,
+    BBP_OUTPUT_CHECKLIST,
+    DATE_FORMAT_ISO,
+)
 from GBUtils import key
 
 
@@ -14,6 +21,7 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
     is_gui = False
     try:
         import wx
+
         if wx.GetApp() is not None:
             is_gui = True
     except ImportError:
@@ -21,9 +29,9 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
 
     if is_gui:
         raise RuntimeError(
-            _("Fallimento generazione abbinamenti automatici (Turno {round_num}):\n{error}").format(
-                round_num=round_number, error=error_message
-            )
+            _(
+                "Fallimento generazione abbinamenti automatici (Turno {round_num}):\n{error}"
+            ).format(round_num=round_number, error=error_message)
         )
 
     print(
@@ -119,32 +127,34 @@ def genera_stringa_trf_per_bbpairings(
                 " "  # TRF vuole almeno uno spazio se la riga 112 è presente ma vuota
             )
         trf_lines.append(f"112 {deputy_str[:45]:<45}\n")
-        
+
         # Gestione time control (sia stringa che dizionario v9)
         tc_val = dati_torneo.get("time_control", "Standard")
         if isinstance(tc_val, dict):
             time_control_str = tc_val.get("raw", "Standard")
         else:
             time_control_str = str(tc_val)
-        trf_lines.append(
-            f"122 {time_control_str[:45]:<45}\n"
-        )  # Usa 'time_control'
-        
+        trf_lines.append(f"122 {time_control_str[:45]:<45}\n")  # Usa 'time_control'
+
         trf_lines.append(f"142 {total_rounds_val:03d}\n")  # TRF-2026 expected rounds
-        
+
         initial_color_setting = str(
             dati_torneo.get("initial_board1_color_setting", "white1")
         ).lower()
         color_char = "W" if "white" in initial_color_setting else "B"
-        trf_lines.append(f"152 {color_char}\n")  # TRF-2026 initial color (length exactly 5)
-        
+        trf_lines.append(
+            f"152 {color_char}\n"
+        )  # TRF-2026 initial color (length exactly 5)
+
         valore_bye_formattato = f"{valore_bye_torneo:.1f}"
         w_score = f"{1.0:>4.1f}"  # " 1.0"
         d_score = f"{0.5:>4.1f}"  # " 0.5"
         l_score = f"{0.0:>4.1f}"  # " 0.0"
         z_score = f"{0.0:>4.1f}"  # " 0.0"
         p_score = f"{valore_bye_torneo:>4.1f}"  # " 1.0" or " 0.5"
-        trf_lines.append(f"162  W{w_score}    D{d_score}    L{l_score}    Z{z_score}    P{p_score}\n")
+        trf_lines.append(
+            f"162  W{w_score}    D{d_score}    L{l_score}    Z{z_score}    P{p_score}\n"
+        )
         trf_lines.append(f"BBU {valore_bye_formattato:>4}\n")
 
         def write_to_char_list_local(target_list, start_col_1based, text_to_write):
@@ -233,11 +243,10 @@ def genera_stringa_trf_per_bbpairings(
                 p_line_chars, 86, f"{start_rank:>4}"
             )  # Campo Rank (col 86-89)
 
-
             history_sorted = sorted(
                 player_data.get("results_history", []), key=lambda x: x.get("round", 0)
             )
-            
+
             # Teniamo traccia dei turni in cui il giocatore ha un risultato
             turni_giocati = set()
 
@@ -310,11 +319,9 @@ def genera_stringa_trf_per_bbpairings(
                         game_block = f"{opp_start_rank_str} {color_char_trf} {result_code_trf}  "[
                             :10
                         ]
-                        
+
                         colonna = 92 + (round_of_this_entry - 1) * 10
-                        write_to_char_list_local(
-                            p_line_chars, colonna, game_block
-                        )
+                        write_to_char_list_local(p_line_chars, colonna, game_block)
 
             # Se il giocatore è ritirato, aggiungi un risultato "Sconfitta a 0 punti" (Z)
             # per tutti i turni mancanti fino al turno corrente compreso.
@@ -322,7 +329,7 @@ def genera_stringa_trf_per_bbpairings(
             # e di considerare assenti i turni precedenti che non ha giocato.
             if dati_torneo["players_dict"][player_data["id"]].get("withdrawn", False):
                 game_block_forfeit = f"{'0000':>4} {'-':<1} {'Z':<1}   "[:10]
-                
+
                 # Riempiamo i turni dal 1 fino al current_round_being_paired se non sono stati giocati
                 for r in range(1, current_round_being_paired + 1):
                     if r not in turni_giocati:
@@ -330,7 +337,7 @@ def genera_stringa_trf_per_bbpairings(
                         write_to_char_list_local(
                             p_line_chars, colonna, game_block_forfeit
                         )
-                        
+
             final_line = "".join(p_line_chars).rstrip()
             trf_lines.append(final_line + "\n")
         return "".join(trf_lines)

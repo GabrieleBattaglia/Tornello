@@ -2,6 +2,7 @@
 import os
 import sys
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from datetime import datetime
 
@@ -25,7 +26,12 @@ except ImportError:
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
 from utils import format_date_locale, format_rank_ordinal, sanitize_filename
 from ui import get_input_with_default
-from db_players import load_players_db, save_players_db, crea_nuovo_giocatore_nel_db, generate_player_id
+from db_players import (
+    load_players_db,
+    save_players_db,
+    crea_nuovo_giocatore_nel_db,
+    generate_player_id,
+)
 
 VERSION = "4.4.0 (Modulo Tornello)"
 
