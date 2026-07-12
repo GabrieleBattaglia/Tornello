@@ -3205,7 +3205,8 @@ class MainFrame(wx.Frame):
             old_stdout = sys.stdout
             sys.stdout = io.StringIO()
             try:
-                Donazione()
+                current_lang = self.settings.get("language") if self.settings else None
+                Donazione(lang=current_lang)
                 donation_msg = sys.stdout.getvalue().strip()
             finally:
                 sys.stdout = old_stdout

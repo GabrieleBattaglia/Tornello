@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.4 (2026.07.12)
+	+ Bugfix: Allineata la lingua del messaggio di Donazione() con la localizzazione attiva dell'applicazione all'uscita (tramite impostazioni utente in GUI ed auto-rilevamento in CLI).
+
 9.3.3 (2026.07.10)
 	+ Feature: Internazionalizzazione (i18n) completa e sistematica dell'intera interfaccia utente.
 	  - Incapsulamento in gettext _() di tutte le stringhe residue dei menu, della barra di stato e dell'albero comandi.

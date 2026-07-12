@@ -125,7 +125,8 @@ if __name__ == "__main__":
 
     # Avvia controller con CLI adapter se --cli è presente, altrimenti avvia la GUI
     if "--cli" in sys.argv:
-        atexit.register(Donazione)
+        from config import lingua_rilevata
+        atexit.register(lambda: Donazione(lang=lingua_rilevata))
         adapter = CLIAdapter()
         controller = TournamentController(adapter)
         controller.start()
