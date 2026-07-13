@@ -1,5 +1,6 @@
 # Gabry
 fide_ratings_local.json
+fide_ratings.db
 *.xml
 *.zip
 dist/
@@ -7,3 +8,16 @@ build/
 test/
 backup/
 __pycache__/
+*.mo
+
+# File di runtime/config locali
+selected_language.json
+Tornello - Settings.json
+Tornello - *.json
+Tornello - *.txt
+Tornello - *.ics
+bbppairings/input_bbp.trf
+bbppairings/output_checklist.txt
+bbppairings/output_coppie.txt
+bbppairings/output_classifica.txt
+bbppairings/output_error.txt

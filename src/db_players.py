@@ -3,7 +3,6 @@ import json
 import zipfile
 import io
 import requests
-import threading
 import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime
@@ -13,6 +12,15 @@ from config import (
     PLAYER_DB_TXT_FILE,
     DATE_FORMAT_ISO,
     FIDE_XML_DOWNLOAD_URL,
+)
+from fide_db import (
+    create_fide_db,
+    bulk_insert_players,
+    cleanup_legacy_json,
+    get_player_by_fide_id,
+    search_players_by_name,
+    fide_db_exists,
+    get_player_count,
 )
 from utils import format_date_locale, enter_escape, format_rank_ordinal
 from stats import get_k_factor
@@ -29,30 +37,23 @@ def _cerca_giocatore_nel_db_fide(search_term):
     """
     Cerca un giocatore nel DB FIDE locale per nome/cognome o ID FIDE.
     Restituisce una lista di record corrispondenti.
-    Ricerca tokenizzata per non essere sensibile all'ordine delle parole.
+    Utilizza il database SQLite locale tramite il modulo fide_db.
     """
-    if not os.path.exists(FIDE_DB_LOCAL_FILE):
-        return []  # Se il file non esiste, non c'è nulla da cercare
-    try:
-        with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
-            fide_db = json.load(f)
-    except (IOError, json.JSONDecodeError):
-        return []  # Errore di lettura, restituisce lista vuota
+    if not fide_db_exists():
+        return []
 
-    matches = []
-    search_terms = search_term.strip().lower().split()
-    search_is_id = search_term.strip().isdigit()
+    search_term = search_term.strip()
+    if not search_term:
+        return []
 
-    if search_is_id and search_term.strip() in fide_db:
-        matches.append(fide_db[search_term.strip()])
-        return matches
+    # Ricerca per ID FIDE esatto
+    if search_term.isdigit():
+        player = get_player_by_fide_id(search_term)
+        return [player] if player else []
 
-    for fide_id, player_data in fide_db.items():
-        full_name = f"{player_data.get('first_name', '')} {player_data.get('last_name', '')}".lower()
-        if all(term in full_name for term in search_terms):
-            matches.append(player_data)
-
-    return matches
+    # Ricerca testuale tramite FTS5
+    from fide_db import search_players
+    return search_players(search_term, limit=50)
 
 
 def sincronizza_db_personale():
@@ -61,7 +62,7 @@ def sincronizza_db_personale():
     aggiornamenti e associazioni di ID FIDE. Mostra un sommario e permette
     di applicare tutto in blocco o valutare singolarmente.
     """
-    if not os.path.exists(FIDE_DB_LOCAL_FILE):
+    if not fide_db_exists():
         print(
             _("ERRORE: Database FIDE locale '{}' non trovato.").format(
                 FIDE_DB_LOCAL_FILE
@@ -74,17 +75,8 @@ def sincronizza_db_personale():
             "\n--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"
         )
     )
-    try:
-        with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
-            fide_db = json.load(f)
-        print(_("Database FIDE locale caricato con {} giocatori.").format(len(fide_db)))
-    except Exception as e:
-        print(
-            _("ERRORE critico durante la lettura di '{}': {}").format(
-                FIDE_DB_LOCAL_FILE, e
-            )
-        )
-        return
+    player_count = get_player_count()
+    print(_("Database FIDE locale disponibile con {} giocatori.").format(player_count))
     players_db = load_players_db()
     if not players_db:
         print(
@@ -114,18 +106,13 @@ def sincronizza_db_personale():
         matches = []
 
         if fide_id_str and fide_id_str != "0":
-            fide_record = fide_db.get(fide_id_str)
+            fide_record = get_player_by_fide_id(fide_id_str)
         else:  # Cerca per nome/cognome
-            p_first_name = local_player.get("first_name", "").lower()
-            p_last_name = local_player.get("last_name", "").lower()
+            p_first_name = local_player.get("first_name", "")
+            p_last_name = local_player.get("last_name", "")
 
             if p_first_name and p_last_name:
-                matches = [
-                    f_p
-                    for f_p in fide_db.values()
-                    if f_p.get("first_name", "").lower() == p_first_name
-                    and f_p.get("last_name", "").lower() == p_last_name
-                ]
+                matches = search_players_by_name(p_first_name, p_last_name)
 
                 if len(matches) == 1:
                     new_fide_id = str(matches[0]["id_fide"])
@@ -444,23 +431,91 @@ def sincronizza_db_personale():
         print(_("\nSincronizzazione completata e database personale salvato!"))
 
 
-def aggiorna_db_fide_locale():
+class ProgressFileObject:
+    """Wrapper per file-like object che segnala il progresso della lettura al callback."""
+    def __init__(self, fileobj, callback, total_size):
+        self.fileobj = fileobj
+        self.callback = callback
+        self.total_size = total_size
+        self.bytes_read = 0
+
+    def read(self, size=-1):
+        data = self.fileobj.read(size)
+        self.bytes_read += len(data)
+        if self.callback:
+            try:
+                self.callback('processing', self.bytes_read, self.total_size)
+            except Exception:
+                pass
+        return data
+
+    def readline(self, limit=-1):
+        data = self.fileobj.readline(limit)
+        self.bytes_read += len(data)
+        if self.callback:
+            try:
+                self.callback('processing', self.bytes_read, self.total_size)
+            except Exception:
+                pass
+        return data
+
+    def close(self):
+        self.fileobj.close()
+
+
+def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
     """
-    Scarica l'ultimo rating list FIDE (XML), estrae un set di dati arricchito
-    e lo salva in un file JSON locale (fide_ratings_local.json).
+    Scarica l'ultimo rating list FIDE (XML), lo elabora e salva i dati
+    in un database SQLite locale (fide_ratings.db).
+    Supporta un callback per notificare il progresso di scaricamento e analisi
+    e un dizionario per salvare le statistiche dell'operazione.
     Restituisce True in caso di successo, False altrimenti.
     """
     import time
+    from fide_db import (
+        get_player_count,
+    )
+
+    old_count = get_player_count()
+    start_download = time.time()
 
     try:
         print(
             _("Download del file ZIP FIDE da: {url}").format(url=FIDE_XML_DOWNLOAD_URL)
         )
-        zip_response = requests.get(FIDE_XML_DOWNLOAD_URL, timeout=120)
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        zip_response = requests.get(
+            FIDE_XML_DOWNLOAD_URL, headers=headers, timeout=(30, 600), stream=True
+        )
         zip_response.raise_for_status()
 
-        print(_("Download completato. Apertura archivio ZIP in memoria..."))
-        with zipfile.ZipFile(io.BytesIO(zip_response.content)) as zf:
+        total_length = zip_response.headers.get('content-length')
+        chunks = []
+
+        if total_length is None:
+            # Nessun content-length disponibile, scarica normalmente
+            chunks.append(zip_response.content)
+        else:
+            total_bytes = int(total_length)
+            bytes_downloaded = 0
+            # Usa chunk da 256KB per uno scaricamento efficiente
+            for chunk in zip_response.iter_content(chunk_size=256 * 1024):
+                if chunk:
+                    chunks.append(chunk)
+                    bytes_downloaded += len(chunk)
+                    if progress_callback:
+                        try:
+                            progress_callback('download', bytes_downloaded, total_bytes)
+                        except Exception:
+                            pass
+
+        download_duration = time.time() - start_download
+        print(_("Download completato in {duration:.2f}s. Apertura archivio ZIP in memoria...").format(duration=download_duration))
+
+        start_processing = time.time()
+        zip_data = b"".join(chunks)
+
+        with zipfile.ZipFile(io.BytesIO(zip_data)) as zf:
             xml_filename = next(
                 (name for name in zf.namelist() if name.lower().endswith(".xml")), None
             )
@@ -468,48 +523,29 @@ def aggiorna_db_fide_locale():
             if not xml_filename:
                 print(_("ERRORE: Nessun file .xml trovato nell'archivio ZIP."))
                 return False
+
+            xml_info = zf.getinfo(xml_filename)
+            xml_size = xml_info.file_size
+
             print(
-                _("Estrazione ed elaborazione del file XML: {filename}...").format(
-                    filename=xml_filename
+                _("Estrazione ed elaborazione del file XML: {filename} ({size_mb:.1f} MB)...").format(
+                    filename=xml_filename,
+                    size_mb=xml_size / (1024 * 1024)
                 )
             )
 
-            # --- INIZIO MODIFICA 1: FEEDBACK PER PARSING XML ---
+            # Crea il database SQLite vuoto
+            create_fide_db()
 
-            # Funzione che il thread eseguirà per stampare il feedback
-            def print_feedback(stop_event, message):
-                while not stop_event.wait(
-                    5
-                ):  # Attende 5 secondi. Se non viene fermato, stampa.
-                    print(message)
+            raw_xml_file = zf.open(xml_filename)
+            progress_xml_file = ProgressFileObject(raw_xml_file, progress_callback, xml_size)
 
-            stop_parsing_feedback = threading.Event()
-            feedback_msg_parsing = _(
-                "  -> L'analisi del file XML è in corso, attendere..."
-            )
-            parsing_thread = threading.Thread(
-                target=print_feedback,
-                args=(stop_parsing_feedback, feedback_msg_parsing),
-            )
+            # Generatore che produce record giocatori dal file XML
+            def parse_xml_players():
+                context = ET.iterparse(progress_xml_file, events=("end",))
+                parse_count = 0
 
-            print(
-                _(
-                    "Analisi del file XML in corso (potrebbe richiedere più di un minuto)..."
-                )
-            )
-            parsing_thread.daemon = (
-                True  # Permette al programma di uscire anche se il thread è attivo
-            )
-            parsing_thread.start()
-
-            try:
-                # Parsing streaming del file XML usando iterparse per minimizzare RAM e rilasciare GIL
-                fide_players_db = {}
-                xml_file_obj = zf.open(xml_filename)
-                context = ET.iterparse(xml_file_obj, events=("end",))
-
-                player_count = 0
-                for event, elem in context:
+                for _event, elem in context:
                     if elem.tag == "player":
                         fide_id_node = elem.find("fideid")
                         if fide_id_node is not None and fide_id_node.text:
@@ -538,11 +574,13 @@ def aggiorna_db_fide_locale():
                             def get_int(tag, default=0):
                                 text = get_text(tag, "")
                                 return (
-                                    int(text) if text.lstrip("-").isdigit() else default
+                                    int(text)
+                                    if text.lstrip("-").isdigit()
+                                    else default
                                 )
 
-                            fide_players_db[fide_id_str] = {
-                                "id_fide": int(fide_id_str),
+                            yield {
+                                "fide_id": int(fide_id_str),
                                 "first_name": first_name_fide,
                                 "last_name": last_name_fide,
                                 "federation": get_text("country"),
@@ -563,68 +601,41 @@ def aggiorna_db_fide_locale():
                                 "birth_year": get_int("birthday", default=None),
                                 "flag": get_text("flag", default=None),
                             }
-                            player_count += 1
-
-                            if player_count % 5000 == 0:
+                            parse_count += 1
+                            if parse_count % 5000 == 0:
                                 time.sleep(0.001)
 
-                        # Pulisce l'elemento XML per non saturare la memoria RAM
                         elem.clear()
-            finally:
-                # Ferma il thread di feedback, che abbia funzionato o meno
-                stop_parsing_feedback.set()
+                progress_xml_file.close()
 
-            # --- FINE MODIFICA 1 ---
+            player_count = bulk_insert_players(parse_xml_players(), progress_callback=None)
+
+            processing_duration = time.time() - start_processing
+            new_count = get_player_count()
+
+            if stats_output is not None:
+                stats_output["old_count"] = old_count
+                stats_output["new_count"] = new_count
+                stats_output["saved_count"] = player_count
+                stats_output["download_time"] = download_duration
+                stats_output["processing_time"] = processing_duration
 
             print(
                 _(
                     "Elaborazione completata. Trovati e salvati {count} giocatori FIDE."
-                ).format(count=len(fide_players_db))
+                ).format(count=player_count)
             )
 
-            # --- INIZIO MODIFICA 2: FEEDBACK PER SCRITTURA JSON ---
-            stop_json_feedback = threading.Event()
-            feedback_msg_json = _(
-                "  -> La scrittura del file JSON è in corso, attendere..."
-            )
-            json_thread = threading.Thread(
-                target=print_feedback, args=(stop_json_feedback, feedback_msg_json)
-            )
-
-            print(
-                _("Salvataggio del database JSON locale (potrebbe richiedere tempo)...")
-            )
-            json_thread.daemon = True
-            json_thread.start()
-            try:
-                # Scrittura incrementale del dizionario
-                with open(FIDE_DB_LOCAL_FILE, "w", encoding="utf-8") as f_out:
-                    f_out.write("{\n")
-                    is_first = True
-                    idx = 0
-                    for fide_id, p_data in fide_players_db.items():
-                        if not is_first:
-                            f_out.write(",\n")
-                        else:
-                            is_first = False
-                        f_out.write(
-                            f'  "{fide_id}": {json.dumps(p_data, ensure_ascii=False)}'
-                        )
-                        idx += 1
-                        if idx % 5000 == 0:
-                            time.sleep(0.001)
-                    f_out.write("\n}\n")
-            finally:
-                stop_json_feedback.set()
-
-            # --- FINE MODIFICA 2 ---
+            # Elimina il vecchio file JSON se presente
+            if cleanup_legacy_json():
+                print(_("Vecchio file JSON FIDE rimosso."))
 
             print(
                 _(
-                    "Database FIDE locale 'fide_ratings_local.json' salvato con successo."
+                    "Database FIDE locale 'fide_ratings.db' salvato con successo."
                 )
             )
-            return True  # Restituisce True in caso di successo
+            return True
     except requests.exceptions.Timeout:
         print(_("ERRORE: Timeout durante il download del file."))
         return False

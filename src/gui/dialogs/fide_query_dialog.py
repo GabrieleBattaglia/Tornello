@@ -1,12 +1,8 @@
-import os
-import json
 import wx
 import builtins
-from config import FIDE_DB_LOCAL_FILE
+from fide_db import search_players
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
-
-from utils import match_player_query
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -29,27 +25,12 @@ class FideQueryDialog(wx.Dialog):
 
         self.settings = settings
         self.players_db = players_db
-        self.fide_db = {}
-
-        # Caricamento del DB FIDE in memoria
-        if os.path.exists(FIDE_DB_LOCAL_FILE):
-            progress = wx.ProgressDialog(
-                _("Caricamento Database FIDE"),
-                _("Caricamento del database FIDE locale in corso... Attendere."),
-                maximum=100,
-                parent=self,
-                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE,
-            )
-            progress.Pulse()
-            try:
-                with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
-                    self.fide_db = json.load(f)
-            except Exception:
-                pass
-            progress.Destroy()
 
         self.all_fide_matches = []
         self.fide_displayed_count = 0
+
+        self._search_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self._on_debounced_search, self._search_timer)
 
         self._init_ui()
         self.apply_theme()
@@ -124,7 +105,11 @@ class FideQueryDialog(wx.Dialog):
         apply_visual_settings(self.detail_text, self.settings)
 
     def on_search_changed(self, event):
-        query = self.search_input.GetValue().strip().lower()
+        self._search_timer.Stop()
+        self._search_timer.Start(900, wx.TIMER_ONE_SHOT)
+
+    def _on_debounced_search(self, event):
+        query = self.search_input.GetValue().strip()
         self.list_results.Clear()
         self.results_map = []
         self.all_fide_matches = []
@@ -134,24 +119,7 @@ class FideQueryDialog(wx.Dialog):
         if len(query) < 3:
             return
 
-        search_is_id = query.isdigit()
-
-        # Cerca per ID FIDE
-        if search_is_id and query in self.fide_db:
-            p = self.fide_db[query]
-            self.all_fide_matches = [p]
-        else:
-            # Cerca per testo con match_player_query
-            matching_with_scores = []
-            for fide_id, p in self.fide_db.items():
-                score = match_player_query(p, query)
-                if score is not None:
-                    matching_with_scores.append((score, p))
-
-            # Ordina per rilevanza
-            matching_with_scores.sort(key=lambda x: x[0])
-            self.all_fide_matches = [p for score, p in matching_with_scores]
-
+        self.all_fide_matches = search_players(query)
         self.load_more_results()
 
         if self.list_results.GetCount() > 0:
@@ -264,11 +232,13 @@ class FideQueryDialog(wx.Dialog):
                 break
 
         if gia_presente:
-            wx.MessageBox(
-                _("Questo giocatore è già presente nel tuo database personale."),
+            dlg = AccessibleMsgDialog(
+                self,
                 _("Info"),
-                wx.ICON_INFORMATION,
+                _("Questo giocatore è già presente nel tuo database personale."),
             )
+            dlg.ShowModal()
+            dlg.Destroy()
             return
 
         # Genera ID locale per il giocatore

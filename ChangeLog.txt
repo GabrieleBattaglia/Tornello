@@ -1,6 +1,16 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.5 (2026.07.13)
+	+ Feature: Migrazione del Database FIDE locale al formato SQLite con estensione FTS5.
+	  - Eliminato completamente il caricamento in memoria RAM (~670 MB risparmiati).
+	  - Ricerca full-text e con operatori istantanea basata su indici SQLite.
+	  - Nuovo download FIDE resiliente su protocollo sicuro HTTPS con supporto User-Agent per bypassare filtri CDN.
+	  - Barra di progresso reale con tracciamento download (in streaming) e parsing XML (tramite wrapper di file object).
+	  - Accessibilità NVDA ottimizzata con focus dinamico e limitazione degli annunci a blocchi del 5%.
+	  - Dialogo finale di successo con report dettagliato: durata download, durata elaborazione SQLite (formato mm:ss:dcm), numero di record salvati e variazione statistica rispetto al database precedente.
+	+ Bugfix: Risolto il problema del focus che saltava sulla lista FIDE durante la digitazione.
+
 9.3.4 (2026.07.12)
 	+ Bugfix: Allineata la lingua del messaggio di Donazione() con la localizzazione attiva dell'applicazione all'uscita (tramite impostazioni utente in GUI ed auto-rilevamento in CLI).
 

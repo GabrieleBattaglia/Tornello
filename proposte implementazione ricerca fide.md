@@ -1,6 +1,6 @@
 # Proposte di Ottimizzazione per la Ricerca nel Database FIDE
 
-Questo documento descrive le strategie proposte per ottimizzare le prestazioni della ricerca all'interno del database locale FIDE (attualmente basato su un file JSON da ~677 MB contenente circa 1 milione di record), prevenendo rallentamenti ed evitare il freeze dell'interfaccia utente (GUI) su macchine meno performanti.
+Questo documento descrive le strategie proposte per ottimizzare le prestazioni della ricerca all'interno del database locale FIDE (attualmente basato su un file JSON da ~677 MB contenente circa 1.8 milione di record), prevenendo rallentamenti ed evitare il freeze dell'interfaccia utente (GUI) su macchine meno performanti.
 
 ---
 
@@ -9,7 +9,7 @@ Attualmente, il file `fide_ratings_local.json` viene interamente caricato in RAM
 
 ### Dettagli dell'implementazione:
 * **Database Relazionale Locale**: Convertire il file JSON in un database SQLite (`fide_ratings.db`) durante il processo di aggiornamento del DB FIDE.
-* **Indici di Ricerca**: Creare indici SQL sulle colonne maggiormente utilizzate per i filtri (`last_name`, `first_name`, `id_fide`).
+* **Indici di Ricerca**: Creare indici SQL sulle colonne maggiormente utilizzate per i filtri (`last_name`, `first_name`, `id_fide`), nazionalità.
 * **Query Ottimizzate**: Eseguire query SQL mirate (es. `SELECT * FROM players WHERE last_name LIKE 'query%' LIMIT 100`) che restituiscono i risultati in pochissimi millisecondi.
 * **SQLite FTS (Full Text Search)**: Sfruttare il modulo nativo di SQLite FTS5 per gestire in modo nativo e velocissimo ricerche complesse con più termini o operatori logici (es. `+`, `-`).
 
@@ -55,3 +55,5 @@ Attualmente la ricerca avviene in modo sincrono nel thread principale che gestis
 
 ### Vantaggi:
 * La GUI di Tornello rimane completamente fluida e reattiva, non dando mai la sensazione di "blocco", anche se i calcoli in background richiedono tempo per completarsi.
+Selezionare la migliore e proporla all'utente specificando livello di complessità, eventuali compromessi da accettare, eventuali criticità.
+Attendere la decisione dell'utente.

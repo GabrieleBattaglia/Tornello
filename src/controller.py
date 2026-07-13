@@ -8,6 +8,7 @@ from typing import List, Optional
 from models import Tournament, Player, Match, Round, RoundDate, ResultEntry
 from config import (
     FIDE_DB_LOCAL_FILE,
+    FIDE_DB_JSON_LEGACY,
     PLAYER_DB_FILE,
     DATE_FORMAT_ISO,
     DEFAULT_K_FACTOR,
@@ -131,6 +132,15 @@ class TournamentController:
 
     def _check_fide_db(self) -> None:
         self.ui.show_message(_("\nVerifica stato database FIDE locale..."))
+
+        # Fallback: se esiste il vecchio JSON ma non il nuovo SQLite, elimina il JSON
+        from fide_db import fide_db_exists, cleanup_legacy_json
+        if not fide_db_exists() and os.path.exists(FIDE_DB_JSON_LEGACY):
+            cleanup_legacy_json()
+            self.ui.show_message(
+                _("Vecchio database FIDE JSON rimosso. È necessario riscaricare il database.")
+            )
+
         db_fide_esiste = os.path.exists(FIDE_DB_LOCAL_FILE)
         db_fide_appena_aggiornato = False
 

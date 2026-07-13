@@ -1,8 +1,6 @@
-import os
-import json
 import wx
 import builtins
-from config import FIDE_DB_LOCAL_FILE
+from fide_db import search_players
 from gui.settings import apply_visual_settings
 from utils import match_player_query, play_sound
 
@@ -30,26 +28,11 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # Facciamo una copia dei giocatori iscritti per gestire l'annullamento
         self.enrolled_players = list(enrolled_players)
 
-        # Carica il database FIDE locale in memoria per ricerche istantanee senza IO
-        self.fide_db = {}
-        if os.path.exists(FIDE_DB_LOCAL_FILE):
-            progress = wx.ProgressDialog(
-                _("Caricamento Database FIDE"),
-                _("Caricamento del database FIDE locale in corso... Attendere."),
-                maximum=100,
-                parent=self,
-                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE,
-            )
-            progress.Pulse()
-            try:
-                with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
-                    self.fide_db = json.load(f)
-            except Exception:
-                pass
-            progress.Destroy()
-
         self.all_fide_matches = []
         self.fide_displayed_count = 0
+
+        self._fide_search_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self._on_debounced_fide_search, self._fide_search_timer)
 
         self._init_ui()
         self.apply_theme()
@@ -237,7 +220,14 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
     def on_search_fide_changed(self, event):
         """Filtra e aggiorna i risultati del DB FIDE."""
-        query = self.search_fide.GetValue().strip().lower()
+        self._fide_search_timer.Stop()
+        self._fide_search_timer.Start(900, wx.TIMER_ONE_SHOT)
+
+    def _on_debounced_fide_search(self, event):
+        self.esegui_ricerca_fide()
+
+    def esegui_ricerca_fide(self, target_sel=None):
+        query = self.search_fide.GetValue().strip()
         self.list_fide_results.Clear()
         self.fide_results_map = []
         self.all_fide_matches = []
@@ -249,36 +239,17 @@ class PlayerEnrollmentDialog(wx.Dialog):
             )
             return
 
-        if event is not None:
-            play_sound("fide_attesa")
+        play_sound("fide_attesa")
 
-        search_is_id = query.isdigit()
         enrolled_fide_ids = {
             p.get("fide_id_num_str")
             for p in self.enrolled_players
             if p.get("fide_id_num_str")
         }
 
-        # Ricerca per ID FIDE esatto
-        if search_is_id and query in self.fide_db:
-            p = self.fide_db[query]
-            fide_id_str = str(p.get("id_fide"))
-            if fide_id_str not in enrolled_fide_ids:
-                self.all_fide_matches = [p]
-        else:
-            # Ricerca testuale con operatori
-            matching_with_scores = []
-            for fide_id, p in self.fide_db.items():
-                if fide_id in enrolled_fide_ids:
-                    continue
-
-                score = match_player_query(p, query)
-                if score is not None:
-                    matching_with_scores.append((score, p))
-
-            # Ordina per rilevanza
-            matching_with_scores.sort(key=lambda x: x[0])
-            self.all_fide_matches = [p for score, p in matching_with_scores]
+        self.all_fide_matches = search_players(
+            query, exclude_fide_ids=enrolled_fide_ids
+        )
 
         self.load_more_fide_results()
 
@@ -289,8 +260,20 @@ class PlayerEnrollmentDialog(wx.Dialog):
             ).format(total=total_found)
         )
 
-        if event is not None:
-            play_sound("fide_pronto")
+        # Ripristina la selezione se indicata o seleziona il primo elemento
+        new_count = self.list_fide_results.GetCount()
+        if new_count > 0:
+            if target_sel is not None:
+                new_sel = min(target_sel, new_count - 1)
+                self.list_fide_results.SetSelection(new_sel)
+                self.list_fide_results.SetFocus()  # Sposta il focus solo all'aggiunta/rimozione
+            else:
+                self.list_fide_results.SetSelection(0)
+        else:
+            if target_sel is not None:
+                self.search_fide.SetFocus()
+
+        play_sound("fide_pronto")
 
     def load_more_fide_results(self):
         # Rimuovi l'eventuale precedente item "Mostra altri..."
@@ -398,7 +381,10 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.enrolled_players.append(new_player)
         self.update_enrolled_list()
-        self.on_search_fide_changed(None)
+        
+        # Esegui la ricerca immediata senza passare per il debounce
+        # e ripristina la selezione desiderata
+        self.esegui_ricerca_fide(target_sel=sel)
 
         # Riproduci suono di aggiunta
         play_sound("aggiunta_giocatore")
@@ -412,15 +398,6 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.list_enrolled.SetSelection(new_idx)
 
-        # Ripristina la selezione e il focus sulla lista FIDE (o sul campo di ricerca se vuota)
-        new_count = self.list_fide_results.GetCount()
-        if new_count > 0:
-            new_sel = min(sel, new_count - 1)
-            self.list_fide_results.SetSelection(new_sel)
-            self.list_fide_results.SetFocus()
-        else:
-            self.search_fide.SetFocus()
-
     def on_remove_enrolled(self, event):
         sel = self.list_enrolled.GetSelection()
         if sel == wx.NOT_FOUND:
@@ -433,7 +410,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.update_enrolled_list()
         self.on_search_local_changed(None)
-        self.on_search_fide_changed(None)
+        
+        # Aggiorna subito la ricerca FIDE
+        self.esegui_ricerca_fide()
 
         # Focus sulla lista iscritti se ci sono ancora elementi, altrimenti torna alla ricerca locale
         if self.list_enrolled.GetCount() > 0:

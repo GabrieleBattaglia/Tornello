@@ -1,9 +1,11 @@
-import os
-import json
 import wx
 import builtins
-from config import FIDE_DB_LOCAL_FILE
 from db_players import load_players_db, save_players_db
+from fide_db import (
+    fide_db_exists,
+    get_player_by_fide_id,
+    search_players_by_name,
+)
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 
@@ -28,24 +30,7 @@ class SyncDatabaseDialog(wx.Dialog):
 
         self.settings = settings
         self.players_db = load_players_db()
-        self.fide_db = {}
-
-        # Carica FIDE DB
-        if os.path.exists(FIDE_DB_LOCAL_FILE):
-            progress = wx.ProgressDialog(
-                _("Caricamento Database FIDE"),
-                _("Caricamento del database FIDE locale in corso... Attendere."),
-                maximum=100,
-                parent=self,
-                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE,
-            )
-            progress.Pulse()
-            try:
-                with open(FIDE_DB_LOCAL_FILE, "r", encoding="utf-8") as f:
-                    self.fide_db = json.load(f)
-            except Exception:
-                pass
-            progress.Destroy()
+        self.fide_db_available = fide_db_exists()
 
         self.changes = []
         self.stats = {"id_associations": 0, "elo_updates": 0, "other_updates": 0}
@@ -57,7 +42,7 @@ class SyncDatabaseDialog(wx.Dialog):
 
     def _collect_changes(self):
         """Confronta il DB locale e FIDE raccogliendo le discrepanze."""
-        if not self.players_db or not self.fide_db:
+        if not self.players_db or not self.fide_db_available:
             return
 
         for player_id, local_player in self.players_db.items():
@@ -68,19 +53,14 @@ class SyncDatabaseDialog(wx.Dialog):
             matches = []
 
             if fide_id_str and fide_id_str != "0":
-                fide_record = self.fide_db.get(fide_id_str)
+                fide_record = get_player_by_fide_id(fide_id_str)
             else:
                 # Cerca per nome e cognome
-                p_first = local_player.get("first_name", "").lower()
-                p_last = local_player.get("last_name", "").lower()
+                p_first = local_player.get("first_name", "")
+                p_last = local_player.get("last_name", "")
 
                 if p_first and p_last:
-                    matches = [
-                        fp
-                        for fp in self.fide_db.values()
-                        if fp.get("first_name", "").lower() == p_first
-                        and fp.get("last_name", "").lower() == p_last
-                    ]
+                    matches = search_players_by_name(p_first, p_last)
                     if len(matches) == 1:
                         new_fide_id = str(matches[0]["id_fide"])
                         fide_record = matches[0]

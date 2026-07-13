@@ -46,7 +46,8 @@ builtins._ = _
 PLAYER_DB_FILE = user_data_path("Tornello - Players_db.json")
 PLAYER_DB_TXT_FILE = user_data_path("Tornello - Players_db.txt")
 ARCHIVED_TOURNAMENTS_DIR = user_data_path("Closed Tournaments")
-FIDE_DB_LOCAL_FILE = user_data_path("fide_ratings_local.json")
+FIDE_DB_LOCAL_FILE = user_data_path("fide_ratings.db")
+FIDE_DB_JSON_LEGACY = user_data_path("fide_ratings_local.json")
 
 # Costanti per l'integrazione con bbpPairings
 BBP_SUBDIR = resource_path("bbppairings")
@@ -60,4 +61,4 @@ BBP_OUTPUT_CHECKLIST = os.path.join(BBP_SUBDIR, "output_checklist.txt")
 DATE_FORMAT_ISO = "%Y-%m-%d"
 DEFAULT_ELO = 1399.0
 DEFAULT_K_FACTOR = 20
-FIDE_XML_DOWNLOAD_URL = "http://ratings.fide.com/download/players_list_xml.zip"
+FIDE_XML_DOWNLOAD_URL = "https://ratings.fide.com/download/players_list_xml.zip"

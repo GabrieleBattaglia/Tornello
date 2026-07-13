@@ -494,7 +494,12 @@ class MainFrame(wx.Frame):
 
     def _check_fide_db_on_startup(self):
         """Verifica se il DB FIDE locale ha più di 30 giorni e propone l'aggiornamento."""
-        from config import FIDE_DB_LOCAL_FILE
+        from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
+        from fide_db import fide_db_exists, cleanup_legacy_json
+
+        # Fallback: se esiste il vecchio JSON ma non il nuovo SQLite, elimina il JSON
+        if not fide_db_exists() and os.path.exists(FIDE_DB_JSON_LEGACY):
+            cleanup_legacy_json()
 
         if os.path.exists(FIDE_DB_LOCAL_FILE):
             try:
@@ -524,6 +529,26 @@ class MainFrame(wx.Frame):
                         dlg.Destroy()
             except Exception:
                 pass
+        else:
+            # Nessun DB FIDE trovato: proponi il download
+            msg = _(
+                "Il database FIDE locale non è presente.\n"
+                "È necessario scaricarlo per poter cercare giocatori "
+                "nel database FIDE internazionale.\n\n"
+                "Vuoi scaricarlo ora?"
+            )
+            dlg = AccessibleMsgDialog(
+                self, _("Database FIDE Mancante"), msg, style=wx.YES_NO
+            )
+            if dlg.ShowModal() == wx.ID_YES:
+                dlg.Destroy()
+                from gui.dialogs.fide_update_dialog import FideUpdateDialog
+
+                update_dlg = FideUpdateDialog(self, self.settings)
+                update_dlg.ShowModal()
+                update_dlg.Destroy()
+            else:
+                dlg.Destroy()
 
     def _check_backup_on_startup(self):
         """Scansiona la cartella backup/ alla ricerca di file più vecchi di 18 mesi."""
@@ -1229,7 +1254,7 @@ class MainFrame(wx.Frame):
             p_label = _("{last} {first} (Elo: {elo}, Naz: {fed})").format(
                 last=p.get("last_name", ""),
                 first=p.get("first_name", ""),
-                elo=p.get("initial_elo", 1399),
+                elo=int(p.get("initial_elo", 1399)),
                 fed=p.get("federation", "ITA"),
             )
             if p.get("withdrawn"):
@@ -1763,7 +1788,7 @@ class MainFrame(wx.Frame):
                     num=idx + 1,
                     last=p.get("last_name", ""),
                     first=p.get("first_name", ""),
-                    elo=p.get("initial_elo", 1399),
+                    elo=int(p.get("initial_elo", 1399)),
                     fed=p.get("federation", "ITA"),
                     withdrawn=withdrawn_str,
                 )
@@ -1781,7 +1806,7 @@ class MainFrame(wx.Frame):
         info.append("=" * 50)
         info.append(_("Cognome: {last_name}").format(last_name=p.get("last_name", "")))
         info.append(_("Nome: {first_name}").format(first_name=p.get("first_name", "")))
-        info.append(_("Elo Iniziale: {elo}").format(elo=p.get("initial_elo", 1399)))
+        info.append(_("Elo Iniziale: {elo}").format(elo=int(p.get("initial_elo", 1399))))
         info.append(_("ID Interno: {id}").format(id=p.get("id", "")))
         info.append(
             _("Fide ID: {fide}").format(fide=p.get("fide_id_num_str") or _("N/D"))
@@ -1973,7 +1998,7 @@ class MainFrame(wx.Frame):
         info.append(
             _("Bianco (White): {name} (Elo: {elo}, Naz: {fed})").format(
                 name=w_name,
-                elo=w_p.get("initial_elo", 1399),
+                elo=int(w_p.get("initial_elo", 1399)),
                 fed=w_p.get("federation", "ITA"),
             )
         )
@@ -1984,7 +2009,7 @@ class MainFrame(wx.Frame):
             info.append(
                 _("Nero (Black): {name} (Elo: {elo}, Naz: {fed})").format(
                     name=b_name,
-                    elo=b_p.get("initial_elo", 1399),
+                    elo=int(b_p.get("initial_elo", 1399)),
                     fed=b_p.get("federation", "ITA"),
                 )
             )
@@ -3145,9 +3170,14 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_fide_update(self, event):
-        from config import FIDE_DB_LOCAL_FILE
+        from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
+        from fide_db import cleanup_legacy_json
         from datetime import datetime
         import os
+
+        # Fallback: elimina vecchio JSON se presente
+        if os.path.exists(FIDE_DB_JSON_LEGACY):
+            cleanup_legacy_json()
 
         msg = ""
         if os.path.exists(FIDE_DB_LOCAL_FILE):

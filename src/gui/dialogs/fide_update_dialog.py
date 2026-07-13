@@ -3,29 +3,39 @@ import builtins
 import threading
 from db_players import aggiorna_db_fide_locale
 from gui.settings import apply_visual_settings
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 
 _ = getattr(builtins, "_", lambda s: s)
 
 
 class FideUpdateThread(threading.Thread):
-    def __init__(self, callback):
+    """
+    Thread per eseguire lo scaricamento e la creazione del DB FIDE SQLite
+    senza bloccare l'interfaccia grafica.
+    """
+    def __init__(self, progress_callback, completion_callback):
         super().__init__()
-        self.callback = callback
+        self.progress_callback = progress_callback
+        self.completion_callback = completion_callback
         self.success = False
+        self.stats = {}
 
     def run(self):
         try:
-            self.success = aggiorna_db_fide_locale()
+            self.success = aggiorna_db_fide_locale(
+                progress_callback=self.progress_callback,
+                stats_output=self.stats
+            )
         except Exception:
             self.success = False
-        wx.CallAfter(self.callback, self.success)
+            self.stats = {}
+        wx.CallAfter(self.completion_callback, self.success, self.stats)
 
 
 class FideUpdateDialog(wx.Dialog):
     """
     Finestra di dialogo per lo scaricamento e l'aggiornamento del DB FIDE locale.
-    Visualizza un messaggio fisso di attesa e una barra di caricamento (Gauge) animata via Timer.
-    L'operazione di rete e CPU-bound viene eseguita in un thread secondario per non bloccare la GUI.
+    Mostra informazioni accessibili a NVDA sul progresso reale di scaricamento e analisi.
     """
 
     def __init__(self, parent, settings):
@@ -35,21 +45,29 @@ class FideUpdateDialog(wx.Dialog):
         )
 
         self.settings = settings
+        self.last_announced_percent = -5  # Annuncia ogni 5% per non saturare lo screen reader
+        
         self.init_ui()
         self.apply_theme()
         self.Centre()
+
+        # Avvio del thread in background
+        self.thread = FideUpdateThread(self.on_progress, self.on_update_complete)
+        self.thread.start()
+
+        # Impostiamo subito il focus sul Gauge per far sì che NVDA legga gli aggiornamenti di progresso
+        wx.CallAfter(self.gauge.SetFocus)
 
     def init_ui(self):
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        # Testo statico che indica l'avvio e la durata dell'operazione, evitando modifiche continue per NVDA
+        # Label di stato posizionata immediatamente prima del Gauge per accessibilità
         self.status_label = wx.StaticText(
             panel,
             label=_(
-                "Aggiornamento del Database FIDE locale in corso...\n"
-                "L'operazione richiede solitamente 1-2 minuti di attesa.\n"
-                "Attendere prego, la barra indica che l'elaborazione è attiva."
+                "Connessione al server FIDE in corso...\n"
+                "Avvio dello scaricamento del database FIDE Ratings."
             ),
         )
         vbox.Add(self.status_label, 0, wx.ALL | wx.EXPAND, 15)
@@ -64,48 +82,116 @@ class FideUpdateDialog(wx.Dialog):
         panel.SetSizer(vbox)
         vbox.Fit(self)
 
-        # Timer per l'animazione costante della barra di progresso
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
-        self.timer.Start(100)  # Aggiorna la barra ogni 100ms
-
-        # Avvio del thread in background
-        self.thread = FideUpdateThread(self.on_update_complete)
-        self.thread.start()
-
     def apply_theme(self):
         apply_visual_settings(self, self.settings)
         for child in self.GetChildren():
             apply_visual_settings(child, self.settings)
 
-    def on_timer(self, event):
-        self.gauge.Pulse()
+    def on_progress(self, phase, current, total):
+        """Callback chiamata dal thread di background per notificare l'avanzamento."""
+        wx.CallAfter(self.update_progress, phase, current, total)
 
-    def on_update_complete(self, success):
-        self.timer.Stop()
+    def update_progress(self, phase, current, total):
+        if total <= 0:
+            return
+        
+        percent = int((current / total) * 100)
+        percent = max(0, min(100, percent))
+        self.gauge.SetValue(percent)
+
+        # Formattazione accessibile a NVDA
+        if phase == 'download':
+            title_text = _("Scaricamento Database FIDE...")
+            if self.GetTitle() != title_text:
+                self.SetTitle(title_text)
+            
+            current_mb = current / (1024 * 1024)
+            total_mb = total / (1024 * 1024)
+            msg = _("Scaricamento in corso: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} MB)...").format(
+                percent=percent,
+                current_mb=current_mb,
+                total_mb=total_mb
+            )
+            if self.status_label.GetLabel() != msg:
+                self.status_label.SetLabel(msg)
+
+        elif phase == 'processing':
+            title_text = _("Analisi del DB FIDE e creazione DB SQLite...")
+            if self.GetTitle() != title_text:
+                self.SetTitle(title_text)
+            
+            msg = _("Scrittura del database SQLite: {percent}%...").format(
+                percent=percent
+            )
+            if self.status_label.GetLabel() != msg:
+                self.status_label.SetLabel(msg)
+
+        # Se la percentuale è cambiata di almeno il 5%, aggiorna l'annuncio accessibile
+        if abs(percent - self.last_announced_percent) >= 5:
+            self.last_announced_percent = percent
+            # Aggiornando il nome o la descrizione accessibile, forziamo NVDA ad annunciare il valore
+            self.gauge.SetName(f"{percent}%")
+
+    def on_update_complete(self, success, stats):
         self.gauge.SetValue(100)
         self.btn_close.SetLabel(_("Chiudi"))
         self.btn_close.Enable()
 
         if success:
+            # Funzione di supporto per formattare la durata in mm:ss:dcm
+            def format_duration(seconds):
+                minutes = int(seconds // 60)
+                remaining_secs = seconds % 60
+                secs = int(remaining_secs)
+                dcm = int((remaining_secs - secs) * 10)
+                return f"{minutes:02d}:{secs:02d}:{dcm:d}"
+
+            d_time = format_duration(stats.get("download_time", 0.0))
+            p_time = format_duration(stats.get("processing_time", 0.0))
+            saved_count = stats.get("saved_count", 0)
+            
+            old_c = stats.get("old_count", 0)
+            new_c = stats.get("new_count", 0)
+            
+            success_msg = _(
+                "Database FIDE locale aggiornato con successo!\n\n"
+                "Tempo impiegato per il download: {d_time}\n"
+                "Tempo per l'elaborazione del DB SQLite: {p_time}\n"
+                "Totale giocatori salvati: {saved_count}"
+            ).format(d_time=d_time, p_time=p_time, saved_count=saved_count)
+            
+            # Se c'era già un DB con dei record, mostriamo la differenza e la percentuale
+            if old_c > 0:
+                diff = new_c - old_c
+                perc = (diff / old_c) * 100 if old_c > 0 else 0.0
+                sign = "+" if diff >= 0 else ""
+                success_msg += _(
+                    "\n\nStatistiche di aggiornamento:\n"
+                    "Prima {old_c} giocatori, ora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
+                ).format(old_c=old_c, new_c=new_c, sign=sign, diff=diff, perc=perc)
+            
             self.status_label.SetLabel(
                 _("Database FIDE locale aggiornato con successo!")
             )
-            wx.MessageBox(
-                _("Database FIDE locale aggiornato con successo!"),
+            
+            # Utilizza il dialogo personalizzato e accessibile per mostrare le statistiche
+            dlg = AccessibleMsgDialog(
+                self,
                 _("Successo"),
-                wx.ICON_INFORMATION,
+                success_msg,
             )
+            dlg.ShowModal()
+            dlg.Destroy()
             self.EndModal(wx.ID_OK)
         else:
             self.status_label.SetLabel(
                 _("Errore durante l'aggiornamento del Database FIDE.")
             )
-            wx.MessageBox(
-                _(
-                    "Errore durante l'aggiornamento del Database FIDE. Controlla la connessione ad internet."
-                ),
+            dlg = AccessibleMsgDialog(
+                self,
                 _("Errore"),
-                wx.ICON_ERROR,
+                _("Errore durante l'aggiornamento del Database FIDE. Controlla la connessione ad internet."),
             )
+            dlg.ShowModal()
+            dlg.Destroy()
             self.EndModal(wx.ID_CANCEL)
