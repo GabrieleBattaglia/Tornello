@@ -1361,7 +1361,7 @@ class MainFrame(wx.Frame):
             1 for r in rounds for m in r.get("matches", []) if m.get("pgn")
         )
         partite_pgn_node = self.tree_ctrl.AppendItem(
-            t_node, f"{_('partite')} ({total_pgn_matches})"
+            t_node, _("Partite PGN") + f" ({total_pgn_matches})"
         )
         self.tree_ctrl.SetItemData(
             partite_pgn_node, {"action": "show_pgn_matches_list", "filepath": filepath}

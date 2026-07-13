@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornello 8.3.0\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-13 12:16+0200\n"
+"POT-Creation-Date: 2026-07-13 22:46+0200\n"
 "PO-Revision-Date: 2025-07-07 07:45+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -4367,9 +4367,9 @@ msgstr "Error loading tournament: {}"
 #: src/gui/main_frame.py:3400 src/gui/main_frame.py:3412
 #: src/gui/main_frame.py:3424 src/gui/main_frame.py:3519
 #: src/gui/main_frame.py:3545 src/gui/main_frame.py:3593
-#: src/gui/main_frame.py:4131 src/gui/main_frame.py:4167
-#: src/gui/main_frame.py:4180 src/gui/main_frame.py:4198
-#: src/gui/main_frame.py:4291
+#: src/gui/main_frame.py:4148 src/gui/main_frame.py:4184
+#: src/gui/main_frame.py:4197 src/gui/main_frame.py:4215
+#: src/gui/main_frame.py:4308
 msgid "Errore"
 msgstr "Mistake"
 
@@ -4658,8 +4658,8 @@ msgid "regole di spareggio"
 msgstr "playoff rules"
 
 #: src/gui/main_frame.py:1364
-msgid "partite"
-msgstr "matches"
+msgid "Partite PGN"
+msgstr "PGN Games"
 
 #: src/gui/main_frame.py:1407
 #, python-brace-format
@@ -5380,6 +5380,11 @@ msgid ""
 "Torneo creato in preparazione. Puoi completare l'inserimento in seguito."
 msgstr "Tournament created in preparation. You can complete the entry later."
 
+#: src/gui/main_frame.py:2604
+#, fuzzy, python-brace-format
+msgid "{name} - raccolta partite.pgn"
+msgstr "PGN COLLECTION"
+
 #: src/gui/main_frame.py:2658 src/gui/main_frame.py:3278
 msgid ""
 "Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
@@ -5728,24 +5733,59 @@ msgstr "Withdrawal after flat rate"
 msgid "Giocatore '{name}' ritirato con successo."
 msgstr "Player '{name}' successfully retired."
 
-#: src/gui/main_frame.py:4121
+#: src/gui/main_frame.py:4101
+#, fuzzy, python-brace-format
+msgid "Scheda Giocatore: {name}\n"
+msgstr "Tournament: {name}\n"
+
+#: src/gui/main_frame.py:4102
+#, python-brace-format
+msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4107
+#, fuzzy, python-brace-format
+msgid "ELO Iniziale: {init} | ELO Attuale: {curr}\n"
+msgstr "Initial Elo: {elo}"
+
+#: src/gui/main_frame.py:4112
+#, fuzzy
+msgid "Stato: RITIRATO DAL TORNEO\n"
+msgstr "Withdrew from the tournament"
+
+#: src/gui/main_frame.py:4115
+#, fuzzy
+msgid "Storico Partite nel Torneo:\n"
+msgstr "Active in the tournament"
+
+#: src/gui/main_frame.py:4127
+msgid "BYE"
+msgstr ""
+
+#: src/gui/main_frame.py:4129
+#, fuzzy, python-brace-format
+msgid ""
+"  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n"
+msgstr "  Round {}: Color: {color} vs {opponent} -> Result: {result}"
+
+#: src/gui/main_frame.py:4138
 #, python-brace-format
 msgid "Visualizzazione scheda di {name}."
 msgstr "Viewing the{name}card."
 
-#: src/gui/main_frame.py:4130
+#: src/gui/main_frame.py:4147
 msgid "Errore nella generazione degli abbinamenti."
 msgstr "Error generating matches."
 
-#: src/gui/main_frame.py:4153
+#: src/gui/main_frame.py:4170
 msgid "Torneo iniziato. Generati abbinamenti per il Turno 1."
 msgstr "Tournament started. Generated pairings for Round 1."
 
-#: src/gui/main_frame.py:4166
+#: src/gui/main_frame.py:4183
 msgid "Il torneo ha già raggiunto il numero massimo di turni previsto."
 msgstr "The tournament has already reached the maximum number of rounds."
 
-#: src/gui/main_frame.py:4178
+#: src/gui/main_frame.py:4195
 msgid ""
 "Impossibile generare il turno successivo: ci sono ancora partite senza "
 "risultato nel turno corrente."
@@ -5753,33 +5793,33 @@ msgstr ""
 "Unable to generate the next round: there are still games without a result in"
 " the current round."
 
-#: src/gui/main_frame.py:4197
+#: src/gui/main_frame.py:4214
 msgid "Errore durante la generazione degli abbinamenti."
 msgstr "Error generating matches."
 
-#: src/gui/main_frame.py:4236
+#: src/gui/main_frame.py:4253
 #, python-brace-format
 msgid "Generati abbinamenti per il Turno {num}."
 msgstr "Pairings generated for Round{num}."
 
-#: src/gui/main_frame.py:4257
+#: src/gui/main_frame.py:4274
 msgid "Non ci sono partite pianificate in questo torneo."
 msgstr "There are no scheduled matches in this tournament."
 
-#: src/gui/main_frame.py:4258
+#: src/gui/main_frame.py:4275
 msgid "Esporta Calendario"
 msgstr "Export Calendar"
 
-#: src/gui/main_frame.py:4266
+#: src/gui/main_frame.py:4283
 msgid "Salva file iCalendar (.ics)"
 msgstr "Save iCalendar file (.ics)"
 
-#: src/gui/main_frame.py:4281
+#: src/gui/main_frame.py:4298
 #, python-brace-format
 msgid "Calendario esportato con successo in '{path}'."
 msgstr "Calendar successfully exported to '{path}'."
 
-#: src/gui/main_frame.py:4290
+#: src/gui/main_frame.py:4307
 #, python-brace-format
 msgid "Errore durante l'esportazione: {e}"
 msgstr "Error during export:{e}"
