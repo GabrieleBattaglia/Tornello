@@ -4340,9 +4340,9 @@ msgid "Tornello - Versione {version} - Data Rilascio {date} - [{name}]"
 msgstr "Turnstile - Version {version} - Release Date {date} - [{name}]"
 
 #: src/gui/main_frame.py:660
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Torneo '{name}' caricato con successo."
-msgstr "Player '{name}' successfully retired."
+msgstr "Tournament '{name}' loaded successfully."
 
 #: src/gui/main_frame.py:664
 #, python-brace-format

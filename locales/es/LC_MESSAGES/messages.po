@@ -4417,9 +4417,9 @@ msgstr ""
 "Torniquete - Versión {version} - Fecha de lanzamiento {date} - [{name}]"
 
 #: src/gui/main_frame.py:660
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Torneo '{name}' caricato con successo."
-msgstr "El jugador '{name}' se retiró con éxito."
+msgstr "Torneo '{name}' cargado con éxito."
 
 #: src/gui/main_frame.py:664
 #, python-brace-format

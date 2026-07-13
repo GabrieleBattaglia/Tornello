@@ -4372,9 +4372,9 @@ msgid "Tornello - Versione {version} - Data Rilascio {date} - [{name}]"
 msgstr "Tourniquet - Version {version} - Date de sortie {date} - [{name}]"
 
 #: src/gui/main_frame.py:660
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Torneo '{name}' caricato con successo."
-msgstr "Le joueur '{name}' a réussi sa retraite."
+msgstr "Tournoi '{name}' chargé avec succès."
 
 #: src/gui/main_frame.py:664
 #, python-brace-format

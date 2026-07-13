@@ -4379,9 +4379,9 @@ msgid "Tornello - Versione {version} - Data Rilascio {date} - [{name}]"
 msgstr "Catraca - Versão {version} - Data de Lançamento {date} - [{name}]"
 
 #: src/gui/main_frame.py:660
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Torneo '{name}' caricato con successo."
-msgstr "Jogador '{name}' aposentou-se com sucesso."
+msgstr "Torneio '{name}' carregado com sucesso."
 
 #: src/gui/main_frame.py:664
 #, python-brace-format
