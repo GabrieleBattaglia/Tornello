@@ -2601,7 +2601,7 @@ class MainFrame(wx.Frame):
                 sanitized_name = sanitize_filename(t_name)
                 pgn_filename = os.path.join(
                     os.path.dirname(self.active_filename),
-                    f"{sanitized_name} - raccolta partite.pgn",
+                    _("{name} - raccolta partite.pgn").format(name=sanitized_name),
                 )
                 all_pgns = []
                 for r in self.current_tournament.get("rounds", []):
@@ -4098,14 +4098,21 @@ class MainFrame(wx.Frame):
     def show_player_detail(self, player):
         self.main_text.Clear()
         p_name = f"{player.get('last_name', '')} {player.get('first_name', '')}".strip()
-        report = f"Scheda Giocatore: {p_name}\n"
-        report += f"ID: {player.get('id')} | Sesso: {player.get('gender', 'M')} | Nazione: {player.get('federation', 'ITA')}\n"
-        report += f"ELO Iniziale: {player.get('initial_elo', 1399)} | ELO Attuale: {player.get('current_elo', 1399)}\n"
+        report = _("Scheda Giocatore: {name}\n").format(name=p_name)
+        report += _("ID: {id} | Sesso: {sex} | Nazione: {fed}\n").format(
+            id=player.get('id'),
+            sex=player.get('gender', 'M'),
+            fed=player.get('federation', 'ITA')
+        )
+        report += _("ELO Iniziale: {init} | ELO Attuale: {curr}\n").format(
+            init=int(player.get('initial_elo', 1399)),
+            curr=int(player.get('current_elo', 1399))
+        )
         if player.get("withdrawn"):
-            report += "Stato: RITIRATO DAL TORNEO\n"
+            report += _("Stato: RITIRATO DAL TORNEO\n")
         report += "-" * 50 + "\n\n"
 
-        report += "Storico Partite nel Torneo:\n"
+        report += _("Storico Partite nel Torneo:\n")
         history = player.get("results_history", [])
         for entry in history:
             opp_id = entry.get("opponent_id")
@@ -4115,7 +4122,17 @@ class MainFrame(wx.Frame):
                 if opp_id != "BYE_PLAYER_ID"
                 else "BYE"
             )
-            report += f"  Turno {entry.get('round')}: vs {opp_name} ({entry.get('color', 'N/D')}) -> Risultato: {entry.get('result')} (Punti: {entry.get('score')})\n"
+            # Localizziamo anche BYE se necessario, ma opp_name "BYE" va bene, convertiamo l'opp_name a _("BYE")
+            if opp_name == "BYE":
+                opp_name = _("BYE")
+            
+            report += _("  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n").format(
+                round=entry.get('round'),
+                opp=opp_name,
+                color=entry.get('color', 'N/D'),
+                res=entry.get('result'),
+                score=entry.get('score')
+            )
 
         self.append_log(report)
         self.set_status(_("Visualizzazione scheda di {name}.").format(name=p_name))

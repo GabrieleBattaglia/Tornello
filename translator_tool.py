@@ -24,8 +24,8 @@ def translate_po_file(po_file_path, target_lang):
     po = polib.pofile(po_file_path)
     translator = GoogleTranslator(source="it", target=target_lang)
 
-    # Regex per trovare i segnaposto tipo {nome_variabile}
-    placeholder_regex = re.compile(r"\{[^}]+\}")
+    # Regex per trovare i segnaposto tipo {nome_variabile} e anche graffe vuote {}
+    placeholder_regex = re.compile(r"\{[^}]*\}")
 
     untranslated_entries = [e for e in po if not e.msgstr and e.msgid]
     total = len(untranslated_entries)

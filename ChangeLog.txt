@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.6 (2026.07.13)
+	+ Feature: Miglioramenti significativi per l'internazionalizzazione (i18n):
+	  - Identificate e rimosse le stringhe residue non localizzate (fuggiasche) come i report dettagliati dei giocatori e il nome della raccolta dei file PGN.
+	  - Corretti errori di traduzione e segnaposto errati nei cataloghi in lingua portoghese (pt), in particolare ripristinato il nome proprio dell'applicazione 'Tornello' (erroneamente tradotto come 'Catraca') e corretti i messaggi di stato.
+	  - Allineati e compilati tutti i cataloghi multilingua (en, es, fr, pt).
+
 9.3.5 (2026.07.13)
 	+ Feature: Migrazione del Database FIDE locale al formato SQLite con estensione FTS5.
 	  - Eliminato completamente il caricamento in memoria RAM (~670 MB risparmiati).

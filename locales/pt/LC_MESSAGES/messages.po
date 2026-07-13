@@ -78,9 +78,8 @@ msgid "Sesso"
 msgstr "Sexo:"
 
 #: Players_DB.py:80
-#, fuzzy
 msgid "Federazione"
-msgstr "Federação:{fed}"
+msgstr "Federação"
 
 #: Players_DB.py:82
 #, fuzzy
@@ -197,9 +196,9 @@ msgid "Risposta non valida. Inserisci 's' o 'n'."
 msgstr "Escolha inválida. Digite 't' ou 'u'."
 
 #: Players_DB.py:231
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Errore: Giocatore con ID {id} non trovato."
-msgstr "ERRO: Banco de dados FIDE local '{}' não encontrado."
+msgstr "Erro: Jogador com ID {id} não encontrado."
 
 #: Players_DB.py:239
 #, python-brace-format
@@ -232,9 +231,9 @@ msgid "Vuoi tentare di rigenerare l'ID in base al nuovo nome/cognome? (s/N)"
 msgstr "Deseja tentar regenerar o ID com base no novo nome/sobrenome? (S/N)"
 
 #: Players_DB.py:286
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "ID giocatore aggiornato da '{old}' a '{new}'."
-msgstr "-> Atualizar {}: de '{}' para '{}'"
+msgstr "ID do jogador atualizado de '{old}' para '{new}'."
 
 #: Players_DB.py:293
 #, python-brace-format
@@ -363,9 +362,8 @@ msgid "  Posizione (es. 1, 2, o RIT): "
 msgstr "Posição (por exemplo, 1, 2 ou RIT):"
 
 #: Players_DB.py:482
-#, fuzzy
 msgid "  Numero totale partecipanti: "
-msgstr "Número total de turnos:{rounds}"
+msgstr "Número total de participantes:"
 
 #: Players_DB.py:490
 #, python-brace-format
@@ -406,17 +404,19 @@ msgid ""
 msgstr "Importação concluída"
 
 #: Players_DB.py:523
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "--- Gestore Database Giocatori Tornello ---\n"
 "\tVersione: {vers}\n"
-msgstr "Relatório do Banco de Dados de Jogadores Tornello - {date} {time}\n"
+msgstr ""
+"--- Gerenciador de banco de dados do torniquete ---\n"
+"\tVersão: {vers}"
 
 #: Players_DB.py:530
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Giocatori nel database: {num}"
-msgstr "Analisando jogadores em seu banco de dados pessoal..."
+msgstr "Jogadores no banco de dados: {num}"
 
 #: Players_DB.py:532
 msgid ""
@@ -444,9 +444,9 @@ msgid ""
 msgstr "Lista de jogadores confirmada."
 
 #: Players_DB.py:577
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Nessun giocatore trovato per '{search}'."
-msgstr "Nenhum jogador ativo para retirar."
+msgstr "Nenhum jogador encontrado para '{search}'."
 
 #: Players_DB.py:583
 #, fuzzy
@@ -470,11 +470,11 @@ msgid "Giocatore cancellato."
 msgstr "Jogador Ausente"
 
 #: Players_DB.py:638
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "Trovate {num} corrispondenze. Specifica meglio:"
-msgstr "{count}correspondências encontradas."
+msgstr "Encontre correspondências {num}. Especifique melhor:"
 
 #: Players_DB.py:658
 #, fuzzy
@@ -503,16 +503,14 @@ msgid "Questo tool confronta il tuo database giocatori personale"
 msgstr "Este player já está presente em seu banco de dados pessoal."
 
 #: Sync_DB.py:31
-#, fuzzy
 msgid "con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"
-msgstr "Banco de dados FIDE local carregado com {} jogadores."
+msgstr ""
+"com o banco de dados FIDE mais recente baixado e oferece atualizações."
 
 #: Sync_DB.py:35
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Il database FIDE locale ({}) non è presente."
-msgstr ""
-"\n"
-"O banco de dados FIDE local não está presente no seu computador."
+msgstr "O banco de dados FIDE local ({}) não está presente."
 
 #: Sync_DB.py:39
 #, fuzzy
@@ -613,21 +611,19 @@ msgid "Riprova più tardi."
 msgstr "Por favor, tente novamente mais tarde."
 
 #: tornello.py:102
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Controllo aggiornamenti fallito: {}"
-msgstr "Confirmar atualização"
+msgstr "Falha na verificação de atualização: {}"
 
 #: tornello.py:110
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Info: Creata sottocartella '{}' per i file di bbpPairings."
-msgstr "Info: Subpasta '{subdir}' criada para os arquivos do bbpPairings."
+msgstr "Info: Criada a subpasta '{}' para arquivos bbpPairings."
 
 #: tornello.py:116
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "ATTENZIONE: Impossibile creare la sottocartella '{}': {}"
-msgstr ""
-"AVISO: Não é possível criar backup de segurança. Eu prossigo de qualquer "
-"maneira..."
+msgstr "AVISO: Não é possível criar a subpasta '{}': {}"
 
 #: tornello.py:120
 msgid "bbpPairings potrebbe non funzionare correttamente."
@@ -1164,7 +1160,7 @@ msgstr "O Time Machine foi cancelado ou falhou. Saia por segurança."
 #: src/controller.py:926
 #, python-brace-format
 msgid "Registrazione risultati automatici per il Turno {round_num} (BYE)..."
-msgstr "Gravando resultados automáticos para Shift{round_num}(BYE)..."
+msgstr "Gravando resultados automáticos para Rodada{round_num}(BYE)..."
 
 #: src/controller.py:964
 #, python-brace-format
@@ -1597,7 +1593,7 @@ msgid ""
 "Fallimento generazione abbinamenti automatici (Turno {round_num}):\n"
 "{error}"
 msgstr ""
-"Falha na geração de emparelhamento automático (Shift{round_num}):{error}"
+"Falha na geração de emparelhamento automático (Rodada{round_num}):{error}"
 
 #: src/engine.py:39
 #, python-brace-format
@@ -1815,19 +1811,19 @@ msgid ""
 msgstr " IDG:{match_id} {white_player} - {black_player} (Agendamento Errado)"
 
 #: src/reports.py:214
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Nome Torneo: {} - "
-msgstr "Nome do Torneio: {name} - "
+msgstr "Nome do Torneio: {} -"
 
 #: src/reports.py:215
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Turno: {}\n"
-msgstr "Torneio: {name}\n"
+msgstr "Turno: {}"
 
 #: src/reports.py:217
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid " Periodo Turno: {} - {}\n"
-msgstr "Período de mudança:{start}-{end}"
+msgstr "Período de mudança: {} - {}"
 
 #: src/reports.py:229
 #, python-brace-format
@@ -2254,22 +2250,20 @@ msgstr ""
 "Dados para a Rodada {round_num} não encontrados ou rodada inválida."
 
 #: src/reports.py:1206
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "--- RIEPILOGO TORNEO IN PREPARAZIONE: {} ---\n"
 "\n"
-msgstr ""
-"\n"
-"--- Torneio Ativo: {name} ---"
+msgstr "--- TORNEIO RESUMO EM PREPARAÇÃO: {} ---"
 
 #: src/gui/dialogs/players_db_dialog.py:139 src/reports.py:1207
 msgid "Senza Nome"
 msgstr "Sem nome"
 
 #: src/reports.py:1210
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Luogo: {}\n"
-msgstr "Localização:{site}"
+msgstr "Localização: {}"
 
 #: src/reports.py:1212
 #, python-brace-format
@@ -2277,21 +2271,21 @@ msgid "Date: {} - {}\n"
 msgstr "Datas: {} - {}"
 
 #: src/reports.py:1218
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Turni previsti: {}\n"
-msgstr "Pontos atuais: {pts}"
+msgstr "Turnos programados: {}"
 
 #: src/reports.py:1223
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Tempo di riflessione: {}\n"
 "\n"
-msgstr "Tempo de reflexão:{tc}"
+msgstr "Tempo de reflexão: {}"
 
 #: src/reports.py:1229
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "--- GIOCATORI INSERITI ({}) ---\n"
-msgstr "JOGADORES REGISTADOS ({count})"
+msgstr "--- JOGADORES INSERIDOS ({}) ---"
 
 #: src/reports.py:1231
 #, fuzzy
@@ -3001,7 +2995,8 @@ msgstr "Regeneração de emparelhamentos para Rodada{target_round}..."
 #: src/tournament.py:186
 #, python-brace-format
 msgid "Ripristinato {score} punto/i per il BYE al Turno {round} per {name}."
-msgstr "Ponto(s) {score} restaurado(s) para BYE em {round} Vire para {name}."
+msgstr ""
+"Ponto(s) {score} restaurado(s) para BYE em {round} Rodada para {name}."
 
 #: src/tournament.py:202
 msgid ""
@@ -4113,7 +4108,7 @@ msgstr "Ver &Jogadores\tCtrl+G"
 
 #: src/gui/main_frame.py:157
 msgid "&Abbinamenti / Turno Corrente\tCtrl+U"
-msgstr "&Emparelhamentos / Shift atual\tCtrl+U"
+msgstr "&Emparelhamentos / Rodada atual\tCtrl+U"
 
 #: src/gui/main_frame.py:160
 msgid "&Classifica Corrente\tCtrl+L"
@@ -4121,7 +4116,7 @@ msgstr "&Classificação atual\tCtrl+L"
 
 #: src/gui/main_frame.py:163
 msgid "&Time Machine (Annulla Turno)\tCtrl+Z"
-msgstr "&Máquina do Tempo (Cancelar Shift)\tCtrl+Z"
+msgstr "&Máquina do Tempo (Cancelar Rodada)\tCtrl+Z"
 
 #: src/gui/main_frame.py:166
 msgid "&Finalizza Torneo\tCtrl+F"
@@ -4197,7 +4192,7 @@ msgid ""
 "Progress. Giorno {}/{} ({:.1f}%), turno {}/{}, risult.{}/{} ({:.1f}%), PGN "
 "{}."
 msgstr ""
-"Progresso. Dia {}/{} ({:.1f}%), turno {}/{}, resultado{}/{} ({:.1f}%), PGN "
+"Progresso. Dia {}/{} ({:.1f}%), rodada {}/{}, result. {}/{} ({:.1f}%), PGN "
 "{}."
 
 #: src/gui/main_frame.py:397
@@ -4231,14 +4226,14 @@ msgid "{} giorno"
 msgstr "{} dia"
 
 #: src/gui/main_frame.py:452
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} giorni"
-msgstr "{m} meses, {d} dias"
+msgstr "{} dias"
 
 #: src/gui/main_frame.py:455
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} ora"
-msgstr "Agora"
+msgstr "{} agora"
 
 #: src/gui/main_frame.py:455
 #, no-python-format, python-brace-format
@@ -4246,14 +4241,14 @@ msgid "{} ore"
 msgstr "{} horas"
 
 #: src/gui/main_frame.py:458
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} minuto"
-msgstr "Minuto:"
+msgstr "{} minuto"
 
 #: src/gui/main_frame.py:458
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{} minuti"
-msgstr "Minuto:"
+msgstr "{} minutos"
 
 #: src/gui/main_frame.py:464
 #, no-python-format, python-brace-format
@@ -4389,9 +4384,9 @@ msgid "Torneo '{name}' caricato con successo."
 msgstr "Jogador '{name}' aposentou-se com sucesso."
 
 #: src/gui/main_frame.py:664
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Errore nel caricamento del torneo: {}"
-msgstr "Erro ao carregar o torneio. Tente novamente."
+msgstr "Erro ao carregar torneio: {}"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:307
 #: src/gui/dialogs/fide_update_dialog.py:192
@@ -4418,11 +4413,13 @@ msgid "Errore"
 msgstr "Erro"
 
 #: src/gui/main_frame.py:683
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Torneo: {name}\n"
 "Turno Corrente: {curr} di {total}\n"
-msgstr "Rodada Atual: {current} / {total}"
+msgstr ""
+"Torneio: {name}\n"
+"Mudança Atual: {curr} de {total}"
 
 #: src/gui/main_frame.py:694
 #, fuzzy, python-brace-format
@@ -7033,7 +7030,9 @@ msgstr "Pos. (Guia)"
 #~ msgid ""
 #~ "ERRORE CRITICO: fallita la rigenerazione degli abbinamenti per il turno "
 #~ "{target_round}."
-#~ msgstr "Gerando emparceiramentos para a Rodada {round_num}..."
+#~ msgstr ""
+#~ "ERRO CRÍTICO: A regeneração do emparelhamento falhou para a rodada "
+#~ "{target_round}."
 
 #~ msgid "Ripristinato 1.0 punto per il BYE al Turno {target_round} per {name}."
 #~ msgstr "Restaurado 1,0 ponto para BYE no Turno {target_round} para {name}."
@@ -7575,7 +7574,7 @@ msgstr "Pos. (Guia)"
 #~ msgstr "  ID FIDE Numérico ('0' se N/D)"
 
 #~ msgid "Data Nascita"
-#~ msgstr "\tData de Nascimento: {birth_date}\n"
+#~ msgstr "Data de nascimento"
 
 #~ msgid "Data Registrazione DB"
 #~ msgstr "Data de registro do banco de dados"
@@ -7630,7 +7629,7 @@ msgstr "Pos. (Guia)"
 #~ msgstr "Escolha inválida. Tente novamente."
 
 #~ msgid "Errore: Giocatore con ID {id} non trovato."
-#~ msgstr "ERRO: Banco de dados FIDE local '{}' não encontrado."
+#~ msgstr "Erro: Jogador com ID {id} não encontrado."
 
 #~ msgid ""
 #~ "\n"
@@ -7647,7 +7646,7 @@ msgstr "Pos. (Guia)"
 #~ msgstr "Deseja tentar regenerar o ID com base no novo nome/sobrenome? (S/N)"
 
 #~ msgid "ID giocatore aggiornato da '{old}' a '{new}'."
-#~ msgstr "    -> Atualização de {}: de '{}' para '{}'"
+#~ msgstr "ID do jogador atualizado de '{old}' para '{new}'."
 
 #~ msgid ""
 #~ "Errore o collisione nella generazione del nuovo ID. L'ID originale '{id}' "
@@ -7730,7 +7729,7 @@ msgstr "Pos. (Guia)"
 #~ "--- Criação de Novo Torneio ---"
 
 #~ msgid "  Nome torneo: "
-#~ msgstr "Nome do Torneio: {name}\n"
+#~ msgstr "Nome do Torneio:"
 
 #~ msgid "  ID Torneo (default: generato in automatico): "
 #~ msgstr "ID do torneio (padrão: gerado automaticamente):"
@@ -7770,10 +7769,12 @@ msgstr "Pos. (Guia)"
 #~ "\n"
 #~ "--- Gestore Database Giocatori Tornello ---\n"
 #~ "\tVersione: {vers}\n"
-#~ msgstr "Relatório do Banco de Dados de Jogadores Tornello - {date} {time}\n"
+#~ msgstr ""
+#~ "--- Gerenciador de banco de dados do torniquete ---\n"
+#~ "\tVersão: {vers}"
 
 #~ msgid "Giocatori nel database: {num}"
-#~ msgstr "Analisando jogadores em seu banco de dados pessoal..."
+#~ msgstr "Jogadores no banco de dados: {num}"
 
 #~ msgid ""
 #~ "Cerca giocatore (ID, nome/cognome), (L)ista tutti, (A)ggiungi nuovo, (S)alva"
@@ -7794,7 +7795,7 @@ msgstr "Pos. (Guia)"
 #~ msgstr "Lista de jogadores confirmada."
 
 #~ msgid "Nessun giocatore trovato per '{search}'."
-#~ msgstr "Nenhum jogador ativo para retirar."
+#~ msgstr "Nenhum jogador encontrado para '{search}'."
 
 #~ msgid "Vuoi aggiungere un nuovo giocatore? (S/n) "
 #~ msgstr "Deseja voltar para a inscrição de jogadores? (s/N)"
@@ -7813,9 +7814,7 @@ msgstr "Pos. (Guia)"
 #~ msgid ""
 #~ "\n"
 #~ "Trovate {num} corrispondenze. Specifica meglio:"
-#~ msgstr ""
-#~ "\n"
-#~ "-> Encontrada 1 correspondência no BD FIDE:"
+#~ msgstr "Encontre correspondências {num}. Especifique melhor:"
 
 #~ msgid ""
 #~ "\n"
@@ -7836,12 +7835,11 @@ msgstr "Pos. (Guia)"
 #~ msgstr "Esta ferramenta compara seu banco de dados pessoal de jogadores"
 
 #~ msgid "con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"
-#~ msgstr "Banco de dados FIDE local carregado com {} jogadores."
+#~ msgstr ""
+#~ "com o banco de dados FIDE mais recente baixado e oferece atualizações."
 
 #~ msgid "Il database FIDE locale ({}) non è presente."
-#~ msgstr ""
-#~ "\n"
-#~ "O banco de dados FIDE local não está presente no seu computador."
+#~ msgstr "O banco de dados FIDE local ({}) não está presente."
 
 #~ msgid ""
 #~ "Vuoi scaricarlo ora da FIDE.com? (Richiede alcuni minuti) (INVIO|ESCAPE)"

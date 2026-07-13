@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-07-13 12:16+0200\n"
+"POT-Creation-Date: 2026-07-13 22:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3907,9 +3907,9 @@ msgstr ""
 #: src/gui/main_frame.py:3400 src/gui/main_frame.py:3412
 #: src/gui/main_frame.py:3424 src/gui/main_frame.py:3519
 #: src/gui/main_frame.py:3545 src/gui/main_frame.py:3593
-#: src/gui/main_frame.py:4131 src/gui/main_frame.py:4167
-#: src/gui/main_frame.py:4180 src/gui/main_frame.py:4198
-#: src/gui/main_frame.py:4291
+#: src/gui/main_frame.py:4148 src/gui/main_frame.py:4184
+#: src/gui/main_frame.py:4197 src/gui/main_frame.py:4215
+#: src/gui/main_frame.py:4308
 msgid "Errore"
 msgstr ""
 
@@ -4854,6 +4854,11 @@ msgstr ""
 msgid "Torneo creato in preparazione. Puoi completare l'inserimento in seguito."
 msgstr ""
 
+#: src/gui/main_frame.py:2604
+#, python-brace-format
+msgid "{name} - raccolta partite.pgn"
+msgstr ""
+
 #: src/gui/main_frame.py:2658 src/gui/main_frame.py:3278
 msgid ""
 "Impossibile modificare l'iscrizione dei giocatori: il torneo è già "
@@ -5170,56 +5175,88 @@ msgstr ""
 msgid "Giocatore '{name}' ritirato con successo."
 msgstr ""
 
-#: src/gui/main_frame.py:4121
+#: src/gui/main_frame.py:4101
+#, python-brace-format
+msgid "Scheda Giocatore: {name}\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4102
+#, python-brace-format
+msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4107
+#, python-brace-format
+msgid "ELO Iniziale: {init} | ELO Attuale: {curr}\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4112
+msgid "Stato: RITIRATO DAL TORNEO\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4115
+msgid "Storico Partite nel Torneo:\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4127
+msgid "BYE"
+msgstr ""
+
+#: src/gui/main_frame.py:4129
+#, python-brace-format
+msgid "  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n"
+msgstr ""
+
+#: src/gui/main_frame.py:4138
 #, python-brace-format
 msgid "Visualizzazione scheda di {name}."
 msgstr ""
 
-#: src/gui/main_frame.py:4130
+#: src/gui/main_frame.py:4147
 msgid "Errore nella generazione degli abbinamenti."
 msgstr ""
 
-#: src/gui/main_frame.py:4153
+#: src/gui/main_frame.py:4170
 msgid "Torneo iniziato. Generati abbinamenti per il Turno 1."
 msgstr ""
 
-#: src/gui/main_frame.py:4166
+#: src/gui/main_frame.py:4183
 msgid "Il torneo ha già raggiunto il numero massimo di turni previsto."
 msgstr ""
 
-#: src/gui/main_frame.py:4178
+#: src/gui/main_frame.py:4195
 msgid ""
 "Impossibile generare il turno successivo: ci sono ancora partite senza "
 "risultato nel turno corrente."
 msgstr ""
 
-#: src/gui/main_frame.py:4197
+#: src/gui/main_frame.py:4214
 msgid "Errore durante la generazione degli abbinamenti."
 msgstr ""
 
-#: src/gui/main_frame.py:4236
+#: src/gui/main_frame.py:4253
 #, python-brace-format
 msgid "Generati abbinamenti per il Turno {num}."
 msgstr ""
 
-#: src/gui/main_frame.py:4257
+#: src/gui/main_frame.py:4274
 msgid "Non ci sono partite pianificate in questo torneo."
 msgstr ""
 
-#: src/gui/main_frame.py:4258
+#: src/gui/main_frame.py:4275
 msgid "Esporta Calendario"
 msgstr ""
 
-#: src/gui/main_frame.py:4266
+#: src/gui/main_frame.py:4283
 msgid "Salva file iCalendar (.ics)"
 msgstr ""
 
-#: src/gui/main_frame.py:4281
+#: src/gui/main_frame.py:4298
 #, python-brace-format
 msgid "Calendario esportato con successo in '{path}'."
 msgstr ""
 
-#: src/gui/main_frame.py:4290
+#: src/gui/main_frame.py:4307
 #, python-brace-format
 msgid "Errore durante l'esportazione: {e}"
 msgstr ""
