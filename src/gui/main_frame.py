@@ -32,9 +32,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self, parent, title, settings):
         # Titolo iniziale dell'app
-        title_str = _(
-            "Tornello - Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]"
-        ).format(__version__, __date__)
+        title_str = f"Tornello - {_('Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]').format(__version__, __date__)}"
         super().__init__(parent, title=title_str, size=(1024, 768))
 
         self.settings = settings
@@ -644,11 +642,8 @@ class MainFrame(wx.Frame):
             }
 
             # Aggiorna titolo finestra
-            # Aggiorna titolo finestra
             t_name = data.get("name", _("Torneo Sconosciuto"))
-            title_str = _(
-                "Tornello - Versione {version} - Data Rilascio {date} - [{name}]"
-            ).format(version=__version__, date=__date__, name=t_name)
+            title_str = f"Tornello - {_('Versione {version} - Data Rilascio {date} - [{name}]').format(version=__version__, date=__date__, name=t_name)}"
             self.SetTitle(title_str)
 
             # Carica il report del turno corrente nell'area centrale
@@ -1220,7 +1215,7 @@ class MainFrame(wx.Frame):
         col_disp_map = {
             "white1": _("Bianco (scelto dall'arbitro)"),
             "black1": _("Nero (scelto dall'arbitro)"),
-            "random": _("Casuale (scelto da Tornello)"),
+            "random": _("Casuale (scelto da {app})").format(app="Tornello"),
         }
         col_val = col_disp_map.get(col_raw, _("Bianco (scelto dall'arbitro)"))
         col_item = self.tree_ctrl.AppendItem(
@@ -1672,7 +1667,7 @@ class MainFrame(wx.Frame):
         col_disp_map = {
             "white1": _("Bianco (scelto dall'arbitro)"),
             "black1": _("Nero (scelto dall'arbitro)"),
-            "random": _("Casuale (scelto da Tornello)"),
+            "random": _("Casuale (scelto da {app})").format(app="Tornello"),
         }
         info.append(
             _(
@@ -2363,7 +2358,7 @@ class MainFrame(wx.Frame):
             choices = [
                 _("Bianco (scelto dall'arbitro)"),
                 _("Nero (scelto dall'arbitro)"),
-                _("Casuale (scelto da Tornello)"),
+                _("Casuale (scelto da {app})").format(app="Tornello"),
             ]
             dlg = wx.SingleChoiceDialog(
                 self,
@@ -2953,7 +2948,7 @@ class MainFrame(wx.Frame):
         col_disp_map = {
             "white1": _("Bianco (scelto dall'arbitro)"),
             "black1": _("Nero (scelto dall'arbitro)"),
-            "random": _("Casuale (scelto da Tornello)"),
+            "random": _("Casuale (scelto da {app})").format(app="Tornello"),
         }
         col_val = col_disp_map.get(col_raw, _("Bianco (scelto dall'arbitro)"))
 
@@ -3646,7 +3641,7 @@ class MainFrame(wx.Frame):
             choices = [
                 _("Bianco (scelto dall'arbitro)"),
                 _("Nero (scelto dall'arbitro)"),
-                _("Casuale (scelto da Tornello)"),
+                _("Casuale (scelto da {app})").format(app="Tornello"),
             ]
             dlg = wx.SingleChoiceDialog(
                 self,
