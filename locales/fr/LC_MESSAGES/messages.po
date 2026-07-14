@@ -4703,9 +4703,9 @@ msgid ""
 "\n"
 "Seleziona questa voce per definire il numero totale di turni previsti."
 msgstr ""
-"Nombre de quarts de travail\n"
+"Nombre de rondes\n"
 "\n"
-"Sélectionnez cet élément pour définir le nombre total d'équipes attendues."
+"Sélectionnez cet élément pour définir le nombre total de rondes prévues."
 
 #: src/gui/main_frame.py:1478
 msgid ""
@@ -4713,9 +4713,9 @@ msgid ""
 "\n"
 "Seleziona questa voce per impostare la cadenza di gioco (es. '60+0' o '15+10'). Questo campo è obbligatorio."
 msgstr ""
-"Le temps de la réflexion\n"
+"Cadence de jeu\n"
 "\n"
-"Sélectionnez cet élément pour définir le rythme du jeu (par exemple « 60+0 » ou « 15+10 »). Ce champ est obligatoire."
+"Sélectionnez cet élément pour définir la cadence de jeu (par exemple '60+0' ou '15+10'). Ce champ est obligatoire."
 
 #: src/gui/main_frame.py:1484
 msgid ""
@@ -4733,9 +4733,9 @@ msgid ""
 "\n"
 "Seleziona questa voce per indicare il nome dell'Arbitro Capo."
 msgstr ""
-"Arbitre en chef\n"
+"Arbitre Principal\n"
 "\n"
-"Sélectionnez cet élément pour indiquer le nom du juge en chef."
+"Sélectionnez cet élément pour indiquer le nom de l'Arbitre Principal."
 
 #: src/gui/main_frame.py:1496
 msgid ""
@@ -5298,7 +5298,7 @@ msgstr "Collaborateurs / Arbitres Adjoints: {}"
 
 #: src/gui/main_frame.py:2336 src/gui/main_frame.py:2944
 msgid "Non impostate"
-msgstr "Ne réglez pas"
+msgstr "Non définis"
 
 #: src/gui/main_frame.py:2343 src/gui/main_frame.py:3627
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"

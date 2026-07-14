@@ -4536,7 +4536,7 @@ msgstr "White (chosen by the arbiter)"
 #: src/gui/main_frame.py:2360 src/gui/main_frame.py:2950
 #: src/gui/main_frame.py:3643
 msgid "Nero (scelto dall'arbitro)"
-msgstr "Black (chosen by the referee)"
+msgstr "Black (chosen by the arbiter)"
 
 #: src/gui/main_frame.py:1218 src/gui/main_frame.py:1670
 #: src/gui/main_frame.py:2361 src/gui/main_frame.py:2951
@@ -5247,7 +5247,7 @@ msgstr "Collaborators / Deputy Arbiters: {}"
 
 #: src/gui/main_frame.py:2336 src/gui/main_frame.py:2944
 msgid "Non impostate"
-msgstr "Do not set"
+msgstr "Not set"
 
 #: src/gui/main_frame.py:2343 src/gui/main_frame.py:3627
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"

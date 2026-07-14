@@ -5327,7 +5327,7 @@ msgstr "Colaboradores / Árbitros suplentes: {}"
 
 #: src/gui/main_frame.py:2336 src/gui/main_frame.py:2944
 msgid "Non impostate"
-msgstr "no establecer"
+msgstr "No configurados"
 
 #: src/gui/main_frame.py:2343 src/gui/main_frame.py:3627
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"
