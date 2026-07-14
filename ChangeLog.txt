@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.8 (2026.07.14)
+	+ Feature: Risolto bug al primissimo avvio dell'applicazione. Ora la lingua viene rilevata ed impostata automaticamente in modo silenzioso in base alle impostazioni del sistema operativo (senza mostrare la finestra di console interattiva in cui veniva richiesto di selezionare la lingua tramite immissione di numeri).
+	+ Feature: Aggiunto il file CREDITS.txt alle risorse incorporate nell'eseguibile di installazione di PyInstaller.
+
 9.3.7 (2026.07.14)
 	+ Feature: Profonda revisione e maquillage terminologico della localizzazione in tutte le lingue (en, es, fr, pt):
 	  - Corretti errori di traduzione automatica errata nei menù, nell'albero comandi, nelle descrizioni dei criteri di spareggio (tie-breaks) e nei report (es. "Sc" tradotto come "ciencia" in spagnolo, "BYE" tradotto come "tchau/ADIÓS", "Next" tradotto come "Después de usted", "Back" tradotto come "Backwards" e "Round" tradotto come "équipe/quart" o "shift").

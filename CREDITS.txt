@@ -11,6 +11,7 @@ Ringraziamenti speciali a:
 - Claudio Gasperoni, per la richiesta di inserire i criteri di spareggio.
 - Bersan Vrioni, per il materiale di riferimento per l'integrazione dei criteri di spareggio e per il consiglio sul design della voce correlata.
 - Marcos Schllosser, per il supporto, la segnalazione dei bug e per il contributo sul funzionamento della localizzazione.
+- Vincenzo Ancora, per il prezioso aiuto nel risolvere il bug del primo avvio e per il supporto continuo. Vincenzo è anche il Maestro di scacchi di Gabriele.
 
 Supporter Club. Un ringraziamento di cuore va a tutti coloro che hanno deciso di supportare il progetto con una piccola donazione affinché possa crescere ed essere utile a più persone possibile.
 - Ginevra Di Modica
