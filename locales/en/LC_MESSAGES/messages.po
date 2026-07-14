@@ -19,27 +19,22 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: Players_DB.py:59
-#, fuzzy
 msgid ""
 "\n"
 "--- Scheda Giocatore Dettagliata ---"
-msgstr ""
-"\n"
-"--- Withdraw Player from Tournament ---"
+msgstr "--- Detailed Player Sheet ---"
 
 #: Players_DB.py:61
-#, fuzzy
 msgid "Dati giocatore non validi o non trovati."
-msgstr "Invalid player number."
+msgstr "Player data invalid or not found."
 
 #: Players_DB.py:67
 msgid "ID"
 msgstr "ID"
 
 #: Players_DB.py:69
-#, fuzzy
 msgid "Nome Completo"
-msgstr "Unknown Name"
+msgstr "Full Name"
 
 #: Players_DB.py:72 src/gui/dialogs/players_db_dialog.py:293
 #: src/gui/dialogs/sync_database_dialog.py:357
@@ -53,19 +48,16 @@ msgid "Nessuno"
 msgstr "Nobody"
 
 #: Players_DB.py:74
-#, fuzzy
 msgid "Elo Standard (FIDE)"
-msgstr "ELO Standard"
+msgstr "Elo Standard (FIDE)"
 
 #: Players_DB.py:75
-#, fuzzy
 msgid "Elo Rapid (FIDE)"
-msgstr "ELO Rapid"
+msgstr "Elo Rapid (FIDE)"
 
 #: Players_DB.py:76
-#, fuzzy
 msgid "Elo Blitz (FIDE)"
-msgstr "ELO Blitz"
+msgstr "Elo Blitz (FIDE)"
 
 #: Players_DB.py:77 Players_DB.py:146
 msgid "Elo Club"
@@ -73,32 +65,28 @@ msgstr "Elo Club"
 
 #: Players_DB.py:78 src/gui/dialogs/players_db_dialog.py:286
 #: src/gui/dialogs/players_db_dialog.py:287
-#, fuzzy
 msgid "Sesso"
-msgstr "Sex:"
+msgstr "Sex"
 
 #: Players_DB.py:80
 msgid "Federazione"
 msgstr "Federation"
 
 #: Players_DB.py:82
-#, fuzzy
 msgid "ID FIDE Numerico"
-msgstr "  Numeric FIDE ID ('0' if N/A)"
+msgstr "FIDE ID Numeric"
 
 #: Players_DB.py:84
-#, fuzzy
 msgid "Data Nascita"
-msgstr "Date of birth"
+msgstr "Date of Birth"
 
 #: Players_DB.py:87
 msgid "Data Registrazione DB"
 msgstr "DB Registration Date"
 
 #: Players_DB.py:90
-#, fuzzy
 msgid "Partite Giocate (valutate)"
-msgstr "Games Played with Black"
+msgstr "Matches Played (rated)"
 
 #: Players_DB.py:93 src/gui/dialogs/accessible_msg_dialog.py:46
 msgid "Sì"
@@ -109,26 +97,22 @@ msgid "No"
 msgstr "No"
 
 #: Players_DB.py:94
-#, fuzzy
 msgid "Esperienza Pregressa Signif."
-msgstr "Significant previous experience? (ENTER|ESCAPE)"
+msgstr "Significant Previous Experience"
 
 #: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:232
-#, fuzzy
 msgid "Medagliere"
-msgstr "to play"
+msgstr "Medal collection"
 
 #: Players_DB.py:102
-#, fuzzy
 msgid "Storico Tornei Giocati"
-msgstr "History of Rounds and Results:"
+msgstr "History of tournaments played"
 
 #: Players_DB.py:128
-#, fuzzy
 msgid ""
 "\n"
 "--- Aggiunta Nuovo Giocatore ---"
-msgstr "Add New Player"
+msgstr "--- Added New Player ---"
 
 #: Players_DB.py:129 src/gui/dialogs/players_db_dialog.py:364
 msgid "Nome: "
@@ -151,34 +135,29 @@ msgid "Elo Corrente"
 msgstr "Elo Current"
 
 #: Players_DB.py:153
-#, fuzzy
 msgid "Titolo FIDE (es. FM, o vuoto per nessuno):"
-msgstr "  FIDE Title (e.g., FM, or empty)"
+msgstr "FIDE title (e.g. FM, or blank for none):"
 
 #: Players_DB.py:158
-#, fuzzy
 msgid "Sesso (m/w):"
-msgstr "  Sex (m/w)"
+msgstr "Gender (m/w):"
 
 #: Players_DB.py:162
-#, fuzzy
 msgid "Input non valido. Usa 'm' o 'w'."
-msgstr "Invalid input."
+msgstr "Invalid input. Use 'm' or 'w'."
 
 #: Players_DB.py:165
-#, fuzzy
 msgid "Federazione (3 lettere):"
-msgstr "  Federation (3 letters, e.g., USA)"
+msgstr "Federation (3 letters):"
 
 #: Players_DB.py:169
-#, fuzzy
 msgid "ID FIDE Numerico (cifre, '0' se N/D):"
-msgstr "  Numeric FIDE ID ('0' if N/A)"
+msgstr "FIDE ID Numeric (digits, '0' if N/A):"
 
 #: Players_DB.py:177
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Data di nascita ({date_format} o vuoto):"
-msgstr "Birth Date ({date_format}or blank or YYYYMMDD)"
+msgstr "Date of birth ({date_format} or blank):"
 
 #: Players_DB.py:190 Players_DB.py:390 src/controller.py:538
 #, python-brace-format
@@ -186,14 +165,12 @@ msgid "Formato data non valido. Usa {date_format}."
 msgstr "Invalid date format. Use{date_format}."
 
 #: Players_DB.py:198
-#, fuzzy
 msgid "Giocatore con esperienza pregressa significativa? (s/n):"
-msgstr "Significant previous experience? (ENTER|ESCAPE)"
+msgstr "Player with significant previous experience? (y/n):"
 
 #: Players_DB.py:206 Players_DB.py:408
-#, fuzzy
 msgid "Risposta non valida. Inserisci 's' o 'n'."
-msgstr "Invalid choice. Try again with (T/U)."
+msgstr "Invalid response. Enter 'y' or 'n'."
 
 #: Players_DB.py:231
 #, python-brace-format
@@ -222,9 +199,8 @@ msgid "Cognome"
 msgstr "Last Name"
 
 #: Players_DB.py:259
-#, fuzzy
 msgid "Nome o cognome modificati."
-msgstr "Name and surname are mandatory."
+msgstr "First or last name changed."
 
 #: Players_DB.py:263
 msgid "Vuoi tentare di rigenerare l'ID in base al nuovo nome/cognome? (s/N)"
@@ -261,38 +237,33 @@ msgid "Elo Club (range 0-3500)"
 msgstr "Elo Club (range 0-3500)"
 
 #: Players_DB.py:338
-#, fuzzy
 msgid "Titolo FIDE (es. FM, '' per nessuno)"
-msgstr "  FIDE Title (e.g., FM, or empty)"
+msgstr "FIDE title (e.g. FM, ''for no one)"
 
 #: Players_DB.py:344
-#, fuzzy
 msgid "Sesso (m/w)"
-msgstr "  Sex (m/w)"
+msgstr "Sex (m/w)"
 
 #: Players_DB.py:355 src/ui.py:164 src/ui.py:460
 msgid "Input non valido."
 msgstr "Invalid input."
 
 #: Players_DB.py:359
-#, fuzzy
 msgid "Federazione (3 lettere)"
-msgstr "  Federation (3 letters, e.g., USA)"
+msgstr "Federation (3 letters)"
 
 #: Players_DB.py:367
-#, fuzzy
 msgid "ID FIDE Numerico (cifre, '0' se N/D)"
-msgstr "  Numeric FIDE ID ('0' if N/A)"
+msgstr "FIDE ID Numeric (digits, '0' if N/A)"
 
 #: Players_DB.py:376
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Data di nascita ({date_format} o vuoto per cancellare)"
-msgstr "Birth Date ({date_format}or blank or YYYYMMDD)"
+msgstr "Date of birth ({date_format} or blank to clear)"
 
 #: Players_DB.py:399
-#, fuzzy
 msgid "Giocatore con esperienza pregressa significativa? (s/n)"
-msgstr "Significant previous experience? (ENTER|ESCAPE)"
+msgstr "Player with significant previous experience? (y/n)"
 
 #: Players_DB.py:410
 msgid ""
@@ -305,30 +276,24 @@ msgid "Medaglie di"
 msgstr "Medals of"
 
 #: Players_DB.py:423
-#, fuzzy
 msgid ""
 "\n"
 "--- Modifica Storico Tornei ---"
-msgstr ""
-"\n"
-"--- Tournament Status ---"
+msgstr "--- Edit Tournament History ---"
 
 #: Players_DB.py:427
-#, fuzzy
 msgid ""
 "\n"
 "Storico Tornei Attuale:"
-msgstr "History of Rounds and Results:"
+msgstr "Current Tournament History:"
 
 #: Players_DB.py:429
-#, fuzzy
 msgid "  Nessun torneo registrato nello storico."
-msgstr "No active tournaments."
+msgstr "No tournaments recorded in the history."
 
 #: Players_DB.py:451
-#, fuzzy
 msgid "Date"
-msgstr "Data"
+msgstr "Dates"
 
 #: Players_DB.py:454
 msgid ""
@@ -341,18 +306,14 @@ msgid "  (A)ggiungi, (C)ancella, (F)ine gestione storico: "
 msgstr "(A)dd, (C)delete, (F)end history management:"
 
 #: Players_DB.py:466
-#, fuzzy
 msgid ""
 "\n"
 "  --- Aggiunta nuovo torneo allo storico ---"
-msgstr ""
-"\n"
-"--- New Tournament Creation ---"
+msgstr "--- Added new tournament to the history ---"
 
 #: Players_DB.py:469
-#, fuzzy
 msgid "  Nome torneo: "
-msgstr "Tournament Name"
+msgstr "Tournament Name:"
 
 #: Players_DB.py:474
 msgid "  ID Torneo (default: generato in automatico): "
@@ -372,37 +333,30 @@ msgid "  Data {field} ({format}): "
 msgstr "Date {field} ({format}):"
 
 #: Players_DB.py:502
-#, fuzzy
 msgid "  Formato data non valido."
-msgstr "Invalid date format. Try again."
+msgstr "Invalid date format."
 
 #: Players_DB.py:504
 msgid "  Torneo aggiunto allo storico."
 msgstr "Tournament added to history."
 
 #: Players_DB.py:506
-#, fuzzy
 msgid "  Numero torneo da cancellare: "
-msgstr "Missing Tournament Name"
+msgstr "Tournament number to cancel:"
 
 #: Players_DB.py:512
-#, fuzzy
 msgid "  Torneo rimosso."
-msgstr ""
-"\n"
-"The tournament is over."
+msgstr "Tournament removed."
 
 #: Players_DB.py:514
-#, fuzzy
 msgid "  Errore cancellazione."
-msgstr "Cancellation cancelled."
+msgstr "Deletion error."
 
 #: Players_DB.py:516
-#, fuzzy
 msgid ""
 "\n"
 "Gestione completata."
-msgstr "Import Completed"
+msgstr "Management completed."
 
 #: Players_DB.py:523
 #, python-brace-format
@@ -433,16 +387,14 @@ msgid "Cerca (ID prec: {id}), (L)ista, (A)ggiungi, (S)alva e esci: "
 msgstr "Search (Previous ID: {id}), (L)ist, (A)dd, (S)ave and exit:"
 
 #: Players_DB.py:550
-#, fuzzy
 msgid "Database vuoto."
-msgstr "&Database"
+msgstr "Empty database."
 
 #: Players_DB.py:552
-#, fuzzy
 msgid ""
 "\n"
 "--- Lista Giocatori Completa ---"
-msgstr "Player list confirmed."
+msgstr "--- Complete Player List ---"
 
 #: Players_DB.py:577
 #, python-brace-format
@@ -450,9 +402,8 @@ msgid "Nessun giocatore trovato per '{search}'."
 msgstr "No players found for '{search}'."
 
 #: Players_DB.py:583
-#, fuzzy
 msgid "Vuoi aggiungere un nuovo giocatore? (S/n) "
-msgstr "Add New Player"
+msgstr "Do you want to add a new player? (Y/n)"
 
 #: Players_DB.py:603
 msgid ""
@@ -466,9 +417,8 @@ msgid "Sicuro di cancellare {first} {last} (ID: {id})? (s/N)"
 msgstr "Are you sure you want to delete {first} {last} (ID: {id})? (y/N)"
 
 #: Players_DB.py:624
-#, fuzzy
 msgid "Giocatore cancellato."
-msgstr "Missing Player"
+msgstr "Player deleted."
 
 #: Players_DB.py:638
 #, python-brace-format
@@ -478,30 +428,24 @@ msgid ""
 msgstr "Find {num} matches. Specify better:"
 
 #: Players_DB.py:658
-#, fuzzy
 msgid ""
 "\n"
 "Salvataggio finale del database prima di uscire..."
-msgstr "Final save before exiting..."
+msgstr "Final saving of the database before exiting..."
 
 #: Players_DB.py:660
-#, fuzzy
 msgid "Uscita dal gestore database giocatori."
-msgstr "Local Player Database Management"
+msgstr "Exiting the player database manager."
 
 #: Sync_DB.py:29
-#, fuzzy
 msgid ""
 "\n"
 "--- Sincronizzatore Database Tornello ---"
-msgstr ""
-"\n"
-"--- Withdraw Player from Tournament ---"
+msgstr "--- Turnstile Database Synchronizer ---"
 
 #: Sync_DB.py:30
-#, fuzzy
 msgid "Questo tool confronta il tuo database giocatori personale"
-msgstr "This player is already present in your personal database."
+msgstr "This tool compares your personal player database"
 
 #: Sync_DB.py:31
 msgid "con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"
@@ -513,10 +457,11 @@ msgid "Il database FIDE locale ({}) non è presente."
 msgstr "The local FIDE database ({}) is not present."
 
 #: Sync_DB.py:39
-#, fuzzy
 msgid ""
 "Vuoi scaricarlo ora da FIDE.com? (Richiede alcuni minuti) (INVIO|ESCAPE)"
-msgstr "Do you want to download it now? (This may take a few minutes)"
+msgstr ""
+"Do you want to download it now from FIDE.com? (Takes a few minutes) "
+"(ENTER|ESCAPE)"
 
 #: Sync_DB.py:44
 msgid "Scaricamento annullato o fallito. Sincronizzazione impossibile."
@@ -529,16 +474,14 @@ msgid ""
 msgstr "Press Enter to exit..."
 
 #: Sync_DB.py:49
-#, fuzzy
 msgid "Sincronizzazione impossibile senza il database FIDE."
-msgstr "Personal Database Synchronization with FIDE"
+msgstr "Synchronization impossible without FIDE database."
 
 #: Sync_DB.py:56
-#, fuzzy
 msgid ""
 "\n"
 "Operazioni completate."
-msgstr "Import Completed"
+msgstr "Operations completed."
 
 #: Sync_DB.py:57
 msgid "Premi Invio per uscire dal tool di sincronizzazione..."
@@ -553,16 +496,14 @@ msgstr ""
 "Operation interrupted by user."
 
 #: tornello.py:62
-#, fuzzy
 msgid "Controllo aggiornamenti..."
-msgstr "Confirm Update"
+msgstr "Checking for updates..."
 
 #: tornello.py:69
-#, fuzzy
 msgid ""
 "\n"
 "*** AGGIORNAMENTO DISPONIBILE! ***"
-msgstr "--- Summary Available Updates ---"
+msgstr "*** UPDATE AVAILABLE! ***"
 
 #: tornello.py:71
 #, python-brace-format
@@ -570,11 +511,12 @@ msgid "Versione corrente: {curr} | Nuova versione: {latest}"
 msgstr "Current version: {curr} | New version: {latest}"
 
 #: tornello.py:77
-#, fuzzy
 msgid ""
 "Vuoi scaricare e installare l'aggiornamento ora? (INVIO per Sì | ESCAPE per "
 "ignorare)"
-msgstr "Apply these changes? (ENTER for Yes | ESCAPE for No):"
+msgstr ""
+"Do you want to download and install the update now? (ENTER for Yes | ESCAPE "
+"for ignore)"
 
 #: tornello.py:82
 msgid ""
@@ -591,11 +533,10 @@ msgstr ""
 "compiled version)."
 
 #: tornello.py:94
-#, fuzzy
 msgid ""
 "\n"
 "*** AGGIORNAMENTO DISPONIBILE ***"
-msgstr "--- Summary Available Updates ---"
+msgstr "*** UPDATE AVAILABLE ***"
 
 #: tornello.py:97
 #, python-brace-format
@@ -1222,9 +1163,9 @@ msgstr ""
 "--- Starting Personal Database Synchronization with Local FIDE Database ---"
 
 #: src/db_players.py:79
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Database FIDE locale disponibile con {} giocatori."
-msgstr "Local FIDE database loaded with {} players."
+msgstr "Local FIDE database available with {} players."
 
 #: src/db_players.py:84
 msgid ""
@@ -1400,20 +1341,22 @@ msgid "Download del file ZIP FIDE da: {url}"
 msgstr "Downloading FIDE ZIP file from: {url}"
 
 #: src/db_players.py:513
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Download completato in {duration:.2f}s. Apertura archivio ZIP in memoria..."
-msgstr "Download complete. Opening ZIP archive in memory..."
+msgstr ""
+"Download completed in {duration:.2f}s. Opening ZIP archive in memory..."
 
 #: src/db_players.py:524
 msgid "ERRORE: Nessun file .xml trovato nell'archivio ZIP."
 msgstr "ERROR: No .xml file found in the ZIP archive."
 
 #: src/db_players.py:531
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "Estrazione ed elaborazione del file XML: {filename} ({size_mb:.1f} MB)..."
-msgstr "Extracting and processing XML file: {filename}..."
+msgstr ""
+"Extraction and processing of the XML file: {filename} ({size_mb:.1f} MB)..."
 
 #: src/db_players.py:625
 #, python-brace-format
@@ -1425,9 +1368,8 @@ msgid "Vecchio file JSON FIDE rimosso."
 msgstr "Old JSON FIDE file removed."
 
 #: src/db_players.py:635
-#, fuzzy
 msgid "Database FIDE locale 'fide_ratings.db' salvato con successo."
-msgstr "Local FIDE database 'fide_ratings_local.json' saved successfully."
+msgstr "Local FIDE database 'fide_ratings.db' saved successfully."
 
 #: src/db_players.py:640
 msgid "ERRORE: Timeout durante il download del file."
@@ -2272,9 +2214,8 @@ msgid "--- GIOCATORI INSERITI ({}) ---\n"
 msgstr "--- PLAYERS INSERTED ({}) ---"
 
 #: src/reports.py:1231
-#, fuzzy
 msgid "Nessun giocatore inserito finora.\n"
-msgstr "No active players to withdraw."
+msgstr "No players entered so far."
 
 #: src/reports.py:1240
 #, python-brace-format
@@ -3594,9 +3535,9 @@ msgstr ""
 "[{b_elo:>4}]"
 
 #: src/ui.py:937
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "      Pianificata per: {date} alle {time}"
-msgstr "Scheduled for:{date}to{time}"
+msgstr "Scheduled for: {date} to {time}"
 
 #: src/ui.py:948
 msgid ""
@@ -4277,9 +4218,8 @@ msgstr ""
 " - Ctrl+Y: Synchronization of the local database with the FIDE path"
 
 #: src/gui/main_frame.py:491
-#, fuzzy
 msgid "Pronto. Nessun torneo caricato."
-msgstr "No active tournaments."
+msgstr "Ready. No tournaments loaded."
 
 #: src/gui/main_frame.py:512
 #, python-brace-format
@@ -4309,9 +4249,8 @@ msgstr ""
 "Do you want to download it now?"
 
 #: src/gui/main_frame.py:539
-#, fuzzy
 msgid "Database FIDE Mancante"
-msgstr "Missing ID"
+msgstr "FIDE Database Missing"
 
 #: src/gui/main_frame.py:588
 #, python-brace-format
@@ -4547,19 +4486,16 @@ msgid "Data fine: {}"
 msgstr "End Date: {}"
 
 #: src/gui/main_frame.py:1153 src/gui/main_frame.py:3571
-#, fuzzy
 msgid "Standard"
-msgstr "ELO Standard"
+msgstr "Standard"
 
 #: src/gui/main_frame.py:1153 src/gui/main_frame.py:3572
-#, fuzzy
 msgid "Rapid"
-msgstr "ELO Rapid"
+msgstr "Rapid"
 
 #: src/gui/main_frame.py:1153 src/gui/main_frame.py:3573
-#, fuzzy
 msgid "Blitz"
-msgstr "ELO Blitz"
+msgstr "Blitz"
 
 #: src/gui/main_frame.py:1157 src/gui/main_frame.py:3576
 #, python-brace-format
@@ -5230,9 +5166,8 @@ msgstr "Tournament Name"
 #: src/gui/main_frame.py:2235 src/gui/main_frame.py:2318
 #: src/gui/main_frame.py:2932 src/gui/main_frame.py:2933
 #: src/gui/main_frame.py:2941 src/gui/main_frame.py:2943
-#, fuzzy
 msgid "Non impostato"
-msgstr "Not played"
+msgstr "Not set"
 
 #: src/gui/main_frame.py:2186 src/gui/main_frame.py:3479
 msgid "Inserisci il luogo (Site):"
@@ -5311,9 +5246,8 @@ msgid "Collaboratori / Vice Arbitri: {}"
 msgstr "Collaborators / Deputy Arbiters: {}"
 
 #: src/gui/main_frame.py:2336 src/gui/main_frame.py:2944
-#, fuzzy
 msgid "Non impostate"
-msgstr "Not played"
+msgstr "Do not set"
 
 #: src/gui/main_frame.py:2343 src/gui/main_frame.py:3627
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"
@@ -5412,9 +5346,8 @@ msgid "Impossibile rimuovere il giocatore: {}"
 msgstr "Unable to remove player: {}"
 
 #: src/gui/main_frame.py:2702
-#, fuzzy
 msgid "Torneo Concluso"
-msgstr "Tournaments Completed"
+msgstr "Tournament Concluded"
 
 #: src/gui/main_frame.py:2705
 #, python-brace-format
@@ -5427,9 +5360,8 @@ msgid "Data Inizio: {start} | Fine: {end}\n"
 msgstr "Start Date: {start} | End: {end}\n"
 
 #: src/gui/main_frame.py:2713
-#, fuzzy
 msgid "Classifica Finale:\n"
-msgstr "FINAL STANDINGS"
+msgstr "Final Ranking:"
 
 #: src/gui/main_frame.py:2720
 #, python-brace-format
@@ -5437,9 +5369,9 @@ msgid " {rank:>2}. {name:<30} Punti: {pts:.1f}\n"
 msgstr "{rank:>2}. {name:<30} Points: {pts:.1f}"
 
 #: src/gui/main_frame.py:2726
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Visualizzazione report torneo concluso '{name}'."
-msgstr "Archiving tournament '{name}'..."
+msgstr "Viewing the tournament report concluded '{name}'."
 
 #: src/gui/main_frame.py:2732
 #, python-brace-format
@@ -5447,14 +5379,12 @@ msgid "Impossibile leggere il report: {}"
 msgstr "Unable to read report: {}"
 
 #: src/gui/main_frame.py:2755
-#, fuzzy
 msgid "concluso"
-msgstr "Tournaments Completed"
+msgstr "concluded"
 
 #: src/gui/main_frame.py:2757
-#, fuzzy
 msgid "in preparazione"
-msgstr "In Preparation"
+msgstr "in preparation"
 
 #: src/gui/dialogs/tiebreak_config_dialog.py:393 src/gui/main_frame.py:2759
 msgid "attivo"
@@ -5475,9 +5405,8 @@ msgstr ""
 "This action will remove the central JSON file and ALL reports generated for this tournament, both in the main folder and in the custom save folder."
 
 #: src/gui/main_frame.py:2780
-#, fuzzy
 msgid "Conferma Eliminazione Torneo"
-msgstr "Confirm Player Elimination"
+msgstr "Confirm Tournament Elimination"
 
 #: src/gui/main_frame.py:2835
 #, python-brace-format
@@ -5505,19 +5434,16 @@ msgid "Avviso"
 msgstr "I notify"
 
 #: src/gui/main_frame.py:2926
-#, fuzzy
 msgid "Nuovo Torneo"
-msgstr "New tournament"
+msgstr "New Tournament"
 
 #: src/gui/main_frame.py:2929
-#, fuzzy
 msgid "Indietro"
-msgstr "Black"
+msgstr "Backwards"
 
 #: src/gui/main_frame.py:3019
-#, fuzzy
 msgid "Avanti"
-msgstr "Data"
+msgstr "After you"
 
 #: src/gui/main_frame.py:3070
 msgid ""
@@ -5735,14 +5661,14 @@ msgid "Giocatore '{name}' ritirato con successo."
 msgstr "Player '{name}' successfully retired."
 
 #: src/gui/main_frame.py:4096
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Scheda Giocatore: {name}\n"
-msgstr "Tournament: {name}\n"
+msgstr "Player Card: {name}"
 
 #: src/gui/main_frame.py:4097
 #, python-brace-format
 msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
-msgstr ""
+msgstr "ID: {id} | Gender: {sex} | Country: {fed}"
 
 #: src/gui/main_frame.py:4102
 #, python-brace-format
@@ -5750,18 +5676,16 @@ msgid "ELO Iniziale: {init} | ELO Attuale: {curr}\n"
 msgstr "Initial ELO: {init} | Current ELO: {curr}\n"
 
 #: src/gui/main_frame.py:4107
-#, fuzzy
 msgid "Stato: RITIRATO DAL TORNEO\n"
-msgstr "Withdrew from the tournament"
+msgstr "Status: WITHDRAWN FROM TOURNAMENT"
 
 #: src/gui/main_frame.py:4110
-#, fuzzy
 msgid "Storico Partite nel Torneo:\n"
-msgstr "Active in the tournament"
+msgstr "History of matches in the Tournament:"
 
 #: src/gui/main_frame.py:4122
 msgid "BYE"
-msgstr ""
+msgstr "BYE"
 
 #: src/gui/main_frame.py:4124
 #, python-brace-format
@@ -5850,9 +5774,8 @@ msgid "Elenco file di backup"
 msgstr "Backup file list"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:158
-#, fuzzy
 msgid "Nome file"
-msgstr "First Name"
+msgstr "File name"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:159
 msgid "Data di modifica"
@@ -5900,12 +5823,11 @@ msgid "{m} mesi, {d} giorni"
 msgstr "{m} months, {d} days"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:284
-#, fuzzy
 msgid ""
 "Nessun file selezionato. Seleziona un file dall'elenco per poterlo "
 "eliminare."
 msgstr ""
-"First select an active tournament from the tree to be able to delete it."
+"No files selected. Select a file from the list to be able to delete it."
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:286
 msgid "Nessuna Selezione"
@@ -5917,9 +5839,8 @@ msgid "Sei sicuro di voler spostare nel cestino il file di backup '{name}'?"
 msgstr "Are you sure you want to move the backup file '{name}' to the trash?"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:296
-#, fuzzy
 msgid "Conferma Eliminazione"
-msgstr "Confirm Removal"
+msgstr "Confirm Deletion"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:304
 #, python-brace-format
@@ -5931,9 +5852,8 @@ msgid "Non ci sono file di backup più vecchi di 18 mesi da eliminare."
 msgstr "There are no backup files older than 18 months to delete."
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:317
-#, fuzzy
 msgid "Nessun File Trovato"
-msgstr "No local FIDE database found."
+msgstr "No Files Found"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:323
 #, python-brace-format
@@ -5945,9 +5865,8 @@ msgstr ""
 "to the trash?"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:326
-#, fuzzy
 msgid "Conferma Eliminazione Consigliata"
-msgstr "Confirm Player Elimination"
+msgstr "Confirm Recommended Deletion"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:337
 #: src/gui/dialogs/backup_cleanup_dialog.py:370
@@ -5981,9 +5900,8 @@ msgstr ""
 "the folder to the trash?"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:359
-#, fuzzy
 msgid "Conferma Svuotamento Cartella"
-msgstr "Confirm Result"
+msgstr "Confirm Folder Emptying"
 
 #: src/gui/dialogs/donation_dialog.py:37
 msgid "Dona con PayPal"
@@ -6128,9 +6046,8 @@ msgid "Annulla"
 msgstr "Cancel"
 
 #: src/gui/dialogs/fide_update_dialog.py:104
-#, fuzzy
 msgid "Scaricamento Database FIDE..."
-msgstr "Loading FIDE Database"
+msgstr "Downloading FIDE Database..."
 
 #: src/gui/dialogs/fide_update_dialog.py:110
 #, python-brace-format
@@ -6288,9 +6205,8 @@ msgid "ELO e Titoli"
 msgstr "ELO and Titles"
 
 #: src/gui/dialogs/players_db_dialog.py:217
-#, fuzzy
 msgid "Storico Tornei"
-msgstr "History of Rounds and Results:"
+msgstr "Tournament history"
 
 #: src/gui/dialogs/players_db_dialog.py:220
 #, python-brace-format
@@ -6298,9 +6214,8 @@ msgid "{}: Pos. {}/{} ({})"
 msgstr "{}: Pos. {}/{} ({})"
 
 #: src/gui/dialogs/players_db_dialog.py:221
-#, fuzzy
 msgid "Torneo"
-msgstr "&Tournament"
+msgstr "Tournament"
 
 #: src/gui/dialogs/players_db_dialog.py:236
 #, python-brace-format
@@ -6323,14 +6238,12 @@ msgid "Legni (Medaglia di legno): {}"
 msgstr "Wood: {}"
 
 #: src/gui/dialogs/players_db_dialog.py:288
-#, fuzzy
 msgid "Anno Nascita"
-msgstr "Year of Birth:"
+msgstr "Year of birth"
 
 #: src/gui/dialogs/players_db_dialog.py:289
-#, fuzzy
 msgid "Nazione (FED)"
-msgstr "Country (FED):"
+msgstr "Nation (FED)"
 
 #: src/gui/dialogs/players_db_dialog.py:290
 #: src/gui/dialogs/sync_database_dialog.py:356
@@ -6348,29 +6261,24 @@ msgid "ELO Blitz"
 msgstr "ELO Blitz"
 
 #: src/gui/dialogs/players_db_dialog.py:294
-#, fuzzy
 msgid "ID FIDE"
-msgstr "FIDE ID:"
+msgstr "FIDE ID"
 
 #: src/gui/dialogs/players_db_dialog.py:295
-#, fuzzy
 msgid "Ori (Oro)"
-msgstr "Ori (Gold):"
+msgstr "Golds (Gold)"
 
 #: src/gui/dialogs/players_db_dialog.py:296
-#, fuzzy
 msgid "Argenti (Argento)"
-msgstr "Argenti (Silver):"
+msgstr "Silvers (Silver)"
 
 #: src/gui/dialogs/players_db_dialog.py:297
-#, fuzzy
 msgid "Bronzi (Bronzo)"
-msgstr "Bronzes (Bronze):"
+msgstr "Bronzes (Bronze)"
 
 #: src/gui/dialogs/players_db_dialog.py:298
-#, fuzzy
 msgid "Legni (Medaglia di legno)"
-msgstr "Woods (Wood Medal):"
+msgstr "Woods (Wooden Medal)"
 
 #: src/gui/dialogs/players_db_dialog.py:304
 #, python-brace-format
