@@ -6437,7 +6437,7 @@ msgstr "Selecione a hora"
 
 #: src/gui/dialogs/result_dialog.py:115
 msgid "Ora:"
-msgstr "Agora:"
+msgstr "Hora:"
 
 #: src/gui/dialogs/result_dialog.py:119
 msgid "Minuto:"
@@ -6460,12 +6460,12 @@ msgstr "Árbitro designado:"
 #: src/gui/dialogs/tiebreak_config_dialog.py:138
 #: src/gui/dialogs/tiebreak_config_dialog.py:139
 msgid "Conferma"
-msgstr "Ele confirma"
+msgstr "Confirmar"
 
 #: src/gui/dialogs/result_dialog.py:268
 #, python-brace-format
 msgid "Risultato Scacchiera {num}"
-msgstr "Quadro de Resultados {num}"
+msgstr "Resultado do tabuleiro {num}"
 
 #: src/gui/dialogs/result_dialog.py:307
 #, python-brace-format
@@ -6496,16 +6496,16 @@ msgstr "Selecione o resultado"
 #: src/gui/dialogs/result_dialog.py:328
 #, python-brace-format
 msgid "1 - 0 (Vince {})"
-msgstr "1 a 0 (para vencer {})"
+msgstr "1 - 0 ({} vence)"
 
 #: src/gui/dialogs/result_dialog.py:329
 #, python-brace-format
 msgid "0 - 1 (Vince {})"
-msgstr "0 - 1 (para vencer {})"
+msgstr "0 - 1 ({} vence)"
 
 #: src/gui/dialogs/result_dialog.py:330
 msgid "1/2 - 1/2 (Patta)"
-msgstr "1/2 - 1/2 (aba)"
+msgstr "1/2 - 1/2 (Empate)"
 
 #: src/gui/dialogs/result_dialog.py:333
 #, python-brace-format
@@ -6523,15 +6523,15 @@ msgstr "0 - 0F (Dupla Ausência)"
 
 #: src/gui/dialogs/result_dialog.py:365
 msgid "Incolla qui il pgn della partita (opzionale):"
-msgstr "Cole a página da partida aqui (opcional):"
+msgstr "Cole o PGN da partida aqui (opcional):"
 
 #: src/gui/dialogs/result_dialog.py:381
 msgid "Pianifica Partita..."
-msgstr "Planejador de jogos..."
+msgstr "Agendar partida..."
 
 #: src/gui/dialogs/result_dialog.py:385
 msgid "Ritira Giocatore..."
-msgstr "Aposentar jogador..."
+msgstr "Retirar jogador..."
 
 #: src/gui/dialogs/result_dialog.py:400
 msgid "Salva PGN"
@@ -6817,7 +6817,7 @@ msgstr "Áudio e Idioma"
 
 #: src/gui/dialogs/visual_settings_dialog.py:131
 msgid "Caratteri finestra principale"
-msgstr "Personagens da janela principal"
+msgstr "Fontes da janela principal"
 
 #: src/gui/dialogs/visual_settings_dialog.py:135
 #: src/gui/dialogs/visual_settings_dialog.py:153
@@ -6826,11 +6826,11 @@ msgstr "Tamanho (pt):"
 
 #: src/gui/dialogs/visual_settings_dialog.py:149
 msgid "Caratteri finestre di dialogo"
-msgstr "Caracteres da caixa de diálogo"
+msgstr "Fontes das caixas de diálogo"
 
 #: src/gui/dialogs/visual_settings_dialog.py:168
 msgid "Caratteri"
-msgstr "Personagens"
+msgstr "Fontes"
 
 #: src/gui/dialogs/visual_settings_dialog.py:170
 msgid "Rosso (%):"

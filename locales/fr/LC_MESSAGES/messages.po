@@ -2374,9 +2374,9 @@ msgstr ""
 "contribution. C'est de loin le modificateur le plus utilisé dans les "
 "tournois. REMARQUE : Si le joueur a des forfaits dans son historique, la "
 "coupe doit exclure principalement la contribution la plus faible résultant "
-"de ces rondes non jouées, à condition que cette valeur ne soit pas inférieure"
-" à la valeur absolue la moins significative de l'ensemble du calcul (Article"
-" 14, 16)."
+"de ces rondes non jouées, à condition que cette valeur ne soit pas "
+"inférieure à la valeur absolue la moins significative de l'ensemble du "
+"calcul (Article 14, 16)."
 
 #: src/tiebreak_criteria.py:30
 msgid ""
@@ -6464,7 +6464,7 @@ msgstr "Sélectionnez l'heure"
 
 #: src/gui/dialogs/result_dialog.py:115
 msgid "Ora:"
-msgstr "Maintenant:"
+msgstr "Heure :"
 
 #: src/gui/dialogs/result_dialog.py:119
 msgid "Minuto:"
@@ -6487,12 +6487,12 @@ msgstr "Arbitre désigné :"
 #: src/gui/dialogs/tiebreak_config_dialog.py:138
 #: src/gui/dialogs/tiebreak_config_dialog.py:139
 msgid "Conferma"
-msgstr "Il confirme"
+msgstr "Confirmer"
 
 #: src/gui/dialogs/result_dialog.py:268
 #, python-brace-format
 msgid "Risultato Scacchiera {num}"
-msgstr "Tableau des résultats {num}"
+msgstr "Résultat de l'échiquier {num}"
 
 #: src/gui/dialogs/result_dialog.py:307
 #, python-brace-format
@@ -6523,16 +6523,16 @@ msgstr "Sélectionner le résultat"
 #: src/gui/dialogs/result_dialog.py:328
 #, python-brace-format
 msgid "1 - 0 (Vince {})"
-msgstr "1 - 0 (Pour gagner {})"
+msgstr "1 - 0 ({} gagne)"
 
 #: src/gui/dialogs/result_dialog.py:329
 #, python-brace-format
 msgid "0 - 1 (Vince {})"
-msgstr "0 - 1 (Pour gagner {})"
+msgstr "0 - 1 ({} gagne)"
 
 #: src/gui/dialogs/result_dialog.py:330
 msgid "1/2 - 1/2 (Patta)"
-msgstr "1/2 - 1/2 (Rabat)"
+msgstr "1/2 - 1/2 (Nulle)"
 
 #: src/gui/dialogs/result_dialog.py:333
 #, python-brace-format
@@ -6550,15 +6550,15 @@ msgstr "0 - 0F (double absence)"
 
 #: src/gui/dialogs/result_dialog.py:365
 msgid "Incolla qui il pgn della partita (opzionale):"
-msgstr "Collez la page du match ici (facultatif) :"
+msgstr "Collez le PGN de la partie ici (facultatif) :"
 
 #: src/gui/dialogs/result_dialog.py:381
 msgid "Pianifica Partita..."
-msgstr "Planificateur de jeu..."
+msgstr "Planifier la partie..."
 
 #: src/gui/dialogs/result_dialog.py:385
 msgid "Ritira Giocatore..."
-msgstr "Retrait d'un joueur..."
+msgstr "Retirer le joueur..."
 
 #: src/gui/dialogs/result_dialog.py:400
 msgid "Salva PGN"
@@ -6845,7 +6845,7 @@ msgstr "Audio et langue"
 
 #: src/gui/dialogs/visual_settings_dialog.py:131
 msgid "Caratteri finestra principale"
-msgstr "Caractères de la fenêtre principale"
+msgstr "Polices de la fenêtre principale"
 
 #: src/gui/dialogs/visual_settings_dialog.py:135
 #: src/gui/dialogs/visual_settings_dialog.py:153
@@ -6854,11 +6854,11 @@ msgstr "Taille (pts) :"
 
 #: src/gui/dialogs/visual_settings_dialog.py:149
 msgid "Caratteri finestre di dialogo"
-msgstr "Caractères de la boîte de dialogue"
+msgstr "Polices des boîtes de dialogue"
 
 #: src/gui/dialogs/visual_settings_dialog.py:168
 msgid "Caratteri"
-msgstr "Personnages"
+msgstr "Polices"
 
 #: src/gui/dialogs/visual_settings_dialog.py:170
 msgid "Rosso (%):"

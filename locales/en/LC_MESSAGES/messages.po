@@ -6406,14 +6406,14 @@ msgstr "Room / URL:"
 
 #: src/gui/dialogs/result_dialog.py:159
 msgid "Arbitro designato:"
-msgstr "Designated referee:"
+msgstr "Designated Arbiter:"
 
 #: src/gui/dialogs/result_dialog.py:174
 #: src/gui/dialogs/tiebreak_config_dialog.py:137
 #: src/gui/dialogs/tiebreak_config_dialog.py:138
 #: src/gui/dialogs/tiebreak_config_dialog.py:139
 msgid "Conferma"
-msgstr "He confirms"
+msgstr "Confirm"
 
 #: src/gui/dialogs/result_dialog.py:268
 #, python-brace-format
@@ -6449,16 +6449,16 @@ msgstr "Select Result"
 #: src/gui/dialogs/result_dialog.py:328
 #, python-brace-format
 msgid "1 - 0 (Vince {})"
-msgstr "1 - 0 (To win {})"
+msgstr "1 - 0 ({} wins)"
 
 #: src/gui/dialogs/result_dialog.py:329
 #, python-brace-format
 msgid "0 - 1 (Vince {})"
-msgstr "0 - 1 (To win {})"
+msgstr "0 - 1 ({} wins)"
 
 #: src/gui/dialogs/result_dialog.py:330
 msgid "1/2 - 1/2 (Patta)"
-msgstr "1/2 - 1/2 (Flap)"
+msgstr "1/2 - 1/2 (Draw)"
 
 #: src/gui/dialogs/result_dialog.py:333
 #, python-brace-format
@@ -6480,11 +6480,11 @@ msgstr "Paste the game PGN here (optional):"
 
 #: src/gui/dialogs/result_dialog.py:381
 msgid "Pianifica Partita..."
-msgstr "Game Planner..."
+msgstr "Schedule Match..."
 
 #: src/gui/dialogs/result_dialog.py:385
 msgid "Ritira Giocatore..."
-msgstr "Retire Player..."
+msgstr "Withdraw Player..."
 
 #: src/gui/dialogs/result_dialog.py:400
 msgid "Salva PGN"

@@ -6499,12 +6499,12 @@ msgstr "Árbitro designado:"
 #: src/gui/dialogs/tiebreak_config_dialog.py:138
 #: src/gui/dialogs/tiebreak_config_dialog.py:139
 msgid "Conferma"
-msgstr "el confirma"
+msgstr "Confirmar"
 
 #: src/gui/dialogs/result_dialog.py:268
 #, python-brace-format
 msgid "Risultato Scacchiera {num}"
-msgstr "Tablero de resultados {num}"
+msgstr "Resultado del tablero {num}"
 
 #: src/gui/dialogs/result_dialog.py:307
 #, python-brace-format
@@ -6535,16 +6535,16 @@ msgstr "Seleccionar resultado"
 #: src/gui/dialogs/result_dialog.py:328
 #, python-brace-format
 msgid "1 - 0 (Vince {})"
-msgstr "1 - 0 (Para ganar {})"
+msgstr "1 - 0 (Gana {})"
 
 #: src/gui/dialogs/result_dialog.py:329
 #, python-brace-format
 msgid "0 - 1 (Vince {})"
-msgstr "0 - 1 (Para ganar {})"
+msgstr "0 - 1 (Gana {})"
 
 #: src/gui/dialogs/result_dialog.py:330
 msgid "1/2 - 1/2 (Patta)"
-msgstr "1/2 - 1/2 (Solapa)"
+msgstr "1/2 - 1/2 (Tablas)"
 
 #: src/gui/dialogs/result_dialog.py:333
 #, python-brace-format
@@ -6566,7 +6566,7 @@ msgstr "Pegue el PGN de la partida aquí (opcional):"
 
 #: src/gui/dialogs/result_dialog.py:381
 msgid "Pianifica Partita..."
-msgstr "Planificador de juegos..."
+msgstr "Programar partida..."
 
 #: src/gui/dialogs/result_dialog.py:385
 msgid "Ritira Giocatore..."
