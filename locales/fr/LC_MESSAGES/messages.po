@@ -2475,7 +2475,7 @@ msgstr "Décompte total des parties gagnées « sur l'échiquier » (article 7.2
 
 #: src/tiebreak_criteria.py:114
 msgid "Partite Giocate col Nero"
-msgstr "Jeux joués avec le noir"
+msgstr "Parties jouées avec les noirs"
 
 #: src/tiebreak_criteria.py:117
 msgid ""
@@ -2537,7 +2537,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:151
 msgid "Round Scelti per il Gioco"
-msgstr "Rondes sélectionnés pour le jeu"
+msgstr "Rondes jouées"
 
 #: src/tiebreak_criteria.py:154
 msgid ""

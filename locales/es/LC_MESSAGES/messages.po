@@ -2416,7 +2416,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:70
 msgid "Incontro Diretto"
-msgstr "reunión directa"
+msgstr "Encuentro directo"
 
 #: src/tiebreak_criteria.py:73
 msgid ""
@@ -2485,7 +2485,7 @@ msgstr "Recuento total de partidas ganadas \"sobre el tablero\" (artículo 7.2).
 
 #: src/tiebreak_criteria.py:114
 msgid "Partite Giocate col Nero"
-msgstr "Juegos jugados con negras"
+msgstr "Partidas jugadas con negras"
 
 #: src/tiebreak_criteria.py:117
 msgid ""
@@ -2505,7 +2505,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:126
 msgid "Partite Vinte col Nero"
-msgstr "Juegos ganados con negras"
+msgstr "Partidas ganadas con negras"
 
 #: src/tiebreak_criteria.py:129
 msgid ""
@@ -2547,7 +2547,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:151
 msgid "Round Scelti per il Gioco"
-msgstr "Rondas seleccionadas para el juego"
+msgstr "Rondas jugadas"
 
 #: src/tiebreak_criteria.py:154
 msgid ""

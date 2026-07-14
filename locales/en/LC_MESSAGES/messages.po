@@ -2371,7 +2371,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:70
 msgid "Incontro Diretto"
-msgstr "Direct meeting"
+msgstr "Direct Encounter"
 
 #: src/tiebreak_criteria.py:73
 msgid ""
@@ -2501,7 +2501,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:151
 msgid "Round Scelti per il Gioco"
-msgstr "Rounds Selected for the Game"
+msgstr "Rounds Played"
 
 #: src/tiebreak_criteria.py:154
 msgid ""
@@ -2543,7 +2543,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:177
 msgid "Numero di Sorteggio"
-msgstr "Draw Number"
+msgstr "Drawing Number"
 
 #: src/tiebreak_criteria.py:180
 msgid ""

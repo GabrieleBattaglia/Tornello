@@ -2360,7 +2360,7 @@ msgstr ""
 "Corte de valor menos significativo: exclui a pior contribuição do cálculo. É"
 " de longe o modificador mais utilizado em torneios. NOTA: Caso o jogador "
 "tenha desistências no seu histórico, o corte deve excluir prioritariamente a"
-" contribuição mais baixa resultante das voltas não disputadas, desde que "
+" contribuição mais baixa resultante das rodadas não disputadas, desde que "
 "este valor não seja inferior ao valor absoluto menos significativo de todo o"
 " cálculo (artigo 14.º, 16)."
 
@@ -2391,7 +2391,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:70
 msgid "Incontro Diretto"
-msgstr "Reunião direta"
+msgstr "Confronto direto"
 
 #: src/tiebreak_criteria.py:73
 msgid ""
@@ -2459,7 +2459,7 @@ msgstr "Contagem total de jogos ganhos “over the board” (Artigo 7.2)."
 
 #: src/tiebreak_criteria.py:114
 msgid "Partite Giocate col Nero"
-msgstr "Jogos disputados com preto"
+msgstr "Partidas disputadas com as pretas"
 
 #: src/tiebreak_criteria.py:117
 msgid ""
@@ -2479,7 +2479,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:126
 msgid "Partite Vinte col Nero"
-msgstr "Jogos ganhos com as pretas"
+msgstr "Partidas ganadas com as pretas"
 
 #: src/tiebreak_criteria.py:129
 msgid ""
@@ -2521,7 +2521,7 @@ msgstr ""
 
 #: src/tiebreak_criteria.py:151
 msgid "Round Scelti per il Gioco"
-msgstr "Rodadas selecionadas para o jogo"
+msgstr "Rodadas jogadas"
 
 #: src/tiebreak_criteria.py:154
 msgid ""
