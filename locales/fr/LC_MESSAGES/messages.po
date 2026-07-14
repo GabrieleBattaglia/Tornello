@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-13 22:52+0200\n"
+"POT-Creation-Date: 2026-07-14 14:01+0200\n"
 "PO-Revision-Date: 2026-04-13 22:12+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr "Expérience antérieure significative"
 
 #: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:232
 msgid "Medagliere"
-msgstr "Collection de médailles"
+msgstr "Tableau des médailles"
 
 #: Players_DB.py:102
 msgid "Storico Tornei Giocati"
@@ -5853,7 +5853,7 @@ msgstr "Suppression recommandée (> 18 mois)"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:172
 msgid "Svuota cartella backup"
-msgstr "Dossier de sauvegarde vide"
+msgstr "Vider le dossier de sauvegarde"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:173
 #: src/gui/dialogs/donation_dialog.py:38
@@ -6240,7 +6240,7 @@ msgstr "Créer un nouveau joueur"
 
 #: src/gui/dialogs/player_enrollment_dialog.py:464
 msgid "Inserisci Nome del nuovo giocatore:"
-msgstr "Entrez le nom du nouveau joueur :"
+msgstr "Saisissez le prénom du nouveau joueur :"
 
 #: src/gui/dialogs/player_enrollment_dialog.py:474
 #: src/gui/dialogs/players_db_dialog.py:494
@@ -6279,7 +6279,7 @@ msgstr "ELO et titres"
 
 #: src/gui/dialogs/players_db_dialog.py:217
 msgid "Storico Tornei"
-msgstr "Historique des rondes et des résultats :"
+msgstr "Historique des tournois"
 
 #: src/gui/dialogs/players_db_dialog.py:220
 #, python-brace-format
@@ -6308,7 +6308,7 @@ msgstr "Bronze: {}"
 #: src/gui/dialogs/players_db_dialog.py:259
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
-msgstr "Médaille de chocolat: {}"
+msgstr "Médailles en chocolat : {}"
 
 #: src/gui/dialogs/players_db_dialog.py:288
 msgid "Anno Nascita"
@@ -7404,7 +7404,7 @@ msgstr "Pos. (Languette)"
 #~ msgstr "Expérience antérieure significative"
 
 #~ msgid "Medagliere"
-#~ msgstr "Collection de médailles"
+#~ msgstr "Tableau des médailles"
 
 #~ msgid "Storico Tornei Giocati"
 #~ msgstr "Historique des tournois joués"

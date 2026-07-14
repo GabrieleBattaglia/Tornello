@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornello 8.3.0\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-13 22:52+0200\n"
+"POT-Creation-Date: 2026-07-14 14:01+0200\n"
 "PO-Revision-Date: 2025-07-07 07:45+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr "Significant Previous Experience"
 
 #: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:232
 msgid "Medagliere"
-msgstr "Medal collection"
+msgstr "Medal Showcase"
 
 #: Players_DB.py:102
 msgid "Storico Tornei Giocati"
@@ -4310,7 +4310,7 @@ msgstr "Error loading tournament: {}"
 #: src/gui/main_frame.py:4192 src/gui/main_frame.py:4210
 #: src/gui/main_frame.py:4303
 msgid "Errore"
-msgstr "Mistake"
+msgstr "Error"
 
 #: src/gui/main_frame.py:678
 #, python-brace-format
@@ -6168,7 +6168,7 @@ msgstr "Create New Player"
 
 #: src/gui/dialogs/player_enrollment_dialog.py:464
 msgid "Inserisci Nome del nuovo giocatore:"
-msgstr "Enter New Player Name:"
+msgstr "Enter the new player's first name:"
 
 #: src/gui/dialogs/player_enrollment_dialog.py:474
 #: src/gui/dialogs/players_db_dialog.py:494
@@ -6206,7 +6206,7 @@ msgstr "ELO and Titles"
 
 #: src/gui/dialogs/players_db_dialog.py:217
 msgid "Storico Tornei"
-msgstr "Tournament history"
+msgstr "Tournament History"
 
 #: src/gui/dialogs/players_db_dialog.py:220
 #, python-brace-format
@@ -6235,7 +6235,7 @@ msgstr "Bronze: {}"
 #: src/gui/dialogs/players_db_dialog.py:259
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
-msgstr "Wood: {}"
+msgstr "Wooden Medals: {}"
 
 #: src/gui/dialogs/players_db_dialog.py:288
 msgid "Anno Nascita"
@@ -7352,7 +7352,7 @@ msgstr "Pos. (Tab)"
 #~ msgstr " Significant prior experience? (s/n)"
 
 #~ msgid "Medagliere"
-#~ msgstr "Medal collection"
+#~ msgstr "Medal Showcase"
 
 #~ msgid "Storico Tornei Giocati"
 #~ msgstr "History of tournaments played"

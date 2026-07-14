@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tornello 8.3.0\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-13 22:52+0200\n"
+"POT-Creation-Date: 2026-07-14 14:01+0200\n"
 "PO-Revision-Date: 2025-06-24 16:23+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: pt <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr "Experiência anterior significativa"
 
 #: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:232
 msgid "Medagliere"
-msgstr "Coleção de medalhas"
+msgstr "Medalheiro"
 
 #: Players_DB.py:102
 msgid "Storico Tornei Giocati"
@@ -5837,7 +5837,7 @@ msgstr "Excluir recomendado (>18 meses)"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:172
 msgid "Svuota cartella backup"
-msgstr "Pasta de backup vazia"
+msgstr "Esvaziar pasta de backup"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:173
 #: src/gui/dialogs/donation_dialog.py:38
@@ -6253,7 +6253,7 @@ msgstr "ELO e títulos"
 
 #: src/gui/dialogs/players_db_dialog.py:217
 msgid "Storico Tornei"
-msgstr "História do torneio"
+msgstr "Histórico de torneios"
 
 #: src/gui/dialogs/players_db_dialog.py:220
 #, python-brace-format
@@ -6282,7 +6282,7 @@ msgstr "Bronze: {}"
 #: src/gui/dialogs/players_db_dialog.py:259
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
-msgstr "Madeira: {}"
+msgstr "Medalhas de madeira: {}"
 
 #: src/gui/dialogs/players_db_dialog.py:288
 msgid "Anno Nascita"
@@ -7536,7 +7536,7 @@ msgstr "Pos. (Guia)"
 #~ msgstr " Experiência prévia significativa? (s/n)"
 
 #~ msgid "Medagliere"
-#~ msgstr "Coleção de medalhas"
+#~ msgstr "Medalheiro"
 
 #~ msgid "Storico Tornei Giocati"
 #~ msgstr "História dos torneios disputados"

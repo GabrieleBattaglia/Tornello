@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-13 22:52+0200\n"
+"POT-Creation-Date: 2026-07-14 14:01+0200\n"
 "PO-Revision-Date: 2025-06-27 22:45+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -102,7 +102,7 @@ msgstr "Experiencia previa significativa"
 
 #: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:232
 msgid "Medagliere"
-msgstr "Colección de medallas"
+msgstr "Medallero"
 
 #: Players_DB.py:102
 msgid "Storico Tornei Giocati"
@@ -5875,7 +5875,7 @@ msgstr "Eliminar recomendado (>18 meses)"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:172
 msgid "Svuota cartella backup"
-msgstr "Carpeta de copia de seguridad vacía"
+msgstr "Vaciar carpeta de copia de seguridad"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:173
 #: src/gui/dialogs/donation_dialog.py:38
@@ -5884,7 +5884,7 @@ msgstr "Carpeta de copia de seguridad vacía"
 #: src/gui/dialogs/players_db_dialog.py:74
 #: src/gui/dialogs/sync_database_dialog.py:159
 msgid "Chiudi"
-msgstr "Cerca"
+msgstr "Cerrar"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:248
 #, python-brace-format
@@ -6292,7 +6292,7 @@ msgstr "ELO y títulos"
 
 #: src/gui/dialogs/players_db_dialog.py:217
 msgid "Storico Tornei"
-msgstr "Historia del torneo"
+msgstr "Historial de torneos"
 
 #: src/gui/dialogs/players_db_dialog.py:220
 #, python-brace-format
@@ -6321,7 +6321,7 @@ msgstr "Bronce: {}"
 #: src/gui/dialogs/players_db_dialog.py:259
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
-msgstr "Madera: {}"
+msgstr "Medallas de madera: {}"
 
 #: src/gui/dialogs/players_db_dialog.py:288
 msgid "Anno Nascita"
@@ -7459,7 +7459,7 @@ msgstr "Pos. (Pestaña)"
 #~ msgstr " ¿Experiencia previa significativa? (s/n)"
 
 #~ msgid "Medagliere"
-#~ msgstr "Colección de medallas"
+#~ msgstr "Medallero"
 
 #~ msgid "Storico Tornei Giocati"
 #~ msgstr "Historial de torneos jugados"
