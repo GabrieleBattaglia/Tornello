@@ -4380,12 +4380,12 @@ msgid ""
 "Turno Corrente: {curr} di {total}\n"
 msgstr ""
 "Tournament: {name}\n"
-"Current Shift: {curr} of {total}"
+"Current Round: {curr} of {total}\n"
 
 #: src/gui/main_frame.py:689
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Abbinamenti Turno {}:\n"
-msgstr "--- Round {} Pairings generated and player states updated ---"
+msgstr "Round {} Pairings:\n"
 
 #: src/gui/main_frame.py:704
 #, python-brace-format
@@ -5382,9 +5382,9 @@ msgid ""
 msgstr "Tournament created in preparation. You can complete the entry later."
 
 #: src/gui/main_frame.py:2599
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{name} - raccolta partite.pgn"
-msgstr "PGN COLLECTION"
+msgstr "{name} - PGN matches collection.pgn"
 
 #: src/gui/main_frame.py:2653 src/gui/main_frame.py:3273
 msgid ""
@@ -5745,9 +5745,9 @@ msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
 msgstr ""
 
 #: src/gui/main_frame.py:4102
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "ELO Iniziale: {init} | ELO Attuale: {curr}\n"
-msgstr "Initial Elo: {elo}"
+msgstr "Initial ELO: {init} | Current ELO: {curr}\n"
 
 #: src/gui/main_frame.py:4107
 #, fuzzy
@@ -5764,10 +5764,11 @@ msgid "BYE"
 msgstr ""
 
 #: src/gui/main_frame.py:4124
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n"
-msgstr "  Round {}: Color: {color} vs {opponent} -> Result: {result}"
+msgstr ""
+"  Round {round}: vs {opp} ({color}) -> Result: {res} (Points: {score})\n"
 
 #: src/gui/main_frame.py:4133
 #, python-brace-format
