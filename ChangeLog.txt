@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.7 (2026.07.14)
+	+ Feature: Profonda revisione e maquillage terminologico della localizzazione in tutte le lingue (en, es, fr, pt):
+	  - Corretti errori di traduzione automatica errata nei menù, nell'albero comandi, nelle descrizioni dei criteri di spareggio (tie-breaks) e nei report (es. "Sc" tradotto come "ciencia" in spagnolo, "BYE" tradotto come "tchau/ADIÓS", "Next" tradotto come "Después de usted", "Back" tradotto come "Backwards" e "Round" tradotto come "équipe/quart" o "shift").
+	  - Ripristinate le combinazioni di tasti ed acceleratori dei menù (es. scorciatoie con tabulazione) che erano state corrotte.
+	+ Bugfix: Risolto bug per cui il manuale (MANUALE.txt) e il ChangeLog (ChangeLog.txt) non venivano inclusi nella directory delle risorse dall'eseguibile compilato con PyInstaller, risultando inaccessibili a runtime (F2 / Guida).
+
 9.3.6 (2026.07.13)
 	+ Feature: Miglioramenti significativi per l'internazionalizzazione (i18n):
 	  - Identificate e rimosse le stringhe residue non localizzate (fuggiasche) come i report dettagliati dei giocatori e il nome della raccolta dei file PGN.
