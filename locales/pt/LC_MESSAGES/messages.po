@@ -5953,7 +5953,7 @@ msgstr "Doe com PayPal"
 
 #: src/gui/dialogs/fide_query_dialog.py:18
 msgid "Consulta Database FIDE"
-msgstr "Veja o banco de dados FIDE"
+msgstr "Consultar banco de dados FIDE"
 
 #: src/gui/dialogs/fide_query_dialog.py:48
 msgid "Cerca per Cognome/Nome o ID FIDE:"
@@ -6054,18 +6054,18 @@ msgstr "ELO Blitz: {}"
 #: src/gui/dialogs/fide_query_dialog.py:204
 #, python-brace-format
 msgid "Partite Blitz: {}"
-msgstr "Partidas relâmpago: {}"
+msgstr "Partidas Blitz: {}"
 
 #: src/gui/dialogs/fide_query_dialog.py:238
 msgid "Questo giocatore è già presente nel tuo database personale."
-msgstr "Este player já está presente em seu banco de dados pessoal."
+msgstr "Este jogador já está presente no seu banco de dados pessoal."
 
 #: src/gui/dialogs/fide_query_dialog.py:282
 #, python-brace-format
 msgid ""
 "Giocatore '{name}' importato con successo nel database locale con ID '{id}'."
 msgstr ""
-"Player '{name}' importado com sucesso para o banco de dados local com ID "
+"Jogador '{name}' importado com sucesso no banco de dados local com ID "
 "'{id}'."
 
 #: src/gui/dialogs/fide_query_dialog.py:286
@@ -6103,7 +6103,7 @@ msgstr "Baixando: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} MB)..."
 
 #: src/gui/dialogs/fide_update_dialog.py:119
 msgid "Analisi del DB FIDE e creazione DB SQLite..."
-msgstr "Análise de banco de dados FIDE e criação de banco de dados SQLite..."
+msgstr "Análise do DB FIDE e criação do DB SQLite..."
 
 #: src/gui/dialogs/fide_update_dialog.py:123
 #, python-brace-format
@@ -6121,9 +6121,9 @@ msgid ""
 msgstr ""
 "Banco de dados FIDE local atualizado com sucesso!\n"
 "\n"
-"Tempo necessário para download: {d_time}\n"
+"Tempo de download: {d_time}\n"
 "Tempo de processamento do banco de dados SQLite: {p_time}\n"
-"Total de jogadores salvos: {saved_count}"
+"Total de jogadores registrados: {saved_count}"
 
 #: src/gui/dialogs/fide_update_dialog.py:169
 #, python-brace-format
@@ -6133,8 +6133,10 @@ msgid ""
 "Statistiche di aggiornamento:\n"
 "Prima {old_c} giocatori, ora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
 msgstr ""
-"Atualizar estatísticas:\n"
-"Anteriormente jogadores {old_c}, agora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
+"\n"
+"\n"
+"Estatísticas de atualização:\n"
+"Antes {old_c} jogadores, agora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
 
 #: src/gui/dialogs/fide_update_dialog.py:174
 msgid "Database FIDE locale aggiornato con successo!"

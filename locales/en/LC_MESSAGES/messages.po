@@ -5909,7 +5909,7 @@ msgstr "Donate with PayPal"
 
 #: src/gui/dialogs/fide_query_dialog.py:18
 msgid "Consulta Database FIDE"
-msgstr "See FIDE Database"
+msgstr "Browse FIDE Database"
 
 #: src/gui/dialogs/fide_query_dialog.py:48
 msgid "Cerca per Cognome/Nome o ID FIDE:"
@@ -5999,7 +5999,7 @@ msgstr "Rapid ELO: {}"
 #: src/gui/dialogs/fide_query_dialog.py:200
 #, python-brace-format
 msgid "Partite Rapid: {}"
-msgstr "Rapid Matches: {}"
+msgstr "Rapid Games: {}"
 
 #: src/gui/dialogs/fide_query_dialog.py:202
 #: src/gui/dialogs/players_db_dialog.py:198
@@ -6010,7 +6010,7 @@ msgstr "Blitz ELO: {}"
 #: src/gui/dialogs/fide_query_dialog.py:204
 #, python-brace-format
 msgid "Partite Blitz: {}"
-msgstr "Blitz matches: {}"
+msgstr "Blitz Games: {}"
 
 #: src/gui/dialogs/fide_query_dialog.py:238
 msgid "Questo giocatore è già presente nel tuo database personale."
@@ -6088,8 +6088,10 @@ msgid ""
 "Statistiche di aggiornamento:\n"
 "Prima {old_c} giocatori, ora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
 msgstr ""
+"\n"
+"\n"
 "Update statistics:\n"
-"Previously {old_c} players, now {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
+"Before {old_c} players, now {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
 
 #: src/gui/dialogs/fide_update_dialog.py:174
 msgid "Database FIDE locale aggiornato con successo!"
