@@ -3983,15 +3983,15 @@ msgstr "&Open Tournament...\tCtrl+O"
 
 #: src/gui/main_frame.py:136
 msgid "&Esporta partite pianificate...\tCtrl+Shift+E"
-msgstr "&Export scheduled matches...\tCtrl+Shift+E"
+msgstr "&Export Scheduled Matches...\tCtrl+Shift+E"
 
 #: src/gui/main_frame.py:139
 msgid "&Elimina Torneo Attivo...\tDelete"
-msgstr "&Delete Active Tournament... Delete"
+msgstr "&Delete Active Tournament...\tDelete"
 
 #: src/gui/main_frame.py:141
 msgid "&Pulisci backup..."
-msgstr "&Clean backup..."
+msgstr "&Clean Backups..."
 
 #: src/gui/main_frame.py:143
 msgid "&Esci\tCtrl+Q"
@@ -4011,7 +4011,7 @@ msgstr "View &Players\tCtrl+G"
 
 #: src/gui/main_frame.py:155
 msgid "&Abbinamenti / Turno Corrente\tCtrl+U"
-msgstr "&Pairings / Current Shift\tCtrl+U"
+msgstr "&Pairings / Current Round\tCtrl+U"
 
 #: src/gui/main_frame.py:158
 msgid "&Classifica Corrente\tCtrl+L"
@@ -4019,7 +4019,7 @@ msgstr "&Current Standings\tCtrl+L"
 
 #: src/gui/main_frame.py:161
 msgid "&Time Machine (Annulla Turno)\tCtrl+Z"
-msgstr "&Time Machine (Cancel Shift)\tCtrl+Z"
+msgstr "&Time Machine (Cancel Round)\tCtrl+Z"
 
 #: src/gui/main_frame.py:164
 msgid "&Finalizza Torneo\tCtrl+F"
@@ -4043,15 +4043,15 @@ msgstr "&Database"
 
 #: src/gui/main_frame.py:180
 msgid "&Area Centrale\tF5"
-msgstr "&Central Area F5"
+msgstr "&Central Area\tF5"
 
 #: src/gui/main_frame.py:181
 msgid "Al&bero di Destra\tF6"
-msgstr "Right tree F6"
+msgstr "Right &Tree\tF6"
 
 #: src/gui/main_frame.py:182
 msgid "&Barra di Stato\tF7"
-msgstr "&Status Bar F7"
+msgstr "&Status Bar\tF7"
 
 #: src/gui/main_frame.py:183
 msgid "&Visualizza"
@@ -4059,7 +4059,7 @@ msgstr "&View"
 
 #: src/gui/main_frame.py:187
 msgid "&Consulta FIDE\tCtrl+K"
-msgstr "&See FIDE\tCtrl+K"
+msgstr "&Query FIDE\tCtrl+K"
 
 #: src/gui/main_frame.py:189
 msgid "&Verifica Aggiornamenti FIDE"
@@ -4075,15 +4075,15 @@ msgstr "&Tools"
 
 #: src/gui/main_frame.py:198
 msgid "&Guida Accessibile\tF1"
-msgstr "&Accessible Guide F1"
+msgstr "&Accessible Guide\tF1"
 
 #: src/gui/main_frame.py:199
 msgid "&Changelog\tF2"
-msgstr "&Changelog F2"
+msgstr "&Changelog\tF2"
 
 #: src/gui/main_frame.py:200
 msgid "C&rediti\tF3"
-msgstr "C&recei F3"
+msgstr "C&redits\tF3"
 
 #: src/gui/main_frame.py:201
 msgid "&Aiuto"
@@ -4431,7 +4431,7 @@ msgstr "Current round ({}/{})"
 
 #: src/gui/main_frame.py:969 src/gui/main_frame.py:987
 msgid "giocate"
-msgstr "play"
+msgstr "played"
 
 #: src/gui/main_frame.py:1030
 #, python-brace-format
@@ -4549,7 +4549,7 @@ msgstr "Random (chosen by {app})"
 #: src/gui/main_frame.py:3008 src/gui/main_frame.py:3676
 #, python-brace-format
 msgid "Colore al giocatore più forte: {}"
-msgstr "Color to the stronger player: {}"
+msgstr "Color for the strongest player: {}"
 
 #: src/gui/main_frame.py:1234 src/gui/main_frame.py:2408
 #: src/gui/main_frame.py:3013 src/gui/main_frame.py:3696
@@ -4576,7 +4576,7 @@ msgstr "Completed"
 
 #: src/gui/main_frame.py:1317
 msgid "calcola il turno successivo"
-msgstr "calculate the next round"
+msgstr "calculate next round"
 
 #: src/gui/main_frame.py:1325
 msgid "Finalizza il torneo"
@@ -4592,7 +4592,7 @@ msgstr "Standings"
 
 #: src/gui/main_frame.py:1349
 msgid "regole di spareggio"
-msgstr "playoff rules"
+msgstr "tie-break criteria"
 
 #: src/gui/main_frame.py:1359
 msgid "Partite PGN"
@@ -5439,11 +5439,11 @@ msgstr "New Tournament"
 
 #: src/gui/main_frame.py:2929
 msgid "Indietro"
-msgstr "Backwards"
+msgstr "Back"
 
 #: src/gui/main_frame.py:3019
 msgid "Avanti"
-msgstr "After you"
+msgstr "Next"
 
 #: src/gui/main_frame.py:3070
 msgid ""

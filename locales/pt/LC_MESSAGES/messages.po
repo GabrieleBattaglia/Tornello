@@ -4009,7 +4009,7 @@ msgstr "Barra de status"
 
 #: src/gui/main_frame.py:133
 msgid "&Nuovo Torneo...\tCtrl+N"
-msgstr "&Novo Torneio...\tCtrl+N"
+msgstr "&Novo torneio...\tCtrl+N"
 
 #: src/gui/main_frame.py:134
 msgid "&Apri Torneo...\tCtrl+O"
@@ -4021,11 +4021,11 @@ msgstr "&Exportar jogos agendados...\tCtrl+Shift+E"
 
 #: src/gui/main_frame.py:139
 msgid "&Elimina Torneo Attivo...\tDelete"
-msgstr "&Excluir torneio ativo... Excluir"
+msgstr "&Excluir torneio ativo...\tDelete"
 
 #: src/gui/main_frame.py:141
 msgid "&Pulisci backup..."
-msgstr "&Limpar backup..."
+msgstr "&Limpar backups..."
 
 #: src/gui/main_frame.py:143
 msgid "&Esci\tCtrl+Q"
@@ -4037,11 +4037,11 @@ msgstr "&Arquivo"
 
 #: src/gui/main_frame.py:149
 msgid "&Iscrizione Giocatori...\tCtrl+I"
-msgstr "Registro de &jogador...\tCtrl+I"
+msgstr "&Inscrição de jogadores...\tCtrl+I"
 
 #: src/gui/main_frame.py:152
 msgid "Visualizza &Giocatori\tCtrl+G"
-msgstr "Ver &Jogadores\tCtrl+G"
+msgstr "Ver &jogadores\tCtrl+G"
 
 #: src/gui/main_frame.py:155
 msgid "&Abbinamenti / Turno Corrente\tCtrl+U"
@@ -4053,11 +4053,11 @@ msgstr "&Classificação atual\tCtrl+L"
 
 #: src/gui/main_frame.py:161
 msgid "&Time Machine (Annulla Turno)\tCtrl+Z"
-msgstr "&Máquina do Tempo (Cancelar Rodada)\tCtrl+Z"
+msgstr "&Máquina do Tempo (Cancelar rodada)\tCtrl+Z"
 
 #: src/gui/main_frame.py:164
 msgid "&Finalizza Torneo\tCtrl+F"
-msgstr "&Finalizar Torneio\tCtrl+F"
+msgstr "&Finalizar torneio\tCtrl+F"
 
 #: src/gui/main_frame.py:166
 msgid "&Torneo"
@@ -4077,15 +4077,15 @@ msgstr "&Banco de dados"
 
 #: src/gui/main_frame.py:180
 msgid "&Area Centrale\tF5"
-msgstr "&Área Central F5"
+msgstr "&Área central\tF5"
 
 #: src/gui/main_frame.py:181
 msgid "Al&bero di Destra\tF6"
-msgstr "Árvore direita F6"
+msgstr "Ár&vore direita\tF6"
 
 #: src/gui/main_frame.py:182
 msgid "&Barra di Stato\tF7"
-msgstr "&Barra de status F7"
+msgstr "&Barra de status\tF7"
 
 #: src/gui/main_frame.py:183
 msgid "&Visualizza"
@@ -4093,11 +4093,11 @@ msgstr "&Visualizar"
 
 #: src/gui/main_frame.py:187
 msgid "&Consulta FIDE\tCtrl+K"
-msgstr "&Veja FIDE\tCtrl+K"
+msgstr "&Consultar FIDE\tCtrl+K"
 
 #: src/gui/main_frame.py:189
 msgid "&Verifica Aggiornamenti FIDE"
-msgstr "&Verifique as atualizações da FIDE"
+msgstr "&Verificar atualizações FIDE"
 
 #: src/gui/main_frame.py:192
 msgid "&Impostazioni (Audio/Video/Lingua)...\tCtrl+P"
@@ -4105,19 +4105,19 @@ msgstr "&Configurações (Áudio/Vídeo/Idioma)...\tCtrl+P"
 
 #: src/gui/main_frame.py:194
 msgid "&Strumenti"
-msgstr "&Instrumentos"
+msgstr "&Ferramentas"
 
 #: src/gui/main_frame.py:198
 msgid "&Guida Accessibile\tF1"
-msgstr "&Guia Acessível F1"
+msgstr "&Guia acessível\tF1"
 
 #: src/gui/main_frame.py:199
 msgid "&Changelog\tF2"
-msgstr "&Registro de alterações F2"
+msgstr "&Registro de alterações\tF2"
 
 #: src/gui/main_frame.py:200
 msgid "C&rediti\tF3"
-msgstr "C&recebi F3"
+msgstr "C&réditos\tF3"
 
 #: src/gui/main_frame.py:201
 msgid "&Aiuto"
@@ -4392,7 +4392,7 @@ msgstr "registrado"
 
 #: src/gui/main_frame.py:864 src/gui/main_frame.py:1269
 msgid "turni"
-msgstr "turnos"
+msgstr "rodadas"
 
 #: src/gui/main_frame.py:871
 msgid "In Preparazione"
@@ -4466,7 +4466,7 @@ msgstr "Rodada atual ({}/{})"
 
 #: src/gui/main_frame.py:969 src/gui/main_frame.py:987
 msgid "giocate"
-msgstr "jogar"
+msgstr "jogadas"
 
 #: src/gui/main_frame.py:1030
 #, python-brace-format
@@ -4480,7 +4480,7 @@ msgstr "Tabuleiro {}: {} - BYE"
 
 #: src/gui/main_frame.py:1051
 msgid "da giocare"
-msgstr "jogar"
+msgstr "por jogar"
 
 #: src/gui/main_frame.py:1076
 #, python-brace-format
@@ -4584,7 +4584,7 @@ msgstr "Aleatório (escolhido por {app})"
 #: src/gui/main_frame.py:3008 src/gui/main_frame.py:3676
 #, python-brace-format
 msgid "Colore al giocatore più forte: {}"
-msgstr "Cor para o jogador mais forte: {}"
+msgstr "Cor do jogador mais forte: {}"
 
 #: src/gui/main_frame.py:1234 src/gui/main_frame.py:2408
 #: src/gui/main_frame.py:3013 src/gui/main_frame.py:3696
@@ -4619,7 +4619,7 @@ msgstr "Finalizar o torneio"
 
 #: src/gui/main_frame.py:1333
 msgid "genera turno"
-msgstr "gerar turno"
+msgstr "gerar rodada"
 
 #: src/gui/main_frame.py:1343
 msgid "Classifica"
@@ -4627,7 +4627,7 @@ msgstr "Classificação"
 
 #: src/gui/main_frame.py:1349
 msgid "regole di spareggio"
-msgstr "regras dos playoffs"
+msgstr "critérios de desempate"
 
 #: src/gui/main_frame.py:1359
 msgid "Partite PGN"
@@ -5474,11 +5474,11 @@ msgstr "Novo Torneio"
 
 #: src/gui/main_frame.py:2929
 msgid "Indietro"
-msgstr "Para trás"
+msgstr "Voltar"
 
 #: src/gui/main_frame.py:3019
 msgid "Avanti"
-msgstr "Depois de você"
+msgstr "Avançar"
 
 #: src/gui/main_frame.py:3070
 msgid ""
