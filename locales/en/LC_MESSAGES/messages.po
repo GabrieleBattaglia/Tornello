@@ -4015,7 +4015,7 @@ msgstr "&Pairings / Current Shift\tCtrl+U"
 
 #: src/gui/main_frame.py:158
 msgid "&Classifica Corrente\tCtrl+L"
-msgstr "&Current Ranking\tCtrl+L"
+msgstr "&Current Standings\tCtrl+L"
 
 #: src/gui/main_frame.py:161
 msgid "&Time Machine (Annulla Turno)\tCtrl+Z"
@@ -4071,7 +4071,7 @@ msgstr "&Settings (Audio/Video/Language)...\tCtrl+P"
 
 #: src/gui/main_frame.py:194
 msgid "&Strumenti"
-msgstr "&Instruments"
+msgstr "&Tools"
 
 #: src/gui/main_frame.py:198
 msgid "&Guida Accessibile\tF1"
@@ -4588,7 +4588,7 @@ msgstr "generate round"
 
 #: src/gui/main_frame.py:1343
 msgid "Classifica"
-msgstr "Classification"
+msgstr "Standings"
 
 #: src/gui/main_frame.py:1349
 msgid "regole di spareggio"
@@ -5361,7 +5361,7 @@ msgstr "Start Date: {start} | End: {end}\n"
 
 #: src/gui/main_frame.py:2713
 msgid "Classifica Finale:\n"
-msgstr "Final Ranking:"
+msgstr "Final Standings:\n"
 
 #: src/gui/main_frame.py:2720
 #, python-brace-format

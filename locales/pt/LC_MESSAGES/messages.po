@@ -5397,7 +5397,7 @@ msgstr "Data de início: {start} | Fim: {end}\n"
 
 #: src/gui/main_frame.py:2713
 msgid "Classifica Finale:\n"
-msgstr "Classificação Final:"
+msgstr "Classificação Final:\n"
 
 #: src/gui/main_frame.py:2720
 #, python-brace-format

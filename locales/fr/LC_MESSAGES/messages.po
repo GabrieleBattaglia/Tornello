@@ -4632,7 +4632,7 @@ msgstr "générer un ronde"
 
 #: src/gui/main_frame.py:1343
 msgid "Classifica"
-msgstr "Classification"
+msgstr "Classement"
 
 #: src/gui/main_frame.py:1349
 msgid "regole di spareggio"
@@ -5409,7 +5409,7 @@ msgstr "Date début: {start} | Fin: {end}\n"
 
 #: src/gui/main_frame.py:2713
 msgid "Classifica Finale:\n"
-msgstr "Classement final :"
+msgstr "Classement Final:\n"
 
 #: src/gui/main_frame.py:2720
 #, python-brace-format
