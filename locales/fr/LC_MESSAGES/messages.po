@@ -1715,16 +1715,14 @@ msgstr ""
 
 #: src/reports.py:61
 msgid "Numero turno non definito."
-msgstr "Numéro d'équipe non défini."
+msgstr "Numéro de ronde non défini."
 
 #: src/reports.py:99
 #, python-brace-format
 msgid ""
 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo"
 " turno."
-msgstr ""
-"Il reste des jours {days} et des heures {hours} jusqu'à la fin de la période"
-" utile pour cette équipe."
+msgstr " Il reste {days} jours et {hours} heures pour terminer cette ronde."
 
 #: src/reports.py:117
 #, python-brace-format
@@ -1739,11 +1737,11 @@ msgstr "Décalage : {round_num}"
 #: src/reports.py:120
 #, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
-msgstr "Période de décalage : {start} - {end}"
+msgstr " Période de la Ronde : {start} - {end}\n"
 
 #: src/reports.py:128
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
-msgstr "(Aucun jeu défini ou chargé pour ce ronde pour le moment)"
+msgstr " (Aucune partie définie ou chargée pour cette ronde pour l'instant)\n"
 
 #: src/reports.py:137
 #, python-brace-format
@@ -1791,21 +1789,25 @@ msgid ""
 "   {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: "
 "{arbiter}\n"
 msgstr ""
-"{time} IDG : {match_id}, {white} vs {black}, Chaîne : {channel}, Arbitre : "
-"{arbiter}"
+"   {time} IDG:{match_id}, {white} vs {black}, Chaîne : {channel}, Arbitre : "
+"{arbiter}\n"
 
 #: src/reports.py:254
 #, python-brace-format
 msgid ""
 "\n"
 "  Ancora non pianificate ({count}):\n"
-msgstr "Pas encore prévu ({count}) :"
+msgstr ""
+"\n"
+"  Pas encore planifiées ({count}) :\n"
 
 #: src/reports.py:262
 msgid ""
 "\n"
 "  -- Partite da giocare con giocatori ritirati --\n"
-msgstr "-- Matchs à jouer avec des joueurs retraités --"
+msgstr ""
+"\n"
+"  -- Matchs à jouer avec des joueurs retraités --\n"
 
 #: src/reports.py:272
 #, python-brace-format
@@ -1818,7 +1820,7 @@ msgstr ""
 
 #: src/reports.py:283
 msgid "   Non pianificate (con ritirati):\n"
-msgstr "Non planifié (avec retrait) :"
+msgstr "   Non planifiées (avec retraités) :\n"
 
 #: src/reports.py:288
 #, python-brace-format
@@ -1829,11 +1831,11 @@ msgstr "Matchs déjà joués ou avec résultat validé ({count}) :"
 
 #: src/reports.py:296
 msgid "  Ancora nessun risultato assegnato\n"
-msgstr "Aucun résultat attribué pour l'instant"
+msgstr "  Aucun résultat attribué pour l'instant\n"
 
 #: src/reports.py:299
 msgid "  -- Partite giocate con giocatori ritirati --\n"
-msgstr "-- Matchs joués avec des joueurs retraités --"
+msgstr "  -- Matchs joués avec des joueurs retraités --\n"
 
 #: src/reports.py:316
 msgid "Salvataggio file turno corrente: Numero turno non definito."
@@ -1843,7 +1845,7 @@ msgstr ""
 #: src/reports.py:321
 #, python-brace-format
 msgid "Tornello - {name} - Turno corrente.txt"
-msgstr "Tourniquet - {name} - Ronde.txt actuel"
+msgstr "Tornello - {name} - Ronde courante.txt"
 
 #: src/reports.py:336
 #, python-brace-format
@@ -1858,7 +1860,7 @@ msgstr "Erreur inattendue dans save_current_tournament_round_file : {error}"
 #: src/reports.py:361
 #, python-brace-format
 msgid "Tornello - {name} - Turno {round_num} Dettagli.txt"
-msgstr "Tourniquet - {name} - Ronde {round_num} Details.txt"
+msgstr "Tornello - {name} - Ronde {round_num} Details.txt"
 
 #: src/reports.py:382
 #, python-brace-format
@@ -1866,7 +1868,7 @@ msgid ""
 "Dati o partite del turno concluso {round_num} non trovati per il "
 "salvataggio."
 msgstr ""
-"Données ou jeux du ronde terminé {round_num} introuvables pour la "
+"Données ou parties de la ronde terminée {round_num} introuvables pour la "
 "sauvegarde."
 
 #: src/reports.py:425
@@ -1886,22 +1888,24 @@ msgstr "Site : {site}, Date de début du tournoi : {start_date}"
 #: src/reports.py:439
 #, python-brace-format
 msgid " DETTAGLIO TURNO {round_num} CONCLUSO "
-msgstr "DÉTAIL DU TOUR {round_num} TERMINÉ"
+msgstr " DÉTAIL DE LA RONDE {round_num} TERMINÉE "
 
 #: src/reports.py:458
 #, python-brace-format
 msgid "\tPeriodo del Turno: {start} - {end}\n"
-msgstr "Période de ronde : {start} - {end}"
+msgstr "\tPériode de la Ronde : {start} - {end}\n"
 
 #: src/reports.py:464
 msgid "\tPeriodo del Turno: Date non trovate\n"
-msgstr "Période de quart : dates introuvables"
+msgstr "\tPériode de la Ronde : Dates introuvables\n"
 
 #: src/reports.py:467
 msgid ""
 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
 "                         [Elo] (Pt) | Risultato"
-msgstr "Sc | ID | Blanc [Elo] (Pt) - Noir [Elo] (Pt) | Résultat"
+msgstr ""
+"Éch| ID  | Blanc                        [Elo] (Pt) - Noir"
+"                         [Elo] (Pt) | Résultat"
 
 #: src/reports.py:476
 msgid "ERRORE_RISULTATO_MANCANTE"
@@ -1920,14 +1924,15 @@ msgstr ""
 msgid ""
 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
 msgstr ""
-"Détails de l'équipe terminés {round_num} enregistrés dans un fichier séparé "
-"« {filename} »"
+"Détails de la ronde terminée {round_num} enregistrés dans le fichier séparé "
+"'{filename}'"
 
 #: src/reports.py:533
 #, python-brace-format
 msgid "Errore durante il salvataggio del file del turno '{filename}': {error}"
 msgstr ""
-"Erreur lors de l'enregistrement du fichier d'équipe '{filename}' : {error}"
+"Erreur lors de l'enregistrement du fichier de la ronde '{filename}' : "
+"{error}"
 
 #: src/reports.py:539
 #, python-brace-format

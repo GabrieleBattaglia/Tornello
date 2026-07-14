@@ -1701,7 +1701,7 @@ msgstr ""
 
 #: src/reports.py:61
 msgid "Numero turno non definito."
-msgstr "Número do turno não definido."
+msgstr "Número da rodada não definido."
 
 #: src/reports.py:99
 #, python-brace-format
@@ -1709,7 +1709,7 @@ msgid ""
 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo"
 " turno."
 msgstr ""
-"Restam dias {days} e horas {hours} até o final do período útil deste turno."
+" Faltam {days} dias e {hours} horas para o término do período desta rodada."
 
 #: src/reports.py:117
 #, python-brace-format
@@ -1724,11 +1724,11 @@ msgstr "Rodada: {round_num}\n"
 #: src/reports.py:120
 #, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
-msgstr "Período de mudança:{start}-{end}"
+msgstr " Período da Rodada: {start} - {end}\n"
 
 #: src/reports.py:128
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
-msgstr " (Nenhuma partida ainda definida ou carregada para esta rodada)\n"
+msgstr " (Nenhuma partida definida ou carregada para esta rodada ainda)\n"
 
 #: src/reports.py:137
 #, python-brace-format
@@ -1775,21 +1775,25 @@ msgid ""
 "   {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: "
 "{arbiter}\n"
 msgstr ""
-"{time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
-"{arbiter}"
+"   {time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
+"{arbiter}\n"
 
 #: src/reports.py:254
 #, python-brace-format
 msgid ""
 "\n"
 "  Ancora non pianificate ({count}):\n"
-msgstr "Ainda não planejado ({count}):"
+msgstr ""
+"\n"
+"  Ainda não programadas ({count}):\n"
 
 #: src/reports.py:262
 msgid ""
 "\n"
 "  -- Partite da giocare con giocatori ritirati --\n"
-msgstr "-- Jogos a serem disputados com jogadores aposentados --"
+msgstr ""
+"\n"
+"  -- Partidas por jogar com jogadores retirados --\n"
 
 #: src/reports.py:272
 #, python-brace-format
@@ -1802,7 +1806,7 @@ msgstr ""
 
 #: src/reports.py:283
 msgid "   Non pianificate (con ritirati):\n"
-msgstr "Não planejado (com retirado):"
+msgstr "   Não programadas (com retirados):\n"
 
 #: src/reports.py:288
 #, python-brace-format
@@ -1813,11 +1817,11 @@ msgstr "Partidas já disputadas ou com resultado validado ({count}):"
 
 #: src/reports.py:296
 msgid "  Ancora nessun risultato assegnato\n"
-msgstr "Nenhum resultado concedido ainda"
+msgstr "  Ainda nenhum resultado atribuído\n"
 
 #: src/reports.py:299
 msgid "  -- Partite giocate con giocatori ritirati --\n"
-msgstr "-- Partidas disputadas com jogadores aposentados --"
+msgstr "  -- Partidas jogadas com jogadores retirados --\n"
 
 #: src/reports.py:316
 msgid "Salvataggio file turno corrente: Numero turno non definito."
@@ -1884,7 +1888,9 @@ msgstr "\tPeríodo da Rodada: Datas não encontradas\n"
 msgid ""
 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
 "                         [Elo] (Pt) | Risultato"
-msgstr "Sc | ID | Branco [Elo] (Pt) - Preto [Elo] (Pt) | Resultado"
+msgstr ""
+"Tab| ID  | Branco                       [Elo] (Pt) - Preto"
+"                        [Elo] (Pt) | Resultado"
 
 #: src/reports.py:476
 msgid "ERRORE_RISULTATO_MANCANTE"

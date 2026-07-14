@@ -1686,16 +1686,14 @@ msgstr ""
 
 #: src/reports.py:61
 msgid "Numero turno non definito."
-msgstr "Shift number not defined."
+msgstr "Round number not defined."
 
 #: src/reports.py:99
 #, python-brace-format
 msgid ""
 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo"
 " turno."
-msgstr ""
-"There are {days} days and {hours} hours left until the end of the useful "
-"period for this shift."
+msgstr " {days} days and {hours} hours remaining to complete this round."
 
 #: src/reports.py:117
 #, python-brace-format
@@ -1710,11 +1708,11 @@ msgstr "Round: {round_num}\n"
 #: src/reports.py:120
 #, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
-msgstr "Shift Period:{start}-{end}"
+msgstr " Round Period: {start} - {end}\n"
 
 #: src/reports.py:128
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
-msgstr " (No matches yet defined or loaded for this round)\n"
+msgstr " (No matches defined or loaded for this round yet)\n"
 
 #: src/reports.py:137
 #, python-brace-format
@@ -1761,15 +1759,17 @@ msgid ""
 "   {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: "
 "{arbiter}\n"
 msgstr ""
-"{time} IDG:{match_id}, {white} vs {black}, Channel: {channel}, Referee: "
-"{arbiter}"
+"   {time} ID:{match_id}, {white} vs {black}, Channel: {channel}, Arbiter: "
+"{arbiter}\n"
 
 #: src/reports.py:254
 #, python-brace-format
 msgid ""
 "\n"
 "  Ancora non pianificate ({count}):\n"
-msgstr "Still unplanned ({count}):"
+msgstr ""
+"\n"
+"  Not yet scheduled ({count}):\n"
 
 #: src/reports.py:262
 msgid ""
@@ -1790,7 +1790,7 @@ msgstr ""
 
 #: src/reports.py:283
 msgid "   Non pianificate (con ritirati):\n"
-msgstr "   Unscheduled (with withdrawn players):\n"
+msgstr "   Unscheduled (with withdrawn):\n"
 
 #: src/reports.py:288
 #, python-brace-format
@@ -1801,7 +1801,7 @@ msgstr "Matches already played or with validated result ({count}):"
 
 #: src/reports.py:296
 msgid "  Ancora nessun risultato assegnato\n"
-msgstr "No results awarded yet"
+msgstr "  No results assigned yet\n"
 
 #: src/reports.py:299
 msgid "  -- Partite giocate con giocatori ritirati --\n"
@@ -1856,7 +1856,7 @@ msgstr "Site: {site}, Tournament Start Date: {start_date}\n"
 #: src/reports.py:439
 #, python-brace-format
 msgid " DETTAGLIO TURNO {round_num} CONCLUSO "
-msgstr " COMPLETED ROUND {round_num} DETAIL "
+msgstr " DETAILS OF COMPLETED ROUND {round_num} "
 
 #: src/reports.py:458
 #, python-brace-format
@@ -1872,8 +1872,8 @@ msgid ""
 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
 "                         [Elo] (Pt) | Risultato"
 msgstr ""
-"Bd | ID  | White                        [Elo] (Pts) - Black"
-"                        [Elo] (Pts) | Result"
+"Bd | ID  | White                        [Elo] (Pt) - Black"
+"                        [Elo] (Pt) | Result"
 
 #: src/reports.py:476
 msgid "ERRORE_RISULTATO_MANCANTE"

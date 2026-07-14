@@ -1723,7 +1723,7 @@ msgstr ""
 
 #: src/reports.py:61
 msgid "Numero turno non definito."
-msgstr "Número de turno no definido."
+msgstr "Número de ronda no definido."
 
 #: src/reports.py:99
 #, python-brace-format
@@ -1731,8 +1731,7 @@ msgid ""
 " Mancano {days} giorni e {hours} ore al termine del periodo utile per questo"
 " turno."
 msgstr ""
-"Quedan {days} días y {hours} horas hasta el final del periodo útil de este "
-"turno."
+" Faltan {days} días y {hours} horas para el final del período de esta ronda."
 
 #: src/reports.py:117
 #, python-brace-format
@@ -1747,7 +1746,7 @@ msgstr "Ronda: {round_num}\n"
 #: src/reports.py:120
 #, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
-msgstr "Período de turno:{start}-{end}"
+msgstr " Periodo de la Ronda: {start} - {end}\n"
 
 #: src/reports.py:128
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
@@ -1799,15 +1798,17 @@ msgid ""
 "   {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: "
 "{arbiter}\n"
 msgstr ""
-"{time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
-"{arbiter}"
+"   {time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
+"{arbiter}\n"
 
 #: src/reports.py:254
 #, python-brace-format
 msgid ""
 "\n"
 "  Ancora non pianificate ({count}):\n"
-msgstr "Aún no planificado ({count}):"
+msgstr ""
+"\n"
+"  Aún no programadas ({count}):\n"
 
 #: src/reports.py:262
 msgid ""
@@ -1828,7 +1829,7 @@ msgstr ""
 
 #: src/reports.py:283
 msgid "   Non pianificate (con ritirati):\n"
-msgstr "   No planificadas (con retirados):\n"
+msgstr "   No programadas (con retirados):\n"
 
 #: src/reports.py:288
 #, python-brace-format
@@ -1839,7 +1840,7 @@ msgstr "Partidos ya jugados o con resultado validado ({count}):"
 
 #: src/reports.py:296
 msgid "  Ancora nessun risultato assegnato\n"
-msgstr "Aún no se han otorgado resultados"
+msgstr "  Aún no se ha asignado ningún resultado\n"
 
 #: src/reports.py:299
 msgid "  -- Partite giocate con giocatori ritirati --\n"
@@ -1911,7 +1912,8 @@ msgid ""
 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero"
 "                         [Elo] (Pt) | Risultato"
 msgstr ""
-"ciencia | identificación | Blanco [Elo] (Pt) - Negro [Elo] (Pt) | Resultado"
+"Tab| ID  | Blanco                       [Elo] (Pt) - Negro"
+"                        [Elo] (Pt) | Resultado"
 
 #: src/reports.py:476
 msgid "ERRORE_RISULTATO_MANCANTE"
@@ -1929,7 +1931,7 @@ msgstr ""
 msgid ""
 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
 msgstr ""
-"Detalle de Ronda Concluida {round_num} guardado en el archivo separado "
+"Detalle de la Ronda Concluida {round_num} guardado en el archivo separado "
 "'{filename}'"
 
 #: src/reports.py:533
