@@ -2374,7 +2374,7 @@ msgstr ""
 "contribution. C'est de loin le modificateur le plus utilisé dans les "
 "tournois. REMARQUE : Si le joueur a des forfaits dans son historique, la "
 "coupe doit exclure principalement la contribution la plus faible résultant "
-"de ces rondes non joués, à condition que cette valeur ne soit pas inférieure"
+"de ces rondes non jouées, à condition que cette valeur ne soit pas inférieure"
 " à la valeur absolue la moins significative de l'ensemble du calcul (Article"
 " 14, 16)."
 
