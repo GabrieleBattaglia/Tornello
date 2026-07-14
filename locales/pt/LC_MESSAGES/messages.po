@@ -1733,7 +1733,7 @@ msgstr " (Nenhuma partida definida ou carregada para esta rodada ainda)\n"
 #: src/reports.py:137
 #, python-brace-format
 msgid " {first_name} {last_name} ({elo}) ha il BYE"
-msgstr "{first_name}{last_name}({elo}) tem tchau"
+msgstr "{first_name}{last_name}({elo}) tem BYE"
 
 #: src/reports.py:147
 msgid "Bianco?"
@@ -2431,7 +2431,7 @@ msgid ""
 msgstr ""
 "Conta o número total de rodadas em que o participante obteve a pontuação "
 "máxima esperada para a vitória, incluindo tanto os pontos obtidos no "
-"tabuleiro quanto os atribuídos sem jogar (desistência, tchau)."
+"tabuleiro quanto os atribuídos sem jogar (desistência, BYE)."
 
 #: src/tiebreak_criteria.py:98
 msgid ""
@@ -4647,7 +4647,7 @@ msgstr "Tabuleiro de xadrez {}: {} vs {} [{}]"
 #: src/gui/main_frame.py:1406
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE [{}]"
-msgstr "Tabuleiro de xadrez {}: {} - tchau [{}]"
+msgstr "Tabuleiro de xadrez {}: {} - BYE [{}]"
 
 #: src/gui/main_frame.py:1448
 msgid ""
@@ -4765,7 +4765,7 @@ msgid ""
 "\n"
 "Seleziona questa voce per definire il punteggio del BYE per i giocatori senza avversario (default 0.5)."
 msgstr ""
-"Valor de tchau\n"
+"Valor de BYE\n"
 "\n"
 "Selecione este item para definir a pontuação BYE para jogadores sem oponente (padrão 0,5)."
 
@@ -5161,7 +5161,7 @@ msgstr "Preto (Preto): {name} (Elo: {elo}, Naz: {fed})"
 
 #: src/gui/main_frame.py:2012
 msgid "Nero: BYE"
-msgstr "Preto: tchau"
+msgstr "Preto: BYE"
 
 #: src/gui/main_frame.py:2014
 msgid "Non ancora disputata"
@@ -5314,7 +5314,7 @@ msgstr "Selecione o valor BYE de acordo com a regra FIDE:"
 
 #: src/gui/main_frame.py:2397 src/gui/main_frame.py:3685
 msgid "Valore del BYE"
-msgstr "Valor de tchau"
+msgstr "Valor de BYE"
 
 #: src/gui/main_frame.py:2424
 msgid "Avanti (Iscrizione Giocatori)"

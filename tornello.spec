@@ -13,7 +13,9 @@ a = Analysis(
     binaries=[],
     datas=[
         ('bbppairings', 'bbppairings'),
-        ('locales', 'locales') # La cartella locales e tutto il suo contenuto per le traduzioni
+        ('locales', 'locales'), # La cartella locales e tutto il suo contenuto per le traduzioni
+        ('MANUALE.txt', '.'),
+        ('ChangeLog.txt', '.')
     ],
     hiddenimports=['unidecode'],
     hookspath=[],

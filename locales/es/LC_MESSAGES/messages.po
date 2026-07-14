@@ -1755,7 +1755,7 @@ msgstr " (Ninguna partida definida o cargada para esta ronda todavía)\n"
 #: src/reports.py:137
 #, python-brace-format
 msgid " {first_name} {last_name} ({elo}) ha il BYE"
-msgstr "{first_name}{last_name}({elo}) tiene ADIÓS"
+msgstr "{first_name}{last_name}({elo}) tiene BYE"
 
 #: src/reports.py:147
 msgid "Bianco?"
@@ -3599,8 +3599,8 @@ msgid ""
 "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs "
 "{black:<20} [{b_elo:>4}]"
 msgstr ""
-"Carolina del Sur. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] "
-"frente a {black:<20} [{b_elo:>4}]"
+"Tab. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] frente a "
+"{black:<20} [{b_elo:>4}]"
 
 #: src/ui.py:937
 #, python-brace-format
@@ -3782,8 +3782,8 @@ msgid ""
 "  Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} "
 "[{b_elo:>4}]"
 msgstr ""
-"Carolina del Sur. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] "
-"frente a {black:<20} [{b_elo:>4}]"
+"Tab. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] frente a "
+"{black:<20} [{b_elo:>4}]"
 
 #: src/ui.py:1261
 msgid "Inserisci il N.Scacchiera (del turno) desiderato dalla lista sopra: "
@@ -4412,7 +4412,7 @@ msgstr "{white} frente a {black}{result}"
 #: src/gui/main_frame.py:708
 #, python-brace-format
 msgid "  {} - BYE (1.0 punti)\n"
-msgstr "{} - ADIÓS (1,0 puntos)"
+msgstr "{} - BYE (1,0 puntos)"
 
 #: src/gui/main_frame.py:710
 msgid "Nessun abbinamento generato per questo turno.\n"
@@ -4684,7 +4684,7 @@ msgstr "Tablero de ajedrez {}: {} vs {} [{}]"
 #: src/gui/main_frame.py:1406
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE [{}]"
-msgstr "Tablero de ajedrez {}: {} - ADIÓS [{}]"
+msgstr "Tablero de ajedrez {}: {} - BYE [{}]"
 
 #: src/gui/main_frame.py:1448
 msgid ""
@@ -5765,7 +5765,7 @@ msgstr "Historial de partidos del Torneo:"
 
 #: src/gui/main_frame.py:4122
 msgid "BYE"
-msgstr "ADIÓS"
+msgstr "BYE"
 
 #: src/gui/main_frame.py:4124
 #, python-brace-format
