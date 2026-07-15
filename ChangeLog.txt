@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.9 (2026.07.15)
+	+ Bugfix: Risolto un blocco potenziale all'avvio in cui la console di PowerShell rimaneva nera ed in attesa all'infinito. Il blocco era causato dai controlli e dai relativi dialoghi modali sul database FIDE e sui backup eseguiti all'interno del costruttore del Frame principale prima dell'inizializzazione del ciclo eventi della GUI. Ora i controlli sono stati differiti tramite wx.CallAfter a finestra mostrata.
+
 9.3.8 (2026.07.14)
 	+ Feature: Risolto bug al primissimo avvio dell'applicazione. Ora la lingua viene rilevata ed impostata automaticamente in modo silenzioso in base alle impostazioni del sistema operativo (senza mostrare la finestra di console interattiva in cui veniva richiesto di selezionare la lingua tramite immissione di numeri).
 	+ Feature: Aggiunto il file CREDITS.txt alle risorse incorporate nell'eseguibile di installazione di PyInstaller.

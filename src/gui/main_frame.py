@@ -46,9 +46,9 @@ class MainFrame(wx.Frame):
 
         self._init_ui()
         self._setup_shortcuts()
-        self._check_fide_db_on_startup()
-        self._check_backup_on_startup()
-        self._scan_and_load_initial_tournament()
+        wx.CallAfter(self._check_fide_db_on_startup)
+        wx.CallAfter(self._check_backup_on_startup)
+        wx.CallAfter(self._scan_and_load_initial_tournament)
         self.Maximize(True)
 
         # Gestione chiusura per riprodurre il suono
