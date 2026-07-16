@@ -15,6 +15,7 @@ DEFAULT_SETTINGS = {
     "rgb_back": [0, 0, 0],  # Percentaggi (0-100)
     "dialog_rgb_back": [0, 0, 0],
     "language": "it",
+    "check_fide_at_startup": True,
 }
 
 

@@ -120,11 +120,9 @@ if __name__ == "__main__":
             print(_("bbpPairings potrebbe non funzionare correttamente."))
             sys.exit(1)
 
-    # Controlla aggiornamenti
-    check_updates()
-
     # Avvia controller con CLI adapter se --cli è presente, altrimenti avvia la GUI
     if "--cli" in sys.argv:
+        check_updates()
         from config import lingua_rilevata
         atexit.register(lambda: Donazione(lang=lingua_rilevata))
         adapter = CLIAdapter()

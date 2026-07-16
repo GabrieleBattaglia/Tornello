@@ -387,4 +387,25 @@ Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, T
   2. Elenco dei backup (al centro): Una lista ordinata cronologicamente (dal più vecchio in alto al più recente in basso) con il nome del file, la data di modifica e l'età calcolata con precisione in mesi e giorni.
   3. Pulsanti d'azione (in basso): Consentono di eliminare il singolo file selezionato (azione attivabile anche premendo il tasto CANC/DELETE sulla tastiera), eliminare solo i file più vecchi di 18 mesi ("Elimina consigliati"), oppure svuotare interamente la cartella.
 - Integrazione Cestino: Per evitare perdite accidentali di dati storici dei tornei, l'eliminazione dei file non è diretta, ma tenta di spostarli nel Cestino del sistema operativo dell'utente.
+------------------------------------------------------------------------
+
+========================================================================
+11. IMPOSTAZIONI DELL'APPLICAZIONE (AUDIO, LINGUA E DATABASE)
+========================================================================
+
+Tornello offre una finestra di configurazione globale accessibile tramite la barra dei menù (Strumenti -> Impostazioni). Questo dialogo è strutturato in schede (Tab) navigabili tramite la tastiera ed è interamente accessibile:
+
+11.1 AUDIO E LINGUA
+- Lingua (Language): Consente di selezionare la lingua dell'interfaccia tra quelle supportate (Italiano, English, Español, Français, Português). La modifica richiede il riavvio del programma per essere applicata.
+- Audio: Permette di regolare il Volume Master degli effetti sonori e del feedback acustico spazializzato generato da Acusticator.
+
+11.2 CONFIGURAZIONE DATABASE FIDE
+- Controlla presenza database FIDE all'avvio: Questa casella di controllo (Checkbox) permette di abilitare o disabilitare il controllo automatico del database FIDE all'avvio dell'applicazione.
+  * Se abilitata (impostazione predefinita): All'avvio dell'applicazione, se il database FIDE non viene trovato localmente, il sistema mostrerà una notifica proponendone lo scaricamento immediato.
+  * Se disabilitata: L'applicazione salterà questo controllo all'avvio, evitando la visualizzazione del messaggio per gli utenti che non necessitano o non desiderano utilizzare le funzioni di ricerca e sincronizzazione FIDE internazionale.
+
+11.3 CARATTERI E COLORI (ACCESSIBILITÀ)
+- Caratteri: Consente di personalizzare la dimensione del testo sia per la finestra principale che per le finestre di dialogo, ottimizzando la leggibilità per ipovedenti o schermi ad alta risoluzione.
+- Colori: Permette di definire le combinazioni cromatiche (RGB) del testo e dello sfondo sia per la finestra principale che per i dialoghi, consentendo di attivare temi ad alto contrasto o combinazioni personalizzate.
+
 

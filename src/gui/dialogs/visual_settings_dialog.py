@@ -121,6 +121,16 @@ class VisualSettingsDialog(wx.Dialog):
         sbs_audio.Add(hbox_vol, 1, wx.EXPAND | wx.ALL, 5)
         vbox_audio.Add(sbs_audio, 0, wx.EXPAND | wx.ALL, 10)
 
+        # Sezione Database FIDE
+        sb_fide = wx.StaticBox(tab_audio, label=_("Database FIDE"))
+        sbs_fide = wx.StaticBoxSizer(sb_fide, wx.VERTICAL)
+        self.chk_fide = wx.CheckBox(
+            tab_audio, label=_("Controlla presenza database FIDE all'avvio")
+        )
+        self.chk_fide.SetValue(self.settings.get("check_fide_at_startup", True))
+        sbs_fide.Add(self.chk_fide, 0, wx.ALL | wx.EXPAND, 5)
+        vbox_audio.Add(sbs_fide, 0, wx.EXPAND | wx.ALL, 10)
+
         tab_audio.SetSizer(vbox_audio)
         self.notebook.AddPage(tab_audio, _("Audio e Lingua"))
 
@@ -365,6 +375,7 @@ class VisualSettingsDialog(wx.Dialog):
         self.spin_size.SetValue(self.default_size)
         self.spin_dialog_size.SetValue(self.default_dialog_size)
         self.slider_vol.SetValue(self.default_volume)
+        self.chk_fide.SetValue(True)
         if "it" in self.lang_codes:
             self.choice_lang.SetSelection(self.lang_codes.index("it"))
         else:
@@ -460,4 +471,5 @@ class VisualSettingsDialog(wx.Dialog):
             "rgb_back": back_rgb,
             "dialog_rgb_back": dialog_back_rgb,
             "language": lang_val,
+            "check_fide_at_startup": self.chk_fide.GetValue(),
         }

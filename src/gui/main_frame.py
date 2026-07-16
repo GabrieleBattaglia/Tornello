@@ -49,6 +49,7 @@ class MainFrame(wx.Frame):
         wx.CallAfter(self._check_fide_db_on_startup)
         wx.CallAfter(self._check_backup_on_startup)
         wx.CallAfter(self._scan_and_load_initial_tournament)
+        wx.CallAfter(self._check_updates_async)
         self.Maximize(True)
 
         # Gestione chiusura per riprodurre il suono
@@ -492,6 +493,9 @@ class MainFrame(wx.Frame):
 
     def _check_fide_db_on_startup(self):
         """Verifica se il DB FIDE locale ha più di 30 giorni e propone l'aggiornamento."""
+        if not self.settings.get("check_fide_at_startup", True):
+            return
+
         from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
         from fide_db import fide_db_exists, cleanup_legacy_json
 
@@ -547,6 +551,61 @@ class MainFrame(wx.Frame):
                 update_dlg.Destroy()
             else:
                 dlg.Destroy()
+
+    def _check_updates_async(self):
+        """Avvia il controllo aggiornamenti in un thread asincrono per non bloccare l'avvio della GUI."""
+        import threading
+        t = threading.Thread(target=self._run_update_check, daemon=True)
+        t.start()
+
+    def _run_update_check(self):
+        try:
+            from GBUtils import update_checker
+            from version import __version__ as current_ver
+            repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
+            avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
+            if avail and dl_url:
+                wx.CallAfter(self._prompt_update_gui, latest_ver, dl_url, changelog)
+        except Exception:
+            pass
+
+    def _prompt_update_gui(self, latest_ver, dl_url, changelog):
+        from version import __version__ as current_ver
+        msg = _(
+            "È disponibile un nuovo aggiornamento!\n\n"
+            "Versione corrente: {curr}\n"
+            "Nuova versione: {latest}\n\n"
+            "Vuoi scaricare e installare l'aggiornamento ora? (L'applicazione si riavvierà)"
+        ).format(curr=current_ver, latest=latest_ver)
+        dlg = AccessibleMsgDialog(self, _("Aggiornamento Disponibile"), msg, style=wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            dlg.Destroy()
+            self.set_status(_("Scaricamento e installazione aggiornamento in corso..."))
+            import threading
+            t = threading.Thread(target=self._run_perform_update, args=(dl_url,), daemon=True)
+            t.start()
+        else:
+            dlg.Destroy()
+
+    def _run_perform_update(self, dl_url):
+        try:
+            from GBUtils import perform_update
+            if perform_update(dl_url, "tornello"):
+                wx.CallAfter(self.Close)
+            else:
+                wx.CallAfter(
+                    wx.MessageBox,
+                    _("Impossibile avviare l'aggiornamento automatico (funzione disponibile solo nella versione compilata)."),
+                    _("Errore Aggiornamento"),
+                    wx.ICON_ERROR
+                )
+        except Exception as e:
+            wx.CallAfter(
+                wx.MessageBox,
+                _("Errore durante l'aggiornamento: {}").format(e),
+                _("Errore Aggiornamento"),
+                wx.ICON_ERROR
+            )
 
     def _check_backup_on_startup(self):
         """Scansiona la cartella backup/ alla ricerca di file più vecchi di 18 mesi."""
