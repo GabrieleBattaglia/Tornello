@@ -3,6 +3,7 @@ import builtins
 from db_players import load_players_db, save_players_db, generate_player_id
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from utils import play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -313,11 +314,15 @@ class PlayersDbDialog(wx.Dialog):
                 if new_val.isdigit():
                     val = int(new_val)
                 else:
-                    wx.MessageBox(
-                        _("Inserisci un valore numerico valido."),
+                    play_sound("errore")
+                    dlg_err = AccessibleMsgDialog(
+                        self,
                         _("Errore"),
-                        wx.ICON_ERROR,
+                        _("Inserisci un valore numerico valido."),
+                        settings=self.settings,
                     )
+                    dlg_err.ShowModal()
+                    dlg_err.Destroy()
                     dlg.Destroy()
                     return
             else:
@@ -342,6 +347,7 @@ class PlayersDbDialog(wx.Dialog):
             from db_players import save_players_db
 
             save_players_db(self.players_db)
+            play_sound("timbratura")
 
             # Aggiorna il testo del nodo in-place per preservare il focus dell'albero
             if "key_nested" in data:
@@ -471,6 +477,7 @@ class PlayersDbDialog(wx.Dialog):
         if dlg.ShowModal() == wx.ID_YES:
             del self.players_db[player_id]
             save_players_db(self.players_db)
+            play_sound("tornello_rimozione_giocatore")
             self.on_search_changed(None)
         dlg.Destroy()
 
@@ -490,9 +497,15 @@ class PlayersDbDialog(wx.Dialog):
         dlg_fn.Destroy()
 
         if not last_name or not first_name:
-            wx.MessageBox(
-                _("Nome e Cognome sono obbligatori."), _("Errore"), wx.ICON_ERROR
+            play_sound("errore")
+            dlg_err = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _("Nome e Cognome sono obbligatori."),
+                settings=self.settings,
             )
+            dlg_err.ShowModal()
+            dlg_err.Destroy()
             return
 
         new_id = generate_player_id(first_name, last_name, self.players_db)
@@ -521,6 +534,7 @@ class PlayersDbDialog(wx.Dialog):
 
         self.players_db[new_id] = new_player
         save_players_db(self.players_db)
+        play_sound("aggiunta_giocatore")
 
         self.search_input.SetValue("")  # Resetta ricerca per mostrare il nuovo
         self.on_search_changed(None)

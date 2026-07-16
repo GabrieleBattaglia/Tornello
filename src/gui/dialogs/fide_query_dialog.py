@@ -3,6 +3,7 @@ import builtins
 from fide_db import search_players
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from utils import play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -119,8 +120,10 @@ class FideQueryDialog(wx.Dialog):
         if len(query) < 3:
             return
 
+        play_sound("fide_attesa")
         self.all_fide_matches = search_players(query)
         self.load_more_results()
+        play_sound("fide_pronto")
 
         if self.list_results.GetCount() > 0:
             self.list_results.SetSelection(0)
@@ -232,6 +235,7 @@ class FideQueryDialog(wx.Dialog):
                 break
 
         if gia_presente:
+            play_sound("errore")
             dlg = AccessibleMsgDialog(
                 self,
                 _("Info"),
@@ -283,6 +287,7 @@ class FideQueryDialog(wx.Dialog):
         ).format(
             name=f"{new_player['last_name']} {new_player['first_name']}", id=new_id
         )
+        play_sound("salvato")
         dlg = AccessibleMsgDialog(self, _("Importazione Completata"), msg)
         dlg.ShowModal()
         dlg.Destroy()

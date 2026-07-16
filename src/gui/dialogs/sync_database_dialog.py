@@ -8,6 +8,7 @@ from fide_db import (
 )
 from gui.settings import apply_visual_settings
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from utils import play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -170,6 +171,7 @@ class SyncDatabaseDialog(wx.Dialog):
 
     def on_bulk_sync(self, event):
         """Applica tutte le modifiche non ambigue in blocco."""
+        play_sound("fide_attesa")
         dlg_prog = wx.ProgressDialog(
             _("Sincronizzazione in corso"),
             _("Elaborazione dati..."),
@@ -214,12 +216,16 @@ class SyncDatabaseDialog(wx.Dialog):
             msg = _(
                 "Aggiornati {num} giocatori. Ci sono {amb} omonimi con ID ambiguo da risolvere."
             ).format(num=applied_count, amb=len(ambiguous_list))
-            wx.MessageBox(msg, _("Risoluzione Omonimi"), wx.ICON_INFORMATION)
+            play_sound("notifica")
+            dlg_res = AccessibleMsgDialog(self, _("Risoluzione Omonimi"), msg)
+            dlg_res.ShowModal()
+            dlg_res.Destroy()
             self._resolve_ambiguous_changes(ambiguous_list)
         else:
             msg = _(
                 "Sincronizzazione massiva completata con successo! Aggiornati {num} giocatori."
             ).format(num=applied_count)
+            play_sound("salvato")
             dlg_res = AccessibleMsgDialog(self, _("Sincronizzazione Completata"), msg)
             dlg_res.ShowModal()
             dlg_res.Destroy()
@@ -271,11 +277,14 @@ class SyncDatabaseDialog(wx.Dialog):
             dlg.Destroy()
 
         save_players_db(self.players_db)
-        wx.MessageBox(
-            _("Tutti gli omonimi sono stati risolti e salvati."),
+        play_sound("salvato")
+        dlg_res = AccessibleMsgDialog(
+            self,
             _("Sincronizzazione Completata"),
-            wx.ICON_INFORMATION,
+            _("Tutti gli omonimi sono stati risolti e salvati."),
         )
+        dlg_res.ShowModal()
+        dlg_res.Destroy()
         self.EndModal(wx.ID_OK)
 
     def on_step_sync(self, event):
@@ -338,8 +347,10 @@ class SyncDatabaseDialog(wx.Dialog):
                             local_p[k_local] = val_f
 
                     applied_count += 1
+                    play_sound("successivo")
                 else:
                     skipped_count += 1
+                    play_sound("salto")
                 dlg.Destroy()
 
             else:
@@ -382,8 +393,10 @@ class SyncDatabaseDialog(wx.Dialog):
                     for k, v in change["updates"].items():
                         local_p[k] = v
                     applied_count += 1
+                    play_sound("successivo")
                 else:
                     skipped_count += 1
+                    play_sound("salto")
                 dlg.Destroy()
 
         if applied_count > 0:
@@ -392,5 +405,8 @@ class SyncDatabaseDialog(wx.Dialog):
         msg_fin = _(
             "Sincronizzazione completata.\nApplicati: {app} | Saltati: {skp}"
         ).format(app=applied_count, skp=skipped_count)
-        wx.MessageBox(msg_fin, _("Sincronizzazione Terminata"), wx.ICON_INFORMATION)
+        play_sound("salvato")
+        dlg_fin = AccessibleMsgDialog(self, _("Sincronizzazione Terminata"), msg_fin)
+        dlg_fin.ShowModal()
+        dlg_fin.Destroy()
         self.EndModal(wx.ID_OK)

@@ -1,6 +1,20 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.11 (2026.07.16)
+	+ Feature: Aggiunto pulsante esplicito "Iscrivi" nel dialogo di iscrizione giocatori.
+	+ Feature: Ottimizzato il layout elastico del dialogo di iscrizione al ridimensionamento.
+	+ Feature: Corretto il troncamento del testo della ricerca FIDE nel dialogo di iscrizione.
+	+ Feature: Aggiunti eventi sonori di feedback nei dialoghi Database Giocatori Locale, Sincronizzazione FIDE e Consulta Database FIDE.
+	+ Feature: Aggiunti eventi sonori diversificati e originali alla pressione dei tasti funzione F1-F7 (apertura, lista, melodia, spostamento ad ottave differenti).
+	+ Feature: Differenziati i suoni per le modifiche nei dialoghi (timbratura per singoli campi, rimozione giocatore dedicata, successivo/salto per sincro passo-passo).
+	+ Feature: Aggiunto un evento sonoro allegro ("donazione") con portamento ascendente per la comparsa del dialogo di donazione.
+	+ Feature: Aggiunti eventi sonori ("apertura", "conferma", "errore") e dialoghi accessibili durante la modifica delle proprietà del torneo attivo dall'albero di destra.
+	+ Feature: Aggiunto evento sonoro ("conferma") per l'attivazione/disattivazione dei modificatori nei criteri di spareggio.
+	+ Bugfix: Uniformata la voce di menù Strumenti -> "Consulta FIDE" in "Consulta Database FIDE".
+	+ Bugfix: Corretto il nome dell'Associazione Scacchisti Ciechi e Ipovedenti Italiani (ASCI) nei crediti e nel manuale.
+	+ Bugfix: Aggiunta traccia in console al momento della cancellazione di un torneo.
+
 9.3.10 (2026.07.16)
 	+ Bugfix: Risolto stallo visivo dopo l'aggiornamento automatico (l'applicazione si riavviava in background rimanendo invisibile sotto la console vuota). Ora la finestra principale della GUI viene forzata in primo piano ed acquisisce il focus corretto all'avvio.
 	+ Bugfix: Risolto errore nella directory di lavoro corrente al riavvio dall'updater (ora l'applicazione viene avviata impostando la propria cartella principale anziché la cartella temporanea Temp).

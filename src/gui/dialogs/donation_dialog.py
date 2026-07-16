@@ -21,6 +21,9 @@ class DonationDialog(wx.Dialog):
         )
 
         self.settings = settings
+        from utils import play_sound
+
+        play_sound("donazione")
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 

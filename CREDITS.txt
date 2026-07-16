@@ -2,7 +2,7 @@ CREDITI DI TORNELLO
 ===================
 
 Tornello è sviluppato da Gabriele Battaglia e Stella.
-Dedicato all'Associazione Scacchisti Italiani Ciechi e Ipovedenti (ASCId) e al gruppo di Scacchierando.
+Dedicato all'Associazione Scacchisti Ciechi e Ipovedenti Italiani (ASCI) e al gruppo di Scacchierando.
 
 Ringraziamenti speciali a:
 - Luca Parravano, per i test e il supporto sulla versione CLI.
@@ -11,7 +11,7 @@ Ringraziamenti speciali a:
 - Claudio Gasperoni, per la richiesta di inserire i criteri di spareggio.
 - Bersan Vrioni, per il materiale di riferimento per l'integrazione dei criteri di spareggio e per il consiglio sul design della voce correlata.
 - Marcos Schllosser, per il supporto, la segnalazione dei bug e per il contributo sul funzionamento della localizzazione.
-- Vincenzo Ancora, per il prezioso aiuto nel risolvere il bug del primo avvio e per il supporto continuo. Vincenzo è anche il Maestro di scacchi di Gabriele.
+- Vincenzo Ancora, per il prezioso aiuto nel risolvere il bug del primo avvio, per la preziosa collaborazione per le correzioni all'interfaccia grafica e per il supporto continuo. Vincenzo è anche il Maestro di scacchi di Gabriele.
 
 Supporter Club. Un ringraziamento di cuore va a tutti coloro che hanno deciso di supportare il progetto con una piccola donazione affinché possa crescere ed essere utile a più persone possibile.
 - Ginevra Di Modica

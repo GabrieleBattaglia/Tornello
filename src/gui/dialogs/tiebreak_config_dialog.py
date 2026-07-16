@@ -423,6 +423,7 @@ class TiebreakConfigDialog(wx.Dialog):
 
         # Aggiorna la visualizzazione
         self.populate_applied()
+        play_sound("conferma", self.torneo)
         self.list_applied.SetSelection(idx)
         self.update_explanation(entry["key"], entry.get("modifiers"))
 

@@ -185,7 +185,9 @@ class MainFrame(wx.Frame):
 
         # Strumenti
         tools_menu = wx.Menu()
-        self.item_fide_query = tools_menu.Append(wx.ID_ANY, _("&Consulta FIDE\tCtrl+K"))
+        self.item_fide_query = tools_menu.Append(
+            wx.ID_ANY, _("&Consulta Database FIDE\tCtrl+K")
+        )
         self.item_fide_update = tools_menu.Append(
             wx.ID_ANY, _("&Verifica Aggiornamenti FIDE")
         )
@@ -235,17 +237,25 @@ class MainFrame(wx.Frame):
 
     def on_key_hook(self, event):
         key_code = event.GetKeyCode()
+        from utils import play_sound
+
         if key_code == wx.WXK_F1:
+            play_sound("apertura")
             self.on_help(None)
         elif key_code == wx.WXK_F2:
+            play_sound("lista")
             self.on_changelog(None)
         elif key_code == wx.WXK_F3:
+            play_sound("melodia_del_campanello_1")
             self.on_credits(None)
         elif key_code == wx.WXK_F5:
+            play_sound("spostamento_f5")
             self.main_text.SetFocus()
         elif key_code == wx.WXK_F6:
+            play_sound("spostamento_f6")
             self.tree_ctrl.SetFocus()
         elif key_code == wx.WXK_F7:
+            play_sound("spostamento_f7")
             self.status_text.SetFocus()
         else:
             event.Skip()
@@ -555,6 +565,7 @@ class MainFrame(wx.Frame):
     def _check_updates_async(self):
         """Avvia il controllo aggiornamenti in un thread asincrono per non bloccare l'avvio della GUI."""
         import threading
+
         t = threading.Thread(target=self._run_update_check, daemon=True)
         t.start()
 
@@ -562,6 +573,7 @@ class MainFrame(wx.Frame):
         try:
             from GBUtils import update_checker
             from version import __version__ as current_ver
+
             repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
             avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
             if avail and dl_url:
@@ -571,18 +583,24 @@ class MainFrame(wx.Frame):
 
     def _prompt_update_gui(self, latest_ver, dl_url, changelog):
         from version import __version__ as current_ver
+
         msg = _(
             "È disponibile un nuovo aggiornamento!\n\n"
             "Versione corrente: {curr}\n"
             "Nuova versione: {latest}\n\n"
             "Vuoi scaricare e installare l'aggiornamento ora? (L'applicazione si riavvierà)"
         ).format(curr=current_ver, latest=latest_ver)
-        dlg = AccessibleMsgDialog(self, _("Aggiornamento Disponibile"), msg, style=wx.YES_NO)
+        dlg = AccessibleMsgDialog(
+            self, _("Aggiornamento Disponibile"), msg, style=wx.YES_NO
+        )
         if dlg.ShowModal() == wx.ID_YES:
             dlg.Destroy()
             self.set_status(_("Scaricamento e installazione aggiornamento in corso..."))
             import threading
-            t = threading.Thread(target=self._run_perform_update, args=(dl_url,), daemon=True)
+
+            t = threading.Thread(
+                target=self._run_perform_update, args=(dl_url,), daemon=True
+            )
             t.start()
         else:
             dlg.Destroy()
@@ -590,21 +608,24 @@ class MainFrame(wx.Frame):
     def _run_perform_update(self, dl_url):
         try:
             from GBUtils import perform_update
+
             if perform_update(dl_url, "tornello"):
                 wx.CallAfter(self.Close)
             else:
                 wx.CallAfter(
                     wx.MessageBox,
-                    _("Impossibile avviare l'aggiornamento automatico (funzione disponibile solo nella versione compilata)."),
+                    _(
+                        "Impossibile avviare l'aggiornamento automatico (funzione disponibile solo nella versione compilata)."
+                    ),
                     _("Errore Aggiornamento"),
-                    wx.ICON_ERROR
+                    wx.ICON_ERROR,
                 )
         except Exception as e:
             wx.CallAfter(
                 wx.MessageBox,
                 _("Errore durante l'aggiornamento: {}").format(e),
                 _("Errore Aggiornamento"),
-                wx.ICON_ERROR
+                wx.ICON_ERROR,
             )
 
     def _check_backup_on_startup(self):
@@ -1860,7 +1881,9 @@ class MainFrame(wx.Frame):
         info.append("=" * 50)
         info.append(_("Cognome: {last_name}").format(last_name=p.get("last_name", "")))
         info.append(_("Nome: {first_name}").format(first_name=p.get("first_name", "")))
-        info.append(_("Elo Iniziale: {elo}").format(elo=int(p.get("initial_elo", 1399))))
+        info.append(
+            _("Elo Iniziale: {elo}").format(elo=int(p.get("initial_elo", 1399)))
+        )
         info.append(_("ID Interno: {id}").format(id=p.get("id", "")))
         info.append(
             _("Fide ID: {fide}").format(fide=p.get("fide_id_num_str") or _("N/D"))
@@ -2889,14 +2912,16 @@ class MainFrame(wx.Frame):
                     self.show_intro_message()
 
                 play_sound("cancellato", self.current_tournament)
-                self.set_status(
-                    _(
-                        "Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati."
-                    ).format(t_name=t_name, deleted_count=deleted_count)
-                )
+                info_msg = _(
+                    "Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati."
+                ).format(t_name=t_name, deleted_count=deleted_count)
+                self.set_status(info_msg)
+                print(info_msg)
             except Exception as e:
+                err_msg = _("Errore durante l'eliminazione del torneo: {}").format(e)
+                print(err_msg)
                 wx.MessageBox(
-                    _("Errore durante l'eliminazione del torneo: {}").format(e),
+                    err_msg,
                     _("Errore"),
                     wx.ICON_ERROR,
                 )
@@ -3514,7 +3539,9 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_active_field_activated(self, item, field_active):
-        from utils import format_date_locale
+        from utils import format_date_locale, play_sound
+
+        play_sound("apertura")
 
         if field_active == "name":
             dlg = wx.TextEntryDialog(
@@ -3531,6 +3558,7 @@ class MainFrame(wx.Frame):
                         item, _("Nome torneo: {}").format(new_val)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "site":
             dlg = wx.TextEntryDialog(
@@ -3547,6 +3575,7 @@ class MainFrame(wx.Frame):
                         item, _("Luogo (Site): {}").format(new_val)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "start_date":
             dlg = wx.TextEntryDialog(
@@ -3567,12 +3596,17 @@ class MainFrame(wx.Frame):
                             item, _("Data inizio: {}").format(format_date_locale(val))
                         )
                         self._save_state()
+                        play_sound("conferma")
                     except ValueError:
-                        wx.MessageBox(
-                            _("Formato data non valido. Usa AAAA-MM-GG."),
+                        play_sound("errore")
+                        dlg_err = AccessibleMsgDialog(
+                            self,
                             _("Errore"),
-                            wx.ICON_ERROR,
+                            _("Formato data non valido. Usa AAAA-MM-GG."),
+                            settings=self.settings,
                         )
+                        dlg_err.ShowModal()
+                        dlg_err.Destroy()
             dlg.Destroy()
         elif field_active == "end_date":
             dlg = wx.TextEntryDialog(
@@ -3593,12 +3627,17 @@ class MainFrame(wx.Frame):
                             item, _("Data fine: {}").format(format_date_locale(val))
                         )
                         self._save_state()
+                        play_sound("conferma")
                     except ValueError:
-                        wx.MessageBox(
-                            _("Formato data non valido. Usa AAAA-MM-GG."),
+                        play_sound("errore")
+                        dlg_err = AccessibleMsgDialog(
+                            self,
                             _("Errore"),
-                            wx.ICON_ERROR,
+                            _("Formato data non valido. Usa AAAA-MM-GG."),
+                            settings=self.settings,
                         )
+                        dlg_err.ShowModal()
+                        dlg_err.Destroy()
             dlg.Destroy()
         elif field_active == "time_control":
             tc = self.current_tournament.get("time_control", {})
@@ -3641,12 +3680,17 @@ class MainFrame(wx.Frame):
                             item, _("Tempo riflessione: {}").format(tc_disp)
                         )
                         self._save_state()
+                    play_sound("conferma")
                 else:
-                    wx.MessageBox(
-                        _("Formato non valido. Usa minuti+incremento o solo minuti."),
+                    play_sound("errore")
+                    dlg_err = AccessibleMsgDialog(
+                        self,
                         _("Errore"),
-                        wx.ICON_ERROR,
+                        _("Formato non valido. Usa minuti+incremento o solo minuti."),
+                        settings=self.settings,
                     )
+                    dlg_err.ShowModal()
+                    dlg_err.Destroy()
             dlg.Destroy()
         elif field_active == "chief_arbiter":
             dlg = wx.TextEntryDialog(
@@ -3663,6 +3707,7 @@ class MainFrame(wx.Frame):
                         item, _("Arbitro Capo: {}").format(new_val)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "deputy_chief_arbiters":
             dlg = wx.TextEntryDialog(
@@ -3679,6 +3724,7 @@ class MainFrame(wx.Frame):
                         item, _("Collaboratori: {}").format(new_val or _("Nessuno"))
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "federation_code":
             dlg = wx.TextEntryDialog(
@@ -3695,6 +3741,7 @@ class MainFrame(wx.Frame):
                         item, _("Codice Federazione: {}").format(new_val)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "color_board1":
             choices = [
@@ -3735,6 +3782,7 @@ class MainFrame(wx.Frame):
                         item, _("Colore al giocatore più forte: {}").format(col_disp)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
         elif field_active == "bye_value":
             choices = ["0.0", "0.5", "1.0"]
@@ -3755,6 +3803,7 @@ class MainFrame(wx.Frame):
                         item, _("Valore del BYE: {}").format(new_val)
                     )
                     self._save_state()
+                play_sound("conferma")
             dlg.Destroy()
 
     def on_activate_match(self, match):
@@ -4154,13 +4203,13 @@ class MainFrame(wx.Frame):
         p_name = f"{player.get('last_name', '')} {player.get('first_name', '')}".strip()
         report = _("Scheda Giocatore: {name}\n").format(name=p_name)
         report += _("ID: {id} | Sesso: {sex} | Nazione: {fed}\n").format(
-            id=player.get('id'),
-            sex=player.get('gender', 'M'),
-            fed=player.get('federation', 'ITA')
+            id=player.get("id"),
+            sex=player.get("gender", "M"),
+            fed=player.get("federation", "ITA"),
         )
         report += _("ELO Iniziale: {init} | ELO Attuale: {curr}\n").format(
-            init=int(player.get('initial_elo', 1399)),
-            curr=int(player.get('current_elo', 1399))
+            init=int(player.get("initial_elo", 1399)),
+            curr=int(player.get("current_elo", 1399)),
         )
         if player.get("withdrawn"):
             report += _("Stato: RITIRATO DAL TORNEO\n")
@@ -4179,13 +4228,15 @@ class MainFrame(wx.Frame):
             # Localizziamo anche BYE se necessario, ma opp_name "BYE" va bene, convertiamo l'opp_name a _("BYE")
             if opp_name == "BYE":
                 opp_name = _("BYE")
-            
-            report += _("  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n").format(
-                round=entry.get('round'),
+
+            report += _(
+                "  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n"
+            ).format(
+                round=entry.get("round"),
                 opp=opp_name,
-                color=entry.get('color', 'N/D'),
-                res=entry.get('result'),
-                score=entry.get('score')
+                color=entry.get("color", "N/D"),
+                res=entry.get("result"),
+                score=entry.get("score"),
             )
 
         self.append_log(report)

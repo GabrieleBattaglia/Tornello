@@ -58,12 +58,20 @@ class PlayerEnrollmentDialog(wx.Dialog):
         sbs_local = wx.StaticBoxSizer(self.sb_local, wx.VERTICAL)
 
         self.search_local = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
+        self.search_local.SetName(_("Filtra per nome o cognome nel database locale"))
         self.search_local.Bind(wx.EVT_TEXT, self.on_search_local_changed)
         sbs_local.Add(self.search_local, 0, wx.EXPAND | wx.ALL, 5)
+
+        self.lbl_local_status = wx.StaticText(panel, label=_("Giocatori trovati: 0"))
+        self.lbl_local_status.SetName(_("Stato ricerca locale"))
+        sbs_local.Add(
+            self.lbl_local_status, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
+        )
 
         self.list_local_results = wx.ListBox(
             panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
         )
+        self.list_local_results.SetName(_("Risultati Ricerca Locale"))
         self.list_local_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_local)
         self.list_local_results.Bind(wx.EVT_CHAR_HOOK, self.on_local_key)
         sbs_local.Add(self.list_local_results, 1, wx.EXPAND | wx.ALL, 5)
@@ -77,21 +85,43 @@ class PlayerEnrollmentDialog(wx.Dialog):
         sbs_fide = wx.StaticBoxSizer(self.sb_fide, wx.VERTICAL)
 
         self.search_fide = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
+        self.search_fide.SetName(
+            _("Filtra per nome o cognome nel database FIDE (minimo 3 caratteri)")
+        )
         self.search_fide.Bind(wx.EVT_TEXT, self.on_search_fide_changed)
         sbs_fide.Add(self.search_fide, 0, wx.EXPAND | wx.ALL, 5)
 
+        self.lbl_fide_status = wx.StaticText(
+            panel, label=_("Digita almeno 3 caratteri per cercare.")
+        )
+        self.lbl_fide_status.SetName(_("Stato ricerca FIDE"))
+        sbs_fide.Add(
+            self.lbl_fide_status, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
+        )
+
         self.list_fide_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        self.list_fide_results.SetName(_("Risultati Ricerca FIDE"))
         self.list_fide_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_fide)
         self.list_fide_results.Bind(wx.EVT_CHAR_HOOK, self.on_fide_key)
         sbs_fide.Add(self.list_fide_results, 1, wx.EXPAND | wx.ALL, 5)
 
         left_vbox.Add(sbs_fide, 1, wx.EXPAND | wx.ALL, 5)
 
+        # Pulsanti colonna sinistra: Iscrivi + Nuovo Giocatore
+        btn_left_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.btn_enroll = wx.Button(panel, label=_("&Iscrivi"))
+        self.btn_enroll.SetName(_("Iscrivi il giocatore selezionato"))
+        self.btn_enroll.Bind(wx.EVT_BUTTON, self.on_enroll_clicked)
+        btn_left_sizer.Add(self.btn_enroll, 1, wx.EXPAND | wx.RIGHT, 5)
+
         self.btn_new_player = wx.Button(
             panel, label=_("Nuovo Giocatore Da Zero (Principiante)")
         )
         self.btn_new_player.Bind(wx.EVT_BUTTON, self.on_create_new_player)
-        left_vbox.Add(self.btn_new_player, 0, wx.EXPAND | wx.ALL, 5)
+        btn_left_sizer.Add(self.btn_new_player, 2, wx.EXPAND)
+
+        left_vbox.Add(btn_left_sizer, 0, wx.EXPAND | wx.ALL, 5)
 
         main_hbox.Add(left_vbox, 1, wx.EXPAND)
 
@@ -122,14 +152,24 @@ class PlayerEnrollmentDialog(wx.Dialog):
         main_hbox.Add(right_vbox, 1, wx.EXPAND)
 
         panel.SetSizer(main_hbox)
-        main_hbox.Fit(self)
+
+        # Sizer principale per il Dialog stesso (self) per garantire elasticità al ridimensionamento
+        dialog_sizer = wx.BoxSizer(wx.VERTICAL)
+        dialog_sizer.Add(panel, 1, wx.EXPAND)
+        self.SetSizer(dialog_sizer)
+
+        self.SetMinSize((850, 600))
+        self.Layout()
 
     def apply_theme(self):
         apply_visual_settings(self.search_local, self.settings)
+        apply_visual_settings(self.lbl_local_status, self.settings)
         apply_visual_settings(self.list_local_results, self.settings)
         apply_visual_settings(self.search_fide, self.settings)
+        apply_visual_settings(self.lbl_fide_status, self.settings)
         apply_visual_settings(self.list_fide_results, self.settings)
         apply_visual_settings(self.list_enrolled, self.settings)
+        apply_visual_settings(self.btn_enroll, self.settings)
         apply_visual_settings(self.btn_new_player, self.settings)
 
     def update_enrolled_list(self):
@@ -212,10 +252,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
             self.local_results_map.append(p)
 
         total_found = len(matching_sorted)
-        self.sb_local.SetLabel(
-            _("Ricerca nel Database Personale Locale ({total} risultati)").format(
-                total=total_found
-            )
+        self.lbl_local_status.SetLabel(
+            _("Giocatori trovati: {total}").format(total=total_found)
         )
 
     def on_search_fide_changed(self, event):
@@ -234,9 +272,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.fide_displayed_count = 0
 
         if len(query) < 3:
-            self.sb_fide.SetLabel(
-                _("Ricerca nel Database FIDE (min. 3 caratteri) (0 risultati)")
-            )
+            self.lbl_fide_status.SetLabel(_("Digita almeno 3 caratteri per cercare."))
             return
 
         play_sound("fide_attesa")
@@ -254,10 +290,8 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.load_more_fide_results()
 
         total_found = len(self.all_fide_matches)
-        self.sb_fide.SetLabel(
-            _(
-                "Ricerca nel Database FIDE (min. 3 caratteri) ({total} risultati)"
-            ).format(total=total_found)
+        self.lbl_fide_status.SetLabel(
+            _("Giocatori trovati: {total}").format(total=total_found)
         )
 
         # Ripristina la selezione se indicata o seleziona il primo elemento
@@ -381,7 +415,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.enrolled_players.append(new_player)
         self.update_enrolled_list()
-        
+
         # Esegui la ricerca immediata senza passare per il debounce
         # e ripristina la selezione desiderata
         self.esegui_ricerca_fide(target_sel=sel)
@@ -410,7 +444,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.update_enrolled_list()
         self.on_search_local_changed(None)
-        
+
         # Aggiorna subito la ricerca FIDE
         self.esegui_ricerca_fide()
 
@@ -447,6 +481,36 @@ class PlayerEnrollmentDialog(wx.Dialog):
         play_sound("conferma")
         event.Skip()
 
+    def on_enroll_clicked(self, event):
+        focused_win = wx.Window.FindFocus()
+        local_sel = self.list_local_results.GetSelection()
+        fide_sel = self.list_fide_results.GetSelection()
+
+        # Se una lista ha il focus ed ha una selezione valida, usiamo quella
+        if focused_win == self.list_local_results and local_sel != wx.NOT_FOUND:
+            self.on_add_local(None)
+            return
+        elif focused_win == self.list_fide_results and fide_sel != wx.NOT_FOUND:
+            self.on_add_fide(None)
+            return
+
+        # Altrimenti proviamo ad aggiungere da chi ha una selezione
+        if local_sel != wx.NOT_FOUND:
+            self.on_add_local(None)
+        elif fide_sel != wx.NOT_FOUND:
+            self.on_add_fide(None)
+        else:
+            from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Nessuna Selezione"),
+                _("Seleziona prima un giocatore dalla ricerca locale o FIDE."),
+                settings=self.settings,
+            )
+            dlg.ShowModal()
+            dlg.Destroy()
+
     def get_enrolled_players(self):
         return self.enrolled_players
 
@@ -470,9 +534,16 @@ class PlayerEnrollmentDialog(wx.Dialog):
         dlg_fn.Destroy()
 
         if not last_name or not first_name:
-            wx.MessageBox(
-                _("Nome e Cognome sono obbligatori."), _("Errore"), wx.ICON_ERROR
+            from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _("Nome e Cognome sono obbligatori."),
+                settings=self.settings,
             )
+            dlg.ShowModal()
+            dlg.Destroy()
             return
 
         # Genera ID e crea nel DB locale

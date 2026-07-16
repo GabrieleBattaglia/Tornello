@@ -1,4 +1,4 @@
-MANUALE GUIDA DI TORNELLO v9.3.10
+MANUALE GUIDA DI TORNELLO v9.3.11
 =================================
 
 Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
@@ -11,7 +11,7 @@ Tornello è stato progettato con una priorità assoluta per l'accessibilità da 
 ========================================================================
 
 1.1 LA FILOSOFIA DI TORNELLO
-Tornello nasce dall'esigenza reale di semplificare la gestione dei tornei di scacchi all'interno dei circoli, eliminando il carico di lavoro manuale che spesso rallenta le competizioni. Il progetto è dedicato in modo particolare all'Associazione Scacchisti Italiani Ciechi e Ipovedenti (ASCId) e alla comunità di Scacchierando, ponendo l'inclusione e l'accessibilità digitale come pilastri fondanti. Lo sviluppo, guidato da Gabriele Battaglia (Gabry) con la collaborazione dell'intelligenza artificiale Stella, punta a fornire uno strumento che sia al contempo potente per gli arbitri esperti e semplice da usare per i principianti.
+Tornello nasce dall'esigenza reale di semplificare la gestione dei tornei di scacchi all'interno dei circoli, eliminando il carico di lavoro manuale che spesso rallenta le competizioni. Il progetto è dedicato in modo particolare all'Associazione Scacchisti Ciechi e Ipovedenti Italiani (ASCI) e alla comunità di Scacchierando, ponendo l'inclusione e l'accessibilità digitale come pilastri fondanti. Lo sviluppo, guidato da Gabriele Battaglia (Gabry) con la collaborazione dell'intelligenza artificiale Stella, punta a fornire uno strumento che sia al contempo potente per gli arbitri esperti e semplice da usare per i principianti.
 
 1.2 L'EVOLUZIONE DA CLI A INTERFACCIA GRAFICA (GUI)
 Nelle sue prime versioni, Tornello era un'applicazione a riga di comando (CLI). Con la versione 9, il software ha compiuto un salto generazionale adottando un'interfaccia grafica (GUI) nativa sviluppata in wxPython. 
