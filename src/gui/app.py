@@ -20,4 +20,5 @@ class TornelloApp(wx.App):
         self.main_frame = MainFrame(None, title="Tornello", settings=self.settings)
         self.SetTopWindow(self.main_frame)
         self.main_frame.Show()
+        self.main_frame.Raise()
         return True

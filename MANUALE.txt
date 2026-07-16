@@ -1,5 +1,5 @@
-MANUALE GUIDA DI TORNELLO v9.3.9
-================================
+MANUALE GUIDA DI TORNELLO v9.3.10
+=================================
 
 Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
 

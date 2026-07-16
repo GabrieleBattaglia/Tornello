@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.10 (2026.07.16)
+	+ Bugfix: Risolto stallo visivo dopo l'aggiornamento automatico (l'applicazione si riavviava in background rimanendo invisibile sotto la console vuota). Ora la finestra principale della GUI viene forzata in primo piano ed acquisisce il focus corretto all'avvio.
+	+ Bugfix: Risolto errore nella directory di lavoro corrente al riavvio dall'updater (ora l'applicazione viene avviata impostando la propria cartella principale anziché la cartella temporanea Temp).
+
 9.3.9 (2026.07.15)
 	+ Bugfix: Risolto un blocco potenziale all'avvio in cui la console di PowerShell rimaneva nera ed in attesa all'infinito. Il blocco era causato dai controlli e dai relativi dialoghi modali sul database FIDE e sui backup eseguiti all'interno del costruttore del Frame principale prima dell'inizializzazione del ciclo eventi della GUI. Ora i controlli sono stati differiti tramite wx.CallAfter a finestra mostrata.
 
