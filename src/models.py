@@ -144,7 +144,7 @@ class Player:
             id=d.get("id", ""),
             first_name=d.get("first_name", ""),
             last_name=d.get("last_name", ""),
-            initial_elo=float(d.get("initial_elo", 1399.0)),
+            initial_elo=float(d.get("initial_elo") or d.get("current_elo") or 1399.0),
             fide_title=d.get("fide_title", ""),
             sex=sex_val,
             gender=gender_val,

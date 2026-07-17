@@ -37,13 +37,14 @@ locales_dir = resource_path("locales")
 project_root = user_data_path("")
 
 # Inizializzazione silente della lingua al primo avvio per evitare prompt in console
-selected_lang_file = os.path.join(project_root, 'selected_language.json')
+selected_lang_file = os.path.join(project_root, "selected_language.json")
 if not os.path.exists(selected_lang_file):
     import json
     import locale
+
     try:
         system_lang, _ = locale.getdefaultlocale()
-        sys_code = system_lang.split('_')[0].lower() if system_lang else "it"
+        sys_code = system_lang.split("_")[0].lower() if system_lang else "it"
     except Exception:
         sys_code = "it"
     supported_langs = ["it", "en", "es", "fr", "pt"]
@@ -51,11 +52,12 @@ if not os.path.exists(selected_lang_file):
     try:
         if not os.path.exists(project_root):
             os.makedirs(project_root)
-        with open(selected_lang_file, 'w', encoding='utf-8') as f:
-            json.dump({
-                "language_code": default_lang,
-                "available_languages": supported_langs
-            }, f, indent=4)
+        with open(selected_lang_file, "w", encoding="utf-8") as f:
+            json.dump(
+                {"language_code": default_lang, "available_languages": supported_langs},
+                f,
+                indent=4,
+            )
     except Exception:
         pass
 

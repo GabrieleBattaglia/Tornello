@@ -738,6 +738,8 @@ def get_standings_text(torneo, final=False):
     seeding_map = {p["id"]: i + 1 for i, p in enumerate(players_for_seeding)}
     # --------------------------------------------
 
+    from stats import calculate_performance_rating, calculate_elo_change, get_k_factor
+
     for p in players:
         p_id = p.get("id")
         if not p_id:
@@ -747,6 +749,15 @@ def get_standings_text(torneo, final=False):
         p["aro"] = compute_aro(p_id, torneo)
         if p.get("withdrawn", False):
             p["final_rank"] = "RIT"
+            p["performance_rating"] = None
+            p["elo_change"] = None
+        else:
+            if p.get("k_factor") is None:
+                p["k_factor"] = get_k_factor(p, torneo.get("start_date"))
+            p["performance_rating"] = calculate_performance_rating(
+                p, torneo["players_dict"]
+            )
+            p["elo_change"] = calculate_elo_change(p, torneo["players_dict"])
 
     def sort_key_standings(player_item):
         # Criteri impliciti sempre attivi: punti (decrescente) e stato attivo/ritirato
@@ -783,6 +794,7 @@ def get_standings_text(torneo, final=False):
             has_real_results = True
             break
 
+    show_ratings = final or has_real_results
     status_line = ""
     is_initial_list = False
     if final:
@@ -968,7 +980,7 @@ def get_standings_text(torneo, final=False):
     if headers_list:
         header_table += " " + " ".join(headers_list)
 
-    if final:
+    if show_ratings:
         header_table += " " + _("Perf") + " " + _("Elo Var.")
 
     out.write(header_table + "\n")
@@ -1009,7 +1021,7 @@ def get_standings_text(torneo, final=False):
         if vals_list:
             line += " " + " ".join(vals_list)
 
-        if final:
+        if show_ratings:
             if player.get("withdrawn", False):
                 perf_str, elo_change_str = "----", " ---"
             else:

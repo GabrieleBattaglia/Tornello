@@ -53,6 +53,7 @@ def _cerca_giocatore_nel_db_fide(search_term):
 
     # Ricerca testuale tramite FTS5
     from fide_db import search_players
+
     return search_players(search_term, limit=50)
 
 
@@ -433,6 +434,7 @@ def sincronizza_db_personale():
 
 class ProgressFileObject:
     """Wrapper per file-like object che segnala il progresso della lettura al callback."""
+
     def __init__(self, fileobj, callback, total_size):
         self.fileobj = fileobj
         self.callback = callback
@@ -444,7 +446,7 @@ class ProgressFileObject:
         self.bytes_read += len(data)
         if self.callback:
             try:
-                self.callback('processing', self.bytes_read, self.total_size)
+                self.callback("processing", self.bytes_read, self.total_size)
             except Exception:
                 pass
         return data
@@ -454,7 +456,7 @@ class ProgressFileObject:
         self.bytes_read += len(data)
         if self.callback:
             try:
-                self.callback('processing', self.bytes_read, self.total_size)
+                self.callback("processing", self.bytes_read, self.total_size)
             except Exception:
                 pass
         return data
@@ -483,13 +485,15 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
         print(
             _("Download del file ZIP FIDE da: {url}").format(url=FIDE_XML_DOWNLOAD_URL)
         )
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
         zip_response = requests.get(
             FIDE_XML_DOWNLOAD_URL, headers=headers, timeout=(30, 600), stream=True
         )
         zip_response.raise_for_status()
 
-        total_length = zip_response.headers.get('content-length')
+        total_length = zip_response.headers.get("content-length")
         chunks = []
 
         if total_length is None:
@@ -505,12 +509,16 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                     bytes_downloaded += len(chunk)
                     if progress_callback:
                         try:
-                            progress_callback('download', bytes_downloaded, total_bytes)
+                            progress_callback("download", bytes_downloaded, total_bytes)
                         except Exception:
                             pass
 
         download_duration = time.time() - start_download
-        print(_("Download completato in {duration:.2f}s. Apertura archivio ZIP in memoria...").format(duration=download_duration))
+        print(
+            _(
+                "Download completato in {duration:.2f}s. Apertura archivio ZIP in memoria..."
+            ).format(duration=download_duration)
+        )
 
         start_processing = time.time()
         zip_data = b"".join(chunks)
@@ -528,17 +536,18 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
             xml_size = xml_info.file_size
 
             print(
-                _("Estrazione ed elaborazione del file XML: {filename} ({size_mb:.1f} MB)...").format(
-                    filename=xml_filename,
-                    size_mb=xml_size / (1024 * 1024)
-                )
+                _(
+                    "Estrazione ed elaborazione del file XML: {filename} ({size_mb:.1f} MB)..."
+                ).format(filename=xml_filename, size_mb=xml_size / (1024 * 1024))
             )
 
             # Crea il database SQLite vuoto
             create_fide_db()
 
             raw_xml_file = zf.open(xml_filename)
-            progress_xml_file = ProgressFileObject(raw_xml_file, progress_callback, xml_size)
+            progress_xml_file = ProgressFileObject(
+                raw_xml_file, progress_callback, xml_size
+            )
 
             # Generatore che produce record giocatori dal file XML
             def parse_xml_players():
@@ -574,9 +583,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                             def get_int(tag, default=0):
                                 text = get_text(tag, "")
                                 return (
-                                    int(text)
-                                    if text.lstrip("-").isdigit()
-                                    else default
+                                    int(text) if text.lstrip("-").isdigit() else default
                                 )
 
                             yield {
@@ -608,7 +615,9 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                         elem.clear()
                 progress_xml_file.close()
 
-            player_count = bulk_insert_players(parse_xml_players(), progress_callback=None)
+            player_count = bulk_insert_players(
+                parse_xml_players(), progress_callback=None
+            )
 
             processing_duration = time.time() - start_processing
             new_count = get_player_count()
@@ -630,11 +639,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
             if cleanup_legacy_json():
                 print(_("Vecchio file JSON FIDE rimosso."))
 
-            print(
-                _(
-                    "Database FIDE locale 'fide_ratings.db' salvato con successo."
-                )
-            )
+            print(_("Database FIDE locale 'fide_ratings.db' salvato con successo."))
             return True
     except requests.exceptions.Timeout:
         print(_("ERRORE: Timeout durante il download del file."))

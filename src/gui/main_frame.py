@@ -2503,7 +2503,7 @@ class MainFrame(wx.Frame):
 
             if not has_next:
                 next_item = self.tree_ctrl.AppendItem(
-                    self.tree_root, _("Avanti (Iscrizione Giocatori)")
+                    self.tree_root, _("Iscrizione Giocatori")
                 )
                 self.tree_ctrl.SetItemData(next_item, {"action": "wizard_next"})
                 if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
@@ -3098,9 +3098,11 @@ class MainFrame(wx.Frame):
         )
         self.tree_ctrl.SetItemData(self.tree_bye, {"field": "bye_value"})
 
-        # Verifica se i campi obbligatori sono validati per mostrare "Avanti"
+        # Verifica se i campi obbligatori sono validati per mostrare "Iscrizione Giocatori"
         if self.creation_data["name"] and self.creation_data["time_control"]:
-            next_item = self.tree_ctrl.AppendItem(self.tree_root, _("Avanti"))
+            next_item = self.tree_ctrl.AppendItem(
+                self.tree_root, _("Iscrizione Giocatori")
+            )
             self.tree_ctrl.SetItemData(next_item, {"action": "wizard_next"})
 
         if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
@@ -3377,6 +3379,12 @@ class MainFrame(wx.Frame):
                 )
                 dlg.Destroy()
                 return
+
+            from stats import get_initial_elo_for_tournament
+
+            category = self.current_tournament.get("tournament_category", "standard")
+            for p in enrolled:
+                p["initial_elo"] = get_initial_elo_for_tournament(p, category)
 
             from models import Player
 

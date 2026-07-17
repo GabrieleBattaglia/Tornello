@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.12 (2026.07.17)
+	+ Bugfix: Risolto il problema per cui l'Elo dei giocatori iscritti si azzerava al valore predefinito di 1399 all'atto dell'iscrizione al torneo.
+	+ Bugfix: Abilitato il calcolo e la visualizzazione dinamica del rating provvisorio (Performance e Variazione Elo) nella classifica parziale/provvisoria durante il torneo non appena ci sono partite giocate.
+	+ Bugfix: Uniformate le scritte dei comandi del wizard per procedere all'iscrizione con la dicitura coerente "Iscrizione Giocatori".
+
 9.3.11 (2026.07.16)
 	+ Feature: Aggiunto pulsante esplicito "Iscrivi" nel dialogo di iscrizione giocatori.
 	+ Feature: Ottimizzato il layout elastico del dialogo di iscrizione al ridimensionamento.

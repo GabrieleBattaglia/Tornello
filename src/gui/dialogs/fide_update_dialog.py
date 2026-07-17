@@ -13,6 +13,7 @@ class FideUpdateThread(threading.Thread):
     Thread per eseguire lo scaricamento e la creazione del DB FIDE SQLite
     senza bloccare l'interfaccia grafica.
     """
+
     def __init__(self, progress_callback, completion_callback):
         super().__init__()
         self.progress_callback = progress_callback
@@ -23,8 +24,7 @@ class FideUpdateThread(threading.Thread):
     def run(self):
         try:
             self.success = aggiorna_db_fide_locale(
-                progress_callback=self.progress_callback,
-                stats_output=self.stats
+                progress_callback=self.progress_callback, stats_output=self.stats
             )
         except Exception:
             self.success = False
@@ -45,8 +45,10 @@ class FideUpdateDialog(wx.Dialog):
         )
 
         self.settings = settings
-        self.last_announced_percent = -5  # Annuncia ogni 5% per non saturare lo screen reader
-        
+        self.last_announced_percent = (
+            -5
+        )  # Annuncia ogni 5% per non saturare lo screen reader
+
         self.init_ui()
         self.apply_theme()
         self.Centre()
@@ -94,32 +96,30 @@ class FideUpdateDialog(wx.Dialog):
     def update_progress(self, phase, current, total):
         if total <= 0:
             return
-        
+
         percent = int((current / total) * 100)
         percent = max(0, min(100, percent))
         self.gauge.SetValue(percent)
 
         # Formattazione accessibile a NVDA
-        if phase == 'download':
+        if phase == "download":
             title_text = _("Scaricamento Database FIDE...")
             if self.GetTitle() != title_text:
                 self.SetTitle(title_text)
-            
+
             current_mb = current / (1024 * 1024)
             total_mb = total / (1024 * 1024)
-            msg = _("Scaricamento in corso: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} MB)...").format(
-                percent=percent,
-                current_mb=current_mb,
-                total_mb=total_mb
-            )
+            msg = _(
+                "Scaricamento in corso: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} MB)..."
+            ).format(percent=percent, current_mb=current_mb, total_mb=total_mb)
             if self.status_label.GetLabel() != msg:
                 self.status_label.SetLabel(msg)
 
-        elif phase == 'processing':
+        elif phase == "processing":
             title_text = _("Analisi del DB FIDE e creazione DB SQLite...")
             if self.GetTitle() != title_text:
                 self.SetTitle(title_text)
-            
+
             msg = _("Scrittura del database SQLite: {percent}%...").format(
                 percent=percent
             )
@@ -149,17 +149,17 @@ class FideUpdateDialog(wx.Dialog):
             d_time = format_duration(stats.get("download_time", 0.0))
             p_time = format_duration(stats.get("processing_time", 0.0))
             saved_count = stats.get("saved_count", 0)
-            
+
             old_c = stats.get("old_count", 0)
             new_c = stats.get("new_count", 0)
-            
+
             success_msg = _(
                 "Database FIDE locale aggiornato con successo!\n\n"
                 "Tempo impiegato per il download: {d_time}\n"
                 "Tempo per l'elaborazione del DB SQLite: {p_time}\n"
                 "Totale giocatori salvati: {saved_count}"
             ).format(d_time=d_time, p_time=p_time, saved_count=saved_count)
-            
+
             # Se c'era già un DB con dei record, mostriamo la differenza e la percentuale
             if old_c > 0:
                 diff = new_c - old_c
@@ -169,11 +169,11 @@ class FideUpdateDialog(wx.Dialog):
                     "\n\nStatistiche di aggiornamento:\n"
                     "Prima {old_c} giocatori, ora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
                 ).format(old_c=old_c, new_c=new_c, sign=sign, diff=diff, perc=perc)
-            
+
             self.status_label.SetLabel(
                 _("Database FIDE locale aggiornato con successo!")
             )
-            
+
             # Utilizza il dialogo personalizzato e accessibile per mostrare le statistiche
             dlg = AccessibleMsgDialog(
                 self,
@@ -190,7 +190,9 @@ class FideUpdateDialog(wx.Dialog):
             dlg = AccessibleMsgDialog(
                 self,
                 _("Errore"),
-                _("Errore durante l'aggiornamento del Database FIDE. Controlla la connessione ad internet."),
+                _(
+                    "Errore durante l'aggiornamento del Database FIDE. Controlla la connessione ad internet."
+                ),
             )
             dlg.ShowModal()
             dlg.Destroy()
