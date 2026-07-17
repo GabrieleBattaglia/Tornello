@@ -341,9 +341,21 @@ class SyncDatabaseDialog(wx.Dialog):
                     for k_fide, k_local in [
                         ("elo_rapid", "elo_rapid"),
                         ("elo_blitz", "elo_blitz"),
+                        ("k_factor", "fide_k_factor"),
+                        ("games", "fide_standard_games"),
+                        ("rapid_games", "fide_rapid_games"),
+                        ("rapid_k", "fide_rapid_k"),
+                        ("blitz_games", "fide_blitz_games"),
+                        ("blitz_k", "fide_blitz_k"),
+                        ("w_title", "w_title"),
+                        ("o_title", "o_title"),
+                        ("foa_title", "foa_title"),
+                        ("flag", "flag"),
                     ]:
                         val_f = selected_match.get(k_fide)
-                        if val_f:
+                        if val_f is not None and val_f != "":
+                            if "elo" in k_fide and val_f == 0:
+                                continue
                             local_p[k_local] = val_f
 
                     applied_count += 1

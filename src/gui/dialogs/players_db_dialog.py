@@ -105,8 +105,9 @@ class PlayersDbDialog(wx.Dialog):
 
         for p_id, p in matching_sorted:
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo = p.get("current_elo", 1399)
-            label = f"{name} (ELO: {elo} - ID: {p_id})"
+            elo_std = p.get("current_elo", 1399)
+            elo_rap = p.get("elo_rapid", 0)
+            label = f"{name} (Std: {elo_std}, Rap: {elo_rap} - ID: {p_id})"
             self.list_players.Append(label)
             self.players_map.append(p_id)
 
@@ -172,6 +173,25 @@ class PlayersDbDialog(wx.Dialog):
         )
         self.tree_ctrl.SetItemPyData(item_fed, {"type": "field", "key": "federation"})
 
+        item_club = self.tree_ctrl.AppendItem(
+            node_bio, _("Club/Società: {}").format(p.get("club", ""))
+        )
+        self.tree_ctrl.SetItemPyData(item_club, {"type": "field", "key": "club"})
+
+        item_gp = self.tree_ctrl.AppendItem(
+            node_bio, _("Partite Locali Giocate: {}").format(p.get("games_played", 0))
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_gp, {"type": "field", "key": "games_played", "is_int": True}
+        )
+
+        item_reg = self.tree_ctrl.AppendItem(
+            node_bio, _("Data Registrazione: {}").format(p.get("registration_date", ""))
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_reg, {"type": "field", "key": "registration_date"}
+        )
+
         # 2. ELO
         node_elo = self.tree_ctrl.AppendItem(root_node, _("ELO e Titoli"))
 
@@ -213,6 +233,79 @@ class PlayersDbDialog(wx.Dialog):
         self.tree_ctrl.SetItemPyData(
             item_fid, {"type": "field", "key": "fide_id_num_str"}
         )
+
+        k_std = p.get("fide_k_factor")
+        k_std_str = str(k_std) if k_std is not None else ""
+        item_k_std = self.tree_ctrl.AppendItem(
+            node_elo, _("FIDE Standard K: {}").format(k_std_str)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_k_std, {"type": "field", "key": "fide_k_factor", "is_int": True}
+        )
+
+        g_std = p.get("fide_standard_games", 0)
+        item_g_std = self.tree_ctrl.AppendItem(
+            node_elo, _("Partite FIDE Standard: {}").format(g_std)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_g_std, {"type": "field", "key": "fide_standard_games", "is_int": True}
+        )
+
+        k_rap = p.get("fide_rapid_k")
+        k_rap_str = str(k_rap) if k_rap is not None else ""
+        item_k_rap = self.tree_ctrl.AppendItem(
+            node_elo, _("FIDE Rapid K: {}").format(k_rap_str)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_k_rap, {"type": "field", "key": "fide_rapid_k", "is_int": True}
+        )
+
+        g_rap = p.get("fide_rapid_games", 0)
+        item_g_rap = self.tree_ctrl.AppendItem(
+            node_elo, _("Partite FIDE Rapid: {}").format(g_rap)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_g_rap, {"type": "field", "key": "fide_rapid_games", "is_int": True}
+        )
+
+        k_blz = p.get("fide_blitz_k")
+        k_blz_str = str(k_blz) if k_blz is not None else ""
+        item_k_blz = self.tree_ctrl.AppendItem(
+            node_elo, _("FIDE Blitz K: {}").format(k_blz_str)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_k_blz, {"type": "field", "key": "fide_blitz_k", "is_int": True}
+        )
+
+        g_blz = p.get("fide_blitz_games", 0)
+        item_g_blz = self.tree_ctrl.AppendItem(
+            node_elo, _("Partite FIDE Blitz: {}").format(g_blz)
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_g_blz, {"type": "field", "key": "fide_blitz_games", "is_int": True}
+        )
+
+        item_w_title = self.tree_ctrl.AppendItem(
+            node_elo, _("Titolo Femminile: {}").format(p.get("w_title", ""))
+        )
+        self.tree_ctrl.SetItemPyData(item_w_title, {"type": "field", "key": "w_title"})
+
+        item_o_title = self.tree_ctrl.AppendItem(
+            node_elo, _("Titolo Arbitro/Altro: {}").format(p.get("o_title", ""))
+        )
+        self.tree_ctrl.SetItemPyData(item_o_title, {"type": "field", "key": "o_title"})
+
+        item_foa_title = self.tree_ctrl.AppendItem(
+            node_elo, _("Titolo FOA: {}").format(p.get("foa_title", ""))
+        )
+        self.tree_ctrl.SetItemPyData(
+            item_foa_title, {"type": "field", "key": "foa_title"}
+        )
+
+        item_flag = self.tree_ctrl.AppendItem(
+            node_elo, _("Flag (Caratteristica): {}").format(p.get("flag", ""))
+        )
+        self.tree_ctrl.SetItemPyData(item_flag, {"type": "field", "key": "flag"})
 
         # 3. Storico Tornei
         node_hist = self.tree_ctrl.AppendItem(root_node, _("Storico Tornei"))
@@ -288,11 +381,24 @@ class PlayersDbDialog(wx.Dialog):
             "gender": _("Sesso"),
             "birth_date": _("Anno Nascita"),
             "federation": _("Nazione (FED)"),
+            "club": _("Club/Società"),
+            "games_played": _("Partite Locali Giocate"),
+            "registration_date": _("Data Registrazione"),
             "current_elo": _("ELO Standard"),
             "elo_rapid": _("ELO Rapid"),
             "elo_blitz": _("ELO Blitz"),
             "fide_title": _("Titolo FIDE"),
             "fide_id_num_str": _("ID FIDE"),
+            "fide_k_factor": _("FIDE Standard K"),
+            "fide_standard_games": _("Partite FIDE Standard"),
+            "fide_rapid_k": _("FIDE Rapid K"),
+            "fide_rapid_games": _("Partite FIDE Rapid"),
+            "fide_blitz_k": _("FIDE Blitz K"),
+            "fide_blitz_games": _("Partite FIDE Blitz"),
+            "w_title": _("Titolo Femminile"),
+            "o_title": _("Titolo Arbitro/Altro"),
+            "foa_title": _("Titolo FOA"),
+            "flag": _("Flag (Caratteristica)"),
             "gold": _("Ori (Oro)"),
             "silver": _("Argenti (Argento)"),
             "bronze": _("Bronzi (Bronzo)"),
@@ -372,33 +478,60 @@ class PlayersDbDialog(wx.Dialog):
                     "gender": _("Sesso: "),
                     "birth_date": _("Anno Nascita: "),
                     "federation": _("Nazione (FED): "),
+                    "club": _("Club/Società: "),
+                    "games_played": _("Partite Locali Giocate: "),
+                    "registration_date": _("Data Registrazione: "),
                     "current_elo": _("ELO Standard: "),
                     "elo_rapid": _("ELO Rapid: "),
                     "elo_blitz": _("ELO Blitz: "),
                     "fide_title": _("Titolo FIDE: "),
                     "fide_id_num_str": _("ID FIDE: "),
+                    "fide_k_factor": _("FIDE Standard K: "),
+                    "fide_standard_games": _("Partite FIDE Standard: "),
+                    "fide_rapid_k": _("FIDE Rapid K: "),
+                    "fide_rapid_games": _("Partite FIDE Rapid: "),
+                    "fide_blitz_k": _("FIDE Blitz K: "),
+                    "fide_blitz_games": _("Partite FIDE Blitz: "),
+                    "w_title": _("Titolo Femminile: "),
+                    "o_title": _("Titolo Arbitro/Altro: "),
+                    "foa_title": _("Titolo FOA: "),
+                    "flag": _("Flag (Caratteristica): "),
                 }
                 prefix = prefix_map.get(key, "")
-                disp_val = p[key]
+                disp_val = p.get(key, "")
                 if key == "sex":
-                    disp_val = "W" if p["sex"] == "w" else "M"
-                elif key in ("current_elo", "elo_rapid", "elo_blitz"):
+                    disp_val = "W" if p.get("sex") == "w" else "M"
+                elif key in (
+                    "current_elo",
+                    "elo_rapid",
+                    "elo_blitz",
+                    "games_played",
+                    "fide_standard_games",
+                    "fide_rapid_games",
+                    "fide_blitz_games",
+                ):
                     try:
                         disp_val = int(float(disp_val))
                     except (ValueError, TypeError):
                         disp_val = 0
+                elif key in ("fide_k_factor", "fide_rapid_k", "fide_blitz_k"):
+                    if disp_val is not None:
+                        try:
+                            disp_val = int(float(disp_val))
+                        except (ValueError, TypeError):
+                            disp_val = ""
+                    else:
+                        disp_val = ""
                 self.tree_ctrl.SetItemText(item, f"{prefix}{disp_val}")
-
-            # Se è cambiato il nome o il cognome, aggiorna la radice dell'albero e la listbox di sinistra
-            if key in ["last_name", "first_name"]:
-                root_item = self.tree_ctrl.GetFirstChild(self.tree_ctrl.GetRootItem())[
-                    0
-                ]
-                if root_item.IsOk():
-                    p_name = (
-                        f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                    )
-                    self.tree_ctrl.SetItemText(root_item, p_name)
+            # Se sono cambiati dati identificativi o l'Elo, aggiorna la radice dell'albero e la listbox di sinistra
+            if key in ["last_name", "first_name", "current_elo", "elo_rapid"]:
+                if key in ["last_name", "first_name"]:
+                    root_item = self.tree_ctrl.GetFirstChild(
+                        self.tree_ctrl.GetRootItem()
+                    )[0]
+                    if root_item.IsOk():
+                        p_name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+                        self.tree_ctrl.SetItemText(root_item, p_name)
 
                 sel = self.list_players.GetSelection()
                 if sel != wx.NOT_FOUND:
@@ -406,7 +539,11 @@ class PlayersDbDialog(wx.Dialog):
                     name_lbl = (
                         f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
                     )
-                    self.list_players.SetString(sel, f"{name_lbl} (ID: {p_id})")
+                    elo_std = p.get("current_elo", 1399)
+                    elo_rap = p.get("elo_rapid", 0)
+                    self.list_players.SetString(
+                        sel, f"{name_lbl} (Std: {elo_std}, Rap: {elo_rap} - ID: {p_id})"
+                    )
 
         dlg.Destroy()
 

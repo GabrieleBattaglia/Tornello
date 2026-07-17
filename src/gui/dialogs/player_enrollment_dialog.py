@@ -14,7 +14,9 @@ class PlayerEnrollmentDialog(wx.Dialog):
     con la possibilità di aggiungere o rimuovere partecipanti.
     """
 
-    def __init__(self, parent, players_db, enrolled_players, settings):
+    def __init__(
+        self, parent, players_db, enrolled_players, settings, category="standard"
+    ):
         title = _("Iscrizione Giocatori")
         super().__init__(
             parent,
@@ -25,6 +27,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self.settings = settings
         self.players_db = players_db
+        self.category = category
         # Facciamo una copia dei giocatori iscritti per gestire l'annullamento
         self.enrolled_players = list(enrolled_players)
 
@@ -174,10 +177,12 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
     def update_enrolled_list(self):
         """Aggiorna il contenuto della lista dei giocatori iscritti, ordinati per ELO decrescente."""
-        # Ordina per ELO decrescente, poi per cognome, poi per nome
+        from stats import get_initial_elo_for_tournament
+
+        # Ordina per ELO decrescente (in base alla cadenza del torneo), poi per cognome, poi per nome
         self.enrolled_players.sort(
             key=lambda x: (
-                -(x.get("current_elo") or x.get("elo_standard") or 1399),
+                -get_initial_elo_for_tournament(x, self.category),
                 x.get("last_name", "").lower(),
                 x.get("first_name", "").lower(),
             )
@@ -189,7 +194,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         for idx, p in enumerate(self.enrolled_players):
             last_name = p.get("last_name", "")
             first_name = p.get("first_name", "")
-            elo = p.get("current_elo") or p.get("elo_standard") or 1399
+            elo = int(get_initial_elo_for_tournament(p, self.category))
             fed = p.get("federation") or "ITA"
             label = f"{idx + 1}. {last_name} {first_name} ({fed}) {elo}"
             self.list_enrolled.Append(label)
@@ -244,9 +249,10 @@ class PlayerEnrollmentDialog(wx.Dialog):
         for p in matching_sorted:
             p_id = p.get("id")
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo = p.get("current_elo") or p.get("elo_standard") or 1399
-            label = _("{name} (ELO: {elo} - ID: {id})").format(
-                name=name, elo=elo, id=p_id
+            elo_std = p.get("current_elo") or p.get("elo_standard") or 1399
+            elo_rap = p.get("elo_rapid") or 0
+            label = _("{name} (Std: {elo_std}, Rap: {elo_rap} - ID: {id})").format(
+                name=name, elo_std=elo_std, elo_rap=elo_rap, id=p_id
             )
             self.list_local_results.Append(label)
             self.local_results_map.append(p)
@@ -324,12 +330,14 @@ class PlayerEnrollmentDialog(wx.Dialog):
             p = self.all_fide_matches[i]
             fide_id_str = str(p.get("id_fide"))
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo = p.get("elo_standard", 0)
+            elo_std = p.get("elo_standard", 0)
+            elo_rap = p.get("elo_rapid", 0)
             label = _(
-                "{name} (ELO FIDE: {elo} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
+                "{name} (Std: {elo_std}, Rap: {elo_rap} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
             ).format(
                 name=name,
-                elo=elo,
+                elo_std=elo_std,
+                elo_rap=elo_rap,
                 fide_id=fide_id_str,
                 anno=p.get("birth_year", _("N/D")),
                 fed=p.get("federation", _("N/D")),
@@ -405,6 +413,18 @@ class PlayerEnrollmentDialog(wx.Dialog):
             "first_name": fide_player.get("first_name", ""),
             "last_name": fide_player.get("last_name", ""),
             "current_elo": fide_player.get("elo_standard") or 1399,
+            "elo_rapid": fide_player.get("elo_rapid", 0),
+            "elo_blitz": fide_player.get("elo_blitz", 0),
+            "fide_k_factor": fide_player.get("k_factor"),
+            "fide_rapid_k": fide_player.get("rapid_k"),
+            "fide_blitz_k": fide_player.get("blitz_k"),
+            "fide_standard_games": fide_player.get("games", 0),
+            "fide_rapid_games": fide_player.get("rapid_games", 0),
+            "fide_blitz_games": fide_player.get("blitz_games", 0),
+            "w_title": fide_player.get("w_title", ""),
+            "o_title": fide_player.get("o_title", ""),
+            "foa_title": fide_player.get("foa_title", ""),
+            "flag": fide_player.get("flag", ""),
             "fide_id_num_str": str(fide_player.get("id_fide")),
             "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
             "sex": sex_val,

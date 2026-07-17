@@ -69,16 +69,17 @@ def pct_to_byte(pct):
     return max(0, min(255, val))
 
 
-def apply_visual_settings(control, settings):
+def apply_visual_settings(control, settings, force_dialog=False):
     """Applica font, colore di testo e colore di sfondo a un controllo wxPython per l'accessibilità."""
     # Rileva automaticamente se il controllo fa parte di una finestra di dialogo
-    is_dialog = False
-    p = control
-    while p:
-        if isinstance(p, wx.Dialog):
-            is_dialog = True
-            break
-        p = p.GetParent()
+    is_dialog = force_dialog
+    if not is_dialog:
+        p = control
+        while p:
+            if isinstance(p, wx.Dialog):
+                is_dialog = True
+                break
+            p = p.GetParent()
 
     if is_dialog:
         fs = settings.get("dialog_font_size", settings.get("font_size", 12))

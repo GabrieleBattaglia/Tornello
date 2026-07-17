@@ -2,9 +2,19 @@
 =============================
 
 9.3.12 (2026.07.17)
+	+ Feature: Memorizzazione e copia integrale di tutti i dati FIDE (Elo Rapid/Blitz, tutti i K-Factor FIDE, conteggio partite per ciascuna cadenza, titoli femminili/arbitri/FOA e nazionalità FIDE) nel database locale personale al momento dell'importazione o iscrizione.
+	+ Feature: Esposta la totalità delle informazioni del giocatore (Elo Rapid/Blitz, partite, K-Factor, titoli collaterali e flag FIDE) sia nella consultazione del DB FIDE sia nel gestore del DB locale tramite albero, rendendo i nuovi campi interamente modificabili a mano.
+	+ Feature: Visualizzazione allineata e compatta contenente sia l'Elo Standard sia l'Elo Rapid in tutte le ricerche e liste dei giocatori (ricerca locale, ricerca FIDE e lista del DB personale).
+	+ Feature: Allineata l'iscrizione dei giocatori affinché utilizzi, ordini e mostri l'Elo specifico per la cadenza del torneo (Standard, Rapid, Blitz) all'interno del dialogo di iscrizione, dell'albero dei tornei e dei report; aggiunto ricalcolo automatico di tutti gli Elo degli iscritti qualora si modifichi la cadenza di un torneo non ancora iniziato.
+	+ Feature: Impedita la modifica dei parametri critici di un torneo (tempo riflessione, colore al primo tabellone, valore del BYE) una volta iniziato per preservare l'integrità dei turni ed accoppiamenti, mostrando un messaggio di errore a tema.
+	+ Feature: Aggiunto l'asterisco `*` per contrassegnare il campo obbligatorio `Nome torneo *` nel wizard di creazione torneo e configurato il focus automatico dello screen reader su questa voce al primissimo avvio.
+	+ Bugfix: Risolto il colore di sfondo della barra di stato del pannello principale che veniva reimpostato a bianco a causa del reset di RichEdit su Windows; ora mantiene costantemente i colori e lo stile del tema impostato per i dialoghi.
+	+ Bugfix: Ottimizzato il layout elastico della ricerca del DB FIDE con larghezze minime vincolate (300px per la lista, 450px per i dettagli) per impedire il restringimento della finestra ad opera di Fit(self) e la conseguente andata a capo forzata del testo.
 	+ Bugfix: Risolto il problema per cui l'Elo dei giocatori iscritti si azzerava al valore predefinito di 1399 all'atto dell'iscrizione al torneo.
 	+ Bugfix: Abilitato il calcolo e la visualizzazione dinamica del rating provvisorio (Performance e Variazione Elo) nella classifica parziale/provvisoria durante il torneo non appena ci sono partite giocate.
 	+ Bugfix: Uniformate le scritte dei comandi del wizard per procedere all'iscrizione con la dicitura coerente "Iscrizione Giocatori".
+	+ Bugfix: Abilitata la cancellazione (tasto Canc) di un giocatore dal TreeCtrl destro a torneo non ancora iniziato, riportando in modo pulito il focus sul ramo genitore "iscritti" sia in caso di successo che di annullamento.
+	+ Bugfix: Perfezionato lo spostamento del focus al completamento del wizard di creazione torneo: sul ramo del turno corrente se si avvia il torneo, o sul ramo "aggiungi giocatore" se si sceglie di lasciarlo in preparazione.
 
 9.3.11 (2026.07.16)
 	+ Feature: Aggiunto pulsante esplicito "Iscrivi" nel dialogo di iscrizione giocatori.

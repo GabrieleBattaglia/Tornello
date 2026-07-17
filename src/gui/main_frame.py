@@ -264,7 +264,7 @@ class MainFrame(wx.Frame):
         """Applica la combinazione di colori ed il font impostati in settings a tutti i controlli."""
         apply_visual_settings(self.main_text, self.settings)
         apply_visual_settings(self.tree_ctrl, self.settings)
-        apply_visual_settings(self.status_text, self.settings)
+        apply_visual_settings(self.status_text, self.settings, force_dialog=True)
 
         # Applica il tema anche ai sotto-pannelli e alle etichette adiacenti
         if hasattr(self, "left_pane") and self.left_pane:
@@ -409,6 +409,7 @@ class MainFrame(wx.Frame):
             lines.append(vit_line)
 
         self.status_text.SetValue("\n".join(lines))
+        apply_visual_settings(self.status_text, self.settings, force_dialog=True)
 
     def append_log(self, text):
         """Aggiunge testo all'area centrale posizionando il cursore all'inizio del blocco inserito."""
@@ -2257,7 +2258,7 @@ class MainFrame(wx.Frame):
                 self.creation_data["name"] = dlg.GetValue().strip()
                 self.tree_ctrl.SetItemText(
                     item,
-                    _("Nome torneo: {}").format(
+                    _("Nome torneo *: {}").format(
                         self.creation_data["name"] or _("Non impostato")
                     ),
                 )
@@ -2517,10 +2518,24 @@ class MainFrame(wx.Frame):
 
         play_sound("conferma")
 
-        # Apri il dialogo di iscrizione giocatori
+        # Calcola la categoria del torneo in base al tempo di riflessione inserito
         from gui.dialogs import PlayerEnrollmentDialog
+        from stats import parse_time_control, classify_tournament_category
 
-        dlg = PlayerEnrollmentDialog(self, players_db, [], self.settings)
+        tc_parsed = parse_time_control(
+            self.creation_data.get("time_control", "60+0")
+        ) or {
+            "minutes": 60,
+            "increment": 0,
+        }
+        category = classify_tournament_category(
+            tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0)
+        )
+        self.creation_data["tournament_category"] = category
+
+        dlg = PlayerEnrollmentDialog(
+            self, players_db, [], self.settings, category=category
+        )
         if dlg.ShowModal() == wx.ID_OK:
             enrolled = dlg.get_enrolled_players()
             if len(enrolled) < 2:
@@ -2542,9 +2557,14 @@ class MainFrame(wx.Frame):
         self.show_intro_message()
 
     def create_tournament_from_wizard(self, enrolled):
+        from stats import get_initial_elo_for_tournament
         from models import Tournament, Player, RoundDate
         from tournament import generate_pairings_for_round
         from utils import sanitize_filename
+
+        category = self.creation_data.get("tournament_category", "standard")
+        for p in enrolled:
+            p["initial_elo"] = get_initial_elo_for_tournament(p, category)
 
         players = []
         for p in enrolled:
@@ -2644,6 +2664,11 @@ class MainFrame(wx.Frame):
             }
             self._save_state()
             self.creation_mode = False
+            self._tree_restore_target = {
+                "action": "show_round_report",
+                "filepath": self.active_filename,
+                "round": 1,
+            }
             self.load_tournament(self.active_filename)
             self.set_status(_("Torneo avviato. Generati abbinamenti per il Turno 1."))
         else:
@@ -2653,6 +2678,10 @@ class MainFrame(wx.Frame):
             }
             self._save_state()
             self.creation_mode = False
+            self._tree_restore_target = {
+                "action": "add_player_action",
+                "filepath": self.active_filename,
+            }
             self.load_tournament(self.active_filename)
             self.set_status(
                 _(
@@ -2726,17 +2755,40 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def delete_player_from_tournament(self, item, player_data):
-        if not self.current_tournament:
+        node_data = self.tree_ctrl.GetItemData(item)
+        if not node_data:
+            return
+        filepath = node_data.get("filepath")
+        if not filepath:
             return
 
-        if len(self.current_tournament.get("rounds", [])) > 0:
+        import json
+        import os
+        from utils import play_sound
+
+        try:
+            with open(filepath, "r", encoding="utf-8") as f_in:
+                t_data = json.load(f_in)
+        except Exception as e:
             wx.MessageBox(
-                _(
-                    "Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
-                ),
+                _("Impossibile leggere il file del torneo: {}").format(e),
                 _("Errore"),
                 wx.ICON_ERROR,
             )
+            return
+
+        if len(t_data.get("rounds", [])) > 0:
+            play_sound("errore")
+            dlg_err = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _(
+                    "Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
+                ),
+                settings=self.settings,
+            )
+            dlg_err.ShowModal()
+            dlg_err.Destroy()
             return
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
@@ -2748,21 +2800,34 @@ class MainFrame(wx.Frame):
         )
         if dlg.ShowModal() == wx.ID_YES:
             try:
-                players = self.current_tournament.get("players", [])
+                players = t_data.get("players", [])
                 to_remove = next(
                     (p for p in players if p.get("id") == player_data.get("id")), None
                 )
                 if to_remove:
                     players.remove(to_remove)
-                    self.current_tournament["players_dict"] = {
-                        p["id"]: p for p in players
-                    }
-                    self._save_state()
-                    self.populate_tree()
-                    from utils import play_sound
+                    t_data["players_dict"] = {p["id"]: p for p in players}
 
+                    with open(filepath, "w", encoding="utf-8") as f_out:
+                        json.dump(t_data, f_out, indent=4)
+
+                    if self.active_filename and os.path.abspath(
+                        self.active_filename
+                    ) == os.path.abspath(filepath):
+                        self.current_tournament = t_data
+
+                    self._tree_restore_target = {
+                        "action": "show_players",
+                        "filepath": filepath,
+                    }
+                    self.populate_tree()
                     play_sound("rimozione_giocatore")
-                    self.show_players_list_verbose()
+
+                    if self.active_filename and os.path.abspath(
+                        self.active_filename
+                    ) == os.path.abspath(filepath):
+                        self.show_players_list_verbose()
+
                     self.set_status(
                         _("Giocatore '{name}' rimosso con successo.").format(
                             name=p_name
@@ -2774,6 +2839,11 @@ class MainFrame(wx.Frame):
                     _("Errore"),
                     wx.ICON_ERROR,
                 )
+        else:
+            parent_item = self.tree_ctrl.GetItemParent(item)
+            if parent_item and parent_item.IsOk():
+                self.tree_ctrl.SelectItem(parent_item)
+                self.tree_ctrl.SetFocus()
         dlg.Destroy()
 
     def load_concluded_tournament_report(self, filepath):
@@ -2943,10 +3013,7 @@ class MainFrame(wx.Frame):
             return
 
         data = self.tree_ctrl.GetItemData(item)
-        if not data or data.get("action") not in [
-            "select_tournament",
-            "load_concluded",
-        ]:
+        if not data:
             from utils import play_sound
 
             play_sound("errore", self.current_tournament)
@@ -2959,8 +3026,28 @@ class MainFrame(wx.Frame):
             )
             return
 
-        filepath = data.get("filepath")
-        if not filepath:
+        action = data.get("action")
+        if action == "show_player_detail":
+            player_data = data.get("player")
+            self.delete_player_from_tournament(item, player_data)
+            return
+        elif action in ["select_tournament", "load_concluded"]:
+            filepath = data.get("filepath")
+            if not filepath:
+                from utils import play_sound
+
+                play_sound("errore", self.current_tournament)
+                wx.MessageBox(
+                    _(
+                        "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
+                    ),
+                    _("Avviso"),
+                    wx.ICON_WARNING,
+                )
+                return
+            self.delete_tournament_completely(item, filepath)
+            return
+        else:
             from utils import play_sound
 
             play_sound("errore", self.current_tournament)
@@ -2972,8 +3059,6 @@ class MainFrame(wx.Frame):
                 wx.ICON_WARNING,
             )
             return
-
-        self.delete_tournament_completely(item, filepath)
 
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""
@@ -3039,7 +3124,7 @@ class MainFrame(wx.Frame):
         bye_val = str(self.creation_data["bye_value"])
 
         self.tree_name = self.tree_ctrl.AppendItem(
-            self.tree_root, _("Nome torneo: {}").format(name_val)
+            self.tree_root, _("Nome torneo *: {}").format(name_val)
         )
         self.tree_ctrl.SetItemData(self.tree_name, {"field": "name"})
 
@@ -3113,6 +3198,9 @@ class MainFrame(wx.Frame):
             target_item = self.find_tree_item_by_field(self.last_activated_field)
             if target_item:
                 wx.CallLater(300, self._restore_tree_focus, target_item)
+        else:
+            if hasattr(self, "tree_name") and self.tree_name:
+                wx.CallLater(300, self._restore_tree_focus, self.tree_name)
 
     def find_tree_item_by_field(self, field_name):
         field_map = {
@@ -3368,7 +3456,10 @@ class MainFrame(wx.Frame):
         from gui.dialogs import PlayerEnrollmentDialog
 
         enrolled_raw = [p for p in self.current_tournament.get("players", [])]
-        dlg = PlayerEnrollmentDialog(self, players_db, enrolled_raw, self.settings)
+        category = self.current_tournament.get("tournament_category", "standard")
+        dlg = PlayerEnrollmentDialog(
+            self, players_db, enrolled_raw, self.settings, category=category
+        )
         if dlg.ShowModal() == wx.ID_OK:
             enrolled = dlg.get_enrolled_players()
             if len(enrolled) < 2:
@@ -3549,6 +3640,19 @@ class MainFrame(wx.Frame):
     def on_active_field_activated(self, item, field_active):
         from utils import format_date_locale, play_sound
 
+        is_started = len(self.current_tournament.get("rounds", [])) > 0
+        if is_started and field_active in ["time_control", "color_board1", "bye_value"]:
+            play_sound("errore")
+            dlg_err = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _("Non è possibile modificare questo parametro a torneo iniziato."),
+                settings=self.settings,
+            )
+            dlg_err.ShowModal()
+            dlg_err.Destroy()
+            return
+
         play_sound("apertura")
 
         if field_active == "name":
@@ -3662,7 +3766,11 @@ class MainFrame(wx.Frame):
             )
             if dlg.ShowModal() == wx.ID_OK:
                 val = dlg.GetValue().strip()
-                from stats import parse_time_control, classify_tournament_category
+                from stats import (
+                    parse_time_control,
+                    classify_tournament_category,
+                    get_initial_elo_for_tournament,
+                )
 
                 tc_parsed = parse_time_control(val)
                 if tc_parsed:
@@ -3673,6 +3781,13 @@ class MainFrame(wx.Frame):
                             tc_parsed.get("minutes", 60), tc_parsed.get("increment", 0)
                         )
                         self.current_tournament["tournament_category"] = cat
+
+                        # Ricalcola l'Elo di partenza per tutti i giocatori iscritti se il torneo non è iniziato
+                        if not self.current_tournament.get("rounds"):
+                            for p in self.current_tournament.get("players", []):
+                                p["initial_elo"] = get_initial_elo_for_tournament(
+                                    p, cat
+                                )
                         cat_map = {
                             "standard": _("Standard"),
                             "rapid": _("Rapid"),

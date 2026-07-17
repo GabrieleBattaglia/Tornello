@@ -20,7 +20,7 @@ class FideQueryDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(850, 550),
+            size=(900, 550),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
         )
 
@@ -65,12 +65,13 @@ class FideQueryDialog(wx.Dialog):
             wx.StaticText(panel, label=_("Giocatori Trovati:")), 0, wx.BOTTOM, 5
         )
         self.list_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        self.list_results.SetMinSize((300, -1))
         self.list_results.Bind(wx.EVT_LISTBOX, self.on_item_selected)
         self.list_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_import_player)
         self.list_results.Bind(wx.EVT_CHAR_HOOK, self.on_list_key)
         vbox_left.Add(self.list_results, 1, wx.EXPAND)
 
-        hbox_views.Add(vbox_left, 1, wx.EXPAND | wx.RIGHT, 10)
+        hbox_views.Add(vbox_left, 3, wx.EXPAND | wx.RIGHT, 10)
 
         # Sizer Destra: Dettagli Giocatore
         vbox_right = wx.BoxSizer(wx.VERTICAL)
@@ -80,9 +81,10 @@ class FideQueryDialog(wx.Dialog):
         self.detail_text = wx.TextCtrl(
             panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2
         )
+        self.detail_text.SetMinSize((450, -1))
         vbox_right.Add(self.detail_text, 1, wx.EXPAND)
 
-        hbox_views.Add(vbox_right, 1, wx.EXPAND)
+        hbox_views.Add(vbox_right, 4, wx.EXPAND)
 
         vbox_main.Add(hbox_views, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
 
@@ -142,12 +144,14 @@ class FideQueryDialog(wx.Dialog):
             p = self.all_fide_matches[i]
             fide_id_str = str(p.get("id_fide"))
             name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo = p.get("elo_standard", 0)
+            elo_std = p.get("elo_standard", 0)
+            elo_rap = p.get("elo_rapid", 0)
             label = _(
-                "{name} (ELO: {elo} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
+                "{name} (Std: {elo_std}, Rap: {elo_rap} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
             ).format(
                 name=name,
-                elo=elo,
+                elo_std=elo_std,
+                elo_rap=elo_rap,
                 fide_id=fide_id_str,
                 anno=p.get("birth_year", _("N/D")),
                 fed=p.get("federation", _("N/D")),
@@ -194,18 +198,40 @@ class FideQueryDialog(wx.Dialog):
             + "\n"
             + _("Titolo FIDE: {}").format(p.get("title", _("Nessuno")))
             + "\n"
+        )
+
+        # Titoli secondari FIDE
+        w_title = p.get("w_title", "")
+        if w_title:
+            details += _("Titolo Femminile: {}").format(w_title) + "\n"
+        o_title = p.get("o_title", "")
+        if o_title:
+            details += _("Titolo Arbitro/Altro: {}").format(o_title) + "\n"
+        foa_title = p.get("foa_title", "")
+        if foa_title:
+            details += _("Titolo FOA: {}").format(foa_title) + "\n"
+
+        details += (
+            _("Flag (Caratteristica): {}").format(p.get("flag", ""))
+            + "\n"
             + _("ELO Standard: {}").format(p.get("elo_standard", 0))
-            + "\n"
-            + _("Partite Standard: {}").format(p.get("games", 0))
-            + "\n"
+            + " ("
+            + _("Partite: {}").format(p.get("games", 0))
+            + ", K: "
+            + str(p.get("k_factor") if p.get("k_factor") is not None else _("N/D"))
+            + ")\n"
             + _("ELO Rapid: {}").format(p.get("elo_rapid", 0))
-            + "\n"
-            + _("Partite Rapid: {}").format(p.get("rapid_games", 0))
-            + "\n"
+            + " ("
+            + _("Partite: {}").format(p.get("rapid_games", 0))
+            + ", K: "
+            + str(p.get("rapid_k") if p.get("rapid_k") is not None else _("N/D"))
+            + ")\n"
             + _("ELO Blitz: {}").format(p.get("elo_blitz", 0))
-            + "\n"
-            + _("Partite Blitz: {}").format(p.get("blitz_games", 0))
-            + "\n"
+            + " ("
+            + _("Partite: {}").format(p.get("blitz_games", 0))
+            + ", K: "
+            + str(p.get("blitz_k") if p.get("blitz_k") is not None else _("N/D"))
+            + ")\n"
         )
         self.detail_text.SetValue(details)
         apply_visual_settings(self.detail_text, self.settings)
@@ -264,6 +290,18 @@ class FideQueryDialog(wx.Dialog):
             "first_name": first_name,
             "last_name": last_name,
             "current_elo": fide_player.get("elo_standard") or 1399,
+            "elo_rapid": fide_player.get("elo_rapid", 0),
+            "elo_blitz": fide_player.get("elo_blitz", 0),
+            "fide_k_factor": fide_player.get("k_factor"),
+            "fide_rapid_k": fide_player.get("rapid_k"),
+            "fide_blitz_k": fide_player.get("blitz_k"),
+            "fide_standard_games": fide_player.get("games", 0),
+            "fide_rapid_games": fide_player.get("rapid_games", 0),
+            "fide_blitz_games": fide_player.get("blitz_games", 0),
+            "w_title": fide_player.get("w_title", ""),
+            "o_title": fide_player.get("o_title", ""),
+            "foa_title": fide_player.get("foa_title", ""),
+            "flag": fide_player.get("flag", ""),
             "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
             "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
             "sex": sex_val,
