@@ -1,7 +1,7 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
-9.3.12 (2026.07.17)
+9.3.12 (2026.07.18)
 	+ Feature: Memorizzazione e copia integrale di tutti i dati FIDE (Elo Rapid/Blitz, tutti i K-Factor FIDE, conteggio partite per ciascuna cadenza, titoli femminili/arbitri/FOA e nazionalità FIDE) nel database locale personale al momento dell'importazione o iscrizione.
 	+ Feature: Esposta la totalità delle informazioni del giocatore (Elo Rapid/Blitz, partite, K-Factor, titoli collaterali e flag FIDE) sia nella consultazione del DB FIDE sia nel gestore del DB locale tramite albero, rendendo i nuovi campi interamente modificabili a mano.
 	+ Feature: Visualizzazione allineata e compatta contenente sia l'Elo Standard sia l'Elo Rapid in tutte le ricerche e liste dei giocatori (ricerca locale, ricerca FIDE e lista del DB personale).

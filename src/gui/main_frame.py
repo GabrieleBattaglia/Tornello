@@ -470,6 +470,8 @@ class MainFrame(wx.Frame):
 
         age_str = ", ".join(age_parts)
 
+        from utils import format_date_locale
+
         intro = _(
             "Ciao! Benvenuto, sono Tornello v{} - Sviluppato da Gabriele Battaglia (IZ4APU) & Stella (AI)\n"
             "  sono nato il 10/06/2025 alle 00:34 e oggi ho {} e sarò felicissimo di aiutarti\n"
@@ -498,7 +500,11 @@ class MainFrame(wx.Frame):
             " - Ctrl+D: Gestione del Database locale dei giocatori\n"
             " - Ctrl+K: Cerca / consulta direttamente il Database FIDE Ratings\n"
             " - Ctrl+Y: Sincronizzazione del Database locale con il tracciato FIDE\n"
-        ).format(__version__, age_str, __date__)
+        ).format(
+            __version__,
+            age_str,
+            format_date_locale(__date__.replace(".", "-")),
+        )
         self.append_log(intro)
         self.set_status(_("Pronto. Nessun torneo caricato."))
 
