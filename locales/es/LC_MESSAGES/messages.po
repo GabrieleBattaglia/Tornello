@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-07-16 22:29+0200\n"
+"POT-Creation-Date: 2026-07-18 07:56+0200\n"
 "PO-Revision-Date: 2025-06-27 22:45+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -36,14 +36,14 @@ msgstr "IDENTIFICACIÓN"
 msgid "Nome Completo"
 msgstr "Nombre completo"
 
-#: Players_DB.py:72 src/gui/dialogs/players_db_dialog.py:294
-#: src/gui/dialogs/sync_database_dialog.py:368
+#: Players_DB.py:72 src/gui/dialogs/players_db_dialog.py:390
+#: src/gui/dialogs/sync_database_dialog.py:380
 msgid "Titolo FIDE"
 msgstr "Título FIDE"
 
-#: Players_DB.py:72 src/gui/dialogs/fide_query_dialog.py:195
-#: src/gui/main_frame.py:1269 src/gui/main_frame.py:1739
-#: src/gui/main_frame.py:1897 src/gui/main_frame.py:3724
+#: Players_DB.py:72 src/gui/dialogs/fide_query_dialog.py:199
+#: src/gui/main_frame.py:1270 src/gui/main_frame.py:1740
+#: src/gui/main_frame.py:1898 src/gui/main_frame.py:3847
 msgid "Nessuno"
 msgstr "Nadie"
 
@@ -63,8 +63,8 @@ msgstr "Elo-Blitz (FIDE)"
 msgid "Elo Club"
 msgstr "Club Elo"
 
-#: Players_DB.py:78 src/gui/dialogs/players_db_dialog.py:287
-#: src/gui/dialogs/players_db_dialog.py:288
+#: Players_DB.py:78 src/gui/dialogs/players_db_dialog.py:380
+#: src/gui/dialogs/players_db_dialog.py:381
 msgid "Sesso"
 msgstr "Sexo"
 
@@ -100,7 +100,7 @@ msgstr "No"
 msgid "Esperienza Pregressa Signif."
 msgstr "Experiencia previa significativa"
 
-#: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:233
+#: Players_DB.py:98 src/gui/dialogs/players_db_dialog.py:326
 msgid "Medagliere"
 msgstr "Medallero"
 
@@ -114,7 +114,7 @@ msgid ""
 "--- Aggiunta Nuovo Giocatore ---"
 msgstr "--- Nuevo jugador agregado ---"
 
-#: Players_DB.py:129 src/gui/dialogs/players_db_dialog.py:370
+#: Players_DB.py:129 src/gui/dialogs/players_db_dialog.py:476
 msgid "Nome: "
 msgstr "Nombre:"
 
@@ -122,7 +122,7 @@ msgstr "Nombre:"
 msgid "Nome richiesto."
 msgstr "Nombre requerido."
 
-#: Players_DB.py:133 src/gui/dialogs/players_db_dialog.py:369
+#: Players_DB.py:133 src/gui/dialogs/players_db_dialog.py:475
 msgid "Cognome: "
 msgstr "Apellido:"
 
@@ -159,7 +159,7 @@ msgstr "ID FIDE Numérico (dígitos, '0' si N/A):"
 msgid "Data di nascita ({date_format} o vuoto):"
 msgstr "Fecha de nacimiento ({date_format} o en blanco):"
 
-#: Players_DB.py:190 Players_DB.py:390 src/controller.py:538
+#: Players_DB.py:190 Players_DB.py:390 src/controller.py:541
 #, python-brace-format
 msgid "Formato data non valido. Usa {date_format}."
 msgstr "Formato de fecha no válido. Utilice{date_format}."
@@ -190,12 +190,12 @@ msgstr ""
 "--- Ingrese nuevos valores o presione Enter para mantener los actuales ---"
 
 #: Players_DB.py:249 src/engine.py:186
-#: src/gui/dialogs/players_db_dialog.py:286
+#: src/gui/dialogs/players_db_dialog.py:379
 msgid "Nome"
 msgstr "Nombre"
 
 #: Players_DB.py:251 src/engine.py:185
-#: src/gui/dialogs/players_db_dialog.py:285
+#: src/gui/dialogs/players_db_dialog.py:378
 msgid "Cognome"
 msgstr "Apellido"
 
@@ -490,7 +490,7 @@ msgstr "Operaciones completadas."
 msgid "Premi Invio per uscire dal tool di sincronizzazione..."
 msgstr "Presione Enter para salir de la herramienta de sincronización..."
 
-#: Sync_DB.py:64 src/controller.py:978
+#: Sync_DB.py:64 src/controller.py:981
 msgid ""
 "\n"
 "Operazione interrotta dall'utente."
@@ -595,7 +595,7 @@ msgstr "El valor debe ser al menos {min_val}."
 msgid "Il valore non può superare {max_val}."
 msgstr "El valor no puede exceder{max_val}."
 
-#: src/cli_adapter.py:55 src/gui/main_frame.py:2299
+#: src/cli_adapter.py:55 src/gui/main_frame.py:2300
 msgid "Inserisci un numero intero valido."
 msgstr "Introduce un número entero válido."
 
@@ -617,14 +617,14 @@ msgstr ""
 "\n"
 "Verificando estado de la base de datos FIDE local..."
 
-#: src/controller.py:141
+#: src/controller.py:143
 msgid ""
 "Vecchio database FIDE JSON rimosso. È necessario riscaricare il database."
 msgstr ""
 "Se eliminó la antigua base de datos FIDE JSON. Necesita volver a descargar "
 "la base de datos."
 
-#: src/controller.py:149
+#: src/controller.py:152
 msgid ""
 "\n"
 "Il database FIDE locale non è presente sul tuo computer."
@@ -632,20 +632,20 @@ msgstr ""
 "\n"
 "La base de datos FIDE local no está presente en tu ordenador."
 
-#: src/controller.py:153
+#: src/controller.py:156
 msgid "Vuoi scaricarlo ora? (L'operazione potrebbe richiedere alcuni minuti)"
 msgstr "¿Quieres descargarlo ahora? (Esto puede tardar unos minutos)"
 
-#: src/controller.py:159
+#: src/controller.py:162
 msgid "Database FIDE locale aggiornato con successo."
 msgstr "Base de datos FIDE local actualizada con éxito."
 
-#: src/controller.py:168
+#: src/controller.py:171
 #, python-brace-format
 msgid "Info: Il tuo database FIDE locale ha {} giorni."
 msgstr "Info: Tu base de datos FIDE local tiene {} días."
 
-#: src/controller.py:175
+#: src/controller.py:178
 msgid ""
 "Essendo trascorsi più di 32 giorni dall'ultimo download, potrebbe essere "
 "stato rilasciato un aggiornamento."
@@ -653,16 +653,16 @@ msgstr ""
 "Dado que han pasado más de 32 días desde la última descarga, es posible que "
 "se haya publicado una actualización."
 
-#: src/controller.py:180
+#: src/controller.py:183
 msgid "Si consiglia di aggiornarlo. Vuoi scaricare la versione più recente?"
 msgstr "Se recomienda actualizarlo. ¿Quieres descargar la última versión?"
 
-#: src/controller.py:188
+#: src/controller.py:191
 #, python-brace-format
 msgid "Errore nel controllare la data del file DB FIDE locale: {}"
 msgstr "Error al comprobar la fecha del archivo de la BD FIDE local: {}"
 
-#: src/controller.py:200
+#: src/controller.py:203
 msgid ""
 "\n"
 "Database FIDE aggiornato. Vuoi sincronizzare ora il tuo DB personale?"
@@ -670,7 +670,7 @@ msgstr ""
 "\n"
 "Base de datos FIDE actualizada. ¿Quieres sincronizar ahora tu BD personal?"
 
-#: src/controller.py:204
+#: src/controller.py:207
 msgid ""
 "\n"
 "Vuoi sincronizzare il tuo DB personale con i dati FIDE locali?"
@@ -678,24 +678,24 @@ msgstr ""
 "\n"
 "¿Quieres sincronizar tu BD personal con los datos FIDE locales?"
 
-#: src/controller.py:224
+#: src/controller.py:227
 msgid "Nessun torneo esistente trovato."
 msgstr "No se encontraron torneos existentes."
 
-#: src/controller.py:225 src/controller.py:287
+#: src/controller.py:228 src/controller.py:290
 msgid "Vuoi creare un nuovo torneo?"
 msgstr "¿Quieres crear un nuevo torneo?"
 
-#: src/controller.py:228
+#: src/controller.py:231
 msgid "Uscita dal programma."
 msgstr "Saliendo del programa."
 
-#: src/controller.py:232 src/engine.py:106 src/gui/main_frame.py:725
-#: src/gui/main_frame.py:754 src/tournament.py:280
+#: src/controller.py:235 src/engine.py:106 src/gui/main_frame.py:726
+#: src/gui/main_frame.py:755 src/tournament.py:280
 msgid "Torneo Sconosciuto"
 msgstr "Torneo Desconocido"
 
-#: src/controller.py:245
+#: src/controller.py:248
 #, python-brace-format
 msgid ""
 "Info: impossibile leggere i dettagli da '{filename}' ({error}). Uso il nome "
@@ -704,7 +704,7 @@ msgstr ""
 "Info: imposible leer los detalles de '{filename}' ({error}). Usando el "
 "nombre del archivo."
 
-#: src/controller.py:258
+#: src/controller.py:261
 #, python-brace-format
 msgid ""
 "\n"
@@ -713,7 +713,7 @@ msgstr ""
 "\n"
 "Se encontró un solo torneo existente: '{name}' (Archivo: {filename})"
 
-#: src/controller.py:267
+#: src/controller.py:270
 #, python-brace-format
 msgid ""
 "Vuoi caricare '{name}'? (Premi INVIO per sì, o inserisci il nome di un NUOVO"
@@ -722,17 +722,17 @@ msgstr ""
 "¿Quieres cargar '{name}'? (Presione ENTER para decir sí, o ingrese el nombre"
 " de un NUEVO torneo para crear):"
 
-#: src/controller.py:274 src/controller.py:391
+#: src/controller.py:277 src/controller.py:394
 #, python-brace-format
 msgid "Caricamento di '{name}'..."
 msgstr "Cargando '{name}'..."
 
-#: src/controller.py:284
+#: src/controller.py:287
 #, python-brace-format
 msgid "Errore fatale nel caricamento del torneo '{filename}'."
 msgstr "Error fatal al cargar el torneo '{filename}'."
 
-#: src/controller.py:295
+#: src/controller.py:298
 msgid ""
 "\n"
 "--- Tornei Esistenti Trovati ---"
@@ -740,23 +740,23 @@ msgstr ""
 "\n"
 "--- Torneos Existentes Encontrados ---"
 
-#: src/controller.py:301
+#: src/controller.py:304
 msgid "Nome Sconosciuto"
 msgstr "Nombre Desconocido"
 
-#: src/controller.py:311
+#: src/controller.py:314
 #, python-brace-format
 msgid " {num}. {name} (dal {start_date} al {end_date}) - File: {filename}"
 msgstr " {num}. {name} (del {start_date} al {end_date}) - Archivo: {filename}"
 
-#: src/controller.py:323
+#: src/controller.py:326
 #, python-brace-format
 msgid ""
 " Errore durante la lettura dei metadati da {filename}: {error} (file "
 "saltato)"
 msgstr " Error al leer los metadatos de {filename}: {error} (archivo omitido)"
 
-#: src/controller.py:330
+#: src/controller.py:333
 msgid ""
 "Nessun torneo valido trovato nonostante la presenza di file. Si procederà "
 "con la creazione."
@@ -764,59 +764,59 @@ msgstr ""
 "No se encontraron torneos válidos a pesar de la presencia de archivos. Se "
 "procederá a la creación."
 
-#: src/controller.py:347
+#: src/controller.py:350
 msgid ""
 "\n"
 "*** TROVATI TORNEI CON CREAZIONE SOSPESA ***"
 msgstr "*** TORNEOS ENCONTRADOS CON CREACIÓN SUSPENDIDA ***"
 
-#: src/controller.py:351
+#: src/controller.py:354
 #, python-brace-format
 msgid " - '{name}' (File: {filename})"
 msgstr "- '{name}' (Archivo:{filename})"
 
-#: src/controller.py:359
+#: src/controller.py:362
 #, python-brace-format
 msgid "Vuoi riprendere la creazione di '{name}'?"
 msgstr "¿Quieres reanudar la creación de '{name}'?"
 
-#: src/controller.py:368
+#: src/controller.py:371
 #, python-brace-format
 msgid "Ripresa creazione torneo '{name}'..."
 msgstr "Reanudando la creación del torneo '{name}'..."
 
-#: src/controller.py:375
+#: src/controller.py:378
 msgid ""
 "Ci sono più tornei in stato sospeso. Selezionali dal menu per riprenderli."
 msgstr ""
 "Hay más torneos en estado suspendido. Selecciónelos del menú para "
 "reanudarlos."
 
-#: src/controller.py:381
+#: src/controller.py:384
 msgid "Crea un nuovo torneo"
 msgstr "Crear un nuevo torneo"
 
-#: src/controller.py:384
+#: src/controller.py:387
 msgid "Scegli un torneo da caricare o creane uno nuovo"
 msgstr "Elige un torneo para cargar o crea uno nuevo"
 
-#: src/controller.py:398
+#: src/controller.py:401
 msgid "Errore nel caricamento del torneo. Riprova."
 msgstr "Error al cargar el torneo. Intentar otra vez."
 
-#: src/controller.py:418
+#: src/controller.py:421
 #, python-brace-format
 msgid ""
 "\n"
 "Ripresa inserimento giocatori per '{name}'..."
 msgstr "Reanudando la inserción del jugador para '{name}'..."
 
-#: src/controller.py:436
+#: src/controller.py:439
 msgid "Creazione torneo annullata a causa di problemi con la lista giocatori."
 msgstr ""
 "Creación del torneo cancelada debido a problemas con la lista de jugadores."
 
-#: src/controller.py:448
+#: src/controller.py:451
 msgid ""
 "\n"
 "--- Creazione Nuovo Torneo ---"
@@ -824,12 +824,12 @@ msgstr ""
 "\n"
 "--- Creación de Nuevo Torneo ---"
 
-#: src/controller.py:453
+#: src/controller.py:456
 #, python-brace-format
 msgid "Nome suggerito per il nuovo torneo: '{name}'"
 msgstr "Nombre sugerido para el nuevo torneo: '{name}'"
 
-#: src/controller.py:462 src/controller.py:483
+#: src/controller.py:465 src/controller.py:486
 #, python-brace-format
 msgid ""
 "Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo?"
@@ -837,110 +837,110 @@ msgstr ""
 "Ya existe un archivo de torneo '{filename}' con este nombre. "
 "¿Sobrescribirlo?"
 
-#: src/controller.py:473
+#: src/controller.py:476
 msgid "Inserisci il nome del nuovo torneo"
 msgstr "Introduce el nombre del nuevo torneo."
 
-#: src/controller.py:476
+#: src/controller.py:479
 msgid "Il nome del torneo non può essere vuoto."
 msgstr "El nombre del torneo no puede estar vacío."
 
-#: src/controller.py:497
+#: src/controller.py:500
 #, python-brace-format
 msgid "Inserisci data inizio ({date_format}) [Default: {default_date}]"
 msgstr ""
 "Ingrese la fecha de inicio ({date_format}) [Predeterminado:{default_date}]"
 
-#: src/controller.py:507
+#: src/controller.py:510
 #, python-brace-format
 msgid "Formato data non valido. Usa {date_format} o AAAAMMGG."
 msgstr "Formato de fecha no válido. Utilice{date_format}o AAAAMMDD."
 
-#: src/controller.py:521
+#: src/controller.py:524
 #, python-brace-format
 msgid "Inserisci data fine ({date_format}) [Default: {default_date}]"
 msgstr ""
 "Ingrese la fecha de finalización ({date_format}) "
 "[Predeterminado:{default_date}]"
 
-#: src/controller.py:531
+#: src/controller.py:534
 msgid "La data di fine non può essere precedente alla data di inizio."
 msgstr "La fecha de finalización no puede ser anterior a la fecha de inicio."
 
-#: src/controller.py:544
+#: src/controller.py:547
 msgid "La data calcolata risulta troppo lontana nel futuro."
 msgstr "La fecha calculada está demasiado lejos en el futuro."
 
-#: src/controller.py:549
+#: src/controller.py:552
 msgid "Inserisci il numero totale dei turni"
 msgstr "Ingrese el número total de turnos"
 
-#: src/controller.py:554
+#: src/controller.py:557
 msgid "Luogo del torneo [Default: Luogo Sconosciuto]"
 msgstr "Ubicación del torneo [Predeterminado: Ubicación desconocida]"
 
-#: src/controller.py:555 src/engine.py:109 src/tournament.py:293
+#: src/controller.py:558 src/engine.py:109 src/tournament.py:293
 msgid "Luogo Sconosciuto"
 msgstr "Lugar Desconocido"
 
-#: src/controller.py:558
+#: src/controller.py:561
 msgid "Federazione organizzante (codice 3 lettere) [Default: ITA]"
 msgstr "Federación organizadora (código de 3 letras) [Predeterminado: ITA]"
 
-#: src/controller.py:566
+#: src/controller.py:569
 msgid "Arbitro Capo [Default: N/D]"
 msgstr "Juez principal [Predeterminado: N/A]"
 
-#: src/controller.py:570
+#: src/controller.py:573
 msgid "Vice Arbitri (separati da virgola) [Default: nessuno]"
 msgstr "Árbitros suplentes (separados por comas) [Predeterminado: ninguno]"
 
-#: src/controller.py:578
+#: src/controller.py:581
 msgid "Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]"
 msgstr ""
 "Control de tempo (por ejemplo, 15+10, 90+30, 3+2) [Predeterminado: 90+30]"
 
-#: src/controller.py:584 src/gui/main_frame.py:3689
+#: src/controller.py:587 src/gui/main_frame.py:3812
 msgid "Formato non valido. Usa minuti+incremento o solo minuti."
 msgstr "Formato no válido. Usa minutos+incremento o solo minutos."
 
-#: src/controller.py:592
+#: src/controller.py:595
 msgid "Bianco alla prima scacchiera del Turno 1?"
 msgstr "¿Blanco en el primer tablero de la curva 1?"
 
-#: src/controller.py:601
+#: src/controller.py:604
 msgid ""
 "Errore fatale nel calcolo delle date dei turni. Creazione torneo annullata."
 msgstr ""
 "Error fatal en el cálculo de las fechas de las rondas. Creación del torneo "
 "cancelada."
 
-#: src/controller.py:648
+#: src/controller.py:651
 msgid ""
 "\n"
 "Reindirizzamento all'inserimento giocatori..."
 msgstr "Redirigir a inserción de reproductor..."
 
-#: src/controller.py:656
+#: src/controller.py:659
 msgid "Calcolo Valore del BYE secondo la regola FIDE"
 msgstr "Cálculo del valor BYE según la regla FIDE"
 
-#: src/controller.py:658
+#: src/controller.py:661
 #, python-brace-format
 msgid "Il valore suggerito è: {val}"
 msgstr "El valor sugerido es: {val}"
 
-#: src/controller.py:662
+#: src/controller.py:665
 #, python-brace-format
 msgid "Accetti il valore suggerito? (No = usa {alt_val})"
 msgstr "¿Aceptas el valor sugerido? (No = usar{alt_val})"
 
-#: src/controller.py:671
+#: src/controller.py:674
 #, python-brace-format
 msgid "Valore del BYE impostato a: {val}"
 msgstr "Valor BYE establecido en: {val}"
 
-#: src/controller.py:678
+#: src/controller.py:681
 #, python-brace-format
 msgid ""
 "Numero insufficiente di giocatori ({num_players}) per {num_rounds} turni. "
@@ -949,7 +949,7 @@ msgstr ""
 "Número insuficiente de jugadores ({num_players}) para{num_rounds}rondas. "
 "Torneo cancelado."
 
-#: src/controller.py:690
+#: src/controller.py:693
 msgid ""
 "\n"
 "Generazione abbinamenti per il Turno 1..."
@@ -957,7 +957,7 @@ msgstr ""
 "\n"
 "Generando emparejamientos para la Ronda 1..."
 
-#: src/controller.py:698
+#: src/controller.py:701
 msgid ""
 "ERRORE CRITICO: Fallimento generazione abbinamenti Turno 1. Torneo non "
 "avviato."
@@ -965,11 +965,11 @@ msgstr ""
 "ERROR CRÍTICO: Fallo en la generación de emparejamientos de la Ronda 1. "
 "Torneo no iniciado."
 
-#: src/controller.py:706
+#: src/controller.py:709
 msgid "Registrazione risultati automatici per il Turno 1 (BYE)..."
 msgstr "Registrando resultados automáticos para la Ronda 1 (BYE)..."
 
-#: src/controller.py:728 src/controller.py:952
+#: src/controller.py:731 src/controller.py:955
 #, python-brace-format
 msgid ""
 " > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico "
@@ -978,25 +978,25 @@ msgstr ""
 " > Jugador {name} (ID: {id}) ha recibido un BYE. Puntos e historial "
 "actualizados."
 
-#: src/controller.py:737
+#: src/controller.py:740
 #, python-brace-format
 msgid "Vuoi che i dati vengano salvati in {}?"
 msgstr "¿Quieres que los datos se guarden en {}?"
 
-#: src/controller.py:741
+#: src/controller.py:744
 msgid "Inserisci il percorso di salvataggio desiderato"
 msgstr "Ingrese la ruta de guardado deseada"
 
-#: src/controller.py:744
+#: src/controller.py:747
 msgid "Il percorso non può essere vuoto."
 msgstr "El camino no puede estar vacío."
 
-#: src/controller.py:762
+#: src/controller.py:765
 #, python-brace-format
 msgid "Percorso non valido o non scrivibile: {}"
 msgstr "Ruta no válida o no se puede escribir: {}"
 
-#: src/controller.py:767
+#: src/controller.py:770
 #, python-brace-format
 msgid ""
 "\n"
@@ -1005,7 +1005,7 @@ msgstr ""
 "\n"
 "Torneo '{name}' creado y Ronda 1 generada. Archivo: '{filename}'"
 
-#: src/controller.py:781
+#: src/controller.py:784
 #, python-brace-format
 msgid ""
 "\n"
@@ -1014,18 +1014,18 @@ msgstr ""
 "\n"
 "--- Torneo Activo: {name} ---"
 
-#: src/controller.py:784
+#: src/controller.py:787
 msgid "Copyright 2026, dedicato all'ASCId e al gruppo Scacchierando."
 msgstr "Copyright 2026, dedicado a ASCId y al grupo Scacchierando."
 
-#: src/controller.py:794
+#: src/controller.py:797
 #, python-brace-format
 msgid ""
 "\n"
 "Il torneo '{name}' si è concluso."
 msgstr "El torneo '{name}' ha finalizado."
 
-#: src/controller.py:801
+#: src/controller.py:804
 #, python-brace-format
 msgid ""
 "\n"
@@ -1034,30 +1034,30 @@ msgstr ""
 "\n"
 "--- Gestión Ronda {round_num} ---"
 
-#: src/controller.py:812
+#: src/controller.py:815
 #, python-brace-format
 msgid "ERRORE CRITICO: Dati turno {round_num} non trovati!"
 msgstr "ERROR CRÍTICO: ¡Datos de la ronda {round_num} no encontrados!"
 
-#: src/controller.py:830
+#: src/controller.py:833
 msgid ""
 "\n"
 "Sessione di inserimento/modifica risultati terminata."
 msgstr "Finalizó la sesión de ingreso/modificación de resultados."
 
-#: src/controller.py:833
+#: src/controller.py:836
 msgid "Salvataggio modifiche al torneo..."
 msgstr "Guardando modificaciones en el torneo..."
 
-#: src/controller.py:836
+#: src/controller.py:839
 msgid "Vuoi continuare?"
 msgstr "¿Quieres continuar?"
 
-#: src/controller.py:838
+#: src/controller.py:841
 msgid "Salvataggio finale prima dell'uscita..."
 msgstr "Guardado final antes de salir..."
 
-#: src/controller.py:844
+#: src/controller.py:847
 #, python-brace-format
 msgid ""
 "\n"
@@ -1066,7 +1066,7 @@ msgstr ""
 "\n"
 "Ronda {round_num} completada."
 
-#: src/controller.py:857
+#: src/controller.py:860
 msgid ""
 "\n"
 "Ultimo turno completato. Avvio finalizzazione torneo..."
@@ -1074,7 +1074,7 @@ msgstr ""
 "\n"
 "Última ronda completada. Iniciando finalización del torneo..."
 
-#: src/controller.py:863
+#: src/controller.py:866
 msgid ""
 "\n"
 "--- Torneo Concluso e Finalizzato Correttamente ---"
@@ -1082,7 +1082,7 @@ msgstr ""
 "\n"
 "--- Torneo Concluido y Finalizado Correctamente ---"
 
-#: src/controller.py:871
+#: src/controller.py:874
 msgid ""
 "\n"
 "--- ERRORE durante la Finalizzazione del Torneo ---"
@@ -1090,7 +1090,7 @@ msgstr ""
 "\n"
 "--- ERROR durante la Finalización del Torneo ---"
 
-#: src/controller.py:880
+#: src/controller.py:883
 #, python-brace-format
 msgid ""
 "\n"
@@ -1098,30 +1098,30 @@ msgid ""
 msgstr ""
 "¿Quieres continuar y generar los emparejamientos para la ronda{round_num}?"
 
-#: src/controller.py:886
+#: src/controller.py:889
 #, python-brace-format
 msgid "Generazione abbinamenti per il Turno {round_num}..."
 msgstr "Generando emparejamientos para la Ronda {round_num}..."
 
-#: src/controller.py:910
+#: src/controller.py:913
 msgid "Time Machine annullata o fallita. Uscita per sicurezza."
 msgstr "Time Machine cancelada o fallida. Salga por seguridad."
 
-#: src/controller.py:926
+#: src/controller.py:929
 #, python-brace-format
 msgid "Registrazione risultati automatici per il Turno {round_num} (BYE)..."
 msgstr "Grabación de resultados automáticos para Shift{round_num}(BYE)..."
 
-#: src/controller.py:964
+#: src/controller.py:967
 #, python-brace-format
 msgid "Turno {round_num} generato e salvato."
 msgstr "Ronda {round_num} generada y guardada."
 
-#: src/controller.py:971
+#: src/controller.py:974
 msgid "Generazione prossimo turno annullata. Salvataggio stato attuale."
 msgstr "Generación de la siguiente ronda cancelada. Guardando estado actual."
 
-#: src/controller.py:984
+#: src/controller.py:987
 #, python-brace-format
 msgid ""
 "\n"
@@ -1130,11 +1130,11 @@ msgstr ""
 "\n"
 "ERROR CRÍTICO NO MANEJADO en el flujo principal: {error}"
 
-#: src/controller.py:1001 src/ui.py:1473
+#: src/controller.py:1004 src/ui.py:1473
 msgid "Creazione backup di sicurezza prima dell'archiviazione..."
 msgstr "Crear copias de seguridad de seguridad antes de archivar..."
 
-#: src/controller.py:1013 src/ui.py:1484
+#: src/controller.py:1016 src/ui.py:1484
 msgid ""
 "ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo "
 "ugualmente..."
@@ -1142,32 +1142,32 @@ msgstr ""
 "ADVERTENCIA: Error al crear uno o más archivos de respaldo. Procedo de todos"
 " modos..."
 
-#: src/controller.py:1020 src/ui.py:1496
+#: src/controller.py:1023 src/ui.py:1496
 msgid "Nessun giocatore nel torneo, impossibile finalizzare."
 msgstr "Ningún jugador en el torneo, imposible finalizar."
 
-#: src/controller.py:1025 src/ui.py:1499
+#: src/controller.py:1028 src/ui.py:1499
 msgid "Accesso al DB e calcolo K-Factor e partite giocate..."
 msgstr "Accediendo a la BD y calculando Factor-K y partidas jugadas..."
 
-#: src/controller.py:1049 src/ui.py:1525
+#: src/controller.py:1052 src/ui.py:1525
 msgid "Ricalcolo finale Buchholz, ARO, Performance Rating, Variazione Elo..."
 msgstr "Recálculo final de Buchholz, ARO, Rendimiento, Variación de Elo..."
 
-#: src/controller.py:1077 src/ui.py:1550
+#: src/controller.py:1080 src/ui.py:1550
 msgid "Ordinamento classifica finale..."
 msgstr "Ordenando la clasificación final..."
 
-#: src/db_players.py:67
+#: src/db_players.py:68
 #, python-brace-format
 msgid "ERRORE: Database FIDE locale '{}' non trovato."
 msgstr "ERROR: Base de datos FIDE local '{}' no encontrada."
 
-#: src/db_players.py:71
+#: src/db_players.py:72
 msgid "Esegui prima la funzione di aggiornamento del DB FIDE."
 msgstr "Ejecuta primero la función de actualización de la BD FIDE."
 
-#: src/db_players.py:75
+#: src/db_players.py:76
 msgid ""
 "\n"
 "--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"
@@ -1175,12 +1175,12 @@ msgstr ""
 "\n"
 "--- Iniciando Sincronización de Base de Datos Personal con Base de Datos FIDE Local ---"
 
-#: src/db_players.py:79
+#: src/db_players.py:80
 #, python-brace-format
 msgid "Database FIDE locale disponibile con {} giocatori."
 msgstr "Base de datos local FIDE disponible con jugadores {}."
 
-#: src/db_players.py:84
+#: src/db_players.py:85
 msgid ""
 "Il tuo database personale dei giocatori è vuoto. Nessuna sincronizzazione da"
 " effettuare."
@@ -1188,11 +1188,11 @@ msgstr ""
 "Tu base de datos personal de jugadores está vacía. No hay sincronización que"
 " realizar."
 
-#: src/db_players.py:89
+#: src/db_players.py:90
 msgid "Analisi dei giocatori nel tuo database personale..."
 msgstr "Analizando jugadores en tu base de datos personal..."
 
-#: src/db_players.py:194
+#: src/db_players.py:195
 msgid ""
 "\n"
 "Analisi completata. Il tuo database personale è già perfettamente sincronizzato!"
@@ -1200,51 +1200,51 @@ msgstr ""
 "\n"
 "Análisis completado. ¡Tu base de datos personal ya está perfectamente sincronizada!"
 
-#: src/db_players.py:199
+#: src/db_players.py:200
 msgid ""
 "\n"
 "--- Sommario Aggiornamenti Disponibili ---"
 msgstr "--- Resumen de actualizaciones disponibles ---"
 
-#: src/db_players.py:202
+#: src/db_players.py:203
 #, python-brace-format
 msgid " - {num} nuovi ID FIDE da associare"
 msgstr "- {num} nuevos ID FIDE para asociar"
 
-#: src/db_players.py:207
+#: src/db_players.py:208
 #, python-brace-format
 msgid " - {num} aggiornamenti Elo"
 msgstr "- Actualizaciones {num} Elo"
 
-#: src/db_players.py:210
+#: src/db_players.py:211
 #, python-brace-format
 msgid " - {num} aggiornamenti anno di nascita"
 msgstr "- Actualizaciones del año de nacimiento {num}"
 
-#: src/db_players.py:216
+#: src/db_players.py:217
 #, python-brace-format
 msgid " - {num} aggiornamenti titoli FIDE"
 msgstr "- {num} actualiza los títulos FIDE"
 
-#: src/db_players.py:220
+#: src/db_players.py:221
 #, python-brace-format
 msgid " - {num} aggiornamenti K-Factor"
 msgstr "- Actualizaciones del factor K {num}"
 
-#: src/db_players.py:227
+#: src/db_players.py:228
 #, python-brace-format
 msgid ""
 " - {num} giocatori con omonimi multipli (richiedono risoluzione manuale)"
 msgstr ""
 "- Reproductores {num} con múltiples homónimos (requiere resolución manual)"
 
-#: src/db_players.py:233
+#: src/db_players.py:234
 msgid "Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."
 msgstr ""
 "Presione ESCAPE para actualizar masivamente a todos los jugadores "
 "automáticamente."
 
-#: src/db_players.py:236
+#: src/db_players.py:237
 msgid ""
 "Premi INVIO per confermare manualmente l'aggiornamento per ogni singolo "
 "giocatore."
@@ -1252,13 +1252,13 @@ msgstr ""
 "Presione ENTER para confirmar manualmente la actualización para cada jugador"
 " individual."
 
-#: src/db_players.py:242
+#: src/db_players.py:243
 msgid ""
 "Scegli la modalità (INVIO = Conferma singola | ESCAPE = Aggiorna in massa): "
 msgstr ""
 "Elija el modo (ENTER = Confirmación única | ESCAPE = Actualización masiva):"
 
-#: src/db_players.py:262
+#: src/db_players.py:263
 #, python-brace-format
 msgid ""
 "\n"
@@ -1267,86 +1267,89 @@ msgstr ""
 "Jugador: {} {} (ID local: {}) tiene {} homónimos en la base de datos FIDE. "
 "Se requiere resolución manual."
 
-#: src/db_players.py:273 src/db_players.py:349
+#: src/db_players.py:274 src/db_players.py:350
 #, python-brace-format
 msgid " {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}"
 msgstr " {}. ID FIDE: {}, FED: {}, Elo: {}, Año Nacimiento: {}"
 
-#: src/db_players.py:282 src/db_players.py:358
+#: src/db_players.py:283 src/db_players.py:359
 msgid "   0. Nessuno di questi"
 msgstr "0. Ninguno de estos"
 
-#: src/db_players.py:283 src/db_players.py:359
+#: src/db_players.py:284 src/db_players.py:360
 #, python-brace-format
 msgid "   Scelta (0-{}): "
 msgstr "Elección (0-{}):"
 
-#: src/db_players.py:325
+#: src/db_players.py:326
 msgid "   Saltato."
 msgstr "Saltado."
 
-#: src/db_players.py:339
+#: src/db_players.py:340
 #, python-brace-format
 msgid ""
 "\n"
 "--- Modifiche per: {} {} (ID: {}) ---"
 msgstr "--- Cambios para: {} {} (ID: {}) ---"
 
-#: src/db_players.py:345
+#: src/db_players.py:346
 #, python-brace-format
 msgid "Trovati {} omonimi nel DB FIDE."
 msgstr "Se encontraron {} homónimos en la base de datos de la FIDE."
 
-#: src/db_players.py:401
+#: src/db_players.py:402
 msgid "Saltato."
 msgstr "Saltado."
 
-#: src/db_players.py:405
+#: src/db_players.py:406
 #, python-brace-format
 msgid " -> Associa nuovo ID FIDE: {}"
 msgstr "-> Asociar nuevo ID FIDE: {}"
 
-#: src/db_players.py:409
+#: src/db_players.py:410
 #, python-brace-format
 msgid " -> Aggiorna {}: da '{}' a '{}'"
 msgstr "-> Actualizar {}: de '{}' a '{}'"
 
-#: src/db_players.py:411 src/gui/dialogs/fide_query_dialog.py:152
-#: src/gui/dialogs/fide_query_dialog.py:153
-#: src/gui/dialogs/fide_query_dialog.py:187
-#: src/gui/dialogs/fide_query_dialog.py:189
+#: src/db_players.py:412 src/gui/dialogs/fide_query_dialog.py:156
+#: src/gui/dialogs/fide_query_dialog.py:157
+#: src/gui/dialogs/fide_query_dialog.py:191
 #: src/gui/dialogs/fide_query_dialog.py:193
-#: src/gui/dialogs/player_enrollment_dialog.py:334
-#: src/gui/dialogs/player_enrollment_dialog.py:335
-#: src/gui/dialogs/players_db_dialog.py:166
-#: src/gui/dialogs/players_db_dialog.py:223
-#: src/gui/dialogs/players_db_dialog.py:224
-#: src/gui/dialogs/players_db_dialog.py:225
+#: src/gui/dialogs/fide_query_dialog.py:197
+#: src/gui/dialogs/fide_query_dialog.py:221
+#: src/gui/dialogs/fide_query_dialog.py:227
+#: src/gui/dialogs/fide_query_dialog.py:233
+#: src/gui/dialogs/player_enrollment_dialog.py:342
+#: src/gui/dialogs/player_enrollment_dialog.py:343
+#: src/gui/dialogs/players_db_dialog.py:167
+#: src/gui/dialogs/players_db_dialog.py:316
+#: src/gui/dialogs/players_db_dialog.py:317
+#: src/gui/dialogs/players_db_dialog.py:318
 #: src/gui/dialogs/sync_database_dialog.py:249
-#: src/gui/dialogs/sync_database_dialog.py:315 src/gui/main_frame.py:1197
-#: src/gui/main_frame.py:1255 src/gui/main_frame.py:1889
-#: src/gui/main_frame.py:1894 src/gui/main_frame.py:2106
-#: src/gui/main_frame.py:2107 src/gui/main_frame.py:2789
-#: src/gui/main_frame.py:2790 src/reports.py:247 src/reports.py:248
-#: src/reports.py:278 src/reports.py:279 src/reports.py:1210
-#: src/reports.py:1213 src/reports.py:1214 src/reports.py:1219
-#: src/reports.py:1224 src/utils.py:67
+#: src/gui/dialogs/sync_database_dialog.py:315 src/gui/main_frame.py:1198
+#: src/gui/main_frame.py:1256 src/gui/main_frame.py:1890
+#: src/gui/main_frame.py:1895 src/gui/main_frame.py:2107
+#: src/gui/main_frame.py:2108 src/gui/main_frame.py:2859
+#: src/gui/main_frame.py:2860 src/reports.py:247 src/reports.py:248
+#: src/reports.py:278 src/reports.py:279 src/reports.py:1222
+#: src/reports.py:1225 src/reports.py:1226 src/reports.py:1231
+#: src/reports.py:1236 src/utils.py:67
 msgid "N/D"
 msgstr "N/D"
 
-#: src/db_players.py:418
+#: src/db_players.py:419
 msgid "Applicare queste modifiche? (INVIO per Sì | ESCAPE per No): "
 msgstr "¿Aplicar estos cambios? (ENTRAR para Sí | ESCAPAR para No):"
 
-#: src/db_players.py:426
+#: src/db_players.py:427
 msgid "Modifiche applicate."
 msgstr "Se aplicaron cambios."
 
-#: src/db_players.py:428
+#: src/db_players.py:429
 msgid "Modifiche saltate."
 msgstr "Se omitieron cambios."
 
-#: src/db_players.py:431
+#: src/db_players.py:432
 msgid ""
 "\n"
 "Sincronizzazione completata e database personale salvato!"
@@ -1354,12 +1357,12 @@ msgstr ""
 "\n"
 "¡Sincronización completada y base de datos personal guardada!"
 
-#: src/db_players.py:484
+#: src/db_players.py:486
 #, python-brace-format
 msgid "Download del file ZIP FIDE da: {url}"
 msgstr "Descargando el archivo ZIP FIDE de: {url}"
 
-#: src/db_players.py:513
+#: src/db_players.py:519
 #, python-brace-format
 msgid ""
 "Download completato in {duration:.2f}s. Apertura archivio ZIP in memoria..."
@@ -1367,42 +1370,42 @@ msgstr ""
 "Descarga completada en {duration:.2f}s. Abriendo archivo ZIP en la "
 "memoria..."
 
-#: src/db_players.py:524
+#: src/db_players.py:532
 msgid "ERRORE: Nessun file .xml trovato nell'archivio ZIP."
 msgstr "ERROR: No se encontró ningún archivo .xml en el archivo ZIP."
 
-#: src/db_players.py:531
+#: src/db_players.py:540
 #, python-brace-format
 msgid ""
 "Estrazione ed elaborazione del file XML: {filename} ({size_mb:.1f} MB)..."
 msgstr ""
 "Extracción y procesamiento del archivo XML: {filename} ({size_mb:.1f} MB)..."
 
-#: src/db_players.py:625
+#: src/db_players.py:634
 #, python-brace-format
 msgid "Elaborazione completata. Trovati e salvati {count} giocatori FIDE."
 msgstr ""
 "Procesamiento completado. Se encontraron y guardaron {count} jugadores FIDE."
 
-#: src/db_players.py:631
+#: src/db_players.py:640
 msgid "Vecchio file JSON FIDE rimosso."
 msgstr "Se eliminó el antiguo archivo JSON FIDE."
 
-#: src/db_players.py:635
+#: src/db_players.py:642
 msgid "Database FIDE locale 'fide_ratings.db' salvato con successo."
 msgstr ""
 "La base de datos local de la FIDE 'fide_ratings.db' se guardó correctamente."
 
-#: src/db_players.py:640
+#: src/db_players.py:645
 msgid "ERRORE: Timeout durante il download del file."
 msgstr "ERROR: Tiempo de espera agotado durante la descarga del archivo."
 
-#: src/db_players.py:643
+#: src/db_players.py:648
 #, python-brace-format
 msgid "ERRORE di rete: {error}"
 msgstr "ERROR de red: {error}"
 
-#: src/db_players.py:648
+#: src/db_players.py:653
 #, python-brace-format
 msgid ""
 "Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: "
@@ -1410,7 +1413,7 @@ msgid ""
 msgstr ""
 "Ocurrió un error inesperado durante la actualización de la BD FIDE: {error}"
 
-#: src/db_players.py:675
+#: src/db_players.py:680
 msgid ""
 "\n"
 "Info: Rilevato database giocatori in formato obsoleto. Avvio migrazione a schema v2..."
@@ -1418,39 +1421,39 @@ msgstr ""
 "Información: Detectada base de datos de jugadores en formato obsoleto. "
 "Iniciando la migración al esquema v2..."
 
-#: src/db_players.py:708
+#: src/db_players.py:713
 msgid "Migrazione completata con successo."
 msgstr "La migración se completó con éxito."
 
-#: src/db_players.py:714
+#: src/db_players.py:719
 #, python-brace-format
 msgid "Errore durante il caricamento del DB giocatori ({filename}): {error}"
 msgstr "Error durante la carga de la BD de jugadores ({filename}): {error}"
 
-#: src/db_players.py:717
+#: src/db_players.py:722
 msgid "Verrà creato un nuovo DB vuoto se si aggiungono giocatori."
 msgstr "Se creará una nueva BD vacía si se añaden jugadores."
 
-#: src/db_players.py:734
+#: src/db_players.py:739
 #, python-brace-format
 msgid "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
 msgstr "Error durante el guardado de la BD de jugadores ({filename}): {error}"
 
-#: src/db_players.py:739
+#: src/db_players.py:744
 #, python-brace-format
 msgid "Errore imprevisto durante il salvataggio del DB: {error}"
 msgstr "Error inesperado durante el guardado de la BD: {error}"
 
-#: src/db_players.py:757
+#: src/db_players.py:762
 #, python-brace-format
 msgid "Report Database Giocatori Tornello - {date} {time}\n"
 msgstr "Informe Base de Datos de Jugadores Tornello - {date} {time}\n"
 
-#: src/db_players.py:767
+#: src/db_players.py:772
 msgid "Il database dei giocatori è vuoto.\n"
 msgstr "La base de datos de jugadores está vacía.\n"
 
-#: src/db_players.py:794
+#: src/db_players.py:799
 #, python-brace-format
 msgid ""
 "\tSesso: {sesso}, Federazione: {federazione}, ID FIDE: {fide_id}, Flag: "
@@ -1459,7 +1462,7 @@ msgstr ""
 "Género:{sesso}, Federación:{federazione}, ID FIDE:{fide_id}, "
 "Bandera:{flag}{extra}"
 
-#: src/db_players.py:822
+#: src/db_players.py:827
 #, python-brace-format
 msgid ""
 "\tPartite Valutate Totali: {games}, K-Factor Stimato: {k_factor}, Data "
@@ -1468,12 +1471,12 @@ msgstr ""
 "\tPartidas Evaluadas Totales: {games}, Factor-K Estimado: {k_factor}, Fecha "
 "Inscripción BD: {reg_date}\n"
 
-#: src/db_players.py:834
+#: src/db_players.py:839
 #, python-brace-format
 msgid "\tData Nascita: {birth_date}\n"
 msgstr "\tFecha de Nacimiento: {birth_date}\n"
 
-#: src/db_players.py:843
+#: src/db_players.py:848
 #, python-brace-format
 msgid ""
 "\tMedagliere: Oro: {gold}, Argento: {silver}, Bronzo: {bronze}, Legno: "
@@ -1482,25 +1485,25 @@ msgstr ""
 "\tMedallero: Oro: {gold}, Plata: {silver}, Bronce: {bronze}, Madera: {wood} "
 "en "
 
-#: src/db_players.py:852
+#: src/db_players.py:857
 #, python-brace-format
 msgid "({count}) tornei:\n"
 msgstr "({count}) torneos:\n"
 
-#: src/db_players.py:868
+#: src/db_players.py:873
 msgid "Nome Torneo Mancante"
 msgstr "Nombre de Torneo Faltante"
 
-#: src/db_players.py:879
+#: src/db_players.py:884
 #, python-brace-format
 msgid "{rank} su {total} in {name} - {start} - {end}"
 msgstr "{rank} de {total} en {name} - {start} - {end}"
 
-#: src/db_players.py:889
+#: src/db_players.py:894
 msgid "\tNessuno\n"
 msgstr "\tNinguno\n"
 
-#: src/db_players.py:894
+#: src/db_players.py:899
 #, python-brace-format
 msgid ""
 "Errore durante il salvataggio del file TXT del DB giocatori ({filename}): "
@@ -1509,12 +1512,12 @@ msgstr ""
 "Error durante el guardado del archivo TXT de la BD de jugadores "
 "({filename}): {error}"
 
-#: src/db_players.py:899
+#: src/db_players.py:904
 #, python-brace-format
 msgid "Errore imprevisto durante il salvataggio del TXT del DB: {}"
 msgstr "Error inesperado durante el guardado del TXT de la BD: {}"
 
-#: src/db_players.py:975
+#: src/db_players.py:980
 msgid ""
 "Errore: Nome e Cognome non possono essere vuoti per la creazione del "
 "giocatore nel DB."
@@ -1522,7 +1525,7 @@ msgstr ""
 "Error: Nombre y Apellido no pueden estar vacíos para la creación del jugador"
 " en la BD."
 
-#: src/db_players.py:984
+#: src/db_players.py:989
 #, python-brace-format
 msgid ""
 "ERRORE CRITICO: Impossibile generare ID univoco per {first_name} "
@@ -1531,12 +1534,12 @@ msgstr ""
 "ERROR CRÍTICO: No se puede generar una identificación única "
 "para{first_name}{last_name}."
 
-#: src/db_players.py:992
+#: src/db_players.py:997
 #, python-brace-format
 msgid "Creazione nuovo giocatore nel DB principale: {} {} con il nuovo ID: {}"
 msgstr "Creando nuevo jugador en la BD principal: {} {} con el nuevo ID: {}"
 
-#: src/db_players.py:1029
+#: src/db_players.py:1034
 #, python-brace-format
 msgid ""
 "Nuovo giocatore '{first_name} {last_name}' (ID: {player_id}) aggiunto al "
@@ -1595,7 +1598,7 @@ msgstr ""
 msgid "Scelta non valida. Inserisci 't' o 'u'."
 msgstr "Elección no válida. Ingrese 't' o 'u'."
 
-#: src/engine.py:122 src/gui/main_frame.py:2391 src/gui/main_frame.py:3699
+#: src/engine.py:122 src/gui/main_frame.py:2392 src/gui/main_frame.py:3822
 msgid "Arbitro Capo"
 msgstr "Árbitro Principal"
 
@@ -1944,7 +1947,7 @@ msgstr "Error al guardar el archivo de la ronda '{filename}': {error}"
 msgid "Errore inatteso durante il salvataggio del file del turno: {error}"
 msgstr "Error inesperado al guardar el archivo de la ronda: {error}"
 
-#: src/reports.py:655 src/reports.py:917 tests/test_stats.py:178
+#: src/reports.py:655 src/reports.py:929 tests/test_stats.py:178
 #: tests/test_stats.py:193 tests/test_stats.py:202
 msgid "Punti"
 msgstr "Agujas"
@@ -1977,7 +1980,7 @@ msgstr "REPS"
 msgid "Vitt"
 msgstr "vitt"
 
-#: src/reports.py:692 src/reports.py:927
+#: src/reports.py:692 src/reports.py:939
 msgid "Neri"
 msgstr "negros"
 
@@ -1985,146 +1988,146 @@ msgstr "negros"
 msgid "Cumul"
 msgstr "cúmulo"
 
-#: src/reports.py:720 src/reports.py:1041
+#: src/reports.py:720 src/reports.py:1053
 msgid "Attenzione: Nessun giocatore per generare la classifica."
 msgstr "Atención: Ningún jugador para generar la clasificación."
 
-#: src/reports.py:789
+#: src/reports.py:801
 msgid "CLASSIFICA FINALE"
 msgstr "CLASIFICACIÓN FINAL"
 
-#: src/reports.py:792
+#: src/reports.py:804
 msgid "Elenco Iniziale Partecipanti (Prima del Turno 1)"
 msgstr "Lista Inicial de Participantes (Antes de la Ronda 1)"
 
-#: src/reports.py:811
+#: src/reports.py:823
 #, python-brace-format
 msgid "Classifica Parziale - Dopo Turno {round_num}"
 msgstr "Clasificación Parcial - Después de la Ronda {round_num}"
 
-#: src/reports.py:815
+#: src/reports.py:827
 #, python-brace-format
 msgid "Classifica Parziale - Durante Turno {round_num}"
 msgstr "Clasificación Parcial - Durante la Ronda {round_num}"
 
-#: src/reports.py:855
+#: src/reports.py:867
 #, python-brace-format
 msgid "Nome Torneo: {name}\n"
 msgstr "Nombre del Torneo: {name}\n"
 
-#: src/reports.py:856
+#: src/reports.py:868
 #, python-brace-format
 msgid "Luogo: {site}\n"
 msgstr "Lugar: {site}\n"
 
-#: src/reports.py:858
+#: src/reports.py:870
 #, python-brace-format
 msgid "Date: {start_date} - {end_date}\n"
 msgstr "Fechas: {start_date} - {end_date}\n"
 
-#: src/reports.py:864
+#: src/reports.py:876
 #, python-brace-format
 msgid "Federazione Organizzante: {fed}\n"
 msgstr "Federación Organizadora: {fed}\n"
 
-#: src/reports.py:869
+#: src/reports.py:881
 #, python-brace-format
 msgid "Arbitro Capo: {arbiter}\n"
 msgstr "Árbitro Principal: {arbiter}\n"
 
-#: src/reports.py:875
+#: src/reports.py:887
 #, python-brace-format
 msgid "Vice Arbitri: {arbiters}\n"
 msgstr "Árbitros Adjuntos: {arbiters}\n"
 
-#: src/reports.py:895
+#: src/reports.py:907
 #, python-brace-format
 msgid "Controllo Tempo: {time_control}\n"
 msgstr "Control de Tiempo: {time_control}\n"
 
-#: src/reports.py:896
+#: src/reports.py:908
 msgid "Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)\n"
 msgstr "Sistema de Emparejamiento: Suizo Holandés (vía bbpPairings)\n"
 
-#: src/gui/main_frame.py:1810 src/reports.py:918
+#: src/gui/main_frame.py:1811 src/reports.py:930
 msgid "Ritirato"
 msgstr "Retirado"
 
-#: src/gui/main_frame.py:1811 src/reports.py:919
+#: src/gui/main_frame.py:1812 src/reports.py:931
 msgid "Buchholz Cut-1"
 msgstr "Corte Buchholz-1"
 
-#: src/gui/main_frame.py:1812 src/reports.py:920
+#: src/gui/main_frame.py:1813 src/reports.py:932
 msgid "Buchholz Totale"
 msgstr "Total"
 
-#: src/reports.py:921
+#: src/reports.py:933
 msgid "ARO"
 msgstr "ARO"
 
-#: src/reports.py:922
+#: src/reports.py:934
 msgid "Elo Iniziale"
 msgstr "Elo inicial"
 
-#: src/gui/main_frame.py:1815 src/reports.py:923 src/tiebreak_criteria.py:230
+#: src/gui/main_frame.py:1816 src/reports.py:935 src/tiebreak_criteria.py:230
 msgid "Sonneborn-Berger"
 msgstr "Sonneborn-Berger"
 
-#: src/gui/main_frame.py:1816 src/reports.py:924
+#: src/gui/main_frame.py:1817 src/reports.py:936
 msgid "Scontro Diretto"
 msgstr "Choque directo"
 
-#: src/reports.py:925
+#: src/reports.py:937
 msgid "REP (Turni Giocati)"
 msgstr "REP (Turnos jugados)"
 
-#: src/reports.py:926
+#: src/reports.py:938
 msgid "Vittorie"
 msgstr "Victorias"
 
-#: src/reports.py:928
+#: src/reports.py:940
 msgid "Cumulativo"
 msgstr "Acumulativo"
 
-#: src/reports.py:932
+#: src/reports.py:944
 #, python-brace-format
 msgid "Criteri di Spareggio: {tiebreaks}\n"
 msgstr "Criterios de remate:{tiebreaks}"
 
-#: src/reports.py:938
+#: src/reports.py:950
 #, python-brace-format
 msgid "Data Report: {date} {time}\n"
 msgstr "Fecha del Informe: {date} {time}\n"
 
-#: src/reports.py:949
+#: src/reports.py:961
 msgid "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti"
 msgstr "Pos. (Tab) Título Nombre Apellido [EloIni] Puntos"
 
-#: src/reports.py:972
+#: src/reports.py:984
 msgid "Perf"
 msgstr "rendimiento"
 
-#: src/reports.py:972
+#: src/reports.py:984
 msgid "Elo Var."
 msgstr "Elo Var."
 
-#: src/reports.py:1046
+#: src/reports.py:1058
 #, python-brace-format
 msgid "Tornello - {name} - Classifica.txt"
 msgstr "Tornello - {name} - Clasificación.txt"
 
-#: src/reports.py:1061
+#: src/reports.py:1073
 #, python-brace-format
 msgid "File classifica '{filename}' salvato/sovrascritto."
 msgstr "Archivo de clasificación '{filename}' guardado/sobrescrito."
 
-#: src/reports.py:1068
+#: src/reports.py:1080
 #, python-brace-format
 msgid ""
 "Errore durante il salvataggio del file classifica '{filename}': {error}"
 msgstr "Error al guardar el archivo de clasificación '{filename}': {error}"
 
-#: src/reports.py:1078
+#: src/reports.py:1090
 msgid ""
 "\n"
 "--- Stato Torneo ---"
@@ -2132,57 +2135,57 @@ msgstr ""
 "\n"
 "--- Estado del Torneo ---"
 
-#: src/reports.py:1079
+#: src/reports.py:1091
 #, python-brace-format
 msgid "Nome: {name}"
 msgstr "Nombre: {name}"
 
-#: src/reports.py:1083
+#: src/reports.py:1095
 #, python-brace-format
 msgid "Periodo: {start} - {end}"
 msgstr "Periodo: {start} - {end}"
 
-#: src/reports.py:1090
+#: src/reports.py:1102
 #, python-brace-format
 msgid "Turno Corrente: {current} / {total}"
 msgstr "Ronda Actual: {current} / {total}"
 
-#: src/reports.py:1104
+#: src/reports.py:1116
 #, python-brace-format
 msgid "Periodo Turno {round_num}: {start} - {end}"
 msgstr "Periodo Ronda {round_num}: {start} - {end}"
 
-#: src/reports.py:1116
+#: src/reports.py:1128
 #, python-brace-format
 msgid " -> Termine turno superato da {days} giorni."
 msgstr " -> Fin de la ronda superado por {days} días."
 
-#: src/reports.py:1123
+#: src/reports.py:1135
 msgid " -> Ultimo giorno per completare il turno."
 msgstr " -> Último día para completar la ronda."
 
-#: src/reports.py:1126
+#: src/reports.py:1138
 #, python-brace-format
 msgid " -> Giorni rimanenti per il turno: {days}"
 msgstr " -> Días restantes para la ronda: {days}"
 
-#: src/reports.py:1138
+#: src/reports.py:1150
 msgid "Termine torneo superato."
 msgstr "Fin del torneo superado."
 
-#: src/reports.py:1148
+#: src/reports.py:1160
 #, python-brace-format
 msgid "Giorni rimanenti alla fine del torneo: {days}"
 msgstr "Días restantes para el fin del torneo: {days}"
 
-#: src/reports.py:1157
+#: src/reports.py:1169
 #, python-brace-format
 msgid "Data fine torneo ('{date}') non valida per calcolo giorni rimanenti."
 msgstr ""
 "Fecha de fin de torneo ('{date}') no válida para el cálculo de días "
 "restantes."
 
-#: src/reports.py:1176
+#: src/reports.py:1188
 #, python-brace-format
 msgid ""
 "\n"
@@ -2191,7 +2194,7 @@ msgstr ""
 "\n"
 "Partidas por jugar/registrar para la Ronda {round_num}: {count}"
 
-#: src/reports.py:1185
+#: src/reports.py:1197
 #, python-brace-format
 msgid ""
 "\n"
@@ -2200,7 +2203,7 @@ msgstr ""
 "\n"
 "Todas las partidas de la Ronda {round_num} han sido registradas."
 
-#: src/reports.py:1190
+#: src/reports.py:1202
 msgid ""
 "\n"
 "Il torneo è concluso."
@@ -2208,7 +2211,7 @@ msgstr ""
 "\n"
 "El torneo ha concluido."
 
-#: src/reports.py:1193
+#: src/reports.py:1205
 #, python-brace-format
 msgid ""
 "\n"
@@ -2217,59 +2220,59 @@ msgstr ""
 "\n"
 "Datos para la Ronda {round_num} no encontrados o ronda no válida."
 
-#: src/reports.py:1206
+#: src/reports.py:1218
 #, python-brace-format
 msgid ""
 "--- RIEPILOGO TORNEO IN PREPARAZIONE: {} ---\n"
 "\n"
 msgstr "--- TORNEO RESUMEN EN PREPARACIÓN: {} ---"
 
-#: src/gui/dialogs/players_db_dialog.py:140 src/reports.py:1207
+#: src/gui/dialogs/players_db_dialog.py:141 src/reports.py:1219
 msgid "Senza Nome"
 msgstr "Sin nombre"
 
-#: src/reports.py:1210
+#: src/reports.py:1222
 #, python-brace-format
 msgid "Luogo: {}\n"
 msgstr "Ubicación: {}"
 
-#: src/reports.py:1212
+#: src/reports.py:1224
 #, python-brace-format
 msgid "Date: {} - {}\n"
 msgstr "Fechas: {} - {}"
 
-#: src/reports.py:1218
+#: src/reports.py:1230
 #, python-brace-format
 msgid "Turni previsti: {}\n"
 msgstr "Turnos programados: {}"
 
-#: src/reports.py:1223
+#: src/reports.py:1235
 #, python-brace-format
 msgid ""
 "Tempo di riflessione: {}\n"
 "\n"
 msgstr "Tiempo de reflexión: {}"
 
-#: src/reports.py:1229
+#: src/reports.py:1241
 #, python-brace-format
 msgid "--- GIOCATORI INSERITI ({}) ---\n"
 msgstr "--- JUGADORES INSERTADOS ({}) ---"
 
-#: src/reports.py:1231
+#: src/reports.py:1243
 msgid "Nessun giocatore inserito finora.\n"
 msgstr "Ningún jugador ingresó hasta el momento."
 
-#: src/reports.py:1240
+#: src/reports.py:1252
 #, python-brace-format
 msgid "{idx:02d}. {name} (ID: {id}, Elo: {elo})\n"
 msgstr "{idx:02d}. {name} (ID: {id}, Elo: {elo})"
 
-#: src/reports.py:1246
+#: src/reports.py:1258
 #, python-brace-format
 msgid "Riepilogo promemoria salvato in: '{report}'"
 msgstr "Resumen del recordatorio guardado en: '{report}'"
 
-#: src/reports.py:1251
+#: src/reports.py:1263
 #, python-brace-format
 msgid "Errore nel salvataggio del riepilogo sospeso: {e}"
 msgstr "Error al guardar el resumen suspendido:{e}"
@@ -4181,57 +4184,57 @@ msgstr ""
 msgid "Vittorie: Bianco {}, patte {}, nero {}."
 msgstr "Gana: blanco {}, empata {}, negro {}."
 
-#: src/gui/main_frame.py:453
+#: src/gui/main_frame.py:454
 #, python-brace-format
 msgid "{} anno"
 msgstr "{} año"
 
-#: src/gui/main_frame.py:453
+#: src/gui/main_frame.py:454
 #, python-brace-format
 msgid "{} anni"
 msgstr "{} años"
 
-#: src/gui/main_frame.py:457
+#: src/gui/main_frame.py:458
 #, python-brace-format
 msgid "{} mese"
 msgstr "{} mes"
 
-#: src/gui/main_frame.py:457
+#: src/gui/main_frame.py:458
 #, python-brace-format
 msgid "{} mesi"
 msgstr "{} meses"
 
-#: src/gui/main_frame.py:461
+#: src/gui/main_frame.py:462
 #, python-brace-format
 msgid "{} giorno"
 msgstr "{} día"
 
-#: src/gui/main_frame.py:461
+#: src/gui/main_frame.py:462
 #, python-brace-format
 msgid "{} giorni"
 msgstr "{} días"
 
-#: src/gui/main_frame.py:464
+#: src/gui/main_frame.py:465
 #, python-brace-format
 msgid "{} ora"
 msgstr "{} ahora"
 
-#: src/gui/main_frame.py:464
+#: src/gui/main_frame.py:465
 #, no-python-format, python-brace-format
 msgid "{} ore"
 msgstr "{} horas"
 
-#: src/gui/main_frame.py:467
+#: src/gui/main_frame.py:468
 #, python-brace-format
 msgid "{} minuto"
 msgstr "{} minuto"
 
-#: src/gui/main_frame.py:467
+#: src/gui/main_frame.py:468
 #, python-brace-format
 msgid "{} minuti"
 msgstr "{} minutos"
 
-#: src/gui/main_frame.py:473
+#: src/gui/main_frame.py:474
 #, no-python-format, python-brace-format
 msgid ""
 "Ciao! Benvenuto, sono Tornello v{} - Sviluppato da Gabriele Battaglia (IZ4APU) & Stella (AI)\n"
@@ -4296,11 +4299,11 @@ msgstr ""
 " - Ctrl+K: buscar/consultar directamente la base de datos de ratings de la FIDE\n"
 " - Ctrl+Y: Sincronización de la base de datos local con la ruta FIDE"
 
-#: src/gui/main_frame.py:502
+#: src/gui/main_frame.py:503
 msgid "Pronto. Nessun torneo caricato."
 msgstr "Listo. No hay torneos cargados."
 
-#: src/gui/main_frame.py:526
+#: src/gui/main_frame.py:527
 #, python-brace-format
 msgid ""
 "Il database FIDE locale è stato aggiornato {days} giorni fa.\n"
@@ -4311,11 +4314,11 @@ msgstr ""
 "Le recomendamos que consulte y descargue la última actualización.\n"
 "¿Quieres continuar con la verificación y la descarga ahora?"
 
-#: src/gui/dialogs/fide_update_dialog.py:42 src/gui/main_frame.py:531
+#: src/gui/dialogs/fide_update_dialog.py:42 src/gui/main_frame.py:532
 msgid "Aggiornamento Database FIDE"
 msgstr "Actualización de la base de datos de la FIDE"
 
-#: src/gui/main_frame.py:547
+#: src/gui/main_frame.py:548
 msgid ""
 "Il database FIDE locale non è presente.\n"
 "È necessario scaricarlo per poter cercare giocatori nel database FIDE internazionale.\n"
@@ -4327,11 +4330,11 @@ msgstr ""
 "\n"
 "¿Quieres descargarlo ahora?"
 
-#: src/gui/main_frame.py:553
+#: src/gui/main_frame.py:554
 msgid "Database FIDE Mancante"
 msgstr "Falta la base de datos de la FIDE"
 
-#: src/gui/main_frame.py:588
+#: src/gui/main_frame.py:589
 #, python-brace-format
 msgid ""
 "È disponibile un nuovo aggiornamento!\n"
@@ -4348,15 +4351,15 @@ msgstr ""
 "\n"
 "¿Quieres descargar e instalar la actualización ahora? (La aplicación se reiniciará)"
 
-#: src/gui/main_frame.py:594
+#: src/gui/main_frame.py:595
 msgid "Aggiornamento Disponibile"
 msgstr "Actualización disponible"
 
-#: src/gui/main_frame.py:598
+#: src/gui/main_frame.py:599
 msgid "Scaricamento e installazione aggiornamento in corso..."
 msgstr "Descarga e instalación de la actualización en curso..."
 
-#: src/gui/main_frame.py:618
+#: src/gui/main_frame.py:619
 msgid ""
 "Impossibile avviare l'aggiornamento automatico (funzione disponibile solo "
 "nella versione compilata)."
@@ -4364,16 +4367,16 @@ msgstr ""
 "No se pudo iniciar la actualización automática (función disponible solo en "
 "la versão compilada)."
 
-#: src/gui/main_frame.py:620 src/gui/main_frame.py:627
+#: src/gui/main_frame.py:621 src/gui/main_frame.py:628
 msgid "Errore Aggiornamento"
 msgstr "Error de actualización"
 
-#: src/gui/main_frame.py:626
+#: src/gui/main_frame.py:627
 #, python-brace-format
 msgid "Errore durante l'aggiornamento: {}"
 msgstr "Error durante la actualización: {}"
 
-#: src/gui/main_frame.py:668
+#: src/gui/main_frame.py:669
 #, python-brace-format
 msgid ""
 "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
@@ -4390,50 +4393,51 @@ msgstr ""
 "\n"
 "Nota: Al elegir 'No', la fecha de modificación de estos archivos se actualizará a hoy y no se le solicitará esta verificación nuevamente hasta dentro de 18 meses."
 
-#: src/gui/main_frame.py:676
+#: src/gui/main_frame.py:677
 msgid "Pulizia Backup Consigliata"
 msgstr "Limpieza de copia de seguridad recomendada"
 
-#: src/gui/main_frame.py:726
+#: src/gui/main_frame.py:727
 #, python-brace-format
 msgid "Versione {version} - Data Rilascio {date} - [{name}]"
 msgstr "Versión {version} - Fecha de Lanzamiento {date} - [{name}]"
 
-#: src/gui/main_frame.py:735
+#: src/gui/main_frame.py:736
 #, python-brace-format
 msgid "Torneo '{name}' caricato con successo."
 msgstr "Torneo '{name}' cargado con éxito."
 
-#: src/gui/main_frame.py:739
+#: src/gui/main_frame.py:740
 #, python-brace-format
 msgid "Errore nel caricamento del torneo: {}"
 msgstr "Error al cargar torneo: {}"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:307
 #: src/gui/dialogs/fide_update_dialog.py:192
-#: src/gui/dialogs/player_enrollment_dialog.py:541
-#: src/gui/dialogs/players_db_dialog.py:320
-#: src/gui/dialogs/players_db_dialog.py:503 src/gui/main_frame.py:740
-#: src/gui/main_frame.py:2300 src/gui/main_frame.py:2358
-#: src/gui/main_frame.py:2383 src/gui/main_frame.py:2529
-#: src/gui/main_frame.py:2633 src/gui/main_frame.py:2737
-#: src/gui/main_frame.py:2774 src/gui/main_frame.py:2815
-#: src/gui/main_frame.py:2849 src/gui/main_frame.py:2925
-#: src/gui/main_frame.py:3352 src/gui/main_frame.py:3359
-#: src/gui/main_frame.py:3375 src/gui/main_frame.py:3396
-#: src/gui/main_frame.py:3410 src/gui/main_frame.py:3417
-#: src/gui/main_frame.py:3428 src/gui/main_frame.py:3434
-#: src/gui/main_frame.py:3461 src/gui/main_frame.py:3472
-#: src/gui/main_frame.py:3479 src/gui/main_frame.py:3491
-#: src/gui/main_frame.py:3503 src/gui/main_frame.py:3604
-#: src/gui/main_frame.py:3635 src/gui/main_frame.py:3688
-#: src/gui/main_frame.py:4253 src/gui/main_frame.py:4289
-#: src/gui/main_frame.py:4302 src/gui/main_frame.py:4320
-#: src/gui/main_frame.py:4413
+#: src/gui/dialogs/player_enrollment_dialog.py:561
+#: src/gui/dialogs/players_db_dialog.py:426
+#: src/gui/dialogs/players_db_dialog.py:640 src/gui/main_frame.py:741
+#: src/gui/main_frame.py:2301 src/gui/main_frame.py:2359
+#: src/gui/main_frame.py:2384 src/gui/main_frame.py:2544
+#: src/gui/main_frame.py:2653 src/gui/main_frame.py:2775
+#: src/gui/main_frame.py:2784 src/gui/main_frame.py:2839
+#: src/gui/main_frame.py:2885 src/gui/main_frame.py:2919
+#: src/gui/main_frame.py:2995 src/gui/main_frame.py:3442
+#: src/gui/main_frame.py:3449 src/gui/main_frame.py:3468
+#: src/gui/main_frame.py:3495 src/gui/main_frame.py:3509
+#: src/gui/main_frame.py:3516 src/gui/main_frame.py:3527
+#: src/gui/main_frame.py:3533 src/gui/main_frame.py:3560
+#: src/gui/main_frame.py:3571 src/gui/main_frame.py:3578
+#: src/gui/main_frame.py:3590 src/gui/main_frame.py:3602
+#: src/gui/main_frame.py:3648 src/gui/main_frame.py:3716
+#: src/gui/main_frame.py:3747 src/gui/main_frame.py:3811
+#: src/gui/main_frame.py:4376 src/gui/main_frame.py:4412
+#: src/gui/main_frame.py:4425 src/gui/main_frame.py:4443
+#: src/gui/main_frame.py:4536
 msgid "Errore"
 msgstr "Error"
 
-#: src/gui/main_frame.py:758
+#: src/gui/main_frame.py:759
 #, python-brace-format
 msgid ""
 "Torneo: {name}\n"
@@ -4442,26 +4446,26 @@ msgstr ""
 "Torneo: {name}\n"
 "Ronda Actual: {curr} de {total}\n"
 
-#: src/gui/main_frame.py:769
+#: src/gui/main_frame.py:770
 #, python-brace-format
 msgid "Abbinamenti Turno {}:\n"
 msgstr "Emparejamientos Ronda {}:\n"
 
-#: src/gui/main_frame.py:784
+#: src/gui/main_frame.py:785
 #, python-brace-format
 msgid "  {white} vs {black}{result}\n"
 msgstr "{white} frente a {black}{result}"
 
-#: src/gui/main_frame.py:788
+#: src/gui/main_frame.py:789
 #, python-brace-format
 msgid "  {} - BYE (1.0 punti)\n"
 msgstr "{} - BYE (1,0 puntos)"
 
-#: src/gui/main_frame.py:790
+#: src/gui/main_frame.py:791
 msgid "Nessun abbinamento generato per questo turno.\n"
 msgstr "No se generaron coincidencias para esta ronda."
 
-#: src/gui/main_frame.py:793
+#: src/gui/main_frame.py:794
 msgid ""
 "\n"
 "Il torneo è in fase di preparazione.\n"
@@ -4472,264 +4476,263 @@ msgstr ""
 "Puedes registrar a otros jugadores presionando Ctrl+I (o desde el menú Torneo -> Registros).\n"
 "Cuando estés listo para comenzar el torneo, selecciona \"Iniciar torneo\" en el árbol de la derecha."
 
-#: src/gui/main_frame.py:944 src/gui/main_frame.py:1322
+#: src/gui/main_frame.py:945 src/gui/main_frame.py:1323
 msgid "iscritti"
 msgstr "registrados"
 
-#: src/gui/main_frame.py:944 src/gui/main_frame.py:1349
+#: src/gui/main_frame.py:945 src/gui/main_frame.py:1350
 msgid "turni"
 msgstr "rondas"
 
-#: src/gui/main_frame.py:951
+#: src/gui/main_frame.py:952
 msgid "In Preparazione"
 msgstr "En preparación"
 
-#: src/gui/main_frame.py:966
+#: src/gui/main_frame.py:967
 msgid "Tornei Conclusi"
 msgstr "Torneos completados"
 
-#: src/gui/main_frame.py:978
+#: src/gui/main_frame.py:979
 msgid "gennaio"
 msgstr "enero"
 
-#: src/gui/main_frame.py:979
+#: src/gui/main_frame.py:980
 msgid "febbraio"
 msgstr "Febrero"
 
-#: src/gui/main_frame.py:980
+#: src/gui/main_frame.py:981
 msgid "marzo"
 msgstr "marzo"
 
-#: src/gui/main_frame.py:981
+#: src/gui/main_frame.py:982
 msgid "aprile"
 msgstr "abril"
 
-#: src/gui/main_frame.py:982
+#: src/gui/main_frame.py:983
 msgid "maggio"
 msgstr "mayo"
 
-#: src/gui/main_frame.py:983
+#: src/gui/main_frame.py:984
 msgid "giugno"
 msgstr "Junio"
 
-#: src/gui/main_frame.py:984
+#: src/gui/main_frame.py:985
 msgid "luglio"
 msgstr "julio"
 
-#: src/gui/main_frame.py:985
+#: src/gui/main_frame.py:986
 msgid "agosto"
 msgstr "agosto"
 
-#: src/gui/main_frame.py:986
+#: src/gui/main_frame.py:987
 msgid "settembre"
 msgstr "septiembre"
 
-#: src/gui/main_frame.py:987
+#: src/gui/main_frame.py:988
 msgid "ottobre"
 msgstr "octubre"
 
-#: src/gui/main_frame.py:988
+#: src/gui/main_frame.py:989
 msgid "novembre"
 msgstr "Noviembre"
 
-#: src/gui/main_frame.py:989
+#: src/gui/main_frame.py:990
 msgid "dicembre"
 msgstr "diciembre"
 
-#: src/gui/main_frame.py:1007
+#: src/gui/main_frame.py:1008
 msgid "Nuovo torneo"
 msgstr "Nuevo torneo"
 
-#: src/gui/main_frame.py:1033
+#: src/gui/main_frame.py:1034
 #, python-brace-format
 msgid "Turno {}"
 msgstr "Ronda {}"
 
-#: src/gui/main_frame.py:1041
+#: src/gui/main_frame.py:1042
 #, python-brace-format
 msgid "Turno corrente ({}/{})"
 msgstr "Ronda actual ({}/{})"
 
-#: src/gui/main_frame.py:1049 src/gui/main_frame.py:1067
+#: src/gui/main_frame.py:1050 src/gui/main_frame.py:1068
 msgid "giocate"
 msgstr "jugadas"
 
-#: src/gui/main_frame.py:1110
+#: src/gui/main_frame.py:1111
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {}"
 msgstr "Tablero {}: {} vs {}"
 
-#: src/gui/main_frame.py:1114
+#: src/gui/main_frame.py:1115
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE"
 msgstr "Tablero {}: {} - BYE"
 
-#: src/gui/main_frame.py:1131
+#: src/gui/main_frame.py:1132
 msgid "da giocare"
 msgstr "por jugar"
 
-#: src/gui/main_frame.py:1156
+#: src/gui/main_frame.py:1157
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} (Pianificata: {} {})"
 msgstr "Tablero de ajedrez {}: {} vs {} (Programado: {} {})"
 
-#: src/gui/main_frame.py:1159
+#: src/gui/main_frame.py:1160
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} (Non pianificata)"
 msgstr "{} Tablero: {} vs {} (no planificado)"
 
-#: src/gui/main_frame.py:1181
+#: src/gui/main_frame.py:1182
 msgid "Dati"
 msgstr "Datos"
 
-#: src/gui/main_frame.py:1189 src/gui/main_frame.py:2260
-#: src/gui/main_frame.py:3042 src/gui/main_frame.py:3558
+#: src/gui/main_frame.py:1190 src/gui/main_frame.py:3670
 #, python-brace-format
 msgid "Nome torneo: {}"
 msgstr "Nombre del torneo: {}"
 
-#: src/gui/main_frame.py:1197 src/gui/main_frame.py:2277
-#: src/gui/main_frame.py:3047 src/gui/main_frame.py:3575
+#: src/gui/main_frame.py:1198 src/gui/main_frame.py:2278
+#: src/gui/main_frame.py:3132 src/gui/main_frame.py:3687
 #, python-brace-format
 msgid "Luogo (Site): {}"
 msgstr "Ubicación: {}"
 
-#: src/gui/main_frame.py:1206 src/gui/main_frame.py:2353
-#: src/gui/main_frame.py:3052 src/gui/main_frame.py:3596
+#: src/gui/main_frame.py:1207 src/gui/main_frame.py:2354
+#: src/gui/main_frame.py:3137 src/gui/main_frame.py:3708
 #, python-brace-format
 msgid "Data inizio: {}"
 msgstr "Fecha de inicio: {}"
 
-#: src/gui/main_frame.py:1215 src/gui/main_frame.py:2378
-#: src/gui/main_frame.py:3057 src/gui/main_frame.py:3627
+#: src/gui/main_frame.py:1216 src/gui/main_frame.py:2379
+#: src/gui/main_frame.py:3142 src/gui/main_frame.py:3739
 #, python-brace-format
 msgid "Data fine: {}"
 msgstr "Fecha de finalización: {}"
 
-#: src/gui/main_frame.py:1233 src/gui/main_frame.py:3669
+#: src/gui/main_frame.py:1234 src/gui/main_frame.py:3792
 msgid "Standard"
 msgstr "Estándar"
 
-#: src/gui/main_frame.py:1233 src/gui/main_frame.py:3670
+#: src/gui/main_frame.py:1234 src/gui/main_frame.py:3793
 msgid "Rapid"
 msgstr "Rápido"
 
-#: src/gui/main_frame.py:1233 src/gui/main_frame.py:3671
+#: src/gui/main_frame.py:1234 src/gui/main_frame.py:3794
 msgid "Blitz"
 msgstr "Bombardeo aéreo"
 
-#: src/gui/main_frame.py:1237 src/gui/main_frame.py:3674
+#: src/gui/main_frame.py:1238 src/gui/main_frame.py:3797
 #, python-brace-format
 msgid "{} min + {} sec ({})"
 msgstr "{} min + {} seg ({})"
 
-#: src/gui/main_frame.py:1243 src/gui/main_frame.py:2316
-#: src/gui/main_frame.py:3067 src/gui/main_frame.py:3680
+#: src/gui/main_frame.py:1244 src/gui/main_frame.py:2317
+#: src/gui/main_frame.py:3152 src/gui/main_frame.py:3803
 #, python-brace-format
 msgid "Tempo riflessione: {}"
 msgstr "Tiempo de reflexión: {}"
 
-#: src/gui/main_frame.py:1255 src/gui/main_frame.py:2399
-#: src/gui/main_frame.py:3077 src/gui/main_frame.py:3707
+#: src/gui/main_frame.py:1256 src/gui/main_frame.py:2400
+#: src/gui/main_frame.py:3162 src/gui/main_frame.py:3830
 #, python-brace-format
 msgid "Arbitro Capo: {}"
 msgstr "Árbitro principal: {}"
 
-#: src/gui/main_frame.py:1268 src/gui/main_frame.py:3724
+#: src/gui/main_frame.py:1269 src/gui/main_frame.py:3847
 #, python-brace-format
 msgid "Collaboratori: {}"
 msgstr "Colaboradores: {}"
 
-#: src/gui/main_frame.py:1283 src/gui/main_frame.py:2434
-#: src/gui/main_frame.py:3087 src/gui/main_frame.py:3741
+#: src/gui/main_frame.py:1284 src/gui/main_frame.py:2435
+#: src/gui/main_frame.py:3172 src/gui/main_frame.py:3864
 #, python-brace-format
 msgid "Codice Federazione: {}"
 msgstr "Código de Federación: {}"
 
-#: src/gui/main_frame.py:1296 src/gui/main_frame.py:1300
-#: src/gui/main_frame.py:1748 src/gui/main_frame.py:1755
-#: src/gui/main_frame.py:2441 src/gui/main_frame.py:3033
-#: src/gui/main_frame.py:3037 src/gui/main_frame.py:3748
+#: src/gui/main_frame.py:1297 src/gui/main_frame.py:1301
+#: src/gui/main_frame.py:1749 src/gui/main_frame.py:1756
+#: src/gui/main_frame.py:2442 src/gui/main_frame.py:3118
+#: src/gui/main_frame.py:3122 src/gui/main_frame.py:3871
 msgid "Bianco (scelto dall'arbitro)"
 msgstr "Blanco (elegido por el árbitro)"
 
-#: src/gui/main_frame.py:1297 src/gui/main_frame.py:1749
-#: src/gui/main_frame.py:2442 src/gui/main_frame.py:3034
-#: src/gui/main_frame.py:3749
+#: src/gui/main_frame.py:1298 src/gui/main_frame.py:1750
+#: src/gui/main_frame.py:2443 src/gui/main_frame.py:3119
+#: src/gui/main_frame.py:3872
 msgid "Nero (scelto dall'arbitro)"
 msgstr "Negro (elegido por el árbitro)"
 
-#: src/gui/main_frame.py:1298 src/gui/main_frame.py:1750
-#: src/gui/main_frame.py:2443 src/gui/main_frame.py:3035
-#: src/gui/main_frame.py:3750
+#: src/gui/main_frame.py:1299 src/gui/main_frame.py:1751
+#: src/gui/main_frame.py:2444 src/gui/main_frame.py:3120
+#: src/gui/main_frame.py:3873
 #, python-brace-format
 msgid "Casuale (scelto da {app})"
 msgstr "Aleatorio (elegido por {app})"
 
-#: src/gui/main_frame.py:1302 src/gui/main_frame.py:2471
-#: src/gui/main_frame.py:3092 src/gui/main_frame.py:3782
+#: src/gui/main_frame.py:1303 src/gui/main_frame.py:2472
+#: src/gui/main_frame.py:3177 src/gui/main_frame.py:3905
 #, python-brace-format
 msgid "Colore al giocatore più forte: {}"
 msgstr "Color del jugador más fuerte: {}"
 
-#: src/gui/main_frame.py:1314 src/gui/main_frame.py:2490
-#: src/gui/main_frame.py:3097 src/gui/main_frame.py:3803
+#: src/gui/main_frame.py:1315 src/gui/main_frame.py:2491
+#: src/gui/main_frame.py:3182 src/gui/main_frame.py:3926
 #, python-brace-format
 msgid "Valore del BYE: {}"
 msgstr "Valor del BYE: {}"
 
-#: src/gui/main_frame.py:1329
+#: src/gui/main_frame.py:1330
 #, python-brace-format
 msgid "{last} {first} (Elo: {elo}, Naz: {fed})"
 msgstr "{last} {first} (Elo: {elo}, Fed: {fed})"
 
-#: src/gui/main_frame.py:1336
+#: src/gui/main_frame.py:1337
 msgid " [RIT]"
 msgstr "[RIT]"
 
-#: src/gui/main_frame.py:1343
+#: src/gui/main_frame.py:1344
 msgid "aggiungi giocatore"
 msgstr "agregar jugador"
 
-#: src/gui/main_frame.py:1373
+#: src/gui/main_frame.py:1374
 msgid "Completati"
 msgstr "Terminado"
 
-#: src/gui/main_frame.py:1397
+#: src/gui/main_frame.py:1398
 msgid "calcola il turno successivo"
 msgstr "calcular la siguiente ronda"
 
-#: src/gui/main_frame.py:1405
+#: src/gui/main_frame.py:1406
 msgid "Finalizza il torneo"
 msgstr "Finalizar el torneo"
 
-#: src/gui/main_frame.py:1413
+#: src/gui/main_frame.py:1414
 msgid "genera turno"
 msgstr "generar ronda"
 
-#: src/gui/main_frame.py:1423
+#: src/gui/main_frame.py:1424
 msgid "Classifica"
 msgstr "Clasificación"
 
-#: src/gui/main_frame.py:1429
+#: src/gui/main_frame.py:1430
 msgid "regole di spareggio"
 msgstr "criterios de desempate"
 
-#: src/gui/main_frame.py:1439
+#: src/gui/main_frame.py:1440
 msgid "Partite PGN"
 msgstr "Partidas PGN"
 
-#: src/gui/main_frame.py:1482
+#: src/gui/main_frame.py:1483
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} [{}]"
 msgstr "Tablero de ajedrez {}: {} vs {} [{}]"
 
-#: src/gui/main_frame.py:1486
+#: src/gui/main_frame.py:1487
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE [{}]"
 msgstr "Tablero de ajedrez {}: {} - BYE [{}]"
 
-#: src/gui/main_frame.py:1528
+#: src/gui/main_frame.py:1529
 msgid ""
 "Nome Torneo\n"
 "\n"
@@ -4739,7 +4742,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento (presione Enter o doble clic) para establecer el nombre del torneo. Este campo es obligatorio."
 
-#: src/gui/main_frame.py:1534
+#: src/gui/main_frame.py:1535
 msgid ""
 "Luogo (Site)\n"
 "\n"
@@ -4749,7 +4752,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para establecer el lugar del torneo (ej. ciudad o 'Online')."
 
-#: src/gui/main_frame.py:1540
+#: src/gui/main_frame.py:1541
 msgid ""
 "Data inizio\n"
 "\n"
@@ -4759,7 +4762,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para establecer la fecha de inicio del torneo."
 
-#: src/gui/main_frame.py:1546
+#: src/gui/main_frame.py:1547
 msgid ""
 "Data fine\n"
 "\n"
@@ -4769,7 +4772,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para establecer la fecha de finalización del torneo."
 
-#: src/gui/main_frame.py:1552
+#: src/gui/main_frame.py:1553
 msgid ""
 "Numero turni\n"
 "\n"
@@ -4779,7 +4782,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para definir el número total de rondas previstas."
 
-#: src/gui/main_frame.py:1558
+#: src/gui/main_frame.py:1559
 msgid ""
 "Tempo riflessione\n"
 "\n"
@@ -4789,7 +4792,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para establecer el control de tiempo (ej. '60+0' o '15+10'). Este campo es obligatorio."
 
-#: src/gui/main_frame.py:1564
+#: src/gui/main_frame.py:1565
 msgid ""
 "Cartella di salvataggio\n"
 "\n"
@@ -4799,7 +4802,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para cambiar el directorio donde se guardará el archivo del torneo."
 
-#: src/gui/main_frame.py:1570
+#: src/gui/main_frame.py:1571
 msgid ""
 "Arbitro Capo\n"
 "\n"
@@ -4809,7 +4812,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para indicar el nombre del Árbitro Principal."
 
-#: src/gui/main_frame.py:1576
+#: src/gui/main_frame.py:1577
 msgid ""
 "Collaboratori / Vice Arbitri\n"
 "\n"
@@ -4819,7 +4822,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para enumerar posibles colaboradores o árbitros adjuntos."
 
-#: src/gui/main_frame.py:1582
+#: src/gui/main_frame.py:1583
 msgid ""
 "Codice Federazione\n"
 "\n"
@@ -4829,7 +4832,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para establecer el código de federación (ej. ITA)."
 
-#: src/gui/main_frame.py:1588
+#: src/gui/main_frame.py:1589
 msgid ""
 "Colore al giocatore più forte\n"
 "\n"
@@ -4839,7 +4842,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para definir si el primer jugador en el tablero tendrá el Blanco, el Negro, o si se elegirá al azar en la ronda 1."
 
-#: src/gui/main_frame.py:1594
+#: src/gui/main_frame.py:1595
 msgid ""
 "Valore del BYE\n"
 "\n"
@@ -4849,7 +4852,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para definir la puntuación del BYE para los jugadores sin oponente (por defecto 0.5)."
 
-#: src/gui/main_frame.py:1600
+#: src/gui/main_frame.py:1601
 msgid ""
 "Procedi\n"
 "\n"
@@ -4859,7 +4862,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para completar la configuración de parámetros y pasar al registro de jugadores."
 
-#: src/gui/main_frame.py:1606
+#: src/gui/main_frame.py:1607
 msgid ""
 "Indietro\n"
 "\n"
@@ -4869,7 +4872,7 @@ msgstr ""
 "\n"
 "Seleccione este elemento para cancelar la creación del torneo y volver a la pantalla inicial."
 
-#: src/gui/main_frame.py:1645
+#: src/gui/main_frame.py:1646
 msgid ""
 "Tornei In Preparazione\n"
 "\n"
@@ -4879,7 +4882,7 @@ msgstr ""
 "\n"
 "En esta sección encontrará los torneos creados pero aún no iniciados (es decir, para los cuales aún no se han generado los emparejamientos de la primera ronda)."
 
-#: src/gui/main_frame.py:1652
+#: src/gui/main_frame.py:1653
 msgid ""
 "Tornei Conclusi\n"
 "\n"
@@ -4889,7 +4892,7 @@ msgstr ""
 "\n"
 "En esta sección se archivan los torneos para los cuales se ha completado el procesamiento de las rondas y que han sido finalizados."
 
-#: src/gui/main_frame.py:1660
+#: src/gui/main_frame.py:1661
 #, python-brace-format
 msgid ""
 "Partite Giocate - Turno {num}\n"
@@ -4900,7 +4903,7 @@ msgstr ""
 "\n"
 "Esta sección enumera las partidas de la ronda {num} que ya se han jugado o tienen un resultado registrado."
 
-#: src/gui/main_frame.py:1668
+#: src/gui/main_frame.py:1669
 #, python-brace-format
 msgid ""
 "Partite Da Giocare - Turno {num}\n"
@@ -4915,7 +4918,7 @@ msgstr ""
 "\n"
 "Al seleccionar una partida y presionar Enter (o hacer doble clic) podrá registrar su resultado o programar su fecha y hora."
 
-#: src/gui/main_frame.py:1675
+#: src/gui/main_frame.py:1676
 msgid ""
 "Aggiungi Giocatore\n"
 "\n"
@@ -4925,7 +4928,7 @@ msgstr ""
 "\n"
 "Haga doble clic o presione Enter en este elemento para abrir la ventana de registro e inserción de nuevos jugadores al torneo."
 
-#: src/gui/main_frame.py:1682
+#: src/gui/main_frame.py:1683
 msgid ""
 "Genera Turno\n"
 "\n"
@@ -4935,7 +4938,7 @@ msgstr ""
 "\n"
 "Haga doble clic o presione Enter en este elemento para iniciar el torneo generando los emparejamientos de la Ronda 1."
 
-#: src/gui/main_frame.py:1689
+#: src/gui/main_frame.py:1690
 msgid ""
 "Genera Turno\n"
 "\n"
@@ -4945,7 +4948,7 @@ msgstr ""
 "\n"
 "Haga doble clic o presione Enter en este elemento para generar los emparejamientos de la siguiente ronda."
 
-#: src/gui/main_frame.py:1696
+#: src/gui/main_frame.py:1697
 msgid ""
 "Finalizza Torneo\n"
 "\n"
@@ -4955,117 +4958,117 @@ msgstr ""
 "\n"
 "Haga doble clic o presione Enter en este elemento para concluir el torneo y guardarlo entre los torneos finalizados."
 
-#: src/gui/main_frame.py:1707
+#: src/gui/main_frame.py:1708
 msgid "INFORMAZIONI DETTAGLIATE DEL TORNEO"
 msgstr "INFORMACIÓN DETALLADA DEL TORNEO"
 
-#: src/gui/main_frame.py:1709
+#: src/gui/main_frame.py:1710
 #, python-brace-format
 msgid "Nome Torneo: {name}"
 msgstr "Nombre del torneo:{name}"
 
-#: src/gui/main_frame.py:1710
+#: src/gui/main_frame.py:1711
 #, python-brace-format
 msgid "Luogo: {site}"
 msgstr "Ubicación:{site}"
 
-#: src/gui/main_frame.py:1712
+#: src/gui/main_frame.py:1713
 #, python-brace-format
 msgid "Data Inizio: {start_date}"
 msgstr "Fecha de inicio:{start_date}"
 
-#: src/gui/main_frame.py:1715
+#: src/gui/main_frame.py:1716
 #, python-brace-format
 msgid "Data Fine: {end_date}"
 msgstr "Fecha de finalización:{end_date}"
 
-#: src/gui/main_frame.py:1733
+#: src/gui/main_frame.py:1734
 #, python-brace-format
 msgid "Tempo di Riflessione: {tc}"
 msgstr "Tiempo de reflexión:{tc}"
 
-#: src/gui/main_frame.py:1735
+#: src/gui/main_frame.py:1736
 #, python-brace-format
 msgid "Arbitro Capo: {arbiter}"
 msgstr "Árbitro principal:{arbiter}"
 
-#: src/gui/main_frame.py:1738
+#: src/gui/main_frame.py:1739
 #, python-brace-format
 msgid "Collaboratori / Vice Arbitri: {arbiters}"
 msgstr "Colaboradores / Árbitros suplentes:{arbiters}"
 
-#: src/gui/main_frame.py:1743
+#: src/gui/main_frame.py:1744
 #, python-brace-format
 msgid "Codice Federazione: {fed}"
 msgstr "Código de Federación:{fed}"
 
-#: src/gui/main_frame.py:1754
+#: src/gui/main_frame.py:1755
 #, python-brace-format
 msgid "Colore assegnato al giocatore più forte in scacchiera 1: {color}"
 msgstr "Color asignado al jugador más fuerte del tablero 1:{color}"
 
-#: src/gui/main_frame.py:1757
+#: src/gui/main_frame.py:1758
 #, python-brace-format
 msgid "Valore del BYE: {val}"
 msgstr "Valor de despedida:{val}"
 
-#: src/gui/main_frame.py:1759
+#: src/gui/main_frame.py:1760
 #, python-brace-format
 msgid "Categoria Elo Torneo: {cat}"
 msgstr "Torneo Elo Categoría:{cat}"
 
-#: src/gui/main_frame.py:1764
+#: src/gui/main_frame.py:1765
 #, python-brace-format
 msgid "Numero totale di turni: {rounds}"
 msgstr "Número total de turnos:{rounds}"
 
-#: src/gui/main_frame.py:1769
+#: src/gui/main_frame.py:1770
 #, python-brace-format
 msgid "Turno corrente: {round}"
 msgstr "Turno actual:{round}"
 
-#: src/gui/main_frame.py:1772
+#: src/gui/main_frame.py:1773
 #, python-brace-format
 msgid "Giocatori iscritti: {count}"
 msgstr "Jugadores registrados:{count}"
 
-#: src/gui/main_frame.py:1797
+#: src/gui/main_frame.py:1798
 msgid "REGOLE DI SPAREGGIO CONFIGURATE"
 msgstr "REGLAS DE REPRODUCCIÓN CONFIGURADAS"
 
-#: src/gui/main_frame.py:1799
+#: src/gui/main_frame.py:1800
 msgid "Ordine di priorità dei criteri di spareggio attivi:\n"
 msgstr "Orden de prioridad de los criterios de desempate activos:"
 
-#: src/gui/main_frame.py:1809
+#: src/gui/main_frame.py:1810
 msgid "Punti Totali"
 msgstr "Puntos totales"
 
-#: src/gui/main_frame.py:1813
+#: src/gui/main_frame.py:1814
 msgid "ARO (Average Rating of Opponents)"
 msgstr "ARO (Rating promedio de los oponentes)"
 
-#: src/gui/main_frame.py:1814
+#: src/gui/main_frame.py:1815
 msgid "Elo Iniziale (Seed)"
 msgstr "Elo inicial (semilla)"
 
-#: src/gui/main_frame.py:1817
+#: src/gui/main_frame.py:1818
 msgid "Turni Giocati (REP)"
 msgstr "Rondas jugadas (REP)"
 
-#: src/gui/main_frame.py:1818
+#: src/gui/main_frame.py:1819
 msgid "Maggior Numero di Vittorie"
 msgstr "Mayor número de victorias"
 
-#: src/gui/main_frame.py:1819
+#: src/gui/main_frame.py:1820
 msgid "Incontri col Nero"
 msgstr "Citas con negro"
 
-#: src/gui/main_frame.py:1820
+#: src/gui/main_frame.py:1821
 msgid "Punteggio Progressivo"
 msgstr "Puntuación progresiva"
 
-#: src/gui/main_frame.py:1828
+#: src/gui/main_frame.py:1829
 msgid ""
 "Fai doppio clic o premi Invio su questa voce per modificare le regole di "
 "spareggio."
@@ -5073,344 +5076,350 @@ msgstr ""
 "Haga doble clic o presione Entrar en esta entrada para editar las reglas de "
 "desempate."
 
-#: src/gui/main_frame.py:1855
+#: src/gui/main_frame.py:1856
 #, python-brace-format
 msgid "GIOCATORI ISCRITTI ({count})"
 msgstr "JUGADORES REGISTRADOS ({count})"
 
-#: src/gui/main_frame.py:1860
+#: src/gui/main_frame.py:1861
 msgid "RITIRATO"
 msgstr "RETIRADO"
 
-#: src/gui/main_frame.py:1862
+#: src/gui/main_frame.py:1863
 #, python-brace-format
 msgid "{num}. {last} {first} (Elo: {elo}, Naz: {fed}){withdrawn}"
 msgstr "{num}. {last} {first} (Elo: {elo}, Fed: {fed}){withdrawn}"
 
-#: src/gui/main_frame.py:1880
+#: src/gui/main_frame.py:1881
 msgid "SCHEDA DETTAGLIATA GIOCATORE"
 msgstr "HOJA DE JUGADOR DETALLADA"
 
-#: src/gui/main_frame.py:1882
+#: src/gui/main_frame.py:1883
 #, python-brace-format
 msgid "Cognome: {last_name}"
 msgstr "Apellido:{last_name}"
 
-#: src/gui/main_frame.py:1883
+#: src/gui/main_frame.py:1884
 #, python-brace-format
 msgid "Nome: {first_name}"
 msgstr "Nombre:{first_name}"
 
-#: src/gui/main_frame.py:1885
+#: src/gui/main_frame.py:1886
 #, python-brace-format
 msgid "Elo Iniziale: {elo}"
 msgstr "Elo inicial: {elo}"
 
-#: src/gui/main_frame.py:1887
+#: src/gui/main_frame.py:1888
 #, python-brace-format
 msgid "ID Interno: {id}"
 msgstr "ID Interno: {id}"
 
-#: src/gui/main_frame.py:1889
+#: src/gui/main_frame.py:1890
 #, python-brace-format
 msgid "Fide ID: {fide}"
 msgstr "FIDE ID: {fide}"
 
-#: src/gui/main_frame.py:1891
+#: src/gui/main_frame.py:1892
 #, python-brace-format
 msgid "Sesso: {gender}"
 msgstr "Sexo: {gender}"
 
-#: src/gui/main_frame.py:1892
+#: src/gui/main_frame.py:1893
 #, python-brace-format
 msgid "Federazione: {fed}"
 msgstr "Federación:{fed}"
 
-#: src/gui/main_frame.py:1894
+#: src/gui/main_frame.py:1895
 #, python-brace-format
 msgid "Anno di nascita: {year}"
 msgstr "Año de nacimiento:{year}"
 
-#: src/gui/main_frame.py:1897
+#: src/gui/main_frame.py:1898
 #, python-brace-format
 msgid "Titolo FIDE: {title}"
 msgstr "Título FIDE:{title}"
 
-#: src/gui/main_frame.py:1899
+#: src/gui/main_frame.py:1900
 #, python-brace-format
 msgid "Punti correnti: {pts}"
 msgstr "Puntos actuales: {pts}"
 
-#: src/gui/main_frame.py:1902
+#: src/gui/main_frame.py:1903
 msgid "Ritirato dal torneo"
 msgstr "Se retiró del torneo"
 
-#: src/gui/main_frame.py:1902
+#: src/gui/main_frame.py:1903
 msgid "Attivo nel torneo"
 msgstr "Activo en el torneo"
 
-#: src/gui/main_frame.py:1904
+#: src/gui/main_frame.py:1905
 #, python-brace-format
 msgid "Stato: {status}"
 msgstr "Estado: {status}"
 
-#: src/gui/main_frame.py:1908
+#: src/gui/main_frame.py:1909
 msgid "Storico Turni e Risultati:"
 msgstr "Historial de Rondas y Resultados:"
 
-#: src/gui/dialogs/result_dialog.py:317 src/gui/main_frame.py:1917
+#: src/gui/dialogs/result_dialog.py:317 src/gui/main_frame.py:1918
 msgid "Bianco"
 msgstr "Blanco"
 
-#: src/gui/dialogs/result_dialog.py:318 src/gui/main_frame.py:1919
+#: src/gui/dialogs/result_dialog.py:318 src/gui/main_frame.py:1920
 msgid "Nero"
 msgstr "Negro"
 
-#: src/gui/main_frame.py:1931
+#: src/gui/main_frame.py:1932
 msgid "Non disputata"
 msgstr "No jugada"
 
-#: src/gui/main_frame.py:1934
+#: src/gui/main_frame.py:1935
 #, python-brace-format
 msgid "  Turno {}: Colore: {color} vs {opponent} -> Risultato: {result}"
 msgstr "  Ronda {}: Color: {color} vs {opponent} -> Resultado: {result}"
 
-#: src/gui/main_frame.py:1947
+#: src/gui/main_frame.py:1948
 msgid "REPORT TURNI DEL TORNEO"
 msgstr "INFORME DE LA RONDA DEL TORNEO"
 
-#: src/gui/main_frame.py:1952
+#: src/gui/main_frame.py:1953
 msgid "Nessun turno disputato o generato."
 msgstr "No se juegan ni generan turnos."
 
-#: src/gui/main_frame.py:1959
+#: src/gui/main_frame.py:1960
 #, python-brace-format
 msgid "Turno {num}: {m_count} partite ({c_count} concluse)"
 msgstr "Ronda {num}: {m_count} partidas ({c_count} finalizadas)"
 
-#: src/gui/main_frame.py:1983
+#: src/gui/main_frame.py:1984
 msgid "Nessun PGN disponibile per questa partita."
 msgstr "No hay ningún PGN disponible para esta partida."
 
-#: src/gui/main_frame.py:1991
+#: src/gui/main_frame.py:1992
 #, python-brace-format
 msgid "RACCOLTA PARTITE PGN - TURNO {num}"
 msgstr "RECOPILACIÓN DE PARTIDAS PGN - RONDA {num}"
 
-#: src/gui/main_frame.py:1993
+#: src/gui/main_frame.py:1994
 msgid "RACCOLTA PARTITE PGN"
 msgstr "RECOPILACIÓN DE PARTIDAS PGN"
 
-#: src/gui/main_frame.py:2022
+#: src/gui/main_frame.py:2023
 #, python-brace-format
 msgid "  Turno {} Scacchiera {}: {} vs {} [{}]"
 msgstr "  Ronda {} Tablero {}: {} vs {} [{}]"
 
-#: src/gui/main_frame.py:2028
+#: src/gui/main_frame.py:2029
 #, python-brace-format
 msgid "  Turno {} Scacchiera {}: {} - BYE [{}]"
 msgstr "  Ronda {} Tablero {}: {} - BYE [{}]"
 
-#: src/gui/main_frame.py:2036
+#: src/gui/main_frame.py:2037
 msgid "Nessuna partita ha ancora un PGN inserito in questo turno."
 msgstr "Ningún NPC ha entrado todavía en esta ronda en ningún juego."
 
-#: src/gui/main_frame.py:2039
+#: src/gui/main_frame.py:2040
 msgid "Nessuna partita ha ancora un PGN inserito."
 msgstr "Ninguna partida tiene un PGN introducido todavía."
 
-#: src/gui/main_frame.py:2064
+#: src/gui/main_frame.py:2065
 #, python-brace-format
 msgid "DETTAGLIO PARTITA - TURNO {num}"
 msgstr "DETALLE DEL PARTIDO - RONDA{num}"
 
-#: src/gui/main_frame.py:2066
+#: src/gui/main_frame.py:2067
 #, python-brace-format
 msgid "Scacchiera Numero: {board}"
 msgstr "Tablero Número: {board}"
 
-#: src/gui/main_frame.py:2076
+#: src/gui/main_frame.py:2077
 #, python-brace-format
 msgid "Bianco (White): {name} (Elo: {elo}, Naz: {fed})"
 msgstr "Blanco: {name} (Elo: {elo}, Fed: {fed})"
 
-#: src/gui/main_frame.py:2087
+#: src/gui/main_frame.py:2088
 #, python-brace-format
 msgid "Nero (Black): {name} (Elo: {elo}, Naz: {fed})"
 msgstr "Negro: {name} (Elo: {elo}, Fed: {fed})"
 
-#: src/gui/main_frame.py:2094
+#: src/gui/main_frame.py:2095
 msgid "Nero: BYE"
 msgstr "Negro: ADIOS"
 
-#: src/gui/main_frame.py:2096
+#: src/gui/main_frame.py:2097
 msgid "Non ancora disputata"
 msgstr "Aún no disputada"
 
-#: src/gui/main_frame.py:2097
+#: src/gui/main_frame.py:2098
 #, python-brace-format
 msgid "Risultato Registrato: {res}"
 msgstr "Resultado registrado:{res}"
 
-#: src/gui/main_frame.py:2101
+#: src/gui/main_frame.py:2102
 msgid "Pianificazione Partita:"
 msgstr "Planificación del partido:"
 
-#: src/gui/main_frame.py:2104
+#: src/gui/main_frame.py:2105
 msgid "Data"
 msgstr "Fecha"
 
-#: src/gui/main_frame.py:2105
+#: src/gui/main_frame.py:2106
 msgid "Ora"
 msgstr "Hora"
 
-#: src/gui/main_frame.py:2106
+#: src/gui/main_frame.py:2107
 msgid "Sala/URL"
 msgstr "Sala/URL"
 
-#: src/gui/main_frame.py:2107
+#: src/gui/main_frame.py:2108
 msgid "Arbitro"
 msgstr "Árbitro"
 
-#: src/gui/main_frame.py:2111
+#: src/gui/main_frame.py:2112
 msgid "Mosse della partita (PGN):"
 msgstr "Movimientos del juego (PGN):"
 
-#: src/gui/main_frame.py:2251 src/gui/main_frame.py:3549
+#: src/gui/main_frame.py:2252 src/gui/main_frame.py:3661
 msgid "Inserisci il nome del torneo:"
 msgstr "Introduce el nombre del torneo:"
 
-#: src/gui/main_frame.py:2252 src/gui/main_frame.py:3550
+#: src/gui/main_frame.py:2253 src/gui/main_frame.py:3662
 msgid "Nome Torneo"
 msgstr "Nombre del torneo"
 
-#: src/gui/main_frame.py:2261 src/gui/main_frame.py:2278
-#: src/gui/main_frame.py:2317 src/gui/main_frame.py:2400
-#: src/gui/main_frame.py:3016 src/gui/main_frame.py:3017
-#: src/gui/main_frame.py:3025 src/gui/main_frame.py:3027
+#: src/gui/main_frame.py:2261 src/gui/main_frame.py:3127
+#, python-brace-format
+msgid "Nome torneo *: {}"
+msgstr "Nombre del torneo *: {}"
+
+#: src/gui/main_frame.py:2262 src/gui/main_frame.py:2279
+#: src/gui/main_frame.py:2318 src/gui/main_frame.py:2401
+#: src/gui/main_frame.py:3101 src/gui/main_frame.py:3102
+#: src/gui/main_frame.py:3110 src/gui/main_frame.py:3112
 msgid "Non impostato"
 msgstr "No establecido"
 
-#: src/gui/main_frame.py:2268 src/gui/main_frame.py:3566
+#: src/gui/main_frame.py:2269 src/gui/main_frame.py:3678
 msgid "Inserisci il luogo (Site):"
 msgstr "Ingrese la ubicación (Sitio):"
 
-#: src/gui/main_frame.py:2269 src/gui/main_frame.py:3567
+#: src/gui/main_frame.py:2270 src/gui/main_frame.py:3679
 msgid "Luogo Torneo"
 msgstr "Ubicación del torneo"
 
-#: src/gui/main_frame.py:2285
+#: src/gui/main_frame.py:2286
 msgid "Inserisci il numero di turni:"
 msgstr "Ingrese el número de turnos:"
 
-#: src/gui/main_frame.py:2286
+#: src/gui/main_frame.py:2287
 msgid "Numero Turni"
 msgstr "Número de turnos"
 
-#: src/gui/main_frame.py:2295 src/gui/main_frame.py:3062
+#: src/gui/main_frame.py:2296 src/gui/main_frame.py:3147
 #, python-brace-format
 msgid "Numero turni: {}"
 msgstr "Número de rondas: {}"
 
-#: src/gui/main_frame.py:2307 src/gui/main_frame.py:3651
+#: src/gui/main_frame.py:2308 src/gui/main_frame.py:3763
 msgid "Inserisci il tempo di riflessione (es. 15+10 o 90+30 o 60+0):"
 msgstr ""
 "Introduzca el tiempo de reflexión (por ejemplo, 15+10 o 90+30 o 60+0):"
 
-#: src/gui/main_frame.py:2308 src/gui/main_frame.py:3652
+#: src/gui/main_frame.py:2309 src/gui/main_frame.py:3764
 msgid "Tempo di riflessione"
 msgstr "Tiempo para reflexionar"
 
-#: src/gui/main_frame.py:2324
+#: src/gui/main_frame.py:2325
 msgid "Seleziona la cartella di salvataggio per i report:"
 msgstr "Seleccione la carpeta para guardar los informes:"
 
-#: src/gui/main_frame.py:2332 src/gui/main_frame.py:3072
+#: src/gui/main_frame.py:2333 src/gui/main_frame.py:3157
 #, python-brace-format
 msgid "Cartella di salvataggio: {}"
 msgstr "Carpeta de guardado: {}"
 
-#: src/gui/main_frame.py:2340 src/gui/main_frame.py:3583
+#: src/gui/main_frame.py:2341 src/gui/main_frame.py:3695
 msgid "Inserisci la data di inizio (AAAA-MM-GG):"
 msgstr "Introduzca la fecha de inicio (AAAA-MM-DD):"
 
-#: src/gui/main_frame.py:2341 src/gui/main_frame.py:3584
+#: src/gui/main_frame.py:2342 src/gui/main_frame.py:3696
 msgid "Data Inizio"
 msgstr "Fecha de inicio"
 
-#: src/gui/main_frame.py:2357 src/gui/main_frame.py:2382
-#: src/gui/main_frame.py:3605 src/gui/main_frame.py:3636
+#: src/gui/main_frame.py:2358 src/gui/main_frame.py:2383
+#: src/gui/main_frame.py:3717 src/gui/main_frame.py:3748
 msgid "Formato data non valido. Usa AAAA-MM-GG."
 msgstr "Formato de fecha no válido. Usa AAAA-MM-DD."
 
-#: src/gui/main_frame.py:2365 src/gui/main_frame.py:3614
+#: src/gui/main_frame.py:2366 src/gui/main_frame.py:3726
 msgid "Inserisci la data di fine (AAAA-MM-GG):"
 msgstr "Introduzca la fecha de finalización (AAAA-MM-DD):"
 
-#: src/gui/main_frame.py:2366 src/gui/main_frame.py:3615
+#: src/gui/main_frame.py:2367 src/gui/main_frame.py:3727
 msgid "Data Fine"
 msgstr "Fecha de finalización"
 
-#: src/gui/main_frame.py:2390 src/gui/main_frame.py:3698
+#: src/gui/main_frame.py:2391 src/gui/main_frame.py:3821
 msgid "Inserisci il nome dell'Arbitro Capo:"
 msgstr "Ingrese el nombre del Juez Principal:"
 
-#: src/gui/main_frame.py:2407 src/gui/main_frame.py:3715
+#: src/gui/main_frame.py:2408 src/gui/main_frame.py:3838
 msgid "Inserisci i collaboratori / vice arbitri (separati da virgola):"
 msgstr "Ingrese los colaboradores/árbitros suplentes (separados por comas):"
 
-#: src/gui/main_frame.py:2408 src/gui/main_frame.py:3716
+#: src/gui/main_frame.py:2409 src/gui/main_frame.py:3839
 msgid "Collaboratori / Vice Arbitri"
 msgstr "Colaboradores / Árbitros suplentes"
 
-#: src/gui/main_frame.py:2416 src/gui/main_frame.py:3082
+#: src/gui/main_frame.py:2417 src/gui/main_frame.py:3167
 #, python-brace-format
 msgid "Collaboratori / Vice Arbitri: {}"
 msgstr "Colaboradores / Árbitros suplentes: {}"
 
-#: src/gui/main_frame.py:2418 src/gui/main_frame.py:3028
+#: src/gui/main_frame.py:2419 src/gui/main_frame.py:3113
 msgid "Non impostate"
 msgstr "No configurados"
 
-#: src/gui/main_frame.py:2425 src/gui/main_frame.py:3732
+#: src/gui/main_frame.py:2426 src/gui/main_frame.py:3855
 msgid "Inserisci il codice della federazione ospitante (es. ITA, FRA):"
 msgstr ""
 "Ingrese el código de la federación anfitriona (por ejemplo, ITA, FRA):"
 
-#: src/gui/main_frame.py:2426 src/gui/main_frame.py:3733
+#: src/gui/main_frame.py:2427 src/gui/main_frame.py:3856
 msgid "Codice Federazione"
 msgstr "Código de Federación"
 
-#: src/gui/main_frame.py:2448 src/gui/main_frame.py:3755
+#: src/gui/main_frame.py:2449 src/gui/main_frame.py:3878
 msgid ""
 "Seleziona il colore per il giocatore più forte (scacchiera 1, turno 1):"
 msgstr "Selecciona el color del jugador más fuerte (tablero 1, turno 1):"
 
-#: src/gui/main_frame.py:2450 src/gui/main_frame.py:3757
+#: src/gui/main_frame.py:2451 src/gui/main_frame.py:3880
 msgid "Colore al giocatore più forte"
 msgstr "Colorea al jugador más fuerte."
 
-#: src/gui/main_frame.py:2478 src/gui/main_frame.py:3791
+#: src/gui/main_frame.py:2479 src/gui/main_frame.py:3914
 msgid "Seleziona il valore del BYE secondo la regola FIDE:"
 msgstr "Seleccione el valor BYE según la regla FIDE:"
 
-#: src/gui/main_frame.py:2479 src/gui/main_frame.py:3792
+#: src/gui/main_frame.py:2480 src/gui/main_frame.py:3915
 msgid "Valore del BYE"
 msgstr "Valor de despedida"
 
-#: src/gui/main_frame.py:2506
-msgid "Avanti (Iscrizione Giocatori)"
-msgstr "Siguiente (Registro de jugador)"
+#: src/gui/dialogs/player_enrollment_dialog.py:20 src/gui/main_frame.py:2507
+#: src/gui/main_frame.py:3189
+msgid "Iscrizione Giocatori"
+msgstr "Registro de jugador"
 
-#: src/gui/main_frame.py:2528
+#: src/gui/main_frame.py:2543
 msgid "Sono necessari almeno 2 giocatori per avviare un torneo."
 msgstr "Se necesitan al menos 2 jugadores para iniciar un torneo."
 
-#: src/gui/main_frame.py:2558
+#: src/gui/main_frame.py:2578
 msgid "Avviso Percorso"
 msgstr "Aviso de ruta"
 
-#: src/gui/main_frame.py:2620
+#: src/gui/main_frame.py:2640
 msgid ""
 "Vuoi avviare il torneo generando subito gli abbinamenti per il Turno 1?\n"
 "\n"
@@ -5422,103 +5431,103 @@ msgstr ""
 "Sí = Iniciar el torneo generando la Ronda 1\n"
 "No = Guarda el torneo 'En preparación' (puedes agregar otros jugadores e iniciarlo más tarde)"
 
-#: src/gui/main_frame.py:2624
+#: src/gui/main_frame.py:2644
 msgid "Avvio Torneo"
 msgstr "Inicio del torneo"
 
-#: src/gui/main_frame.py:2632
+#: src/gui/main_frame.py:2652
 msgid "Errore nella generazione degli abbinamenti con bbpPairings."
 msgstr "Error al generar emparejamientos con bbpPairings."
 
-#: src/gui/main_frame.py:2648
+#: src/gui/main_frame.py:2673
 msgid "Torneo avviato. Generati abbinamenti per il Turno 1."
 msgstr "Comenzó el torneo. Emparejamientos generados para la Ronda 1."
 
-#: src/gui/main_frame.py:2659
+#: src/gui/main_frame.py:2688
 msgid ""
 "Torneo creato in preparazione. Puoi completare l'inserimento in seguito."
 msgstr "Torneo creado en preparación. Puede completar la entrada más tarde."
 
-#: src/gui/main_frame.py:2681
+#: src/gui/main_frame.py:2710
 #, python-brace-format
 msgid "{name} - raccolta partite.pgn"
 msgstr "{name} - recopilacion de partidas PGN.pgn"
 
-#: src/gui/main_frame.py:2735 src/gui/main_frame.py:3357
-msgid ""
-"Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
-msgstr "No se puede cambiar el registro del jugador: el torneo ya comenzó."
-
-#: src/gui/main_frame.py:2743
-#, python-brace-format
-msgid "Sei sicuro di voler rimuovere il giocatore {name} dal torneo?"
-msgstr "¿Estás seguro de que quieres eliminar al jugador{name}del torneo?"
-
-#: src/gui/main_frame.py:2747
-msgid "Conferma Rimozione Giocatore"
-msgstr "Confirmar la eliminación del jugador"
-
-#: src/gui/main_frame.py:2767
-#, python-brace-format
-msgid "Giocatore '{name}' rimosso con successo."
-msgstr "El jugador '{name}' se eliminó correctamente."
-
-#: src/gui/main_frame.py:2773
-#, python-brace-format
-msgid "Impossibile rimuovere il giocatore: {}"
-msgstr "No se puede eliminar el jugador: {}"
-
-#: src/gui/main_frame.py:2784
-msgid "Torneo Concluso"
-msgstr "Torneo Concluido"
-
-#: src/gui/main_frame.py:2787
-#, python-brace-format
-msgid "Torneo Concluso: {}\n"
-msgstr "Torneo finalizado: {}\n"
-
-#: src/gui/main_frame.py:2788
-#, python-brace-format
-msgid "Data Inizio: {start} | Fine: {end}\n"
-msgstr "Fecha de inicio: {start} | Fin: {end}\n"
-
-#: src/gui/main_frame.py:2795
-msgid "Classifica Finale:\n"
-msgstr "Clasificación Final:\n"
-
-#: src/gui/main_frame.py:2802
-#, python-brace-format
-msgid " {rank:>2}. {name:<30} Punti: {pts:.1f}\n"
-msgstr "{rank:>2}. Puntos {name:<30}: {pts:.1f}"
-
-#: src/gui/main_frame.py:2808
-#, python-brace-format
-msgid "Visualizzazione report torneo concluso '{name}'."
-msgstr "Viendo el informe del torneo concluyó '{name}'."
-
-#: src/gui/main_frame.py:2814
-#, python-brace-format
-msgid "Impossibile leggere il report: {}"
-msgstr "No se puede leer el informe: {}"
-
-#: src/gui/main_frame.py:2837
-msgid "concluso"
-msgstr "concluyó"
-
-#: src/gui/main_frame.py:2839
-msgid "in preparazione"
-msgstr "en preparación"
-
-#: src/gui/dialogs/tiebreak_config_dialog.py:393 src/gui/main_frame.py:2841
-msgid "attivo"
-msgstr "activo"
-
-#: src/gui/main_frame.py:2848
+#: src/gui/main_frame.py:2774 src/gui/main_frame.py:2918
 #, python-brace-format
 msgid "Impossibile leggere il file del torneo: {}"
 msgstr "No se puede leer el archivo del torneo: {}"
 
-#: src/gui/main_frame.py:2859
+#: src/gui/main_frame.py:2786 src/gui/main_frame.py:3447
+msgid ""
+"Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
+msgstr "No se puede cambiar el registro del jugador: el torneo ya comenzó."
+
+#: src/gui/main_frame.py:2795
+#, python-brace-format
+msgid "Sei sicuro di voler rimuovere il giocatore {name} dal torneo?"
+msgstr "¿Estás seguro de que quieres eliminar al jugador{name}del torneo?"
+
+#: src/gui/main_frame.py:2799
+msgid "Conferma Rimozione Giocatore"
+msgstr "Confirmar la eliminación del jugador"
+
+#: src/gui/main_frame.py:2832
+#, python-brace-format
+msgid "Giocatore '{name}' rimosso con successo."
+msgstr "El jugador '{name}' se eliminó correctamente."
+
+#: src/gui/main_frame.py:2838
+#, python-brace-format
+msgid "Impossibile rimuovere il giocatore: {}"
+msgstr "No se puede eliminar el jugador: {}"
+
+#: src/gui/main_frame.py:2854
+msgid "Torneo Concluso"
+msgstr "Torneo Concluido"
+
+#: src/gui/main_frame.py:2857
+#, python-brace-format
+msgid "Torneo Concluso: {}\n"
+msgstr "Torneo finalizado: {}\n"
+
+#: src/gui/main_frame.py:2858
+#, python-brace-format
+msgid "Data Inizio: {start} | Fine: {end}\n"
+msgstr "Fecha de inicio: {start} | Fin: {end}\n"
+
+#: src/gui/main_frame.py:2865
+msgid "Classifica Finale:\n"
+msgstr "Clasificación Final:\n"
+
+#: src/gui/main_frame.py:2872
+#, python-brace-format
+msgid " {rank:>2}. {name:<30} Punti: {pts:.1f}\n"
+msgstr "{rank:>2}. Puntos {name:<30}: {pts:.1f}"
+
+#: src/gui/main_frame.py:2878
+#, python-brace-format
+msgid "Visualizzazione report torneo concluso '{name}'."
+msgstr "Viendo el informe del torneo concluyó '{name}'."
+
+#: src/gui/main_frame.py:2884
+#, python-brace-format
+msgid "Impossibile leggere il report: {}"
+msgstr "No se puede leer el informe: {}"
+
+#: src/gui/main_frame.py:2907
+msgid "concluso"
+msgstr "concluyó"
+
+#: src/gui/main_frame.py:2909
+msgid "in preparazione"
+msgstr "en preparación"
+
+#: src/gui/dialogs/tiebreak_config_dialog.py:393 src/gui/main_frame.py:2911
+msgid "attivo"
+msgstr "activo"
+
+#: src/gui/main_frame.py:2929
 #, python-brace-format
 msgid ""
 "Sei sicuro di voler eliminare definitivamente il torneo {t_type} '{t_name}'?\n"
@@ -5527,11 +5536,11 @@ msgstr ""
 "¿Estás seguro de que deseas eliminar permanentemente el torneo {t_type} '{t_name}'?\n"
 "Esta acción eliminará el archivo JSON central y TODOS los informes generados para este torneo, tanto en la carpeta principal como en la carpeta de guardado personalizada."
 
-#: src/gui/main_frame.py:2862
+#: src/gui/main_frame.py:2932
 msgid "Conferma Eliminazione Torneo"
 msgstr "Confirmar eliminación del torneo"
 
-#: src/gui/main_frame.py:2916
+#: src/gui/main_frame.py:2986
 #, python-brace-format
 msgid ""
 "Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati "
@@ -5540,34 +5549,30 @@ msgstr ""
 "Se han eliminado el torneo '{t_name}' y sus archivos {deleted_count} "
 "relacionados."
 
-#: src/gui/main_frame.py:2921
+#: src/gui/main_frame.py:2991
 #, python-brace-format
 msgid "Errore durante l'eliminazione del torneo: {}"
 msgstr "Error al eliminar el torneo: {}"
 
-#: src/gui/main_frame.py:2938 src/gui/main_frame.py:2955
-#: src/gui/main_frame.py:2969
+#: src/gui/main_frame.py:3008 src/gui/main_frame.py:3022
+#: src/gui/main_frame.py:3042 src/gui/main_frame.py:3056
 msgid "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
 msgstr "Primero selecciona un torneo activo del árbol para poder eliminarlo."
 
-#: src/gui/main_frame.py:2940 src/gui/main_frame.py:2957
-#: src/gui/main_frame.py:2971
+#: src/gui/main_frame.py:3010 src/gui/main_frame.py:3024
+#: src/gui/main_frame.py:3044 src/gui/main_frame.py:3058
 msgid "Avviso"
 msgstr "yo notifico"
 
-#: src/gui/main_frame.py:3010
+#: src/gui/main_frame.py:3095
 msgid "Nuovo Torneo"
 msgstr "Nuevo Torneo"
 
-#: src/gui/main_frame.py:3013
+#: src/gui/main_frame.py:3098
 msgid "Indietro"
 msgstr "Atrás"
 
-#: src/gui/main_frame.py:3103
-msgid "Avanti"
-msgstr "Siguiente"
-
-#: src/gui/main_frame.py:3154
+#: src/gui/main_frame.py:3244
 msgid ""
 "La lingua è stata cambiata. Riavvia l'applicazione affinché le modifiche "
 "abbiano effetto."
@@ -5575,11 +5580,11 @@ msgstr ""
 "El idioma ha sido cambiado. Reinicie la aplicación para que los cambios "
 "surtan efecto."
 
-#: src/gui/main_frame.py:3158
+#: src/gui/main_frame.py:3248
 msgid "Riavvio Richiesto"
 msgstr "Reiniciar requerido"
 
-#: src/gui/main_frame.py:3183
+#: src/gui/main_frame.py:3273
 msgid ""
 "MANUALE GUIDA DI TORNELLO v9.3.0\n"
 "================================\n"
@@ -5591,7 +5596,7 @@ msgstr ""
 "\n"
 "Archivo MANUAL.txt no encontrado. Consulte la ayuda en línea o restaure el archivo."
 
-#: src/gui/main_frame.py:3205
+#: src/gui/main_frame.py:3295
 msgid ""
 "CHANGELOG DI TORNELLO\n"
 "=====================\n"
@@ -5603,7 +5608,7 @@ msgstr ""
 "\n"
 "No se encontró el archivo ChangeLog.txt. Consulte la ayuda en línea o restaure el archivo."
 
-#: src/gui/main_frame.py:3227
+#: src/gui/main_frame.py:3317
 msgid ""
 "CREDITI DI TORNELLO\n"
 "===================\n"
@@ -5615,62 +5620,62 @@ msgstr ""
 "\n"
 "Tornello es desarrollado por Gabriele Battaglia y Stella."
 
-#: src/gui/main_frame.py:3268
+#: src/gui/main_frame.py:3358
 #, python-brace-format
 msgid ""
 "Il database FIDE locale corrente è stato aggiornato {days} giorni fa.\n"
 "\n"
 msgstr "La base de datos local actual de la FIDE se actualizó hace{days}días."
 
-#: src/gui/main_frame.py:3271
+#: src/gui/main_frame.py:3361
 msgid ""
 "Nessun database FIDE locale trovato.\n"
 "\n"
 msgstr "No se encontró ninguna base de datos local de la FIDE."
 
-#: src/gui/main_frame.py:3274
+#: src/gui/main_frame.py:3364
 msgid ""
 "Desideri collegarti a ratings.fide.com e scaricare l'ultimo aggiornamento?"
 msgstr ""
 "¿Quieres conectarte a ratings.fide.com y descargar la última actualización?"
 
-#: src/gui/main_frame.py:3278
+#: src/gui/main_frame.py:3368
 msgid "Verifica Aggiornamenti FIDE"
 msgstr "Consulta las actualizaciones de la FIDE"
 
-#: src/gui/main_frame.py:3327
+#: src/gui/main_frame.py:3417
 msgid "Offri un caffè"
 msgstr "Invítame a un café"
 
-#: src/gui/main_frame.py:3342
+#: src/gui/main_frame.py:3432
 msgid "Apri Torneo"
 msgstr "Torneo abierto"
 
-#: src/gui/main_frame.py:3352 src/gui/main_frame.py:3396
-#: src/gui/main_frame.py:3410 src/gui/main_frame.py:3417
-#: src/gui/main_frame.py:3428 src/gui/main_frame.py:3461
+#: src/gui/main_frame.py:3442 src/gui/main_frame.py:3495
+#: src/gui/main_frame.py:3509 src/gui/main_frame.py:3516
+#: src/gui/main_frame.py:3527 src/gui/main_frame.py:3560
 msgid "Nessun torneo attivo."
 msgstr "No hay torneos activos."
 
-#: src/gui/main_frame.py:3374
+#: src/gui/main_frame.py:3467
 msgid "Sono necessari almeno 2 giocatori per il torneo."
 msgstr "Se requieren al menos 2 jugadores para el torneo."
 
-#: src/gui/main_frame.py:3399
+#: src/gui/main_frame.py:3498
 msgid ""
 "Elenco Giocatori Iscritti:\n"
 "\n"
 msgstr "Lista de jugadores registrados:"
 
-#: src/gui/main_frame.py:3433
+#: src/gui/main_frame.py:3532
 msgid "Impossibile annullare il turno: nessun turno giocato."
 msgstr "No se puede cancelar el turno: no se jugaron turnos."
 
-#: src/gui/main_frame.py:3441
+#: src/gui/main_frame.py:3540
 msgid "Annulla Turno"
 msgstr "Cancelar turno"
 
-#: src/gui/main_frame.py:3443
+#: src/gui/main_frame.py:3542
 msgid ""
 "Sei sicuro di voler annullare l'ultimo turno e tornare indietro? Questa "
 "azione è irreversibile."
@@ -5678,19 +5683,19 @@ msgstr ""
 "¿Estás seguro de que deseas cancelar el último turno y regresar? Esta acción"
 " es irreversible."
 
-#: src/gui/main_frame.py:3455
+#: src/gui/main_frame.py:3554
 msgid "Time Machine attivata: tornati al turno precedente."
 msgstr "Máquina del Tiempo activada: vuelve a la ronda anterior."
 
-#: src/gui/main_frame.py:3472
+#: src/gui/main_frame.py:3571
 msgid "Il torneo è già concluso e finalizzato."
 msgstr "El torneo ya está concluido y finalizado."
 
-#: src/gui/main_frame.py:3479
+#: src/gui/main_frame.py:3578
 msgid "Il torneo non è ancora iniziato."
 msgstr "El torneo aún no ha comenzado."
 
-#: src/gui/main_frame.py:3489
+#: src/gui/main_frame.py:3588
 msgid ""
 "Impossibile finalizzare il torneo prima di aver completato tutti i turni "
 "previsti."
@@ -5698,7 +5703,7 @@ msgstr ""
 "Imposible finalizar el torneo antes de completar todas las rondas "
 "programadas."
 
-#: src/gui/main_frame.py:3501
+#: src/gui/main_frame.py:3600
 msgid ""
 "Impossibile finalizzare il torneo: ci sono ancora partite senza risultato "
 "nell'ultimo turno."
@@ -5706,11 +5711,11 @@ msgstr ""
 "Imposible cerrar el torneo: aún quedan partidos sin resultado en la última "
 "ronda."
 
-#: src/gui/main_frame.py:3510
+#: src/gui/main_frame.py:3609
 msgid "Finalizza Torneo"
 msgstr "Finalizar Torneo"
 
-#: src/gui/main_frame.py:3512
+#: src/gui/main_frame.py:3611
 msgid ""
 "Sei sicuro di voler concludere definitivamente il torneo? Verranno calcolati"
 " i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database "
@@ -5720,121 +5725,125 @@ msgstr ""
 "calcularán las clasificaciones finales, los play-offs y los ELO se "
 "actualizarán en la base de datos de jugadores."
 
-#: src/gui/main_frame.py:3529
+#: src/gui/main_frame.py:3628
 msgid ""
 "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."
 msgstr ""
 "¡Torneo finalizado con éxito! Los datos del jugador han sido actualizados."
 
-#: src/gui/dialogs/fide_update_dialog.py:180 src/gui/main_frame.py:3531
+#: src/gui/dialogs/fide_update_dialog.py:180 src/gui/main_frame.py:3630
 msgid "Successo"
 msgstr "Éxito"
 
-#: src/gui/main_frame.py:3538
+#: src/gui/main_frame.py:3637
 msgid "Torneo concluso e archiviato."
 msgstr "Torneo concluido y archivado."
 
-#: src/gui/main_frame.py:3831
+#: src/gui/main_frame.py:3649
+msgid "Non è possibile modificare questo parametro a torneo iniziato."
+msgstr "No es posible modificar este parámetro una vez iniciado el torneo."
+
+#: src/gui/main_frame.py:3954
 msgid "La partita con BYE non richiede inserimento risultati."
 msgstr "El partido con BYE no requiere ingresar resultados."
 
-#: src/gui/dialogs/fide_query_dialog.py:241 src/gui/main_frame.py:3832
+#: src/gui/dialogs/fide_query_dialog.py:267 src/gui/main_frame.py:3955
 msgid "Info"
 msgstr "Información"
 
-#: src/gui/main_frame.py:3903
+#: src/gui/main_frame.py:4026
 #, python-brace-format
 msgid "Partita pianificata per il {date} alle {time}."
 msgstr "Partido programado para{date}a las{time}."
 
-#: src/gui/main_frame.py:3909
+#: src/gui/main_frame.py:4032
 msgid "Nessuna modifica alla pianificazione."
 msgstr "Ningún cambio en la programación."
 
-#: src/gui/main_frame.py:3999
+#: src/gui/main_frame.py:4122
 #, python-brace-format
 msgid "Errore durante l'elaborazione PGN: {}"
 msgstr "Error al procesar el PGN: {}"
 
-#: src/gui/main_frame.py:4011
+#: src/gui/main_frame.py:4134
 msgid "Partita aggiornata con PGN."
 msgstr "Juego actualizado con PGN."
 
-#: src/gui/main_frame.py:4014
+#: src/gui/main_frame.py:4137
 #, python-brace-format
 msgid "Risultato registrato: {res}."
 msgstr "Resultado registrado:{res}."
 
-#: src/gui/main_frame.py:4076
+#: src/gui/main_frame.py:4199
 msgid "Nessuna modifica apportata alla partita."
 msgstr "No se realizaron cambios en el partido."
 
-#: src/gui/main_frame.py:4178
+#: src/gui/main_frame.py:4301
 #, python-brace-format
 msgid "Il giocatore {name} si ritira definitivamente dal torneo?"
 msgstr "¿El jugador{name}se retira permanentemente del torneo?"
 
-#: src/gui/main_frame.py:4181
+#: src/gui/main_frame.py:4304
 msgid "Ritiro dopo Forfait"
 msgstr "Retiro después de la tarifa plana"
 
-#: src/gui/main_frame.py:4195
+#: src/gui/main_frame.py:4318
 #, python-brace-format
 msgid "Giocatore '{name}' ritirato con successo."
 msgstr "El jugador '{name}' se retiró con éxito."
 
-#: src/gui/main_frame.py:4204
+#: src/gui/main_frame.py:4327
 #, python-brace-format
 msgid "Scheda Giocatore: {name}\n"
 msgstr "Tarjeta de jugador: {name}"
 
-#: src/gui/main_frame.py:4205
+#: src/gui/main_frame.py:4328
 #, python-brace-format
 msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
 msgstr "ID: {id} | Género: {sex} | País: {fed}"
 
-#: src/gui/main_frame.py:4210
+#: src/gui/main_frame.py:4333
 #, python-brace-format
 msgid "ELO Iniziale: {init} | ELO Attuale: {curr}\n"
 msgstr "ELO Inicial: {init} | ELO Actual: {curr}\n"
 
-#: src/gui/main_frame.py:4215
+#: src/gui/main_frame.py:4338
 msgid "Stato: RITIRATO DAL TORNEO\n"
 msgstr "Estado: RETIRADO DEL TORNEO"
 
-#: src/gui/main_frame.py:4218
+#: src/gui/main_frame.py:4341
 msgid "Storico Partite nel Torneo:\n"
 msgstr "Historial de partidos del Torneo:"
 
-#: src/gui/main_frame.py:4230
+#: src/gui/main_frame.py:4353
 msgid "BYE"
 msgstr "BYE"
 
-#: src/gui/main_frame.py:4233
+#: src/gui/main_frame.py:4356
 #, python-brace-format
 msgid ""
 "  Turno {round}: vs {opp} ({color}) -> Risultato: {res} (Punti: {score})\n"
 msgstr ""
 "  Ronda {round}: vs {opp} ({color}) -> Resultado: {res} (Puntos: {score})\n"
 
-#: src/gui/main_frame.py:4243
+#: src/gui/main_frame.py:4366
 #, python-brace-format
 msgid "Visualizzazione scheda di {name}."
 msgstr "Viendo la tarjeta{name}."
 
-#: src/gui/main_frame.py:4252
+#: src/gui/main_frame.py:4375
 msgid "Errore nella generazione degli abbinamenti."
 msgstr "Error al generar coincidencias."
 
-#: src/gui/main_frame.py:4275
+#: src/gui/main_frame.py:4398
 msgid "Torneo iniziato. Generati abbinamenti per il Turno 1."
 msgstr "Comenzó el torneo. Emparejamientos generados para la Ronda 1."
 
-#: src/gui/main_frame.py:4288
+#: src/gui/main_frame.py:4411
 msgid "Il torneo ha già raggiunto il numero massimo di turni previsto."
 msgstr "El torneo ya ha alcanzado el número máximo de rondas."
 
-#: src/gui/main_frame.py:4300
+#: src/gui/main_frame.py:4423
 msgid ""
 "Impossibile generare il turno successivo: ci sono ancora partite senza "
 "risultato nel turno corrente."
@@ -5842,39 +5851,39 @@ msgstr ""
 "No se puede generar la siguiente ronda: aún quedan partidos sin resultado en"
 " la ronda actual."
 
-#: src/gui/main_frame.py:4319
+#: src/gui/main_frame.py:4442
 msgid "Errore durante la generazione degli abbinamenti."
 msgstr "Error al generar coincidencias."
 
-#: src/gui/main_frame.py:4358
+#: src/gui/main_frame.py:4481
 #, python-brace-format
 msgid "Generati abbinamenti per il Turno {num}."
 msgstr "Emparejamientos generados para la Ronda{num}."
 
-#: src/gui/main_frame.py:4379
+#: src/gui/main_frame.py:4502
 msgid "Non ci sono partite pianificate in questo torneo."
 msgstr "No hay partidos programados en este torneo."
 
-#: src/gui/main_frame.py:4380
+#: src/gui/main_frame.py:4503
 msgid "Esporta Calendario"
 msgstr "Exportar Calendario"
 
-#: src/gui/main_frame.py:4388
+#: src/gui/main_frame.py:4511
 msgid "Salva file iCalendar (.ics)"
 msgstr "Guardar archivo iCalendar (.ics)"
 
-#: src/gui/main_frame.py:4403
+#: src/gui/main_frame.py:4526
 #, python-brace-format
 msgid "Calendario esportato con successo in '{path}'."
 msgstr "Calendario exportado con éxito en '{path}'."
 
-#: src/gui/main_frame.py:4412
+#: src/gui/main_frame.py:4535
 #, python-brace-format
 msgid "Errore durante l'esportazione: {e}"
 msgstr "Error durante la exportación:{e}"
 
 #: src/gui/dialogs/accessible_msg_dialog.py:58
-#: src/gui/dialogs/player_enrollment_dialog.py:142
+#: src/gui/dialogs/player_enrollment_dialog.py:145
 #: src/gui/dialogs/visual_settings_dialog.py:342
 msgid "OK"
 msgstr "DE ACUERDO"
@@ -5922,7 +5931,7 @@ msgstr "Vaciar carpeta de copia de seguridad"
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:173
 #: src/gui/dialogs/donation_dialog.py:41
-#: src/gui/dialogs/fide_query_dialog.py:94
+#: src/gui/dialogs/fide_query_dialog.py:96
 #: src/gui/dialogs/fide_update_dialog.py:137
 #: src/gui/dialogs/players_db_dialog.py:75
 #: src/gui/dialogs/sync_database_dialog.py:160
@@ -5954,7 +5963,7 @@ msgstr ""
 "eliminarlo."
 
 #: src/gui/dialogs/backup_cleanup_dialog.py:286
-#: src/gui/dialogs/player_enrollment_dialog.py:507
+#: src/gui/dialogs/player_enrollment_dialog.py:527
 msgid "Nessuna Selezione"
 msgstr "Sin selección"
 
@@ -6046,104 +6055,123 @@ msgstr "Buscar por Apellido/Nombre o ID FIDE:"
 msgid "Giocatori Trovati:"
 msgstr "Jugadores encontrados:"
 
-#: src/gui/dialogs/fide_query_dialog.py:78
+#: src/gui/dialogs/fide_query_dialog.py:79
 msgid "Dettagli Giocatore FIDE:"
 msgstr "Detalles del jugador FIDE:"
 
-#: src/gui/dialogs/fide_query_dialog.py:91
+#: src/gui/dialogs/fide_query_dialog.py:93
 msgid "Importa nel DB Locale"
 msgstr "Importar a la base de datos local"
 
-#: src/gui/dialogs/fide_query_dialog.py:147
-#, python-brace-format
-msgid "{name} (ELO: {elo} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
+#: src/gui/dialogs/fide_query_dialog.py:150
+#: src/gui/dialogs/player_enrollment_dialog.py:336
+#, fuzzy, python-brace-format
+msgid ""
+"{name} (Std: {elo_std}, Rap: {elo_rap} - ID FIDE: {fide_id} - Anno: {anno} -"
+" FED: {fed})"
 msgstr "{name} (ELO: {elo} - FIDE ID: {fide_id} - Año: {anno} - FED: {fed})"
 
-#: src/gui/dialogs/fide_query_dialog.py:164
-#: src/gui/dialogs/player_enrollment_dialog.py:346
+#: src/gui/dialogs/fide_query_dialog.py:168
+#: src/gui/dialogs/player_enrollment_dialog.py:354
 #, python-brace-format
 msgid "-- Mostra altri risultati ({rem} rimanenti su {total}) --"
 msgstr "-- Mostrar más resultados ({rem} restante en {total}) --"
 
-#: src/gui/dialogs/fide_query_dialog.py:183
-#: src/gui/dialogs/players_db_dialog.py:149
+#: src/gui/dialogs/fide_query_dialog.py:187
+#: src/gui/dialogs/players_db_dialog.py:150
 #, python-brace-format
 msgid "Cognome: {}"
 msgstr "Apellido: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:185
-#: src/gui/dialogs/players_db_dialog.py:154
+#: src/gui/dialogs/fide_query_dialog.py:189
+#: src/gui/dialogs/players_db_dialog.py:155
 #, python-brace-format
 msgid "Nome: {}"
 msgstr "Nombre: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:187
-#: src/gui/dialogs/players_db_dialog.py:211
+#: src/gui/dialogs/fide_query_dialog.py:191
+#: src/gui/dialogs/players_db_dialog.py:231
 #, python-brace-format
 msgid "ID FIDE: {}"
 msgstr "ID FIDE: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:189
-#: src/gui/dialogs/players_db_dialog.py:171
+#: src/gui/dialogs/fide_query_dialog.py:193
+#: src/gui/dialogs/players_db_dialog.py:172
 #, python-brace-format
 msgid "Nazione (FED): {}"
 msgstr "País (FED): {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:191
+#: src/gui/dialogs/fide_query_dialog.py:195
 #, python-brace-format
 msgid "Sesso (Sex): {}"
 msgstr "Sexo: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:193
-#: src/gui/dialogs/players_db_dialog.py:166
+#: src/gui/dialogs/fide_query_dialog.py:197
+#: src/gui/dialogs/players_db_dialog.py:167
 #, python-brace-format
 msgid "Anno Nascita: {}"
 msgstr "Año de nacimiento: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:195
-#: src/gui/dialogs/players_db_dialog.py:206
+#: src/gui/dialogs/fide_query_dialog.py:199
+#: src/gui/dialogs/players_db_dialog.py:226
 #, python-brace-format
 msgid "Titolo FIDE: {}"
 msgstr "Título FIDE: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:197
-#: src/gui/dialogs/players_db_dialog.py:181
+#: src/gui/dialogs/fide_query_dialog.py:206
+#: src/gui/dialogs/players_db_dialog.py:289
+#, fuzzy, python-brace-format
+msgid "Titolo Femminile: {}"
+msgstr "Título FIDE: {}"
+
+#: src/gui/dialogs/fide_query_dialog.py:209
+#: src/gui/dialogs/players_db_dialog.py:294
+#, fuzzy, python-brace-format
+msgid "Titolo Arbitro/Altro: {}"
+msgstr "Árbitro principal: {}"
+
+#: src/gui/dialogs/fide_query_dialog.py:212
+#: src/gui/dialogs/players_db_dialog.py:299
+#, fuzzy, python-brace-format
+msgid "Titolo FOA: {}"
+msgstr "Título FIDE: {}"
+
+#: src/gui/dialogs/fide_query_dialog.py:215
+#: src/gui/dialogs/players_db_dialog.py:306
+#, python-brace-format
+msgid "Flag (Caratteristica): {}"
+msgstr "Bandera (Característica): {}"
+
+#: src/gui/dialogs/fide_query_dialog.py:217
+#: src/gui/dialogs/players_db_dialog.py:201
 #, python-brace-format
 msgid "ELO Standard: {}"
 msgstr "ELO Estándar: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:199
-#, python-brace-format
-msgid "Partite Standard: {}"
-msgstr "Partidas Estándar: {}"
+#: src/gui/dialogs/fide_query_dialog.py:219
+#: src/gui/dialogs/fide_query_dialog.py:225
+#: src/gui/dialogs/fide_query_dialog.py:231
+#, fuzzy, python-brace-format
+msgid "Partite: {}"
+msgstr "Partidas Rápidas: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:201
-#: src/gui/dialogs/players_db_dialog.py:190
+#: src/gui/dialogs/fide_query_dialog.py:223
+#: src/gui/dialogs/players_db_dialog.py:210
 #, python-brace-format
 msgid "ELO Rapid: {}"
 msgstr "ELO Rápido: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:203
-#, python-brace-format
-msgid "Partite Rapid: {}"
-msgstr "Partidas Rápidas: {}"
-
-#: src/gui/dialogs/fide_query_dialog.py:205
-#: src/gui/dialogs/players_db_dialog.py:199
+#: src/gui/dialogs/fide_query_dialog.py:229
+#: src/gui/dialogs/players_db_dialog.py:219
 #, python-brace-format
 msgid "ELO Blitz: {}"
 msgstr "ELO Blitz: {}"
 
-#: src/gui/dialogs/fide_query_dialog.py:207
-#, python-brace-format
-msgid "Partite Blitz: {}"
-msgstr "Partidas Blitz: {}"
-
-#: src/gui/dialogs/fide_query_dialog.py:242
+#: src/gui/dialogs/fide_query_dialog.py:268
 msgid "Questo giocatore è già presente nel tuo database personale."
 msgstr "Este jugador ya está presente en su base de datos personal."
 
-#: src/gui/dialogs/fide_query_dialog.py:286
+#: src/gui/dialogs/fide_query_dialog.py:324
 #, python-brace-format
 msgid ""
 "Giocatore '{name}' importato con successo nel database locale con ID '{id}'."
@@ -6151,11 +6179,11 @@ msgstr ""
 "El jugador '{name}' se importó exitosamente a la base de datos local con ID "
 "'{id}'."
 
-#: src/gui/dialogs/fide_query_dialog.py:291
+#: src/gui/dialogs/fide_query_dialog.py:329
 msgid "Importazione Completata"
 msgstr "Importación completada"
 
-#: src/gui/dialogs/fide_update_dialog.py:69
+#: src/gui/dialogs/fide_update_dialog.py:71
 msgid ""
 "Connessione al server FIDE in corso...\n"
 "Avvio dello scaricamento del database FIDE Ratings."
@@ -6163,8 +6191,8 @@ msgstr ""
 "Conectándose al servidor FIDE...\n"
 "Iniciando la descarga de la base de datos de Ratings FIDE."
 
-#: src/gui/dialogs/fide_update_dialog.py:78
-#: src/gui/dialogs/player_enrollment_dialog.py:141
+#: src/gui/dialogs/fide_update_dialog.py:80
+#: src/gui/dialogs/player_enrollment_dialog.py:144
 #: src/gui/dialogs/result_dialog.py:173 src/gui/dialogs/result_dialog.py:396
 #: src/gui/dialogs/tiebreak_config_dialog.py:143
 #: src/gui/dialogs/tiebreak_config_dialog.py:144
@@ -6173,11 +6201,11 @@ msgstr ""
 msgid "Annulla"
 msgstr "Cancelar"
 
-#: src/gui/dialogs/fide_update_dialog.py:104
+#: src/gui/dialogs/fide_update_dialog.py:106
 msgid "Scaricamento Database FIDE..."
 msgstr "Descargando la base de datos FIDE..."
 
-#: src/gui/dialogs/fide_update_dialog.py:110
+#: src/gui/dialogs/fide_update_dialog.py:113
 #, python-brace-format
 msgid ""
 "Scaricamento in corso: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} "
@@ -6229,117 +6257,106 @@ msgstr "¡La base de datos local de la FIDE se actualizó exitosamente!"
 msgid "Errore durante l'aggiornamento del Database FIDE."
 msgstr "Error al actualizar la base de datos FIDE."
 
-#: src/gui/dialogs/fide_update_dialog.py:193
+#: src/gui/dialogs/fide_update_dialog.py:194
 msgid ""
 "Errore durante l'aggiornamento del Database FIDE. Controlla la connessione "
 "ad internet."
 msgstr ""
 "Error al actualizar la base de datos FIDE. Verifique su conexión a Internet."
 
-#: src/gui/dialogs/player_enrollment_dialog.py:18
-msgid "Iscrizione Giocatori"
-msgstr "Registro de jugador"
-
-#: src/gui/dialogs/player_enrollment_dialog.py:56
+#: src/gui/dialogs/player_enrollment_dialog.py:59
 msgid "Ricerca nel Database Personale Locale"
 msgstr "Buscar en la Base de Datos Personal Local"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:61
+#: src/gui/dialogs/player_enrollment_dialog.py:64
 msgid "Filtra per nome o cognome nel database locale"
 msgstr "Filtrar por nombre o apellido en la base de datos local"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:65
+#: src/gui/dialogs/player_enrollment_dialog.py:68
 msgid "Giocatori trovati: 0"
 msgstr "Jugadores encontrados: 0"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:66
+#: src/gui/dialogs/player_enrollment_dialog.py:69
 msgid "Stato ricerca locale"
 msgstr "Estado de la búsqueda local"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:74
+#: src/gui/dialogs/player_enrollment_dialog.py:77
 msgid "Risultati Ricerca Locale"
 msgstr "Resultados de la búsqueda local"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:83
+#: src/gui/dialogs/player_enrollment_dialog.py:86
 msgid "Ricerca nel Database FIDE (min. 3 caratteri)"
 msgstr "Buscar en la base de datos de la FIDE (mínimo 3 caracteres)"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:89
+#: src/gui/dialogs/player_enrollment_dialog.py:92
 msgid "Filtra per nome o cognome nel database FIDE (minimo 3 caratteri)"
 msgstr ""
 "Filtrar por nombre o apellido en la base de datos FIDE (mínimo 3 caracteres)"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:95
-#: src/gui/dialogs/player_enrollment_dialog.py:275
+#: src/gui/dialogs/player_enrollment_dialog.py:98
+#: src/gui/dialogs/player_enrollment_dialog.py:281
 msgid "Digita almeno 3 caratteri per cercare."
 msgstr "Escribe al menos 3 caracteres para buscar."
 
-#: src/gui/dialogs/player_enrollment_dialog.py:97
+#: src/gui/dialogs/player_enrollment_dialog.py:100
 msgid "Stato ricerca FIDE"
 msgstr "Estado de la búsqueda FIDE"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:103
+#: src/gui/dialogs/player_enrollment_dialog.py:106
 msgid "Risultati Ricerca FIDE"
 msgstr "Resultados de la búsqueda FIDE"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:113
+#: src/gui/dialogs/player_enrollment_dialog.py:116
 msgid "&Iscrivi"
 msgstr "&Inscribir"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:114
+#: src/gui/dialogs/player_enrollment_dialog.py:117
 msgid "Iscrivi il giocatore selezionato"
 msgstr "Inscribir al jugador seleccionado"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:119
+#: src/gui/dialogs/player_enrollment_dialog.py:122
 msgid "Nuovo Giocatore Da Zero (Principiante)"
 msgstr "Nuevo jugador desde cero (principiante)"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:131
+#: src/gui/dialogs/player_enrollment_dialog.py:134
 msgid "Giocatori Iscritti al Torneo"
 msgstr "Jugadores registrados en el torneo"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:200
+#: src/gui/dialogs/player_enrollment_dialog.py:205
 #, python-brace-format
 msgid "Giocatori Iscritti al Torneo ({total})"
 msgstr "Jugadores registrados en el torneo ({total})"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:248
-#, python-brace-format
-msgid "{name} (ELO: {elo} - ID: {id})"
+#: src/gui/dialogs/player_enrollment_dialog.py:254
+#, fuzzy, python-brace-format
+msgid "{name} (Std: {elo_std}, Rap: {elo_rap} - ID: {id})"
 msgstr "{name} (ELO: {elo} - ID: {id})"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:256
-#: src/gui/dialogs/player_enrollment_dialog.py:294
+#: src/gui/dialogs/player_enrollment_dialog.py:262
+#: src/gui/dialogs/player_enrollment_dialog.py:300
 #, python-brace-format
 msgid "Giocatori trovati: {total}"
 msgstr "Jugadores encontrados: {total}"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:329
-#, python-brace-format
-msgid ""
-"{name} (ELO FIDE: {elo} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
-msgstr ""
-"{name} (FIDE ELO: {elo} - FIDE ID: {fide_id} - Año: {anno} - FED: {fed})"
-
-#: src/gui/dialogs/player_enrollment_dialog.py:508
+#: src/gui/dialogs/player_enrollment_dialog.py:528
 msgid "Seleziona prima un giocatore dalla ricerca locale o FIDE."
 msgstr "Primero selecciona un jugador de la búsqueda local o FIDE."
 
-#: src/gui/dialogs/player_enrollment_dialog.py:519
+#: src/gui/dialogs/player_enrollment_dialog.py:539
 msgid "Inserisci Cognome del nuovo giocatore:"
 msgstr "Ingrese el apellido del nuevo jugador:"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:519
-#: src/gui/dialogs/player_enrollment_dialog.py:528
+#: src/gui/dialogs/player_enrollment_dialog.py:539
+#: src/gui/dialogs/player_enrollment_dialog.py:548
 msgid "Crea Nuovo Giocatore"
 msgstr "Crear nuevo jugador"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:528
+#: src/gui/dialogs/player_enrollment_dialog.py:548
 msgid "Inserisci Nome del nuovo giocatore:"
 msgstr "Ingrese el nombre del nuevo jugador:"
 
-#: src/gui/dialogs/player_enrollment_dialog.py:542
-#: src/gui/dialogs/players_db_dialog.py:504
+#: src/gui/dialogs/player_enrollment_dialog.py:562
+#: src/gui/dialogs/players_db_dialog.py:641
 msgid "Nome e Cognome sono obbligatori."
 msgstr "Nombre y apellido son obligatorios."
 
@@ -6359,166 +6376,321 @@ msgstr "Agregar nuevo jugador"
 msgid "Scheda ed Albero Dati (Invio = Modifica | Canc = Elimina):"
 msgstr "Tarjeta y árbol de datos (Entrar = Modificar | Del = Eliminar):"
 
-#: src/gui/dialogs/players_db_dialog.py:146
+#: src/gui/dialogs/players_db_dialog.py:147
 msgid "Anagrafica"
 msgstr "Datos personales"
 
-#: src/gui/dialogs/players_db_dialog.py:161
+#: src/gui/dialogs/players_db_dialog.py:162
 #, python-brace-format
 msgid "Sesso: {}"
 msgstr "Sexo: {}"
 
-#: src/gui/dialogs/players_db_dialog.py:176
+#: src/gui/dialogs/players_db_dialog.py:177
+#, python-brace-format
+msgid "Club/Società: {}"
+msgstr "Club/Sociedad: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:182
+#, fuzzy, python-brace-format
+msgid "Partite Locali Giocate: {}"
+msgstr "Partidas Blitz: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:189
+#, fuzzy, python-brace-format
+msgid "Data Registrazione: {}"
+msgstr "Fecha de registro de la base de datos"
+
+#: src/gui/dialogs/players_db_dialog.py:196
 msgid "ELO e Titoli"
 msgstr "ELO y títulos"
 
-#: src/gui/dialogs/players_db_dialog.py:218
+#: src/gui/dialogs/players_db_dialog.py:240
+#, fuzzy, python-brace-format
+msgid "FIDE Standard K: {}"
+msgstr "ELO Estándar: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:248
+#, fuzzy, python-brace-format
+msgid "Partite FIDE Standard: {}"
+msgstr "Partidas Estándar: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:257
+#, fuzzy, python-brace-format
+msgid "FIDE Rapid K: {}"
+msgstr "ELO Rápido: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:265
+#, fuzzy, python-brace-format
+msgid "Partite FIDE Rapid: {}"
+msgstr "Partidas Rápidas: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:274
+#, fuzzy, python-brace-format
+msgid "FIDE Blitz K: {}"
+msgstr "ELO Blitz: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:282
+#, fuzzy, python-brace-format
+msgid "Partite FIDE Blitz: {}"
+msgstr "Partidas Blitz: {}"
+
+#: src/gui/dialogs/players_db_dialog.py:311
 msgid "Storico Tornei"
 msgstr "Historial de torneos"
 
-#: src/gui/dialogs/players_db_dialog.py:221
+#: src/gui/dialogs/players_db_dialog.py:314
 #, python-brace-format
 msgid "{}: Pos. {}/{} ({})"
 msgstr "{}: pos. {}/{} ({})"
 
-#: src/gui/dialogs/players_db_dialog.py:222
+#: src/gui/dialogs/players_db_dialog.py:315
 msgid "Torneo"
 msgstr "Torneo"
 
-#: src/gui/dialogs/players_db_dialog.py:237
+#: src/gui/dialogs/players_db_dialog.py:330
 #, python-brace-format
 msgid "Ori (Oro): {}"
 msgstr "Oro: {}"
 
-#: src/gui/dialogs/players_db_dialog.py:244
+#: src/gui/dialogs/players_db_dialog.py:337
 #, python-brace-format
 msgid "Argenti (Argento): {}"
 msgstr "Plata: {}"
 
-#: src/gui/dialogs/players_db_dialog.py:252
+#: src/gui/dialogs/players_db_dialog.py:345
 #, python-brace-format
 msgid "Bronzi (Bronzo): {}"
 msgstr "Bronce: {}"
 
-#: src/gui/dialogs/players_db_dialog.py:260
+#: src/gui/dialogs/players_db_dialog.py:353
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
 msgstr "Medallas de madera: {}"
 
-#: src/gui/dialogs/players_db_dialog.py:289
+#: src/gui/dialogs/players_db_dialog.py:382
 msgid "Anno Nascita"
 msgstr "año de nacimiento"
 
-#: src/gui/dialogs/players_db_dialog.py:290
+#: src/gui/dialogs/players_db_dialog.py:383
 msgid "Nazione (FED)"
 msgstr "Nación (FED)"
 
-#: src/gui/dialogs/players_db_dialog.py:291
-#: src/gui/dialogs/sync_database_dialog.py:367
+#: src/gui/dialogs/players_db_dialog.py:384
+msgid "Club/Società"
+msgstr "Club/Sociedad"
+
+#: src/gui/dialogs/players_db_dialog.py:385
+msgid "Partite Locali Giocate"
+msgstr "Partidas locales jugadas"
+
+#: src/gui/dialogs/players_db_dialog.py:386
+msgid "Data Registrazione"
+msgstr "Fecha de registro"
+
+#: src/gui/dialogs/players_db_dialog.py:387
+#: src/gui/dialogs/sync_database_dialog.py:379
 msgid "ELO Standard"
 msgstr "Estándar ELO"
 
-#: src/gui/dialogs/players_db_dialog.py:292
-#: src/gui/dialogs/sync_database_dialog.py:371
+#: src/gui/dialogs/players_db_dialog.py:388
+#: src/gui/dialogs/sync_database_dialog.py:383
 msgid "ELO Rapid"
 msgstr "ELO rápido"
 
-#: src/gui/dialogs/players_db_dialog.py:293
-#: src/gui/dialogs/sync_database_dialog.py:372
+#: src/gui/dialogs/players_db_dialog.py:389
+#: src/gui/dialogs/sync_database_dialog.py:384
 msgid "ELO Blitz"
 msgstr "Bombardeo ELO"
 
-#: src/gui/dialogs/players_db_dialog.py:295
+#: src/gui/dialogs/players_db_dialog.py:391
 msgid "ID FIDE"
 msgstr "ID FIDE"
 
-#: src/gui/dialogs/players_db_dialog.py:296
+#: src/gui/dialogs/players_db_dialog.py:392
+msgid "FIDE Standard K"
+msgstr "FIDE Standard K"
+
+#: src/gui/dialogs/players_db_dialog.py:393
+#, python-brace-format
+msgid "Partite FIDE Standard"
+msgstr "Partidas FIDE Standard"
+
+#: src/gui/dialogs/players_db_dialog.py:394
+msgid "FIDE Rapid K"
+msgstr "FIDE Rapid K"
+
+#: src/gui/dialogs/players_db_dialog.py:395
+#, python-brace-format
+msgid "Partite FIDE Rapid"
+msgstr "Partidas FIDE Rapid"
+
+#: src/gui/dialogs/players_db_dialog.py:396
+msgid "FIDE Blitz K"
+msgstr "FIDE Blitz K"
+
+#: src/gui/dialogs/players_db_dialog.py:397
+#, python-brace-format
+msgid "Partite FIDE Blitz"
+msgstr "Partidas FIDE Blitz"
+
+#: src/gui/dialogs/players_db_dialog.py:398
+msgid "Titolo Femminile"
+msgstr "Título femenino"
+
+#: src/gui/dialogs/players_db_dialog.py:399
+msgid "Titolo Arbitro/Altro"
+msgstr "Título de árbitro/otro"
+
+#: src/gui/dialogs/players_db_dialog.py:400
+msgid "Titolo FOA"
+msgstr "Título FOA"
+
+#: src/gui/dialogs/players_db_dialog.py:401
+msgid "Flag (Caratteristica)"
+msgstr "Flag (Característica)"
+
+#: src/gui/dialogs/players_db_dialog.py:402
 msgid "Ori (Oro)"
 msgstr "Oros (Oro)"
 
-#: src/gui/dialogs/players_db_dialog.py:297
+#: src/gui/dialogs/players_db_dialog.py:403
 msgid "Argenti (Argento)"
 msgstr "Platas (Plata)"
 
-#: src/gui/dialogs/players_db_dialog.py:298
+#: src/gui/dialogs/players_db_dialog.py:404
 msgid "Bronzi (Bronzo)"
 msgstr "Bronces (Bronce)"
 
-#: src/gui/dialogs/players_db_dialog.py:299
+#: src/gui/dialogs/players_db_dialog.py:405
 msgid "Legni (Medaglia di legno)"
 msgstr "Woods (Medalla de madera)"
 
-#: src/gui/dialogs/players_db_dialog.py:305
+#: src/gui/dialogs/players_db_dialog.py:411
 #, python-brace-format
 msgid "Modifica valore per '{field}':"
 msgstr "Cambiar valor para '{field}':"
 
-#: src/gui/dialogs/players_db_dialog.py:306
+#: src/gui/dialogs/players_db_dialog.py:412
 msgid "Modifica Campo"
 msgstr "Editar campo"
 
-#: src/gui/dialogs/players_db_dialog.py:321
+#: src/gui/dialogs/players_db_dialog.py:427
 msgid "Inserisci un valore numerico valido."
 msgstr "Introduce un valor numérico válido."
 
-#: src/gui/dialogs/players_db_dialog.py:356
+#: src/gui/dialogs/players_db_dialog.py:462
 msgid "Ori (Oro): "
 msgstr "Ori (Oro):"
 
-#: src/gui/dialogs/players_db_dialog.py:357
+#: src/gui/dialogs/players_db_dialog.py:463
 msgid "Argenti (Argento): "
 msgstr "Argenti (Plata):"
 
-#: src/gui/dialogs/players_db_dialog.py:358
+#: src/gui/dialogs/players_db_dialog.py:464
 msgid "Bronzi (Bronzo): "
 msgstr "Bronces (Bronce):"
 
-#: src/gui/dialogs/players_db_dialog.py:359
+#: src/gui/dialogs/players_db_dialog.py:465
 msgid "Legni (Medaglia di legno): "
 msgstr "Maderas (Medalla de Madera):"
 
-#: src/gui/dialogs/players_db_dialog.py:371
-#: src/gui/dialogs/players_db_dialog.py:372
+#: src/gui/dialogs/players_db_dialog.py:477
+#: src/gui/dialogs/players_db_dialog.py:478
 msgid "Sesso: "
 msgstr "Sexo:"
 
-#: src/gui/dialogs/players_db_dialog.py:373
+#: src/gui/dialogs/players_db_dialog.py:479
 msgid "Anno Nascita: "
 msgstr "Año de nacimiento:"
 
-#: src/gui/dialogs/players_db_dialog.py:374
+#: src/gui/dialogs/players_db_dialog.py:480
 msgid "Nazione (FED): "
 msgstr "País (FED):"
 
-#: src/gui/dialogs/players_db_dialog.py:375
+#: src/gui/dialogs/players_db_dialog.py:481
+msgid "Club/Società: "
+msgstr "Club/Sociedad: "
+
+#: src/gui/dialogs/players_db_dialog.py:482
+msgid "Partite Locali Giocate: "
+msgstr "Partidas locales jugadas: "
+
+#: src/gui/dialogs/players_db_dialog.py:483
+msgid "Data Registrazione: "
+msgstr "Fecha de registro: "
+
+#: src/gui/dialogs/players_db_dialog.py:484
 msgid "ELO Standard: "
 msgstr "Estándares ELO:"
 
-#: src/gui/dialogs/players_db_dialog.py:376
+#: src/gui/dialogs/players_db_dialog.py:485
 msgid "ELO Rapid: "
 msgstr "ELO Rápido:"
 
-#: src/gui/dialogs/players_db_dialog.py:377
+#: src/gui/dialogs/players_db_dialog.py:486
 msgid "ELO Blitz: "
 msgstr "Bombardeo ELO:"
 
-#: src/gui/dialogs/players_db_dialog.py:378
+#: src/gui/dialogs/players_db_dialog.py:487
 msgid "Titolo FIDE: "
 msgstr "Título FIDE:"
 
-#: src/gui/dialogs/players_db_dialog.py:379
+#: src/gui/dialogs/players_db_dialog.py:488
 msgid "ID FIDE: "
 msgstr "Identificación FIDE:"
 
-#: src/gui/dialogs/players_db_dialog.py:431
+#: src/gui/dialogs/players_db_dialog.py:489
+msgid "FIDE Standard K: "
+msgstr "FIDE Standard K: "
+
+#: src/gui/dialogs/players_db_dialog.py:490
+#, python-brace-format
+msgid "Partite FIDE Standard: "
+msgstr "Partidas FIDE Standard: "
+
+#: src/gui/dialogs/players_db_dialog.py:491
+msgid "FIDE Rapid K: "
+msgstr "FIDE Rapid K: "
+
+#: src/gui/dialogs/players_db_dialog.py:492
+#, python-brace-format
+msgid "Partite FIDE Rapid: "
+msgstr "Partidas FIDE Rapid: "
+
+#: src/gui/dialogs/players_db_dialog.py:493
+msgid "FIDE Blitz K: "
+msgstr "FIDE Blitz K: "
+
+#: src/gui/dialogs/players_db_dialog.py:494
+#, python-brace-format
+msgid "Partite FIDE Blitz: "
+msgstr "Partidas FIDE Blitz: "
+
+#: src/gui/dialogs/players_db_dialog.py:495
+msgid "Titolo Femminile: "
+msgstr "Título femenino: "
+
+#: src/gui/dialogs/players_db_dialog.py:496
+msgid "Titolo Arbitro/Altro: "
+msgstr "Título de árbitro/otro: "
+
+#: src/gui/dialogs/players_db_dialog.py:497
+msgid "Titolo FOA: "
+msgstr "Título FOA: "
+
+#: src/gui/dialogs/players_db_dialog.py:498
+msgid "Flag (Caratteristica): "
+msgstr "Flag (Característica): "
+
+#: src/gui/dialogs/players_db_dialog.py:568
 msgid "Sei sicuro di voler rimuovere questo record dallo storico?"
 msgstr "¿Está seguro de que desea eliminar este registro del historial?"
 
-#: src/gui/dialogs/players_db_dialog.py:434
+#: src/gui/dialogs/players_db_dialog.py:571
 msgid "Conferma Rimozione"
 msgstr "Confirmar eliminación"
 
-#: src/gui/dialogs/players_db_dialog.py:468
+#: src/gui/dialogs/players_db_dialog.py:605
 #, python-brace-format
 msgid ""
 "Sei sicuro di voler eliminare definitivamente il giocatore '{name}' dal "
@@ -6527,20 +6699,20 @@ msgstr ""
 "¿Estás seguro de que deseas eliminar permanentemente al jugador '{name}' de "
 "la base de datos?"
 
-#: src/gui/dialogs/players_db_dialog.py:472
+#: src/gui/dialogs/players_db_dialog.py:609
 msgid "Conferma Eliminazione Giocatore"
 msgstr "Confirmar la eliminación del jugador"
 
-#: src/gui/dialogs/players_db_dialog.py:485
+#: src/gui/dialogs/players_db_dialog.py:622
 msgid "Inserisci Cognome:"
 msgstr "Ingrese el apellido:"
 
-#: src/gui/dialogs/players_db_dialog.py:485
-#: src/gui/dialogs/players_db_dialog.py:492
+#: src/gui/dialogs/players_db_dialog.py:622
+#: src/gui/dialogs/players_db_dialog.py:629
 msgid "Nuovo Giocatore"
 msgstr "Nuevo jugador"
 
-#: src/gui/dialogs/players_db_dialog.py:492
+#: src/gui/dialogs/players_db_dialog.py:629
 msgid "Inserisci Nome:"
 msgstr "Introduzca el nombre:"
 
@@ -6808,20 +6980,20 @@ msgstr "Todos los homónimos han sido resueltos y guardados."
 msgid "Seleziona il record FIDE corretto per {name} (Omonimia multipla):"
 msgstr "Seleccione el registro FIDE correcto para{name}(Múltiple Honymy):"
 
-#: src/gui/dialogs/sync_database_dialog.py:361
+#: src/gui/dialogs/sync_database_dialog.py:373
 #, python-brace-format
 msgid " - Associazione ID FIDE: {id_val}"
 msgstr "- Asociación FIDE ID:{id_val}"
 
-#: src/gui/dialogs/sync_database_dialog.py:369
+#: src/gui/dialogs/sync_database_dialog.py:381
 msgid "Data di nascita"
 msgstr "Fecha de nacimiento"
 
-#: src/gui/dialogs/sync_database_dialog.py:370
+#: src/gui/dialogs/sync_database_dialog.py:382
 msgid "K-Factor"
 msgstr "Factor K"
 
-#: src/gui/dialogs/sync_database_dialog.py:382
+#: src/gui/dialogs/sync_database_dialog.py:394
 #, python-brace-format
 msgid ""
 "Vuoi applicare le seguenti modifiche per {name}?\n"
@@ -6832,11 +7004,11 @@ msgstr ""
 "\n"
 "{summary}"
 
-#: src/gui/dialogs/sync_database_dialog.py:386
+#: src/gui/dialogs/sync_database_dialog.py:398
 msgid "Conferma Aggiornamento"
 msgstr "Confirmar actualización"
 
-#: src/gui/dialogs/sync_database_dialog.py:406
+#: src/gui/dialogs/sync_database_dialog.py:418
 #, python-brace-format
 msgid ""
 "Sincronizzazione completata.\n"
@@ -6845,7 +7017,7 @@ msgstr ""
 "Sincronización completada.\n"
 "Aplicado:{app}| Omitido:{skp}"
 
-#: src/gui/dialogs/sync_database_dialog.py:409
+#: src/gui/dialogs/sync_database_dialog.py:421
 msgid "Sincronizzazione Terminata"
 msgstr "Sincronización finalizada"
 
@@ -7018,3 +7190,14 @@ msgstr "Pos. (Pestaña)"
 #~ msgid "Ricerca nel Database FIDE (min. 3 caratteri) ({total} risultati)"
 #~ msgstr ""
 #~ "Búsqueda en la Base de Datos FIDE (mínimo 3 caracteres) (resultados {total})"
+
+#~ msgid "Avanti (Iscrizione Giocatori)"
+#~ msgstr "Siguiente (Registro de jugador)"
+
+#~ msgid "Avanti"
+#~ msgstr "Siguiente"
+
+#~ msgid ""
+#~ "{name} (ELO FIDE: {elo} - ID FIDE: {fide_id} - Anno: {anno} - FED: {fed})"
+#~ msgstr ""
+#~ "{name} (FIDE ELO: {elo} - FIDE ID: {fide_id} - Año: {anno} - FED: {fed})"
