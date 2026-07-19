@@ -22,5 +22,6 @@
         0,
         0
     ],
-    "language": "en"
+    "language": "it",
+    "check_fide_at_startup": true
 }
