@@ -1,11 +1,13 @@
-import os
+import builtins
 import glob
 import json
+import os
+
 import wx
-import builtins
-from version import __version__, __date__
-from gui.settings import apply_visual_settings, save_settings
+from version import __date__, __version__
+
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
+from gui.settings import apply_visual_settings, save_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -305,6 +307,7 @@ class MainFrame(wx.Frame):
 
             try:
                 from datetime import datetime
+
                 from config import DATE_FORMAT_ISO
 
                 dt_start = datetime.strptime(t_start_str, DATE_FORMAT_ISO)
@@ -332,10 +335,8 @@ class MainFrame(wx.Frame):
                     else:
                         x_day = 1
 
-                    if x_day < 1:
-                        x_day = 1
-                    if x_day > y_days:
-                        x_day = y_days
+                    x_day = max(x_day, 1)
+                    x_day = min(x_day, y_days)
 
                 day_pct = (x_day / y_days) * 100.0
             except Exception:
@@ -513,8 +514,8 @@ class MainFrame(wx.Frame):
         if not self.settings.get("check_fide_at_startup", True):
             return
 
-        from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
-        from fide_db import fide_db_exists, cleanup_legacy_json
+        from config import FIDE_DB_JSON_LEGACY, FIDE_DB_LOCAL_FILE
+        from fide_db import cleanup_legacy_json, fide_db_exists
 
         # Fallback: se esiste il vecchio JSON ma non il nuovo SQLite, elimina il JSON
         if not fide_db_exists() and os.path.exists(FIDE_DB_JSON_LEGACY):
@@ -578,8 +579,9 @@ class MainFrame(wx.Frame):
 
     def _run_update_check(self):
         try:
-            from GBUtils import update_checker
             from version import __version__ as current_ver
+
+            from GBUtils import update_checker
 
             repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
             avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
@@ -1084,6 +1086,7 @@ class MainFrame(wx.Frame):
         matches_played.sort(key=lambda x: match_id_to_board.get(x.get("id"), 0))
 
         from datetime import datetime
+
         from config import DATE_FORMAT_ISO
 
         def get_match_sort_key(m_item):
@@ -1841,8 +1844,9 @@ class MainFrame(wx.Frame):
         self.main_text.ShowPosition(0)
 
     def on_configure_tiebreaks(self):
-        from gui.dialogs import TiebreakConfigDialog
         from utils import play_sound
+
+        from gui.dialogs import TiebreakConfigDialog
 
         play_sound("apertura", self.current_tournament)
         dlg = TiebreakConfigDialog(self, self.current_tournament)
@@ -2525,8 +2529,9 @@ class MainFrame(wx.Frame):
         play_sound("conferma")
 
         # Calcola la categoria del torneo in base al tempo di riflessione inserito
+        from stats import classify_tournament_category, parse_time_control
+
         from gui.dialogs import PlayerEnrollmentDialog
-        from stats import parse_time_control, classify_tournament_category
 
         tc_parsed = parse_time_control(
             self.creation_data.get("time_control", "60+0")
@@ -2563,8 +2568,8 @@ class MainFrame(wx.Frame):
         self.show_intro_message()
 
     def create_tournament_from_wizard(self, enrolled):
+        from models import Player, RoundDate, Tournament
         from stats import get_initial_elo_for_tournament
-        from models import Tournament, Player, RoundDate
         from tournament import generate_pairings_for_round
         from utils import sanitize_filename
 
@@ -2599,7 +2604,7 @@ class MainFrame(wx.Frame):
         )
 
         # Classificazione categoria Elo
-        from stats import parse_time_control, classify_tournament_category
+        from stats import classify_tournament_category, parse_time_control
 
         tc_parsed = parse_time_control(self.creation_data["time_control"]) or {
             "minutes": 60,
@@ -2660,7 +2665,7 @@ class MainFrame(wx.Frame):
                     wx.ICON_ERROR,
                 )
                 return
-            from models import Round, Match
+            from models import Match, Round
 
             round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
             tournament.rounds.append(round_obj)
@@ -2697,8 +2702,8 @@ class MainFrame(wx.Frame):
 
     def _save_state(self):
         if self.current_tournament:
-            from tournament import save_tournament
             from reports import save_current_tournament_round_file, save_standings_text
+            from tournament import save_tournament
 
             save_tournament(self.current_tournament, filepath=self.active_filename)
             save_current_tournament_round_file(self.current_tournament)
@@ -2707,6 +2712,7 @@ class MainFrame(wx.Frame):
             # Accumula ed esporta il file PGN del torneo
             if self.active_filename:
                 import os
+
                 from utils import sanitize_filename
 
                 t_name = self.current_tournament.get("name", "Torneo_Senza_Nome")
@@ -2770,6 +2776,7 @@ class MainFrame(wx.Frame):
 
         import json
         import os
+
         from utils import play_sound
 
         try:
@@ -2896,6 +2903,7 @@ class MainFrame(wx.Frame):
         """Rimuove fisicamente dal disco un torneo (attivo, concluso o in preparazione) e tutti i file correlati."""
         import json
         import os
+
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -3069,6 +3077,7 @@ class MainFrame(wx.Frame):
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""
         from datetime import datetime, timedelta
+
         from config import DATE_FORMAT_ISO
         from utils import play_sound
 
@@ -3345,10 +3354,11 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_fide_update(self, event):
-        from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
-        from fide_db import cleanup_legacy_json
-        from datetime import datetime
         import os
+        from datetime import datetime
+
+        from config import FIDE_DB_JSON_LEGACY, FIDE_DB_LOCAL_FILE
+        from fide_db import cleanup_legacy_json
 
         # Fallback: elimina vecchio JSON se presente
         if os.path.exists(FIDE_DB_JSON_LEGACY):
@@ -3403,8 +3413,9 @@ class MainFrame(wx.Frame):
         play_sound("chiusura", self.current_tournament, sync=True)
 
         try:
-            import sys
             import io
+            import sys
+
             from GBUtils import Donazione
 
             old_stdout = sys.stdout
@@ -3773,9 +3784,9 @@ class MainFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 val = dlg.GetValue().strip()
                 from stats import (
-                    parse_time_control,
                     classify_tournament_category,
                     get_initial_elo_for_tournament,
+                    parse_time_control,
                 )
 
                 tc_parsed = parse_time_control(val)
@@ -4046,8 +4057,9 @@ class MainFrame(wx.Frame):
                     old_pgn = actual_match.get("pgn", "").strip()
                     if res != old_res or p_text != old_pgn:
                         if p_text:
-                            import chess.pgn
                             import io
+
+                            import chess.pgn
 
                             pgn_io = io.StringIO(p_text)
                             try:
@@ -4384,7 +4396,7 @@ class MainFrame(wx.Frame):
             )
             return
 
-        from models import Round, Match
+        from models import Match, Round
 
         round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
         self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
@@ -4464,7 +4476,7 @@ class MainFrame(wx.Frame):
                     }
                 )
 
-        from models import Round, Match
+        from models import Match, Round
 
         round_obj = Round(
             round=next_round_num, matches=[Match.from_dict(m) for m in next_matches]

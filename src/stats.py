@@ -1,8 +1,8 @@
 import math
-from typing import Optional
 from datetime import datetime
+
+from config import DATE_FORMAT_ISO, DEFAULT_ELO, DEFAULT_K_FACTOR
 from dateutil.relativedelta import relativedelta
-from config import DEFAULT_K_FACTOR, DEFAULT_ELO, DATE_FORMAT_ISO
 from utils import format_points, get_player_by_id
 
 
@@ -311,10 +311,8 @@ def calculate_performance_rating(player, tournament_players_dict):
     # Arrotonda la percentuale al centesimo più vicino per il lookup
     lookup_p = round(score_percentage, 2)
     # Gestisce casi limite
-    if lookup_p < 0.0:
-        lookup_p = 0.0
-    if lookup_p > 1.0:
-        lookup_p = 1.0
+    lookup_p = max(lookup_p, 0.0)
+    lookup_p = min(lookup_p, 1.0)
     # Ottieni dp dalla mappa, con fallback a +/- 800 per sicurezza
     dp = dp_map.get(lookup_p, 800 if lookup_p > 0.5 else -800)
     # Calcola performance
@@ -499,7 +497,7 @@ def get_initial_elo_for_tournament(player_db_data: dict, category: str) -> float
     return float(elo)
 
 
-def parse_time_control(time_control_str: str) -> Optional[dict]:
+def parse_time_control(time_control_str: str) -> dict | None:
     """
     Parsa una stringa di controllo del tempo (es. "15+10", "90+30", "3+2")
     e restituisce un dizionario strutturato con minuti, incremento e valore PGN,

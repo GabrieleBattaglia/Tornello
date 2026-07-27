@@ -1,5 +1,6 @@
-import wx
 import builtins
+
+import wx
 
 _ = getattr(builtins, "_", lambda s: s)
 

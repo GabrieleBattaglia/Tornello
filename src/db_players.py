@@ -1,29 +1,30 @@
-import os
-import json
-import zipfile
 import io
-import requests
+import json
+import os
 import traceback
 import xml.etree.ElementTree as ET
+import zipfile
 from datetime import datetime
+
+import requests
 from config import (
+    DATE_FORMAT_ISO,
     FIDE_DB_LOCAL_FILE,
+    FIDE_XML_DOWNLOAD_URL,
     PLAYER_DB_FILE,
     PLAYER_DB_TXT_FILE,
-    DATE_FORMAT_ISO,
-    FIDE_XML_DOWNLOAD_URL,
 )
 from fide_db import (
-    create_fide_db,
     bulk_insert_players,
     cleanup_legacy_json,
-    get_player_by_fide_id,
-    search_players_by_name,
+    create_fide_db,
     fide_db_exists,
+    get_player_by_fide_id,
     get_player_count,
+    search_players_by_name,
 )
-from utils import format_date_locale, enter_escape, format_rank_ordinal
 from stats import get_k_factor
+from utils import enter_escape, format_date_locale, format_rank_ordinal
 
 try:
     from unidecode import unidecode
@@ -474,6 +475,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
     Restituisce True in caso di successo, False altrimenti.
     """
     import time
+
     from fide_db import (
         get_player_count,
     )
@@ -713,7 +715,7 @@ def load_players_db():
                 print(_("Migrazione completata con successo."))
 
             return players_map
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             print(
                 _(
                     "Errore durante il caricamento del DB giocatori ({filename}): {error}"
@@ -733,7 +735,7 @@ def save_players_db(players_db):
         with open(PLAYER_DB_FILE, "w", encoding="utf-8") as f:
             json.dump(data_to_save, f, indent=1, ensure_ascii=False)
         save_players_db_txt(players_db)
-    except IOError as e:
+    except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
@@ -893,7 +895,7 @@ def save_players_db_txt(players_db):
                 else:
                     f.write(_("\tNessuno\n"))
                 f.write("\t" + "-" * 30 + "\n")
-    except IOError as e:
+    except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del file TXT del DB giocatori ({filename}): {error}"

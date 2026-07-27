@@ -1,8 +1,10 @@
-import wx
 import builtins
+
+import wx
 from fide_db import search_players
-from gui.settings import apply_visual_settings
 from utils import match_player_query, play_sound
+
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -572,6 +574,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         new_id = generate_player_id(first_name, last_name, self.players_db)
 
         from datetime import datetime
+
         from config import DATE_FORMAT_ISO
 
         new_player = {

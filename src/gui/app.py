@@ -1,12 +1,12 @@
-# ruff: noqa: E402
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 import wx
-from gui.settings import load_settings
+
 from gui.main_frame import MainFrame
+from gui.settings import load_settings
 
 
 class TornelloApp(wx.App):

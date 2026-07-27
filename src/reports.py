@@ -1,33 +1,33 @@
 import os
 import traceback
 from datetime import datetime
+
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
-from utils import (
-    format_date_locale,
-    format_points,
-    sanitize_filename,
-    _ensure_players_dict,
-)
 from stats import (
+    compute_aro,
     compute_buchholz,
     compute_buchholz_cut1,
-    compute_aro,
-    compute_sonneborn_berger,
-    compute_direct_encounter,
-    compute_played_rounds_rep,
-    compute_number_of_wins,
-    compute_number_of_blacks,
     compute_cumulative,
+    compute_direct_encounter,
+    compute_number_of_blacks,
+    compute_number_of_wins,
+    compute_played_rounds_rep,
+    compute_sonneborn_berger,
     compute_tiebreak_value,
 )
 from tiebreak_criteria import (
     get_column_header,
     get_criterion_display_name,
-    migrate_old_tiebreaks,
     get_default_tiebreaks,
+    migrate_old_tiebreaks,
     normalize_tiebreak_entry,
 )
-
+from utils import (
+    _ensure_players_dict,
+    format_date_locale,
+    format_points,
+    sanitize_filename,
+)
 from version import VERSIONE
 
 
@@ -52,6 +52,7 @@ def get_current_round_report_text(torneo, round_num=None):
     """
     import io
     from datetime import datetime
+
     from utils import format_date_locale
 
     if round_num is None:
@@ -337,7 +338,7 @@ def save_current_tournament_round_file(torneo):
                 filename=filename
             )
         )
-    except IOError as e:
+    except OSError as e:
         print(
             f"Errore durante la sovrascrittura del file stato turno corrente '{filename}': {e}"
         )
@@ -527,7 +528,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                 "Dettaglio Turno Concluso {round_num} salvato nel file separato '{filename}'"
             ).format(round_num=completed_round_number, filename=filename)
         )
-    except IOError as e:
+    except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del file del turno '{filename}': {error}"
@@ -711,6 +712,7 @@ def get_standings_text(torneo, final=False):
     """
     import io
     from datetime import datetime
+
     from tournament import ricalcola_punti_tutti_giocatori
     from utils import format_date_locale
 
@@ -738,7 +740,7 @@ def get_standings_text(torneo, final=False):
     seeding_map = {p["id"]: i + 1 for i, p in enumerate(players_for_seeding)}
     # --------------------------------------------
 
-    from stats import calculate_performance_rating, calculate_elo_change, get_k_factor
+    from stats import calculate_elo_change, calculate_performance_rating, get_k_factor
 
     for p in players:
         p_id = p.get("id")
@@ -997,7 +999,7 @@ def get_standings_text(torneo, final=False):
             delta_str = f"({delta:+})"
             rank_display_str = f"{int(rank_to_show):>3} {delta_str:<7}"
         else:
-            rank_display_str = f"{str(rank_to_show):>3} {' ':<7}"
+            rank_display_str = f"{rank_to_show!s:>3} {' ':<7}"
 
         fide_title = str(player.get("fide_title", "")).strip().upper()
         player_name_str = (
@@ -1074,7 +1076,7 @@ def save_standings_text(torneo, final=False):
                 filename=filename
             )
         )
-    except IOError as e:
+    except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del file classifica '{filename}': {error}"

@@ -22,7 +22,6 @@ def announce_text_to_screen_reader(text):
     Su Windows, utilizza il motore wx.Accessibility se disponibile.
     Per semplicità ed elevata compatibilità, ci affidiamo anche al focus dei controlli.
     """
-    pass
 
 
 def set_accessibility_label(control, label_text):

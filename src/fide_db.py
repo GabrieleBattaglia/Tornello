@@ -8,12 +8,12 @@ da ~677 MB, riducendo il consumo di RAM a quasi zero e offrendo tempi
 di risposta nell'ordine dei millisecondi.
 """
 
+import builtins
 import os
 import re
 import sqlite3
-import builtins
 
-from config import FIDE_DB_LOCAL_FILE, FIDE_DB_JSON_LEGACY
+from config import FIDE_DB_JSON_LEGACY, FIDE_DB_LOCAL_FILE
 
 _ = getattr(builtins, "_", lambda s: s)
 

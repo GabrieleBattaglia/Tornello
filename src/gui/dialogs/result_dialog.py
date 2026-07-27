@@ -1,8 +1,10 @@
-import wx
 import builtins
 import datetime
-from gui.settings import apply_visual_settings
+
+import wx
 from utils import format_date_locale
+
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -65,10 +67,8 @@ class ScheduleDialog(wx.Dialog):
             end_date = today + datetime.timedelta(days=7)
 
         limit_date = end_date + datetime.timedelta(days=3)
-        if limit_date < today + datetime.timedelta(days=3):
-            limit_date = today + datetime.timedelta(days=3)
-        if limit_date > today + datetime.timedelta(days=30):
-            limit_date = today + datetime.timedelta(days=30)
+        limit_date = max(limit_date, today + datetime.timedelta(days=3))
+        limit_date = min(limit_date, today + datetime.timedelta(days=30))
 
         dates_list = []
         curr = today
@@ -479,8 +479,9 @@ class ResultDialog(wx.Dialog):
             self.btn_ok.Enable(True)
             return
 
-        import chess.pgn
         import io
+
+        import chess.pgn
 
         pgn_io = io.StringIO(val)
         try:

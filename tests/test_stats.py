@@ -1,10 +1,10 @@
 from stats import (
-    get_k_factor,
+    calculate_elo_change,
+    calculate_performance_rating,
+    compute_aro,
     compute_buchholz,
     compute_buchholz_cut1,
-    compute_aro,
-    calculate_performance_rating,
-    calculate_elo_change,
+    get_k_factor,
 )
 
 
@@ -68,7 +68,7 @@ def test_stats_calculations_with_real_data(sample_tournament_dict):
 
 
 def test_time_control_parsing_and_classification():
-    from stats import parse_time_control, classify_tournament_category
+    from stats import classify_tournament_category, parse_time_control
 
     # Valido
     res = parse_time_control("15+10")
@@ -96,12 +96,12 @@ def test_time_control_parsing_and_classification():
 
 def test_new_tiebreaks_with_real_data(sample_tournament_dict):
     from stats import (
-        compute_sonneborn_berger,
-        compute_direct_encounter,
-        compute_played_rounds_rep,
-        compute_number_of_wins,
-        compute_number_of_blacks,
         compute_cumulative,
+        compute_direct_encounter,
+        compute_number_of_blacks,
+        compute_number_of_wins,
+        compute_played_rounds_rep,
+        compute_sonneborn_berger,
     )
 
     # Setup players dictionary
@@ -139,8 +139,8 @@ def test_new_tiebreaks_with_real_data(sample_tournament_dict):
 
 
 def test_dynamic_standings_sorting():
-    from reports import get_standings_text
     from config import _
+    from reports import get_standings_text
 
     # Create a minimal sample tournament dict
     torneo = {

@@ -1,18 +1,20 @@
-import wx
 import builtins
-from gui.accessibility import CustomAccessible
-from gui.settings import apply_visual_settings
-from utils import play_sound
+
+import wx
 from tiebreak_criteria import (
     CRITERIA,
     MODIFIERS,
-    get_supported_modifiers,
+    get_all_criteria_keys,
     get_criterion_display_name,
     get_criterion_explanation,
     get_default_tiebreaks,
+    get_supported_modifiers,
     migrate_old_tiebreaks,
-    get_all_criteria_keys,
 )
+from utils import play_sound
+
+from gui.accessibility import CustomAccessible
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 

@@ -1,4 +1,3 @@
-# ruff: noqa: E402
 import os
 import sys
 
@@ -21,7 +20,7 @@ import builtins
 builtins._ = _
 
 from config import FIDE_DB_LOCAL_FILE
-from db_players import sincronizza_db_personale, aggiorna_db_fide_locale
+from db_players import aggiorna_db_fide_locale, sincronizza_db_personale
 from utils import enter_escape
 
 

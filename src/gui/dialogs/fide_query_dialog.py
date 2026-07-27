@@ -1,9 +1,11 @@
-import wx
 import builtins
+
+import wx
 from fide_db import search_players
-from gui.settings import apply_visual_settings
-from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from utils import play_sound
+
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -279,6 +281,7 @@ class FideQueryDialog(wx.Dialog):
         new_id = generate_player_id(first_name, last_name, self.players_db)
 
         from datetime import datetime
+
         from config import DATE_FORMAT_ISO
 
         fide_sex = fide_player.get("sex", "M")

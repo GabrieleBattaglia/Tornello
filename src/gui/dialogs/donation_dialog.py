@@ -1,6 +1,8 @@
-import wx
 import builtins
 import webbrowser
+
+import wx
+
 from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)

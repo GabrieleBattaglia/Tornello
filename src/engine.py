@@ -2,14 +2,16 @@ import os
 import subprocess
 import traceback
 from datetime import datetime
+
 from config import (
-    BBP_SUBDIR,
-    BBP_INPUT_TRF,
     BBP_EXE_PATH,
-    BBP_OUTPUT_COUPLES,
+    BBP_INPUT_TRF,
     BBP_OUTPUT_CHECKLIST,
+    BBP_OUTPUT_COUPLES,
+    BBP_SUBDIR,
     DATE_FORMAT_ISO,
 )
+
 from GBUtils import key
 
 
@@ -384,7 +386,7 @@ def run_bbpairings_engine(trf_content_string):
     try:
         with open(BBP_INPUT_TRF, "w", encoding="utf-8") as f:
             f.write(trf_content_string)
-    except IOError as e:
+    except OSError as e:
         return (
             False,
             None,

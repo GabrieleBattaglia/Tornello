@@ -15,10 +15,11 @@ except AttributeError:
 
 from config import FIDE_DB_LOCAL_FILE
 from db_players import (
-    aggiorna_db_fide_locale,
     _cerca_giocatore_nel_db_fide as cerca_giocatore_fide,
 )
-
+from db_players import (
+    aggiorna_db_fide_locale,
+)
 
 # --- NUOVE FUNZIONI DI VISUALIZZAZIONE ---
 

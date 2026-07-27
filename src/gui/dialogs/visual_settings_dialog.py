@@ -1,10 +1,12 @@
-import os
-import wx
 import builtins
-from utils import play_sound
-from gui.settings import apply_visual_settings
+import os
+
+import wx
 from config import resource_path
+from utils import play_sound
 from version import __version__
+
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -356,6 +358,7 @@ class VisualSettingsDialog(wx.Dialog):
     def on_volume_change(self, event):
         val = self.slider_vol.GetValue()
         import json
+
         from config import user_data_path
 
         settings_path = user_data_path("Tornello - Settings.json")

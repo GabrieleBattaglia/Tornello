@@ -1,44 +1,46 @@
+import glob
 import os
 import shutil
-import glob
 import traceback
 from datetime import datetime
+
 from config import (
-    DEFAULT_ELO,
-    DATE_FORMAT_ISO,
-    PLAYER_DB_FILE,
-    DEFAULT_K_FACTOR,
     ARCHIVED_TOURNAMENTS_DIR,
-)
-from GBUtils import dgt, key
-from utils import (
-    enter_escape,
-    format_date_locale,
-    sanitize_filename,
-    create_backup,
-    play_sound,
+    DATE_FORMAT_ISO,
+    DEFAULT_ELO,
+    DEFAULT_K_FACTOR,
+    PLAYER_DB_FILE,
 )
 from db_players import (
     _cerca_giocatore_nel_db_fide,
+    allinea_giocatori_con_database,
     crea_nuovo_giocatore_nel_db,
     save_players_db,
-    allinea_giocatori_con_database,
-)
-from tournament import (
-    time_machine_torneo,
-    save_tournament,
-    _apply_match_result_to_players,
-)
-from stats import (
-    get_k_factor,
-    compute_buchholz,
-    compute_buchholz_cut1,
-    compute_aro,
-    calculate_performance_rating,
-    calculate_elo_change,
-    get_initial_elo_for_tournament,
 )
 from reports import save_standings_text, save_suspended_tournament_summary
+from stats import (
+    calculate_elo_change,
+    calculate_performance_rating,
+    compute_aro,
+    compute_buchholz,
+    compute_buchholz_cut1,
+    get_initial_elo_for_tournament,
+    get_k_factor,
+)
+from tournament import (
+    _apply_match_result_to_players,
+    save_tournament,
+    time_machine_torneo,
+)
+from utils import (
+    create_backup,
+    enter_escape,
+    format_date_locale,
+    play_sound,
+    sanitize_filename,
+)
+
+from GBUtils import dgt, key
 
 
 def _conferma_lista_giocatori_torneo(torneo, players_db):
@@ -168,6 +170,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
 
 def input_schedule_details(existing_details=None):
     from datetime import datetime
+
     from config import DATE_FORMAT_ISO
 
     details = {}
@@ -316,10 +319,10 @@ def input_schedule_details(existing_details=None):
 def get_input_with_default(prompt_message, default_value=None):
     default_display = str(default_value) if default_value is not None else ""
     if default_display or default_value is None:
-        user_input = input("{} [{}]: ".format(prompt_message, default_display)).strip()
+        user_input = input(f"{prompt_message} [{default_display}]: ").strip()
         return user_input if user_input else default_value
     else:
-        return input("{}: ".format(prompt_message)).strip()
+        return input(f"{prompt_message}: ").strip()
 
 
 def input_players(

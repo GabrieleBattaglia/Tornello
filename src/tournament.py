@@ -1,20 +1,21 @@
-import os
 import json
+import os
 import traceback
 from datetime import datetime, timedelta
+
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
-from utils import (
-    format_date_locale,
-    sanitize_filename,
-    create_backup,
-    get_player_by_id,
-    _ensure_players_dict,
-)
 from engine import (
-    handle_bbpairings_failure,
     genera_stringa_trf_per_bbpairings,
-    run_bbpairings_engine,
+    handle_bbpairings_failure,
     parse_bbpairings_couples_output,
+    run_bbpairings_engine,
+)
+from utils import (
+    _ensure_players_dict,
+    create_backup,
+    format_date_locale,
+    get_player_by_id,
+    sanitize_filename,
 )
 
 
@@ -149,8 +150,7 @@ def time_machine_torneo(torneo):
     max_id = 0
     for r in torneo.get("rounds", []):
         for m in r.get("matches", []):
-            if m.get("id", 0) > max_id:
-                max_id = m.get("id", 0)
+            max_id = max(max_id, m.get("id", 0))
     torneo["next_match_id"] = max_id + 1
     print(_("Contatore ID Partita ripristinato a: {}").format(torneo["next_match_id"]))
 
@@ -258,8 +258,7 @@ def rollback_to_previous_round(torneo):
     max_id = 0
     for r in rounds:
         for m in r.get("matches", []):
-            if m.get("id", 0) > max_id:
-                max_id = m.get("id", 0)
+            max_id = max(max_id, m.get("id", 0))
     torneo["next_match_id"] = max_id + 1
 
     # Ricostruisci il dizionario cache per coerenza
@@ -311,7 +310,7 @@ def load_tournament(filename_to_load):
                     p["id"]: p for p in torneo_data.get("players", [])
                 }
                 return torneo_data
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             print(
                 _(
                     "Errore durante il caricamento del torneo ({filename}): {error}"
@@ -350,7 +349,7 @@ def save_tournament(torneo, filepath=None):
             del torneo_to_save["players_dict"]
         with open(dynamic_tournament_filename, "w", encoding="utf-8") as f:
             json.dump(torneo_to_save, f, indent=1, ensure_ascii=False)
-    except IOError as e:
+    except OSError as e:
         print(
             _("Errore durante il salvataggio del torneo ({filename}): {error}").format(
                 filename=dynamic_tournament_filename, error=e
@@ -409,10 +408,7 @@ def calculate_dates(start_date_str, end_date_str, total_rounds):
                 days=current_round_days - 1
             )
             # Assicura che l'ultima data di fine sia quella del torneo
-            if round_num == total_rounds:
-                current_end_date = end_date
-            # Assicura che le date intermedie non superino la data finale del torneo
-            elif current_end_date > end_date:
+            if round_num == total_rounds or current_end_date > end_date:
                 current_end_date = end_date
             round_dates.append(
                 {

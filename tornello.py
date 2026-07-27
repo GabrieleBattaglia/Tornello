@@ -1,8 +1,7 @@
-# ruff: noqa: E402
 # Entry point per Tornello v9
+import atexit
 import os
 import sys
-import atexit
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -48,16 +47,18 @@ try:
 except AttributeError:
     sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "src"))
 
-from GBUtils import Donazione
-from config import BBP_SUBDIR
 from cli_adapter import CLIAdapter
+from config import BBP_SUBDIR
 from controller import TournamentController
+
+from GBUtils import Donazione
 
 
 def check_updates():
     try:
-        from GBUtils import update_checker, perform_update, enter_escape
         from version import __version__ as current_ver
+
+        from GBUtils import enter_escape, perform_update, update_checker
 
         print(_("Controllo aggiornamenti..."))
         repo_api = (
@@ -124,6 +125,7 @@ if __name__ == "__main__":
     if "--cli" in sys.argv:
         check_updates()
         from config import lingua_rilevata
+
         atexit.register(lambda: Donazione(lang=lingua_rilevata))
         adapter = CLIAdapter()
         controller = TournamentController(adapter)

@@ -1,4 +1,3 @@
-# ruff: noqa: E402
 import os
 import sys
 import warnings
@@ -13,7 +12,7 @@ if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
 try:
-    from GBUtils import polipo, dgt
+    from GBUtils import dgt, polipo
 
     lingua_rilevata, _ = polipo(source_language="it")
     import builtins
@@ -24,14 +23,14 @@ except ImportError:
     sys.exit(1)
 
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
-from utils import format_date_locale, format_rank_ordinal, sanitize_filename
-from ui import get_input_with_default
 from db_players import (
-    load_players_db,
-    save_players_db,
     crea_nuovo_giocatore_nel_db,
     generate_player_id,
+    load_players_db,
+    save_players_db,
 )
+from ui import get_input_with_default
+from utils import format_date_locale, format_rank_ordinal, sanitize_filename
 
 VERSION = "4.4.0 (Modulo Tornello)"
 

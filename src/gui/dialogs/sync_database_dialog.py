@@ -1,14 +1,16 @@
-import wx
 import builtins
+
+import wx
 from db_players import load_players_db, save_players_db
 from fide_db import (
     fide_db_exists,
     get_player_by_fide_id,
     search_players_by_name,
 )
-from gui.settings import apply_visual_settings
-from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from utils import play_sound
+
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 

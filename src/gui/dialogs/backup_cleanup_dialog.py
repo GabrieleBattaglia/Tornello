@@ -1,12 +1,14 @@
+import builtins
 import os
 import sys
 from datetime import datetime
+
 import wx
-import builtins
-from gui.settings import apply_visual_settings
-from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
-from gui.accessibility import set_accessibility_label
 from utils import play_sound
+
+from gui.accessibility import set_accessibility_label
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 

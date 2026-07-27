@@ -1,11 +1,12 @@
-import os
 import json
-from models import Player, Round, Match, ResultEntry
+import os
+
 from db_players import load_players_db
+from models import Match, Player, ResultEntry, Round
 from tournament import (
     _apply_match_result_to_players,
-    ricalcola_punti_tutti_giocatori,
     generate_pairings_for_round,
+    ricalcola_punti_tutti_giocatori,
 )
 from ui import finalize_tournament
 
@@ -71,9 +72,9 @@ def test_e2e_tournament_flow(tmp_path, monkeypatch):
         json.dump(initial_db, f, indent=4)
 
     # Applica il monkeypatch
+    import config
     import db_players
     import ui
-    import config
 
     monkeypatch.setattr(db_players, "PLAYER_DB_FILE", str(db_file))
     monkeypatch.setattr(db_players, "PLAYER_DB_TXT_FILE", str(db_txt))
@@ -225,9 +226,9 @@ def test_e2e_complex_tournament_flow_bye_withdrawals(tmp_path, monkeypatch):
         json.dump(initial_db, f, indent=4)
 
     # Applica il monkeypatch
+    import config
     import db_players
     import ui
-    import config
 
     monkeypatch.setattr(db_players, "PLAYER_DB_FILE", str(db_file))
     monkeypatch.setattr(db_players, "PLAYER_DB_TXT_FILE", str(db_txt))

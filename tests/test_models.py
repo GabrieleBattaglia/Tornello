@@ -25,8 +25,9 @@ def test_tournament_serialization_roundtrip(sample_tournament_dict):
 
 
 def test_rollback_to_previous_round(sample_tournament_dict):
-    from tournament import rollback_to_previous_round
     import copy
+
+    from tournament import rollback_to_previous_round
 
     t_dict = copy.deepcopy(sample_tournament_dict)
 

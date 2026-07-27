@@ -1,16 +1,16 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Set
+from typing import Any
 
 
 @dataclass
 class ResultEntry:
     round: int
     opponent_id: str
-    color: Optional[str]  # "white", "black", or None (for BYE)
+    color: str | None  # "white", "black", or None (for BYE)
     result: str  # "1-0", "0-1", "1/2-1/2", etc.
     score: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "round": self.round,
             "opponent_id": self.opponent_id,
@@ -20,7 +20,7 @@ class ResultEntry:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "ResultEntry":
+    def from_dict(cls, d: dict[str, Any]) -> "ResultEntry":
         return cls(
             round=d.get("round", 0),
             opponent_id=d.get("opponent_id", ""),
@@ -42,33 +42,33 @@ class Player:
     fide_id_num_str: str = "0"
     birth_date: str = "1900-01-01"
     points: float = 0.0
-    results_history: List[ResultEntry] = field(default_factory=list)
-    opponents: Set[str] = field(default_factory=set)
+    results_history: list[ResultEntry] = field(default_factory=list)
+    opponents: set[str] = field(default_factory=set)
     white_games: int = 0
     black_games: int = 0
-    last_color: Optional[str] = None
+    last_color: str | None = None
     consecutive_white: int = 0
     consecutive_black: int = 0
     received_bye_count: int = 0
-    received_bye_in_round: List[int] = field(default_factory=list)
+    received_bye_in_round: list[int] = field(default_factory=list)
     buchholz: float = 0.0
-    buchholz_cut1: Optional[float] = None
-    performance_rating: Optional[float] = None
-    elo_change: Optional[float] = None
-    k_factor: Optional[int] = None
+    buchholz_cut1: float | None = None
+    performance_rating: float | None = None
+    elo_change: float | None = None
+    k_factor: int | None = None
     games_this_tournament: int = 0
     downfloat_count: int = 0
-    final_rank: Optional[int] = None
+    final_rank: int | None = None
     withdrawn: bool = False
-    display_rank: Optional[int] = None
+    display_rank: int | None = None
 
     # Issue #14: Fallback Elo and complete FIDE fields
-    elo_club: Optional[float] = None
-    elo_rapid: Optional[float] = None
-    elo_blitz: Optional[float] = None
-    fide_k_factor: Optional[int] = None
-    fide_rapid_k: Optional[int] = None
-    fide_blitz_k: Optional[int] = None
+    elo_club: float | None = None
+    elo_rapid: float | None = None
+    elo_blitz: float | None = None
+    fide_k_factor: int | None = None
+    fide_rapid_k: int | None = None
+    fide_blitz_k: int | None = None
     fide_standard_games: int = 0
     fide_rapid_games: int = 0
     fide_blitz_games: int = 0
@@ -79,7 +79,7 @@ class Player:
     current_elo: float = 1399.0
     gender: str = "M"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "first_name": self.first_name,
@@ -128,7 +128,7 @@ class Player:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "Player":
+    def from_dict(cls, d: dict[str, Any]) -> "Player":
         history_list = d.get("results_history", [])
         results_history = [ResultEntry.from_dict(h) for h in history_list]
         opponents = set(d.get("opponents", []))
@@ -193,15 +193,15 @@ class Match:
     id: int
     round: int
     white_player_id: str
-    black_player_id: Optional[str]  # None if BYE
-    result: Optional[str] = (
+    black_player_id: str | None  # None if BYE
+    result: str | None = (
         None  # "1-0", "0-1", "1/2-1/2", "1-F", "F-1", "0-0F", "BYE", or None
     )
     is_scheduled: bool = False
-    schedule_info: Optional[Dict[str, Any]] = None
-    pgn: Optional[str] = None
+    schedule_info: dict[str, Any] | None = None
+    pgn: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = {
             "id": self.id,
             "round": self.round,
@@ -217,7 +217,7 @@ class Match:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "Match":
+    def from_dict(cls, d: dict[str, Any]) -> "Match":
         return cls(
             id=d.get("id", 0),
             round=d.get("round", 0),
@@ -236,7 +236,7 @@ class RoundDate:
     start_date: str
     end_date: str
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "round": self.round,
             "start_date": self.start_date,
@@ -244,7 +244,7 @@ class RoundDate:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "RoundDate":
+    def from_dict(cls, d: dict[str, Any]) -> "RoundDate":
         return cls(
             round=d.get("round", 0),
             start_date=d.get("start_date", ""),
@@ -255,13 +255,13 @@ class RoundDate:
 @dataclass
 class Round:
     round: int
-    matches: List[Match] = field(default_factory=list)
+    matches: list[Match] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"round": self.round, "matches": [m.to_dict() for m in self.matches]}
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "Round":
+    def from_dict(cls, d: dict[str, Any]) -> "Round":
         matches_list = d.get("matches", [])
         matches = [Match.from_dict(m) for m in matches_list]
         return cls(round=d.get("round", 0), matches=matches)
@@ -280,9 +280,9 @@ class Tournament:
     deputy_chief_arbiters: str = ""
     time_control: Any = "Standard"  # Issue #12: string or dict
     initial_board1_color_setting: str = "white1"
-    round_dates: List[RoundDate] = field(default_factory=list)
-    players: List[Player] = field(default_factory=list)
-    rounds: List[Round] = field(default_factory=list)
+    round_dates: list[RoundDate] = field(default_factory=list)
+    players: list[Player] = field(default_factory=list)
+    rounds: list[Round] = field(default_factory=list)
     next_match_id: int = 1
     bye_value: float = 0.5
     launch_count: int = 0
@@ -294,7 +294,7 @@ class Tournament:
     save_path: str = ""
 
     # players_dict is a cache of player objects, not saved directly to file
-    players_dict: Dict[str, Player] = field(
+    players_dict: dict[str, Player] = field(
         default_factory=dict, init=False, repr=False
     )
 
@@ -304,7 +304,7 @@ class Tournament:
     def update_players_dict(self):
         self.players_dict = {p.id: p for p in self.players}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "launch_count": self.launch_count,
             "name": self.name,
@@ -332,7 +332,7 @@ class Tournament:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "Tournament":
+    def from_dict(cls, d: dict[str, Any]) -> "Tournament":
         rd_list = d.get("round_dates", [])
         round_dates = [RoundDate.from_dict(rd) for rd in rd_list]
 

@@ -1,9 +1,7 @@
-from typing import List, Optional
-
-from controller import UIAdapter
-from models import Tournament, Player, Round
-from utils import enter_escape, play_sound
 import ui
+from controller import UIAdapter
+from models import Player, Round, Tournament
+from utils import enter_escape, play_sound
 
 
 class CLIAdapter(UIAdapter):
@@ -27,7 +25,7 @@ class CLIAdapter(UIAdapter):
         return input(f"{prompt}: ").strip()
 
     def input_int(
-        self, prompt: str, min_val: Optional[int] = None, max_val: Optional[int] = None
+        self, prompt: str, min_val: int | None = None, max_val: int | None = None
     ) -> int:
         while True:
             val_str = self.input_text(prompt)
@@ -54,7 +52,7 @@ class CLIAdapter(UIAdapter):
             except ValueError:
                 self.show_error(_("Inserisci un numero intero valido."))
 
-    def select_option(self, prompt: str, options: List[str]) -> int:
+    def select_option(self, prompt: str, options: list[str]) -> int:
         for idx, option in enumerate(options):
             print(f" {idx + 1}. {option}")
         while True:
@@ -71,10 +69,10 @@ class CLIAdapter(UIAdapter):
     def input_players(
         self,
         players_db: dict,
-        existing_players: List[Player],
+        existing_players: list[Player],
         tournament: Tournament,
-        tournament_filename: Optional[str],
-    ) -> Optional[List[Player]]:
+        tournament_filename: str | None,
+    ) -> list[Player] | None:
         # Convert List[Player] to List[dict] for compatibility
         raw_existing = [p.to_dict() for p in existing_players]
         raw_torneo = tournament.to_dict()
@@ -124,7 +122,7 @@ class CLIAdapter(UIAdapter):
     def play_sound(
         self,
         sound_name: str,
-        tournament: Optional[Tournament] = None,
+        tournament: Tournament | None = None,
         sync: bool = False,
     ) -> None:
         torneo_dict = tournament.to_dict() if tournament else None

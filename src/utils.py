@@ -1,9 +1,11 @@
 import datetime
-import re
 import os
+import re
 import shutil
+
 from babel.dates import format_date
-from config import _, lingua_rilevata, DATE_FORMAT_ISO
+from config import DATE_FORMAT_ISO, _, lingua_rilevata
+
 from GBUtils import key
 
 
@@ -106,8 +108,9 @@ def parse_flexible_date(date_input_str):
     e compatto senza punteggiatura (YYYYMMDD).
     Restituisce un oggetto datetime se valido, solleva ValueError altrimenti.
     """
-    from config import DATE_FORMAT_ISO
     from datetime import datetime
+
+    from config import DATE_FORMAT_ISO
 
     date_str = date_input_str.strip()
     if not date_str:

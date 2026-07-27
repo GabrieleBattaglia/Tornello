@@ -1,9 +1,11 @@
-import wx
 import builtins
-from db_players import load_players_db, save_players_db, generate_player_id
-from gui.settings import apply_visual_settings
-from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+import wx
+from db_players import generate_player_id, load_players_db, save_players_db
 from utils import play_sound
+
+from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -647,6 +649,7 @@ class PlayersDbDialog(wx.Dialog):
 
         new_id = generate_player_id(first_name, last_name, self.players_db)
         from datetime import datetime
+
         from config import DATE_FORMAT_ISO
 
         new_player = {

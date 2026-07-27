@@ -1,6 +1,7 @@
 """Test per il modulo fide_db (database FIDE SQLite con FTS5)."""
 
 import os
+
 import pytest
 from fide_db import (
     _build_fts_query,
@@ -16,7 +17,6 @@ from fide_db import (
     search_players,
     search_players_by_name,
 )
-
 
 # -- Fixtures ---------------------------------------------------------------
 
@@ -445,9 +445,10 @@ class TestFideUpdateLocale:
     def test_aggiorna_db_fide_locale_success_and_stats(self, fide_db_path, monkeypatch):
         import io
         import zipfile
+
+        import db_players
         import requests
         from db_players import aggiorna_db_fide_locale
-        import db_players
 
         # 1. Crea uno ZIP mock in memoria contenente un XML FIDE minimale
         xml_content = """<?xml version="1.0" encoding="utf-8"?>
@@ -532,10 +533,10 @@ class TestFideUpdateLocale:
 
         # Verifica che i dati siano stati scritti nel DB SQLite
         from fide_db import get_player_by_fide_id
+
         player = get_player_by_fide_id(1503014)
         assert player is not None
         assert player["last_name"] == "Carlsen"
         assert player["first_name"] == "Magnus"
         assert player["elo_standard"] == 2830
         assert player["birth_year"] == 1990
-

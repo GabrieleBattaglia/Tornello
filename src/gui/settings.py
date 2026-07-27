@@ -1,7 +1,7 @@
-import os
 import json
-import wx
+import os
 
+import wx
 from config import user_data_path
 
 SETTINGS_FILE = user_data_path("Tornello - Settings.json")

@@ -1,56 +1,55 @@
-import os
-import json
 import glob
-from datetime import datetime, timedelta
+import json
+import os
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from datetime import datetime, timedelta
 
-from models import Tournament, Player, Match, Round, RoundDate, ResultEntry
 from config import (
-    FIDE_DB_LOCAL_FILE,
-    FIDE_DB_JSON_LEGACY,
-    PLAYER_DB_FILE,
     DATE_FORMAT_ISO,
-    DEFAULT_K_FACTOR,
     DEFAULT_ELO,
-)
-from utils import (
-    format_date_locale,
-    sanitize_filename,
-    create_backup,
-    parse_flexible_date,
+    DEFAULT_K_FACTOR,
+    FIDE_DB_JSON_LEGACY,
+    FIDE_DB_LOCAL_FILE,
+    PLAYER_DB_FILE,
 )
 from db_players import (
+    aggiorna_db_fide_locale,
     load_players_db,
     sincronizza_db_personale,
-    aggiorna_db_fide_locale,
 )
 from engine import handle_bbpairings_failure
-from tournament import (
-    load_tournament,
-    save_tournament,
-    generate_pairings_for_round,
-    time_machine_torneo,
+from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
+from reports import (
+    append_completed_round_to_history_file,
+    save_current_tournament_round_file,
+    save_standings_text,
 )
 from stats import (
-    get_k_factor,
+    calculate_elo_change,
+    calculate_performance_rating,
+    classify_tournament_category,
+    compute_aro,
     compute_buchholz,
     compute_buchholz_cut1,
-    compute_aro,
-    calculate_performance_rating,
-    calculate_elo_change,
-    parse_time_control,
-    classify_tournament_category,
     compute_tiebreak_value,
+    get_k_factor,
+    parse_time_control,
 )
 from tiebreak_criteria import (
     get_default_tiebreaks,
     migrate_old_tiebreaks,
 )
-from reports import (
-    save_current_tournament_round_file,
-    append_completed_round_to_history_file,
-    save_standings_text,
+from tournament import (
+    generate_pairings_for_round,
+    load_tournament,
+    save_tournament,
+    time_machine_torneo,
+)
+from utils import (
+    create_backup,
+    format_date_locale,
+    parse_flexible_date,
+    sanitize_filename,
 )
 
 
@@ -73,22 +72,22 @@ class UIAdapter(ABC):
 
     @abstractmethod
     def input_int(
-        self, prompt: str, min_val: Optional[int] = None, max_val: Optional[int] = None
+        self, prompt: str, min_val: int | None = None, max_val: int | None = None
     ) -> int:
         pass
 
     @abstractmethod
-    def select_option(self, prompt: str, options: List[str]) -> int:
+    def select_option(self, prompt: str, options: list[str]) -> int:
         pass
 
     @abstractmethod
     def input_players(
         self,
         players_db: dict,
-        existing_players: List[Player],
+        existing_players: list[Player],
         tournament: Tournament,
-        tournament_filename: Optional[str],
-    ) -> Optional[List[Player]]:
+        tournament_filename: str | None,
+    ) -> list[Player] | None:
         pass
 
     @abstractmethod
@@ -103,7 +102,7 @@ class UIAdapter(ABC):
     def play_sound(
         self,
         sound_name: str,
-        tournament: Optional[Tournament] = None,
+        tournament: Tournament | None = None,
         sync: bool = False,
     ) -> None:
         pass
@@ -117,8 +116,8 @@ class TournamentController:
     def __init__(self, ui_adapter: UIAdapter):
         self.ui = ui_adapter
         self.players_db = load_players_db()
-        self.tournament: Optional[Tournament] = None
-        self.active_filename: Optional[str] = None
+        self.tournament: Tournament | None = None
+        self.active_filename: str | None = None
 
     def start(self) -> None:
         self.ui.show_message(_("\nBENVENUTI! Sono Tornello V9"))
@@ -134,7 +133,7 @@ class TournamentController:
         self.ui.show_message(_("\nVerifica stato database FIDE locale..."))
 
         # Fallback: se esiste il vecchio JSON ma non il nuovo SQLite, elimina il JSON
-        from fide_db import fide_db_exists, cleanup_legacy_json
+        from fide_db import cleanup_legacy_json, fide_db_exists
 
         if not fide_db_exists() and os.path.exists(FIDE_DB_JSON_LEGACY):
             cleanup_legacy_json()
@@ -447,7 +446,7 @@ class TournamentController:
         if hasattr(self.tournament, "creation_suspended"):
             delattr(self.tournament, "creation_suspended")
 
-    def _create_new_tournament(self, suggested_name: Optional[str] = None) -> None:
+    def _create_new_tournament(self, suggested_name: str | None = None) -> None:
         self.ui.show_message(_("\n--- Creazione Nuovo Torneo ---"))
         new_name = ""
 

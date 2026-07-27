@@ -1,9 +1,11 @@
-import wx
 import builtins
 import threading
+
+import wx
 from db_players import aggiorna_db_fide_locale
-from gui.settings import apply_visual_settings
+
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
