@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.14 (2026.07.28)
+	+ Fix: Perfezionate le traduzioni in portoghese/brasiliano sostituendo la dicitura spagnola "Tablero" / "Tabuleiro" con il termine tecnico corretto "Mesa" nei riferimenti ai tabelloni ed accoppiamenti di torneo.
+
 9.3.13 (2026.07.27)
 	+ Fix: Aggiornata la traduzione portoghese dei 19 criteri di spareggio FIDE secondo le terminologie ufficiali per il pubblico brasiliano (Issue #33).
 

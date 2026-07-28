@@ -4525,12 +4525,12 @@ msgstr "jogadas"
 #: src/gui/main_frame.py:1117
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {}"
-msgstr "Tabuleiro {}: {} vs {}"
+msgstr "Mesa {}: {} vs {}"
 
 #: src/gui/main_frame.py:1121
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE"
-msgstr "Tabuleiro {}: {} - BYE"
+msgstr "Mesa {}: {} - BYE"
 
 #: src/gui/main_frame.py:1138
 msgid "da giocare"
@@ -4539,12 +4539,12 @@ msgstr "por jogar"
 #: src/gui/main_frame.py:1163
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} (Pianificata: {} {})"
-msgstr "Tabuleiro de xadrez {}: {} vs {} (programado: {} {})"
+msgstr "Mesa {}: {} vs {} (programado: {} {})"
 
 #: src/gui/main_frame.py:1166
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} (Non pianificata)"
-msgstr "{} Quadro: {} vs {} (não planejado)"
+msgstr "Mesa {}: {} vs {} (não planejado)"
 
 #: src/gui/main_frame.py:1188
 msgid "Dati"
@@ -4689,12 +4689,12 @@ msgstr "Partidas PGN"
 #: src/gui/main_frame.py:1489
 #, python-brace-format
 msgid "Scacchiera {}: {} vs {} [{}]"
-msgstr "Tabuleiro de xadrez {}: {} vs {} [{}]"
+msgstr "Mesa {}: {} vs {} [{}]"
 
 #: src/gui/main_frame.py:1493
 #, python-brace-format
 msgid "Scacchiera {}: {} - BYE [{}]"
-msgstr "Tabuleiro de xadrez {}: {} - BYE [{}]"
+msgstr "Mesa {}: {} - BYE [{}]"
 
 #: src/gui/main_frame.py:1535
 msgid ""
@@ -5171,12 +5171,12 @@ msgstr "COLEÇÃO DE JOGOS PGN"
 #: src/gui/main_frame.py:2029
 #, python-brace-format
 msgid "  Turno {} Scacchiera {}: {} vs {} [{}]"
-msgstr "  Rodada {} Tablero {}: {} vs {} [{}]"
+msgstr "  Rodada {} Mesa {}: {} vs {} [{}]"
 
 #: src/gui/main_frame.py:2035
 #, python-brace-format
 msgid "  Turno {} Scacchiera {}: {} - BYE [{}]"
-msgstr "  Rodada {} Tablero {}: {} - BYE [{}]"
+msgstr "  Rodada {} Mesa {}: {} - BYE [{}]"
 
 #: src/gui/main_frame.py:2043
 msgid "Nessuna partita ha ancora un PGN inserito in questo turno."
@@ -5194,7 +5194,7 @@ msgstr "DETALHE DA PARTIDA - RODADA{num}"
 #: src/gui/main_frame.py:2073
 #, python-brace-format
 msgid "Scacchiera Numero: {board}"
-msgstr "Número do tabuleiro de xadrez: {board}"
+msgstr "Número da mesa: {board}"
 
 #: src/gui/main_frame.py:2083
 #, python-brace-format
@@ -6715,7 +6715,7 @@ msgstr "Confirmar"
 #: src/gui/dialogs/result_dialog.py:268
 #, python-brace-format
 msgid "Risultato Scacchiera {num}"
-msgstr "Resultado do tabuleiro {num}"
+msgstr "Resultado da mesa {num}"
 
 #: src/gui/dialogs/result_dialog.py:307
 #, python-brace-format
@@ -6737,7 +6737,7 @@ msgstr " | Árbitro: {}"
 #: src/gui/dialogs/result_dialog.py:316
 #, python-brace-format
 msgid "Scacchiera {}:\n"
-msgstr "Tabuleiro {}:\n"
+msgstr "Mesa {}:\n"
 
 #: src/gui/dialogs/result_dialog.py:324
 msgid "Seleziona Risultato"
