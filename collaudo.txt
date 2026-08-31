@@ -1,0 +1,69 @@
+Collaudo sul campo di Tornello, fase 1
+Progetto: Tornello 9.3.14
+Documento creato il 2026-08-31 da ClaudIA, modello Claude Opus 5, modalita' UltraCode
+A cosa serve questo file
+L'analisi della fase 1 ha prodotto novantanove rilievi, raccolti in analisi_codice_fase_1.txt. Alcuni non sono verificabili leggendo il codice: richiedono di usare il programma, oppure richiedono una decisione arbitrale che spetta a Gabriele. Qui sotto sono descritte le prove da fare, una per volta. Sotto ciascuna prova c'e' una riga Esito, da compilare con OK oppure con la descrizione di cosa e' successo davvero. Quando tutte le righe Esito sono compilate e non restano segnalazioni aperte, la fase puo' proseguire con le correzioni.
+
+Prova 1, punti del bye nell'interfaccia grafica. Riguarda il rilievo G1, gravita' critica.
+Cosa fare: avviare Tornello nella versione grafica, creare un torneo nuovo con un numero dispari di giocatori, per esempio cinque, lasciando il valore del bye a 0.5, avviare il torneo e guardare gli abbinamenti del primo turno per individuare chi ha ricevuto il bye. Senza inserire alcun risultato, aprire la classifica.
+Cosa osservare: il giocatore che ha ricevuto il bye ha 0.5 punti oppure zero. Aprire poi la sua scheda e vedere se il turno 1 compare nel suo storico.
+Cosa mi aspetto, se il rilievo e' fondato: zero punti e nessuna voce nello storico.
+Esito:
+
+Prova 2, suoni nella versione compilata. Riguarda il rilievo A22, gravita' alta.
+Cosa fare: compilare Tornello con PyInstaller secondo le istruzioni di Compilazione e invio release.txt, poi avviare l'eseguibile prodotto in dist, non il sorgente. Provare in sequenza un'azione che conferma, una che da' errore, un salvataggio, una cancellazione e una notifica.
+Cosa osservare: se quei cinque suoni si sentono. Nel sorgente si sentono di sicuro, la prova serve proprio a confrontare le due situazioni.
+Cosa mi aspetto, se il rilievo e' fondato: silenzio su conferma, errore, salvataggio, cancellazione e notifica, mentre i suoni specifici di Tornello, per esempio avvio, abbinamento e risultati, continuano a funzionare.
+Esito:
+
+Prova 3, file di lavoro del motore nella versione compilata. Riguarda il rilievo A2, gravita' alta.
+Cosa fare: prendere la cartella prodotta dalla compilazione e spostarla dentro una cartella protetta in scrittura, per esempio dentro Programmi, poi avviare l'eseguibile da li' e generare gli abbinamenti di un turno.
+Cosa osservare: se la generazione degli abbinamenti riesce oppure fallisce, e con quale messaggio.
+Cosa mi aspetto, se il rilievo e' fondato: fallimento della generazione, perche' il file input_bbp.trf va scritto in una cartella non scrivibile.
+Nota: se preferisci non toccare Programmi, va bene qualunque cartella su cui il tuo utente non ha permesso di scrittura.
+Esito:
+
+Prova 4, backup e salvataggi con directory di lavoro diversa. Riguarda i rilievi A1, A7, B6 e D2, gravita' alta.
+Cosa fare: aprire una console in una cartella qualsiasi diversa da quella di Tornello, per esempio la cartella Documenti, e da li' avviare Tornello indicando il percorso completo dell'eseguibile o dello script. Aprire un torneo esistente, inserire un risultato e chiudere.
+Cosa osservare: dove e' finito il file del torneo aggiornato, se e' comparsa una cartella backup nella cartella Documenti, e se il file originale del torneo e' stato aggiornato oppure e' rimasto indietro.
+Cosa mi aspetto, se i rilievi sono fondati: un secondo file del torneo creato nella cartella da cui hai lanciato il programma, e l'originale rimasto invariato.
+Esito:
+
+Prova 5, fallimento degli abbinamenti. Riguarda il rilievo B2, gravita' critica.
+Cosa fare: provocare un fallimento di bbpPairings. Il modo piu' semplice e' rinominare temporaneamente bbpPairings.exe nella sottocartella bbppairings e poi chiedere la generazione di un turno. Ricordati di rinominarlo indietro dopo la prova.
+Cosa osservare: cosa mostra il programma. In particolare se compare il messaggio ordinato di errore con la proposta di tornare indietro con la Time Machine, oppure il messaggio generico di errore imprevisto, oppure un blocco.
+Cosa mi aspetto, se il rilievo e' fondato: nella versione grafica il messaggio generico di errore imprevisto con il file error.log, e nella versione testuale un errore su un oggetto stringa.
+Esito:
+
+Prova 6, ritirati dopo la Time Machine. Riguarda il rilievo B3, gravita' alta.
+Cosa fare: su un torneo di prova di almeno cinque turni, ritirare un giocatore al secondo turno, proseguire fino al quarto, poi usare la Time Machine per tornare al terzo.
+Cosa osservare: se il giocatore ritirato al secondo turno risulta di nuovo attivo e compare negli abbinamenti rigenerati.
+Cosa mi aspetto, se il rilievo e' fondato: si', torna attivo.
+Esito:
+
+Prova 7, classifica finale e criteri di spareggio. Riguarda il rilievo D1, gravita' alta.
+Cosa fare: su un torneo di prova, configurare criteri di spareggio diversi da quelli predefiniti, per esempio mettere al primo posto lo Scontro Diretto e al secondo il Sonneborn-Berger, giocare tutti i turni facendo in modo che almeno due giocatori chiudano a pari punti, guardare la classifica prima di finalizzare, poi finalizzare e riaprire la classifica finale archiviata.
+Cosa osservare: se l'ordine dei giocatori a pari punti e' lo stesso prima e dopo la finalizzazione.
+Cosa mi aspetto, se il rilievo e' fondato: ordine diverso, perche' la finalizzazione usa criteri fissi.
+Esito:
+
+Prova 8, dialogo di inserimento risultato. Riguarda i rilievi F1 e F3, gravita' alta e media.
+Cosa fare: aprire il dialogo di inserimento risultato su una partita, raggiungere il gruppo delle opzioni con il tasto tabulatore invece che con le frecce, e osservare cosa succede. Poi, senza toccare altro, premere Invio.
+Cosa osservare: se il semplice passaggio del focus ha gia' selezionato un risultato, e se l'Invio lo registra.
+Cosa mi aspetto, se il rilievo e' fondato: si' a entrambe le cose.
+Da provare anche: in una conferma distruttiva, per esempio l'eliminazione di un torneo, verificare quale pulsante e' predefinito quando il dialogo si apre.
+Esito:
+
+Prova 9, correzione di un risultato dopo un riavvolgimento. Riguarda il rilievo E6, gravita' media.
+Cosa fare: riavvolgere un torneo con la Time Machine o con il rollback in modo da lasciare, se possibile, un turno precedente con almeno una partita senza risultato, poi provare a modificare il risultato di una partita di quel turno.
+Cosa osservare: in quale turno viene registrato il risultato, guardando lo storico dei due giocatori.
+Nota: se il programma non ti lascia mai arrivare a questa situazione, e' una buona notizia e va scritto nell'esito, perche' significa che il difetto non e' raggiungibile.
+Esito:
+
+Prova 10, questione arbitrale sul Buchholz. Riguarda il rilievo B9, gravita' media.
+Non e' una prova sul programma ma una decisione tua. La domanda e': secondo il regolamento FIDE sugli spareggi in vigore dal primo marzo 2026, nel calcolo del Buchholz i turni non giocati, cioe' bye e forfait, vanno conteggiati con il meccanismo dell'avversario virtuale oppure semplicemente saltati come fa oggi Tornello.
+La tua risposta:
+
+Prova 11, verifica generale dopo la lettura del rapporto.
+Se leggendo analisi_codice_fase_1.txt ti vengono in mente comportamenti anomali che hai notato usando Tornello e che non compaiono fra i rilievi, scrivili qui sotto: li verifichero' prima di iniziare le correzioni.
+Segnalazioni aggiuntive:

@@ -1,0 +1,648 @@
+Analisi del codice di Tornello, fase 1
+Progetto: Tornello
+Versione analizzata: 9.3.14 del 2026.07.28
+Fase: 1
+Data: 2026-08-31
+Analisi eseguita da: ClaudIA, modello Claude Opus 5, modalita' UltraCode
+Nota sul metodo: il progetto conta 22.419 righe di Python su 47 file, quindi l'analisi e' divisa in sette blocchi come previsto dal punto 3.6 del documento di refactoring. Questo file cresce un blocco alla volta. Gli identificativi dei rilievi sono progressivi per blocco, la lettera indica il blocco e il numero l'ordine di gravita' decrescente al suo interno. Il riepilogo finale, alla chiusura dell'ultimo blocco, riordina tutto per gravita' complessiva e propone l'ordine di lavorazione.
+
+Blocco A, nucleo e configurazione
+File esaminati con numero di righe:
+tornello.py, 137 righe
+src/version.py, 6 righe
+src/config.py, 90 righe
+src/utils.py, 430 righe
+src/models.py, 371 righe
+src/cli_adapter.py, 134 righe
+src/gui/__init__.py, 2 righe
+src/gui/app.py, 24 righe
+src/gui/accessibility.py, 35 righe
+src/gui/settings.py, 117 righe
+Esaminati inoltre, come contorno: tornello.spec, requirements.txt, .gitignore, Tornello - Settings.json.
+
+Rilievi del blocco A
+
+A1, gravita' alta, categoria fragilita', src/utils.py riga 20.
+La funzione create_backup costruisce la cartella di destinazione come stringa relativa "backup", quindi risolta rispetto alla directory di lavoro corrente e non rispetto alla radice dell'applicazione. Tutte le altre risorse del progetto passano invece da user_data_path.
+Impatto: create_backup e' chiamata nei tre punti piu' delicati del programma, cioe' prima della finalizzazione del torneo in controller.py riga 1005 e in ui.py riga 1477, prima della Time Machine in tournament.py riga 120 e prima del rollback in tournament.py riga 229. Se Tornello viene avviato da una directory diversa dalla propria, per esempio da un collegamento con cartella di avvio diversa o da una console aperta altrove, le copie di sicurezza finiscono in una cartella backup creata dove capita, e l'utente che deve recuperare un torneo non le trova. Se la directory di lavoro non e' scrivibile la funzione ritorna semplicemente False.
+Correzione proposta: costruire backup_dir con user_data_path("backup"), come gia' fatto per il database giocatori e per le impostazioni.
+
+A2, gravita' alta, categoria fragilita', src/config.py righe 79 e 82, src/engine.py riga 387.
+BBP_SUBDIR e' calcolato con resource_path, cioe' la cartella delle risorse di sola lettura, che con PyInstaller diventa sys._MEIPASS. Dentro quella stessa cartella vengono pero' scritti i file di lavoro del motore di abbinamento, input_bbp.trf, output_coppie.txt e output_checklist.txt. Anche tornello.py riga 107 tenta di crearla con os.makedirs.
+Impatto: da sorgente la cartella coincide con la radice del progetto e tutto funziona, quindi il difetto e' invisibile in sviluppo. Nella versione compilata la scrittura avviene dentro _internal in modalita' onedir, cioe' in una cartella che dopo un'installazione in Programmi o in un'altra posizione protetta non e' scrivibile; in una eventuale modalita' onefile la cartella e' temporanea e sparisce alla chiusura. Nel caso peggiore l'abbinamento del turno fallisce sulla macchina dell'utente e non su quella di sviluppo.
+Correzione proposta: mantenere l'eseguibile bbpPairings.exe come risorsa risolta con resource_path e spostare i tre file di lavoro in una cartella ottenuta con user_data_path, per esempio user_data_path("bbppairings"), creata al primo avvio.
+
+A3, gravita' alta, categoria DRY, src/utils.py righe 40-48.
+enter_escape e' reimplementata dentro il progetto, mentre e' una delle utilita' di GBUtils elencate nelle regole generali. La prova che si tratta di una duplicazione e non di una variante voluta e' che tornello.py riga 61 importa proprio enter_escape da GBUtils, mentre tutti gli altri quindici punti di chiamata, in ui.py, db_players.py, cli_adapter.py e Sync_DB.py, usano la copia locale.
+Impatto: due comportamenti potenzialmente divergenti per la stessa interazione da tastiera nello stesso programma, e ogni futura correzione fatta in GBUtils non arriva a Tornello.
+Correzione proposta: eliminare la funzione da utils.py e importare enter_escape da GBUtils in tutti i punti di uso, dopo aver verificato che la firma coincida.
+
+A4, gravita' alta, categoria DRY, src/utils.py righe 199-222, criticita' che coinvolge GBUtils.
+play_sound apre Acu_Collection.json dentro la cartella di GBUtils, vi inserisce i preset audio definiti localmente in src/audio_presets.py e riscrive il file se ha aggiunto qualcosa.
+Impatto: un singolo progetto scrive dentro il patrimonio condiviso di GBUtils senza che l'utente lo sappia, aggiungendo al database comune preset specifici di Tornello; se la cartella di GBUtils e' di sola lettura o e' dentro l'eseguibile compilato la scrittura fallisce e viene solo stampato un messaggio su stderr.
+Correzione proposta: da decidere con Gabriele. Le due strade sono lasciare che Tornello usi solo i propri preset locali senza toccare il file condiviso, oppure spostare stabilmente i preset in Acu_Collection.json con un intervento esplicito e concordato, togliendo la scrittura automatica. La questione e' ripresa nella sezione dedicata a GBUtils.
+
+A5, gravita' alta, categoria ottimizzazione, src/utils.py righe 205-220.
+Ogni chiamata di play_sound apre e interpreta il JSON dei preset da disco, e potenzialmente lo riscrive, prima di suonare.
+Impatto: il feedback sonoro accompagna quasi ogni azione dell'interfaccia, quindi il programma esegue una lettura di file e una decodifica JSON per ogni conferma e per molti tasti premuti. Su un disco lento o con il file sincronizzato su cloud il ritardo diventa percepibile proprio nel momento in cui il suono dovrebbe essere immediato.
+Correzione proposta: caricare la collezione una sola volta in una variabile di modulo alla prima chiamata e riusarla, eseguendo l'eventuale scrittura una volta sola.
+
+A6, gravita' media, categoria logica, src/utils.py righe 246-252, da verificare nei blocchi successivi.
+_ensure_players_dict ricostruisce la cache dei giocatori solo quando il numero di elementi della lista e' diverso dal numero di chiavi del dizionario.
+Impatto: se la lista dei giocatori viene ricostruita mantenendo lo stesso numero di elementi, per esempio ricaricando il torneo da file o risincronizzando i dati dopo una modifica, la cache continua a puntare ai vecchi dizionari e get_player_by_id restituisce dati non aggiornati. Il rilievo e' marcato come da verificare perche' la pericolosita' effettiva dipende da come tournament.py e ui.py rigenerano la lista, cosa che sara' esaminata nei blocchi B e D.
+Correzione proposta: invalidare esplicitamente la cache dopo ogni ricostruzione della lista, oppure confrontare anche l'identita' degli oggetti e non solo la lunghezza.
+
+A7, gravita' media, categoria fragilita', tornello.py righe 19-23.
+Il gestore globale delle eccezioni scrive error.log usando un percorso relativo, quindi nella directory di lavoro corrente, e in caso di fallimento tace.
+Impatto: il file di diagnosi che serve proprio quando qualcosa e' andato storto puo' finire in una cartella qualsiasi, mentre il messaggio mostrato all'utente afferma comunque che i dettagli sono stati salvati in error.log. Vale la stessa osservazione fatta per i backup in A1.
+Correzione proposta: risolvere il percorso del log con user_data_path al momento della scrittura, dato che a quel punto config e' gia' stato importato.
+
+A8, gravita' media, categoria regole generali, src/config.py righe 47 e 65.
+Alla riga 47 il nome _ e' usato come variabile di scarto per il secondo valore di locale.getdefaultlocale(), mentre lo stesso modulo, alla riga 65, assegna a _ la funzione di traduzione e la installa in builtins. Inoltre locale.getdefaultlocale() e' deprecato dalla versione 3.11 di Python, e l'avviso non si vede perche' tornello.py riga 7 e gui/app.py riga 3 filtrano tutti i DeprecationWarning.
+Impatto: chiunque aggiunga una stringa tradotta fra la riga 47 e la riga 65 ottiene un errore di tipo difficile da interpretare, perche' in quel tratto _ e' una stringa. Sul lungo periodo la funzione deprecata sparira' da Python e il rilevamento automatico della lingua al primo avvio smettera' di funzionare.
+Correzione proposta: rinominare la variabile di scarto e sostituire getdefaultlocale con locale.getlocale preceduto da setlocale, oppure con la lettura diretta delle variabili d'ambiente.
+
+A9, gravita' media, categoria ottimizzazione, src/cli_adapter.py righe 90-120 e src/gui/main_frame.py nei punti che importano models.
+Il progetto mantiene due rappresentazioni parallele degli stessi dati, le dataclass di models.py e i dizionari grezzi usati da ui.py e reports.py, e converte avanti e indietro a ogni passaggio con to_dict e from_dict.
+Impatto: oltre al costo di copiare l'intero torneo a ogni interazione, la risincronizzazione e' parziale e scritta a mano. In update_match_results vengono riportati indietro solo players, rounds, current_round e next_match_id: qualunque altro campo che ui.py dovesse modificare, per esempio concluded o save_path, andrebbe perso senza alcun segnale. L'entita' del rischio e' marcata come da verificare nel blocco D, dopo la lettura di ui.update_match_result.
+Correzione proposta: nel breve periodo verificare e documentare l'elenco dei campi risincronizzati; nel medio periodo scegliere una sola rappresentazione, preferibilmente le dataclass, e adattare ui.py e reports.py.
+
+A10, gravita' media, categoria regole generali, src/utils.py righe 51-62.
+format_rank_ordinal costruisce l'ordinale con il simbolo di grado italiano e restituisce la sigla RIT, entrambi non tradotti, in un programma che ha cinque lingue.
+Impatto: nelle versioni inglese, francese, spagnola e portoghese la classifica mostra ordinali italiani e una sigla italiana, letti come tali dallo screen reader.
+Correzione proposta: passare le due stringhe dal sistema di traduzione, valutando per l'ordinale una formattazione affidata a Babel come gia' fatto per le date.
+
+A11, gravita' media, categoria regole generali, src/gui/settings.py righe 31, 41, 53 e 62, e in generale tutto il progetto.
+Il salvataggio e il caricamento delle impostazioni globali sono racchiusi in try seguiti da except Exception e pass. Ruff conta sul progetto intero 93 rilievi blind-except e 32 try-except-pass, di cui 31 nei soli file di questo blocco.
+Impatto: se il file delle impostazioni non e' scrivibile, l'utente cambia font, colori o volume, non riceve alcun errore e al riavvio ritrova le impostazioni vecchie, senza avere modo di capire perche'.
+Correzione proposta: restringere le eccezioni catturate a OSError e json.JSONDecodeError e, dove l'operazione riguarda dati dell'utente, segnalare l'errore invece di ignorarlo.
+
+A12, gravita' bassa, categoria regole generali, src/version.py riga 3.
+L'intestazione autori riporta "Gabriele Battaglia & Stella (AI)", mentre il formato richiesto e' Gabriele Battaglia (IZ4APU) e ClaudIA con modello e modalita' del momento.
+Impatto: nessuno funzionale, e' una difformita' dalle regole permanenti.
+Correzione proposta: aggiornare la stringa alla forma prevista.
+
+A13, gravita' bassa, categoria ottimizzazione, src/utils.py riga 261 e src/gui/accessibility.py riga 19.
+get_relevance_score non e' chiamata da nessuna parte, la sua logica e' stata riscritta dentro match_player_query. announce_text_to_screen_reader ha solo la docstring, il corpo e' vuoto, e non e' chiamata da nessuna parte.
+Impatto: codice morto che lascia credere, leggendo il modulo di accessibilita', che esista un meccanismo di annuncio diretto verso NVDA, mentre il programma si affida soltanto al focus dei controlli.
+Correzione proposta: rimuovere entrambe, oppure implementare davvero l'annuncio se serve, decidendolo esplicitamente.
+
+A14, gravita' bassa, categoria fragilita', src/utils.py riga 420.
+La verifica di scrivibilita' della cartella apre il file di prova senza dichiarare l'encoding, unico caso nel blocco.
+Correzione proposta: aggiungere encoding="utf-8" per coerenza con il resto del progetto.
+
+A15, gravita' bassa, categoria ottimizzazione, tornello.py riga 67.
+update_checker restituisce anche il changelog della nuova versione, che viene assegnato e mai usato.
+Impatto: all'utente che valuta se aggiornare non viene mostrato cosa cambia, pur essendo il dato gia' disponibile.
+Correzione proposta: stampare il changelog prima della richiesta di conferma, oppure non richiederlo affatto.
+
+A16, gravita' bassa, categoria fragilita', tornello.py righe 45-48.
+Il rilevamento dell'esecuzione compilata avviene con un accesso nudo a sys._MEIPASS dentro un try, che ruff segnala come espressione inutile, mentre config.py usa la forma corretta getattr(sys, "frozen", False).
+Correzione proposta: uniformare i due punti sulla forma usata in config.py.
+
+A17, gravita' bassa, categoria DRY, src/models.py righe 79, 147 e 187.
+Il valore Elo predefinito 1399.0 e' scritto tre volte dentro models.py mentre config.py lo definisce gia' come DEFAULT_ELO; lo stesso vale per la federazione "ITA" e per la data convenzionale "1900-01-01".
+Correzione proposta: importare le costanti da config, dopo aver verificato che questo non crei un import circolare.
+
+A18, gravita' bassa, categoria fragilita', src/models.py righe 147 e 187.
+initial_elo e current_elo sono ricavati con una catena di or fra valori del dizionario: un Elo pari a zero, essendo falso in senso booleano, viene scartato in favore del valore successivo o del predefinito.
+Impatto: molto limitato, perche' un Elo zero non e' un dato realistico, ma la stessa forma nasconderebbe qualunque futuro campo numerico in cui lo zero e' legittimo.
+Correzione proposta: usare un controllo esplicito su None invece della catena di or.
+
+A19, gravita' bassa, categoria regole generali, radice del progetto.
+Tornello non ha una propria configurazione di ruff ed eredita quella di E:\git\mine\pyproject.toml, il cui commento la dichiara scritta per Orologic e GBUtils. Il set di regole effettivo dipende quindi da un file esterno al repository, che chi clona il solo progetto non ha.
+Correzione proposta: aggiungere un pyproject.toml o un ruff.toml nel repository, allineato a quello comune, cosi' che il progetto sia verificabile da solo.
+
+A20, gravita' bassa, categoria ottimizzazione, .gitignore e tornello.spec.
+Il .gitignore ignora *.mo e "Tornello - *.json" ma quei file sono comunque tracciati, quindi la regola descrive una intenzione che non corrisponde allo stato del repository; contiene inoltre la voce test/ mentre la cartella dei test si chiama tests/. Il file tornello.spec passa ancora il parametro cipher, rimosso dalle funzionalita' di PyInstaller e oggi accettato solo per compatibilita'. Infine warnings.filterwarnings compare identico in tornello.py e in gui/app.py.
+Correzione proposta: allineare .gitignore allo stato reale, togliere cipher dallo spec, lasciare il filtro dei warning nel solo punto di ingresso.
+
+A21, gravita' bassa, categoria fragilita', src/config.py riga 73.
+PLAYER_DB_TXT_FILE punta a "Tornello - Players_db.txt" mentre il file presente nel repository si chiama "Tornello - Players_DB.txt". Su Windows la differenza non conta, su un file system sensibile alle maiuscole si', e il progetto e' comunque dichiarato Windows first.
+Correzione proposta: allineare la stringa al nome reale del file.
+
+Cio' che nel blocco A e' risultato conforme e non richiede interventi
+La chiamata a polipo in config.py riga 65 passa localedir e config_path come percorsi assoluti gia' risolti da resource_path e user_data_path, quindi Tornello e' immune al difetto di polipo segnalato nel documento di refactoring a proposito dei percorsi relativi. La stessa cosa non vale per Players_DB.py e Sync_DB.py, che chiamano polipo senza percorsi e saranno esaminati nel blocco C.
+La distinzione fra resource_path per le risorse di sola lettura e user_data_path per i dati scrivibili e' concettualmente corretta e ben documentata, e regge sia in sviluppo sia nella versione compilata; l'unica eccezione e' il caso descritto in A2.
+Il cambio di lingua a caldo e' gestito onestamente: main_frame.py riga 3259 avvisa che serve il riavvio, quindi il fatto che utils.py importi lingua_rilevata una volta sola all'avvio non e' un difetto.
+Le dataclass di models.py sono complete, simmetriche fra to_dict e from_dict, con conversioni di tipo esplicite in ingresso e valori predefiniti per ogni campo, e reggono senza rompersi la lettura di salvataggi vecchi privi dei campi aggiunti di recente.
+set_accessibility_label in gui/accessibility.py e' scritta correttamente: espone il nome tramite MSAA solo per wx.ACC_SELF e lascia al sistema le etichette dei figli, e in piu' imposta HelpText e ToolTip come alternative che NVDA legge.
+Il file tornello.spec include correttamente locales, bbppairings e i documenti di testo, ed esclude i pacchetti pesanti non usati.
+match_player_query in utils.py implementa in modo corretto e leggibile la ricerca con operatori piu', meno e uguale, con ordinamento per numero di termini trovati e per corrispondenza iniziale su cognome e nome.
+
+Approfondimento audio, richiesto da Gabriele durante la fase 1
+Verifica di compatibilita' con la grammatica attuale di Acusticator
+La versione installata di Acusticator e' la 6.4 del 5 agosto 2026. Accetta uno score come lista piatta di valori in multipli di quattro, dove ogni gruppo e' nota, durata, pan e volume; la nota puo' essere una stringa musicale, un numero in Hertz, la lettera p per la pausa oppure un portamento con due valori separati dal punto; anche pan e volume ammettono ora la forma a portamento, indicata come stringa con due valori o come coppia. L'inviluppo adsr e' espresso in percentuali e kind sceglie fra sinusoide, quadra, triangolare e dente di sega.
+Ho confrontato questa grammatica con i 339 preset presenti in Acu_Collection.json e con il lettore scritto in src/utils.py. Il risultato e' che 337 preset su 339 usano la forma a quartine annidate ed sono letti correttamente da Tornello; 150 di essi contengono un portamento di nota, che passa inalterato ad Acusticator e funziona; uno, Laser_destra_sinistra, contiene un pan a portamento espresso come stringa, che pure passa inalterato e funziona. Due preset, perfect_match e perfect_bonus, hanno invece lo score gia' appiattito, cioe' come lista di numeri e non di quartine: il lettore di Tornello, che scompatta ogni elemento in nota, durata, pan e volume, su quei due preset solleva un'eccezione, inghiottita dal blocco except a riga 242 di utils.py, e non produce alcun suono. Tornello oggi non li richiama, quindi il difetto e' latente, ma diventa concreto nel momento in cui la collezione viene usata come banca suoni comune a tutti i progetti.
+Un secondo punto di incompatibilita' riguarda il volume. Il lettore di Tornello calcola il volume finale con base_volume piu' vol_delta, presupponendo che il quarto valore della quartina sia sempre un numero. Oggi nella collezione e' sempre cosi', quindi tutto funziona, ma Acusticator accetta ormai anche il volume a portamento sotto forma di stringa: il primo preset scritto in quella forma che entrasse nella banca renderebbe muto quel suono in Tornello, di nuovo senza alcun messaggio.
+
+A22, gravita' alta, categoria fragilita', src/utils.py righe 195-228 e tornello.spec.
+Sette dei trentadue eventi sonori usati dal programma esistono soltanto in Acu_Collection.json e non hanno un corrispondente in src/audio_presets.py: sono cancellato, conferma che rimanda a roger_cw_conferma, errore che rimanda a rifiutato, salvato che rimanda a written_ok, notifica e i due suoni di menu menu_triplicato_su_2 e menu_triplicato_verso_il_basso_3. Il file Acu_Collection.json non e' fra i datas dichiarati in tornello.spec, quindi non viene incluso nel pacchetto e nella versione compilata non esiste.
+Impatto: nella versione compilata, cioe' quella che usano gli utenti, i suoni di conferma, di errore, di salvataggio, di cancellazione e di notifica, che sono i piu' frequenti dell'intera applicazione, non vengono riprodotti, mentre da sorgente funzionano. Il rilievo e' marcato come da confermare sul campo, perche' la prova definitiva richiede di compilare e lanciare l'eseguibile, cosa che ho annotato in collaudo.txt.
+Correzione proposta: completare src/audio_presets.py con i sette preset mancanti copiandoli dalla collezione, e in aggiunta dichiarare Acu_Collection.json fra i datas dello spec se si vuole che la banca completa viaggi con il programma.
+
+A23, gravita' media, categoria logica, src/utils.py righe 210-215 e src/audio_presets.py.
+La fusione fra i preset locali e la collezione condivisa avviene solo per aggiunta, cioe' inserisce nella collezione le chiavi che non ci sono ancora e non tocca quelle esistenti. Quattro preset, apertura, spostamento, salto e successivo, hanno oggi contenuto diverso fra il file locale e la collezione.
+Impatto: lo stesso nome di evento produce due suoni diversi a seconda che la collezione sia raggiungibile o no, quindi da sorgente e da eseguibile compilato l'utente sente cose diverse, e non c'e' modo di capire quale delle due versioni sia quella voluta.
+Correzione proposta: stabilire quale delle due fonti e' autorevole, allineare l'altra e togliere la fusione automatica, che e' proprio il meccanismo che ha lasciato divergere le due copie.
+
+A24, gravita' media, categoria ottimizzazione, src/utils.py righe 166-193.
+Il dizionario che associa il nome dell'evento al nome del preset viene ricostruito da zero a ogni chiamata di play_sound, perche' e' scritto dentro il corpo della funzione.
+Correzione proposta: portarlo a livello di modulo come costante, come gia' fatto in Orologic con TEMI_MENU.
+
+Proposta di riscrittura della gestione audio sul modello di Orologic
+Orologic risolve lo stesso problema con un dizionario definito una volta sola a livello di modulo, TEMI_MENU in orologic.py riga 135, che associa a ogni voce una chiamata gia' pronta ad Acusticator, al posto delle lunghe catene di rami che c'erano prima. Il vantaggio non e' solo la brevita': non c'e' alcun accesso al disco nel momento in cui il suono deve partire.
+Per Tornello la stessa impostazione e' applicabile e la propongo cosi', in tre passi che restano tutti dentro il progetto e non toccano GBUtils.
+Primo, spostare event_presets fuori da play_sound, come costante di modulo, secondo il rilievo A24.
+Secondo, caricare la banca suoni una sola volta, alla prima riproduzione, in una variabile di modulo: si legge Acu_Collection.json se esiste, si sovrappongono in memoria i preset di audio_presets.py e da quel momento non si tocca piu' il disco. Questo risolve insieme A5, che segnalava la lettura ripetuta a ogni suono, e A4, perche' la scrittura dentro la cartella di GBUtils sparisce del tutto.
+Terzo, rendere il lettore tollerante alle due forme di score, quella a quartine annidate e quella gia' appiattita, e al volume espresso come portamento, applicando in quel caso lo scostamento a entrambi gli estremi. Sono poche righe e mettono Tornello al riparo dai due punti di incompatibilita' descritti sopra.
+Sulla banca suoni centralizzata per tutti i progetti, che e' l'obiettivo dichiarato da Gabriele, osservo che i diciotto preset con prefisso tornello sono gia' dentro Acu_Collection.json, quindi il grosso del passaggio e' avvenuto, per quanto sia avvenuto per effetto della scrittura automatica descritta in A4 e non per una scelta esplicita. Il passo che manca non appartiene a Tornello: perche' la collezione diventi davvero la banca comune servirebbe che la lettura, la fusione e la riproduzione per nome stessero in un'unica funzione dentro GBUtils, usata poi da tutti i progetti, invece di essere riscritta in ciascuno di essi. Questa e' una proposta da valutare insieme, e non la eseguo: la regola dice di non toccare GBUtils senza richiesta esplicita. La riporto anche nella sezione dedicata a GBUtils.
+
+Blocco B, motore di torneo
+File esaminati con numero di righe:
+src/engine.py, 568 righe
+src/tournament.py, 629 righe
+src/tiebreak_criteria.py, 521 righe
+src/stats.py, 1538 righe
+Per la verifica del formato TRF sono stati letti anche i sorgenti di bbpPairings 6.0.0 in E:\git\Others\bbpPairings, in particolare src/fileformats/trf.cpp.
+
+Rilievi del blocco B
+
+B1, gravita' critica, categoria logica, src/stats.py righe 1186-1199 e 1340.
+La funzione _get_dp_map restituisce la tabella FIDE che converte la percentuale di punteggio nella differenza di performance, ma la tabella e' troncata: contiene tredici voci, da 1.00 a 0.89, mentre la tabella completa, presente piu' sopra dentro calculate_performance_rating, ne ha centouno, da 1.00 a 0.00. In compute_tpr, alla riga 1341, il valore mancante viene rimpiazzato dal fallback piu' o meno 800.
+Impatto: il criterio di spareggio TPR, che l'utente puo' scegliere fra i diciannove criteri FIDE, e' sbagliato per qualunque giocatore con meno dell'ottantanove per cento dei punti, cioe' per la quasi totalita' dei partecipanti. Un giocatore al sessanta per cento riceve una differenza di performance di piu' 800 invece di piu' 72; un giocatore esattamente al cinquanta per cento riceve meno 800 invece di zero, perche' la condizione del fallback e' un maggiore stretto. Il difetto si propaga al criterio APRO, che alla riga 1425 calcola la media dei TPR degli avversari. Se uno di questi due criteri e' attivo, l'ordine della classifica finale a pari punti e' falsato in modo grossolano, e quella classifica e' il risultato ufficiale del torneo.
+Correzione proposta: estrarre la tabella completa in un'unica costante di modulo e farla usare sia a calculate_performance_rating sia a _get_dp_map, eliminando la duplicazione che ha reso possibile la troncatura.
+
+B2, gravita' critica, categoria logica, src/tournament.py righe 499-551.
+generate_pairings_for_round, in tutti e quattro i casi di fallimento, esegue return handle_bbpairings_failure. Quella funzione, quando l'interfaccia e' grafica, solleva RuntimeError; quando e' testuale, restituisce la stringa time_machine oppure terminate. La funzione non restituisce quindi mai None in caso di errore, mentre tutti i chiamanti verificano esattamente quella condizione: main_frame.py alle righe 2661, 4391 e 4457, controller.py alla riga 697, e la Time Machine stessa in tournament.py alla riga 164.
+Impatto: quando bbpPairings non riesce ad abbinare, cosa che accade proprio nei tornei difficili, nella versione testuale il valore di ritorno e' una stringa e il chiamante la tratta come lista di partite, iterandola carattere per carattere fino all'errore di attributo; nella versione grafica l'eccezione RuntimeError non e' catturata in nessuno dei tre punti di chiamata e finisce nel gestore globale, che mostra il messaggio generico di errore imprevisto. In entrambi i casi il percorso di recupero previsto, cioe' la proposta di tornare indietro con la Time Machine, non viene mai raggiunto. Da notare che controller.py alla riga 894 invoca a sua volta handle_bbpairings_failure dentro un ramo che non puo' essere raggiunto.
+Correzione proposta: far restituire None a generate_pairings_for_round in caso di fallimento e spostare la scelta dell'azione di recupero nei chiamanti, che sono gli unici a sapere se si trovano in ambiente testuale o grafico.
+
+B3, gravita' alta, categoria logica, src/tournament.py righe 143-144 e 243-244.
+Sia la Time Machine sia il rollback del turno azzerano il flag di ritiro di tutti i giocatori, con un semplice controllo sul valore corrente, mentre il commento del codice dichiara l'intenzione opposta, cioe' ripristinare lo stato solo per chi si e' ritirato nel turno annullato.
+Impatto: un giocatore ritirato al secondo turno di un torneo di nove, se l'arbitro riavvolge al settimo turno per correggere un risultato, risulta di nuovo attivo e viene reinserito negli abbinamenti. L'arbitro se ne accorge solo guardando gli accoppiamenti del turno rigenerato.
+Correzione proposta: registrare nel giocatore il turno in cui e' avvenuto il ritiro e ripristinare lo stato solo se quel turno e' maggiore o uguale al turno di destinazione.
+
+B4, gravita' alta, categoria logica, src/stats.py righe 9-47 e src/reports.py riga 758.
+get_k_factor ricava il coefficiente K da tre informazioni, il K ufficiale FIDE, il numero di partite gia' giocate e il flag di giocatore esperto. Le ultime due esistono solo nell'anagrafica del database locale. Il controller alla riga 1037 e l'interfaccia testuale alla riga 1515 la chiamano correttamente passando il record del database, mentre reports.py alla riga 758 la chiama passando il giocatore del torneo, che quei due campi non li ha.
+Impatto: nel report la condizione partite minori di trenta e' sempre vera, quindi ogni giocatore privo di K ufficiale FIDE riceve K uguale a 40, il valore riservato ai debuttanti, anche se e' un giocatore esperto da K 20. La variazione Elo stimata e mostrata nei report puo' quindi essere doppia rispetto a quella effettivamente applicata al database al momento della finalizzazione, calcolata invece con il dato giusto.
+Correzione proposta: passare sempre il record anagrafico del database locale, oppure copiare nel giocatore del torneo i due campi mancanti al momento dell'iscrizione.
+
+B5, gravita' alta, categoria logica, src/stats.py righe 100-142 e 168-198.
+Ne' il calcolo della variazione Elo ne' quello della performance escludono le partite non giocate. Un risultato 1-F registra punteggio 1.0 per il vincitore e 0.0 per l'assente, e viene contato come partita valida a tutti gli effetti; lo stesso vale per F-1 e per la doppia assenza 0-0F. I commenti alle righe 108-113 di stats.py e alle righe 1523-1524 di ui.py mostrano che il dubbio era gia' stato posto e mai risolto.
+Impatto: la variazione Elo e la performance calcolate da Tornello si discostano da quelle FIDE ogni volta che nel torneo c'e' un forfait, e la performance e' anche uno dei dati che compaiono in classifica. Sul turno saltato da un giocatore, l'avversario si vede attribuire una vittoria piena anche nel calcolo del rating.
+Correzione proposta: saltare nel calcolo Elo e nella performance le voci di storico il cui risultato contiene la lettera F, cioe' 1-F, F-1 e 0-0F, coerentemente con quanto gia' fatto in compute_apro e compute_appo, che li escludono correttamente.
+
+B6, gravita' alta, categoria fragilita', src/tournament.py righe 119-120 e 228-229.
+Prima di due operazioni distruttive, la Time Machine e il rollback, il codice costruisce il nome del file torneo come stringa relativa e lo passa a create_backup, che a sua volta scrive in una cartella relativa. Il torneo pero' puo' essere salvato altrove, perche' il modello prevede i campi save_path e custom_save_path.
+Impatto: se il file del torneo non si trova nella directory di lavoro corrente, create_backup ritorna subito False perche' il file non esiste, e nel caso del rollback il valore di ritorno non viene nemmeno controllato. Il backup di sicurezza che l'utente crede di avere semplicemente non esiste, e l'operazione distruttiva viene eseguita lo stesso.
+Correzione proposta: usare il percorso reale del file del torneo, quello con cui e' stato aperto o salvato, e in entrambi i casi verificare l'esito prima di procedere.
+
+B7, gravita' alta, categoria fragilita', src/engine.py riga 332.
+La generazione del TRF legge lo stato di ritiro con due accessi diretti a chiave senza alcuna protezione, mentre tutto il resto della funzione usa get con valore predefinito.
+Impatto: se la cache players_dict non contiene l'identificativo, cosa possibile per il difetto di invalidazione descritto in A6, viene sollevato un KeyError che il blocco except di riga 346 trasforma in un ritorno None, quindi in un fallimento della generazione degli abbinamenti che, per via di B2, non viene nemmeno gestito correttamente. Il messaggio che l'utente legge parla di errore catastrofico nella generazione della stringa TRF e non aiuta a capire la causa.
+Correzione proposta: usare get sul dizionario e, in mancanza del giocatore, ricadere sul dato gia' presente in player_data.
+
+B8, gravita' media, categoria logica, src/stats.py righe 780-793.
+I quattro modificatori del Buchholz sono applicati con una catena di if ed elif, quindi si escludono a vicenda, mentre il dialogo di configurazione li presenta come caselle indipendenti e la tabella CRITERION_MODIFIERS dichiara che il Buchholz li supporta tutti e quattro.
+Impatto: se l'utente attiva per esempio Cut-1 e Median-1 insieme, viene applicato solo Cut-1 e nessun avviso segnala che la seconda scelta e' stata ignorata. Il valore di spareggio non corrisponde a quello dichiarato nella configurazione.
+Correzione proposta: decidere se le combinazioni hanno senso secondo il regolamento; se non ne hanno, impedirle nel dialogo, se ne hanno, applicarle in sequenza.
+
+B9, gravita' media, categoria logica, src/stats.py righe 748-752, da verificare con il regolamento alla mano.
+Nel calcolo del Buchholz i turni senza avversario reale, cioe' i bye, sono semplicemente saltati e non contribuiscono alla somma. Il regolamento FIDE sugli spareggi in vigore dal primo marzo 2026, che tiebreak_criteria.py cita come riferimento, prevede per i turni non giocati il ricorso all'avversario virtuale, con un punteggio costruito secondo una regola precisa.
+Impatto: se l'interpretazione corretta e' quella dell'avversario virtuale, il Buchholz di ogni giocatore che ha ricevuto un bye o ha avuto un forfait e' piu' basso di quanto dovrebbe, e la classifica a pari merito ne risente.
+Il rilievo e' marcato come da verificare: non ho il testo del regolamento fra le fonti disponibili e su un punto arbitrale preferisco il parere di Gabriele invece di una mia deduzione.
+
+B10, gravita' media, categoria DRY, src/stats.py righe 207-307 e 1186-1199.
+La tabella FIDE della differenza di performance esiste in due copie, una scritta per esteso dentro calculate_performance_rating e una dentro _get_dp_map. E' la duplicazione che ha reso possibile il difetto critico B1, dato che la seconda copia e' rimasta incompleta.
+Correzione proposta: una sola costante di modulo, usata da entrambe.
+
+B11, gravita' media, categoria fragilita', src/engine.py righe 502-551.
+Durante la lettura dell'output di bbpPairings, ogni riga malformata, con identificativi non numerici o con uno start rank non presente in mappa, viene saltata con un semplice avviso stampato e il ciclo prosegue.
+Impatto: se anche una sola riga viene scartata, il turno viene creato con un abbinamento in meno, quindi due giocatori restano senza partita, e il programma non se ne accorge. Nell'interfaccia grafica gli avvisi stampati su console non sono nemmeno visibili.
+Correzione proposta: contare le righe scartate e, se ce ne sono, considerare fallita l'intera lettura invece di restituire un turno incompleto.
+
+B12, gravita' media, categoria logica, src/engine.py riga 80.
+Il valore del bye viene letto con un valore predefinito di 1.0, mentre in tutto il resto del programma, dal modello dati al caricamento del torneo alla Time Machine, il predefinito e' 0.5.
+Impatto: su un torneo il cui salvataggio, per qualsiasi motivo, non contenga la chiave bye_value, il file TRF dichiarerebbe a bbpPairings un bye da un punto mentre Tornello ne assegnerebbe mezzo, con classifica e abbinamenti costruiti su presupposti diversi.
+Correzione proposta: allineare il valore predefinito a 0.5, o meglio prenderlo da un'unica costante in config.
+
+B13, gravita' media, categoria logica, src/tournament.py righe 599-616, da verificare nei blocchi D ed E.
+_apply_match_result_to_players aggiunge sempre una nuova voce allo storico dei due giocatori, senza verificare se per quel turno ce ne sia gia' una.
+Impatto: se il risultato di una partita gia' registrata viene corretto senza prima rimuovere la voce precedente, il giocatore accumula due voci per lo stesso turno e i punti risultano raddoppiati. La gravita' effettiva dipende da come ui.py e main_frame.py gestiscono la correzione di un risultato, che verifichero' nei blocchi successivi.
+Correzione proposta: sostituire l'eventuale voce dello stesso turno invece di accodarne una nuova.
+
+B14, gravita' media, categoria ottimizzazione, src/stats.py, funzioni di spareggio.
+Nessun valore di spareggio viene memorizzato: compute_apro richiama compute_tpr per ogni avversario, compute_appo richiama compute_ptp che a sua volta esegue una ricerca binaria di dodici iterazioni, e l'intera classifica viene ricalcolata da capo a ogni visualizzazione, per ogni giocatore e per ogni criterio configurato.
+Impatto: su tornei ampi con criteri di secondo livello attivi il ricalcolo diventa percepibile ogni volta che si apre la classifica.
+Correzione proposta: memorizzare i valori calcolati per turno in una cache invalidata quando cambia un risultato.
+
+B15, gravita' media, categoria regole generali, src/engine.py riga 41, src/tournament.py righe 72, 459 e 552.
+L'output testuale contiene sequenze di trattini ripetuti come separatori grafici, per esempio la riga di apertura della Time Machine e quella di intestazione della generazione abbinamenti.
+Impatto: le regole di accessibilita' vietano esplicitamente i separatori grafici, che NVDA legge come sequenze di trattini o annuncia come simboli inutili.
+Correzione proposta: sostituire con una riga di testo che dica direttamente di cosa si tratta.
+
+B16, gravita' media, categoria fragilita', src/tournament.py righe 81-115.
+time_machine_torneo chiede conferma con input e stampa con print, quindi presuppone la console, ma e' invocata anche da controller.py riga 904 dentro il flusso di gestione dei fallimenti.
+Impatto: finche' la funzione resta confinata alla versione testuale non ci sono conseguenze; se venisse richiamata dall'interfaccia grafica il programma si bloccherebbe in attesa di un input su una console che l'utente non sta guardando. La versione grafica usa infatti rollback_to_previous_round, che non chiede nulla. Segnalo l'asimmetria perche' e' una trappola per chi mettera' mano al codice.
+Correzione proposta: separare la logica di riavvolgimento dalla sua interfaccia, come gia' fatto altrove con l'adattatore.
+
+B17, gravita' media, categoria regole generali, src/tiebreak_criteria.py riga 9.
+Il modulo risolve la funzione di traduzione al momento dell'import, con un fallback che restituisce la stringa originale, e traduce tutte le descrizioni dei criteri in quel preciso istante.
+Impatto: se il modulo viene importato prima che config abbia installato il traduttore, cosa che accade per esempio negli script di supporto e nei test, nomi e descrizioni dei criteri restano in italiano anche nelle altre lingue.
+Correzione proposta: marcare le stringhe senza tradurle e applicare la traduzione al momento della visualizzazione.
+
+B18, gravita' bassa, categoria logica, src/engine.py riga 274.
+Il punteggio della partita viene convertito in float e il risultato non viene assegnato a nulla: e' una riga senza effetto, residuo di una versione precedente.
+
+B19, gravita' bassa, categoria DRY, src/tournament.py righe 22-61 e 556-568.
+_ricalcola_stato_giocatore_da_storico e ricalcola_punti_tutti_giocatori si sovrappongono: la prima ricalcola punti, avversari, colori e bye, la seconda solo i punti. Due funzioni con lo stesso scopo dichiarato di essere la fonte di verita' dei punteggi.
+Correzione proposta: tenere solo la prima e applicarla a tutti i giocatori dove serve.
+
+B20, gravita' bassa, categoria logica, src/stats.py riga 799.
+Il totale del Buchholz viene arrotondato passando per format_points, cioe' convertendo il numero in stringa a un decimale e riconvertendolo in float. Con i punteggi consueti, multipli di mezzo punto, il risultato e' corretto, ma la strada e' tortuosa e mascherera' eventuali valori con piu' decimali.
+
+B21, gravita' bassa, categoria ottimizzazione, src/tournament.py riga 466.
+La lista costruita si chiama lista_giocatori_attivi ma contiene anche i giocatori ritirati, che devono comparire nel TRF con i turni a forfait. Il nome dice il contrario di quello che il codice fa.
+
+Cio' che nel blocco B e' risultato conforme e non richiede interventi
+Il file TRF generato per bbpPairings e' corretto. L'ho verificato riga per riga sui sorgenti del motore in E:\git\Others\bbpPairings\src\fileformats\trf.cpp e non sulla sola documentazione: l'identificativo del giocatore e' letto dalle colonne 5-8 e Tornello lo scrive li'; l'Elo dalle colonne 49-52; il punteggio dalle colonne 81-84; i blocchi partita partono dalla colonna 92 con passo dieci, con il colore al quinto carattere del blocco e il risultato al settimo, esattamente come li costruisce write_to_char_list_local. La riga 152 deve essere lunga esattamente cinque caratteri e lo e'; la riga 162 vuole il carattere del risultato in colonna 6 e il punteggio nelle quattro successive con passo nove, e il formato prodotto coincide; la riga 192 accetta il valore FIDE_DUTCH che Tornello scrive; la riga BBU e' letta a partire dalla colonna 5 e anche li' il formato coincide. I prefissi che il motore non conosce vengono ignorati senza errore, quindi le righe informative aggiuntive non danno fastidio. Infine, poiche' Tornello non emette la riga XXC con l'opzione rank, il motore usa come ordine di merito l'ordine in cui compaiono le righe 001, e Tornello le scrive gia' ordinate per start rank: le due cose coincidono.
+tiebreak_criteria.py e' un buon modulo: il catalogo dei diciannove criteri e' completo e documentato, la tabella dei modificatori ammessi per criterio e' esplicita, ed esiste la migrazione dal vecchio formato a lista di stringhe al nuovo formato a dizionari, con normalizzazione delle voci non riconosciute. E' esattamente il tipo di migrazione che il documento di refactoring chiede di verificare.
+compute_ptp calcola la performance perfetta con una ricerca binaria corretta, senza il limite di quattrocento punti come previsto per quel criterio, e con estremi di ricerca sensati.
+calculate_expected_score applica correttamente il limite FIDE di quattrocento punti di differenza, e calculate_elo_change applica l'arrotondamento FIDE nella forma giusta, cioe' allontanandosi da zero.
+Il caricamento del torneo in load_tournament riempie con setdefault tutti i campi che potrebbero mancare nei salvataggi vecchi e ricostruisce la cache dei giocatori, quindi i file di tornei prodotti da versioni precedenti restano leggibili.
+
+Blocco C, dati e persistenza
+File esaminati con numero di righe:
+src/db_players.py, 1075 righe
+src/fide_db.py, 485 righe
+Players_DB.py, 664 righe
+Sync_DB.py, 64 righe
+consulta.py, 175 righe
+
+Rilievi del blocco C
+
+C1, gravita' alta, categoria fragilita', src/db_players.py righe 729-750 e src/tournament.py righe 350-351.
+Sia il database dei giocatori sia il file del torneo vengono salvati aprendo direttamente il file definitivo in scrittura e scaricandovi il JSON. Non c'e' scrittura atomica, cioe' scrittura su file temporaneo e sostituzione finale, e non c'e' alcuna copia di sicurezza automatica prima della riscrittura.
+Impatto: se il programma viene chiuso, va in errore o la macchina si spegne mentre il file e' aperto in scrittura, il contenuto precedente e' gia' stato troncato e quello nuovo e' incompleto. Il database dei giocatori contiene l'anagrafica, gli Elo, le medaglie e lo storico dei tornei di tutti i giocatori, ricostruirlo e' impossibile. Il rischio cresce con la dimensione del file, e il database in repository e' gia' di 64 KB.
+Correzione proposta: scrivere su un file temporaneo nella stessa cartella e sostituire il definitivo con os.replace, che su Windows e' atomico; in aggiunta valutare una copia di sicurezza rotante prima di ogni salvataggio del database giocatori.
+
+C2, gravita' alta, categoria fragilita', src/db_players.py righe 546-548 e src/fide_db.py righe 109-114.
+Durante l'aggiornamento del database FIDE, create_fide_db esegue DROP TABLE sulle tabelle esistenti e le ricrea vuote. La chiamata avviene dopo lo scaricamento ma prima dell'analisi dell'XML e dell'inserimento dei record.
+Impatto: se l'analisi dell'XML fallisce a meta', per un archivio incompleto, un XML malformato o semplicemente per la chiusura del programma, l'utente resta senza database FIDE, perche' quello vecchio e' gia' stato cancellato. Il rimedio e' riscaricare oltre cinquanta megabyte e rielaborare piu' di un milione di record.
+Correzione proposta: costruire il nuovo database in un file temporaneo affiancato e sostituire il file definitivo solo a importazione conclusa con successo.
+
+C3, gravita' alta, categoria regole generali, Players_DB.py riga 17 e Sync_DB.py riga 17.
+Entrambi gli script chiamano polipo passando soltanto source_language, quindi senza localedir e senza config_path. Subito dopo importano config, che chiama polipo una seconda volta con i percorsi assoluti corretti.
+Impatto: e' esattamente il difetto descritto nella nota su polipo del documento di refactoring. La prima chiamata risolve la cartella delle traduzioni e quella di configurazione rispetto alla directory di lavoro: se lo script viene avviato da un'altra cartella non trova le traduzioni, non ritrova la lingua gia' scelta e crea una cartella di impostazioni vuota nel posto sbagliato. In piu' il traduttore viene installato due volte in builtins, con la seconda chiamata che sovrascrive la prima, quindi il lavoro della prima e' comunque buttato.
+Correzione proposta: togliere la chiamata diretta a polipo dai due script e limitarsi a importare config, che la esegue gia' con i percorsi assoluti giusti.
+
+C4, gravita' alta, categoria regole generali, src/version.py, Players_DB.py riga 35 e consulta.py riga 105.
+Nel progetto convivono tre numerazioni di versione indipendenti: 9.3.14 in src/version.py, la costante 4.4.0 in Players_DB.py e la stringa v1.0.1 con data 10 maggio 2026 stampata da consulta.py. Le regole chiedono una versione dichiarata in un punto unico e non duplicata.
+Impatto: l'utente che segnala un problema non sa quale numero comunicare, e le due versioni secondarie non vengono aggiornate da anni pur essendo cambiato il codice che le sta sotto.
+Correzione proposta: importare e mostrare in tutti e tre i punti la versione di src/version.py, eventualmente affiancata dal nome dello strumento.
+
+C5, gravita' alta, categoria regole generali, undici file del progetto.
+Le stringhe di codice attivo che contengono separatori grafici, cioe' sequenze di almeno tre trattini, uguali o underscore oppure moltiplicazioni come "-" per trenta, sono ottantacinque: ventidue in reports.py, quindici in gui/main_frame.py, undici in Players_DB.py, dieci in ui.py, otto in controller.py, sette in consulta.py, sei in db_players.py, tre in tournament.py e una ciascuno in Sync_DB.py, tornello.py ed engine.py. Un esempio per tutti sono le due righe di trenta trattini che consulta.py stampa attorno alla scheda di ogni giocatore alle righe 32 e 35, e la riga di quarantadue trattini in db_players.py riga 232.
+Impatto: le regole di accessibilita' vietano esplicitamente i separatori grafici. NVDA li legge come sequenze di simboli o, con le impostazioni di punteggiatura piu' verbose, come trenta ripetizioni della parola trattino, e su display braille occupano una riga intera senza portare alcuna informazione. Il caso piu' pesante e' reports.py, perche' quei separatori finiscono anche nei file di testo della classifica e dei turni, cioe' nei documenti che l'arbitro distribuisce.
+Correzione proposta: sostituire ogni separatore con una riga di testo che dica cosa comincia, per esempio la parola Classifica seguita dal nome del torneo. Il conteggio va comunque riverificato caso per caso durante la correzione, perche' fra le ottantacinque occorrenze possono esserci stringhe non destinate alla lettura.
+
+C6, gravita' alta, categoria regole generali, consulta.py, intero file.
+consulta.py non usa mai la funzione di traduzione: tutte le sue stringhe sono in italiano, scritte direttamente nel codice, benche' il file importi config e quindi disponga del traduttore gia' installato.
+Impatto: chi usa Tornello in inglese, spagnolo, francese o portoghese, aprendo lo strumento di consultazione del database FIDE, si trova un programma interamente in italiano, compresi i messaggi di errore e le richieste di input.
+Correzione proposta: passare tutte le stringhe visibili dal traduttore e rigenerare i cataloghi, quando Gabriele dara' il via libera alla fase di traduzione.
+
+C7, gravita' media, categoria ottimizzazione, src/fide_db.py righe 64-76 e 92-101.
+fide_db_exists e get_player_count verificano l'esistenza del database eseguendo SELECT COUNT(*) sulla tabella players, che contiene oltre un milione di record. fide_db_exists e' chiamata all'inizio di ogni ricerca sul database FIDE.
+Impatto: ogni ricerca paga una scansione completa dell'indice prima ancora di cominciare. Su disco meccanico o con il file non ancora in cache il ritardo e' percepibile a ogni battitura in una ricerca incrementale.
+Correzione proposta: per la sola verifica di esistenza usare una query che si ferma alla prima riga, per esempio SELECT 1 FROM players LIMIT 1, e riservare il conteggio completo ai punti che lo mostrano davvero.
+
+C8, gravita' media, categoria fragilita', src/fide_db.py righe 64-101, 250-281 e 344.
+Le connessioni SQLite sono aperte e chiuse a mano con conn.close alla fine del blocco try. Se la query solleva un'eccezione, la chiusura viene saltata e la connessione resta aperta fino alla garbage collection.
+Impatto: su Windows un file SQLite con una connessione ancora aperta resta bloccato, e proprio quel file e' quello che l'aggiornamento del database FIDE deve poter sostituire. Una ricerca fallita puo' quindi impedire l'aggiornamento successivo senza che il motivo sia intuibile.
+Correzione proposta: usare il costrutto with su sqlite3.connect oppure un blocco finally, e valutare una funzione di contesto unica per tutte le query del modulo.
+
+C9, gravita' media, categoria ottimizzazione, src/db_players.py righe 519-550.
+L'archivio FIDE viene scaricato accumulando tutti i blocchi in una lista in memoria e poi unito con una join, che ne crea una seconda copia completa prima di darlo a ZipFile.
+Impatto: il picco di memoria e' pari a circa il doppio della dimensione dell'archivio, che oggi supera i cinquanta megabyte e cresce ogni anno, e tutto questo mentre l'interfaccia grafica e' viva. Su una macchina modesta l'operazione e' inutilmente pesante.
+Correzione proposta: scrivere i blocchi su un file temporaneo su disco e aprire lo zip da li', liberando la memoria.
+
+C10, gravita' media, categoria ottimizzazione, src/db_players.py righe 576-586.
+Dentro il ciclo che analizza l'XML, per ogni giocatore vengono ridefinite le due funzioni annidate get_text e get_int.
+Impatto: su un archivio da oltre un milione di giocatori significa creare piu' di due milioni di funzioni durante l'importazione, lavoro puro senza alcun beneficio.
+Correzione proposta: definirle una sola volta fuori dal ciclo, passando l'elemento come parametro.
+
+C11, gravita' media, categoria fragilita', src/db_players.py riga 709.
+La mappa dei giocatori viene costruita con p["id"] per ogni record letto dal file. Il blocco except che racchiude il caricamento cattura soltanto OSError e json.JSONDecodeError.
+Impatto: se anche un solo record del database giocatori e' privo del campo id, per una modifica manuale o per un salvataggio interrotto, viene sollevato un KeyError che nessuno cattura e il programma termina con il messaggio generico di errore imprevisto, invece di segnalare quale record e' malformato.
+Correzione proposta: saltare con un avviso i record privi di identificativo, oppure estendere la cattura al KeyError con un messaggio parlante.
+
+C12, gravita' media, categoria ottimizzazione, src/db_players.py righe 736-737 e 752.
+Ogni salvataggio del database giocatori rigenera integralmente anche il file di testo leggibile, ricalcolando per ciascun giocatore il K-Factor e le statistiche.
+Impatto: l'operazione viene ripetuta anche quando cambia un solo campo di un solo giocatore, per esempio durante la sincronizzazione FIDE giocatore per giocatore, dove il costo si moltiplica per il numero di conferme.
+Correzione proposta: rigenerare il file di testo su richiesta e a fine operazione, non a ogni salvataggio.
+
+C13, gravita' media, categoria logica, src/db_players.py righe 113-119 e 258-262.
+Quando un giocatore del database personale non ha l'identificativo FIDE, la sincronizzazione lo cerca per nome e cognome e, se trova una sola corrispondenza, propone di associare quell'identificativo. La modalita' di aggiornamento in massa applica poi tutte le proposte senza chiedere altro.
+Impatto: due giocatori con lo stesso nome e cognome esistono, e nell'archivio FIDE ce ne sono a migliaia. In modalita' massa l'associazione sbagliata viene scritta nel database senza che nessuno la veda, e da quel momento il giocatore eredita Elo, titolo e K-Factor di un'altra persona.
+Correzione proposta: escludere dalla modalita' in massa le associazioni di identificativo nuove, applicando automaticamente solo gli aggiornamenti di chi un identificativo ce l'ha gia'.
+
+C14, gravita' bassa, categoria ottimizzazione, src/db_players.py righe 444-463.
+ProgressFileObject invoca il callback di avanzamento a ogni singola lettura del file XML, che con l'analisi incrementale avviene ogni pochi kilobyte.
+Impatto: decine di migliaia di notifiche di avanzamento per una sola importazione. Se il callback aggiorna un testo nell'interfaccia, l'effetto per chi usa lo screen reader e' un flusso continuo di annunci, cioe' esattamente la verbosita' che le regole chiedono di evitare.
+Correzione proposta: notificare solo quando la percentuale cambia di almeno un punto.
+
+C15, gravita' bassa, categoria ottimizzazione, src/db_players.py righe 613-614.
+Ogni cinquemila record l'importazione esegue una pausa di un millesimo di secondo per lasciare respirare l'interfaccia.
+Impatto: e' un rimedio empirico al posto della soluzione strutturale, cioe' eseguire l'importazione in un thread separato. Il costo in se' e' trascurabile.
+
+C16, gravita' bassa, categoria ottimizzazione, src/db_players.py riga 30 e riga 33.
+unidecode viene importato, e in sua assenza viene definita una funzione di ricambio, ma nel modulo non e' mai usato. Nel frattempo generate_player_id costruisce gli identificativi tagliando direttamente le lettere del cognome, quindi un cognome con lettere accentate produce un identificativo con caratteri non ASCII.
+Correzione proposta: o si usa unidecode nella generazione degli identificativi, che era con ogni probabilita' l'intenzione originale, o si toglie l'import inutile. La prima strada e' preferibile.
+
+C17, gravita' bassa, categoria logica, src/db_players.py righe 930-938.
+Nel ramo che gestisce piu' di novecentonovantanove omonimi, l'identificativo viene costruito con quattro cifre di timestamp, quindi con una lunghezza diversa da quella di tutti gli altri, e in caso di ulteriore collisione si passa a una forma ancora diversa con il prefisso TEMP.
+Impatto: praticamente nullo nella realta', ma il formato degli identificativi cessa di essere uniforme proprio nel caso limite in cui servirebbe di piu' poterli riconoscere.
+
+Cio' che nel blocco C e' risultato conforme e non richiede interventi
+Il database giocatori ha una migrazione di schema vera: load_players_db riconosce sia il vecchio formato a lista sia il nuovo formato a dizionario con schema_version, riempie i campi aggiunti nella versione 2 e riscrive il file una sola volta, segnalando all'utente cosa sta facendo. E' il comportamento che il documento di refactoring chiede di verificare a proposito dei salvataggi.
+Il passaggio del database FIDE da JSON a SQLite e' ben fatto: la tabella ha indici sui campi di ricerca, esiste una tabella virtuale FTS5 per la ricerca testuale, l'inserimento massivo usa executemany a blocchi con i PRAGMA giusti per l'importazione, e cleanup_legacy_json rimuove il vecchio file JSON quando l'importazione e' riuscita.
+La ricerca sul database FIDE distingue correttamente la ricerca per identificativo numerico da quella testuale, e i termini della query FTS vengono ripuliti prima di finire nella clausola match, quindi un apice o un carattere speciale digitato dall'utente non rompe la query.
+L'analisi dell'XML FIDE usa iterparse con clear dell'elemento a ogni giocatore, quindi non tiene in memoria l'intero albero: e' la scelta giusta per un file di quelle dimensioni.
+allinea_giocatori_con_database gestisce in modo esplicito sia i giocatori come dizionario sia quelli come oggetto Player, e sceglie l'Elo giusto in base alla cadenza del torneo.
+
+Blocco D, report e interfaccia testuale
+File esaminati con numero di righe:
+src/reports.py, 1358 righe
+src/ui.py, 1834 righe
+
+Rilievi del blocco D
+
+D1, gravita' alta, categoria logica, src/ui.py righe 1556-1573.
+La classifica finale, quella che assegna final_rank ed e' il risultato ufficiale del torneo, viene ordinata da sort_key_final con una sequenza di criteri fissa e scritta nel codice: punti, stato attivo o ritirato, Buchholz Cut-1, Buchholz totale, performance, Elo iniziale. La configurazione dei criteri di spareggio scelta dall'arbitro non viene nemmeno letta, mentre la classifica parziale, prodotta da get_standings_text in reports.py riga 764, usa correttamente i criteri configurati.
+Impatto: l'arbitro configura i criteri FIDE nell'apposito dialogo, per esempio Scontro Diretto e Sonneborn-Berger, vede la classifica ordinata secondo quei criteri per tutto il torneo, e alla finalizzazione si ritrova un ordine diverso, calcolato con criteri che non ha scelto. Da quell'ordine dipendono il piazzamento ufficiale, le medaglie assegnate nel database giocatori e i file archiviati. Il difetto riguarda entrambe le interfacce, perche' anche quella grafica chiama la stessa funzione da main_frame.py riga 3637.
+Correzione proposta: far usare a sort_key_final gli stessi criteri configurati, riusando la logica gia' scritta in reports.py invece di duplicarla, e verificare a posteriori che classifica parziale e finale coincidano a parita' di dati.
+
+D2, gravita' alta, categoria fragilita', src/ui.py nove punti di chiamata e src/controller.py riga 777.
+save_tournament viene invocata senza il parametro filepath in tutte le chiamate dell'interfaccia testuale, alle righe 375, 1009, 1058, 1171, 1342, 1353, 1364, 1421 e 1593 di ui.py, e nel controller alla riga 777. In quel caso, come visto nel blocco B, il file viene costruito come "Tornello - nome del torneo.json" e scritto nella directory di lavoro corrente. La sola chiamata che passa il percorso reale e' quella dell'interfaccia grafica, in main_frame.py riga 2708.
+Impatto: un torneo salvato in una cartella personalizzata, possibilita' prevista dai campi save_path e custom_save_path, se toccato dall'interfaccia testuale viene riscritto altrove. Si creano due file con lo stesso nome in cartelle diverse e le modifiche successive finiscono ora nell'uno ora nell'altro, con perdita silenziosa del lavoro.
+Correzione proposta: propagare sempre il percorso di origine del torneo, come gia' fa l'interfaccia grafica.
+
+D3, gravita' alta, categoria regole generali, src/reports.py righe 955, 957, 960 e 988.
+L'intestazione di ogni report scrive due righe di ottanta trattini attorno alla riga di stato, piu' una terza riga di trattini lunga quanto l'intestazione della tabella.
+Impatto: sono i file che l'arbitro stampa e distribuisce, e sono anche cio' che l'utente cieco legge con NVDA. Ottanta trattini sono due righe intere di display braille senza alcuna informazione, e con la punteggiatura verbosa attiva vengono letti uno per uno.
+Correzione proposta: eliminare le righe di trattini e affidare la separazione al testo, per esempio scrivendo direttamente Classifica seguita dallo stato del torneo.
+
+D4, gravita' alta, categoria regole generali, src/reports.py righe 962-1042.
+La classifica e' costruita come tabella a colonne allineate con riempimento di spazi: tre caratteri per la posizione, sette per la variazione rispetto al tabellone, tre per il titolo, ventisette per il nome, sei per l'Elo, cinque per i punti, piu' una colonna per ciascun criterio di spareggio attivo, piu' performance e variazione Elo, e per i ritirati la riga viene portata a novanta caratteri per allinearvi la dicitura di ritiro.
+Impatto: le regole chiedono che tabelle e allineamenti a colonne siano resi in forma discorsiva o con separatori leggibili, e che le stringhe informative siano organizzate in blocchi di circa quaranta caratteri per il display braille. Qui una riga supera i novanta caratteri e per leggerla servono tre spostamenti del display, mentre le colonne vuote diventano corse di spazi che rendono difficile capire quale valore si sta leggendo. In piu' i valori mancanti sono rappresentati con quattro trattini e con tre trattini preceduti da spazio.
+Correzione proposta: affiancare alla tabella una forma discorsiva, per esempio una riga per giocatore del tipo posizione, nome, punti, seguita dai criteri con il loro nome, e sostituire i trattini dei valori assenti con una sigla leggibile come n.d.
+
+D5, gravita' media, categoria logica, src/ui.py righe 1500-1512 e src/reports.py righe 754-761.
+Alla finalizzazione il K-Factor viene calcolato correttamente dal record del database, come descritto in B4, ma solo per i giocatori non ritirati; ai ritirati viene assegnato k_factor uguale a None e games_this_tournament uguale a zero, e piu' avanti anche Buchholz, ARO, performance e variazione Elo vengono azzerati o messi a None. Nella classifica parziale, invece, i ritirati conservano Buchholz e ARO calcolati.
+Impatto: il giocatore ritirato perde nel documento finale i dati che vedeva fino al turno prima, e soprattutto non riceve alcuna variazione Elo per le partite che ha effettivamente giocato prima di ritirarsi, il che non corrisponde alle regole FIDE, dove le partite giocate contano comunque.
+Correzione proposta: calcolare Elo e performance anche per i ritirati sulle partite realmente disputate, ed escluderli solo dall'assegnazione del piazzamento.
+
+D6, gravita' media, categoria ottimizzazione, src/reports.py righe 764-786.
+La funzione chiave dell'ordinamento rilegge e rinormalizza la configurazione dei criteri di spareggio per ogni giocatore, e per ciascun criterio richiama get_criterion_value, che a sua volta esegue il calcolo completo del criterio.
+Impatto: si somma al fatto, gia' rilevato in B14, che nessun valore di spareggio e' memorizzato. Con i criteri di secondo livello attivi, generare la classifica di un torneo ampio significa ricalcolare molte volte le stesse quantita'.
+Correzione proposta: normalizzare la configurazione una sola volta fuori dalla funzione chiave e calcolare i valori dei criteri in un passaggio preliminare, memorizzandoli sul giocatore.
+
+D7, gravita' media, categoria logica, src/reports.py righe 724-725 e src/ui.py righe 1492-1495.
+La cache players_dict viene ricostruita in tre punti diversi con lo stesso confronto fra numero di giocatori e numero di chiavi, cioe' con la stessa logica di _ensure_players_dict in utils.py, ricopiata invece che richiamata.
+Impatto: il difetto di invalidazione descritto in A6 esiste quindi in tre copie, e una eventuale correzione fatta in utils.py non raggiungerebbe questi due punti.
+Correzione proposta: chiamare _ensure_players_dict.
+
+D8, gravita' media, categoria regole generali, src/reports.py righe 307, 525, 1045 e 1258.
+Tutti i report terminano scrivendo due ritorni a capo consecutivi seguiti dalla firma del programma, quindi con una riga vuota di separazione.
+Impatto: le regole chiedono di evitare le righe vuote di separazione dove non sono esplicitamente richieste. In lettura sequenziale con NVDA la riga vuota e' un annuncio in piu' senza contenuto.
+Correzione proposta: un solo ritorno a capo prima della firma.
+
+D9, gravita' media, categoria fragilita', src/ui.py righe 812-1454.
+update_match_result e' una sola funzione di oltre seicento righe che tiene insieme la scelta della partita per numero di scacchiera o per nome, la pianificazione, l'inserimento del risultato, la conferma, il ritiro dei giocatori a forfait, il salvataggio e i suoni.
+Impatto: e' il punto in cui si concentra la maggior parte delle regole del programma e nessuna di esse e' isolabile per essere provata separatamente. Ogni modifica futura ha un rischio di regressione alto proprio dove il costo di un errore e' massimo, cioe' nella registrazione dei risultati.
+Correzione proposta: separare la selezione della partita, la validazione del risultato e l'applicazione, in modo che almeno la parte di calcolo sia coperta da test.
+
+D10, gravita' bassa, categoria logica, src/reports.py riga 1109.
+datetime.now viene chiamata e il risultato non viene assegnato a nulla: e' una riga senza effetto, gemella di quella gia' segnalata in engine.py riga 274.
+
+D11, gravita' bassa, categoria regole generali, src/reports.py riga 963.
+L'intestazione della tabella e' una sola stringa da tradurre in cui l'allineamento delle colonne e' ottenuto con spazi dentro il testo tradotto. Una traduzione con parole piu' lunghe disallinea l'intera tabella rispetto ai dati sottostanti.
+Correzione proposta: comporre l'intestazione dai singoli nomi di colonna tradotti, applicando il riempimento nel codice e non nella stringa.
+
+Cio' che nel blocco D e' risultato conforme e non richiede interventi
+La selezione della partita in update_match_result lavora soltanto sulle partite ancora senza risultato, quindi dall'interfaccia testuale il rischio di storico duplicato descritto in B13 non si presenta: una partita gia' registrata non e' selezionabile una seconda volta. Resta da verificare nel blocco E se l'interfaccia grafica consente invece la correzione di un risultato gia' inserito.
+La ricerca della partita accetta sia il numero di scacchiera sia una parte del nome dei giocatori, gestisce esplicitamente il caso di una sola corrispondenza e quello di piu' corrispondenze, e in quest'ultimo caso elenca le alternative con Elo e scacchiera: e' un buon esempio di interazione testuale accessibile.
+Ogni risultato viene confermato con una domanda che nomina per esteso vincitore e perdente invece di ripetere la sigla, quindi lo screen reader legge una frase di senso compiuto e non una notazione.
+Dopo un forfait il programma chiede esplicitamente, per ciascun giocatore coinvolto, se si ritira dal torneo, invece di dedurlo: e' la scelta giusta, perche' forfait e ritiro sono due cose diverse.
+La finalizzazione crea le copie di sicurezza del database giocatori e del file del torneo prima di toccare qualsiasi cosa, e verifica l'esito segnalandolo all'utente; il limite e' quello gia' descritto in A1, cioe' dove quelle copie finiscono.
+I report includono in testa tutti i dati identificativi del torneo, compresi arbitro, federazione, controllo del tempo e criteri di spareggio attivi scritti con il loro nome esteso: chi legge il file sa con quali regole e' stata prodotta quella classifica.
+
+Blocco E, interfaccia grafica principale
+File esaminato con numero di righe:
+src/gui/main_frame.py, 4568 righe
+Data la dimensione, l'esame e' stato condotto sulla struttura complessiva e poi in profondita' sui percorsi critici: registrazione e correzione dei risultati, generazione dei turni, finalizzazione, aggiornamenti in thread, barra di stato e testo mostrato all'utente.
+
+Rilievi del blocco E
+
+E1, gravita' alta, categoria logica, src/gui/main_frame.py righe 4465-4475.
+Alla generazione di ogni nuovo turno, per ciascun giocatore ritirato viene aggiunta allo storico una voce con avversario BYE_PLAYER_ID, risultato BYE e punteggio zero.
+Impatto: quella voce dice tre cose false a tre diversi consumatori dei dati. Primo, _ricalcola_stato_giocatore_da_storico in tournament.py riga 45 conta come bye ricevuto ogni voce con quell'avversario, quindi il ritirato risulta avere uno o piu' bye. Secondo, la generazione del TRF in engine.py riga 277 traduce quella voce nel codice U, cioe' bye assegnato dall'abbinatore, e non nel codice Z che marca il turno non giocato: bbpPairings riceve quindi la dichiarazione che un giocatore ritirato ha ottenuto un bye. Terzo, e' proprio quel codice U che porta il motore ad attribuirgli il punteggio previsto per il bye, mezzo punto o un punto, mentre Tornello gli ha registrato zero: i due sistemi lavorano su punteggi diversi per lo stesso giocatore. Da notare infine che queste voci vengono create solo dall'interfaccia grafica: il percorso testuale, in controller.py, non le aggiunge, quindi lo stesso torneo gestito nei due modi produce storici diversi.
+Correzione proposta: non scrivere alcuna voce di storico per i turni successivi al ritiro, e lasciare che sia il ramo gia' presente in engine.py righe 332-341, quello che riempie con il codice Z i turni mancanti dei ritirati, a dire al motore come stanno le cose.
+
+E2, gravita' alta, categoria regole generali, src/gui/main_frame.py righe 770, 1718, 1808, 1835, 1868, 1892, 1920, 1959, 2005, 2076, 2875, 3289, 3311, 3333 e 4357.
+Il testo che l'applicazione mostra nell'area centrale, cioe' quello che l'utente legge con NVDA, e' punteggiato da righe di separatori grafici: cinquanta caratteri uguale prima di quasi ogni sezione informativa, quaranta trattini nel report del turno corrente, cinquanta trattini nella scheda giocatore e nel report dei tornei conclusi, trenta trattini nel dettaglio, e nei tre dialoghi di Aiuto, Changelog e Crediti righe di trentadue, ventuno e diciannove uguali seguite da una riga vuota doppia.
+Impatto: sono quindici punti nel solo file principale dell'interfaccia, ripetuti a ogni schermata. Le regole vietano esplicitamente questi separatori, che NVDA legge come sequenze di simboli e che sul display braille occupano una riga intera senza informazione. Il caso di riga 1835, dove il separatore e' preceduto da un ritorno a capo, aggiunge anche la riga vuota di separazione, pure quella da evitare.
+Correzione proposta: sostituire ogni separatore con l'intestazione testuale della sezione che introduce, per esempio Dati del torneo oppure Elenco dei giocatori iscritti.
+
+E3, gravita' alta, categoria ottimizzazione, src/gui/main_frame.py, intero file.
+Il file contiene una sola classe con ottantacinque metodi e 4568 righe, dentro cui convivono la costruzione dell'interfaccia, la navigazione dell'albero, il procedimento guidato di creazione del torneo, la registrazione dei risultati, la finalizzazione, l'esportazione ICS, il controllo degli aggiornamenti e la gestione dei backup. Gli import locali dentro i metodi sono centodiciannove.
+Impatto: e' il file dove ogni intervento e' piu' rischioso e piu' lento, perche' non esiste alcun confine interno. La quantita' di import locali, in gran parte introdotti per rompere dipendenze circolari, rende inoltre difficile capire da fuori quali moduli servono davvero.
+Correzione proposta: estrarre almeno tre unita' autonome, il procedimento guidato di creazione del torneo, la gestione dei risultati e la costruzione dell'albero, lasciando in MainFrame il coordinamento. E' un lavoro da programmare a parte, non da fare insieme alle correzioni puntuali.
+
+E4, gravita' media, categoria regole generali, src/gui/main_frame.py righe 391-410.
+La riga di avanzamento della barra di stato ha la forma Progress. Giorno 3/7 (42.9%), turno 2/5, risult.8/12 (66.7%), PGN 3, cioe' circa settanta caratteri in una sola stringa, e la riga delle vittorie le si affianca.
+Impatto: e' esattamente il tipo di stringa che le regole vogliono organizzata in blocchi di circa quaranta caratteri, perche' riporta dati aggiornabili in tempo reale e viene riletta a ogni azione. Su un display braille da quaranta celle serve uno spostamento per leggerla tutta, proprio mentre l'utente sta facendo altro.
+Correzione proposta: spezzarla in due righe, la prima con giorno e turno, la seconda con risultati e PGN, mantenendo ciascuna sotto i quaranta caratteri.
+
+E5, gravita' media, categoria ottimizzazione, src/gui/main_frame.py riga 412.
+Ogni aggiornamento della barra di stato richiama apply_visual_settings sul controllo di testo, che ricrea l'oggetto font, reimposta i tre colori e riapplica lo stile all'intero contenuto.
+Impatto: la barra di stato viene aggiornata a ogni azione dell'utente, quindi il lavoro si ripete di continuo; il changelog della versione 9.3.12 mostra che proprio il comportamento di RichEdit su Windows in questo punto ha gia' dato problemi. Un riapplicare stile completo puo' inoltre far rileggere il contenuto allo screen reader.
+Correzione proposta: applicare gli stili una volta sola alla creazione del controllo e al cambio delle impostazioni visive, non a ogni aggiornamento di testo.
+
+E6, gravita' media, categoria logica, src/gui/main_frame.py righe 4247-4266 e src/tournament.py riga 576, da verificare sul campo.
+Prima di applicare un risultato, la finestra principale ripulisce lo storico dei due giocatori filtrando sul numero di turno della partita, mentre _apply_match_result_to_players scrive la nuova voce usando il turno corrente del torneo. Le due parti usano quindi due riferimenti diversi.
+Impatto: finche' si registra o si corregge una partita del turno in corso i due valori coincidono e tutto funziona. Le correzioni sui turni gia' conclusi sono impedite dal controllo disable_result_change di riga 4012, quindi il caso pericoloso oggi non si presenta. Resterebbe scoperto un turno precedente rimasto incompleto, situazione possibile dopo un riavvolgimento: in quel caso la pulizia toglierebbe le voci del turno vecchio e la scrittura ne creerebbe una per il turno corrente, falsando lo storico di entrambi i giocatori. Marco il rilievo come da verificare perche' la sua raggiungibilita' dipende da una sequenza di operazioni che va provata a mano.
+Correzione proposta: far scrivere a _apply_match_result_to_players il turno della partita, che e' gia' presente nell'oggetto match, invece del turno corrente del torneo.
+
+E7, gravita' media, categoria DRY, src/gui/main_frame.py righe 15-25.
+La classe CustomAccessible e' ripetuta identica qui e in src/gui/accessibility.py righe 4-16, con l'unica differenza dei commenti.
+Impatto: due copie della stessa classe di accessibilita', e la finestra principale usa la propria invece di quella del modulo dedicato, quindi una correzione al modulo di accessibilita' non arriverebbe alla finestra principale.
+Correzione proposta: importarla da gui.accessibility ed eliminare la copia locale.
+
+E8, gravita' media, categoria regole generali, src/gui/main_frame.py, trentuno blocchi except Exception di cui quindici seguiti da pass.
+Impatto: nell'interfaccia grafica un errore inghiottito non lascia nemmeno la traccia su console che la versione testuale lascerebbe, perche' la finestra copre la console. L'utente vede semplicemente un comando che non fa nulla.
+Correzione proposta: restringere le eccezioni a quelle attese e, dove l'operazione riguarda dati dell'utente, mostrare un messaggio o scriverla nel registro degli eventi.
+
+E9, gravita' bassa, categoria regole generali, src/gui/main_frame.py riga 12.
+Anche qui la funzione di traduzione viene risolta all'import con un fallback che restituisce la stringa originale, con la stessa conseguenza descritta in B17.
+
+E10, gravita' bassa, categoria ottimizzazione, src/gui/main_frame.py riga 4466.
+Il ciclo scorre il dizionario dei giocatori con items ma usa soltanto il valore, come segnalato anche da ruff.
+
+Cio' che nel blocco E e' risultato conforme e non richiede interventi
+La gestione dei thread e' corretta. Il controllo degli aggiornamenti e l'installazione girano in thread demone separati e ogni ritorno verso l'interfaccia passa da wx.CallAfter, sia per aprire il dialogo sia per chiudere la finestra sia per mostrare gli errori. E' esattamente il modo giusto di trattare wxPython, e non ho trovato in questo file alcun aggiornamento di controlli fatto direttamente da un thread secondario.
+Le operazioni di avvio che potrebbero bloccare la comparsa della finestra, cioe' il controllo del database FIDE, quello dei backup, il caricamento del torneo iniziale e il controllo aggiornamenti, sono tutte differite con wx.CallAfter dopo la costruzione della finestra.
+La correzione di un risultato in un turno gia' concluso o in un torneo finalizzato e' impedita in modo esplicito, con il parametro disable_result_change calcolato a partire dallo stato reale del turno e del torneo.
+Prima di applicare un risultato lo storico dei due giocatori viene ripulito delle voci dello stesso turno, quindi il rischio di storico duplicato descritto in B13 non si presenta nell'uso normale dell'interfaccia grafica.
+L'oggetto partita su cui si opera viene sempre ricercato dentro il torneo attualmente caricato, per identificativo e turno, con un commento che spiega il perche': e' la difesa giusta contro i riferimenti a oggetti non piu' attuali dopo un ricaricamento.
+La generazione del turno successivo verifica prima che tutte le partite del turno corrente abbiano un risultato e che non si superi il numero di turni previsto, e in caso di errore ripristina il numero di turno precedente prima di uscire.
+Il ritiro dopo un forfait viene chiesto all'utente con un dialogo accessibile dedicato e non dedotto automaticamente, coerentemente con quanto fa la versione testuale.
+
+Blocco F, dialoghi e audio
+File esaminati con numero di righe:
+src/gui/dialogs/__init__.py, 10 righe
+src/gui/dialogs/accessible_msg_dialog.py, 83 righe
+src/gui/dialogs/backup_cleanup_dialog.py, 392 righe
+src/gui/dialogs/donation_dialog.py, 79 righe
+src/gui/dialogs/fide_query_dialog.py, 341 righe
+src/gui/dialogs/fide_update_dialog.py, 201 righe
+src/gui/dialogs/player_enrollment_dialog.py, 612 righe
+src/gui/dialogs/players_db_dialog.py, 687 righe
+src/gui/dialogs/result_dialog.py, 569 righe
+src/gui/dialogs/sync_database_dialog.py, 426 righe
+src/gui/dialogs/tiebreak_config_dialog.py, 548 righe
+src/gui/dialogs/visual_settings_dialog.py, 478 righe
+src/audio_presets.py, 301 righe
+
+Rilievi del blocco F
+
+F1, gravita' alta, categoria logica, src/gui/dialogs/result_dialog.py righe 445-453 e 462-470.
+Il gestore dell'evento di arrivo del focus su un pulsante di scelta del risultato esegue rb.SetValue(True), cioe' seleziona l'opzione per il solo fatto che il focus vi e' passato. Insieme a questo, il gestore dei tasti trasforma il tasto Invio premuto su un pulsante di scelta in una conferma del dialogo.
+Impatto: l'utente che raggiunge il gruppo con il tabulatore seleziona senza volerlo la prima opzione su cui atterra, e un Invio dato subito dopo registra quel risultato. Nel dialogo in questione le opzioni sono la vittoria del bianco, quella del nero, la patta, i due forfait e la doppia assenza: un risultato sbagliato registrato per errore e' esattamente il tipo di guasto che poi richiede la Time Machine.
+Correzione proposta: togliere la selezione automatica sul focus, lasciando che siano le frecce a scegliere come e' consuetudine nei gruppi di pulsanti di scelta, e non trattare Invio come conferma quando il focus e' dentro il gruppo.
+
+F2, gravita' media, categoria regole generali, src/gui/dialogs/result_dialog.py righe 445-453.
+Ogni passaggio di focus fra i sei pulsanti di scelta riproduce il suono del risultato corrispondente.
+Impatto: scorrendo le opzioni con le frecce l'utente sente sei suoni in rapida successione, sovrapposti all'annuncio vocale di NVDA, e per il difetto A5 ognuno di essi comporta anche una lettura del file dei preset da disco. Le regole chiedono di evitare la verbosita' inutile.
+Correzione proposta: mantenere un solo suono breve e uguale per il cambio di selezione, oppure riprodurre il suono del risultato soltanto alla conferma.
+
+F3, gravita' media, categoria fragilita', src/gui/dialogs/accessible_msg_dialog.py righe 46-57.
+Nei dialoghi con Si e No il pulsante predefinito e' sempre il Si, mentre il commento accanto dichiara l'intenzione di poterlo impostare sul No. Lo stesso dialogo e' usato anche per le conferme distruttive, per esempio l'eliminazione di un torneo e il ritiro definitivo di un giocatore.
+Impatto: un Invio dato per abitudine mentre si legge la domanda conferma l'operazione. Per le azioni distruttive la convenzione e' l'opposta.
+Correzione proposta: aggiungere un parametro che imposti il No come predefinito e usarlo in tutte le conferme distruttive.
+
+F4, gravita' media, categoria ottimizzazione, src/gui/dialogs/fide_update_dialog.py righe 94-96, insieme a C14.
+La funzione di avanzamento accoda una chiamata wx.CallAfter a ogni notifica ricevuta dal thread, e le notifiche arrivano a ogni lettura del file XML, quindi decine di migliaia di volte per una sola importazione.
+Impatto: la coda degli eventi dell'interfaccia si riempie di chiamate che nella quasi totalita' dei casi non cambiano nulla, perche' il dialogo stesso filtra poi gli aggiornamenti. Durante l'importazione l'interfaccia risponde peggio proprio mentre l'utente aspetta.
+Correzione proposta: filtrare a monte, dentro ProgressFileObject, notificando solo al variare della percentuale intera.
+
+F5, gravita' media, categoria DRY, src/gui/dialogs/donation_dialog.py righe 11-79.
+Il dialogo di donazione ricostruisce da zero la stessa struttura di AccessibleMsgDialog, cioe' area di testo di sola lettura navigabile, pulsanti e applicazione delle impostazioni visive, aggiungendo soltanto il pulsante che apre il browser.
+Correzione proposta: derivarlo da AccessibleMsgDialog aggiungendo il pulsante, cosi' che ogni miglioria all'accessibilita' del dialogo base valga anche per questo.
+
+F6, gravita' media, categoria logica, src/gui/dialogs/tiebreak_config_dialog.py righe 411-430, collegato a B8.
+Il menu dei modificatori consente di attivarne piu' d'uno sullo stesso criterio, perche' ogni voce e' una casella indipendente, e la configurazione risultante viene salvata cosi' com'e'.
+Impatto: e' il lato interfaccia del difetto B8. L'utente puo' salvare una combinazione, per esempio Cut-1 insieme a Median-1, che il calcolo poi non applica: la classifica non corrisponde alla configurazione mostrata.
+Correzione proposta: decidere la regola una volta sola, e o impedire qui le combinazioni non ammesse o applicarle davvero in stats.py.
+
+F7, gravita' bassa, categoria regole generali, tutti i dialoghi.
+Ogni file dei dialoghi risolve la funzione di traduzione all'import con il consueto ripiego, come gia' rilevato in B17 ed E9.
+
+F8, gravita' bassa, categoria ottimizzazione, src/gui/dialogs/, quattro variabili estratte e mai usate segnalate da ruff, oltre a un ciclo su un dizionario che usa items pur non servendo la chiave.
+
+Cio' che nel blocco F e' risultato conforme e non richiede interventi
+AccessibleMsgDialog e' la scelta giusta e va tenuta come modello: il messaggio e' dentro un controllo di testo di sola lettura invece che in una etichetta statica, quindi si puo' navigare con le frecce e rileggere parola per parola con NVDA, il focus vi viene portato automaticamente all'apertura, i pulsanti sono tradotti e le impostazioni visive dell'utente sono applicate a tutti i controlli.
+Il dialogo di aggiornamento del database FIDE e' l'esempio migliore di accessibilita' del progetto. L'elaborazione gira in un thread separato, ogni ritorno verso l'interfaccia passa da wx.CallAfter, l'etichetta di stato viene aggiornata solo quando il testo cambia davvero, e l'annuncio verso lo screen reader viene forzato soltanto ogni cinque punti percentuali, invece che a ogni aggiornamento: e' esattamente il compromesso giusto fra informare e non essere verbosi. Anche la posizione dell'etichetta di stato immediatamente prima della barra di avanzamento e' una scelta deliberata e corretta, documentata in un commento.
+Il dialogo dei criteri di spareggio espone i nomi accessibili sui controlli con SetName e SetAccessible, mostra per ogni criterio selezionato la spiegazione estesa presa dal catalogo FIDE, e permette di riordinare i criteri, il che rende comprensibile una materia altrimenti opaca.
+Il dialogo del risultato nomina i giocatori dentro ciascuna opzione, per esempio 1 - 0 vince Rossi, invece di lasciare la sola notazione: chi ascolta capisce cosa sta scegliendo senza doversi ricordare chi ha il bianco.
+I preset audio locali in audio_presets.py sono documentati uno per uno con una descrizione in italiano del suono che producono, e la loro struttura, quartine di nota, durata, panoramica e scostamento di volume, e' compatibile con la grammatica di Acusticator 6.4, come verificato nella sezione dedicata all'audio.
+
+Blocco G, controllore, test e strumenti
+File esaminati con numero di righe:
+src/controller.py, 1167 righe
+tests/conftest.py, 24 righe
+tests/test_backup_cleanup.py, 46 righe
+tests/test_db.py, 51 righe
+tests/test_e2e.py, 372 righe
+tests/test_engine.py, 113 righe
+tests/test_fide_db.py, 542 righe
+tests/test_models.py, 55 righe
+tests/test_pgn.py, 79 righe
+tests/test_stats.py, 203 righe
+tests/test_utils.py, 109 righe
+translator_tool.py, 92 righe
+zip_maker.py, 14 righe
+Nota: controller.py non compariva nei sei blocchi annunciati all'inizio dell'analisi, per una mia svista nella suddivisione. E' stato recuperato qui ed esaminato per intero.
+
+Rilievi del blocco G
+
+G1, gravita' critica, categoria logica, src/gui/main_frame.py righe 4386-4416 e 4418-4500, in confronto con src/controller.py righe 712-732 e 932-956.
+Il giocatore che riceve il bye non ottiene i punti nell'interfaccia grafica. Il controllore testuale, sia alla generazione del primo turno sia a ogni turno successivo, scorre gli abbinamenti, individua quelli con risultato BYE e per ciascuno aggiunge il valore del bye ai punti del giocatore, gli scrive la voce nello storico, incrementa il contatore dei bye ricevuti e annota il turno. L'interfaccia grafica, negli stessi due punti, si limita ad aggiungere gli abbinamenti al turno: nessuna delle quattro operazioni viene eseguita. La ricerca nella storia del repository conferma che quel codice in main_frame.py non e' mai esistito.
+Impatto: in un torneo con un numero dispari di giocatori gestito dall'interfaccia grafica, chi riceve il bye non vede accreditato il mezzo punto o il punto previsto, la sua classifica e' sbagliata, e nel file TRF del turno successivo quel turno risulta semplicemente assente dal suo storico, quindi bbpPairings non sa che ha gia' ricevuto un bye e puo' assegnargliene un altro. I tornei archiviati nel repository contengono invece le voci di bye corrette con il punteggio giusto, il che indica che sono stati gestiti con la versione testuale.
+Il rilievo e' marcato come da confermare sul campo, perche' la prova definitiva richiede di creare un torneo con un numero dispari di iscritti nell'interfaccia grafica e guardare la classifica dopo il primo turno. La prova e' descritta in collaudo.txt.
+Correzione proposta: portare nell'interfaccia grafica la stessa registrazione del bye gia' scritta nel controllore, meglio ancora estraendola in un'unica funzione condivisa in tournament.py, chiamata da entrambe le interfacce.
+
+G2, gravita' alta, categoria logica, src/gui/main_frame.py riga 797.
+Il report del turno corrente scrive per il bye la dicitura BYE seguita da 1.0 punti, con il valore scritto direttamente nel testo.
+Impatto: il valore del bye e' configurabile e vale 0.5 per impostazione predefinita, come mostra lo stesso albero dei dati del torneo. L'utente legge quindi nel report un punteggio diverso da quello che il programma dovrebbe assegnare, e diverso da quello che ha configurato.
+Correzione proposta: usare il valore reale preso dal torneo.
+
+G3, gravita' media, categoria logica, src/controller.py righe 886-923.
+Il controllore chiama generate_pairings_for_round passando un dizionario ricavato dall'oggetto torneo. La funzione, durante la generazione, incrementa next_match_id dentro quel dizionario, ma il valore aggiornato non viene mai riportato sull'oggetto Tournament, che resta al numero precedente.
+Impatto: a ogni turno gli identificativi delle partite ripartono dallo stesso valore, quindi partite di turni diversi condividono lo stesso identificativo. Oggi non provoca danni visibili perche' la ricerca della partita avviene sempre dentro un turno specifico, ma e' un presupposto fragile: qualunque funzione futura che cerchi una partita per solo identificativo troverebbe la prima delle omonime.
+Correzione proposta: riportare next_match_id sull'oggetto torneo subito dopo la generazione, come gia' avviene per gli altri campi in cli_adapter.
+
+G4, gravita' media, categoria fragilita', requirements.txt e translator_tool.py righe 6-11.
+translator_tool.py richiede polib e deep_translator, che non compaiono in requirements.txt; il file gestisce l'assenza con un messaggio, quindi il difetto non e' invisibile, ma le dipendenze dichiarate del progetto restano incomplete. Nella direzione opposta, requirements.txt elenca pytest, che non e' installato nell'ambiente Python attualmente in uso, per cui la suite di test non e' eseguibile cosi' com'e'.
+Correzione proposta: separare le dipendenze di esecuzione da quelle di sviluppo, per esempio con un requirements-dev.txt che contenga pytest, polib e deep_translator. Non ho installato nulla: l'ambiente di Gabriele non si tocca senza il suo assenso.
+
+G5, gravita' media, categoria ottimizzazione, tests/, copertura.
+La suite conta centoventitre test in nove file, con una buona copertura del database FIDE, quarantasette test, e prove vere da capo a fondo del flusso di torneo. Restano pero' scoperti proprio i punti dove ho trovato i difetti piu' gravi: non c'e' un test sul criterio TPR, che avrebbe fatto emergere subito la tabella troncata del rilievo B1; non c'e' un test sulla classifica finale prodotta da finalize_tournament, che avrebbe mostrato l'uso di criteri di spareggio diversi da quelli configurati, rilievo D1; non c'e' un test sull'assegnazione dei punti del bye lungo il percorso dell'interfaccia grafica, rilievo G1; e non c'e' un test che verifichi il valore di ritorno di generate_pairings_for_round quando bbpPairings fallisce, rilievo B2.
+Correzione proposta: aggiungere questi quattro test insieme alle rispettive correzioni, cosi' che ciascuna nasca con la propria prova di non regressione.
+
+G6, gravita' media, categoria regole generali, src/controller.py, otto stringhe con separatori grafici.
+Le intestazioni del ciclo principale, per esempio quella del torneo attivo e quella di gestione del turno, sono racchiuse fra trattini ripetuti, con la stessa conseguenza gia' descritta in C5.
+
+G7, gravita' bassa, categoria fragilita', zip_maker.py.
+Lo strumento di confezionamento ha il percorso della cartella di distribuzione scritto nel codice, non verifica che esista, e produce sempre un archivio chiamato Tornello.zip senza il numero di versione.
+Impatto: se la compilazione non e' andata a buon fine, lo strumento crea in silenzio un archivio vuoto; e due release diverse producono archivi con lo stesso nome.
+Correzione proposta: verificare l'esistenza della cartella e includere la versione nel nome dell'archivio, prendendola da src/version.py.
+
+G8, gravita' bassa, categoria ottimizzazione, src/controller.py righe 1-53.
+Il modulo importa cinquantatre nomi da undici moduli in testa al file, fra cui alcuni che servono in un solo punto. Non e' un difetto in se', ma insieme alla lunghezza del ciclo principale, oltre duecento righe annidate fino a sei livelli, rende difficile seguire il flusso.
+Correzione proposta: estrarre dal ciclo principale almeno la gestione della fine turno e quella della generazione del turno successivo.
+
+Cio' che nel blocco G e' risultato conforme e non richiede interventi
+L'architettura del controllore e' la parte meglio progettata del programma. UIAdapter e' una classe astratta con metodi dichiarati con abstractmethod, e TournamentController lavora solo attraverso quell'interfaccia: la logica del torneo e' quindi separata dal modo in cui si parla con l'utente, ed e' la stessa separazione che il documento di refactoring chiede altrove. E' anche la base su cui si potrebbero risolvere le asimmetrie fra versione testuale e grafica descritte in E1 e G1.
+Il ciclo principale intercetta l'interruzione da tastiera e salva lo stato prima di uscire, e fa lo stesso davanti a un errore non previsto, con stampa della traccia: chi lavora a un torneo non perde il lavoro perche' ha premuto per sbaglio la combinazione di interruzione.
+La suite di test e' reale e non di facciata: prova il flusso completo di un torneo, compresi bye e ritiri, usa un torneo vero salvato come dato di prova tramite una fixture condivisa, verifica la migrazione del database giocatori, il formato TRF prodotto per bbpPairings e la lettura del suo output, la validazione dei PGN compresa la difesa da intestazioni malevole, e la risoluzione dei percorsi di salvataggio nei casi limite di unita' non disponibile e cartella non scrivibile.
+translator_tool.py preserva i segnaposto delle stringhe durante la traduzione automatica, che e' precisamente il punto in cui una traduzione automatica rovinerebbe il programma.
+
+Criticita' che riguardano GBUtils, da sottoporre a Gabriele senza intervenire
+Non ho modificato nulla dentro GBUtils, come prescritto. Quanto segue e' materiale per una decisione.
+Primo, la scrittura automatica dentro Acu_Collection.json. Come descritto in A4, ogni avvio di Tornello che riproduca un suono apre il file dei preset dentro la cartella di GBUtils e, se vi trova chiavi mancanti, lo riscrive aggiungendole. E' cosi' che i diciotto preset con prefisso tornello sono finiti nella collezione condivisa. La decisione da prendere e' se la collezione debba essere la banca suoni comune, e in tal caso i preset vanno inseriti una volta con un intervento esplicito e la scrittura automatica va tolta, oppure se ogni progetto debba restare padrone dei propri suoni, e allora Tornello deve limitarsi a leggere.
+Secondo, la grammatica della collezione non e' uniforme. Su 339 preset, 337 hanno lo score come lista di quartine e due, perfect_match e perfect_bonus, ce l'hanno gia' appiattito come lista di numeri. Un lettore scritto per una delle due forme fallisce sull'altra. Se la collezione diventa la banca comune di tutti i progetti, questa differenza va sanata alla fonte, oppure il lettore deve accettare entrambe le forme.
+Terzo, quattro preset esistono in due versioni diverse: apertura, spostamento, salto e successivo hanno contenuto diverso fra Acu_Collection.json e il file locale di Tornello. Serve decidere quale sia quella buona.
+Quarto, e' una proposta, non un rilievo: perche' la collezione sia davvero una banca suoni centralizzata servirebbe che la lettura del file, la fusione con eventuali preset locali e la riproduzione per nome stessero in un'unica funzione dentro GBUtils, per esempio una play_preset che riceve nome, volume e modalita' sincrona. Oggi ogni progetto riscrive quella logica per conto proprio, ed e' il motivo per cui Tornello ha un lettore che non regge due dei preset presenti nella collezione. La funzione andrebbe scritta in GBUtils, quindi non la tocco: attendo il tuo assenso.
+Quinto, la nota su polipo gia' presente nel documento di refactoring trova qui una conferma: Players_DB.py e Sync_DB.py lo chiamano senza percorsi assoluti, come descritto in C3. La correzione, per Tornello, sta tutta dentro Tornello e non richiede modifiche a polipo.
+
+Riepilogo finale
+Rilievi complessivi: 99.
+Di gravita' critica: 3. Sono B1, la tabella FIDE troncata che falsa i criteri TPR e APRO; B2, il valore di ritorno di generate_pairings_for_round che rende irraggiungibile la gestione dei fallimenti di abbinamento; G1, i punti del bye mai assegnati nell'interfaccia grafica.
+Di gravita' alta: 26.
+Di gravita' media: 44.
+Di gravita' bassa: 26.
+Per blocco: A ventiquattro, B ventuno, C diciassette, D undici, E dieci, F otto, G otto.
+Per categoria, i temi ricorrenti sono quattro. I percorsi relativi alla directory di lavoro, che toccano backup, log degli errori, file di lavoro del motore e salvataggio del torneo: A1, A2, A7, B6, C3 e D2. La divergenza fra interfaccia testuale e grafica, che fanno cose diverse sugli stessi dati: E1, G1 e G3. I separatori grafici e le tabelle a colonne nell'output, contrari alle regole di accessibilita': C5, D3, D4, E2, E4 e G6. La duplicazione di logica che ha gia' prodotto difetti reali: la tabella FIDE in due copie, B10 e B1; la classe di accessibilita' in due copie, E7; enter_escape in due copie, A3; la cache dei giocatori in tre copie, D7.
+
+Ordine di lavorazione proposto
+Primo gruppo, i tre difetti critici, che toccano il risultato del torneo e vanno corretti per primi, ciascuno accompagnato dal test che oggi manca: B1, G1, B2. Insieme a B1 conviene fare anche B10, cioe' unificare la tabella, perche' e' la causa del difetto.
+Secondo gruppo, la correttezza dei risultati e delle classifiche: D1, la classifica finale che ignora i criteri configurati; B3, i ritirati riabilitati da Time Machine e rollback; B5, i forfait contati nel calcolo Elo e nella performance; B4, il K-Factor sbagliato nei report; G2, il valore del bye scritto a mano nel report.
+Terzo gruppo, la sicurezza dei dati: C1, salvataggi non atomici del database giocatori e del torneo; C2, il database FIDE cancellato prima di avere il nuovo; A1, B6 e D2, cioe' backup e salvataggi che finiscono nella cartella sbagliata; A2, i file di lavoro del motore scritti in una cartella di sola lettura.
+Quarto gruppo, l'accessibilita': C5, D3, D4, E2 ed E4, cioe' separatori grafici, tabelle a colonne e la riga di stato troppo lunga, piu' F1 ed F3, cioe' la selezione automatica dei risultati sul focus e il pulsante Si predefinito nelle conferme distruttive. Sono correzioni indipendenti fra loro e si possono fare a piccoli passi.
+Quinto gruppo, l'audio: A22, i sette suoni muti nella versione compilata; A4, A5, A23 e A24 insieme, cioe' la riscrittura della gestione suoni sul modello a dizionario di Orologic, che risolve in un colpo solo la scrittura dentro GBUtils, la lettura ripetuta da disco e il dizionario ricostruito a ogni chiamata.
+Sesto gruppo, DRY e regole generali: A3, E7, D7, B19, C4 e A12, cioe' le duplicazioni e le difformita' formali, compresa l'intestazione autori.
+Settimo gruppo, prestazioni: B14 e D6, la memorizzazione dei valori di spareggio; C7, C9, C10, C12 e F4, il database FIDE e la sua importazione; E5, la barra di stato.
+Ottavo gruppo, il resto dei rilievi medi e bassi, e il lavoro strutturale di E3, cioe' la divisione di main_frame.py, che ha senso solo come intervento programmato a se' stante e non insieme alle correzioni puntuali.
+Prima di considerare chiusa la fase, e come previsto dal punto 3.7 del documento di refactoring, vanno eseguite le prove descritte in collaudo.txt, perche' cinque rilievi, A22, E6, G1, B9 e in parte A2, non sono verificabili senza usare il programma sul campo o senza il parere di Gabriele sul regolamento FIDE.
