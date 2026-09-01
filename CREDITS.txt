@@ -1,7 +1,8 @@
 CREDITI DI TORNELLO
 ===================
 
-Tornello è sviluppato da Gabriele Battaglia e Stella.
+Tornello è sviluppato da Gabriele Battaglia (IZ4APU) e ClaudIA.
+Alle versioni fino alla 9.3.14 ha collaborato l'intelligenza artificiale Stella.
 Dedicato all'Associazione Scacchisti Ciechi e Ipovedenti Italiani (ASCI) e al gruppo di Scacchierando.
 
 Ringraziamenti speciali a:

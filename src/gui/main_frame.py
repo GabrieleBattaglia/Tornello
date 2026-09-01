@@ -4,7 +4,7 @@ import json
 import os
 
 import wx
-from version import __date__, __version__
+from version import __authors__, __date__, __version__
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 from gui.settings import apply_visual_settings, save_settings
@@ -474,7 +474,7 @@ class MainFrame(wx.Frame):
         from utils import format_date_locale
 
         intro = _(
-            "Ciao! Benvenuto, sono Tornello v{} - Sviluppato da Gabriele Battaglia (IZ4APU) & Stella (AI)\n"
+            "Ciao! Benvenuto, sono Tornello v{} - Sviluppato da {}\n"
             "  sono nato il 10/06/2025 alle 00:34 e oggi ho {} e sarò felicissimo di aiutarti\n"
             "  a gestire i tuoi tornei con sistema svizzero/olandese.\n\n"
             "La data del mio ultimo rilascio è {}\n\n"
@@ -503,6 +503,7 @@ class MainFrame(wx.Frame):
             " - Ctrl+Y: Sincronizzazione del Database locale con il tracciato FIDE\n"
         ).format(
             __version__,
+            __authors__,
             age_str,
             format_date_locale(__date__.replace(".", "-")),
         )
@@ -3329,10 +3330,8 @@ class MainFrame(wx.Frame):
 
         if not credits_str:
             credits_str = _(
-                "CREDITI DI TORNELLO\n"
-                "===================\n\n"
-                "Tornello è sviluppato da Gabriele Battaglia e Stella."
-            )
+                "CREDITI DI TORNELLO\n\nTornello è sviluppato da {}."
+            ).format(__authors__)
         self.append_log(credits_str)
         self.main_text.SetFocus()
 

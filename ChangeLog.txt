@@ -3,7 +3,7 @@
 
 9.3.15 (2026.09.01)
 	+ Bugfix: Le partite non giocate (1-F, F-1, 0-0F) non concorrono piu' al calcolo della variazione Elo e della performance. Il punto assegnato per forfait continua a valere in classifica, come previsto dal regolamento, ma non produce piu' rating di torneo. Rilievo B5 dell'analisi di fase 1.
-	+ Fix: Aggiornata l'intestazione autori in version.py al formato previsto dalle regole di progetto.
+	+ Fix: Aggiornate le firme di sviluppo. La versione, il messaggio di benvenuto, i crediti, il file CREDITS.txt ed il manuale riportano ora gli autori attuali; il contributo di Stella resta indicato come storico fino alla 9.3.14. Il nome degli autori viene ora letto da un punto unico invece di essere ripetuto nelle stringhe.
 
 9.3.14 (2026.07.28)
 	+ Fix: Perfezionate le traduzioni in portoghese/brasiliano sostituendo la dicitura spagnola "Tablero" / "Tabuleiro" con il termine tecnico corretto "Mesa" nei riferimenti ai tabelloni ed accoppiamenti di torneo.
