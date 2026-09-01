@@ -188,10 +188,11 @@ get_k_factor ricava il coefficiente K da tre informazioni, il K ufficiale FIDE, 
 Impatto: nel report la condizione partite minori di trenta e' sempre vera, quindi ogni giocatore privo di K ufficiale FIDE riceve K uguale a 40, il valore riservato ai debuttanti, anche se e' un giocatore esperto da K 20. La variazione Elo stimata e mostrata nei report puo' quindi essere doppia rispetto a quella effettivamente applicata al database al momento della finalizzazione, calcolata invece con il dato giusto.
 Correzione proposta: passare sempre il record anagrafico del database locale, oppure copiare nel giocatore del torneo i due campi mancanti al momento dell'iscrizione.
 
-B5, gravita' alta, categoria logica, src/stats.py righe 100-142 e 168-198.
+B5, gravita' alta, categoria logica, src/stats.py righe 100-142 e 168-198. CORRETTO il 2026-09-01, versione 9.3.15.
 Ne' il calcolo della variazione Elo ne' quello della performance escludono le partite non giocate. Un risultato 1-F registra punteggio 1.0 per il vincitore e 0.0 per l'assente, e viene contato come partita valida a tutti gli effetti; lo stesso vale per F-1 e per la doppia assenza 0-0F. I commenti alle righe 108-113 di stats.py e alle righe 1523-1524 di ui.py mostrano che il dubbio era gia' stato posto e mai risolto.
 Impatto: la variazione Elo e la performance calcolate da Tornello si discostano da quelle FIDE ogni volta che nel torneo c'e' un forfait, e la performance e' anche uno dei dati che compaiono in classifica. Sul turno saltato da un giocatore, l'avversario si vede attribuire una vittoria piena anche nel calcolo del rating.
 Correzione proposta: saltare nel calcolo Elo e nella performance le voci di storico il cui risultato contiene la lettera F, cioe' 1-F, F-1 e 0-0F, coerentemente con quanto gia' fatto in compute_apro e compute_appo, che li escludono correttamente.
+Decisione di Gabriele del 2026-09-01: il punto assegnato per forfait vale in classifica ma non concorre alla performance ne' alla variazione Elo finale. Correzione applicata lo stesso giorno nella versione 9.3.15, come descritto nella sezione delle correzioni applicate in fondo al rapporto.
 
 B6, gravita' alta, categoria fragilita', src/tournament.py righe 119-120 e 228-229.
 Prima di due operazioni distruttive, la Time Machine e il rollback, il codice costruisce il nome del file torneo come stringa relativa e lo passa a create_backup, che a sua volta scrive in una cartella relativa. Il torneo pero' puo' essere salvato altrove, perche' il modello prevede i campi save_path e custom_save_path.
@@ -657,3 +658,17 @@ Formattazione. ruff format non ha nulla da ridire: cinquanta file gia' formattat
 Aggiornamento del riepilogo al 2026-09-01
 Il rilievo B9 e' stato chiuso senza intervento dopo la decisione arbitrale di Gabriele: il conteggio resta di 99 rilievi, di cui 98 aperti, con i medi che scendono da 44 a 43. I tre critici e i 26 alti sono invariati.
 Restano da decidere due punti prima di iniziare le correzioni: il rilievo B5, cioe' se escludere le partite non giocate dal calcolo della variazione Elo e della performance come prevede il regolamento FIDE sul rating, e le voci raccolte nella nota per il refactoring di GBUtils, che pero' appartengono al turno di GBUtils e non a questo.
+
+Correzioni applicate, aggiornamento del 2026-09-01
+Da qui in avanti il rapporto registra anche cio' che viene corretto, con la data e la versione risultante, cosi' che la fase resti tracciabile.
+
+B5, partite non giocate escluse dal rating. Applicata il 2026-09-01, versione 9.3.15.
+Decisione di riferimento: Gabriele, 2026-09-01. Il punto assegnato per forfait vale in classifica ma non concorre alla performance ne' alla variazione Elo finale.
+Cosa e' stato fatto: in src/stats.py e' stata aggiunta la funzione is_forfeit_result, che riconosce i risultati 1-F, F-1 e 0-0F, e la si richiama in calculate_elo_change e in calculate_performance_rating per saltare quelle voci dello storico. Sono stati rimossi i commenti che lasciavano la questione aperta. I punti in classifica non sono stati toccati, cosi' come non e' stata toccata la tabella dei risultati.
+Verifica: aggiunto a tests/test_stats.py il test test_forfeit_esclusi_da_elo_e_performance, che controlla il riconoscimento dei tre risultati di forfait, verifica che un giocatore con una vittoria giocata piu' una per forfait ottenga la stessa variazione Elo e la stessa performance di chi ha soltanto la vittoria giocata, e che chi ha solo partite non giocate resti a variazione zero e performance pari all'Elo iniziale. La suite completa passa: settantaquattro test.
+Questione collegata, non toccata e da decidere: il conteggio games_this_tournament in ui.py righe 1516-1524 continua a includere le partite non giocate, e quel numero viene sommato a games_played nel database, dove serve a stabilire se il giocatore ha superato le trenta partite ai fini del K-Factor. Se le partite non giocate non producono rating, e' ragionevole che non contino nemmeno li', ma e' un terzo effetto che la decisione non nominava e non l'ho esteso di mia iniziativa.
+Rimane inoltre da decidere se la stessa esclusione vada applicata ai criteri di spareggio TPR e PTP, che oggi calcolano una performance includendo le partite non giocate del giocatore stesso, mentre APRO e APPO escludono gia' correttamente gli avversari incontrati per forfait.
+
+A12, intestazione autori. Applicata il 2026-09-01, versione 9.3.15.
+src/version.py ora riporta Gabriele Battaglia (IZ4APU) e ClaudIA (Claude Opus 5 UltraCode), con data aggiornata.
+Da decidere: il nome dell'assistente precedente compare ancora in altri quattro punti, cioe' gui/main_frame.py righe 477 e 3334, CREDITS.txt riga 4 e MANUALE.txt riga 14. Sono testi pubblici e il credito storico e' una scelta editoriale di Gabriele, quindi non li ho toccati: vanno sostituiti, affiancati o lasciati come sono su sua indicazione.

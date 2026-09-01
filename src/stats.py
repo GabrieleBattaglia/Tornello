@@ -6,6 +6,15 @@ from dateutil.relativedelta import relativedelta
 from utils import format_points, get_player_by_id
 
 
+def is_forfeit_result(result_str):
+    """
+    Vero se il risultato indica una partita non giocata: 1-F, F-1 o 0-0F.
+    I punti assegnati per forfait valgono in classifica ma non concorrono
+    al calcolo della variazione Elo e della performance.
+    """
+    return "F" in str(result_str or "").upper()
+
+
 def get_k_factor(player_data_dict, tournament_start_date_str):
     """
     Determina il K-Factor FIDE. Ora dà priorità al valore ufficiale FIDE se presente nel DB,
@@ -108,13 +117,10 @@ def calculate_elo_change(player, tournament_players_dict):
         if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
             continue
 
-        # Salta partite marcate come 0-0F (Forfait/Non giocate) nel calcolo Elo
-        # (il risultato è 0-0 ma non conta come partita giocata ai fini Elo)
-        # NOTA: Potrebbe essere necessario marcare esplicitamente queste partite
-        #       se la logica attuale non distingue "0-0F" da un pareggio 0.5-0.5
-        #       Per ora, assumiamo che "score" sia None o 0.0 per forfait.
-        #       Se usi "0-0F" come result string, potremmo aggiungere un check qui.
-        # if result_entry.get("result") == "0-0F": continue # Opzionale
+        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
+        # forfait vale in classifica ma non concorre alla variazione Elo.
+        if is_forfeit_result(result_entry.get("result")):
+            continue
 
         opponent = tournament_players_dict.get(opponent_id)
         if not opponent or "initial_elo" not in opponent:
@@ -171,6 +177,10 @@ def calculate_performance_rating(player, tournament_players_dict):
         score = result_entry.get("score")
         # Salta BYE e partite senza avversario o punteggio
         if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
+            continue
+        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
+        # forfait vale in classifica ma non concorre alla performance.
+        if is_forfeit_result(result_entry.get("result")):
             continue
         opponent = tournament_players_dict.get(opponent_id)
         if not opponent or "initial_elo" not in opponent:

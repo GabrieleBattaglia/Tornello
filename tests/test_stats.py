@@ -201,3 +201,95 @@ def test_dynamic_standings_sorting():
     ]
     assert header_line2.find(_("Punti")) < header_line2.find("ARO")
     assert header_line2.find("ARO") < header_line2.find("BH")
+
+
+def test_forfeit_esclusi_da_elo_e_performance():
+    """I punti da forfait valgono in classifica ma non nel calcolo del rating.
+    Regola stabilita da Gabriele il 2026-09-01, rilievo B5 della fase 1."""
+    from stats import is_forfeit_result
+
+    assert is_forfeit_result("1-F")
+    assert is_forfeit_result("F-1")
+    assert is_forfeit_result("0-0F")
+    assert not is_forfeit_result("1-0")
+    assert not is_forfeit_result("0-1")
+    assert not is_forfeit_result("1/2-1/2")
+    assert not is_forfeit_result(None)
+
+    avversari = {
+        "AVV001": {"id": "AVV001", "initial_elo": 1600.0},
+        "AVV002": {"id": "AVV002", "initial_elo": 1600.0},
+    }
+
+    # Il giocatore vince una partita giocata e una per forfait: solo la prima conta.
+    giocatore = {
+        "id": "TST001",
+        "initial_elo": 1600.0,
+        "k_factor": 20,
+        "results_history": [
+            {
+                "round": 1,
+                "opponent_id": "AVV001",
+                "color": "white",
+                "result": "1-0",
+                "score": 1.0,
+            },
+            {
+                "round": 2,
+                "opponent_id": "AVV002",
+                "color": "black",
+                "result": "1-F",
+                "score": 1.0,
+            },
+        ],
+    }
+
+    solo_giocata = {
+        "id": "TST002",
+        "initial_elo": 1600.0,
+        "k_factor": 20,
+        "results_history": [
+            {
+                "round": 1,
+                "opponent_id": "AVV001",
+                "color": "white",
+                "result": "1-0",
+                "score": 1.0,
+            },
+        ],
+    }
+
+    # Con Elo pari, una vittoria giocata su un avversario di pari forza vale +10 con K 20.
+    assert calculate_elo_change(giocatore, avversari) == 10
+    assert calculate_elo_change(giocatore, avversari) == calculate_elo_change(
+        solo_giocata, avversari
+    )
+    assert calculate_performance_rating(
+        giocatore, avversari
+    ) == calculate_performance_rating(solo_giocata, avversari)
+
+    # Chi ha solo partite non giocate non ha rating di torneo: nessuna variazione Elo
+    # e performance pari all'Elo iniziale.
+    solo_forfeit = {
+        "id": "TST003",
+        "initial_elo": 1500.0,
+        "k_factor": 20,
+        "results_history": [
+            {
+                "round": 1,
+                "opponent_id": "AVV001",
+                "color": "white",
+                "result": "1-F",
+                "score": 1.0,
+            },
+            {
+                "round": 2,
+                "opponent_id": "AVV002",
+                "color": "black",
+                "result": "0-0F",
+                "score": 0.0,
+            },
+        ],
+    }
+    assert calculate_elo_change(solo_forfeit, avversari) == 0
+    assert calculate_performance_rating(solo_forfeit, avversari) == 1500
