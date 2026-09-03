@@ -41,6 +41,15 @@ def save_settings(settings):
     except Exception:
         pass
 
+    # Il volume dei suoni viene tenuto in memoria da utils per non rileggere il
+    # file a ogni effetto: se qui e' cambiato, quella copia va buttata.
+    try:
+        from utils import invalida_volume_audio
+
+        invalida_volume_audio()
+    except ImportError:
+        pass
+
     # Sincronizza selected_language.json con il codice lingua delle impostazioni
     try:
         lang_code = settings.get("language", "it")

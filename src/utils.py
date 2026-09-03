@@ -133,114 +133,84 @@ def parse_flexible_date(date_input_str):
     raise ValueError(f"Formato data '{date_str}' non riconosciuto.")
 
 
+# Il volume delle impostazioni si legge una volta sola e si tiene da parte:
+# prima veniva riletto da disco a ogni singolo suono, e i suoni sono tanti.
+_volume_impostazioni = None
+
+
+def invalida_volume_audio():
+    """Da chiamare quando l'utente cambia il volume nelle impostazioni."""
+    global _volume_impostazioni
+    _volume_impostazioni = None
+
+
+def _volume_base():
+    """Il volume scelto dall'utente, da 0 a 1. Mezzo se non risulta niente."""
+    global _volume_impostazioni
+    if _volume_impostazioni is not None:
+        return _volume_impostazioni
+    volume = 0.5
+    try:
+        import json
+
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Settings.json")
+        if os.path.exists(percorso):
+            with open(percorso, encoding="utf-8") as f:
+                volume = json.load(f).get("volume", 50) / 100.0
+    except (OSError, ValueError, ImportError):
+        pass
+    _volume_impostazioni = max(0.0, min(1.0, volume))
+    return _volume_impostazioni
+
+
+# Quale suono della collezione va con quale evento del programma. E' l'unica
+# cosa che riguarda Tornello: leggere la collezione e convertirne i volumi lo
+# fa Acusticator, che e' anche il solo a sapere dove trovarla da eseguibile.
+EVENTI = {
+    "avvio": "tornello_avvio",
+    "chiusura": "tornello_chiusura",
+    "errore": "rifiutato",
+    "conferma": "roger_cw_conferma",
+    "cancellato": "cancellato",
+    "salvato": "written_ok",
+    "nuovo_turno": "tornello_abbinamento",
+    "aggiunta_giocatore": "tornello_aggiunta_giocatore",
+    "ritiro_giocatore": "tornello_ritiro_giocatore",
+    "rimozione_giocatore": "tornello_rimozione_giocatore",
+    "conclusione_turno": "tornello_conclusione_turno",
+    "conclusione_torneo": "tornello_conclusione_torneo",
+    "time_machine": "tornello_time_machine",
+    "pianifica_crea": "tornello_pianifica_crea",
+    "pianifica_modifica": "tornello_pianifica_modifica",
+    "pianifica_rimuovi": "tornello_pianifica_rimuovi",
+    "risultato_1-0": "tornello_risultato_1_0",
+    "risultato_0-1": "tornello_risultato_0_1",
+    "risultato_1/2-1/2": "tornello_risultato_patta",
+    "risultato_1-F": "tornello_risultato_1_F",
+    "risultato_F-1": "tornello_risultato_F_1",
+    "risultato_0-0F": "tornello_risultato_0_0F",
+    "notifica": "notifica",
+}
+
+
 def play_sound(event_name, torneo=None, sync=False):
     """
     Riproduce un effetto acustico per feedback utente.
-    event_name può essere: 'avvio', 'chiusura', 'errore', 'conferma', 'cancellato',
-    'salvato', 'nuovo_turno', 'aggiunta_giocatore', 'ritiro_giocatore',
-    'rimozione_giocatore', 'conclusione_turno', 'conclusione_torneo', 'time_machine',
-    'pianifica_crea', 'pianifica_modifica', 'pianifica_rimuovi',
-    'risultato_1-0', 'risultato_0-1', 'risultato_1/2-1/2', 'risultato_1-F', 'risultato_F-1', 'risultato_0-0F',
-    'notifica'.
+    event_name puo' essere una delle chiavi di EVENTI, oppure direttamente il
+    nome di un preset della collezione condivisa, che viene cercato tale e
+    quale: e' il caso di apertura, spostamento, lista e simili.
+    Il volume viene da quello scelto nelle impostazioni, o da base_volume del
+    torneo se il torneo ne ha uno suo. Restituisce True se il suono e' partito.
     """
-    import json
-    import os
-    import sys
+    from GBUtils import Acusticator
 
-    # Determina il volume base dal file di impostazioni globali o dal torneo
-    base_volume = 0.5
-    try:
-        from config import user_data_path
-
-        settings_path = user_data_path("Tornello - Settings.json")
-        if os.path.exists(settings_path):
-            with open(settings_path, "r", encoding="utf-8") as sf:
-                s_data = json.load(sf)
-                base_volume = s_data.get("volume", 50) / 100.0
-    except Exception:
-        pass
-
+    volume = _volume_base()
     if torneo and isinstance(torneo, dict):
-        base_volume = torneo.get("base_volume", base_volume)
-
-    # Mappatura eventi su preset
-    event_presets = {
-        "avvio": "tornello_avvio",
-        "chiusura": "tornello_chiusura",
-        "errore": "rifiutato",
-        "conferma": "roger_cw_conferma",
-        "cancellato": "cancellato",
-        "salvato": "written_ok",
-        "nuovo_turno": "tornello_abbinamento",
-        "aggiunta_giocatore": "tornello_aggiunta_giocatore",
-        "ritiro_giocatore": "tornello_ritiro_giocatore",
-        "rimozione_giocatore": "tornello_rimozione_giocatore",
-        "conclusione_turno": "tornello_conclusione_turno",
-        "conclusione_torneo": "tornello_conclusione_torneo",
-        "time_machine": "tornello_time_machine",
-        "pianifica_crea": "tornello_pianifica_crea",
-        "pianifica_modifica": "tornello_pianifica_modifica",
-        "pianifica_rimuovi": "tornello_pianifica_rimuovi",
-        "risultato_1-0": "tornello_risultato_1_0",
-        "risultato_0-1": "tornello_risultato_0_1",
-        "risultato_1/2-1/2": "tornello_risultato_patta",
-        "risultato_1-F": "tornello_risultato_1_F",
-        "risultato_F-1": "tornello_risultato_F_1",
-        "risultato_0-0F": "tornello_risultato_0_0F",
-        "notifica": "notifica",
-    }
-
-    preset_name = event_presets.get(event_name, event_name)
-
-    try:
-        import GBUtils
-        from GBUtils import Acusticator
-
-        gbutils_dir = os.path.dirname(GBUtils.__file__)
-        db_path = os.path.join(gbutils_dir, "Acu_Collection.json")
-
-        from audio_presets import custom_presets
-
-        preset_data = None
-        if os.path.exists(db_path):
-            try:
-                with open(db_path, "r", encoding="utf-8") as f:
-                    collection = json.load(f)
-
-                db_dirty = False
-                for k, v in custom_presets.items():
-                    if k not in collection:
-                        collection[k] = v
-                        db_dirty = True
-
-                if db_dirty:
-                    with open(db_path, "w", encoding="utf-8") as f:
-                        json.dump(collection, f, indent=4, ensure_ascii=False)
-
-                preset_data = collection.get(preset_name)
-            except Exception as e:
-                sys.stderr.write(f"Acusticator DB Error: {e}\n")
-
-        if not preset_data:
-            preset_data = custom_presets.get(preset_name)
-
-        if not preset_data:
-            return
-
-        score_flat = []
-        for q in preset_data.get("score", []):
-            note, dur, pan, vol_delta = q
-            vol = max(0.0, min(1.0, base_volume + vol_delta))
-            score_flat.extend([note, dur, pan, vol])
-
-        Acusticator(
-            score_flat,
-            kind=preset_data.get("kind", 1),
-            adsr=preset_data.get("adsr", [0.005, 0.0, 100.0, 0.005]),
-            sync=sync,
-        )
-    except Exception as e:
-        sys.stderr.write(f"Acusticator Play Error: {e}\n")
+        volume = torneo.get("base_volume", volume)
+    return Acusticator.play(EVENTI.get(event_name, event_name),
+                            sync=sync, volume=volume)
 
 
 def _ensure_players_dict(torneo):

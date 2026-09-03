@@ -3,7 +3,7 @@ import os
 
 import wx
 from config import resource_path
-from utils import play_sound
+from utils import invalida_volume_audio, play_sound
 from version import __version__
 
 from gui.settings import apply_visual_settings
@@ -372,6 +372,8 @@ class VisualSettingsDialog(wx.Dialog):
                 json.dump(temp_settings, f, indent=4)
         except Exception:
             pass
+        # Il suono di prova deve farsi sentire al volume appena scelto.
+        invalida_volume_audio()
         play_sound("notifica")
 
     def on_reset(self, event):

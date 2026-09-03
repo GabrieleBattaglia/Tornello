@@ -7,6 +7,15 @@ base_path = os.path.abspath(SPECPATH)
 src_path = os.path.join(base_path, 'src')
 gbutils_path = os.path.abspath(os.path.join(base_path, '..', 'GBUtils'))
 
+# La collezione dei suoni condivisa va dentro il pacchetto: da quando
+# play_sound si appoggia ad Acusticator e' li' che stanno tutti i preset,
+# compresi i trentuno che prima Tornello si portava in audio_presets.py.
+import os
+
+import GBUtils
+
+COLLEZIONE_SUONI = os.path.join(os.path.dirname(GBUtils.__file__), 'Acu_Collection.json')
+
 a = Analysis(
     ['tornello.py'],
     pathex=[src_path, gbutils_path],
@@ -16,7 +25,8 @@ a = Analysis(
         ('locales', 'locales'), # La cartella locales e tutto il suo contenuto per le traduzioni
         ('MANUALE.txt', '.'),
         ('ChangeLog.txt', '.'),
-        ('CREDITS.txt', '.')
+        ('CREDITS.txt', '.'),
+        (COLLEZIONE_SUONI, '.'),  # Collezione condivisa di GBUtils (v9.3.16)
     ],
     hiddenimports=['unidecode'],
     hookspath=[],
