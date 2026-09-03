@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.17 (2026.09.03)
+	+ Fix: Il controllo aggiornamenti da riga di comando ora dice sempre com'e' andata: se la versione e' gia' l'ultima lo comunica, e se la rete non e' raggiungibile lo dice con un messaggio tranquillo invece di restare in silenzio. Issue #34.
+	+ Nota per la Issue #34: il file auto_updater_error.log trovato dall'utente era prodotto dalla versione di GBUtils inclusa nella release v9.3.13, l'ultima pubblicata. La correzione che gestisce in silenzio l'assenza di connessione e' entrata in GBUtils il 28 luglio 2026, poche ore dopo quella compilazione, quindi il file non verra' piu' creato dalla prossima release.
+
 9.3.16 (2026.09.03)
 	+ Refactoring: L'audio passa ad Acusticator di GBUtils. play_sound era la quarta copia del lettore della collezione fra i progetti: a ogni singolo suono rileggeva le impostazioni e poi apriva e analizzava i 118 KB di Acu_Collection.json, con 167 punti di chiamata nel codice.
 	+ Bugfix: play_sound non riscrive piu' dentro la collezione condivisa mentre il programma gira. Lo faceva per aggiungerci i preset mancanti, e da eseguibile compilato quella scrittura sarebbe finita in _internal, che ogni aggiornamento sostituisce, fallendo in silenzio.

@@ -10,10 +10,11 @@ Cosa osservare: il giocatore che ha ricevuto il bye ha 0.5 punti oppure zero. Ap
 Cosa mi aspetto, se il rilievo e' fondato: zero punti e nessuna voce nello storico.
 Esito:
 
-Prova 2, suoni nella versione compilata. Riguarda il rilievo A22, gravita' alta.
-Cosa fare: compilare Tornello con PyInstaller secondo le istruzioni di Compilazione e invio release.txt, poi avviare l'eseguibile prodotto in dist, non il sorgente. Provare in sequenza un'azione che conferma, una che da' errore, un salvataggio, una cancellazione e una notifica.
-Cosa osservare: se quei cinque suoni si sentono. Nel sorgente si sentono di sicuro, la prova serve proprio a confrontare le due situazioni.
-Cosa mi aspetto, se il rilievo e' fondato: silenzio su conferma, errore, salvataggio, cancellazione e notifica, mentre i suoni specifici di Tornello, per esempio avvio, abbinamento e risultati, continuano a funzionare.
+Prova 2, suoni nella versione compilata. Riscritta il 2026-09-03 dopo il passaggio al motore audio condiviso.
+Il rilievo A22, cioe' i sette suoni che nella versione compilata non si sentivano perche' la collezione non veniva inclusa, e' stato risolto dalla versione 9.3.16: play_sound ora chiama Acusticator.play di GBUtils e tornello.spec porta dentro Acu_Collection.json. La prova serve quindi a confermare che il nuovo motore funziona anche da eseguibile, non piu' a dimostrare il difetto.
+Cosa fare: compilare Tornello secondo le istruzioni di Compilazione e invio release.txt, poi avviare l'eseguibile prodotto in dist, non il sorgente. Provare in sequenza il suono di avvio, uno di conferma, uno di errore, un salvataggio, una cancellazione, una notifica, la generazione di un turno e l'inserimento di un risultato di ciascun tipo.
+Cosa osservare: che tutti si sentano, che siano quelli giusti e che nessuno arrivi in ritardo rispetto all'azione. Verificare inoltre che nella cartella dell'eseguibile non compaia alcun file di errore dopo la sessione.
+Cosa mi aspetto: tutti i suoni presenti e immediati.
 Esito:
 
 Prova 3, file di lavoro del motore nella versione compilata. Riguarda il rilievo A2, gravita' alta.
@@ -60,10 +61,22 @@ Cosa osservare: in quale turno viene registrato il risultato, guardando lo stori
 Nota: se il programma non ti lascia mai arrivare a questa situazione, e' una buona notizia e va scritto nell'esito, perche' significa che il difetto non e' raggiungibile.
 Esito:
 
-Prova 10, questione arbitrale sul Buchholz. Riguarda il rilievo B9, gravita' media.
-Non e' una prova sul programma ma una decisione tua. La domanda e': secondo il regolamento FIDE sugli spareggi in vigore dal primo marzo 2026, nel calcolo del Buchholz i turni non giocati, cioe' bye e forfait, vanno conteggiati con il meccanismo dell'avversario virtuale oppure semplicemente saltati come fa oggi Tornello.
+Prova 10, questione arbitrale sul Buchholz. Riguarda il rilievo B9, gravita' media. Aggiornata il 2026-09-03 dopo la ricerca nel Handbook.
+Non e' una prova sul programma ma una decisione tua, e ora la fonte c'e'. Il regolamento sugli spareggi, articolo 15.3, rimanda per i tornei svizzeri all'articolo 16, che riguarda i criteri basati sui risultati degli avversari, quindi Buchholz e Sonneborn-Berger. L'articolo 16.4 stabilisce che per lo spareggio del giocatore stesso ogni turno non giocato va valutato come una partita contro un fittizio, con il risultato corrispondente ai punti assegnati e con il punteggio del fittizio pari a quello del giocatore, entro i limiti indicati. L'articolo 16.3 disciplina l'effetto sugli spareggi degli avversari e il 16.5 detta una regola apposita per il Cut-1, che tocca anche il rilievo B8. Tornello oggi salta del tutto quei turni.
+La domanda quindi non e' piu' quale sia la regola, ma se adeguarvisi: implementare l'articolo 16 con il fittizio e i suoi limiti, oppure tenere il comportamento attuale e documentarlo come scelta.
 La tua risposta:
 
 Prova 11, verifica generale dopo la lettura del rapporto.
 Se leggendo analisi_codice_fase_1.txt ti vengono in mente comportamenti anomali che hai notato usando Tornello e che non compaiono fra i rilievi, scrivili qui sotto: li verifichero' prima di iniziare le correzioni.
 Segnalazioni aggiuntive:
+
+Prova 12, controllo aggiornamenti senza connessione. Riguarda la Issue #34, segnalata da Marcos.
+Cosa fare: staccare la connessione di rete, oppure disattivare la scheda, e avviare Tornello prima nella versione grafica e poi con l'opzione --cli. Al termine guardare nella cartella del programma se e' comparso un file chiamato auto_updater_error.log.
+Cosa osservare: nella versione da riga di comando deve comparire il messaggio che dice che il controllo non e' riuscito, probabilmente per mancanza di connessione, e che il programma funziona ugualmente; nella versione grafica non deve comparire nulla, perche' il controllo all'avvio e' silenzioso per scelta. In nessuno dei due casi deve essere creato il file di log.
+Nota: la prova ha valore soltanto sull'eseguibile ricompilato adesso. La release v9.3.13, quella che ha in mano Marcos, contiene una versione di GBUtils precedente alla correzione e il file di log lo scrive.
+Esito:
+
+Prova 13, torneo ampio come quello di Marcos.
+Cosa fare: creare un torneo con sessanta giocatori, portarlo avanti di due o tre turni inserendo risultati, e provare anche a ritirare un giocatore in modo che il numero degli attivi diventi dispari.
+Cosa osservare: i tempi di generazione degli abbinamenti e di apertura della classifica, che sono i due punti dove il rapporto segnala ricalcoli ripetuti, e soprattutto cosa succede al giocatore che riceve il bye dopo il ritiro, perche' e' il difetto critico G1 gia' oggetto della prova 1.
+Esito:

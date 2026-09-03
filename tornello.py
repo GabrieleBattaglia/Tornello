@@ -99,6 +99,16 @@ def check_updates():
                     ).format(latest_ver=latest_ver)
                 )
                 print(_("Riprova più tardi."))
+        elif latest_ver:
+            print(_("Nessun aggiornamento disponibile: hai già l'ultima versione."))
+        else:
+            # update_checker restituisce una versione vuota anche quando la rete
+            # non è raggiungibile: è un evento normale, non un errore del programma.
+            print(
+                _(
+                    "Controllo aggiornamenti non riuscito, probabilmente manca la connessione. Il programma funziona ugualmente."
+                )
+            )
     except Exception as e_update:
         print(_("Controllo aggiornamenti fallito: {}").format(e_update))
 
