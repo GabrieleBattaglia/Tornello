@@ -3387,8 +3387,27 @@ class MainFrame(wx.Frame):
             from gui.dialogs.fide_update_dialog import FideUpdateDialog
 
             update_dlg = FideUpdateDialog(self, self.settings)
-            update_dlg.ShowModal()
+            esito = update_dlg.ShowModal()
             update_dlg.Destroy()
+
+            # La versione testuale propone la sincronizzazione subito dopo un
+            # aggiornamento riuscito; qui mancava del tutto. FideUpdateDialog
+            # chiude con wx.ID_OK solo quando l'aggiornamento e' andato a buon
+            # fine, vedi il suo on_update_complete.
+            if esito == wx.ID_OK:
+                dlg_prop = AccessibleMsgDialog(
+                    self,
+                    _("Sincronizzazione Database"),
+                    _(
+                        "Database FIDE aggiornato. Vuoi sincronizzare ora il tuo database personale dei giocatori con i nuovi dati?"
+                    ),
+                    style=wx.YES_NO,
+                )
+                if dlg_prop.ShowModal() == wx.ID_YES:
+                    dlg_prop.Destroy()
+                    self.on_sync_db(None)
+                else:
+                    dlg_prop.Destroy()
         else:
             dlg.Destroy()
 
@@ -3409,7 +3428,13 @@ class MainFrame(wx.Frame):
     def on_close(self, event):
         from utils import play_sound
 
-        play_sound("chiusura", self.current_tournament, sync=True)
+        # sync=True aspetterebbe senza limite che l'audio segnali la fine:
+        # se lo stream smette di rispondere, per esempio subito dopo un
+        # carico pesante come l'importazione FIDE, l'applicazione resta
+        # bloccata in chiusura e va terminata a forza. Un tempo massimo
+        # tiene comunque l'attesa breve, senza lasciare la chiusura in balia
+        # dell'audio.
+        play_sound("chiusura", self.current_tournament, sync=1.5)
 
         try:
             import io

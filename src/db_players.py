@@ -13,6 +13,7 @@ from config import (
     FIDE_XML_DOWNLOAD_URL,
     PLAYER_DB_FILE,
     PLAYER_DB_TXT_FILE,
+    user_data_path,
 )
 from fide_db import (
     bulk_insert_players,
@@ -32,6 +33,22 @@ except ImportError:
 
     def unidecode(x):
         return x
+
+
+def _scrivi_log_errore(messaggio):
+    """
+    Registra su file un errore che altrimenti resterebbe solo in console, dove
+    su un eseguibile senza finestra di console o su una console che scorre
+    sparisce senza che nessuno possa piu' leggerlo.
+    """
+    try:
+        percorso = user_data_path("error.log")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(percorso, "a", encoding="utf-8") as f:
+            f.write(f"\n=== {messaggio} - {timestamp} ===\n")
+            f.write(traceback.format_exc())
+    except OSError:
+        pass
 
 
 def _cerca_giocatore_nel_db_fide(search_term):
@@ -300,18 +317,23 @@ def sincronizza_db_personale():
                         updates["birth_date"] = f"{fide_birth_year}-01-01"
 
                     # Nuovi campi FIDE
+                    # Il secondo elemento di ogni coppia e' il nome di campo
+                    # usato ovunque nel database locale, lo stesso scritto da
+                    # crea_nuovo_giocatore_nel_db: prima non coincideva, e le
+                    # associazioni finivano su chiavi mai lette da nessun'altra
+                    # parte del programma.
                     fide_fields_to_sync = [
-                        ("elo_rapid", "fide_elo_rapid"),
-                        ("elo_blitz", "fide_elo_blitz"),
-                        ("games", "fide_games"),
+                        ("elo_rapid", "elo_rapid"),
+                        ("elo_blitz", "elo_blitz"),
+                        ("games", "fide_standard_games"),
                         ("rapid_games", "fide_rapid_games"),
                         ("rapid_k", "fide_rapid_k"),
                         ("blitz_games", "fide_blitz_games"),
                         ("blitz_k", "fide_blitz_k"),
-                        ("w_title", "fide_w_title"),
-                        ("o_title", "fide_o_title"),
-                        ("foa_title", "fide_foa_title"),
-                        ("flag", "fide_flag"),
+                        ("w_title", "w_title"),
+                        ("o_title", "o_title"),
+                        ("foa_title", "foa_title"),
+                        ("flag", "flag"),
                     ]
                     for fide_key, local_key in fide_fields_to_sync:
                         fide_val = chosen_match.get(fide_key)
@@ -376,18 +398,23 @@ def sincronizza_db_personale():
                         updates["birth_date"] = f"{fide_birth_year}-01-01"
 
                     # Nuovi campi FIDE
+                    # Il secondo elemento di ogni coppia e' il nome di campo
+                    # usato ovunque nel database locale, lo stesso scritto da
+                    # crea_nuovo_giocatore_nel_db: prima non coincideva, e le
+                    # associazioni finivano su chiavi mai lette da nessun'altra
+                    # parte del programma.
                     fide_fields_to_sync = [
-                        ("elo_rapid", "fide_elo_rapid"),
-                        ("elo_blitz", "fide_elo_blitz"),
-                        ("games", "fide_games"),
+                        ("elo_rapid", "elo_rapid"),
+                        ("elo_blitz", "elo_blitz"),
+                        ("games", "fide_standard_games"),
                         ("rapid_games", "fide_rapid_games"),
                         ("rapid_k", "fide_rapid_k"),
                         ("blitz_games", "fide_blitz_games"),
                         ("blitz_k", "fide_blitz_k"),
-                        ("w_title", "fide_w_title"),
-                        ("o_title", "fide_o_title"),
-                        ("foa_title", "fide_foa_title"),
-                        ("flag", "fide_flag"),
+                        ("w_title", "w_title"),
+                        ("o_title", "o_title"),
+                        ("foa_title", "foa_title"),
+                        ("flag", "flag"),
                     ]
                     for fide_key, local_key in fide_fields_to_sync:
                         fide_val = chosen_match.get(fide_key)
@@ -824,7 +851,7 @@ def save_players_db_txt(players_db):
 
                 extra_titles = [
                     player.get(t)
-                    for t in ["fide_w_title", "fide_o_title", "fide_foa_title"]
+                    for t in ["w_title", "o_title", "foa_title"]
                     if player.get(t)
                 ]
                 extra_titles_str = (
@@ -838,18 +865,18 @@ def save_players_db_txt(players_db):
                         sesso=sesso,
                         federazione=federazione_giocatore,
                         fide_id=fide_id_numerico,
-                        flag=player.get("fide_flag") or "N/D",
+                        flag=player.get("flag") or "N/D",
                         extra=extra_titles_str,
                     )
                 )
                 f.write(
-                    f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_games', 'N/D')})\n"
+                    f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_standard_games', 'N/D')})\n"
                 )
                 f.write(
-                    f"\tElo Rapid: {player.get('fide_elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n"
+                    f"\tElo Rapid: {player.get('elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n"
                 )
                 f.write(
-                    f"\tElo Blitz: {player.get('fide_elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n"
+                    f"\tElo Blitz: {player.get('elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n"
                 )
 
                 games_played_total = player.get("games_played", 0)
@@ -940,7 +967,14 @@ def save_players_db_txt(players_db):
         print(
             _("Errore imprevisto durante il salvataggio del TXT del DB: {}").format(e)
         )
-        traceback.print_exc()  # Stampa traceback per errori non gestiti
+        traceback.print_exc()
+        # Il file JSON, l'unico che conta per i dati, e' gia' salvato a
+        # questo punto: qui va solo il TXT leggibile. L'eccezione veniva
+        # solo stampata in console, dove su un eseguibile senza console o
+        # su una finestra che scorre sparisce senza lasciare traccia.
+        _scrivi_log_errore(
+            "Errore durante il salvataggio del TXT del database giocatori"
+        )
 
 
 def generate_player_id(first_name, last_name, players_db_dict):

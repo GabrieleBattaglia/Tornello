@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.20 (2026.09.03)
+	+ Bugfix: Risolto il blocco in chiusura dell'applicazione, che a volte restava "non risponde" e andava terminata a forza. Il suono di commiato aspettava senza limite di tempo che l'audio confermasse di aver finito; ora l'attesa e' comunque breve, cosi' un intoppo dell'audio non tiene piu' in ostaggio la chiusura del programma.
+	+ Feature: Dopo un aggiornamento riuscito del database FIDE, l'interfaccia grafica propone ora di sincronizzare subito il database personale dei giocatori, come gia' faceva la versione a riga di comando.
+	+ Bugfix: Corretti sette nomi di campo sbagliati usati per leggere e scrivere i dati FIDE extra dei giocatori (titoli, bandiera, Elo Rapid/Blitz, partite FIDE). Le associazioni durante la sincronizzazione finivano su chiavi mai lette da nessun'altra parte del programma, e il report testuale del database mostrava sempre "N/D" per quei campi anche quando i dati c'erano.
+	+ Fix: Un errore imprevisto durante il salvataggio del report testuale del database giocatori, che prima veniva solo stampato in console e poteva sparire senza lasciare traccia, viene ora scritto anche in error.log.
+
 9.3.19 (2026.09.03)
 	+ Bugfix: L'aggiornamento del database FIDE non distrugge piu' il database in uso. Il nuovo viene costruito su un file a parte e prende il posto di quello buono solo a importazione riuscita, quindi un errore a meta' non lascia piu' senza dati e senza la possibilita' di lavorare. Rilievo C2 dell'analisi di fase 1.
 	+ Bugfix: Le connessioni al database FIDE vengono chiuse anche quando una interrogazione fallisce. Prima restavano aperte, e su Windows tenevano bloccato il file proprio mentre si cercava di sostituirlo; il conteggio dei giocatori inoltre creava un file vuoto quando il database non c'era. Rilievo C8.
