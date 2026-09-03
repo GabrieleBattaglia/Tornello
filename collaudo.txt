@@ -4,6 +4,7 @@ Documento creato il 2026-08-31 da ClaudIA, modello Claude Opus 5, modalita' Ultr
 A cosa serve questo file
 L'analisi della fase 1 ha prodotto novantanove rilievi, raccolti in analisi_codice_fase_1.txt. Alcuni non sono verificabili leggendo il codice: richiedono di usare il programma, oppure richiedono una decisione arbitrale che spetta a Gabriele. Qui sotto sono descritte le prove da fare, una per volta. Sotto ciascuna prova c'e' una riga Esito, da compilare con OK oppure con la descrizione di cosa e' successo davvero. Quando tutte le righe Esito sono compilate e non restano segnalazioni aperte, la fase puo' proseguire con le correzioni.
 
+GB: non posso proseguire con le prove se prima non risolviamo il problema dell'aggiornamento db FIDE, vedi la issue che ho aperto.
 Prova 1, punti del bye nell'interfaccia grafica. Riguarda il rilievo G1, gravita' critica.
 Cosa fare: avviare Tornello nella versione grafica, creare un torneo nuovo con un numero dispari di giocatori, per esempio cinque, lasciando il valore del bye a 0.5, avviare il torneo e guardare gli abbinamenti del primo turno per individuare chi ha ricevuto il bye. Senza inserire alcun risultato, aprire la classifica.
 Cosa osservare: il giocatore che ha ricevuto il bye ha 0.5 punti oppure zero. Aprire poi la sua scheda e vedere se il turno 1 compare nel suo storico.

@@ -178,7 +178,11 @@ def bulk_insert_players(players_iter, progress_callback=None):
          birth_year, flag)
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     """
-    fts_sql = "INSERT INTO players_fts(rowid, search_text) VALUES (?, ?)"
+    # OR REPLACE anche qui: l'archivio FIDE puo' contenere lo stesso identificativo
+    # piu' di una volta, e senza questa clausola il secondo record fa fallire
+    # l'intera importazione con un errore di vincolo sulla tabella di ricerca,
+    # mentre la tabella players lo assorbirebbe. Issue #35.
+    fts_sql = "INSERT OR REPLACE INTO players_fts(rowid, search_text) VALUES (?, ?)"
 
     batch_size = 5000
     count = 0

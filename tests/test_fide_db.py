@@ -540,3 +540,49 @@ class TestFideUpdateLocale:
         assert player["first_name"] == "Magnus"
         assert player["elo_standard"] == 2830
         assert player["birth_year"] == 1990
+
+
+class TestIdentificativiDuplicati:
+    """L'archivio FIDE puo' contenere lo stesso identificativo piu' di una volta.
+    Prima della correzione della Issue #35 il secondo record faceva fallire
+    l'intera importazione con sqlite3.IntegrityError: constraint failed."""
+
+    def test_importazione_con_id_duplicato_non_fallisce(self, fide_db_path):
+        create_fide_db()
+        primo = dict(SAMPLE_PLAYERS[0])
+        secondo = dict(SAMPLE_PLAYERS[0])
+        secondo["elo_standard"] = 2999
+        secondo["last_name"] = "Carlsen Aggiornato"
+        terzo = dict(SAMPLE_PLAYERS[1])
+
+        count = bulk_insert_players(iter([primo, secondo, terzo]))
+
+        assert count == 3
+        assert get_player_count() == 2
+
+    def test_vince_l_ultimo_record_letto(self, fide_db_path):
+        create_fide_db()
+        primo = dict(SAMPLE_PLAYERS[0])
+        secondo = dict(SAMPLE_PLAYERS[0])
+        secondo["elo_standard"] = 2999
+        secondo["last_name"] = "Carlsen Aggiornato"
+
+        bulk_insert_players(iter([primo, secondo]))
+
+        giocatore = get_player_by_fide_id(primo["fide_id"])
+        assert giocatore["elo_standard"] == 2999
+        assert giocatore["last_name"] == "Carlsen Aggiornato"
+
+    def test_la_ricerca_testuale_resta_coerente(self, fide_db_path):
+        create_fide_db()
+        primo = dict(SAMPLE_PLAYERS[0])
+        secondo = dict(SAMPLE_PLAYERS[0])
+        secondo["last_name"] = "Cognomenuovo"
+
+        bulk_insert_players(iter([primo, secondo]))
+
+        trovati = search_players("Cognomenuovo")
+        assert len(trovati) == 1
+        assert trovati[0]["id_fide"] == primo["fide_id"]
+        # Il cognome vecchio non deve piu' comparire nella tabella di ricerca.
+        assert search_players("Carlsen") == []

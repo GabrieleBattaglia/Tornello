@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.18 (2026.09.03)
+	+ Bugfix: L'aggiornamento del database FIDE non fallisce piu' quando l'archivio contiene lo stesso identificativo giocatore piu' di una volta. La tabella dei giocatori assorbiva il doppione, quella di ricerca no, e l'importazione si interrompeva con un errore di vincolo dopo aver gia' scaricato ed elaborato ottocento megabyte. Issue #35.
+
 9.3.17 (2026.09.03)
 	+ Fix: Il controllo aggiornamenti da riga di comando ora dice sempre com'e' andata: se la versione e' gia' l'ultima lo comunica, e se la rete non e' raggiungibile lo dice con un messaggio tranquillo invece di restare in silenzio. Issue #34.
 	+ Nota per la Issue #34: il file auto_updater_error.log trovato dall'utente era prodotto dalla versione di GBUtils inclusa nella release v9.3.13, l'ultima pubblicata. La correzione che gestisce in silenzio l'assenza di connessione e' entrata in GBUtils il 28 luglio 2026, poche ore dopo quella compilazione, quindi il file non verra' piu' creato dalla prossima release.
