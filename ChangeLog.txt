@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.19 (2026.09.03)
+	+ Bugfix: L'aggiornamento del database FIDE non distrugge piu' il database in uso. Il nuovo viene costruito su un file a parte e prende il posto di quello buono solo a importazione riuscita, quindi un errore a meta' non lascia piu' senza dati e senza la possibilita' di lavorare. Rilievo C2 dell'analisi di fase 1.
+	+ Bugfix: Le connessioni al database FIDE vengono chiuse anche quando una interrogazione fallisce. Prima restavano aperte, e su Windows tenevano bloccato il file proprio mentre si cercava di sostituirlo; il conteggio dei giocatori inoltre creava un file vuoto quando il database non c'era. Rilievo C8.
+	+ Feature: Quando l'aggiornamento del database FIDE non riesce, il dialogo dice il motivo reale invece di indicare sempre la connessione a internet, e ricorda che il database precedente e' rimasto utilizzabile.
+
 9.3.18 (2026.09.03)
 	+ Bugfix: L'aggiornamento del database FIDE non fallisce piu' quando l'archivio contiene lo stesso identificativo giocatore piu' di una volta. La tabella dei giocatori assorbiva il doppione, quella di ricerca no, e l'importazione si interrompeva con un errore di vincolo dopo aver gia' scaricato ed elaborato ottocento megabyte. Issue #35.
 

@@ -28,9 +28,11 @@ class FideUpdateThread(threading.Thread):
             self.success = aggiorna_db_fide_locale(
                 progress_callback=self.progress_callback, stats_output=self.stats
             )
-        except Exception:
+        except Exception as errore:
+            # Anche un errore che sfugge del tutto deve arrivare all'utente
+            # con il suo motivo, invece di sparire.
             self.success = False
-            self.stats = {}
+            self.stats["error"] = str(errore)
         wx.CallAfter(self.completion_callback, self.success, self.stats)
 
 
@@ -189,12 +191,21 @@ class FideUpdateDialog(wx.Dialog):
             self.status_label.SetLabel(
                 _("Errore durante l'aggiornamento del Database FIDE.")
             )
+            # Il motivo vero viene da chi ha svolto il lavoro: prima veniva
+            # sempre indicata la connessione, anche quando la causa era un'altra.
+            motivo = (stats or {}).get("error")
+            if motivo:
+                messaggio = _(
+                    "Aggiornamento del Database FIDE non riuscito.\n\nMotivo: {reason}\n\nIl database che avevi prima e' rimasto intatto e resta utilizzabile."
+                ).format(reason=motivo)
+            else:
+                messaggio = _(
+                    "Aggiornamento del Database FIDE non riuscito. Controlla la connessione ad internet.\n\nIl database che avevi prima e' rimasto intatto e resta utilizzabile."
+                )
             dlg = AccessibleMsgDialog(
                 self,
                 _("Errore"),
-                _(
-                    "Errore durante l'aggiornamento del Database FIDE. Controlla la connessione ad internet."
-                ),
+                messaggio,
             )
             dlg.ShowModal()
             dlg.Destroy()

@@ -23,11 +23,54 @@ _ = getattr(builtins, "_", lambda s: s)
 # ---------------------------------------------------------------------------
 
 
-def _get_connection():
-    """Apre una connessione al database SQLite FIDE."""
-    conn = sqlite3.connect(FIDE_DB_LOCAL_FILE)
+def _get_connection(db_path=None):
+    """
+    Apre una connessione al database SQLite FIDE.
+    db_path permette di lavorare su un file diverso da quello definitivo, come
+    accade durante l'importazione, che costruisce il database a parte.
+    """
+    conn = sqlite3.connect(db_path or FIDE_DB_LOCAL_FILE)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def temp_db_path():
+    """Percorso del file su cui viene costruito il database durante l'importazione."""
+    return FIDE_DB_LOCAL_FILE + ".import"
+
+
+def _remove_sqlite_sidecars(db_path):
+    """Rimuove gli eventuali file di appoggio -wal e -shm lasciati da SQLite."""
+    for suffix in ("-wal", "-shm"):
+        sidecar = db_path + suffix
+        if os.path.exists(sidecar):
+            try:
+                os.remove(sidecar)
+            except OSError:
+                pass
+
+
+def promote_temp_db(db_path):
+    """
+    Sostituisce il database FIDE definitivo con quello appena costruito.
+    La sostituzione avviene solo a importazione riuscita, cosi' un fallimento
+    lascia intatto il database precedente. Restituisce True se ha sostituito.
+    """
+    if not os.path.exists(db_path):
+        return False
+    _remove_sqlite_sidecars(db_path)
+    os.replace(db_path, FIDE_DB_LOCAL_FILE)
+    return True
+
+
+def discard_temp_db(db_path):
+    """Elimina il database temporaneo di una importazione non riuscita."""
+    _remove_sqlite_sidecars(db_path)
+    if os.path.exists(db_path):
+        try:
+            os.remove(db_path)
+        except OSError:
+            pass
 
 
 def _row_to_dict(row):
@@ -65,14 +108,16 @@ def fide_db_exists():
     """Verifica se il database SQLite FIDE esiste e contiene dati."""
     if not os.path.exists(FIDE_DB_LOCAL_FILE):
         return False
+    conn = None
     try:
         conn = _get_connection()
         cursor = conn.execute("SELECT COUNT(*) FROM players")
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count > 0
-    except Exception:
+        return cursor.fetchone()[0] > 0
+    except sqlite3.Error:
         return False
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def cleanup_legacy_json():
@@ -91,14 +136,21 @@ def cleanup_legacy_json():
 
 def get_player_count():
     """Restituisce il numero totale di giocatori nel database FIDE."""
+    # Senza questo controllo la sola connessione creerebbe un file vuoto, e se poi
+    # la tabella manca l'eccezione lascerebbe aperta la connessione su quel file,
+    # che su Windows resta bloccato e non si puo' piu' sostituire.
+    if not os.path.exists(FIDE_DB_LOCAL_FILE):
+        return 0
+    conn = None
     try:
         conn = _get_connection()
         cursor = conn.execute("SELECT COUNT(*) FROM players")
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count
-    except Exception:
+        return cursor.fetchone()[0]
+    except sqlite3.Error:
         return 0
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -106,9 +158,13 @@ def get_player_count():
 # ---------------------------------------------------------------------------
 
 
-def create_fide_db():
-    """Crea un database FIDE SQLite vuoto, eliminando eventuali tabelle preesistenti."""
-    conn = _get_connection()
+def create_fide_db(db_path=None):
+    """
+    Crea un database FIDE SQLite vuoto, eliminando eventuali tabelle preesistenti.
+    Con db_path lavora su un file diverso da quello definitivo: e' la strada che
+    usa l'importazione per non distruggere il database buono prima di avere i dati nuovi.
+    """
+    conn = _get_connection(db_path)
     conn.execute("DROP TABLE IF EXISTS players_fts")
     conn.execute("DROP TABLE IF EXISTS players")
     conn.executescript(
@@ -146,11 +202,13 @@ def create_fide_db():
         );
     """
     )
-    conn.commit()
-    conn.close()
+    try:
+        conn.commit()
+    finally:
+        conn.close()
 
 
-def bulk_insert_players(players_iter, progress_callback=None):
+def bulk_insert_players(players_iter, progress_callback=None, db_path=None):
     """
     Inserisce i giocatori dal generatore fornito nel database SQLite.
 
@@ -163,7 +221,7 @@ def bulk_insert_players(players_iter, progress_callback=None):
     Returns:
         Numero totale di giocatori inseriti.
     """
-    conn = _get_connection()
+    conn = _get_connection(db_path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=OFF")
     conn.execute("PRAGMA cache_size=-64000")  # 64 MB di cache
@@ -185,6 +243,28 @@ def bulk_insert_players(players_iter, progress_callback=None):
     fts_sql = "INSERT OR REPLACE INTO players_fts(rowid, search_text) VALUES (?, ?)"
 
     batch_size = 5000
+
+    try:
+        count = _riempi_tabelle(
+            conn, players_iter, insert_sql, fts_sql, batch_size, progress_callback
+        )
+        conn.commit()
+        # Riporta il contenuto del giornale WAL dentro il file principale e torna
+        # al giornale ordinario: cosi' il database e' un file solo, spostabile.
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        conn.execute("PRAGMA journal_mode=DELETE")
+    finally:
+        # Senza questa chiusura, una importazione fallita lascerebbe la connessione
+        # aperta e il file bloccato, proprio mentre si prova a rimediare.
+        conn.close()
+    return count
+
+
+def _riempi_tabelle(
+    conn, players_iter, insert_sql, fts_sql, batch_size, progress_callback
+):
+    """Scorre i record e li inserisce a blocchi nelle due tabelle."""
     count = 0
     batch_p = []
     batch_f = []
@@ -240,9 +320,6 @@ def bulk_insert_players(players_iter, progress_callback=None):
         conn.executemany(insert_sql, batch_p)
         conn.executemany(fts_sql, batch_f)
 
-    conn.commit()
-    conn.execute("PRAGMA synchronous=FULL")
-    conn.close()
     return count
 
 

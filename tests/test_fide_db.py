@@ -1,6 +1,7 @@
 """Test per il modulo fide_db (database FIDE SQLite con FTS5)."""
 
 import os
+import sqlite3
 
 import pytest
 from fide_db import (
@@ -586,3 +587,118 @@ class TestIdentificativiDuplicati:
         assert trovati[0]["id_fide"] == primo["fide_id"]
         # Il cognome vecchio non deve piu' comparire nella tabella di ricerca.
         assert search_players("Carlsen") == []
+
+
+def _zip_fide_finto():
+    """Costruisce in memoria uno ZIP con un XML FIDE minimo, come quello vero."""
+    import io
+    import zipfile
+
+    xml = """<?xml version="1.0" encoding="utf-8"?>
+    <playerslist>
+        <player>
+            <fideid>1503014</fideid>
+            <name>Carlsen, Magnus</name>
+            <country>NOR</country>
+            <sex>M</sex>
+            <title>GM</title>
+            <rating>2830</rating>
+            <games>50</games>
+            <k>10</k>
+            <birthday>1990</birthday>
+        </player>
+    </playerslist>
+    """
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("players_list_foa.xml", xml)
+    return buffer.getvalue()
+
+
+class _RispostaFinta:
+    def __init__(self, contenuto):
+        self.content = contenuto
+        self.status_code = 200
+        self.headers = {"content-length": str(len(contenuto))}
+
+    def raise_for_status(self):
+        pass
+
+    def iter_content(self, chunk_size=1):
+        for i in range(0, len(self.content), chunk_size):
+            yield self.content[i : i + chunk_size]
+
+
+class TestImportazioneNonDistruttiva:
+    """Il database in uso non deve sparire quando l'importazione fallisce.
+    Rilievi C2 e C8 dell'analisi di fase 1, confermati dalla Issue #35."""
+
+    def _prepara(self, fide_db_path, monkeypatch):
+        import db_players
+        import requests
+
+        db_path = fide_db_path[0]
+        create_fide_db()
+        bulk_insert_players(iter(SAMPLE_PLAYERS))
+        monkeypatch.setattr(
+            requests, "get", lambda *a, **k: _RispostaFinta(_zip_fide_finto())
+        )
+        monkeypatch.setattr(db_players, "FIDE_DB_LOCAL_FILE", db_path)
+        return db_path
+
+    def test_il_database_precedente_sopravvive_a_un_errore(
+        self, fide_db_path, monkeypatch
+    ):
+        import db_players
+        from db_players import aggiorna_db_fide_locale
+
+        db_path = self._prepara(fide_db_path, monkeypatch)
+        quanti_prima = get_player_count()
+        assert quanti_prima == len(SAMPLE_PLAYERS)
+
+        def esplode(*args, **kwargs):
+            raise sqlite3.IntegrityError("constraint failed")
+
+        monkeypatch.setattr(db_players, "bulk_insert_players", esplode)
+
+        stats = {}
+        assert aggiorna_db_fide_locale(stats_output=stats) is False
+        # Il database in uso e' ancora quello di prima, con i suoi giocatori.
+        assert get_player_count() == quanti_prima
+        assert get_player_by_fide_id(SAMPLE_PLAYERS[0]["fide_id"]) is not None
+        # Il file temporaneo non resta in giro.
+        assert not os.path.exists(db_path + ".import")
+
+    def test_il_motivo_dell_errore_arriva_a_chi_ha_chiesto(
+        self, fide_db_path, monkeypatch
+    ):
+        import db_players
+        from db_players import aggiorna_db_fide_locale
+
+        self._prepara(fide_db_path, monkeypatch)
+
+        def esplode(*args, **kwargs):
+            raise ValueError("archivio illeggibile")
+
+        monkeypatch.setattr(db_players, "bulk_insert_players", esplode)
+
+        stats = {}
+        assert aggiorna_db_fide_locale(stats_output=stats) is False
+        assert "error" in stats
+        assert "archivio illeggibile" in stats["error"]
+
+    def test_importazione_riuscita_sostituisce_il_database(
+        self, fide_db_path, monkeypatch
+    ):
+        from db_players import aggiorna_db_fide_locale
+
+        db_path = self._prepara(fide_db_path, monkeypatch)
+
+        stats = {}
+        assert aggiorna_db_fide_locale(stats_output=stats) is True
+        # Nel nuovo archivio c'e' un solo giocatore: ha preso il posto dei due vecchi.
+        assert get_player_count() == 1
+        assert get_player_by_fide_id(1503014) is not None
+        assert get_player_by_fide_id(SAMPLE_PLAYERS[1]["fide_id"]) is None
+        assert not os.path.exists(db_path + ".import")
+        assert stats.get("error") is None

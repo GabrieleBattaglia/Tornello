@@ -477,11 +477,18 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
     import time
 
     from fide_db import (
+        discard_temp_db,
         get_player_count,
+        promote_temp_db,
+        temp_db_path,
     )
 
     old_count = get_player_count()
     start_download = time.time()
+    # Il database nuovo viene costruito a parte e prende il posto di quello buono
+    # solo a importazione riuscita: un errore a meta' non lascia l'utente senza dati.
+    db_temporaneo = temp_db_path()
+    discard_temp_db(db_temporaneo)
 
     try:
         print(
@@ -543,8 +550,8 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                 ).format(filename=xml_filename, size_mb=xml_size / (1024 * 1024))
             )
 
-            # Crea il database SQLite vuoto
-            create_fide_db()
+            # Crea il database SQLite vuoto, sul file temporaneo
+            create_fide_db(db_temporaneo)
 
             raw_xml_file = zf.open(xml_filename)
             progress_xml_file = ProgressFileObject(
@@ -618,8 +625,12 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                 progress_xml_file.close()
 
             player_count = bulk_insert_players(
-                parse_xml_players(), progress_callback=None
+                parse_xml_players(), progress_callback=None, db_path=db_temporaneo
             )
+
+            # Da qui in poi i dati nuovi sono completi: il database temporaneo puo'
+            # prendere il posto di quello in uso.
+            promote_temp_db(db_temporaneo)
 
             processing_duration = time.time() - start_processing
             new_count = get_player_count()
@@ -644,19 +655,43 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
             print(_("Database FIDE locale 'fide_ratings.db' salvato con successo."))
             return True
     except requests.exceptions.Timeout:
-        print(_("ERRORE: Timeout durante il download del file."))
-        return False
-    except requests.exceptions.RequestException as e_req:
-        print(_("ERRORE di rete: {error}").format(error=e_req))
-        return False
-    except Exception as e_main:
-        print(
+        return _fallimento_aggiornamento(
+            stats_output,
+            db_temporaneo,
             _(
-                "Si è verificato un errore imprevisto durante l'aggiornamento del DB FIDE: {error}"
-            ).format(error=e_main)
+                "Il sito FIDE non ha risposto entro il tempo previsto. Riprova piu' tardi."
+            ),
         )
+    except requests.exceptions.RequestException as e_req:
+        return _fallimento_aggiornamento(
+            stats_output,
+            db_temporaneo,
+            _("Errore di rete durante lo scaricamento: {error}").format(error=e_req),
+        )
+    except Exception as e_main:
         traceback.print_exc()
-        return False
+        return _fallimento_aggiornamento(
+            stats_output,
+            db_temporaneo,
+            _("Errore imprevisto durante l'elaborazione dei dati: {error}").format(
+                error=e_main
+            ),
+        )
+
+
+def _fallimento_aggiornamento(stats_output, db_temporaneo, messaggio):
+    """
+    Chiude un aggiornamento del database FIDE non riuscito: elimina il database
+    temporaneo, lasciando intatto quello in uso, riporta il motivo a chi ha
+    chiesto l'operazione e lo stampa anche in console.
+    """
+    from fide_db import discard_temp_db
+
+    discard_temp_db(db_temporaneo)
+    print(_("ERRORE: {message}").format(message=messaggio))
+    if stats_output is not None:
+        stats_output["error"] = messaggio
+    return False
 
 
 def load_players_db():
