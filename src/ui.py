@@ -1552,25 +1552,35 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     # --- Fase 3: Ordinamento Finale e Assegnazione Rank ---
     print(_("Ordinamento classifica finale..."))
 
+    # I criteri di spareggio configurati dall'arbitro, gli stessi che usa la
+    # classifica mostrata durante il torneo. Prima qui c'era una sequenza fissa
+    # scritta nel codice, Buchholz Cut-1, Buchholz, performance ed Elo, che
+    # ignorava la configurazione: il piazzamento assegnato non corrispondeva
+    # all'ordine con cui la classifica veniva poi stampata, e nel report finale
+    # le posizioni comparivano fuori sequenza. Rilievo D1.
+    from reports import get_criterion_value
+    from tiebreak_criteria import get_default_tiebreaks, migrate_old_tiebreaks
+
+    raw_tiebreaks = torneo.get("tiebreaks", None)
+    if raw_tiebreaks is None:
+        tiebreak_order_final = get_default_tiebreaks()
+    elif raw_tiebreaks and isinstance(raw_tiebreaks[0], str):
+        tiebreak_order_final = migrate_old_tiebreaks(raw_tiebreaks)
+    else:
+        tiebreak_order_final = raw_tiebreaks
+
     def sort_key_final(player):
-        points = float(player.get("points", -999))
+        try:
+            points = float(player.get("points", 0.0))
+        except (ValueError, TypeError):
+            points = 0.0
         status_val = (
             1 if not player.get("withdrawn", False) else 0
         )  # 1 per attivo, 0 per ritirato
-        bucch_c1 = float(
-            player.get("buchholz_cut1", -1.0)
-            if player.get("buchholz_cut1") is not None
-            else -1.0
-        )
-        bucch_tot = float(player.get("buchholz", 0.0))
-        performance = int(
-            player.get("performance_rating", -1)
-            if player.get("performance_rating") is not None
-            else -1
-        )
-        elo_initial = int(player.get("initial_elo", 0))
-        # Ordina per: Punti (desc), Stato (attivi prima), Spareggi (desc)
-        return (-points, -status_val, -bucch_c1, -bucch_tot, -performance, -elo_initial)
+        chiave = [-points, -status_val]
+        for criterio in tiebreak_order_final:
+            chiave.append(-get_criterion_value(player, criterio, torneo))
+        return tuple(chiave)
 
     try:
         players_sorted = sorted(torneo.get("players", []), key=sort_key_final)

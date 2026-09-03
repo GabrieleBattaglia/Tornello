@@ -11,13 +11,20 @@ from GBUtils import key
 
 def create_backup(filepath, context="backup"):
     """
-    Crea una copia di backup del file specificato nella cartella 'backup'.
+    Crea una copia di backup del file specificato nella cartella 'backup'
+    accanto all'applicazione.
     Aggiunge un timestamp e il contesto al nome del file per non sovrascrivere backup precedenti.
     """
     if not os.path.exists(filepath):
         return False
 
-    backup_dir = "backup"
+    # La cartella va accanto all'applicazione, non nella directory da cui e'
+    # stata avviata: con un percorso relativo le copie di sicurezza fatte prima
+    # di finalizzazione, Time Machine e rollback finivano dove capitava, e
+    # l'utente che doveva recuperare un torneo non le trovava.
+    from config import user_data_path
+
+    backup_dir = user_data_path("backup")
     if not os.path.exists(backup_dir):
         try:
             os.makedirs(backup_dir)
@@ -209,8 +216,9 @@ def play_sound(event_name, torneo=None, sync=False):
     volume = _volume_base()
     if torneo and isinstance(torneo, dict):
         volume = torneo.get("base_volume", volume)
-    return Acusticator.play(EVENTI.get(event_name, event_name),
-                            sync=sync, volume=volume)
+    return Acusticator.play(
+        EVENTI.get(event_name, event_name), sync=sync, volume=volume
+    )
 
 
 def _ensure_players_dict(torneo):

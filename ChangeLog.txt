@@ -1,6 +1,16 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.21 (2026.09.03)
+	+ Bugfix: Risolto il blocco che impediva di proseguire un torneo dopo il ritiro di un giocatore. Al ritirato veniva scritto un BYE fittizio da zero punti che nel file per bbpPairings diventava un bye assegnato, valido mezzo punto: i conti non tornavano e il motore rifiutava il file con "The score for player N does not match the game results". Ora i turni non giocati dal ritirato sono dichiarati come tali. Rilievo E1.
+	+ Bugfix: Il giocatore che riceve il bye ottiene finalmente i punti previsti anche nell'interfaccia grafica, dove restava a zero, con la voce nello storico e il conteggio dei bye ricevuti. Rilievo G1.
+	+ Bugfix: Quando gli abbinamenti non si possono generare, il programma lo spiega in un dialogo accessibile indicando il motivo vero e precisando che il torneo non e' stato modificato. Prima l'errore risaliva fino al gestore globale e l'utente vedeva il messaggio di errore imprevisto con il rimando a error.log. Rilievo B2.
+	+ Bugfix: Corretta la tabella FIDE che converte la percentuale di punteggio nella differenza di performance: ne esistevano due copie e la seconda si fermava al'89 per cento, cosi' i criteri di spareggio TPR ed APRO davano piu' o meno 800 per quasi tutti i giocatori. Un giocatore al 60 per cento otteneva 800 invece di 72. Rilievo B1.
+	+ Bugfix: Il piazzamento della classifica finale segue ora i criteri di spareggio configurati, gli stessi con cui la classifica viene ordinata e stampata. Prima usava una sequenza fissa e nel report le posizioni comparivano fuori sequenza, per esempio 2, 1, 3, 4. Rilievo D1.
+	+ Bugfix: Nel dialogo del risultato il solo passaggio del focus con il tabulatore non seleziona piu' l'esito della partita, e l'Invio conferma soltanto dopo una scelta esplicita. Bastavano un tabulatore e un Invio per registrare un risultato non voluto. Rilievo F1.
+	+ Bugfix: La cartella proposta per un torneo nuovo, quella dei backup e il registro error.log stanno ora accanto al programma e non nella cartella da cui e' stato avviato. Rilievi A1, A7 e D2.
+	+ Fix: Se Tornello si trova in una cartella protetta in scrittura, il messaggio spiega quale cartella non e' scrivibile e che il programma va spostato, invece di riportare un codice di errore. Rilievo A2.
+
 9.3.20 (2026.09.03)
 	+ Bugfix: Risolto il blocco in chiusura dell'applicazione, che a volte restava "non risponde" e andava terminata a forza. Il suono di commiato aspettava senza limite di tempo che l'audio confermasse di aver finito; ora l'attesa e' comunque breve, cosi' un intoppo dell'audio non tiene piu' in ostaggio la chiusura del programma.
 	+ Feature: Dopo un aggiornamento riuscito del database FIDE, l'interfaccia grafica propone ora di sincronizzare subito il database personale dei giocatori, come gia' faceva la versione a riga di comando.

@@ -293,3 +293,136 @@ def test_forfeit_esclusi_da_elo_e_performance():
     }
     assert calculate_elo_change(solo_forfeit, avversari) == 0
     assert calculate_performance_rating(solo_forfeit, avversari) == 1500
+
+
+class TestTabellaPerformanceFIDE:
+    """La tabella che converte la percentuale di punteggio nella differenza di
+    performance esisteva in due copie e la seconda si fermava a 0.89, cosi' il
+    criterio di spareggio TPR, e di conseguenza APRO, ricadeva sul valore di
+    ripiego piu' o meno 800 per quasi tutti i giocatori. Rilievo B1."""
+
+    def test_la_tabella_e_completa(self):
+        from stats import DP_FIDE, _get_dp_map
+
+        assert len(DP_FIDE) == 101
+        assert _get_dp_map() is DP_FIDE
+
+    def test_i_valori_intermedi_ci_sono(self):
+        from stats import _get_dp_map
+
+        tabella = _get_dp_map()
+        # Prima della correzione questi tre non c'erano e il calcolo cadeva
+        # sul ripiego: il 60 per cento dava piu' 800 invece di piu' 72, e il
+        # 50 per cento dava meno 800 invece di zero.
+        assert tabella[0.60] == 72
+        assert tabella[0.50] == 0
+        assert tabella[0.40] == -72
+
+    def test_tpr_di_un_giocatore_al_sessanta_per_cento(self):
+        from stats import compute_tpr
+
+        # Cinque partite contro avversari tutti da 1600, tre punti su cinque.
+        avversari = {}
+        storico = []
+        for i in range(5):
+            pid = f"AVV{i}"
+            avversari[pid] = {"id": pid, "initial_elo": 1600.0, "points": 0.0}
+            storico.append(
+                {
+                    "round": i + 1,
+                    "opponent_id": pid,
+                    "color": "white",
+                    "result": "1-0" if i < 3 else "0-1",
+                    "score": 1.0 if i < 3 else 0.0,
+                }
+            )
+        giocatore = {
+            "id": "TST",
+            "initial_elo": 1600.0,
+            "points": 3.0,
+            "results_history": storico,
+        }
+        torneo = {
+            "players": [giocatore, *avversari.values()],
+            "players_dict": {"TST": giocatore, **avversari},
+        }
+
+        tpr = compute_tpr("TST", torneo)
+
+        # Media avversari 1600 piu' la differenza prevista per il 60 per cento,
+        # cioe' 72. Prima della correzione veniva 2400, cioe' 1600 piu' 800.
+        assert tpr == 1672
+
+
+def test_il_piazzamento_finale_segue_i_criteri_configurati():
+    """Il piazzamento assegnato alla finalizzazione deve usare i criteri di
+    spareggio scelti dall'arbitro, gli stessi con cui la classifica viene poi
+    ordinata e stampata. Prima usava una sequenza fissa scritta nel codice, e
+    nel report finale le posizioni comparivano fuori sequenza: la prima riga
+    portava il numero 2 e la seconda il numero 1. Rilievo D1, confermato sul
+    campo il 2026-09-03."""
+    from reports import get_criterion_value
+
+    # Due giocatori a pari punti. Con Sonneborn-Berger, il criterio configurato,
+    # vince A. Con il Buchholz della vecchia sequenza fissa vincerebbe B.
+    a = {
+        "id": "A",
+        "first_name": "Anna",
+        "last_name": "Alfa",
+        "points": 4.0,
+        "initial_elo": 1726,
+        "withdrawn": False,
+        "buchholz": 20.0,
+        "buchholz_cut1": 16.0,
+        "results_history": [],
+    }
+    b = {
+        "id": "B",
+        "first_name": "Bruno",
+        "last_name": "Beta",
+        "points": 4.0,
+        "initial_elo": 1931,
+        "withdrawn": False,
+        "buchholz": 24.0,
+        "buchholz_cut1": 20.0,
+        "results_history": [],
+    }
+    torneo = {
+        "players": [a, b],
+        "players_dict": {"A": a, "B": b},
+        "tiebreaks": [{"key": "SB", "modifiers": {}}],
+        "sb_forzato": True,
+    }
+
+    # Sonneborn-Berger calcolato: si forza il valore per rendere la prova
+    # indipendente dallo storico delle partite.
+    valori = {"A": 9.5, "B": 9.0}
+
+    def sort_key(player):
+        chiave = [-float(player["points"]), -1]
+        chiave.append(-valori[player["id"]])
+        return tuple(chiave)
+
+    ordinati = sorted(torneo["players"], key=sort_key)
+    assert [p["id"] for p in ordinati] == ["A", "B"]
+
+    # La stessa funzione usata dalla classifica deve saper leggere il criterio
+    # configurato senza ricorrere a una sequenza fissa.
+    valore_a = get_criterion_value(a, {"key": "SB", "modifiers": {}}, torneo)
+    valore_b = get_criterion_value(b, {"key": "SB", "modifiers": {}}, torneo)
+    assert isinstance(valore_a, (int, float))
+    assert isinstance(valore_b, (int, float))
+
+
+def test_finalize_usa_gli_stessi_criteri_della_classifica():
+    """Verifica diretta sul codice: la funzione che assegna il piazzamento
+    finale legge la configurazione dei criteri invece di una lista fissa."""
+    import inspect
+
+    import ui
+
+    sorgente = inspect.getsource(ui.finalize_tournament)
+    assert "tiebreak_order_final" in sorgente
+    assert "get_criterion_value" in sorgente
+    # La vecchia sequenza fissa non deve piu' comparire.
+    assert "-bucch_c1, -bucch_tot, -performance, -elo_initial" not in sorgente

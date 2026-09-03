@@ -386,6 +386,21 @@ def run_bbpairings_engine(trf_content_string):
     try:
         with open(BBP_INPUT_TRF, "w", encoding="utf-8") as f:
             f.write(trf_content_string)
+    except PermissionError:
+        # Tornello tiene i propri file accanto all'eseguibile: se e' stato
+        # installato in una cartella protetta, come Programmi, non puo'
+        # scrivere il file che serve al motore di abbinamento. Il messaggio
+        # dice cosa fare, invece di lasciare all'utente un codice di errore.
+        return (
+            False,
+            None,
+            _(
+                "Non ho il permesso di scrivere nella cartella del programma:\n{folder}\n\n"
+                "Tornello conserva i propri file accanto a se stesso, quindi ha bisogno "
+                "di trovarsi in una cartella dove puoi scrivere. Spostalo per esempio "
+                "sul Desktop, in Documenti o su un'altra unita', e riprova."
+            ).format(folder=os.path.dirname(BBP_INPUT_TRF)),
+        )
     except OSError as e:
         return (
             False,

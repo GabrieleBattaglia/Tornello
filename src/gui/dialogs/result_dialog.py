@@ -443,8 +443,12 @@ class ResultDialog(wx.Dialog):
         return None
 
     def on_rb_focus(self, event):
+        # Il solo passaggio del focus non sceglie piu' il risultato: con il
+        # tabulatore si finiva per selezionare l'opzione su cui si atterrava, e
+        # un Invio dato subito dopo la registrava. La scelta si fa con le
+        # frecce, come in ogni gruppo di pulsanti di scelta, oppure con la
+        # barra spaziatrice.
         rb = event.GetEventObject()
-        rb.SetValue(True)
         for val, button in self.radio_buttons:
             if button == rb:
                 from utils import play_sound
@@ -466,7 +470,14 @@ class ResultDialog(wx.Dialog):
             return
 
         if key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER:
-            self.EndModal(wx.ID_OK)
+            # Invio dentro il gruppo delle opzioni non conferma piu' da solo:
+            # insieme alla selezione automatica sul focus bastavano un
+            # tabulatore e un Invio per registrare un risultato non voluto.
+            # Serve una scelta esplicita, con le frecce o con la barra.
+            if any(button.GetValue() for _val, button in self.radio_buttons):
+                self.EndModal(wx.ID_OK)
+            else:
+                event.Skip()
         elif key == wx.WXK_ESCAPE:
             self.EndModal(wx.ID_CANCEL)
         else:

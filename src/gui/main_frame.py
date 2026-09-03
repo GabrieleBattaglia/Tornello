@@ -12,6 +12,15 @@ from gui.settings import apply_visual_settings, save_settings
 _ = getattr(builtins, "_", lambda s: s)
 
 
+def _cartella_predefinita_tornei():
+    """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
+    programma. Prima veniva proposta la directory di lavoro corrente, che
+    coincide con quella del programma solo se lo si avvia da li'."""
+    from config import user_data_path
+
+    return os.path.abspath(user_data_path(""))
+
+
 class CustomAccessible(wx.Accessible):
     """Classe custom per MSAA per esporre il nome corretto del controllo ai lettori dello schermo."""
 
@@ -2658,13 +2667,10 @@ class MainFrame(wx.Frame):
         dlg_start.Destroy()
 
         if start_now:
-            matches = generate_pairings_for_round(tournament.to_dict())
+            torneo_per_abbinamenti = tournament.to_dict()
+            matches = generate_pairings_for_round(torneo_per_abbinamenti)
             if matches is None:
-                wx.MessageBox(
-                    _("Errore nella generazione degli abbinamenti con bbpPairings."),
-                    _("Errore"),
-                    wx.ICON_ERROR,
-                )
+                self._avvisa_abbinamento_fallito(torneo_per_abbinamenti)
                 return
             from models import Match, Round
 
@@ -3096,7 +3102,10 @@ class MainFrame(wx.Frame):
             "end_date": future_str,
             "rounds": 5,
             "time_control": "60+0",
-            "save_path": os.path.abspath("."),
+            # La cartella del programma, non quella da cui e' stato avviato:
+            # con os.path.abspath(".") un torneo creato lanciando Tornello da
+            # un'altra cartella finiva li', lontano da tutti gli altri.
+            "save_path": _cartella_predefinita_tornei(),
             "chief_arbiter": "N/D",
             "deputy_chief_arbiters": "",
             "federation_code": "ITA",
@@ -4413,14 +4422,15 @@ class MainFrame(wx.Frame):
 
         matches = generate_pairings_for_round(self.current_tournament)
         if matches is None:
-            wx.MessageBox(
-                _("Errore nella generazione degli abbinamenti."),
-                _("Errore"),
-                wx.ICON_ERROR,
-            )
+            self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
         from models import Match, Round
+        from tournament import registra_bye_del_turno
+
+        # Il giocatore senza avversario prende i punti previsti dal torneo:
+        # prima li assegnava solo il percorso testuale.
+        registra_bye_del_turno(self.current_tournament, matches, 1)
 
         round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
         self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
@@ -4438,6 +4448,34 @@ class MainFrame(wx.Frame):
         self.populate_tree()
         self.show_current_round_report()
         self.set_status(_("Torneo iniziato. Generati abbinamenti per il Turno 1."))
+
+    def _avvisa_abbinamento_fallito(self, torneo):
+        """
+        Spiega all'utente perche' gli abbinamenti non sono stati generati.
+
+        Prima il fallimento arrivava come eccezione al gestore globale e
+        l'utente vedeva il messaggio di errore imprevisto con il rimando a
+        error.log, senza alcuna indicazione utile.
+        """
+        from tournament import motivo_ultimo_fallimento
+
+        motivo = motivo_ultimo_fallimento(torneo)
+        messaggio = _("Non e' stato possibile generare gli abbinamenti del turno.")
+        if motivo:
+            messaggio += _("\n\nMotivo: {reason}").format(reason=motivo)
+        messaggio += _(
+            "\n\nIl torneo non e' stato modificato. Se il problema dipende da un "
+            "risultato inserito per errore nei turni precedenti, puoi correggerlo "
+            "e riprovare, oppure tornare indietro con la Time Machine."
+        )
+        from utils import play_sound
+
+        play_sound("errore", torneo)
+        dlg = AccessibleMsgDialog(
+            self, _("Abbinamenti non generati"), messaggio, settings=self.settings
+        )
+        dlg.ShowModal()
+        dlg.Destroy()
 
     def generate_next_round(self):
         """Genera gli abbinamenti per il turno successivo se il turno corrente è concluso."""
@@ -4480,25 +4518,21 @@ class MainFrame(wx.Frame):
         next_matches = generate_pairings_for_round(self.current_tournament)
         if next_matches is None:
             self.current_tournament["current_round"] = curr_round
-            wx.MessageBox(
-                _("Errore durante la generazione degli abbinamenti."),
-                _("Errore"),
-                wx.ICON_ERROR,
-            )
+            self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
-        players_dict = self.current_tournament.get("players_dict", {})
-        for p_id, p in players_dict.items():
-            if p.get("withdrawn"):
-                p.setdefault("results_history", []).append(
-                    {
-                        "round": next_round_num,
-                        "opponent_id": "BYE_PLAYER_ID",
-                        "color": None,
-                        "result": "BYE",
-                        "score": 0.0,
-                    }
-                )
+        # Al giocatore ritirato non va scritta alcuna voce di storico per i
+        # turni che non gioca. Prima gliene veniva messa una di BYE con zero
+        # punti: nel file TRF diventava il codice U, cioe' bye assegnato, che
+        # per bbpPairings vale il punteggio del bye e non zero. Il totale
+        # dichiarato non tornava piu' con i risultati e il motore rifiutava il
+        # file con "The score for player N does not match the game results",
+        # bloccando la generazione del turno successivo. Ci pensa gia'
+        # engine.py, che per i ritirati riempie con il codice Z i turni non
+        # giocati.
+        from tournament import registra_bye_del_turno
+
+        registra_bye_del_turno(self.current_tournament, next_matches, next_round_num)
 
         from models import Match, Round
 

@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from config import DATE_FORMAT_ISO, DEFAULT_ELO
 from engine import (
     genera_stringa_trf_per_bbpairings,
-    handle_bbpairings_failure,
     parse_bbpairings_couples_output,
     run_bbpairings_engine,
 )
@@ -446,6 +445,33 @@ def calculate_dates(start_date_str, end_date_str, total_rounds):
         return None
 
 
+CHIAVE_ERRORE_ABBINAMENTO = "_errore_abbinamento"
+
+
+def _abbinamento_fallito(torneo, motivo):
+    """
+    Registra il motivo del fallimento sul torneo e restituisce None.
+
+    generate_pairings_for_round restituiva qui il valore di
+    handle_bbpairings_failure, cioe' una stringa nel percorso testuale e
+    un'eccezione in quello grafico, mentre tutti i chiamanti verificano se il
+    risultato e' None. Il percorso di recupero non veniva quindi mai
+    raggiunto e nell'interfaccia grafica l'eccezione finiva nel gestore
+    globale come errore imprevisto. Ora il fallimento si riconosce dal None e
+    il motivo resta leggibile con motivo_ultimo_fallimento.
+    """
+    if isinstance(torneo, dict):
+        torneo[CHIAVE_ERRORE_ABBINAMENTO] = motivo
+    return None
+
+
+def motivo_ultimo_fallimento(torneo):
+    """Il motivo dell'ultimo fallimento di abbinamento, da mostrare all'utente."""
+    if isinstance(torneo, dict):
+        return torneo.get(CHIAVE_ERRORE_ABBINAMENTO)
+    return None
+
+
 def generate_pairings_for_round(torneo):
     """
     Genera gli abbinamenti per il turno corrente usando bbpPairings.exe.
@@ -498,8 +524,8 @@ def generate_pairings_for_round(torneo):
     )
     if not trf_string:
         print(_("ERRORE: Fallita generazione della stringa TRF per bbpPairings."))
-        return handle_bbpairings_failure(
-            torneo, round_number, "Fallimento generazione stringa TRF."
+        return _abbinamento_fallito(
+            torneo, _("Non e' stato possibile preparare i dati per bbpPairings.")
         )
     # 3. Eseguire bbpPairings.exe
     success, bbp_output_data, bbp_message = run_bbpairings_engine(trf_string)
@@ -513,10 +539,9 @@ def generate_pairings_for_round(torneo):
         )
         if parsed_pairing_list is None:
             print(_("ERRORE: Fallimento parsing output coppie di bbpPairings."))
-            return handle_bbpairings_failure(
+            return _abbinamento_fallito(
                 torneo,
-                round_number,
-                f"Fallimento parsing output bbpPairings:\n{bbp_message}",
+                _("Gli abbinamenti prodotti da bbpPairings non sono leggibili."),
             )
         # 5. Convertire in formato `all_matches`
         for i, match_info in enumerate(parsed_pairing_list):
@@ -537,8 +562,11 @@ def generate_pairings_for_round(torneo):
         returncode = bbp_output_data.get("returncode", -1) if bbp_output_data else -1
         if returncode == 1:
             print(_("ATTENZIONE: bbpPairings non ha trovato abbinamenti validi."))
-            return handle_bbpairings_failure(
-                torneo, round_number, "bbpPairings: Nessun abbinamento valido trovato."
+            return _abbinamento_fallito(
+                torneo,
+                _(
+                    "bbpPairings non ha trovato alcun abbinamento valido per questo turno."
+                ),
             )
         else:
             print(
@@ -546,11 +574,53 @@ def generate_pairings_for_round(torneo):
                     message=bbp_message
                 )
             )
-            return handle_bbpairings_failure(
-                torneo, round_number, f"Errore critico bbpPairings:\n{bbp_message}"
-            )
+            return _abbinamento_fallito(torneo, bbp_message)
     print(_("--- Abbinamenti Turno {} generati. ---").format(round_number))
     return all_generated_matches
+
+
+def registra_bye_del_turno(torneo, matches, round_number):
+    """
+    Assegna al giocatore che ha ricevuto il bye i punti previsti dal torneo e
+    ne scrive la voce nello storico, con il conteggio dei bye ricevuti.
+
+    Va chiamata subito dopo aver generato gli abbinamenti di un turno. Prima
+    esisteva solo nel percorso testuale, dentro il controller, e l'interfaccia
+    grafica non assegnava nulla: chi riceveva il bye restava a zero punti.
+    Restituisce la lista degli identificativi a cui il bye e' stato assegnato.
+    """
+    valore_bye = torneo.get("bye_value", 0.5)
+    _ensure_players_dict(torneo)
+    assegnati = []
+    for match in matches or []:
+        if match.get("result") != "BYE":
+            continue
+        bye_id = match.get("white_player_id")
+        giocatore = torneo["players_dict"].get(bye_id)
+        if not giocatore:
+            continue
+        storico = giocatore.setdefault("results_history", [])
+        # Se il turno e' gia' registrato non si somma due volte, per esempio
+        # quando gli abbinamenti vengono rigenerati dopo la Time Machine.
+        if any(
+            v.get("round") == round_number and v.get("opponent_id") == "BYE_PLAYER_ID"
+            for v in storico
+        ):
+            continue
+        giocatore["points"] = float(giocatore.get("points", 0.0)) + valore_bye
+        storico.append(
+            {
+                "round": round_number,
+                "opponent_id": "BYE_PLAYER_ID",
+                "color": None,
+                "result": "BYE",
+                "score": valore_bye,
+            }
+        )
+        giocatore["received_bye_count"] = giocatore.get("received_bye_count", 0) + 1
+        giocatore.setdefault("received_bye_in_round", []).append(round_number)
+        assegnati.append(bye_id)
+    return assegnati
 
 
 def ricalcola_punti_tutti_giocatori(torneo):

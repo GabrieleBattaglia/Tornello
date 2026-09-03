@@ -16,8 +16,18 @@ def install_excepthook():
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_line = f"=== UNHANDLED EXCEPTION {timestamp} ===\n{err_msg}\n"
 
+        # Il log va accanto all'applicazione: con un percorso relativo finiva
+        # nella directory da cui il programma era stato avviato, mentre il
+        # messaggio mostrato all'utente dice comunque di cercarlo in error.log.
         try:
-            with open("error.log", "a", encoding="utf-8") as f:
+            from config import user_data_path
+
+            percorso_log = user_data_path("error.log")
+        except Exception:
+            percorso_log = "error.log"
+
+        try:
+            with open(percorso_log, "a", encoding="utf-8") as f:
                 f.write(log_line)
         except Exception:
             pass
