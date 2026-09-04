@@ -113,7 +113,9 @@ class BackupCleanupDialog(wx.Dialog):
         )
 
         self.settings = settings
-        self.backup_dir = "backup"
+        from config import user_data_path
+
+        self.backup_dir = user_data_path("backup")
         self.files_info = []
         self.old_files_info = []
 
@@ -213,9 +215,14 @@ class BackupCleanupDialog(wx.Dialog):
 
         if os.path.exists(self.backup_dir):
             try:
-                for filename in os.listdir(self.backup_dir):
-                    filepath = os.path.join(self.backup_dir, filename)
-                    if os.path.isfile(filepath):
+                # I backup stanno nelle sottocartelle dell'anno e del mese,
+                # quindi la scansione scende nell'albero invece di fermarsi
+                # al primo livello.
+                for cartella, _sottocartelle, files in os.walk(self.backup_dir):
+                    for filename in files:
+                        filepath = os.path.join(cartella, filename)
+                        if not os.path.isfile(filepath):
+                            continue
                         stat = os.stat(filepath)
                         size_bytes = stat.st_size
                         mtime = datetime.fromtimestamp(stat.st_mtime)
@@ -229,7 +236,7 @@ class BackupCleanupDialog(wx.Dialog):
                         self.files_info.append(f_info)
                         if mtime < limit_date:
                             self.old_files_info.append(f_info)
-            except Exception:
+            except OSError:
                 pass
 
         # Ordina dal più vecchio al più recente (ascendente)

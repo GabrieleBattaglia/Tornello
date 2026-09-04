@@ -9,10 +9,52 @@ from config import DATE_FORMAT_ISO, _, lingua_rilevata
 from GBUtils import key
 
 
+def nome_cartella_mese(mese):
+    """Nome della sottocartella di un mese, per esempio "09 Settembre".
+    Il numero davanti serve a tenere i mesi in ordine quando il gestore file li
+    ordina per nome, mentre la parola segue la lingua scelta nel programma."""
+    nomi = (
+        _("Gennaio"),
+        _("Febbraio"),
+        _("Marzo"),
+        _("Aprile"),
+        _("Maggio"),
+        _("Giugno"),
+        _("Luglio"),
+        _("Agosto"),
+        _("Settembre"),
+        _("Ottobre"),
+        _("Novembre"),
+        _("Dicembre"),
+    )
+    try:
+        numero = max(1, min(12, int(mese)))
+    except (TypeError, ValueError):
+        numero = 1
+    return f"{numero:02d} {nomi[numero - 1]}"
+
+
+def cartella_per_data(radice, data=None, crea=True):
+    """Percorso della sottocartella anno e mese dentro una radice, per esempio
+    backup, 2026, 09 Settembre. Le due sottocartelle nascono solo quando c'e'
+    davvero qualcosa da metterci dentro.
+    Restituisce None se la cartella non si e' potuta creare."""
+    if data is None:
+        data = datetime.datetime.now()
+    percorso = os.path.join(radice, f"{data.year:04d}", nome_cartella_mese(data.month))
+    if crea:
+        try:
+            os.makedirs(percorso, exist_ok=True)
+        except OSError:
+            return None
+    return percorso
+
+
 def create_backup(filepath, context="backup"):
     """
     Crea una copia di backup del file specificato nella cartella 'backup'
-    accanto all'applicazione.
+    accanto all'applicazione, dentro le sottocartelle dell'anno e del mese in
+    cui la copia viene fatta.
     Aggiunge un timestamp e il contesto al nome del file per non sovrascrivere backup precedenti.
     """
     if not os.path.exists(filepath):
@@ -24,23 +66,21 @@ def create_backup(filepath, context="backup"):
     # l'utente che doveva recuperare un torneo non le trovava.
     from config import user_data_path
 
-    backup_dir = user_data_path("backup")
-    if not os.path.exists(backup_dir):
-        try:
-            os.makedirs(backup_dir)
-        except OSError:
-            return False
+    adesso = datetime.datetime.now()
+    backup_dir = cartella_per_data(user_data_path("backup"), adesso)
+    if not backup_dir:
+        return False
 
     filename = os.path.basename(filepath)
     name, ext = os.path.splitext(filename)
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = adesso.strftime("%Y%m%d_%H%M%S")
     backup_filename = f"{name}_{context}_{timestamp}{ext}"
     backup_path = os.path.join(backup_dir, backup_filename)
 
     try:
         shutil.copy2(filepath, backup_path)
         return True
-    except Exception:
+    except OSError:
         return False
 
 

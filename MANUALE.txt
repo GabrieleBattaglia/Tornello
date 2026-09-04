@@ -209,7 +209,8 @@ ESEMPI PRATICI DI RICERCA
 6. GESTIONE DEI TURNI E INSERIMENTO RISULTATI
 ========================================================================
 
-Una volta completata l'iscrizione dei giocatori, premendo INVIO sulla voce "Avvia Turno 1" nell'albero di destra (F6), Tornello genera gli abbinamenti del primo turno.
+Il torneo appena creato resta in preparazione: puoi rivedere i dati, aggiungere o togliere iscritti quante volte vuoi. Quando la lista e' al completo, lo avvii premendo INVIO sulla voce "calcola il turno 1", che trovi sotto la cartella "turni" del torneo, oppure sulla voce "Avvio torneo" in fondo al centro comandi (F6). Tornello genera cosi' gli abbinamenti del primo turno.
+Prima di generarli controlla che gli iscritti bastino per i turni previsti: fra N giocatori esistono N-1 avversari possibili, quindi servono almeno tanti iscritti quanti sono i turni piu' uno, altrimenti l'abbinatore resterebbe senza incontri nuovi prima della fine. Se il numero non basta l'avvio viene impedito e il torneo resta in preparazione. Se invece i turni sono meno di quelli consigliati per il numero di iscritti, ricevi solo un avviso e decidi tu se procedere.
 
 6.1 LA STRUTTURA DELLE PARTITE NELL'ALBERO
 Nell'albero di destra compare la cartella "Partite" del turno corrente, suddivisa in tre sotto-cartelle:
@@ -333,7 +334,7 @@ In base alla cadenza impostata per il torneo, Tornello determina la tipologia di
   * Viene aggiornato il medagliere personale (conteggio dei primi, secondi e terzi posti).
 
 9.3 ARCHIVIAZIONE E CLASSIFICA
-Il torneo viene salvato in modo permanente come file JSON all'interno della cartella "Closed Tournaments". Contemporaneamente, la classifica finale ufficiale viene stampata in formato testuale leggibile nell'Area Centrale (F5), pronta per essere copiata, stampata o inviata ai partecipanti.
+Il torneo viene archiviato dentro la cartella "Closed Tournaments", che sta accanto al programma, ordinata per anno e per mese di conclusione: per esempio un torneo finito a settembre 2026 finisce in "Closed Tournaments", poi "2026", poi "09 Settembre", e infine in una cartella con il nome del torneo, dove vanno il file JSON e tutti i report. Le cartelle dell'anno e del mese nascono solo quando c'e' davvero un torneo da metterci dentro, e i nomi dei mesi seguono la lingua scelta. La stessa struttura per anno e mese vale per la cartella "backup", dove il criterio e' la data in cui la copia di sicurezza viene creata. Contemporaneamente, la classifica finale ufficiale viene stampata in formato testuale leggibile nell'Area Centrale (F5), pronta per essere copiata, stampata o inviata ai partecipanti.
 
 9.4 ELIMINAZIONE DI UN TORNEO ATTIVO
 Se si desidera eliminare definitivamente un torneo e tutti i suoi report dal disco, è possibile farlo in due modi: selezionando il menù File -> Elimina Torneo Attivo, oppure posizionandosi sul nodo del torneo attivo nell'albero di destra (F6) e premendo il tasto CANC/DELETE. Verrà mostrato un dialogo di conferma accessibile che elenca tutti i file che saranno rimossi (incluso il JSON del torneo, i report .txt della classifica e dei turni, e i calendari .ics). Se confermato, Tornello ripulirà completamente le directory del disco e riporterà l'albero allo stato iniziale.

@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.7.0 (2026.09.05)
+	+ Feature: Il torneo appena creato resta sempre in preparazione e si avvia da una voce dell'albero, "calcola il turno 1" sotto i turni oppure "Avvio torneo" in fondo al centro comandi. La domanda che chiedeva se generare subito il turno 1 e' stata tolta: compariva una volta sola e, rispondendo di no, spariva senza lasciare traccia di come procedere.
+	+ Feature: L'archivio dei tornei conclusi e' ordinato per anno e per mese di conclusione, con i nomi dei mesi nella lingua scelta e le cartelle create solo quando c'e' qualcosa da metterci dentro. La stessa struttura vale per la cartella dei backup, dove il criterio e' la data in cui la copia viene fatta. La pulizia automatica dei backup e la finestra di pulizia scendono ora nelle sottocartelle.
+	+ Feature: Il ritiro di un giocatore viene impedito quando lascerebbe il torneo senza abbastanza giocatori per completare i turni rimanenti. Al posto del ritiro si aprono due strade: riportare il torneo alla fase di iscrizione, che conserva iscritti e impostazioni, oppure eliminarlo. Cosi' l'abbinatore non viene mai messo nella condizione di fallire a meta' torneo. Il calcolo tiene un giocatore di margine sopra il minimo teorico, perche' il sistema svizzero puo' esaurire le combinazioni prima del limite matematico.
+	+ Fix: Riportando un torneo alla fase di iscrizione, i giocatori che si erano ritirati escono dall'elenco degli iscritti, mentre gli altri restano con i dati azzerati. Prima venivano riattivati tutti.
+
 9.6.0 (2026.09.04)
 	+ Feature: All'avvio Tornello controlla di poter scrivere nella propria cartella. Se non puo', lo dice con un messaggio che spiega perche' e cosa fare, e si chiude invece di far fallire una operazione alla volta. Il programma e' portabile e tiene accanto a se' il database dei giocatori, i tornei, l'archivio e i backup: se quella cartella non e' scrivibile non esiste ripiego, perche' la cartella di default e' la stessa.
 	+ Bugfix: I file dei tornei in corso, l'archivio e le copie di sicurezza vengono ora cercati e scritti accanto al programma, non nella cartella da cui e' stato avviato. Avviando Tornello da un'altra cartella, i tornei nascevano li' e l'albero non trovava piu' quelli veri.

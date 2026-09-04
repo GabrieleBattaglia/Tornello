@@ -1724,26 +1724,25 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         _("Archiviazione del torneo '{name}'...").format(name=tournament_name_original)
     )
     sanitized_tournament_name = sanitize_filename(tournament_name_original)
+    # L'archivio e' ordinato per anno e per mese di conclusione del torneo, e
+    # le due sottocartelle nascono solo quando c'e' un torneo da metterci.
     end_date_str = torneo.get("end_date")
-    archive_folder_suffix = datetime.now().strftime(
-        "%Y-%m-%d"
-    )  # Fallback per suffisso cartella
+    data_archivio = datetime.now()
     if end_date_str:
         try:
-            end_date_obj = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
-            archive_folder_suffix = end_date_obj.strftime("%B %Y").capitalize()
+            data_archivio = datetime.strptime(end_date_str, DATE_FORMAT_ISO)
         except ValueError:
             print(
                 _(
-                    " Warning: Formato data di fine ('{date_str}') non valido. Uso data corrente per suffisso cartella archivio."
+                    " Warning: Formato data di fine ('{date_str}') non valido. Uso data corrente per la cartella archivio."
                 ).format(date_str=end_date_str)
             )
-    tournament_archive_subdir_name = (
-        f"{sanitized_tournament_name} - {archive_folder_suffix}"
-    )
-    full_archive_path = os.path.join(
-        ARCHIVED_TOURNAMENTS_DIR, tournament_archive_subdir_name
-    )
+    from utils import cartella_per_data
+
+    cartella_del_mese = cartella_per_data(ARCHIVED_TOURNAMENTS_DIR, data_archivio)
+    if not cartella_del_mese:
+        cartella_del_mese = ARCHIVED_TOURNAMENTS_DIR
+    full_archive_path = os.path.join(cartella_del_mese, sanitized_tournament_name)
     try:
         os.makedirs(full_archive_path, exist_ok=True)
     except OSError as e:

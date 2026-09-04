@@ -94,32 +94,34 @@ class TestRitornoAllaPreparazione:
         assert torneo["current_round"] == 1
         assert torneo["next_match_id"] == 1
 
-    def test_i_giocatori_tornano_allo_stato_iniziale(self):
+    def test_i_giocatori_rimasti_tornano_allo_stato_iniziale(self):
         from tournament import riporta_torneo_alla_preparazione
 
-        torneo, primo, secondo = self._torneo()
+        torneo, _primo, secondo = self._torneo()
 
         riporta_torneo_alla_preparazione(torneo)
 
-        for giocatore in (primo, secondo):
-            assert giocatore["points"] == 0.0
-            assert giocatore["results_history"] == []
-            assert giocatore["withdrawn"] is False
-            assert giocatore["received_bye_count"] == 0
-            assert giocatore["received_bye_in_round"] == []
-            assert giocatore["opponents"] == set()
-            assert giocatore["final_rank"] is None
+        assert secondo["points"] == 0.0
+        assert secondo["results_history"] == []
+        assert secondo["withdrawn"] is False
+        assert secondo["received_bye_count"] == 0
+        assert secondo["received_bye_in_round"] == []
+        assert secondo["opponents"] == set()
+        assert secondo["final_rank"] is None
 
-    def test_gli_iscritti_restano(self):
-        """L'elenco degli iscritti e i dati generali non si toccano: e' la
-        differenza fra riportare indietro il torneo ed eliminarlo."""
+    def test_i_ritirati_escono_dall_elenco_e_gli_altri_restano(self):
+        """Chi si era ritirato non tornera' a giocare, quindi esce
+        dall'elenco; gli altri restano iscritti, perche' l'arbitro vorra'
+        ripartire da loro aggiungendone altri. Scelta di Gabriele del
+        2026-09-05."""
         from tournament import riporta_torneo_alla_preparazione
 
         torneo, _primo, _secondo = self._torneo()
 
         riporta_torneo_alla_preparazione(torneo)
 
-        assert [p["id"] for p in torneo["players"]] == ["UNO001", "DUE001"]
+        assert [p["id"] for p in torneo["players"]] == ["DUE001"]
+        assert list(torneo["players_dict"]) == ["DUE001"]
         assert torneo["name"] == "Prova"
         assert torneo["total_rounds"] == 3
 
@@ -184,3 +186,71 @@ class TestIscrittiETurni:
 
         assert si_puo is False
         assert motivo
+
+
+class TestRitiroPossibile:
+    """Il ritiro non deve mai lasciare il torneo senza abbastanza giocatori per
+    arrivare in fondo: e' la regola che impedisce all'abbinatore di fallire a
+    meta' torneo. Al minimo teorico, cioe' turni rimanenti piu' uno, si somma
+    un giocatore di margine, perche' il sistema svizzero abbina per punteggio e
+    puo' esaurire le combinazioni prima del limite matematico."""
+
+    def _torneo(self, turni, turno_corrente, attivi, ritirati=0):
+        players = [{"id": f"P{i}"} for i in range(attivi + ritirati)]
+        for p in players[attivi:]:
+            p["withdrawn"] = True
+        return {
+            "total_rounds": turni,
+            "current_round": turno_corrente,
+            "players": players,
+        }
+
+    def test_con_pochi_giocatori_il_ritiro_e_impedito(self):
+        from tournament import controlla_ritiro_possibile
+
+        # Sette turni, siamo al secondo, restano cinque turni: servono sette
+        # giocatori attivi dopo il ritiro e ne resterebbero cinque.
+        si_puo, resterebbero, necessari, rimanenti = controlla_ritiro_possibile(
+            self._torneo(7, 2, 6), "P0"
+        )
+
+        assert si_puo is False
+        assert resterebbero == 5
+        assert necessari == 7
+        assert rimanenti == 5
+
+    def test_con_giocatori_a_sufficienza_il_ritiro_passa(self):
+        from tournament import controlla_ritiro_possibile
+
+        si_puo, resterebbero, _necessari, _rimanenti = controlla_ritiro_possibile(
+            self._torneo(5, 3, 12), "P0"
+        )
+
+        assert si_puo is True
+        assert resterebbero == 11
+
+    def test_all_ultimo_turno_il_ritiro_e_sempre_possibile(self):
+        """Non ci sono piu' abbinamenti da fare, quindi nessun rischio."""
+        from tournament import controlla_ritiro_possibile
+
+        si_puo, _resterebbero, _necessari, rimanenti = controlla_ritiro_possibile(
+            self._torneo(5, 5, 4), "P0"
+        )
+
+        assert si_puo is True
+        assert rimanenti == 0
+
+    def test_i_gia_ritirati_non_contano(self):
+        from tournament import controlla_ritiro_possibile
+
+        si_puo, resterebbero, _necessari, _rimanenti = controlla_ritiro_possibile(
+            self._torneo(3, 1, 5, ritirati=4), "P0"
+        )
+
+        assert resterebbero == 4
+        assert si_puo is True
+
+    def test_un_torneo_inesistente_non_fa_danni(self):
+        from tournament import controlla_ritiro_possibile
+
+        assert controlla_ritiro_possibile(None, "P0") == (False, 0, 0, 0)

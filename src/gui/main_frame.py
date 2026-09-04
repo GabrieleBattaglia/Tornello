@@ -649,8 +649,8 @@ class MainFrame(wx.Frame):
             )
 
     def _check_backup_on_startup(self):
-        """Scansiona la cartella backup/ alla ricerca di file più vecchi di 18 mesi."""
-        backup_dir = "backup"
+        """Scansiona la cartella dei backup alla ricerca di file più vecchi di 18 mesi."""
+        backup_dir = user_data_path("backup")
         if not os.path.exists(backup_dir):
             return
 
@@ -671,13 +671,16 @@ class MainFrame(wx.Frame):
 
         old_files = []
         try:
-            for item in os.listdir(backup_dir):
-                filepath = os.path.join(backup_dir, item)
-                if os.path.isfile(filepath):
-                    mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
-                    if mtime < limit_date:
-                        old_files.append((filepath, mtime))
-        except Exception:
+            # I backup sono divisi per anno e mese: la ricerca scende
+            # nell'albero delle sottocartelle.
+            for cartella, _sottocartelle, files in os.walk(backup_dir):
+                for item in files:
+                    filepath = os.path.join(cartella, item)
+                    if os.path.isfile(filepath):
+                        mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
+                        if mtime < limit_date:
+                            old_files.append((filepath, mtime))
+        except OSError:
             return
 
         if not old_files:
@@ -1026,6 +1029,28 @@ class MainFrame(wx.Frame):
         # 4. NUOVO TORNEO
         new_item = self.tree_ctrl.AppendItem(self.tree_root, _("Nuovo torneo"))
         self.tree_ctrl.SetItemData(new_item, {"action": "start_new_tournament"})
+
+        # 5. AVVIO DEL TORNEO APERTO, se non e' ancora iniziato. E' la voce che
+        #    ha preso il posto della domanda che compariva a fine creazione.
+        if (
+            self.current_tournament
+            and self.active_filename
+            and not self.current_tournament.get("rounds")
+            and not self.current_tournament.get("concluded")
+        ):
+            avvio_item = self.tree_ctrl.AppendItem(
+                self.tree_root,
+                _("Avvio torneo: {name}").format(
+                    name=self.current_tournament.get("name", "")
+                ),
+            )
+            self.tree_ctrl.SetItemData(
+                avvio_item,
+                {
+                    "action": "start_tournament_matchmaking_action",
+                    "filepath": self.active_filename,
+                },
+            )
 
         if expanded_actions:
             self._restore_tree_expansion_state(self.tree_root, expanded_actions)
@@ -1434,7 +1459,9 @@ class MainFrame(wx.Frame):
                     )
         else:
             if not is_concluded:
-                node_act = self.tree_ctrl.AppendItem(turni_node, _("genera turno"))
+                node_act = self.tree_ctrl.AppendItem(
+                    turni_node, _("calcola il turno 1")
+                )
                 self.tree_ctrl.SetItemData(
                     node_act,
                     {
@@ -2584,7 +2611,6 @@ class MainFrame(wx.Frame):
     def create_tournament_from_wizard(self, enrolled):
         from models import Player, RoundDate, Tournament
         from stats import get_initial_elo_for_tournament
-        from tournament import generate_pairings_for_round
         from utils import sanitize_filename
 
         category = self.creation_data.get("tournament_category", "standard")
@@ -2661,72 +2687,26 @@ class MainFrame(wx.Frame):
         tournament = Tournament.from_dict(t_dict)
         tournament.update_players_dict()
 
-        msg = _(
-            "Vuoi avviare il torneo generando subito gli abbinamenti per il Turno 1?\n\n"
-            "Sì = Avvia il torneo generando il Turno 1\n"
-            "No = Salva il torneo 'In preparazione' (potrai aggiungere altri giocatori ed avviarlo in seguito)"
-        )
-        dlg_start = AccessibleMsgDialog(self, _("Avvio Torneo"), msg, style=wx.YES_NO)
-        start_now = dlg_start.ShowModal() == wx.ID_YES
-        dlg_start.Destroy()
-
-        if start_now and not self._torneo_puo_partire(tournament.to_dict()):
-            # Il torneo non si puo' avviare, ma il lavoro fatto non va perso:
-            # lo si salva in preparazione, pronto da avviare quando i numeri
-            # tornano.
-            start_now = False
-
-        if start_now:
-            torneo_per_abbinamenti = tournament.to_dict()
-            matches = generate_pairings_for_round(torneo_per_abbinamenti)
-            if matches is None:
-                self._avvisa_abbinamento_fallito(torneo_per_abbinamenti)
-                return
-            from models import Match, Round
-
-            round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
-            tournament.rounds.append(round_obj)
-            self.current_tournament = tournament.to_dict()
-            self.current_tournament["players_dict"] = {
-                p["id"]: p for p in self.current_tournament.get("players", [])
-            }
-            # Anche il torneo avviato dalla procedura guidata deve assegnare i
-            # punti del bye: prima li registrava solo l'avvio di un torneo
-            # gia' salvato in preparazione.
-            from tournament import registra_bye_del_turno
-
-            registra_bye_del_turno(self.current_tournament, matches, 1)
-            self._save_state()
-            # Lo stesso suono dell'avvio di un torneo salvato in preparazione:
-            # da questa strada mancava del tutto.
-            from utils import play_sound
-
-            play_sound("nuovo_turno", self.current_tournament)
-            self.creation_mode = False
-            self._tree_restore_target = {
-                "action": "show_round_report",
-                "filepath": self.active_filename,
-                "round": 1,
-            }
-            self.load_tournament(self.active_filename)
-            self.set_status(_("Torneo avviato. Generati abbinamenti per il Turno 1."))
-        else:
-            self.current_tournament = tournament.to_dict()
-            self.current_tournament["players_dict"] = {
-                p["id"]: p for p in self.current_tournament.get("players", [])
-            }
-            self._save_state()
-            self.creation_mode = False
-            self._tree_restore_target = {
-                "action": "add_player_action",
-                "filepath": self.active_filename,
-            }
-            self.load_tournament(self.active_filename)
-            self.set_status(
-                _(
-                    "Torneo creato in preparazione. Puoi completare l'inserimento in seguito."
-                )
+        # Il torneo nasce sempre in preparazione. L'avvio e' una voce
+        # dell'albero, "calcola il turno 1" sotto i turni oppure la voce in
+        # fondo al centro comandi: piu' chiaro di una domanda che compariva una
+        # volta sola e che, se rispondevi di no, spariva.
+        self.current_tournament = tournament.to_dict()
+        self.current_tournament["players_dict"] = {
+            p["id"]: p for p in self.current_tournament.get("players", [])
+        }
+        self._save_state()
+        self.creation_mode = False
+        self._tree_restore_target = {
+            "action": "start_tournament_matchmaking_action",
+            "filepath": self.active_filename,
+        }
+        self.load_tournament(self.active_filename)
+        self.set_status(
+            _(
+                "Torneo creato. Quando gli iscritti sono al completo, avvialo con la voce calcola il turno 1."
             )
+        )
 
     def _save_state(self):
         if self.current_tournament:
@@ -2909,6 +2889,7 @@ class MainFrame(wx.Frame):
         l'arbitro sta cercando davvero."""
         import os
 
+        from tournament import controlla_ritiro_possibile
         from utils import play_sound
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
@@ -2950,12 +2931,17 @@ class MainFrame(wx.Frame):
             )
             return
 
-        attivi = [
-            p
-            for p in self.current_tournament.get("players", [])
-            if not p.get("withdrawn")
-        ]
-        resterebbero = len(attivi) - 1
+        # Il ritiro non deve mai lasciare il torneo senza abbastanza giocatori
+        # per arrivare in fondo, altrimenti l'abbinatore si fermerebbe a meta'
+        # torneo senza che si possa piu' rimediare.
+        si_puo, resterebbero, necessari, turni_rimanenti = controlla_ritiro_possibile(
+            self.current_tournament, giocatore.get("id")
+        )
+        if not si_puo:
+            self._bivio_torneo_non_proseguibile(
+                filepath, p_name, resterebbero, necessari, turni_rimanenti
+            )
+            return
 
         if stato == "giocata":
             messaggio = _(
@@ -2965,11 +2951,6 @@ class MainFrame(wx.Frame):
             messaggio = _(
                 "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verra' piu' abbinato nei turni successivi."
             ).format(name=p_name)
-
-        if resterebbero < 2:
-            messaggio += _(
-                "\n\nAttenzione: dopo questo ritiro non resterebbero giocatori a sufficienza per proseguire, quindi ti verra' chiesto se riportare il torneo alla fase di iscrizione."
-            )
 
         dlg = AccessibleMsgDialog(
             self,
@@ -2983,36 +2964,44 @@ class MainFrame(wx.Frame):
         if conferma != wx.ID_YES:
             return
 
-        if resterebbero < 2:
-            self._proponi_ritorno_alla_preparazione(filepath, p_name)
-            return
-
         self.withdraw_player(giocatore.get("id"))
         self._tree_restore_target = {"action": "show_players", "filepath": filepath}
         self.populate_tree()
         self.show_players_list_verbose()
 
-    def _proponi_ritorno_alla_preparazione(self, filepath, nome_ritirato):
-        """Quando il ritiro lascerebbe il torneo senza giocatori a sufficienza,
-        l'arbitro ha quasi sempre sbagliato la creazione. Invece di eliminare il
-        torneo lo si riporta alla fase di iscrizione, dove tutti i dati tornano
-        modificabili e gli iscritti restano al loro posto."""
+    def _bivio_torneo_non_proseguibile(
+        self, filepath, nome_giocatore, resterebbero, necessari, turni_rimanenti
+    ):
+        """Il ritiro renderebbe impossibile completare il torneo. Il ritiro non
+        viene registrato e restano due strade: riportare il torneo alla fase di
+        iscrizione, che conserva tutto e permette di rifarlo, oppure eliminarlo.
+        In nessun caso l'abbinatore viene messo nella condizione di fallire."""
         from tournament import riporta_torneo_alla_preparazione
         from utils import create_backup, play_sound
 
+        play_sound("errore")
         messaggio = _(
-            "Ritirando {name} il torneo resterebbe senza giocatori a sufficienza per proseguire.\n\nVuoi riportare il torneo alla fase di iscrizione? Verranno cancellati tutti i turni giocati e i loro risultati, mentre l'elenco degli iscritti e i dati del torneo restano al loro posto e tornano modificabili. Prima dell'operazione viene creata una copia di sicurezza."
-        ).format(name=nome_ritirato)
+            "Ritirando {name} resterebbero {resterebbero} giocatori attivi, mentre per portare a termine i {turni} turni che mancano ne servono almeno {necessari}.\n\n"
+            "Il ritiro non viene registrato, perche' il torneo si fermerebbe a meta' senza possibilita' di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori gia' ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
+            "Vuoi riportare il torneo alla fase di iscrizione? Prima dell'operazione viene creata una copia di sicurezza."
+        ).format(
+            name=nome_giocatore,
+            resterebbero=resterebbero,
+            turni=turni_rimanenti,
+            necessari=necessari,
+        )
         dlg = AccessibleMsgDialog(
             self,
-            _("Torneo senza giocatori"),
+            _("Il torneo non potrebbe proseguire"),
             messaggio,
             style=wx.YES_NO,
             settings=self.settings,
         )
         conferma = dlg.ShowModal()
         dlg.Destroy()
+
         if conferma != wx.ID_YES:
+            self._proponi_eliminazione_torneo(filepath)
             return
 
         create_backup(filepath, "pre_ritorno_preparazione")
@@ -3034,6 +3023,37 @@ class MainFrame(wx.Frame):
             _(
                 "Torneo riportato alla fase di iscrizione. I turni sono stati cancellati."
             )
+        )
+
+    def _proponi_eliminazione_torneo(self, filepath):
+        """Seconda strada del bivio: eliminare il torneo. Si riusa la stessa
+        funzione dell'albero, che chiede conferma e cancella anche i file."""
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Eliminare il torneo"),
+            _(
+                "Vuoi allora eliminare definitivamente il torneo e tutti i suoi file? Se rispondi di no non viene fatto nulla, e il torneo resta come si trova ora."
+            ),
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+
+        nodo = self._find_matching_item(
+            self.tree_root, {"action": "select_tournament", "filepath": filepath}
+        )
+        if nodo and nodo.IsOk():
+            self.delete_tournament_completely(nodo, filepath)
+            return
+
+        self._dialogo_informativo(
+            _("Eliminazione dall'albero"),
+            _(
+                "Per eliminare il torneo posizionati sul suo nome nell'albero e premi il tasto Canc."
+            ),
         )
 
     def _torneo_puo_partire(self, torneo):

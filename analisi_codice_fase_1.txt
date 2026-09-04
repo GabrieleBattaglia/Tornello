@@ -875,3 +875,23 @@ Nota tecnica da tenere presente nella decisione: a torneo iniziato il vincolo gi
 Richiesta nuova, non ancora affrontata: struttura delle cartelle di archivio e di backup.
 Gabriele chiede che la cartella dell'archivio abbia un nome traducibile, Chiusi in italiano, e che dentro si creino una cartella per anno e dentro ancora le dodici cartelle dei mesi con i nomi localizzati, create solo quando c'e' qualcosa da metterci, con i tornei ordinati per mese di conclusione. La stessa struttura per la cartella backup, dove il criterio e' la data di creazione del file, verificando che la pulizia automatica dei backup continui a funzionare.
 Punto da chiarire prima di procedere: la cartella attuale si chiama Closed Tournaments e contiene i tornei gia' archiviati, quindi serve decidere come trattarli. Inoltre un nome tradotto significa che al cambio di lingua la cartella cambia nome e i tornei archiviati risulterebbero spariti, a meno di cercare in tutte le varianti conosciute.
+
+Lavori della versione 9.7.0, decisi da Gabriele il 2026-09-05
+
+Ritiro che renderebbe impossibile finire il torneo. Decisione 3 chiusa, con la sintesi a due strade.
+Gabriele ha accettato la sintesi proposta: il ritiro viene impedito quando i giocatori attivi scenderebbero sotto il minimo necessario, e al suo posto si aprono due strade, riportare il torneo alla fase di iscrizione oppure eliminarlo. Ha chiesto inoltre di stare larghi con la stima, aggiungendo uno o due giocatori al minimo teorico, invece di interrogare l'abbinatore in anticipo.
+Implementazione: tournament.controlla_ritiro_possibile confronta i giocatori che resterebbero attivi con i turni ancora da giocare piu' uno, cioe' il minimo matematico, piu' un giocatore di margine, perche' il sistema svizzero abbina per punteggio e puo' esaurire le combinazioni prima del limite teorico. All'ultimo turno il controllo non si applica, perche' non ci sono piu' abbinamenti da fare. Nell'interfaccia il messaggio dice quanti giocatori resterebbero e quanti ne servono, e propone prima il ritorno alla fase di iscrizione, poi l'eliminazione.
+Richiesta di sviluppo futuro registrata come Issue numero 38: dare all'arbitro la possibilita' di comporre a mano gli abbinamenti quando il motore non riesce a produrli, come previsto dai regolamenti nei casi eccezionali. La stessa issue riporta anche l'idea di interrogare bbpPairings prima di accettare un ritiro, con i suoi limiti.
+
+Ritirati e ritorno alla fase di iscrizione. Decisione presa da Gabriele.
+Chi si era ritirato esce dall'elenco degli iscritti, perche' non tornera' comunque a giocare; chi non si era ritirato resta iscritto con i dati azzerati, perche' l'arbitro vorra' ripartire da quei giocatori aggiungendone altri.
+
+Struttura delle cartelle di archivio e di backup. Richiesta di Gabriele, con il nome della cartella lasciato invariato.
+Gabriele ha annullato la richiesta di tradurre il nome della cartella di archivio, che resta Closed Tournaments: era il punto che avrebbe fatto sparire i tornei archiviati al cambio di lingua.
+Implementazione: utils.cartella_per_data costruisce il percorso anno e mese sotto una radice qualsiasi, e utils.nome_cartella_mese produce nomi come 09 Settembre, con il numero davanti perche' restino in ordine e la parola nella lingua scelta. L'archiviazione di un torneo concluso usa l'anno e il mese della data di fine, o la data odierna se quella manca, e dentro il mese crea una cartella con il solo nome del torneo, senza piu' il suffisso del mese che ora e' nel percorso. Le copie di sicurezza usano l'anno e il mese in cui vengono create. Le cartelle nascono solo quando c'e' un file da metterci.
+Effetto sulla pulizia dei backup, verificato: sia il controllo all'avvio sia la finestra di pulizia leggevano la sola cartella backup con un percorso relativo e senza scendere nelle sottocartelle. Ora usano il percorso accanto al programma e una scansione ricorsiva, quindi continuano a vedere tutti i file.
+I tornei gia' archiviati restano dove sono: l'albero li trova comunque, perche' la ricerca dei tornei conclusi e' ricorsiva.
+
+Avvio del torneo riorganizzato. Richiesta di Gabriele.
+La domanda che chiedeva se generare subito il turno 1 e' stata tolta. Il torneo appena creato resta sempre in preparazione, e l'avvio e' una voce dell'albero: calcola il turno 1, sotto i turni, che ha preso il nome delle voci degli altri turni, oppure Avvio torneo seguito dal nome, come ultima voce del centro comandi, che compare solo quando il torneo aperto non e' ancora iniziato. Dopo la creazione il fuoco viene portato proprio su quella voce.
+Il controllo sul rapporto fra iscritti e turni, introdotto nella 9.5.0, resta agganciato all'avvio, che ora e' un punto solo.

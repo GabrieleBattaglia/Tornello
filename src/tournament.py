@@ -653,10 +653,12 @@ def controlla_iscritti_e_turni(torneo):
 
 def riporta_torneo_alla_preparazione(torneo):
     """Riporta un torneo iniziato alla fase in cui si iscrivono i giocatori.
-    Cancella tutti i turni e azzera lo stato dei giocatori, iscrizioni comprese
-    quelle dei ritirati, lasciando l'elenco degli iscritti e i dati generali.
+    Cancella tutti i turni, toglie dall'elenco i giocatori che si erano
+    ritirati e azzera lo stato di quelli rimasti, lasciando intatti i dati
+    generali del torneo.
     Serve al caso in cui l'arbitro si accorge di aver sbagliato la creazione:
-    l'alternativa sarebbe eliminare il torneo e ricominciare da capo.
+    l'alternativa sarebbe eliminare il torneo e ricominciare da capo, e chi si
+    era ritirato non tornera' comunque a giocare.
     Restituisce True se il torneo e' stato riportato indietro.
     """
     if not torneo or not isinstance(torneo, dict):
@@ -666,8 +668,10 @@ def riporta_torneo_alla_preparazione(torneo):
     torneo["next_match_id"] = 1
     torneo.pop(CHIAVE_ERRORE_ABBINAMENTO, None)
     torneo["concluded"] = False
-    _ensure_players_dict(torneo)
-    for giocatore in torneo.get("players", []):
+    rimasti = [p for p in torneo.get("players", []) if not p.get("withdrawn")]
+    torneo["players"] = rimasti
+    torneo["players_dict"] = {p["id"]: p for p in rimasti}
+    for giocatore in rimasti:
         giocatore["results_history"] = []
         giocatore["withdrawn"] = False
         giocatore["final_rank"] = None
@@ -680,6 +684,39 @@ def riporta_torneo_alla_preparazione(torneo):
         giocatore["downfloat_count"] = 0
         _ricalcola_stato_giocatore_da_storico(giocatore)
     return True
+
+
+# Margine di sicurezza sul numero minimo di giocatori necessari per portare a
+# termine i turni che restano. Il minimo teorico e' turni rimanenti piu' uno,
+# ma il sistema svizzero abbina per punteggio e puo' esaurire le combinazioni
+# prima di quel limite, quindi si sta larghi di un giocatore.
+MARGINE_GIOCATORI = 1
+
+
+def controlla_ritiro_possibile(torneo, player_id):
+    """Dice se il torneo puo' ancora arrivare in fondo dopo il ritiro di questo
+    giocatore. Restituisce una tupla: si puo' ritirare, quanti resterebbero
+    attivi, quanti ne servirebbero, quanti turni restano da giocare.
+    """
+    if not torneo or not isinstance(torneo, dict):
+        return False, 0, 0, 0
+
+    attivi = [
+        p
+        for p in torneo.get("players", [])
+        if not p.get("withdrawn") and p.get("id") != player_id
+    ]
+    resterebbero = len(attivi)
+    turni_totali = int(torneo.get("total_rounds") or 0)
+    turno_corrente = int(torneo.get("current_round") or 1)
+    turni_rimanenti = max(0, turni_totali - turno_corrente)
+
+    if turni_rimanenti == 0:
+        # Il torneo e' all'ultimo turno: non ci sono altri abbinamenti da fare.
+        return resterebbero >= 1, resterebbero, 1, 0
+
+    necessari = turni_rimanenti + 1 + MARGINE_GIOCATORI
+    return resterebbero >= necessari, resterebbero, necessari, turni_rimanenti
 
 
 def registra_bye_del_turno(torneo, matches, round_number):

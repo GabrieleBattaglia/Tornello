@@ -1,93 +1,39 @@
-Collaudo sul campo di Tornello, fase 1, terzo giro
-Progetto: Tornello 9.4.0
-Documento aggiornato il 2026-09-04 da ClaudIA, modello Claude Opus 5, modalita' UltraCode
+Collaudo sul campo di Tornello, fase 1, quarto giro
+Progetto: Tornello 9.7.0
+Documento riscritto il 2026-09-05 da ClaudIA, modello Claude Opus 5, modalita' UltraCode
 A cosa serve questo file
-Qui restano soltanto le prove che hanno bisogno delle tue mani, perche' toccano l'interfaccia grafica, e le decisioni che spettano a te. Tutto cio' che si poteva verificare via software e' gia' stato verificato e sta in analisi_codice_fase_1.txt. Sotto ogni prova c'e' una riga Esito da compilare.
+Gli esiti del terzo giro, le tue risposte e i lavori che ne sono nati stanno in analisi_codice_fase_1.txt. Qui restano solo le prove nuove, tutte sull'interfaccia grafica. Non ci sono decisioni in sospeso: hai risposto a tutte. Sotto ogni prova c'e' una riga Esito da compilare.
 
-Parte prima, le prove che restano
+Prova 1, il nuovo avvio del torneo.
+Cosa fare: creare un torneo con otto giocatori e cinque turni, completando la procedura guidata fino all'iscrizione.
+Cosa osservare: al termine non deve piu' comparire la domanda che chiedeva se generare subito il turno 1. Il torneo resta in preparazione e il fuoco si posa sulla voce che lo avvia. Devono esserci due strade per partire, la voce calcola il turno 1 sotto la cartella turni del torneo, e la voce Avvio torneo seguita dal nome, come ultima voce del centro comandi. Provale tutte e due, in due tornei diversi. La voce in fondo al centro comandi deve sparire appena il torneo e' iniziato.
+Esito:
 
-Prova 1, punti del bye dalla procedura guidata. Correzione della 9.3.22.
-Cosa fare: creare un torneo con cinque giocatori e il bye a mezzo punto, e alla domanda finale rispondere di avviarlo subito generando il turno 1. Guardare poi la classifica senza inserire risultati.
-Cosa osservare: il giocatore senza avversario deve avere mezzo punto, e nel report del turno deve comparire il bye con il valore configurato nel torneo.
-Perche' la ripeti: la correzione della 9.3.21 copriva solo l'avvio di un torneo salvato in preparazione, e la procedura guidata segue una strada tutta sua. Se vuoi provare anche l'altra strada, salva il torneo in preparazione e avvialo in un secondo momento dall'albero.
-Esito: Corretto, funziona.
-  3 (+0)        Ariaudo, Claudio            [1856]   0.0   0.0   0.0    0 1856
-  4 (+0)    1N  Gasperoni, Claudio          [1844]   0.0   0.0   0.0    0 1844
-  5 (+0)    1N  Badano, Giancarlo           [1800]   0.5   0.5   0.5    0 1800
-Nota: ho notato che manca un effetto sonoro quando dico di sì alla generazione del T1. Dovremmo mettercelo.
+Prova 2, il controllo fra iscritti e turni.
+Cosa fare: creare un torneo con cinque turni e cinque giocatori soltanto, poi provare ad avviarlo.
+Cosa osservare: l'avvio deve essere impedito, con un messaggio che dice quanti giocatori servono e perche'. Il torneo deve restare in preparazione, pronto da avviare dopo aver aggiunto altri iscritti. Prova poi il secondo caso: sedici giocatori e due turni soltanto, dove deve comparire un avviso che consiglia almeno quattro turni ma ti lascia procedere se confermi.
+Esito:
 
-Prova 2, archiviazione del torneo concluso. Correzione della 9.3.22.
-Cosa fare: portare a termine un torneo breve e finalizzarlo. Guardare poi la cartella di Tornello e la cartella Closed Tournaments.
-Cosa osservare: nella cartella del programma non deve restare nessun file che inizia con Tornello seguito dal nome del torneo, ne il file JSON ne i report di testo. Dentro Closed Tournaments deve esserci la cartella del torneo con tutti i suoi file. Nell'albero il torneo deve comparire fra i tornei conclusi.
-Esito: Ok
-Nota. Quando premo l'ok dopo la richiesta di finalizzazione, NVDA rimane senza focus. Dovremmo portarlo in centro comandi, sulla voce nuovo.
+Prova 3, ritiro impedito e due strade.
+Cosa fare: creare un torneo con sei giocatori e cinque turni, avviarlo, giocare il primo turno e poi provare a ritirare un giocatore.
+Cosa osservare: il ritiro deve essere impedito, perche' resterebbero cinque attivi mentre per i quattro turni che mancano ne servono almeno sei. Il messaggio deve dire questi numeri e proporre di riportare il torneo alla fase di iscrizione. Rispondendo di no deve arrivare la seconda domanda, quella sull'eliminazione del torneo: rispondi di no anche a quella e verifica che non venga fatto nulla e che il torneo resti intatto.
+Esito:
 
-Prova 3, ritiro dall'albero. Lavoro nuovo della 9.4.0.
-Cosa fare: a torneo iniziato, premere Canc su un giocatore nell'albero. Provare i tre casi.
-Primo caso, il giocatore ha gia' giocato la partita del turno in corso: deve comparire la proposta di ritiro, che avverte che la partita gia' giocata resta valida e che il ritiro vale dal turno successivo.
-Secondo caso, il giocatore ha una partita del turno in corso ancora senza risultato: la proposta non deve comparire, e il messaggio deve invitare a registrare prima quel risultato, con il forfait se il giocatore non si e' presentato. Verificare che, registrando il forfait, il programma proponga il ritiro come faceva gia' prima.
-Terzo caso, il giocatore e' gia' ritirato: il messaggio deve dirlo e non proporre altro.
-Cosa osservare anche: dopo il ritiro il giocatore non deve piu' comparire negli abbinamenti dei turni successivi, e nell'elenco degli iscritti deve risultare ritirato.
-Esito: ok per tutto tranne l'etichetta ritirato nell'albero iscritti.
+Prova 4, ritorno alla fase di iscrizione.
+Cosa fare: ripetere la prova 3 e questa volta accettare il ritorno alla fase di iscrizione. Se hai gia' ritirato qualcuno prima, meglio: serve a vedere la differenza fra i ritirati e gli altri.
+Cosa osservare: i turni giocati devono sparire, i giocatori che si erano gia' ritirati devono uscire dall'elenco degli iscritti, mentre gli altri devono restare con zero punti e nessuno storico. I dati del torneo devono tornare modificabili e la voce per iscrivere altri giocatori deve essere di nuovo disponibile. Controlla infine che nella cartella backup sia comparsa la copia di sicurezza con la dicitura pre_ritorno_preparazione, che ora si trova dentro le sottocartelle dell'anno e del mese.
+Esito:
 
-Prova 4, ritorno alla fase di iscrizione. Lavoro nuovo della 9.4.0, delicato.
-Cosa fare: creare un torneo con pochi giocatori, avviarlo, e ritirare i giocatori uno dopo l'altro finche' il ritiro successivo lascerebbe meno di due giocatori attivi.
-Cosa osservare: a quel punto deve comparire la proposta di riportare il torneo alla fase di iscrizione, con l'avviso che i turni verranno cancellati e che gli iscritti restano. Accettando, l'albero deve tornare a mostrare la voce per iscrivere i giocatori, i dati del torneo devono tornare modificabili, e i giocatori devono avere zero punti e nessuno storico. Verificare inoltre che nella cartella backup sia comparsa una copia di sicurezza con il nome del torneo e la dicitura pre_ritorno_preparazione.
-Nota: e' l'operazione piu' distruttiva fra quelle nuove, per questo viene chiesta conferma e viene fatta la copia di sicurezza. Se qualcosa non torna, fermati e dimmelo prima di ripetere.
-Esito: Qui ci sono cose che non vanno. Come al punto 4, io non capisco, almeno con NVDA, se un giocatore è ritirato o meno, dall'albero iscritti. Quando ritiro il penultimo ho l'avviso che dici e questo va bene. Quando ritiro l'ultimo ricompare la voce iscrivi giocatori ma nella sezione iscritti restano presenti tutti quelli che ho ritirato.
-Inoltre, importante. Forse hai già il codice per la regola che dice il numero minimo di giocatori necesari per i turni previsti ed anche quella che indica il numero minimo dei turni in base ai giocatori iscritti. Prima di iniziare il torneo assicurati che questi due cap siano rispettati. Quando ritiro giocatori,non è importante l'avviso che non posso proseguire perchè vorrei svuotarli per aggiungerne altri. L'avviso deve comparire quando decido di partire col torneo, diciamo prima di generare il T1. Lì il rapporto iscritti turni deve essere validato e la prosecuzione impedita, se è il caso.
-Mi interrogo inoltre sull'utilità di mantenere un giocatore ritirato nell'albero iscritti: a meno che non abbia la possibilità di riaggiungerlo, il che complicherebbe inutilmente le cose, forse è meglio toglierlo completamente. Così, tolgo, aggiungo, faccio quello che mi pare e quando ho finito, l'app valida se turni e iscritti sono idonei uno all'altro.
-A questo proposito io toglierei l'automatismo della richiesta di generare il t1 dopo aver aggiunto i giocatori e lo sostituirei con una bella voce: Iniziamo, o Avvio torneo, come ultima del centro comandi. Se lo fai, elimina il pop-up che chiede se voglio generare il T1, e aggiungi la voce calcola Turno 1, sotto turni, come avviene ora per gli altri. Mi sembra tutto molto più logico e pulito.
+Prova 5, archivio e backup ordinati per anno e mese.
+Cosa fare: portare a termine un torneo breve e finalizzarlo.
+Cosa osservare: dentro Closed Tournaments devono esserci la cartella dell'anno, dentro quella del mese con il nome scritto come 09 Settembre, e dentro ancora la cartella con il nome del torneo, che contiene il file JSON e tutti i report. Nell'albero il torneo deve comparire fra i tornei conclusi, e i sette tornei archiviati prima d'ora devono continuare a comparire dove sono sempre stati. Apri poi la finestra di pulizia dei backup dal menu File e verifica che elenchi anche i file finiti nelle sottocartelle nuove.
+Esito:
 
-Prova 5, spareggi con i turni non giocati. Lavoro nuovo della 9.4.0.
-Cosa fare: giocare un torneo in cui almeno un giocatore riceve il bye e almeno uno si ritira, poi guardare la classifica con Buchholz e Buchholz Cut-1 fra i criteri.
-Cosa osservare: chi ha ricevuto il bye non deve piu' essere penalizzato, perche' quel turno vale ora quanto il suo punteggio; chi ha perso a tavolino o si e' ritirato deve invece vedere il proprio Buchholz Cut-1 abbassarsi, perche' il taglio colpisce per primo il turno non giocato. I giocatori che hanno disputato tutti i turni devono avere gli stessi valori di prima.
-Nota: la conformita' al regolamento e' gia' verificata da nove prove automatiche e dal confronto con due tornei archiviati. Questa prova serve a vedere che i numeri arrivino corretti fino alla classifica e ai report.
-Esito: Spero di aver fatto bene, sono partito con 8 giocatori quindi il bye è stato dato solo dal T3 in poi quando ho ritirato un giocatore. Se la prova non è valida, dimmelo, lasciala qui che la rifaccio.
-Ecco la classifica ed una nota.
-  1 (+3)    1N  Gasperoni, Claudio          [1830]   4.0  11.5  13.5 1837 1830 2077  +31
-  2 (-1)        Casadei, Marco              [1988]   3.5  11.0  11.5 1784 1988 1933   -6
-  3 (+0)        Ariaudo, Claudio            [1890]   3.0  11.0  11.5 1784 1890 1856   -5
-  4 (+4)    2N  Soppelsa, Maurizio          [1727]   2.5  13.0  15.0 1885 1727 1788   +5
-  5 (+0)    1N  Badano, Giancarlo           [1792]   2.5  13.0  13.5 1844 1792 1844   +7
-  6 (+0)        Caputi, Giuliano            [1787]   2.0  12.5  14.5 1908 1787 1821   +3
-RIT             Vrioni, Bersan              [1925]   1.0  ---- ---- ---- ---- ----  ---    [RITIRATO]
-  8 (-1)    2N  Nicolini, Francesco         [1784]   0.5  11.0  11.5 1899 1784 1099  -28
-Nota: va cambiata la label dei pulsanti radio che stabiliscono il forfait, nella finestra punteggio partita.
-Tu scrivi:
-forfait giocatore 1 / assenza giocatore 2.
-Non è per nulla chiaro: forfait e assenza sono sinonimi, quindi a quale dei due si riferisce? Trova una formula più chiara.
+Prova 6, cartella protetta e cartella di lavoro.
+Cosa fare: rimettere una copia di Tornello in Programmi e avviarla. Poi, dalla copia normale, avviare il programma da una cartella diversa dalla sua e creare un torneo indicando una cartella di lavoro tua.
+Cosa osservare: nella copia in Programmi il programma deve avvisare subito che non puo' scrivere nella propria cartella, dire cosa fare e chiudersi, senza piu' errori a ripetizione. Nell'altra prova i tornei e l'archivio devono restare accanto al programma, mentre nella cartella di lavoro che hai scelto devono comparire i report di testo e la raccolta delle partite in formato PGN.
+Esito:
 
-Prova 6, verifica generale.
-Se usando Tornello noti comportamenti anomali che non compaiono fra i rilievi, scrivili qui sotto. Se ti capita di condurre un torneo numeroso, dimmi soltanto se l'interfaccia ti sembra pronta o lenta: la parte di calcolo e' gia' stata misurata ed e' istantanea anche con sessanta giocatori.
+Prova 7, verifica generale.
+Se usando Tornello noti comportamenti anomali che non compaiono fra i rilievi, scrivili qui sotto.
 Segnalazioni aggiuntive:
-Nessuna annotazione sul funzionamento ma una richiesta.
-Bisogna migliorare la struttura della cartella Closed.
-* Vorrei che il nome fosse traducibile in tutte le lingue di Tornello, partendo da chiusi, in italiano.
-* Dentro si crea una cartella con le 4 cifre dell'anno
-* e dentro questa, vorrei che dentro si creassero, quando c'è contenuto da salvare, 12 sottocartelle: 01 gennaio, 02 febbraio... con nomi dei mesi localizzabili in base alla lingua scelta.
-* Dentro a queste cartelle, tutti i tornei la cui conclusione cada all'interno di quel mese.
-* Sia la sottocartella degli anni che quella dei mesi vengono create solo quando c'è qualcosa da salvarci dentro.
-La stessa struttura la vorrei applicata per la cartella backup, con la differenza che qui non c'è data di conclusione, semplicemente il file va nell'anno \ mese in cui viene generato.
-* attenzione che con questa nuova struttura è necessario verificare che il sistema di pulizia backup automatico continui a funzionare come prima.
-
-Parte seconda, le decisioni che aspettano te
-
-Decisione 1, dove va il file del torneo.
-Hai chiesto che i dati finiscano nella cartella scelta durante la creazione, con ripiego sulla cartella del programma. Oggi i report di testo e il PGN ci finiscono davvero, il file JSON del torneo no: viene scritto senza cartella e quindi nasce dove il programma e' stato avviato. Anche l'albero cerca i tornei nello stesso posto. Portare il JSON nella cartella scelta significa decidere come l'albero ritrova i tornei sparsi in cartelle diverse.
-Strada A, consigliata: il JSON sta sempre accanto al programma, che resta l'unico posto dove l'albero cerca, e nella cartella scelta vanno i report e una copia del JSON.
-Strada B: il JSON va nella cartella scelta e Tornello tiene nelle impostazioni l'elenco delle cartelle di lavoro usate, per ritrovare i tornei all'avvio.
-La tua risposta:
-Confermo la scelta consigliata. il json ed altri file cuore del programma, sempre assieme all'eseguibile. I file che dipendono da un evento (torneo) specifico, vanno nella cartella che l'utente ha scelto in fase di creazione. La cartella closed, anche lei accanto all'eseguibile.
-
-Decisione 2, controllo dei permessi di scrittura.
-La tua proposta e' di controllare all'avvio se la cartella del programma e' scrivibile, avvisare e chiudere in caso contrario, e di ripetere il controllo sulla cartella scelta in fase di creazione del torneo. Sono d'accordo con entrambi i controlli: il primo e' quello che rende sicuro il ripiego, perche' se la cartella del programma e' scrivibile non puoi piu' incappare nel secondo messaggio di errore.
-La tua risposta:
-Confermo. Implementa questa nuova feature.
-
-Decisione 3, quando le combinazioni sono esaurite.
-Quando il sistema svizzero non ha piu' abbinamenti possibili, oggi il messaggio dice soltanto che il motore non ha trovato abbinamenti validi, come per un guasto qualsiasi. Propongo di distinguere il caso, spiegando che tutte le combinazioni fra i giocatori rimasti sono gia' state giocate e che il torneo non puo' proseguire oltre, e di avvisare in fase di creazione quando i turni richiesti superano il numero dei giocatori meno uno.
-La tua risposta:
-Qui l'azione di Tornello deve essere preventiva. Bisogna impedire il ritiro se i giocatori diventeranno poi insufficienti. Sì spiega perchè e si indica che l'unica via possibile è eliminare definitivamente tutto il torneo.
-Il motore non può mai fallire un abbinamento.
-In futuro prevedo l'implementazione in cui l'arbitro decide le coppie a mano, quando si verificano rarissimi casi di questo tipo. Ma ora dobbiamo impedire che bbpairings fallisca.
