@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.3.22 (2026.09.04)
+	+ Bugfix: Il giocatore che riceve il bye ottiene i punti previsti anche quando il torneo viene avviato subito dalla procedura guidata. La correzione della 9.3.21 copriva solo l'avvio di un torneo salvato in preparazione, e la classifica del primo turno mostrava ancora zero. Rilievo G1.
+	+ Bugfix: I file di un torneo concluso vengono di nuovo spostati nella cartella Closed Tournaments. Da quando la procedura guidata propone la cartella dell'applicazione, l'archiviazione la trattava come una cartella esterna e dei report lasciava una copia accanto al programma. Ora restano al loro posto solo se l'arbitro ha scelto davvero un'altra cartella.
+	+ Bugfix: Il risultato di una partita viene registrato nello storico del turno a cui la partita appartiene, non del turno in corso. Dopo un riavvolgimento i due valori possono differire e la voce sarebbe finita nel turno sbagliato per entrambi i giocatori. Rilievo E6.
+
 9.3.21 (2026.09.03)
 	+ Bugfix: Risolto il blocco che impediva di proseguire un torneo dopo il ritiro di un giocatore. Al ritirato veniva scritto un BYE fittizio da zero punti che nel file per bbpPairings diventava un bye assegnato, valido mezzo punto: i conti non tornavano e il motore rifiutava il file con "The score for player N does not match the game results". Ora i turni non giocati dal ritirato sono dichiarati come tali. Rilievo E1.
 	+ Bugfix: Il giocatore che riceve il bye ottiene finalmente i punti previsti anche nell'interfaccia grafica, dove restava a zero, con la voce nello storico e il conteggio dei bye ricevuti. Rilievo G1.

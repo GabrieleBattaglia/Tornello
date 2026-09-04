@@ -643,7 +643,10 @@ def _apply_match_result_to_players(torneo, match_obj, result_str, w_score, b_sco
     Funzione di supporto che applica il risultato di una partita ai due giocatori
     e aggiorna tutte le strutture dati necessarie.
     """
-    current_round_num = torneo.get("current_round")
+    # Il risultato appartiene al turno della partita, non al turno in corso:
+    # dopo un riavvolgimento i due valori possono differire e la voce finirebbe
+    # nello storico del turno sbagliato.
+    current_round_num = match_obj.get("round") or torneo.get("current_round")
     if not current_round_num:
         return
 

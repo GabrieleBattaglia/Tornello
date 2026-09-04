@@ -2680,6 +2680,12 @@ class MainFrame(wx.Frame):
             self.current_tournament["players_dict"] = {
                 p["id"]: p for p in self.current_tournament.get("players", [])
             }
+            # Anche il torneo avviato dalla procedura guidata deve assegnare i
+            # punti del bye: prima li registrava solo l'avvio di un torneo
+            # gia' salvato in preparazione.
+            from tournament import registra_bye_del_turno
+
+            registra_bye_del_turno(self.current_tournament, matches, 1)
             self._save_state()
             self.creation_mode = False
             self._tree_restore_target = {

@@ -352,3 +352,73 @@ class TestFallimentoAbbinamenti:
         motivo = motivo_ultimo_fallimento(torneo)
         assert motivo, "il motivo del fallimento deve restare disponibile"
         assert isinstance(motivo, str)
+
+
+class TestTurnoDelRisultato:
+    """Il risultato va scritto nello storico del turno della partita, non del
+    turno in corso. Rilievo E6: dopo un riavvolgimento i due valori possono
+    differire e la voce finirebbe nel turno sbagliato per entrambi i giocatori."""
+
+    def _torneo(self):
+        bianco = {
+            "id": "BIA001",
+            "first_name": "Anna",
+            "last_name": "Bianchi",
+            "points": 0.0,
+            "results_history": [],
+        }
+        nero = {
+            "id": "NER001",
+            "first_name": "Bruno",
+            "last_name": "Neri",
+            "points": 0.0,
+            "results_history": [],
+        }
+        partita = {
+            "id": 7,
+            "round": 2,
+            "white_player_id": "BIA001",
+            "black_player_id": "NER001",
+            "result": None,
+        }
+        torneo = {
+            # Il torneo e' tornato al turno 4 dopo un riavvolgimento, ma la
+            # partita da correggere appartiene al turno 2.
+            "current_round": 4,
+            "players": [bianco, nero],
+            "players_dict": {"BIA001": bianco, "NER001": nero},
+            "rounds": [{"round": 2, "matches": [partita]}],
+        }
+        return torneo, bianco, nero, partita
+
+    def test_lo_storico_riceve_il_turno_della_partita(self):
+        from tournament import _apply_match_result_to_players
+
+        torneo, bianco, nero, partita = self._torneo()
+
+        _apply_match_result_to_players(torneo, partita, "1-0", 1.0, 0.0)
+
+        assert bianco["results_history"][0]["round"] == 2
+        assert nero["results_history"][0]["round"] == 2
+
+    def test_la_partita_del_turno_giusto_viene_aggiornata(self):
+        from tournament import _apply_match_result_to_players
+
+        torneo, bianco, nero, partita = self._torneo()
+
+        _apply_match_result_to_players(torneo, partita, "1-0", 1.0, 0.0)
+
+        assert torneo["rounds"][0]["matches"][0]["result"] == "1-0"
+        assert bianco["points"] == 1.0
+        assert nero["points"] == 0.0
+
+    def test_senza_turno_nella_partita_vale_il_turno_corrente(self):
+        from tournament import _apply_match_result_to_players
+
+        torneo, bianco, nero, partita = self._torneo()
+        del partita["round"]
+        torneo["rounds"] = [{"round": 4, "matches": [partita]}]
+
+        _apply_match_result_to_players(torneo, partita, "1/2-1/2", 0.5, 0.5)
+
+        assert bianco["results_history"][0]["round"] == 4

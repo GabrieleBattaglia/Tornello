@@ -1,9 +1,9 @@
-﻿Report Database Giocatori Tornello - Venerdì 17 luglio 2026 23:49:01
+﻿Report Database Giocatori Tornello - Giovedì 3 settembre 2026 15:31:12
 ========================================
 
 ID: ARICL001, Claudio Ariaudo
 	Sesso: M, Federazione: ITA, ID FIDE: 815535, Flag: N/D
-	Elo Standard: 1873 (Partite FIDE: 0)
+	Elo Standard: 1856 (Partite FIDE: 0)
 	Elo Rapid: 1979 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -23,7 +23,7 @@ ID: ARIGI001, NC Giuliano Ariaudo
 	------------------------------
 ID: BADGI001, 1N Giancarlo Badano
 	Sesso: M, Federazione: ITA, ID FIDE: 810495, Flag: N/D
-	Elo Standard: 1812 (Partite FIDE: 0)
+	Elo Standard: 1800 (Partite FIDE: 0)
 	Elo Rapid: 1851 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 1745 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 12, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -44,7 +44,7 @@ ID: BARGI001, NC Giuseppe Baratta
 	------------------------------
 ID: BATGA001, 3N Gabriele Battaglia
 	Sesso: M, Federazione: ITA, ID FIDE: 804495, Flag: N/D
-	Elo Standard: 1518 (Partite FIDE: 0)
+	Elo Standard: 1505 (Partite FIDE: 0)
 	Elo Rapid: 1635 (Partite FIDE: 3, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 29, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -103,7 +103,7 @@ ID: CALVA001, NC Valeria Calzolari
 	------------------------------
 ID: CAPGI001, Giuliano Caputi
 	Sesso: M, Federazione: ITA, ID FIDE: 821993, Flag: N/D
-	Elo Standard: 1768 (Partite FIDE: 0)
+	Elo Standard: 1787 (Partite FIDE: 0)
 	Elo Rapid: 1870 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -113,7 +113,7 @@ ID: CAPGI001, Giuliano Caputi
 	------------------------------
 ID: CASMA002, Marco Casadei
 	Sesso: M, Federazione: ITA, ID FIDE: 847542, Flag: N/D
-	Elo Standard: 1985 (Partite FIDE: 0)
+	Elo Standard: 1993 (Partite FIDE: 0)
 	Elo Rapid: 2028 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -144,7 +144,7 @@ ID: CIBSI001, NC Silvia Cibin
 	------------------------------
 ID: CICMA001, NC Mathias Cicciarella
 	Sesso: M, Federazione: ITA, ID FIDE: 552013138, Flag: N/D
-	Elo Standard: 1458 (Partite FIDE: 0)
+	Elo Standard: 1632 (Partite FIDE: 0)
 	Elo Rapid: 1681 (Partite FIDE: 3, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -176,7 +176,7 @@ ID: COLMI001, 3N Michele Colangelo
 	------------------------------
 ID: DEFMO001, Monica De Fazio
 	Sesso: W, Federazione: ITA, ID FIDE: 28524853, Flag: w
-	Elo Standard: 1443 (Partite FIDE: 0)
+	Elo Standard: 1434 (Partite FIDE: 0)
 	Elo Rapid: N/D (Partite FIDE: 0, K: 0)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 0, K-Factor Stimato: 20, Data Iscrizione DB: Martedì 17 marzo 2026
@@ -371,7 +371,7 @@ ID: PAGVI001, NC Virginio Paglia
 	------------------------------
 ID: PARLU001, 3N Luca Parravano
 	Sesso: M, Federazione: ITA, ID FIDE: 28556666, Flag: N/D
-	Elo Standard: 1487 (Partite FIDE: 0)
+	Elo Standard: 1439 (Partite FIDE: 0)
 	Elo Rapid: 1525 (Partite FIDE: 0, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 5, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -381,7 +381,7 @@ ID: PARLU001, 3N Luca Parravano
 	------------------------------
 ID: PEZER001, Erica Pezzolato
 	Sesso: F, Federazione: ITA, ID FIDE: 2888888, Flag: w
-	Elo Standard: 1625 (Partite FIDE: 0)
+	Elo Standard: 1616 (Partite FIDE: 0)
 	Elo Rapid: 1687 (Partite FIDE: 5, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 6, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -391,7 +391,7 @@ ID: PEZER001, Erica Pezzolato
 	------------------------------
 ID: POLDI001, Diego Poli
 	Sesso: M, Federazione: ITA, ID FIDE: 865613, Flag: N/D
-	Elo Standard: 1654 (Partite FIDE: 2)
+	Elo Standard: 1652 (Partite FIDE: 2)
 	Elo Rapid: 1739 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 1671 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -422,7 +422,7 @@ ID: RIVPA001, Paolo Rivalta
 	------------------------------
 ID: SCAVA001, NC Valeria Scapin
 	Sesso: W, Federazione: ITA, ID FIDE: 552013146, Flag: w
-	Elo Standard: 1425 (Partite FIDE: 0)
+	Elo Standard: 1464 (Partite FIDE: 0)
 	Elo Rapid: 1596 (Partite FIDE: 3, K: 40)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -528,7 +528,7 @@ ID: VILGE001, Gennaro Vilone
 	------------------------------
 ID: VRIBE001, Bersan Vrioni
 	Sesso: M, Federazione: ITA, ID FIDE: 805351, Flag: N/D
-	Elo Standard: 1939 (Partite FIDE: 0)
+	Elo Standard: 1931 (Partite FIDE: 0)
 	Elo Rapid: 1888 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -548,7 +548,7 @@ ID: ZAVFA001, 2N Fabrizio Zavan
 	------------------------------
 ID: ZENSI001, Simone Zenini
 	Sesso: M, Federazione: ITA, ID FIDE: 898210, Flag: N/D
-	Elo Standard: 1602 (Partite FIDE: 0)
+	Elo Standard: 1589 (Partite FIDE: 0)
 	Elo Rapid: 1639 (Partite FIDE: 0, K: 20)
 	Elo Blitz: N/D (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025

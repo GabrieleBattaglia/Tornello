@@ -1,79 +1,45 @@
-Collaudo sul campo di Tornello, fase 1, secondo giro
-Progetto: Tornello 9.3.21
-Documento riscritto il 2026-09-03 da ClaudIA, modello Claude Opus 5, modalita' UltraCode
+Collaudo sul campo di Tornello, fase 1, terzo giro
+Progetto: Tornello 9.3.22
+Documento riscritto il 2026-09-04 da ClaudIA, modello Claude Opus 5, modalita' UltraCode
 A cosa serve questo file
-Le prime otto prove sono state eseguite da Gabriele il 2026-09-03 e hanno confermato sette rilievi, tutti corretti nella versione 9.3.21. Gli esiti completi e le diagnosi sono in analisi_codice_fase_1.txt, nella sezione delle prime otto prove. Questo file contiene ora soltanto cio' che resta da fare: le riverifiche delle correzioni appena applicate e le prove non ancora eseguite. Come prima, sotto ogni prova c'e' una riga Esito da compilare.
+Le prove del secondo giro sono state eseguite e i loro esiti, con le diagnosi, stanno in analisi_codice_fase_1.txt nella sezione del secondo giro. Restano qui soltanto le prove che hanno bisogno delle tue mani, perche' toccano l'interfaccia grafica, e le decisioni che spettano a te. Tutto cio' che si poteva verificare via software e' gia' stato verificato: la prova sul torneo da sessanta giocatori, la questione del turno mancante e il rilievo E6, che era una prova del secondo giro ed e' stato corretto alla fonte, sono chiusi e non compaiono piu'.
 
-Parte prima, riverifica delle correzioni della versione 9.3.21
-Sono le prove che confermano che quanto e' stato corretto funziona davvero. La prima e la seconda sono le piu' importanti, perche' riguardano difetti che impedivano di condurre un torneo.
+Parte prima, le due prove che restano
+Sono corte e servono a confermare le correzioni della 9.3.22.
 
-Riverifica A, punti del bye. Corregge il rilievo G1, era critico.
-Cosa fare: creare nella versione grafica un torneo con cinque giocatori, valore del bye a 0.5, avviarlo e guardare la classifica subito dopo la generazione del primo turno, senza inserire risultati.
-Cosa osservare: il giocatore senza avversario deve avere 0.5 punti. Nel report del turno deve risultare il bye, e il valore indicato deve essere quello configurato nel torneo, non un valore fisso.
-Nota: la scheda del giocatore nel database personale, quella raggiungibile da gestione giocatori locali, si aggiorna soltanto alla finalizzazione del torneo, quindi li' non deve comparire nulla: la mia istruzione precedente era imprecisa su questo punto.
+Prova 1, punti del bye dalla procedura guidata.
+Cosa fare: creare un torneo con cinque giocatori e il bye a mezzo punto, e alla domanda finale rispondere di avviarlo subito generando il turno 1. Guardare poi la classifica senza inserire risultati.
+Cosa osservare: il giocatore senza avversario deve avere mezzo punto, e nel report del turno deve comparire il bye con il valore configurato nel torneo.
+Perche' la ripeti: la correzione della 9.3.21 copriva solo l'avvio di un torneo salvato in preparazione, e la procedura guidata segue una strada tutta sua. Se vuoi provare anche l'altra strada, salva il torneo in preparazione e avvialo in un secondo momento dall'albero.
 Esito:
 
-Riverifica B, ritiro e generazione dei turni successivi. Corregge il rilievo E1, era il difetto che ti ha bloccato.
-Cosa fare: ripetere esattamente la sequenza della prova 6. Torneo di cinque giocatori su cinque turni, giocare il primo turno, al secondo inserire un forfait e ritirare il giocatore assente, generare e giocare il terzo turno, poi generare il quarto.
-Cosa osservare: il quarto turno deve essere generato senza errori. Prima bbpPairings rispondeva con codice 3 e il messaggio "The score for player N does not match the game results". Controllare anche che il ritirato non compaia negli abbinamenti e che nel suo storico non risultino bye che non ha mai ricevuto.
-Nota: la correzione e' gia' stata provata dando il file TRF risultante al vero bbpPairings, che ora esce con codice 0 e produce gli abbinamenti. Questa riverifica serve a confermarlo dentro il programma.
+Prova 2, archiviazione del torneo concluso.
+Cosa fare: portare a termine un torneo breve e finalizzarlo. Guardare poi la cartella di Tornello e la cartella Closed Tournaments.
+Cosa osservare: nella cartella del programma non deve restare nessun file che inizia con Tornello seguito dal nome del torneo, ne il file JSON ne i report di testo. Dentro Closed Tournaments deve esserci la cartella del torneo con tutti i suoi file. Nell'albero il torneo deve comparire fra i tornei conclusi.
+Nota: la correzione e' gia' stata provata fuori dal programma, finalizzando un torneo di prova: prima restavano quattro file di testo accanto al programma, ora la cartella di lavoro resta vuota e in archivio ci sono tutti e cinque i file. Questa prova serve a confermarlo dentro l'interfaccia.
 Esito:
 
-Riverifica C, fallimento degli abbinamenti. Corregge il rilievo B2, era critico.
-Cosa fare: rinominare di nuovo bbpPairings.exe e chiedere la generazione di un turno. Ricordarsi di rinominarlo indietro.
-Cosa osservare: deve comparire un dialogo accessibile che dice che gli abbinamenti non sono stati generati, ne indica il motivo vero e precisa che il torneo non e' stato modificato. Non deve piu' comparire il messaggio di errore imprevisto, e in error.log non deve finire alcuna eccezione non gestita.
-Esito:
-
-Riverifica D, classifica finale. Corregge il rilievo D1.
-Cosa fare: ripetere la prova 7, cioe' configurare criteri di spareggio diversi dai predefiniti, giocare un torneo fino in fondo con almeno due giocatori a pari punti, e finalizzare.
-Cosa osservare: nella classifica finale la colonna delle posizioni deve essere in sequenza, 1, 2, 3 e cosi' via. Nella tua prova precedente riportava 2, 1, 3, 4: era il numero di posizione calcolato con criteri diversi da quelli usati per ordinare le righe.
-Esito:
-
-Riverifica E, dialogo del risultato. Corregge il rilievo F1.
-Cosa fare: aprire il dialogo di inserimento risultato, raggiungere il gruppo delle opzioni con il tabulatore e premere Invio senza toccare altro.
-Cosa osservare: il solo passaggio del focus non deve piu' selezionare alcun risultato, e l'Invio non deve registrare nulla finche' non hai scelto davvero con le frecce o con la barra spaziatrice. Verificare anche che scegliere con le frecce e confermare con Invio funzioni come sempre.
-Esito:
-
-Riverifica F, percorsi dei file. Corregge i rilievi A1, A7 e D2.
-Cosa fare: ripetere la prova 4, cioe' avviare Tornello da una cartella diversa dalla sua, e creare un torneo.
-Cosa osservare: la cartella proposta per il salvataggio deve essere quella del programma, non quella da cui hai lanciato. Provocare poi un backup, per esempio con la Time Machine, e verificare che la cartella backup nasca accanto al programma.
-Esito:
-
-Riverifica G, cartella protetta. Riguarda il rilievo A2.
-Cosa fare: rimettere la cartella compilata in una posizione non scrivibile e chiedere la generazione di un turno.
-Cosa osservare: il messaggio deve ora spiegare quale cartella non e' scrivibile e dire che Tornello va spostato dove hai i permessi di scrittura. Non deve piu' comparire un codice numerico.
-Nota: la generazione continua a fallire, ed e' corretto cosi'. Tornello e' un programma portabile e tiene i propri dati accanto a se stesso: in una cartella protetta non puo' funzionare. Se vuoi che funzioni anche li', serve una scelta di progetto diversa, cioe' usare una cartella dati per utente, ed e' una decisione tua.
-Esito:
-
-Parte seconda, prove non ancora eseguite
-
-Prova 9, correzione di un risultato dopo un riavvolgimento. Riguarda il rilievo E6, gravita' media.
-Cosa fare: riavvolgere un torneo con la Time Machine o con il rollback in modo da lasciare, se possibile, un turno precedente con almeno una partita senza risultato, poi provare a modificare il risultato di una partita di quel turno.
-Cosa osservare: in quale turno viene registrato il risultato, guardando lo storico dei due giocatori.
-Nota: se il programma non ti lascia mai arrivare a questa situazione e' una buona notizia e va scritto nell'esito, perche' significa che il difetto non e' raggiungibile.
-Esito:
-
-Prova 10, questione arbitrale sul Buchholz. Riguarda i rilievi B9 e B8, gravita' media.
-Non e' una prova sul programma ma una decisione tua, e la fonte c'e' gia'. Il regolamento sugli spareggi, articolo 15.3, rimanda per i tornei svizzeri all'articolo 16, che riguarda i criteri basati sui risultati degli avversari, quindi Buchholz e Sonneborn-Berger. L'articolo 16.4 stabilisce che per lo spareggio del giocatore stesso ogni turno non giocato va valutato come una partita contro un fittizio, con il punteggio del fittizio pari a quello del giocatore, entro i limiti indicati. L'articolo 16.5 detta una regola apposita per il Cut-1, che tocca il rilievo B8. Tornello oggi salta del tutto quei turni.
-La domanda: implementare l'articolo 16 con il giocatore fittizio e i suoi limiti, oppure tenere il comportamento attuale e documentarlo come scelta consapevole.
-La tua risposta:
-
-Prova 11, ritiro dall'albero a torneo iniziato. Nasce dalla tua osservazione nella prova 6.
-Non e' una prova ma una decisione. La verifica dice che il tasto Canc non esegue il ritiro ma la rimozione dall'iscrizione, e che il blocco a torneo iniziato e' corretto, perche' togliere un iscritto che ha gia' giocato lascerebbe abbinamenti e risultati riferiti a un giocatore inesistente. Il ritiro vero funziona gia' e si ottiene con il forfait, come hai fatto tu. Resta pero' la lacuna che hai notato: dall'albero, a torneo iniziato, non c'e' una via per ritirare e si finisce in un messaggio senza uscita.
-La proposta: trasformare quel messaggio in una offerta di ritiro, cioe' spiegare che l'iscrizione non si puo' piu' togliere e chiedere se si intende invece ritirare il giocatore.
-Le tue domande aperte, su cui decidi tu: cosa fare se il giocatore ha gia' giocato la partita del turno in corso, e cosa fare se resta l'ultimo iscritto, caso in cui dicevi che deve tornare attiva la voce di iscrizione.
-La tua risposta:
-
-Prova 12, controllo aggiornamenti senza connessione. Riguarda la Issue #34, segnalata da Marcos.
-Cosa fare: staccare la connessione di rete e avviare Tornello prima nella versione grafica e poi con l'opzione --cli. Al termine guardare nella cartella del programma se e' comparso un file chiamato auto_updater_error.log.
-Cosa osservare: nella versione da riga di comando deve comparire il messaggio che dice che il controllo non e' riuscito, probabilmente per mancanza di connessione, e che il programma funziona ugualmente; nella versione grafica non deve comparire nulla, perche' il controllo all'avvio e' silenzioso per scelta. In nessuno dei due casi deve essere creato il file di log.
-Esito:
-
-Prova 13, torneo ampio come quello di Marcos.
-Cosa fare: creare un torneo con sessanta giocatori, portarlo avanti di due o tre turni inserendo risultati, e ritirare un giocatore in modo che il numero degli attivi diventi dispari.
-Cosa osservare: i tempi di generazione degli abbinamenti e di apertura della classifica, che sono i due punti dove il rapporto segnala ricalcoli ripetuti. Verificare inoltre che il bye venga assegnato correttamente dopo il ritiro, perche' e' il punto in cui si incrociano le due correzioni piu' importanti di questa tornata.
-Esito:
-
-Prova 14, verifica generale.
-Se usando Tornello noti comportamenti anomali che non compaiono fra i rilievi, scrivili qui sotto.
+Prova 3, verifica generale.
+Se usando Tornello noti comportamenti anomali che non compaiono fra i rilievi, scrivili qui sotto. Se ti capita di condurre un torneo numeroso, dimmi soltanto se l'interfaccia ti sembra pronta o lenta: la parte di calcolo e' gia' stata misurata ed e' istantanea anche con sessanta giocatori, quindi l'unica cosa che resta da giudicare e' la reattivita' percepita.
 Segnalazioni aggiuntive:
+
+Parte seconda, le decisioni che aspettano te
+Le prime due riguardano lavori gia' approvati e non hanno bisogno di risposta, sono qui solo per tenere il conto. Le altre sono domande vere.
+
+Lavoro approvato 1, regolamento FIDE sugli spareggi, articolo 16.
+Hai risposto che va implementato al cento per cento. E' il prossimo lavoro in programma.
+
+Lavoro approvato 2, ritiro dall'albero a torneo iniziato.
+Hai accettato la proposta e hai dato le due regole: chi ha gia' giocato la partita del turno in corso non si ritira subito ma dal turno successivo, e se resta l'ultimo iscritto il torneo torna alla fase in cui si iscrivono i giocatori. Sulla seconda mi hai lasciato decidere fra il ritorno alla fase di iscrizione e la chiusura del torneo con invito a ricominciare: la mia risposta e' nel messaggio della sessione.
+
+Decisione 1, dove va il file del torneo.
+Hai chiesto che i dati finiscano nella cartella scelta durante la creazione, con ripiego sulla cartella del programma. Oggi i report di testo e il PGN ci finiscono davvero, il file JSON del torneo no: viene scritto senza cartella e quindi nasce dove il programma e' stato avviato. Anche l'albero cerca i tornei nello stesso posto. Portare il JSON nella cartella scelta significa decidere come l'albero ritrova i tornei sparsi in cartelle diverse. Le due strade sono nel messaggio della sessione.
+La tua risposta:
+
+Decisione 2, controllo dei permessi di scrittura.
+La tua proposta e' di controllare all'avvio se la cartella del programma e' scrivibile, avvisare e chiudere in caso contrario, e di ripetere il controllo sulla cartella scelta in fase di creazione del torneo. Il mio parere e' nel messaggio della sessione.
+La tua risposta:
+
+Decisione 3, quando le combinazioni sono esaurite.
+Quando il sistema svizzero non ha piu' abbinamenti possibili, oggi il messaggio dice soltanto che il motore non ha trovato abbinamenti validi, come per un guasto qualsiasi. Propongo di distinguere il caso, spiegando che tutte le combinazioni fra i giocatori rimasti sono gia' state giocate e che il torneo non puo' proseguire oltre, e di avvisare in fase di creazione quando i turni richiesti superano il numero dei giocatori meno uno.
+La tua risposta:

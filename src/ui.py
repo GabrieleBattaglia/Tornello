@@ -10,6 +10,7 @@ from config import (
     DEFAULT_ELO,
     DEFAULT_K_FACTOR,
     PLAYER_DB_FILE,
+    user_data_path,
 )
 from db_players import (
     _cerca_giocatore_nel_db_fide,
@@ -1452,6 +1453,25 @@ def update_match_result(torneo):
     return any_changes_made_in_this_session
 
 
+def cartella_di_lavoro_esterna(custom_path):
+    """
+    Dice se la cartella di lavoro del torneo e' davvero un'altra cartella
+    rispetto a quella dell'applicazione.
+    Serve all'archiviazione: i file del torneo concluso restano al loro posto
+    solo quando l'arbitro ha scelto una cartella esterna, altrimenti vanno
+    spostati in archivio invece di essere lasciati accanto al programma.
+    """
+    if not custom_path:
+        return False
+    try:
+        cartella_applicazione = os.path.abspath(user_data_path(""))
+        return os.path.abspath(custom_path) != cartella_applicazione
+    except (OSError, ValueError):
+        # Percorso non risolvibile: meglio conservare gli originali che
+        # rischiare di cancellarli.
+        return True
+
+
 def finalize_tournament(torneo, players_db, current_tournament_filename):
     """
     Completa il torneo: calcola Elo/Performance/Spareggi, aggiorna DB giocatori,
@@ -1747,6 +1767,13 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         if warning:
             print(warning)
 
+    # I file restano al loro posto soltanto quando la cartella di lavoro e' una
+    # cartella esterna scelta dall'arbitro. Da quando la procedura guidata
+    # propone la cartella dell'applicazione, custom_save_path e' sempre
+    # valorizzato: senza questo confronto i report del torneo concluso
+    # restavano accanto al programma invece di finire in archivio.
+    conserva_originali = cartella_di_lavoro_esterna(custom_path)
+
     # 1. Trova il file JSON principale del torneo (locale)
     local_json_filename = f"Tornello - {sanitized_tournament_name}.json"
     if current_tournament_filename and os.path.exists(current_tournament_filename):
@@ -1791,10 +1818,10 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                     ).format(filename=filename_only, path=full_archive_path)
                 )
                 continue
-            if custom_path:
+            if conserva_originali:
                 shutil.copy2(
                     filepath, destination_path
-                )  # Copia in archivio lasciando l'originale in Dropbox
+                )  # Copia in archivio lasciando l'originale nella cartella scelta
             else:
                 shutil.move(
                     filepath, destination_path
@@ -1815,7 +1842,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                 moved_files_count += 1
 
             # Se l'utente ha una cartella personalizzata, salva una copia del JSON concluso anche lì
-            if custom_path:
+            if conserva_originali:
                 custom_json_dest = os.path.join(custom_path, json_filename_only)
                 if not os.path.exists(custom_json_dest):
                     shutil.copy2(local_json_path, custom_json_dest)
