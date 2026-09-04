@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.8.0 (2026.09.05)
+	+ Feature: Le cartelle dell'anno e del mese rimaste vuote dentro backup vengono tolte di mezzo da sole, sia all'avvio sia a ogni ricarica della finestra di pulizia. Restavano indietro dopo le cancellazioni e nessuno le rimuoveva.
+	+ Fix: Il numero minimo di giocatori richiesto per accettare un ritiro e' ora quello matematico, turni rimanenti piu' uno, senza margine di sicurezza. Il margine di un giocatore introdotto nella 9.7.0 avrebbe impedito ritiri legittimi: un ritiro e' un fatto e non una scelta dell'arbitro, e la via prevista per i casi in cui il motore non trova comunque un abbinamento e' l'intervento manuale, gia' registrato come Issue 38.
+	+ Fix: La pulizia automatica dei backup all'avvio e la finestra di pulizia manuale usano ora la stessa lettura dei file, una sola implementazione invece di due quasi uguali. Entrambe sono state provate sul serio con la nuova struttura ad anni e mesi: la finestra elenca i file delle sottocartelle e ne calcola le statistiche, il controllo all'avvio li segnala, aggiorna le date se si risponde di no e apre la finestra di pulizia se si risponde di si'.
+
 9.7.0 (2026.09.05)
 	+ Feature: Il torneo appena creato resta sempre in preparazione e si avvia da una voce dell'albero, "calcola il turno 1" sotto i turni oppure "Avvio torneo" in fondo al centro comandi. La domanda che chiedeva se generare subito il turno 1 e' stata tolta: compariva una volta sola e, rispondendo di no, spariva senza lasciare traccia di come procedere.
 	+ Feature: L'archivio dei tornei conclusi e' ordinato per anno e per mese di conclusione, con i nomi dei mesi nella lingua scelta e le cartelle create solo quando c'e' qualcosa da metterci dentro. La stessa struttura vale per la cartella dei backup, dove il criterio e' la data in cui la copia viene fatta. La pulizia automatica dei backup e la finestra di pulizia scendono ora nelle sottocartelle.

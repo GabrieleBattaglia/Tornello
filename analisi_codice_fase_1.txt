@@ -895,3 +895,18 @@ I tornei gia' archiviati restano dove sono: l'albero li trova comunque, perche' 
 Avvio del torneo riorganizzato. Richiesta di Gabriele.
 La domanda che chiedeva se generare subito il turno 1 e' stata tolta. Il torneo appena creato resta sempre in preparazione, e l'avvio e' una voce dell'albero: calcola il turno 1, sotto i turni, che ha preso il nome delle voci degli altri turni, oppure Avvio torneo seguito dal nome, come ultima voce del centro comandi, che compare solo quando il torneo aperto non e' ancora iniziato. Dopo la creazione il fuoco viene portato proprio su quella voce.
 Il controllo sul rapporto fra iscritti e turni, introdotto nella 9.5.0, resta agganciato all'avvio, che ora e' un punto solo.
+
+Lavori della versione 9.8.0, decisi da Gabriele il 2026-09-05
+
+Margine sul numero di giocatori portato a zero.
+Gabriele ha accolto l'obiezione: un ritiro e' un fatto e non una scelta dell'arbitro, quindi un margine di sicurezza avrebbe costretto a rifare tornei che potevano proseguire. La costante MARGINE_GIOCATORI vale ora zero e resta il solo minimo matematico, cioe' turni rimanenti piu' uno. La conseguenza pratica e' che, ritirando un giocatore per turno, il blocco non scatta mai, perche' ogni turno consuma sia un turno sia un giocatore. Se il sistema svizzero esaurisce ugualmente le combinazioni, la via prevista e' l'abbinamento manuale dell'arbitro, registrato come Issue numero 38.
+
+Verifica dei due sistemi di pulizia dei backup. Richiesta di Gabriele, ed era una richiesta giusta.
+Quando avevo adattato la lettura dei backup alla nuova struttura ad anni e mesi mi ero fermata alla lettura del codice e ai test esistenti, che pero' non coprivano quella parte. La verifica vera e' stata fatta ora, e i due sistemi funzionano entrambi.
+Finestra di pulizia manuale: la classe e' stata costruita davvero, su una cartella di prova con due file in sottocartelle diverse, uno recente e uno invecchiato di due anni. Elenca entrambi i file, riconosce il vecchio come da eliminare, mostra due voci nella lista e conta correttamente le statistiche. Dopo la cancellazione del file vecchio, l'elenco si aggiorna e la cartella del mese rimasta vuota sparisce.
+Controllo automatico all'avvio: il metodo e' stato eseguito davvero, con la finestra di dialogo sostituita da una finta. Trova il file vecchio nella sottocartella, mostra il messaggio con il conteggio giusto, aggiorna le date se si risponde di no, cosi' da non riproporsi, apre la finestra di pulizia se si risponde di si', e resta muto quando non ci sono file vecchi.
+Rifattorizzazione conseguente: le due letture erano quasi identiche e sono diventate una sola funzione condivisa, utils.elenca_file_di_backup, che scende nelle sottocartelle e separa i file piu' vecchi del limite.
+Sedici prove automatiche coprono ora questa parte, comprese quelle che eseguono il controllo automatico nelle sue tre risposte possibili.
+
+Rimozione delle cartelle vuote. Richiesta di Gabriele, non esisteva.
+utils.rimuovi_cartelle_vuote elimina le sottocartelle rimaste senza file, procedendo dal basso verso l'alto, cosi' che una cartella dell'anno rimasta vuota dopo la rimozione dei mesi sparisca nello stesso passaggio. La radice, cioe' la cartella backup, non viene mai toccata. La chiamata avviene a ogni ricarica della finestra di pulizia e al controllo di avvio, quindi le cartelle vuote lasciate indietro dalle cancellazioni precedenti spariscono da sole alla prima occasione.

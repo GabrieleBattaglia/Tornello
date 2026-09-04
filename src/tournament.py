@@ -687,10 +687,12 @@ def riporta_torneo_alla_preparazione(torneo):
 
 
 # Margine di sicurezza sul numero minimo di giocatori necessari per portare a
-# termine i turni che restano. Il minimo teorico e' turni rimanenti piu' uno,
-# ma il sistema svizzero abbina per punteggio e puo' esaurire le combinazioni
-# prima di quel limite, quindi si sta larghi di un giocatore.
-MARGINE_GIOCATORI = 1
+# termine i turni che restano. Il minimo e' quello matematico, turni rimanenti
+# piu' uno, senza margine: un ritiro non e' una scelta dell'arbitro ma un fatto,
+# e un margine avrebbe costretto a rifare tornei che potevano proseguire. Se il
+# sistema svizzero esaurisce ugualmente le combinazioni prima del limite, la
+# via prevista e' l'abbinamento manuale dell'arbitro, Issue 38.
+MARGINE_GIOCATORI = 0
 
 
 def controlla_ritiro_possibile(torneo, player_id):

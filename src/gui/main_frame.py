@@ -669,19 +669,13 @@ class MainFrame(wx.Frame):
         else:
             limit_date = today - datetime.timedelta(days=548)  # ~18 mesi
 
-        old_files = []
-        try:
-            # I backup sono divisi per anno e mese: la ricerca scende
-            # nell'albero delle sottocartelle.
-            for cartella, _sottocartelle, files in os.walk(backup_dir):
-                for item in files:
-                    filepath = os.path.join(cartella, item)
-                    if os.path.isfile(filepath):
-                        mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
-                        if mtime < limit_date:
-                            old_files.append((filepath, mtime))
-        except OSError:
-            return
+        # Stessa lettura della finestra di pulizia, e come li' si tolgono
+        # prima le cartelle dell'anno e del mese rimaste vuote.
+        from utils import elenca_file_di_backup, rimuovi_cartelle_vuote
+
+        rimuovi_cartelle_vuote(backup_dir)
+        _tutti, vecchi = elenca_file_di_backup(backup_dir, limit_date)
+        old_files = [(f["path"], f["mtime"]) for f in vecchi]
 
         if not old_files:
             return

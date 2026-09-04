@@ -191,9 +191,9 @@ class TestIscrittiETurni:
 class TestRitiroPossibile:
     """Il ritiro non deve mai lasciare il torneo senza abbastanza giocatori per
     arrivare in fondo: e' la regola che impedisce all'abbinatore di fallire a
-    meta' torneo. Al minimo teorico, cioe' turni rimanenti piu' uno, si somma
-    un giocatore di margine, perche' il sistema svizzero abbina per punteggio e
-    puo' esaurire le combinazioni prima del limite matematico."""
+    meta' torneo. Il minimo e' quello matematico, turni rimanenti piu' uno,
+    senza margine: un ritiro e' un fatto e non una scelta dell'arbitro, e un
+    margine avrebbe costretto a rifare tornei che potevano proseguire."""
 
     def _torneo(self, turni, turno_corrente, attivi, ritirati=0):
         players = [{"id": f"P{i}"} for i in range(attivi + ritirati)]
@@ -208,15 +208,16 @@ class TestRitiroPossibile:
     def test_con_pochi_giocatori_il_ritiro_e_impedito(self):
         from tournament import controlla_ritiro_possibile
 
-        # Sette turni, siamo al secondo, restano cinque turni: servono sette
-        # giocatori attivi dopo il ritiro e ne resterebbero cinque.
+        # Sette turni, siamo al secondo, restano cinque turni: fra sei
+        # giocatori si possono giocare al massimo cinque turni, quindi ne
+        # servono sei attivi dopo il ritiro e ne resterebbero cinque.
         si_puo, resterebbero, necessari, rimanenti = controlla_ritiro_possibile(
             self._torneo(7, 2, 6), "P0"
         )
 
         assert si_puo is False
         assert resterebbero == 5
-        assert necessari == 7
+        assert necessari == 6
         assert rimanenti == 5
 
     def test_con_giocatori_a_sufficienza_il_ritiro_passa(self):

@@ -84,6 +84,66 @@ def create_backup(filepath, context="backup"):
         return False
 
 
+def elenca_file_di_backup(cartella_backup, limite_data=None):
+    """Elenca i file di backup, scendendo nelle sottocartelle dell'anno e del
+    mese. Restituisce due liste: tutti i file, dal piu' vecchio al piu'
+    recente, e quelli piu' vecchi della data limite, se indicata.
+    Ogni file e' un dizionario con nome, percorso, dimensione e data di
+    ultima modifica."""
+    tutti = []
+    vecchi = []
+    if not cartella_backup or not os.path.isdir(cartella_backup):
+        return tutti, vecchi
+
+    try:
+        for cartella, _sottocartelle, files in os.walk(cartella_backup):
+            for nome in files:
+                percorso = os.path.join(cartella, nome)
+                if not os.path.isfile(percorso):
+                    continue
+                dati = os.stat(percorso)
+                modifica = datetime.datetime.fromtimestamp(dati.st_mtime)
+                informazioni = {
+                    "name": nome,
+                    "path": percorso,
+                    "size": dati.st_size,
+                    "mtime": modifica,
+                }
+                tutti.append(informazioni)
+                if limite_data is not None and modifica < limite_data:
+                    vecchi.append(informazioni)
+    except OSError:
+        return tutti, vecchi
+
+    tutti.sort(key=lambda f: f["mtime"])
+    vecchi.sort(key=lambda f: f["mtime"])
+    return tutti, vecchi
+
+
+def rimuovi_cartelle_vuote(radice):
+    """Toglie di mezzo le sottocartelle rimaste vuote sotto una radice, senza
+    mai toccare la radice stessa. Serve alla cartella dei backup: quando i file
+    di un mese vengono cancellati, la cartella del mese e poi quella dell'anno
+    resterebbero li' a vuoto.
+    Restituisce quante cartelle sono state rimosse."""
+    if not radice or not os.path.isdir(radice):
+        return 0
+    rimosse = 0
+    radice_assoluta = os.path.abspath(radice)
+    # dal basso verso l'alto, cosi' una cartella dell'anno che resta vuota dopo
+    # la rimozione dei mesi viene tolta nello stesso passaggio.
+    for cartella, _sottocartelle, _files in os.walk(radice, topdown=False):
+        if os.path.abspath(cartella) == radice_assoluta:
+            continue
+        try:
+            if not os.listdir(cartella):
+                os.rmdir(cartella)
+                rimosse += 1
+        except OSError:
+            continue
+    return rimosse
+
+
 def enter_escape(prompt=""):
     """Ritorna vero su invio, falso su escape"""
     while True:

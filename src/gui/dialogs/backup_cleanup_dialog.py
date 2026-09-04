@@ -213,34 +213,14 @@ class BackupCleanupDialog(wx.Dialog):
         except ImportError:
             limit_date = today - datetime.timedelta(days=548)
 
-        if os.path.exists(self.backup_dir):
-            try:
-                # I backup stanno nelle sottocartelle dell'anno e del mese,
-                # quindi la scansione scende nell'albero invece di fermarsi
-                # al primo livello.
-                for cartella, _sottocartelle, files in os.walk(self.backup_dir):
-                    for filename in files:
-                        filepath = os.path.join(cartella, filename)
-                        if not os.path.isfile(filepath):
-                            continue
-                        stat = os.stat(filepath)
-                        size_bytes = stat.st_size
-                        mtime = datetime.fromtimestamp(stat.st_mtime)
+        # Le cancellazioni lasciano indietro le cartelle dell'anno e del mese
+        # ormai vuote: si tolgono di mezzo prima di rileggere l'elenco.
+        from utils import elenca_file_di_backup, rimuovi_cartelle_vuote
 
-                        f_info = {
-                            "name": filename,
-                            "path": filepath,
-                            "size": size_bytes,
-                            "mtime": mtime,
-                        }
-                        self.files_info.append(f_info)
-                        if mtime < limit_date:
-                            self.old_files_info.append(f_info)
-            except OSError:
-                pass
-
-        # Ordina dal più vecchio al più recente (ascendente)
-        self.files_info.sort(key=lambda x: x["mtime"])
+        rimuovi_cartelle_vuote(self.backup_dir)
+        self.files_info, self.old_files_info = elenca_file_di_backup(
+            self.backup_dir, limit_date
+        )
 
     def populate_list(self):
         """Ricarica la lista e aggiorna il testo delle statistiche."""
