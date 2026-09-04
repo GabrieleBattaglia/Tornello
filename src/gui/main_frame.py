@@ -1353,7 +1353,10 @@ class MainFrame(wx.Frame):
                 fed=p.get("federation", "ITA"),
             )
             if p.get("withdrawn"):
-                p_label += _(" [RIT]")
+                # Parola intera e non la sigla: allo screen reader "RIT" non
+                # dice nulla, ed e' l'unico modo per sapere dall'albero che il
+                # giocatore ha lasciato il torneo.
+                p_label += _(", ritirato")
             p_node = self.tree_ctrl.AppendItem(iscritti_node, p_label)
             self.tree_ctrl.SetItemData(
                 p_node,
@@ -2666,6 +2669,12 @@ class MainFrame(wx.Frame):
         start_now = dlg_start.ShowModal() == wx.ID_YES
         dlg_start.Destroy()
 
+        if start_now and not self._torneo_puo_partire(tournament.to_dict()):
+            # Il torneo non si puo' avviare, ma il lavoro fatto non va perso:
+            # lo si salva in preparazione, pronto da avviare quando i numeri
+            # tornano.
+            start_now = False
+
         if start_now:
             torneo_per_abbinamenti = tournament.to_dict()
             matches = generate_pairings_for_round(torneo_per_abbinamenti)
@@ -2687,6 +2696,11 @@ class MainFrame(wx.Frame):
 
             registra_bye_del_turno(self.current_tournament, matches, 1)
             self._save_state()
+            # Lo stesso suono dell'avvio di un torneo salvato in preparazione:
+            # da questa strada mancava del tutto.
+            from utils import play_sound
+
+            play_sound("nuovo_turno", self.current_tournament)
             self.creation_mode = False
             self._tree_restore_target = {
                 "action": "show_round_report",
@@ -3010,6 +3024,33 @@ class MainFrame(wx.Frame):
                 "Torneo riportato alla fase di iscrizione. I turni sono stati cancellati."
             )
         )
+
+    def _torneo_puo_partire(self, torneo):
+        """Controlla il rapporto fra iscritti e turni prima di generare il
+        primo turno. Il divieto ferma l'avvio, l'avvertimento chiede solo
+        conferma. Serve a non far partire tornei che l'abbinatore non potrebbe
+        portare a termine: era il caso dei cinque giocatori su cinque turni."""
+        from tournament import controlla_iscritti_e_turni
+        from utils import play_sound
+
+        si_puo, motivo, avvertimento = controlla_iscritti_e_turni(torneo)
+        if not si_puo:
+            play_sound("errore")
+            self._dialogo_informativo(_("Torneo non avviabile"), motivo)
+            return False
+        if avvertimento:
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Turni consigliati"),
+                avvertimento + _("\n\nVuoi avviare comunque il torneo?"),
+                style=wx.YES_NO,
+                settings=self.settings,
+            )
+            conferma = dlg.ShowModal()
+            dlg.Destroy()
+            if conferma != wx.ID_YES:
+                return False
+        return True
 
     def _dialogo_informativo(self, titolo, messaggio):
         dlg = AccessibleMsgDialog(self, titolo, messaggio, settings=self.settings)
@@ -3832,6 +3873,10 @@ class MainFrame(wx.Frame):
                 )
                 self.current_tournament = None
                 self.active_filename = None
+                # Dopo la finestra di conferma il focus resterebbe nel vuoto:
+                # lo si riporta nell'albero, sulla voce che serve subito dopo
+                # aver chiuso un torneo.
+                self._tree_restore_target = {"action": "start_new_tournament"}
                 self.populate_tree()
                 self.show_intro_message()
                 self.set_status(_("Torneo concluso e archiviato."))
@@ -4569,6 +4614,9 @@ class MainFrame(wx.Frame):
     def start_tournament_matchmaking(self):
         from tournament import generate_pairings_for_round
         from utils import play_sound
+
+        if not self._torneo_puo_partire(self.current_tournament):
+            return
 
         matches = generate_pairings_for_round(self.current_tournament)
         if matches is None:

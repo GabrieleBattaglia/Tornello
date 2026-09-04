@@ -1,6 +1,13 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.5.0 (2026.09.04)
+	+ Feature: Prima di generare il primo turno, Tornello controlla che gli iscritti reggano i turni previsti. Fra N giocatori ci sono N-1 avversari possibili, quindi con meno di turni piu' uno iscritti l'abbinatore resterebbe senza incontri nuovi: in quel caso l'avvio viene impedito e il torneo resta salvato in preparazione. Se invece i turni sono meno di quelli consigliati dal numero di iscritti, cioe' il logaritmo in base due arrotondato per eccesso, si riceve un avviso e si puo' procedere.
+	+ Fix: Nell'albero degli iscritti il giocatore ritirato e' segnalato con la parola "ritirato" al posto della sigla RIT, che allo screen reader non diceva nulla.
+	+ Fix: Nel dialogo del risultato le due voci di vittoria a tavolino dicevano "Forfait tizio / Assenza caio", e non era chiaro a chi si riferisse cosa, dato che forfait e assenza sono la stessa cosa. Ora dicono chi vince a tavolino e chi non si e' presentato.
+	+ Fix: Dopo la conferma di fine finalizzazione il focus tornava nel vuoto. Ora si posiziona nell'albero, sulla voce per creare un nuovo torneo.
+	+ Fix: Avviando il torneo dalla procedura guidata mancava il suono di generazione del turno, presente invece avviando un torneo salvato in preparazione.
+
 9.4.0 (2026.09.04)
 	+ Feature: I criteri di spareggio basati sui risultati degli avversari seguono ora l'articolo 16 del regolamento FIDE sugli spareggi, in vigore dal 1 marzo 2026. I turni non giocati non vengono piu' saltati: il riposo assegnato dall'abbinatore, le partite a tavolino e i turni successivi a un ritiro contano come una partita contro un avversario fittizio che vale quanto il giocatore stesso, entro i tetti previsti dagli articoli 16.4.1 e 16.4.2. Riguarda Buchholz con tutti i suoi modificatori, Sonneborn-Berger, Fore-Buchholz e, di conseguenza, la media Buchholz degli avversari. Rilievo B9.
 	+ Feature: Per lo spareggio di chi lo ha incontrato, il punteggio di un giocatore che ha lasciato il torneo viene calcolato valutando come patte i turni non giocati dopo la sua ultima partita, come prescrive l'articolo 16.3.2.

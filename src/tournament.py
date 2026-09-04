@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import traceback
 from datetime import datetime, timedelta
@@ -577,6 +578,73 @@ def generate_pairings_for_round(torneo):
             return _abbinamento_fallito(torneo, bbp_message)
     print(_("--- Abbinamenti Turno {} generati. ---").format(round_number))
     return all_generated_matches
+
+
+def controlla_iscritti_e_turni(torneo):
+    """Verifica che il numero di iscritti regga i turni previsti, prima che il
+    torneo parta.
+    Il primo vincolo e' matematico: fra N giocatori esistono N-1 avversari
+    possibili, quindi non si possono giocare piu' di N-1 turni senza ripetere
+    un incontro, cosa che il sistema svizzero non ammette. Servono percio'
+    almeno turni piu' uno iscritti, altrimenti l'abbinatore si troverebbe
+    prima o poi senza abbinamenti validi.
+    Il secondo e' una raccomandazione arbitrale: con pochi turni il torneo non
+    riesce a separare i primi classificati, e il numero consigliato e' il
+    logaritmo in base due degli iscritti, arrotondato per eccesso.
+    Restituisce una tupla: si puo' partire, motivo del divieto, avvertimento.
+    """
+    if not torneo or not isinstance(torneo, dict):
+        return False, _("Nessun torneo da controllare."), None
+
+    iscritti = len([p for p in torneo.get("players", []) if not p.get("withdrawn")])
+    turni = int(torneo.get("total_rounds") or 0)
+
+    if turni < 1:
+        return False, _("Il torneo non ha turni previsti."), None
+    if iscritti < 2:
+        return (
+            False,
+            _("Servono almeno due giocatori iscritti per avviare un torneo."),
+            None,
+        )
+
+    minimo_iscritti = turni + 1
+    if iscritti < minimo_iscritti:
+        return (
+            False,
+            _(
+                "Per un torneo di {turni} turni servono almeno {minimo} giocatori, e "
+                "al momento ne risultano {iscritti}. Fra {iscritti} giocatori ci sono "
+                "solo {avversari} avversari possibili a testa, quindi dal turno "
+                "{primo_turno_impossibile} in poi l'abbinatore non troverebbe piu' "
+                "incontri nuovi. Iscrivi altri giocatori oppure riduci il numero dei "
+                "turni."
+            ).format(
+                turni=turni,
+                minimo=minimo_iscritti,
+                iscritti=iscritti,
+                avversari=iscritti - 1,
+                primo_turno_impossibile=iscritti,
+            ),
+            None,
+        )
+
+    turni_consigliati = math.ceil(math.log2(iscritti))
+    if turni < turni_consigliati:
+        return (
+            True,
+            None,
+            _(
+                "Con {iscritti} giocatori i turni consigliati sono almeno "
+                "{consigliati}, mentre il torneo ne prevede {turni}: la classifica "
+                "finale rischia di lasciare troppi giocatori a pari punti. Puoi "
+                "procedere lo stesso."
+            ).format(
+                iscritti=iscritti, consigliati=turni_consigliati, turni=turni
+            ),
+        )
+
+    return True, None, None
 
 
 def riporta_torneo_alla_preparazione(torneo):

@@ -128,3 +128,59 @@ class TestRitornoAllaPreparazione:
 
         assert riporta_torneo_alla_preparazione(None) is False
         assert riporta_torneo_alla_preparazione("non un torneo") is False
+
+
+class TestIscrittiETurni:
+    """Il rapporto fra iscritti e turni va controllato prima di avviare il
+    torneo. Fra N giocatori ci sono N-1 avversari possibili, quindi con meno di
+    turni piu' uno iscritti l'abbinatore resta senza incontri nuovi: e' quello
+    che e' successo sul campo con cinque giocatori su cinque turni."""
+
+    def _torneo(self, turni, iscritti, ritirati=0):
+        players = [{"id": f"P{i}"} for i in range(iscritti + ritirati)]
+        for p in players[iscritti:]:
+            p["withdrawn"] = True
+        return {"total_rounds": turni, "players": players}
+
+    def test_troppi_turni_per_gli_iscritti(self):
+        from tournament import controlla_iscritti_e_turni
+
+        si_puo, motivo, _avviso = controlla_iscritti_e_turni(self._torneo(5, 5))
+
+        assert si_puo is False
+        assert "6" in motivo
+
+    def test_il_numero_giusto_di_iscritti_va_bene(self):
+        from tournament import controlla_iscritti_e_turni
+
+        si_puo, motivo, avviso = controlla_iscritti_e_turni(self._torneo(5, 8))
+
+        assert si_puo is True
+        assert motivo is None
+        assert avviso is None
+
+    def test_pochi_turni_sono_solo_un_avvertimento(self):
+        from tournament import controlla_iscritti_e_turni
+
+        si_puo, motivo, avviso = controlla_iscritti_e_turni(self._torneo(2, 16))
+
+        assert si_puo is True
+        assert motivo is None
+        assert avviso is not None
+
+    def test_i_ritirati_non_contano_fra_gli_iscritti(self):
+        from tournament import controlla_iscritti_e_turni
+
+        si_puo, _motivo, _avviso = controlla_iscritti_e_turni(
+            self._torneo(5, 5, ritirati=3)
+        )
+
+        assert si_puo is False
+
+    def test_servono_almeno_due_giocatori(self):
+        from tournament import controlla_iscritti_e_turni
+
+        si_puo, motivo, _avviso = controlla_iscritti_e_turni(self._torneo(1, 1))
+
+        assert si_puo is False
+        assert motivo
