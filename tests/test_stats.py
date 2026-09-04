@@ -426,3 +426,396 @@ def test_finalize_usa_gli_stessi_criteri_della_classifica():
     assert "get_criterion_value" in sorgente
     # La vecchia sequenza fissa non deve piu' comparire.
     assert "-bucch_c1, -bucch_tot, -performance, -elo_initial" not in sorgente
+
+
+class TestArticolo16:
+    """Turni non giocati negli spareggi basati sui risultati degli avversari,
+    articolo 16 del regolamento FIDE sugli spareggi in vigore dal 1 marzo 2026.
+    Fino alla versione 9.3.22 Tornello saltava del tutto quei turni, che e' la
+    regola precedente al 2023."""
+
+    def _giocatore(self, pid, punti, storico):
+        return {
+            "id": pid,
+            "first_name": pid,
+            "last_name": pid,
+            "initial_elo": 1800.0,
+            "points": punti,
+            "results_history": storico,
+        }
+
+    def _bye(self, turno):
+        return {
+            "round": turno,
+            "opponent_id": "BYE_PLAYER_ID",
+            "color": None,
+            "result": "BYE",
+            "score": 0.5,
+        }
+
+    def _torneo(self, giocatori, rounds, turni_totali):
+        return {
+            "players": giocatori,
+            "players_dict": {p["id"]: p for p in giocatori},
+            "rounds": rounds,
+            "total_rounds": turni_totali,
+            "bye_value": 0.5,
+        }
+
+    def _girone_di_tre(self):
+        """Tre giocatori, tre turni, ognuno riceve un bye dall'abbinatore e
+        chiude con un punto e mezzo."""
+        p = self._giocatore(
+            "P",
+            1.5,
+            [
+                self._bye(1),
+                {
+                    "round": 2,
+                    "opponent_id": "X",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "Y",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                },
+            ],
+        )
+        x = self._giocatore(
+            "X",
+            1.5,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "Y",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "P",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                },
+                self._bye(3),
+            ],
+        )
+        y = self._giocatore(
+            "Y",
+            1.5,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "X",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                },
+                self._bye(2),
+                {
+                    "round": 3,
+                    "opponent_id": "P",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+            ],
+        )
+        rounds = [
+            {
+                "round": 1,
+                "matches": [
+                    {
+                        "white_player_id": "P",
+                        "black_player_id": None,
+                        "result": "BYE",
+                    },
+                    {
+                        "white_player_id": "X",
+                        "black_player_id": "Y",
+                        "result": "1-0",
+                    },
+                ],
+            },
+            {
+                "round": 2,
+                "matches": [
+                    {
+                        "white_player_id": "P",
+                        "black_player_id": "X",
+                        "result": "1-0",
+                    },
+                    {
+                        "white_player_id": "Y",
+                        "black_player_id": None,
+                        "result": "BYE",
+                    },
+                ],
+            },
+            {
+                "round": 3,
+                "matches": [
+                    {
+                        "white_player_id": "Y",
+                        "black_player_id": "P",
+                        "result": "1-0",
+                    },
+                    {
+                        "white_player_id": "X",
+                        "black_player_id": None,
+                        "result": "BYE",
+                    },
+                ],
+            },
+        ]
+        return self._torneo([p, x, y], rounds, 3)
+
+    def test_il_bye_conta_come_avversario_fittizio(self):
+        """Articolo 16.4: il turno di bye vale una partita contro un fittizio
+        che ha il punteggio del giocatore stesso, qui un punto e mezzo, sotto
+        il tetto di mezzo punto per turno del torneo."""
+        from stats import compute_buchholz
+
+        torneo = self._girone_di_tre()
+
+        # 1.5 dal fittizio del turno 1, piu' 1.5 di X e 1.5 di Y.
+        assert compute_buchholz("P", torneo) == 4.5
+
+    def test_il_fittizio_entra_anche_nel_sonneborn_berger(self):
+        from stats import compute_sonneborn_berger
+
+        torneo = self._girone_di_tre()
+
+        # 1.5 per il mezzo punto del bye, piu' 1.5 per la vittoria su X,
+        # piu' zero per la sconfitta con Y.
+        assert compute_sonneborn_berger("P", torneo) == 2.25
+
+    def test_il_bye_non_e_un_turno_non_disponibile(self):
+        """Il bye assegnato dall'abbinatore e' della categoria 16.2.1 e non e'
+        un VUR, quindi il Cut-1 non deve accanirsi su di lui."""
+        from stats import CAT_BYE_ABBINATORE, categorie_turni_non_giocati
+
+        torneo = self._girone_di_tre()
+
+        assert categorie_turni_non_giocati("P", torneo) == {1: CAT_BYE_ABBINATORE}
+
+    def _torneo_con_ritiro(self):
+        """R gioca e perde il primo turno, poi si ritira: i turni 2 e 3 non
+        hanno traccia nel suo storico."""
+        r = self._giocatore(
+            "R",
+            0.0,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "A",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                }
+            ],
+        )
+        a = self._giocatore(
+            "A",
+            3.0,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "R",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "B",
+                    "color": "black",
+                    "result": "0-1",
+                    "score": 1.0,
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "B",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+            ],
+        )
+        b = self._giocatore(
+            "B",
+            0.0,
+            [
+                {
+                    "round": 2,
+                    "opponent_id": "A",
+                    "color": "white",
+                    "result": "0-1",
+                    "score": 0.0,
+                },
+                {
+                    "round": 3,
+                    "opponent_id": "A",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                },
+            ],
+        )
+        rounds = [
+            {
+                "round": 1,
+                "matches": [
+                    {"white_player_id": "A", "black_player_id": "R", "result": "1-0"}
+                ],
+            },
+            {
+                "round": 2,
+                "matches": [
+                    {"white_player_id": "B", "black_player_id": "A", "result": "0-1"}
+                ],
+            },
+            {
+                "round": 3,
+                "matches": [
+                    {"white_player_id": "A", "black_player_id": "B", "result": "1-0"}
+                ],
+            },
+        ]
+        return self._torneo([r, a, b], rounds, 3)
+
+    def test_i_turni_dopo_il_ritiro_valgono_come_patte(self):
+        """Articolo 16.3.2: per gli spareggi degli avversari, i turni non
+        giocati della categoria 16.2.5 si valutano come patte. Il ritirato ha
+        zero punti sul campo ma ne vale uno per chi lo ha incontrato."""
+        from stats import punteggio_aggiustato
+
+        torneo = self._torneo_con_ritiro()
+
+        assert punteggio_aggiustato("R", torneo) == 1.0
+
+    def test_il_ritiro_e_classificato_come_bye_finale(self):
+        from stats import CAT_BYE_FINALE, categorie_turni_non_giocati
+
+        torneo = self._torneo_con_ritiro()
+
+        assert categorie_turni_non_giocati("R", torneo) == {
+            2: CAT_BYE_FINALE,
+            3: CAT_BYE_FINALE,
+        }
+
+    def test_il_turno_in_corso_non_e_un_turno_non_giocato(self):
+        """Se la partita del giocatore esiste ma non ha ancora un risultato il
+        turno non va contato: altrimenti ogni classifica intermedia
+        assegnerebbe un fittizio a chi deve ancora giocare."""
+        from stats import categorie_turni_non_giocati
+
+        torneo = self._torneo_con_ritiro()
+        torneo["rounds"].append(
+            {
+                "round": 4,
+                "matches": [
+                    {"white_player_id": "A", "black_player_id": "B", "result": None},
+                    {"white_player_id": "R", "black_player_id": None, "result": "1-0"},
+                ],
+            }
+        )
+
+        assert 4 not in categorie_turni_non_giocati("A", torneo)
+
+    def test_la_sconfitta_per_forfait_e_limitata_dall_avversario(self):
+        """Articolo 16.4.1: per i forfait il fittizio non puo' valere piu' del
+        punteggio aggiustato dell'avversario che era stato abbinato."""
+        from stats import compute_buchholz
+
+        primo = self._giocatore(
+            "P2",
+            4.0,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "Z",
+                    "color": "white",
+                    "result": "F-1",
+                    "score": 0.0,
+                },
+                {
+                    "round": 2,
+                    "opponent_id": "W",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                },
+            ],
+        )
+        zeta = self._giocatore(
+            "Z",
+            2.0,
+            [
+                {
+                    "round": 1,
+                    "opponent_id": "P2",
+                    "color": "black",
+                    "result": "F-1",
+                    "score": 1.0,
+                },
+                self._bye(2),
+            ],
+        )
+        doppia = self._giocatore(
+            "W",
+            0.0,
+            [
+                {
+                    "round": 2,
+                    "opponent_id": "P2",
+                    "color": "black",
+                    "result": "1-0",
+                    "score": 0.0,
+                }
+            ],
+        )
+        rounds = [
+            {
+                "round": 1,
+                "matches": [
+                    {"white_player_id": "P2", "black_player_id": "Z", "result": "F-1"}
+                ],
+            },
+            {
+                "round": 2,
+                "matches": [
+                    {"white_player_id": "P2", "black_player_id": "W", "result": "1-0"},
+                    {"white_player_id": "Z", "black_player_id": None, "result": "BYE"},
+                ],
+            },
+        ]
+        torneo = self._torneo([primo, zeta, doppia], rounds, 2)
+
+        # Il giocatore ha 4 punti ma il fittizio vale 2, cioe' il punteggio di
+        # Z. Con l'avversario del secondo turno a zero, il totale e' 2.
+        assert compute_buchholz("P2", torneo) == 2.0
+
+    def test_il_cut1_toglie_prima_il_turno_non_disponibile(self):
+        """Eccezione dell'articolo 16.5: con turni non disponibili al gioco si
+        taglia il contributo piu' basso fra quelli, non il piu' basso in
+        assoluto."""
+        from stats import _taglia_contributi
+
+        rimasti = _taglia_contributi([3.0, 1.0, 2.0], 1, [False, False, True])
+
+        assert sorted(valore for valore, _vur in rimasti) == [1.0, 3.0]
+
+    def test_senza_turni_non_disponibili_il_cut1_toglie_il_minimo(self):
+        from stats import _taglia_contributi
+
+        rimasti = _taglia_contributi([3.0, 1.0, 2.0], 1, [False, False, False])
+
+        assert sorted(valore for valore, _vur in rimasti) == [2.0, 3.0]

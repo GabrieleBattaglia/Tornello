@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.4.0 (2026.09.04)
+	+ Feature: I criteri di spareggio basati sui risultati degli avversari seguono ora l'articolo 16 del regolamento FIDE sugli spareggi, in vigore dal 1 marzo 2026. I turni non giocati non vengono piu' saltati: il riposo assegnato dall'abbinatore, le partite a tavolino e i turni successivi a un ritiro contano come una partita contro un avversario fittizio che vale quanto il giocatore stesso, entro i tetti previsti dagli articoli 16.4.1 e 16.4.2. Riguarda Buchholz con tutti i suoi modificatori, Sonneborn-Berger, Fore-Buchholz e, di conseguenza, la media Buchholz degli avversari. Rilievo B9.
+	+ Feature: Per lo spareggio di chi lo ha incontrato, il punteggio di un giocatore che ha lasciato il torneo viene calcolato valutando come patte i turni non giocati dopo la sua ultima partita, come prescrive l'articolo 16.3.2.
+	+ Feature: Il taglio Cut-1, e gli altri tagli verso il basso, escludono per primo il contributo piu' basso proveniente dai turni in cui il giocatore non era disponibile a giocare, secondo l'eccezione dell'articolo 16.5. Prima si limitavano a togliere il valore piu' basso in assoluto. Rilievo B8.
+	+ Bugfix: Il Sonneborn-Berger non viene piu' arrotondato a un decimale. E' un prodotto che cade spesso sui quarti di punto, e l'arrotondamento poteva creare parita' inesistenti nella classifica o invertire l'ordine di due giocatori.
+
 9.3.22 (2026.09.04)
 	+ Bugfix: Il giocatore che riceve il bye ottiene i punti previsti anche quando il torneo viene avviato subito dalla procedura guidata. La correzione della 9.3.21 copriva solo l'avvio di un torneo salvato in preparazione, e la classifica del primo turno mostrava ancora zero. Rilievo G1.
 	+ Bugfix: I file di un torneo concluso vengono di nuovo spostati nella cartella Closed Tournaments. Da quando la procedura guidata propone la cartella dell'applicazione, l'archiviazione la trattava come una cartella esterna e dei report lasciava una copia accanto al programma. Ora restano al loro posto solo se l'arbitro ha scelto davvero un'altra cartella.

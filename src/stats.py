@@ -337,101 +337,242 @@ def calculate_performance_rating(player, tournament_players_dict):
     return round(performance)
 
 
-def compute_buchholz(player_id, torneo):
-    """Calcola il punteggio Buchholz Totale per un giocatore (somma punti avversari)."""
-    buchholz_score = 0.0
-    player = get_player_by_id(torneo, player_id)
-    if not player:
-        return 0.0
-    # Assicura che il dizionario dei giocatori sia aggiornato
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
-    )
-    # Usa lo storico risultati per trovare gli avversari reali
-    opponent_ids_encountered = (
-        set()
-    )  # Per evitare di contare due volte in caso di errori nello storico
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        # Ignora BYE e avversari non validi
+# Articolo 16 del regolamento FIDE sugli spareggi, in vigore dal 1 marzo 2026:
+# trattamento dei turni non giocati negli spareggi che si basano sui risultati
+# degli avversari, cioe' Buchholz, Sonneborn-Berger e le loro varianti.
+# Fino alla versione 9.3.22 Tornello saltava del tutto quei turni, che e' la
+# regola precedente al 2023 e produce classifiche non conformi.
+BYE_ID = "BYE_PLAYER_ID"
+# Le cinque categorie dell'articolo 16.2.
+CAT_BYE_ABBINATORE = "bye_abbinatore"  # 16.2.1, bye assegnato dall'abbinatore
+CAT_VITTORIA_FORFAIT = "vittoria_forfait"  # 16.2.2
+CAT_BYE_RICHIESTO = "bye_richiesto"  # 16.2.3, seguito da almeno un turno giocato
+CAT_SCONFITTA_FORFAIT = "sconfitta_forfait"  # 16.2.4
+CAT_BYE_FINALE = "bye_finale"  # 16.2.5, seguito solo da turni non disponibili
+# Turni non disponibili al gioco, i VUR dell'articolo 16.1.2.
+CATEGORIE_VUR = frozenset({CAT_BYE_RICHIESTO, CAT_SCONFITTA_FORFAIT, CAT_BYE_FINALE})
+CATEGORIE_FORFAIT = frozenset({CAT_VITTORIA_FORFAIT, CAT_SCONFITTA_FORFAIT})
+
+
+def _players_dict(torneo):
+    return torneo.get("players_dict") or {p["id"]: p for p in torneo.get("players", [])}
+
+
+def _numero_float(valore, ripiego=0.0):
+    try:
+        return float(valore)
+    except (ValueError, TypeError):
+        return ripiego
+
+
+def _turni_con_risultati(torneo):
+    """Numeri dei turni in cui almeno una partita ha un risultato.
+    Un turno appena generato non conta ancora per gli spareggi."""
+    turni = set()
+    for round_data in torneo.get("rounds", []):
+        numero = round_data.get("round")
+        if numero is None:
+            continue
+        for partita in round_data.get("matches", []):
+            if partita.get("result"):
+                turni.add(int(numero))
+                break
+    return sorted(turni)
+
+
+def _ha_partita_in_attesa(torneo, player_id, numero_turno):
+    """Vero se in quel turno il giocatore ha una partita ancora senza
+    risultato: il turno e' in corso per lui, non un turno non giocato."""
+    for round_data in torneo.get("rounds", []):
+        if round_data.get("round") != numero_turno:
+            continue
+        for partita in round_data.get("matches", []):
+            if player_id in (
+                partita.get("white_player_id"),
+                partita.get("black_player_id"),
+            ):
+                return not partita.get("result")
+    return False
+
+
+def categorie_turni_non_giocati(player_id, torneo, turni=None):
+    """Classifica i turni non giocati dal giocatore secondo l'articolo 16.2.
+    Restituisce un dizionario numero di turno, categoria."""
+    giocatore = get_player_by_id(torneo, player_id)
+    if not giocatore:
+        return {}
+    if turni is None:
+        turni = _turni_con_risultati(torneo)
+    ultimo_turno = int(torneo.get("total_rounds") or (turni[-1] if turni else 0))
+    storico = {}
+    for voce in giocatore.get("results_history", []):
+        numero = voce.get("round")
+        if numero is not None:
+            storico[int(numero)] = voce
+
+    categorie = {}
+    for turno in turni:
+        voce = storico.get(turno)
+        if voce is None:
+            # Nessuna traccia del turno: e' un bye a zero punti, che
+            # l'articolo 16.1.1 equipara a un bye richiesto. E' il caso di
+            # ogni turno successivo al ritiro di un giocatore.
+            if _ha_partita_in_attesa(torneo, player_id, turno):
+                continue
+            categorie[turno] = CAT_BYE_RICHIESTO
+            continue
+        risultato = str(voce.get("result") or "").upper()
+        if voce.get("opponent_id") == BYE_ID or risultato == "BYE":
+            categorie[turno] = CAT_BYE_ABBINATORE
+        elif "F" in risultato:
+            punti = _numero_float(voce.get("score"))
+            categorie[turno] = (
+                CAT_VITTORIA_FORFAIT if punti > 0 else CAT_SCONFITTA_FORFAIT
+            )
+
+    # Un bye richiesto diventa della categoria 16.2.5 se e' nell'ultimo turno
+    # del torneo o se dopo di esso ci sono soltanto altri turni non disponibili.
+    for turno, categoria in list(categorie.items()):
+        if categoria != CAT_BYE_RICHIESTO:
+            continue
+        successivi = [t for t in turni if t > turno]
         if (
-            opponent_id
-            and opponent_id != "BYE_PLAYER_ID"
-            and opponent_id not in opponent_ids_encountered
+            turno >= ultimo_turno
+            or not successivi
+            or all(categorie.get(t) in CATEGORIE_VUR for t in successivi)
         ):
-            opponent = players_dict.get(opponent_id)
-            if opponent:
-                # Assicura che i punti siano float
-                opponent_points = 0.0
-                try:
-                    opponent_points = float(opponent.get("points", 0.0))
-                except (ValueError, TypeError):
-                    print(
-                        _(
-                            "Warning: Punti non validi ({points}) per avversario {opponent_id} nel calcolo Buchholz di {player_id}."
-                        ).format(
-                            points=opponent.get("points"),
-                            opponent_id=opponent_id,
-                            player_id=player_id,
-                        )
-                    )
-                buchholz_score += opponent_points
-                opponent_ids_encountered.add(opponent_id)
-            else:
-                # Questo warning è importante
-                print(
-                    _(
-                        "Warning: Avversario {opponent_id} (dallo storico di {player_id}) non trovato nel dizionario giocatori per calcolo Buchholz."
-                    ).format(opponent_id=opponent_id, player_id=player_id)
-                )
-    # Formatta il risultato Buchholz come gli altri punteggi
-    return float(format_points(buchholz_score))  # Ritorna float ma formattato
+            categorie[turno] = CAT_BYE_FINALE
+    return categorie
+
+
+def punteggio_aggiustato(player_id, torneo, turni=None):
+    """Punteggio del giocatore come lo vedono gli spareggi dei suoi avversari,
+    secondo l'articolo 16.3. Cambia solo per i turni della categoria 16.2.5,
+    che vanno valutati come patte: e' il caso dei turni successivi a un ritiro."""
+    giocatore = get_player_by_id(torneo, player_id)
+    if not giocatore:
+        return 0.0
+    punteggio = _numero_float(giocatore.get("points"))
+    categorie = categorie_turni_non_giocati(player_id, torneo, turni)
+    for turno, categoria in categorie.items():
+        if categoria != CAT_BYE_FINALE:
+            continue
+        voce_punti = 0.0
+        for voce in giocatore.get("results_history", []):
+            if voce.get("round") == turno:
+                voce_punti = _numero_float(voce.get("score"))
+                break
+        punteggio += 0.5 - voce_punti
+    return punteggio
+
+
+def contributi_spareggio(player_id, torneo):
+    """Contributi da usare per Buchholz, Sonneborn-Berger e varianti, uno per
+    ogni turno, secondo gli articoli 16.3 e 16.4.
+    Ogni contributo e' un dizionario con il turno, il punteggio dell'avversario
+    reale o fittizio, i punti fatti dal giocatore in quel turno e l'indicazione
+    se il turno era fra quelli non disponibili al gioco."""
+    giocatore = get_player_by_id(torneo, player_id)
+    if not giocatore:
+        return []
+    giocatori = _players_dict(torneo)
+    turni = _turni_con_risultati(torneo)
+    if not turni:
+        return []
+    categorie = categorie_turni_non_giocati(player_id, torneo, turni)
+    punti_giocatore = _numero_float(giocatore.get("points"))
+    # Articolo 16.4.2: il fittizio non puo' valere piu' di una patta per ogni
+    # turno del torneo.
+    tetto_patte = 0.5 * int(torneo.get("total_rounds") or len(turni))
+    storico = {}
+    for voce in giocatore.get("results_history", []):
+        numero = voce.get("round")
+        if numero is not None:
+            storico[int(numero)] = voce
+
+    contributi = []
+    for turno in turni:
+        voce = storico.get(turno)
+        categoria = categorie.get(turno)
+        punti_del_turno = _numero_float(voce.get("score")) if voce else 0.0
+        if categoria is None:
+            if not voce:
+                continue
+            avversario = giocatori.get(voce.get("opponent_id"))
+            if not avversario:
+                continue
+            contributi.append(
+                {
+                    "turno": turno,
+                    "punteggio": punteggio_aggiustato(
+                        voce.get("opponent_id"), torneo, turni
+                    ),
+                    "punti": punti_del_turno,
+                    "vur": False,
+                    "elo": _numero_float(avversario.get("initial_elo"), DEFAULT_ELO),
+                }
+            )
+            continue
+        # Turno non giocato: l'articolo 16.4 lo valuta come una partita contro
+        # un avversario fittizio che ha il punteggio del giocatore stesso.
+        tetto = tetto_patte
+        if categoria in CATEGORIE_FORFAIT and voce:
+            avversario_previsto = voce.get("opponent_id")
+            if avversario_previsto and avversario_previsto in giocatori:
+                # Articolo 16.4.1: per i forfait il tetto e' il punteggio
+                # aggiustato dell'avversario che era stato abbinato.
+                tetto = punteggio_aggiustato(avversario_previsto, torneo, turni)
+        contributi.append(
+            {
+                "turno": turno,
+                "punteggio": min(punti_giocatore, tetto),
+                "punti": punti_del_turno,
+                "vur": categoria in CATEGORIE_VUR,
+                "elo": None,
+            }
+        )
+    return contributi
+
+
+def _taglia_contributi(valori, quantita, vur):
+    """Toglie i contributi meno significativi rispettando l'articolo 16.5:
+    quando il giocatore ha turni non disponibili al gioco, il taglio deve
+    colpire per primo il contributo piu' basso proveniente da quei turni."""
+    elementi = list(zip(valori, vur, strict=False))
+    for _ in range(quantita):
+        if len(elementi) <= 1:
+            break
+        candidati = [e for e in elementi if e[1]]
+        if candidati:
+            da_togliere = min(candidati, key=lambda e: e[0])
+        else:
+            da_togliere = min(elementi, key=lambda e: e[0])
+        elementi.remove(da_togliere)
+    return elementi
+
+
+def compute_buchholz(player_id, torneo):
+    """Buchholz totale, articoli 8.1 e 16 del regolamento FIDE sugli spareggi.
+    Somma i punteggi degli avversari; i turni non giocati dal giocatore
+    contano come partite contro un avversario fittizio, e i turni non giocati
+    degli avversari sono valutati secondo l'articolo 16.3."""
+    contributi = contributi_spareggio(player_id, torneo)
+    if not contributi:
+        return 0.0
+    return float(format_points(sum(c["punteggio"] for c in contributi)))
 
 
 def compute_buchholz_cut1(player_id, torneo):
-    """Calcola il punteggio Buchholz Cut 1 (esclude il punteggio più basso)."""
-    opponent_scores = []
-    player = get_player_by_id(torneo, player_id)
-    if not player:
+    """Buchholz Cut-1: toglie il contributo meno significativo, dando la
+    precedenza a quello piu' basso fra i turni non disponibili al gioco,
+    come vuole l'eccezione dell'articolo 16.5."""
+    contributi = contributi_spareggio(player_id, torneo)
+    if not contributi:
         return 0.0
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    rimasti = _taglia_contributi(
+        [c["punteggio"] for c in contributi], 1, [c["vur"] for c in contributi]
     )
-    opponent_ids_encountered = set()  # Evita doppio conteggio se storico errato
-
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        if (
-            opponent_id
-            and opponent_id != "BYE_PLAYER_ID"
-            and opponent_id not in opponent_ids_encountered
-        ):
-            opponent = players_dict.get(opponent_id)
-            if opponent:
-                try:
-                    opponent_scores.append(float(opponent.get("points", 0.0)))
-                except (ValueError, TypeError):
-                    print(
-                        _(
-                            "Warning: Punti non validi ({points}) per avversario {opponent_id} in BuchholzCut1 di {player_id}."
-                        ).format(
-                            points=opponent.get("points"),
-                            opponent_id=opponent_id,
-                            player_id=player_id,
-                        )
-                    )
-                opponent_ids_encountered.add(opponent_id)
-            # else: Warning già dato da compute_buchholz se chiamato prima
-    if not opponent_scores:
-        return 0.0
-
-    # Calcola Buchholz totale e sottrai il minimo
-    total_score = sum(opponent_scores)
-    min_score = min(opponent_scores) if opponent_scores else 0.0
-    buchholz_cut1_score = total_score - min_score
-
-    # Formatta come gli altri punti
-    return float(format_points(buchholz_cut1_score))
+    return float(format_points(sum(valore for valore, _vur in rimasti)))
 
 
 def compute_aro(player_id, torneo):
@@ -559,41 +700,17 @@ def classify_tournament_category(minutes: int, increment: int) -> str:
 
 
 def compute_sonneborn_berger(player_id, torneo):
-    """Calcola il punteggio Sonneborn-Berger per un giocatore."""
-    sb_score = 0.0
-    player = get_player_by_id(torneo, player_id)
-    if not player:
+    """Sonneborn-Berger, articoli 9.1 e 16: per ogni turno il punteggio
+    dell'avversario, reale o fittizio, moltiplicato per i punti che il
+    giocatore ha fatto in quel turno."""
+    contributi = contributi_spareggio(player_id, torneo)
+    if not contributi:
         return 0.0
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
-    )
-    opponent_ids_encountered = set()
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        if (
-            opponent_id
-            and opponent_id != "BYE_PLAYER_ID"
-            and opponent_id not in opponent_ids_encountered
-        ):
-            opponent = players_dict.get(opponent_id)
-            if opponent:
-                try:
-                    opponent_points = float(opponent.get("points", 0.0))
-                except (ValueError, TypeError):
-                    opponent_points = 0.0
-                score = result_entry.get("score")
-                if score is not None:
-                    try:
-                        score_val = float(score)
-                    except (ValueError, TypeError):
-                        score_val = 0.0
-
-                    if score_val == 1.0:
-                        sb_score += opponent_points
-                    elif score_val == 0.5:
-                        sb_score += opponent_points * 0.5
-                opponent_ids_encountered.add(opponent_id)
-    return float(format_points(sb_score))
+    totale = sum(c["punteggio"] * c["punti"] for c in contributi)
+    # Niente format_points qui: arrotonda a un decimale, mentre il
+    # Sonneborn-Berger e' un prodotto che cade spesso sui quarti di punto e
+    # serve intero per ordinare la classifica.
+    return round(totale, 4)
 
 
 def compute_direct_encounter(player_id, torneo):
@@ -738,82 +855,35 @@ def compute_cumulative(player_id, torneo):
 def compute_buchholz_generic(
     player_id, torneo, cut1=False, cut2=False, median1=False, median2=False
 ):
-    """Buchholz generico con supporto ai modificatori FIDE (Cut-1/2, Median-1/2).
-
-    Raccoglie i punti di tutti gli avversari, poi applica i modificatori:
-      - cut1: rimuove 1 punteggio più basso
-      - cut2: rimuove 2 punteggi più bassi
-      - median1: rimuove 1 più basso + 1 più alto
-      - median2: rimuove 2 più bassi + 2 più alti
-
-    Per forfeit handling con Cut-1 (Art.14/16): se il giocatore ha sconfitte
-    per forfeit, il taglio deve escludere prioritariamente il contributo più
-    basso derivante da quei turni non giocati, purché tale valore non sia
-    inferiore al valore assoluto più basso.
-    """
-    player = get_player_by_id(torneo, player_id)
-    if not player:
+    """Buchholz con i modificatori dell'articolo 14, cioe' Cut-1, Cut-2,
+    Median-1 e Median-2, calcolato sui contributi dell'articolo 16.
+    I tagli in basso seguono l'eccezione dell'articolo 16.5: quando il
+    giocatore ha turni non disponibili al gioco si toglie prima il contributo
+    piu' basso proveniente da quei turni."""
+    contributi = contributi_spareggio(player_id, torneo)
+    if not contributi:
         return 0.0
 
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
-    )
+    valori = [c["punteggio"] for c in contributi]
+    vur = [c["vur"] for c in contributi]
 
-    opponent_scores = []
-    forfeit_scores = []  # Punteggi avversari da turni con sconfitta per forfeit
+    if cut1:
+        elementi = _taglia_contributi(valori, 1, vur)
+    elif cut2:
+        elementi = _taglia_contributi(valori, 2, vur)
+    elif median1:
+        elementi = _taglia_contributi(valori, 1, vur)
+        if len(elementi) > 1:
+            elementi.remove(max(elementi, key=lambda e: e[0]))
+    elif median2:
+        elementi = _taglia_contributi(valori, 2, vur)
+        for _ in range(2):
+            if len(elementi) > 1:
+                elementi.remove(max(elementi, key=lambda e: e[0]))
+    else:
+        elementi = list(zip(valori, vur, strict=False))
 
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
-            continue
-
-        opponent = players_dict.get(opponent_id)
-        if not opponent:
-            continue
-
-        try:
-            opp_pts = float(opponent.get("points", 0.0))
-        except (ValueError, TypeError):
-            opp_pts = 0.0
-
-        opponent_scores.append(opp_pts)
-
-        # Controlla se il giocatore ha perso per forfeit in questo turno
-        result_str = str(result_entry.get("result", "")).upper()
-        score_val = 0.0
-        try:
-            score_val = float(result_entry.get("score", 0.0))
-        except (ValueError, TypeError):
-            pass
-        if "F" in result_str and score_val == 0.0:
-            forfeit_scores.append(opp_pts)
-
-    if not opponent_scores:
-        return 0.0
-
-    scores = sorted(opponent_scores)
-
-    # Applica i modificatori
-    if cut1 and len(scores) > 1:
-        if forfeit_scores:
-            # Art.14/16: priorità a escludere il contributo forfeit più basso,
-            # ma solo se non è inferiore al minimo assoluto
-            min_forfeit = min(forfeit_scores)
-            min_absolute = scores[0]
-            if min_forfeit >= min_absolute:
-                scores.remove(min_forfeit)
-            else:
-                scores.pop(0)
-        else:
-            scores.pop(0)
-    elif cut2 and len(scores) > 2:
-        scores = scores[2:]
-    elif median1 and len(scores) > 2:
-        scores = scores[1:-1]
-    elif median2 and len(scores) > 4:
-        scores = scores[2:-2]
-
-    return float(format_points(sum(scores)))
+    return float(format_points(sum(valore for valore, _vur in elementi)))
 
 
 def compute_wins_all(player_id, torneo):
@@ -1031,135 +1101,77 @@ def compute_average_opponent_buchholz(player_id, torneo):
     return math.floor(avg + 0.5)
 
 
+def _torneo_con_ultimo_turno_pari(torneo):
+    """Copia del torneo in cui tutte le partite dell'ultimo turno sono patte.
+    Serve al Fore-Buchholz, che e' un Buchholz calcolato su quello scenario:
+    costruire il torneo virtuale e riusare il calcolo dell'articolo 16 evita
+    di avere una seconda implementazione degli spareggi da tenere allineata."""
+    ultimo_turno = torneo.get("current_round", 1)
+    giocatori = []
+    for originale in torneo.get("players", []):
+        copia = dict(originale)
+        storico = []
+        differenza = 0.0
+        for voce in originale.get("results_history", []):
+            voce_copia = dict(voce)
+            if voce_copia.get("round") == ultimo_turno and voce_copia.get(
+                "opponent_id"
+            ) not in (None, BYE_ID):
+                vecchi_punti = _numero_float(voce_copia.get("score"))
+                voce_copia["score"] = 0.5
+                voce_copia["result"] = "1/2-1/2"
+                differenza += 0.5 - vecchi_punti
+            storico.append(voce_copia)
+        copia["results_history"] = storico
+        copia["points"] = _numero_float(originale.get("points")) + differenza
+        giocatori.append(copia)
+
+    virtuale = dict(torneo)
+    virtuale["players"] = giocatori
+    virtuale["players_dict"] = {p["id"]: p for p in giocatori}
+    rounds = []
+    for round_data in torneo.get("rounds", []):
+        copia_round = dict(round_data)
+        if copia_round.get("round") == ultimo_turno:
+            partite = []
+            for partita in copia_round.get("matches", []):
+                copia_partita = dict(partita)
+                if copia_partita.get("result") and copia_partita.get("result") != "BYE":
+                    copia_partita["result"] = "1/2-1/2"
+                partite.append(copia_partita)
+            copia_round["matches"] = partite
+        rounds.append(copia_round)
+    virtuale["rounds"] = rounds
+    return virtuale
+
+
 def compute_fore_buchholz(player_id, torneo, cut1=False):
-    """FB: Fore-Buchholz – Buchholz calcolato come se tutte le partite
-    dell'ultimo turno fossero terminate in parità.
-
-    Per ogni avversario: se ha giocato nell'ultimo turno, il suo punteggio
-    viene ricalcolato come (punti - punteggio_ultimo_turno + 0.5).
-    """
-    player = get_player_by_id(torneo, player_id)
-    if not player:
-        return 0.0
-
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    """FB, Fore-Buchholz: il Buchholz che si otterrebbe se tutte le partite
+    dell'ultimo turno finissero in parita'. E' una variante del Buchholz,
+    quindi segue le stesse regole dell'articolo 16 sui turni non giocati."""
+    return compute_buchholz_generic(
+        player_id, _torneo_con_ultimo_turno_pari(torneo), cut1=cut1
     )
-
-    # Determina il turno corrente
-    current_round = torneo.get("current_round", 1)
-
-    opponent_scores = []
-    forfeit_scores = []
-
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
-            continue
-
-        opponent = players_dict.get(opponent_id)
-        if not opponent:
-            continue
-
-        try:
-            opp_pts = float(opponent.get("points", 0.0))
-        except (ValueError, TypeError):
-            opp_pts = 0.0
-
-        # Verifica se l'avversario ha giocato nell'ultimo turno
-        opp_last_round_score = None
-        for opp_result in opponent.get("results_history", []):
-            if opp_result.get("round") == current_round:
-                try:
-                    opp_last_round_score = float(opp_result.get("score", 0.0))
-                except (ValueError, TypeError):
-                    opp_last_round_score = 0.0
-                break
-
-        if opp_last_round_score is not None:
-            # Ricalcola come se l'ultimo turno fosse un pareggio
-            modified_pts = opp_pts - opp_last_round_score + 0.5
-        else:
-            modified_pts = opp_pts
-
-        opponent_scores.append(modified_pts)
-
-        # Controlla forfeit per Cut-1
-        result_str = str(result_entry.get("result", "")).upper()
-        score_val = 0.0
-        try:
-            score_val = float(result_entry.get("score", 0.0))
-        except (ValueError, TypeError):
-            pass
-        if "F" in result_str and score_val == 0.0:
-            forfeit_scores.append(modified_pts)
-
-    if not opponent_scores:
-        return 0.0
-
-    scores = sorted(opponent_scores)
-
-    if cut1 and len(scores) > 1:
-        if forfeit_scores:
-            min_forfeit = min(forfeit_scores)
-            min_absolute = scores[0]
-            if min_forfeit >= min_absolute:
-                scores.remove(min_forfeit)
-            else:
-                scores.pop(0)
-        else:
-            scores.pop(0)
-
-    return float(format_points(sum(scores)))
 
 
 def compute_sonneborn_berger_generic(player_id, torneo, cut1=False):
-    """SB con supporto modificatore Cut-1.
-
-    Raccoglie tutti i contributi (punti_avversario * score_contro_di_lui).
-    Se cut1, rimuove il CONTRIBUTO più basso (il prodotto più piccolo).
-    """
-    player = get_player_by_id(torneo, player_id)
-    if not player:
+    """Sonneborn-Berger con il modificatore Cut-1, calcolato sui contributi
+    dell'articolo 16. Il taglio segue l'eccezione dell'articolo 16.5: fra il
+    contributo piu' basso proveniente da un turno non disponibile e il
+    contributo piu' basso in assoluto si toglie il maggiore dei due, che e'
+    sempre il primo quando esistono turni non disponibili."""
+    contributi = contributi_spareggio(player_id, torneo)
+    if not contributi:
         return 0.0
 
-    players_dict = torneo.get(
-        "players_dict", {p["id"]: p for p in torneo.get("players", [])}
+    valori = [c["punteggio"] * c["punti"] for c in contributi]
+    vur = [c["vur"] for c in contributi]
+    elementi = (
+        _taglia_contributi(valori, 1, vur)
+        if cut1
+        else list(zip(valori, vur, strict=False))
     )
-
-    contributions = []
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
-            continue
-
-        opponent = players_dict.get(opponent_id)
-        if not opponent:
-            continue
-
-        try:
-            opponent_points = float(opponent.get("points", 0.0))
-        except (ValueError, TypeError):
-            opponent_points = 0.0
-
-        score = result_entry.get("score")
-        if score is None:
-            continue
-
-        try:
-            score_val = float(score)
-        except (ValueError, TypeError):
-            score_val = 0.0
-
-        contributions.append(opponent_points * score_val)
-
-    if not contributions:
-        return 0.0
-
-    if cut1 and len(contributions) > 1:
-        contributions.remove(min(contributions))
-
-    return float(format_points(sum(contributions)))
+    return round(sum(valore for valore, _vur in elementi), 4)
 
 
 def compute_aro_generic(player_id, torneo, cut1=False):

@@ -2804,17 +2804,7 @@ class MainFrame(wx.Frame):
             return
 
         if len(t_data.get("rounds", [])) > 0:
-            play_sound("errore")
-            dlg_err = AccessibleMsgDialog(
-                self,
-                _("Errore"),
-                _(
-                    "Impossibile modificare l'iscrizione dei giocatori: il torneo è già iniziato."
-                ),
-                settings=self.settings,
-            )
-            dlg_err.ShowModal()
-            dlg_err.Destroy()
+            self._proponi_ritiro_dal_torneo(item, player_data, filepath)
             return
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
@@ -2870,6 +2860,160 @@ class MainFrame(wx.Frame):
             if parent_item and parent_item.IsOk():
                 self.tree_ctrl.SelectItem(parent_item)
                 self.tree_ctrl.SetFocus()
+        dlg.Destroy()
+
+    def _partita_del_turno_corrente(self, player_id):
+        """Dice cosa fa il giocatore nel turno in corso: 'assente' se non ha
+        partita, 'giocata' se il risultato c'e' gia', 'da_giocare' altrimenti."""
+        rounds = self.current_tournament.get("rounds", [])
+        if not rounds:
+            return "assente"
+        ultimo = rounds[-1]
+        for partita in ultimo.get("matches", []):
+            if player_id in (
+                partita.get("white_player_id"),
+                partita.get("black_player_id"),
+            ):
+                return "giocata" if partita.get("result") else "da_giocare"
+        return "assente"
+
+    def _proponi_ritiro_dal_torneo(self, item, player_data, filepath):
+        """A torneo iniziato l'iscrizione non si puo' piu' togliere, perche'
+        lascerebbe abbinamenti e risultati riferiti a un giocatore che non
+        esiste piu'. Al suo posto si offre il ritiro, che e' l'operazione che
+        l'arbitro sta cercando davvero."""
+        import os
+
+        from utils import play_sound
+
+        p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
+        e_il_torneo_attivo = bool(self.active_filename) and os.path.abspath(
+            self.active_filename
+        ) == os.path.abspath(filepath)
+        if not e_il_torneo_attivo or not self.current_tournament:
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Torneo non aperto"),
+                _(
+                    "Il torneo e' gia' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: al suo posto si puo' ritirare il giocatore. Apri prima il torneo, poi ripeti l'operazione."
+                ).format(name=p_name),
+            )
+            return
+
+        giocatore = self.current_tournament.get("players_dict", {}).get(
+            player_data.get("id")
+        )
+        if not giocatore:
+            return
+
+        if giocatore.get("withdrawn"):
+            self._dialogo_informativo(
+                _("Giocatore gia' ritirato"),
+                _("{name} risulta gia' ritirato dal torneo.").format(name=p_name),
+            )
+            return
+
+        turno_corrente = self.current_tournament.get("current_round", 1)
+        stato = self._partita_del_turno_corrente(giocatore.get("id"))
+        if stato == "da_giocare":
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Partita ancora aperta"),
+                _(
+                    "{name} ha una partita senza risultato nel turno {round}. Registra prima quel risultato, indicando il forfait se non si e' presentato: subito dopo il programma ti proporra' il ritiro."
+                ).format(name=p_name, round=turno_corrente),
+            )
+            return
+
+        attivi = [
+            p
+            for p in self.current_tournament.get("players", [])
+            if not p.get("withdrawn")
+        ]
+        resterebbero = len(attivi) - 1
+
+        if stato == "giocata":
+            messaggio = _(
+                "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? La partita che ha gia' giocato nel turno {round} resta valida e il ritiro vale dal turno successivo."
+            ).format(name=p_name, round=turno_corrente)
+        else:
+            messaggio = _(
+                "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verra' piu' abbinato nei turni successivi."
+            ).format(name=p_name)
+
+        if resterebbero < 2:
+            messaggio += _(
+                "\n\nAttenzione: dopo questo ritiro non resterebbero giocatori a sufficienza per proseguire, quindi ti verra' chiesto se riportare il torneo alla fase di iscrizione."
+            )
+
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Ritiro dal torneo"),
+            messaggio,
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+
+        if resterebbero < 2:
+            self._proponi_ritorno_alla_preparazione(filepath, p_name)
+            return
+
+        self.withdraw_player(giocatore.get("id"))
+        self._tree_restore_target = {"action": "show_players", "filepath": filepath}
+        self.populate_tree()
+        self.show_players_list_verbose()
+
+    def _proponi_ritorno_alla_preparazione(self, filepath, nome_ritirato):
+        """Quando il ritiro lascerebbe il torneo senza giocatori a sufficienza,
+        l'arbitro ha quasi sempre sbagliato la creazione. Invece di eliminare il
+        torneo lo si riporta alla fase di iscrizione, dove tutti i dati tornano
+        modificabili e gli iscritti restano al loro posto."""
+        from tournament import riporta_torneo_alla_preparazione
+        from utils import create_backup, play_sound
+
+        messaggio = _(
+            "Ritirando {name} il torneo resterebbe senza giocatori a sufficienza per proseguire.\n\nVuoi riportare il torneo alla fase di iscrizione? Verranno cancellati tutti i turni giocati e i loro risultati, mentre l'elenco degli iscritti e i dati del torneo restano al loro posto e tornano modificabili. Prima dell'operazione viene creata una copia di sicurezza."
+        ).format(name=nome_ritirato)
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Torneo senza giocatori"),
+            messaggio,
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+
+        create_backup(filepath, "pre_ritorno_preparazione")
+        if not riporta_torneo_alla_preparazione(self.current_tournament):
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Operazione non riuscita"),
+                _(
+                    "Non e' stato possibile riportare il torneo alla fase di iscrizione."
+                ),
+            )
+            return
+
+        self._save_state()
+        self._tree_restore_target = {"action": "show_players", "filepath": filepath}
+        self.populate_tree()
+        self.show_players_list_verbose()
+        self.set_status(
+            _(
+                "Torneo riportato alla fase di iscrizione. I turni sono stati cancellati."
+            )
+        )
+
+    def _dialogo_informativo(self, titolo, messaggio):
+        dlg = AccessibleMsgDialog(self, titolo, messaggio, settings=self.settings)
+        dlg.ShowModal()
         dlg.Destroy()
 
     def load_concluded_tournament_report(self, filepath):

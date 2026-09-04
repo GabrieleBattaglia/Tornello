@@ -579,6 +579,37 @@ def generate_pairings_for_round(torneo):
     return all_generated_matches
 
 
+def riporta_torneo_alla_preparazione(torneo):
+    """Riporta un torneo iniziato alla fase in cui si iscrivono i giocatori.
+    Cancella tutti i turni e azzera lo stato dei giocatori, iscrizioni comprese
+    quelle dei ritirati, lasciando l'elenco degli iscritti e i dati generali.
+    Serve al caso in cui l'arbitro si accorge di aver sbagliato la creazione:
+    l'alternativa sarebbe eliminare il torneo e ricominciare da capo.
+    Restituisce True se il torneo e' stato riportato indietro.
+    """
+    if not torneo or not isinstance(torneo, dict):
+        return False
+    torneo["rounds"] = []
+    torneo["current_round"] = 1
+    torneo["next_match_id"] = 1
+    torneo.pop(CHIAVE_ERRORE_ABBINAMENTO, None)
+    torneo["concluded"] = False
+    _ensure_players_dict(torneo)
+    for giocatore in torneo.get("players", []):
+        giocatore["results_history"] = []
+        giocatore["withdrawn"] = False
+        giocatore["final_rank"] = None
+        giocatore["display_rank"] = None
+        giocatore["buchholz"] = 0.0
+        giocatore["buchholz_cut1"] = None
+        giocatore["performance_rating"] = None
+        giocatore["elo_change"] = None
+        giocatore["games_this_tournament"] = 0
+        giocatore["downfloat_count"] = 0
+        _ricalcola_stato_giocatore_da_storico(giocatore)
+    return True
+
+
 def registra_bye_del_turno(torneo, matches, round_number):
     """
     Assegna al giocatore che ha ricevuto il bye i punti previsti dal torneo e
