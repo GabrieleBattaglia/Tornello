@@ -123,7 +123,48 @@ def check_updates():
         print(_("Controllo aggiornamenti fallito: {}").format(e_update))
 
 
+def verifica_permessi_di_scrittura():
+    """Tornello e' portabile e tiene i propri dati accanto a se stesso: il
+    database dei giocatori, i tornei, l'archivio, i backup e i file di lavoro
+    dell'abbinatore. Se quella cartella non e' scrivibile non c'e' ripiego che
+    tenga, perche' anche la cartella di default e' quella. Meglio dirlo subito
+    e con chiarezza, invece di far fallire una operazione alla volta.
+    """
+    from config import user_data_path
+    from utils import cartella_scrivibile
+
+    cartella = os.path.abspath(user_data_path(""))
+    if cartella_scrivibile(cartella):
+        return True
+
+    messaggio = _(
+        "Tornello non puo' scrivere nella propria cartella:\n{cartella}\n\n"
+        "Il programma tiene accanto a se' il database dei giocatori, i tornei, "
+        "l'archivio e le copie di sicurezza, quindi senza permesso di scrittura "
+        "non puo' funzionare.\n\n"
+        "Sposta la cartella di Tornello dove hai i permessi di scrittura, per "
+        "esempio nei tuoi Documenti o sul Desktop, e riavvia il programma."
+    ).format(cartella=cartella)
+    print(messaggio)
+    if "--cli" not in sys.argv:
+        try:
+            import wx
+
+            app_avviso = wx.App(False)
+            wx.MessageBox(
+                messaggio, _("Cartella non scrivibile"), wx.OK | wx.ICON_ERROR
+            )
+            app_avviso.Destroy()
+        except (ImportError, RuntimeError):
+            # Senza interfaccia grafica resta il messaggio in console.
+            pass
+    return False
+
+
 if __name__ == "__main__":
+    if not verifica_permessi_di_scrittura():
+        sys.exit(1)
+
     if not os.path.exists(BBP_SUBDIR):
         try:
             os.makedirs(BBP_SUBDIR)

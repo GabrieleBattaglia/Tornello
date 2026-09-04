@@ -347,7 +347,23 @@ def match_player_query(player, query):
     return (-total_matched, rel_score, last_name_l, first_name_l)
 
 
-def resolve_and_verify_save_path(path, default_fallback="."):
+def cartella_scrivibile(percorso):
+    """Vero se nella cartella si possono davvero creare file. Non basta
+    controllare che esista: in Programmi la cartella c'e' ma la scrittura e'
+    negata, ed e' li' che Tornello si fermava con un codice di errore."""
+    if not percorso or not os.path.isdir(percorso):
+        return False
+    prova = os.path.join(percorso, ".tornello_write_test")
+    try:
+        with open(prova, "w") as f:
+            f.write("test")
+        os.remove(prova)
+        return True
+    except OSError:
+        return False
+
+
+def resolve_and_verify_save_path(path, default_fallback=None):
     """
     Verifica se il percorso personalizzato è valido e accessibile.
     - Se l'unità (drive letter) non è disponibile: fallback alla cartella di default + avviso.
@@ -355,6 +371,13 @@ def resolve_and_verify_save_path(path, default_fallback="."):
     - Logga l'operazione su console/stdout.
     Restituisce una tupla (resolved_path, warning_message).
     """
+    if default_fallback is None:
+        # Il ripiego e' la cartella del programma, non quella da cui e' stato
+        # avviato: sono due cose diverse ogni volta che lo si lancia da altrove.
+        from config import user_data_path
+
+        default_fallback = os.path.abspath(user_data_path(""))
+
     if not path:
         return default_fallback, None
 
@@ -393,15 +416,10 @@ def resolve_and_verify_save_path(path, default_fallback="."):
             return default_fallback, msg
 
     # Verifica se la cartella esistente è scrivibile
-    try:
-        test_file = os.path.join(path, ".tornello_write_test")
-        with open(test_file, "w") as f:
-            f.write("test")
-        os.remove(test_file)
-    except Exception as e:
+    if not cartella_scrivibile(path):
         msg = _(
-            "La cartella '{path}' non è scrivibile: {error}. Uso la cartella di default: '{fallback}'."
-        ).format(path=path, error=e, fallback=default_fallback)
+            "La cartella '{path}' non e' scrivibile. Uso la cartella di default: '{fallback}'."
+        ).format(path=path, fallback=default_fallback)
         print(f"LOG: {msg}")
         return default_fallback, msg
 

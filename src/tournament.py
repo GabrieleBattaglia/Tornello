@@ -4,7 +4,7 @@ import os
 import traceback
 from datetime import datetime, timedelta
 
-from config import DATE_FORMAT_ISO, DEFAULT_ELO
+from config import DATE_FORMAT_ISO, DEFAULT_ELO, user_data_path
 from engine import (
     genera_stringa_trf_per_bbpairings,
     parse_bbpairings_couples_output,
@@ -116,7 +116,9 @@ def time_machine_torneo(torneo):
 
     # Crea un backup del file torneo corrente prima dell'operazione
     if "name" in torneo:
-        current_filename = f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        current_filename = user_data_path(
+            f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        )
         if create_backup(current_filename, "pre_timemachine"):
             print(
                 _("Backup di sicurezza creato: {filename}").format(
@@ -225,7 +227,9 @@ def rollback_to_previous_round(torneo):
 
     # Crea un backup prima dell'operazione
     if "name" in torneo:
-        current_filename = f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        current_filename = user_data_path(
+            f"Tornello - {sanitize_filename(torneo['name'])}.json"
+        )
         create_backup(current_filename, "pre_rollback")
 
     # Rimuovi l'ultimo round
@@ -333,7 +337,9 @@ def save_tournament(torneo, filepath=None):
         if filepath:
             dynamic_tournament_filename = filepath
         else:
-            dynamic_tournament_filename = f"Tornello - {sanitized_name}.json"
+            dynamic_tournament_filename = user_data_path(
+                f"Tornello - {sanitized_name}.json"
+            )
         torneo_to_save = torneo.copy()
         # Prepara i dati per il salvataggio JSON
         if "players" in torneo_to_save:
@@ -639,9 +645,7 @@ def controlla_iscritti_e_turni(torneo):
                 "{consigliati}, mentre il torneo ne prevede {turni}: la classifica "
                 "finale rischia di lasciare troppi giocatori a pari punti. Puoi "
                 "procedere lo stesso."
-            ).format(
-                iscritti=iscritti, consigliati=turni_consigliati, turni=turni
-            ),
+            ).format(iscritti=iscritti, consigliati=turni_consigliati, turni=turni),
         )
 
     return True, None, None

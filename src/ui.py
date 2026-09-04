@@ -1775,7 +1775,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     conserva_originali = cartella_di_lavoro_esterna(custom_path)
 
     # 1. Trova il file JSON principale del torneo (locale)
-    local_json_filename = f"Tornello - {sanitized_tournament_name}.json"
+    local_json_filename = user_data_path(f"Tornello - {sanitized_tournament_name}.json")
     if current_tournament_filename and os.path.exists(current_tournament_filename):
         local_json_path = current_tournament_filename
     elif os.path.exists(local_json_filename):
@@ -1795,7 +1795,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             custom_path, f"Tornello - {sanitized_tournament_name}"
         )
     else:
-        file_pattern_prefix = f"Tornello - {sanitized_tournament_name}"
+        file_pattern_prefix = user_data_path(f"Tornello - {sanitized_tournament_name}")
 
     for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
         if os.path.isfile(file_in_dir):

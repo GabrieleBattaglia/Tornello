@@ -107,3 +107,32 @@ def test_delete_active_tournament_logic():
         assert not os.path.exists(r2)
         assert not os.path.exists(r3)
         assert os.path.exists(other_file)  # Should not be deleted!
+
+
+class TestCartellaScrivibile:
+    """Il controllo dei permessi che Tornello fa all'avvio. Non basta che la
+    cartella esista: in Programmi c'e' ma non si puo' scrivere, ed e' li' che
+    la prova sul campo si fermava con un codice di errore."""
+
+    def test_una_cartella_normale_e_scrivibile(self, tmp_path):
+        from utils import cartella_scrivibile
+
+        assert cartella_scrivibile(str(tmp_path)) is True
+
+    def test_una_cartella_inesistente_non_lo_e(self, tmp_path):
+        from utils import cartella_scrivibile
+
+        assert cartella_scrivibile(str(tmp_path / "assente")) is False
+
+    def test_un_percorso_vuoto_non_lo_e(self):
+        from utils import cartella_scrivibile
+
+        assert cartella_scrivibile("") is False
+        assert cartella_scrivibile(None) is False
+
+    def test_non_lascia_il_file_di_prova(self, tmp_path):
+        from utils import cartella_scrivibile
+
+        cartella_scrivibile(str(tmp_path))
+
+        assert list(tmp_path.iterdir()) == []

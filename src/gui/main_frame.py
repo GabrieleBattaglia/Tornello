@@ -12,12 +12,13 @@ from gui.settings import apply_visual_settings, save_settings
 _ = getattr(builtins, "_", lambda s: s)
 
 
+from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
+
+
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
     programma. Prima veniva proposta la directory di lavoro corrente, che
     coincide con quella del programma solo se lo si avvia da li'."""
-    from config import user_data_path
-
     return os.path.abspath(user_data_path(""))
 
 
@@ -714,7 +715,7 @@ class MainFrame(wx.Frame):
 
         tournament_files = [
             f
-            for f in glob.glob("Tornello - *.json")
+            for f in glob.glob(user_data_path("Tornello - *.json"))
             if "- concluso_" not in os.path.basename(f).lower()
             and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
             and os.path.basename(f) != "Tornello - Settings.json"
@@ -915,7 +916,7 @@ class MainFrame(wx.Frame):
 
         active_files = [
             f
-            for f in glob.glob("Tornello - *.json")
+            for f in glob.glob(user_data_path("Tornello - *.json"))
             if "- concluso_" not in os.path.basename(f).lower()
             and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
             and os.path.basename(f) != "Tornello - Settings.json"
@@ -937,7 +938,7 @@ class MainFrame(wx.Frame):
                 pass
 
         closed_files = glob.glob(
-            os.path.join("Closed Tournaments", "**", "Tornello - *.json"),
+            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
             recursive=True,
         )
         concluded_files = []
@@ -2603,7 +2604,7 @@ class MainFrame(wx.Frame):
         save_dir = resolved_save_dir
 
         sanitized = sanitize_filename(self.creation_data["name"])
-        self.active_filename = f"Tornello - {sanitized}.json"
+        self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
         from tournament import calculate_dates
 
@@ -2742,10 +2743,20 @@ class MainFrame(wx.Frame):
 
                 from utils import sanitize_filename
 
+                from utils import resolve_and_verify_save_path
+
                 t_name = self.current_tournament.get("name", "Torneo_Senza_Nome")
                 sanitized_name = sanitize_filename(t_name)
+                # La raccolta partite e' un file che appartiene al torneo, non
+                # al programma: va nella cartella di lavoro scelta dall'arbitro,
+                # come i report di testo.
+                cartella_pgn = self.current_tournament.get("custom_save_path")
+                if cartella_pgn:
+                    cartella_pgn, _avviso = resolve_and_verify_save_path(cartella_pgn)
+                else:
+                    cartella_pgn = os.path.dirname(self.active_filename)
                 pgn_filename = os.path.join(
-                    os.path.dirname(self.active_filename),
+                    cartella_pgn,
                     _("{name} - raccolta partite.pgn").format(name=sanitized_name),
                 )
                 all_pgns = []

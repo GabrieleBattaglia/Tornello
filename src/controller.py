@@ -11,6 +11,7 @@ from config import (
     FIDE_DB_JSON_LEGACY,
     FIDE_DB_LOCAL_FILE,
     PLAYER_DB_FILE,
+    user_data_path,
 )
 from db_players import (
     aggiorna_db_fide_locale,
@@ -457,7 +458,7 @@ class TournamentController:
                 )
             )
             sanitized = sanitize_filename(suggested_name)
-            prospective = f"Tornello - {sanitized}.json"
+            prospective = user_data_path(f"Tornello - {sanitized}.json")
             if os.path.exists(prospective):
                 if self.ui.confirm(
                     _(
@@ -478,7 +479,7 @@ class TournamentController:
                 self.ui.show_message(_("Il nome del torneo non può essere vuoto."))
                 continue
             sanitized = sanitize_filename(input_name)
-            prospective = f"Tornello - {sanitized}.json"
+            prospective = user_data_path(f"Tornello - {sanitized}.json")
             if os.path.exists(prospective):
                 if not self.ui.confirm(
                     _(

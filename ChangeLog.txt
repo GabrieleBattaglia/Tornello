@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.6.0 (2026.09.04)
+	+ Feature: All'avvio Tornello controlla di poter scrivere nella propria cartella. Se non puo', lo dice con un messaggio che spiega perche' e cosa fare, e si chiude invece di far fallire una operazione alla volta. Il programma e' portabile e tiene accanto a se' il database dei giocatori, i tornei, l'archivio e i backup: se quella cartella non e' scrivibile non esiste ripiego, perche' la cartella di default e' la stessa.
+	+ Bugfix: I file dei tornei in corso, l'archivio e le copie di sicurezza vengono ora cercati e scritti accanto al programma, non nella cartella da cui e' stato avviato. Avviando Tornello da un'altra cartella, i tornei nascevano li' e l'albero non trovava piu' quelli veri.
+	+ Fix: La raccolta delle partite in formato PGN segue i report di testo e finisce nella cartella di lavoro scelta alla creazione del torneo, perche' e' un file che appartiene al torneo e non al programma.
+	+ Fix: Quando la cartella di lavoro scelta non e' utilizzabile, il ripiego e' la cartella del programma e non piu' quella da cui e' stato avviato.
+
 9.5.0 (2026.09.04)
 	+ Feature: Prima di generare il primo turno, Tornello controlla che gli iscritti reggano i turni previsti. Fra N giocatori ci sono N-1 avversari possibili, quindi con meno di turni piu' uno iscritti l'abbinatore resterebbe senza incontri nuovi: in quel caso l'avvio viene impedito e il torneo resta salvato in preparazione. Se invece i turni sono meno di quelli consigliati dal numero di iscritti, cioe' il logaritmo in base due arrotondato per eccesso, si riceve un avviso e si puo' procedere.
 	+ Fix: Nell'albero degli iscritti il giocatore ritirato e' segnalato con la parola "ritirato" al posto della sigla RIT, che allo screen reader non diceva nulla.
