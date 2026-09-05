@@ -82,6 +82,11 @@ def test_e2e_tournament_flow(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "ARCHIVED_TOURNAMENTS_DIR", str(closed_dir))
     monkeypatch.setattr(ui, "PLAYER_DB_FILE", str(db_file))
     monkeypatch.setattr(ui, "ARCHIVED_TOURNAMENTS_DIR", str(closed_dir))
+    # Anche le copie di sicurezza vanno nella cartella temporanea: senza questo
+    # ogni esecuzione della suite lasciava una manciata di file dentro la
+    # cartella backup vera, ed e' da li' che venivano quasi tutti gli
+    # ottocento backup trovati il 2026-09-05.
+    monkeypatch.setattr(config, "user_data_path", lambda p: str(tmp_path / p))
 
     # 2. Inizializza un nuovo torneo
     torneo_dict = {
@@ -236,6 +241,11 @@ def test_e2e_complex_tournament_flow_bye_withdrawals(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "ARCHIVED_TOURNAMENTS_DIR", str(closed_dir))
     monkeypatch.setattr(ui, "PLAYER_DB_FILE", str(db_file))
     monkeypatch.setattr(ui, "ARCHIVED_TOURNAMENTS_DIR", str(closed_dir))
+    # Anche le copie di sicurezza vanno nella cartella temporanea: senza questo
+    # ogni esecuzione della suite lasciava una manciata di file dentro la
+    # cartella backup vera, ed e' da li' che venivano quasi tutti gli
+    # ottocento backup trovati il 2026-09-05.
+    monkeypatch.setattr(config, "user_data_path", lambda p: str(tmp_path / p))
 
     # 2. Inizializza un nuovo torneo con 29 giocatori e 7 turni
     torneo_dict = {
