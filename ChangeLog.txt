@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.8.2 (2026.09.05)
+	+ Fix: Le regole del .gitignore che escludono i file di lavoro sono ora ancorate alla cartella del progetto. Senza la barra iniziale valevano a qualsiasi profondita' e rendevano invisibili al repository anche i tornei dentro Closed Tournaments: spostandoli, git registrava le cancellazioni e scartava in silenzio i nuovi percorsi. Da ora i tornei archiviati entrano da soli nei commit.
+	+ Fix: Lo strumento di riordino dell'archivio e dei backup e' stato spostato dalla cartella scratch, che il repository esclude, alla radice del progetto insieme agli altri strumenti di servizio, cosi' e' disponibile su tutte le macchine.
+
 9.8.1 (2026.09.05)
 	+ Fix: La suite di prove automatiche non lascia piu' copie di sicurezza nella cartella backup vera. Non isolava quella cartella e ne abbandonava sei a ogni esecuzione: dei 817 backup trovati sulla macchina di sviluppo, 814 venivano dai test e solo sette da tornei veri.
 	+ Strumento: riordina_archivio_e_backup.py sposta i tornei conclusi e le copie di sicurezza gia' esistenti nella struttura per anno e mese introdotta con la 9.7.0. Senza argomenti fa una prova e stampa soltanto cosa farebbe; con --esegui sposta davvero, senza mai sovrascrivere nulla.

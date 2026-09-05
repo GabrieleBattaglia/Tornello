@@ -12,10 +12,14 @@ __pycache__/
 
 # File di runtime/config locali
 selected_language.json
-Tornello - Settings.json
-Tornello - *.json
-Tornello - *.txt
-Tornello - *.ics
+# La barra iniziale limita queste regole alla cartella del progetto, dove
+# stanno i file di lavoro. Senza, valevano a qualsiasi profondita' e rendevano
+# invisibili anche i tornei dentro Closed Tournaments: spostandoli, git li
+# registrava come cancellati e non riprendeva i nuovi percorsi.
+/Tornello - Settings.json
+/Tornello - *.json
+/Tornello - *.txt
+/Tornello - *.ics
 bbppairings/input_bbp.trf
 bbppairings/output_checklist.txt
 bbppairings/output_coppie.txt
