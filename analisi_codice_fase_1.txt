@@ -914,7 +914,7 @@ utils.rimuovi_cartelle_vuote elimina le sottocartelle rimaste senza file, proced
 Riordino dei file esistenti e uso futuro delle copie di sicurezza, 2026-09-05
 
 Script di riordino, richiesto da Gabriele.
-scratch/riordina_archivio_e_backup.py porta nella struttura per anno e mese i file creati prima della versione 9.7.0. Per i tornei conclusi la data si legge dal file del torneo, con il suffisso nel nome della cartella e la data di modifica come ripieghi; per le copie di sicurezza si legge dal timestamp nel nome del file. Lo script non sovrascrive mai nulla, di sua iniziativa fa solo una prova, e sposta davvero soltanto con l'argomento --esegui.
+riordina_archivio_e_backup.py porta nella struttura per anno e mese i file creati prima della versione 9.7.0. Per i tornei conclusi la data si legge dal file del torneo, con il suffisso nel nome della cartella e la data di modifica come ripieghi; per le copie di sicurezza si legge dal timestamp nel nome del file. Lo script non sovrascrive mai nulla, di sua iniziativa fa solo una prova, e sposta davvero soltanto con l'argomento --esegui.
 Esecuzione sulla macchina di sviluppo: tre tornei archiviati spostati sotto il loro anno e mese, con la cartella di Primavera_2 che conteneva una copia di se stessa e che e' stata appiattita; quattro cartelle di torneo rimaste vuote sono state rimosse; 789 copie di sicurezza spostate. Dopo il riordino l'archivio contiene gli stessi 29 file di prima e la radice della cartella backup e' vuota.
 Effetto collaterale gestito: il file di prova usato dalle prove automatiche stava in una di quelle cartelle. La preparazione dei test ora lo cerca dentro l'archivio invece di puntare a un percorso fisso, cosi' un prossimo riordino non la rompera'.
 

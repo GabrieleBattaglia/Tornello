@@ -3,7 +3,7 @@
 
 9.8.1 (2026.09.05)
 	+ Fix: La suite di prove automatiche non lascia piu' copie di sicurezza nella cartella backup vera. Non isolava quella cartella e ne abbandonava sei a ogni esecuzione: dei 817 backup trovati sulla macchina di sviluppo, 814 venivano dai test e solo sette da tornei veri.
-	+ Strumento: scratch/riordina_archivio_e_backup.py sposta i tornei conclusi e le copie di sicurezza gia' esistenti nella struttura per anno e mese introdotta con la 9.7.0. Senza argomenti fa una prova e stampa soltanto cosa farebbe; con --esegui sposta davvero, senza mai sovrascrivere nulla.
+	+ Strumento: riordina_archivio_e_backup.py sposta i tornei conclusi e le copie di sicurezza gia' esistenti nella struttura per anno e mese introdotta con la 9.7.0. Senza argomenti fa una prova e stampa soltanto cosa farebbe; con --esegui sposta davvero, senza mai sovrascrivere nulla.
 
 9.8.0 (2026.09.05)
 	+ Feature: Le cartelle dell'anno e del mese rimaste vuote dentro backup vengono tolte di mezzo da sole, sia all'avvio sia a ogni ricarica della finestra di pulizia. Restavano indietro dopo le cancellazioni e nessuno le rimuoveva.
