@@ -16,7 +16,19 @@ from utils import (
     format_date_locale,
     get_player_by_id,
     sanitize_filename,
+    scrivi_json_atomico,
 )
+
+
+def ultimo_turno_nello_storico(player_obj):
+    """Numero del turno piu' alto in cui il giocatore compare, zero se non ha
+    mai giocato. Serve a capire fino a quando e' rimasto in gioco, per esempio
+    per decidere se un ritiro va annullato durante un riavvolgimento."""
+    turni = [
+        res.get("round", 0) or 0
+        for res in (player_obj or {}).get("results_history", [])
+    ]
+    return max(turni) if turni else 0
 
 
 def _ricalcola_stato_giocatore_da_storico(player_obj):
@@ -137,12 +149,16 @@ def time_machine_torneo(torneo):
         r for r in torneo.get("rounds", []) if r.get("round", 0) < target_round
     ]
     for player in torneo.get("players", []):
+        # L'ultimo turno in cui il giocatore compare va letto prima di tagliare
+        # lo storico: dice se il suo ritiro e' avvenuto prima o dopo il punto a
+        # cui si sta tornando.
+        ultimo_turno_giocato = ultimo_turno_nello_storico(player)
         player["results_history"] = [
             res
             for res in player.get("results_history", [])
             if res.get("round", 0) < target_round
         ]
-        if player.get("withdrawn", False):
+        if player.get("withdrawn", False) and ultimo_turno_giocato >= target_round:
             player["withdrawn"] = False
         # Questa funzione azzererà i punti a 0 e li ricalcolerà dalla storia (ora ridotta)
         _ricalcola_stato_giocatore_da_storico(player)
@@ -238,13 +254,15 @@ def rollback_to_previous_round(torneo):
 
     # 2. Rimuovi le partite dell'ultimo round dallo storico di ciascun giocatore
     for player in torneo.get("players", []):
+        ultimo_turno_giocato = ultimo_turno_nello_storico(player)
         player["results_history"] = [
             res
             for res in player.get("results_history", [])
             if res.get("round", 0) != last_round_num
         ]
-        # Ripristina lo stato di ritirato se avvenuto in questo turno
-        if player.get("withdrawn", False):
+        # Il ritiro si annulla solo se il giocatore era ancora in gioco nel
+        # turno che viene cancellato: chi si era ritirato prima resta ritirato.
+        if player.get("withdrawn", False) and ultimo_turno_giocato >= last_round_num:
             player["withdrawn"] = False
 
         # Ricalcola i punti e lo stato del giocatore dallo storico rimanente
@@ -353,8 +371,9 @@ def save_tournament(torneo, filepath=None):
         # Rimuovi il dizionario cache che non è serializzabile o necessario salvare
         if "players_dict" in torneo_to_save:
             del torneo_to_save["players_dict"]
-        with open(dynamic_tournament_filename, "w", encoding="utf-8") as f:
-            json.dump(torneo_to_save, f, indent=1, ensure_ascii=False)
+        # Scrittura atomica: il file buono viene sostituito solo a
+        # salvataggio completato. Rilievo C1.
+        scrivi_json_atomico(dynamic_tournament_filename, torneo_to_save)
     except OSError as e:
         print(
             _("Errore durante il salvataggio del torneo ({filename}): {error}").format(

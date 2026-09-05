@@ -1,12 +1,53 @@
 import datetime
+import json
 import os
 import re
 import shutil
+import tempfile
 
 from babel.dates import format_date
 from config import DATE_FORMAT_ISO, _, lingua_rilevata
 
 from GBUtils import key
+
+
+def scrivi_json_atomico(percorso, dati, indent=1):
+    """Scrive un file JSON senza correre il rischio di lasciarlo a meta'.
+    Il contenuto va prima in un file temporaneo nella stessa cartella, viene
+    scaricato sul disco e solo allora prende il posto del file buono con una
+    sostituzione, che il sistema operativo esegue in un colpo solo.
+    Scrivendo direttamente sul file definitivo, un arresto del programma o della
+    macchina a meta' operazione lascerebbe il vecchio contenuto gia' troncato e
+    il nuovo incompleto: per il database dei giocatori, che contiene anagrafica,
+    Elo, medaglie e storico, sarebbe una perdita non rimediabile.
+    Le eccezioni vengono lasciate salire, perche' i chiamanti le gestiscono
+    gia'; il file temporaneo non resta mai in giro.
+    """
+    cartella = os.path.dirname(os.path.abspath(percorso)) or "."
+    os.makedirs(cartella, exist_ok=True)
+    temporaneo = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=cartella,
+            prefix=".tornello_",
+            suffix=".tmp",
+            delete=False,
+        ) as f:
+            temporaneo = f.name
+            json.dump(dati, f, indent=indent, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporaneo, percorso)
+        return True
+    except Exception:
+        if temporaneo and os.path.exists(temporaneo):
+            try:
+                os.remove(temporaneo)
+            except OSError:
+                pass
+        raise
 
 
 def nome_cartella_mese(mese):

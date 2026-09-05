@@ -136,3 +136,127 @@ class TestCartellaScrivibile:
         cartella_scrivibile(str(tmp_path))
 
         assert list(tmp_path.iterdir()) == []
+
+
+class TestRitiratiNelRiavvolgimento:
+    """Riavvolgendo un turno, il ritiro va annullato solo per chi era ancora in
+    gioco in quel turno. Prima veniva azzerato per tutti: un giocatore ritirato
+    al secondo turno tornava negli abbinamenti se l'arbitro riavvolgeva al
+    settimo, e se ne accorgeva solo leggendo gli accoppiamenti. Rilievo B3."""
+
+    def _giocatore(self, pid, turni):
+        return {
+            "id": pid,
+            "first_name": pid,
+            "last_name": pid,
+            "points": float(len(turni)),
+            "withdrawn": False,
+            "results_history": [
+                {
+                    "round": turno,
+                    "opponent_id": "ALTRO",
+                    "color": "white",
+                    "result": "1-0",
+                    "score": 1.0,
+                }
+                for turno in turni
+            ],
+        }
+
+    def _torneo(self, tmp_path, monkeypatch):
+        import config
+
+        monkeypatch.setattr(config, "user_data_path", lambda p: str(tmp_path / p))
+
+        # Chi ha lasciato presto: ultima partita al turno 1, poi ritirato.
+        presto = self._giocatore("PRESTO", [1])
+        presto["withdrawn"] = True
+        # Chi si ritira proprio nel turno che verra' annullato.
+        adesso = self._giocatore("ADESSO", [1, 2, 3])
+        adesso["withdrawn"] = True
+        # Chi non si e' mai ritirato.
+        attivo = self._giocatore("ATTIVO", [1, 2, 3])
+
+        torneo = {
+            "name": "Prova rollback",
+            "current_round": 3,
+            "total_rounds": 5,
+            "players": [presto, adesso, attivo],
+            "rounds": [
+                {"round": numero, "matches": [{"id": numero, "round": numero}]}
+                for numero in (1, 2, 3)
+            ],
+        }
+        torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
+        return torneo, presto, adesso, attivo
+
+    def test_chi_si_era_ritirato_prima_resta_ritirato(self, tmp_path, monkeypatch):
+        from tournament import rollback_to_previous_round
+
+        torneo, presto, adesso, attivo = self._torneo(tmp_path, monkeypatch)
+
+        assert rollback_to_previous_round(torneo) is True
+
+        assert presto["withdrawn"] is True, "il ritiro del turno 1 non va annullato"
+        assert adesso["withdrawn"] is False, (
+            "chi giocava nel turno annullato torna in gioco"
+        )
+        assert attivo["withdrawn"] is False
+
+    def test_l_ultimo_turno_nello_storico(self):
+        from tournament import ultimo_turno_nello_storico
+
+        assert ultimo_turno_nello_storico(self._giocatore("X", [1, 2, 7])) == 7
+        assert ultimo_turno_nello_storico(self._giocatore("X", [])) == 0
+        assert ultimo_turno_nello_storico(None) == 0
+
+
+class TestScritturaAtomica:
+    """Il database dei giocatori e i tornei vengono scritti prima in un file
+    temporaneo e poi sostituiti in un colpo solo. Scrivendo direttamente sul
+    file definitivo, un arresto a meta' operazione lasciava il vecchio
+    contenuto troncato e il nuovo incompleto. Rilievo C1."""
+
+    def test_scrive_il_contenuto(self, tmp_path):
+        import json
+
+        from utils import scrivi_json_atomico
+
+        percorso = tmp_path / "dati.json"
+
+        assert scrivi_json_atomico(str(percorso), {"a": 1, "b": [2, 3]}) is True
+        with open(percorso, encoding="utf-8") as f:
+            assert json.load(f) == {"a": 1, "b": [2, 3]}
+
+    def test_non_lascia_file_temporanei(self, tmp_path):
+        from utils import scrivi_json_atomico
+
+        scrivi_json_atomico(str(tmp_path / "dati.json"), {"a": 1})
+
+        assert [f.name for f in tmp_path.iterdir()] == ["dati.json"]
+
+    def test_un_errore_non_distrugge_il_file_esistente(self, tmp_path):
+        import json
+
+        import pytest
+
+        from utils import scrivi_json_atomico
+
+        percorso = tmp_path / "dati.json"
+        percorso.write_text('{"prezioso": true}', encoding="utf-8")
+
+        # Un insieme non e' serializzabile: la scrittura fallisce a meta'.
+        with pytest.raises(TypeError):
+            scrivi_json_atomico(str(percorso), {"rotto": {1, 2, 3}})
+
+        with open(percorso, encoding="utf-8") as f:
+            assert json.load(f) == {"prezioso": True}
+        assert [f.name for f in tmp_path.iterdir()] == ["dati.json"]
+
+    def test_crea_la_cartella_se_manca(self, tmp_path):
+        from utils import scrivi_json_atomico
+
+        percorso = tmp_path / "nuova" / "dati.json"
+
+        assert scrivi_json_atomico(str(percorso), {"a": 1}) is True
+        assert percorso.exists()

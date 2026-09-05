@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.8.3 (2026.09.05)
+	+ Bugfix: Riavvolgendo un torneo con la Time Machine o annullando un turno, il ritiro veniva annullato per tutti i giocatori invece che per i soli ritirati nel turno cancellato. Un giocatore ritirato al secondo turno tornava negli abbinamenti se l'arbitro riavvolgeva al settimo. Ora il ritiro si annulla soltanto per chi era ancora in gioco nel turno a cui si torna. Rilievo B3.
+	+ Bugfix: Il report del turno corrente scriveva per il bye un punto fisso di 1.0, mentre il valore e' configurabile e vale mezzo punto per impostazione predefinita: l'arbitro leggeva un punteggio diverso da quello impostato. Rilievo G2.
+	+ Fix: Il database dei giocatori e i file dei tornei vengono scritti prima su un file temporaneo e messi al loro posto solo a salvataggio completato. Scrivendo direttamente sul file definitivo, un arresto del programma o della macchina a meta' operazione lasciava il vecchio contenuto gia' troncato e il nuovo incompleto, e il database con anagrafica, Elo, medaglie e storico non si sarebbe potuto ricostruire. Rilievo C1.
+
 9.8.2 (2026.09.05)
 	+ Fix: Le regole del .gitignore che escludono i file di lavoro sono ora ancorate alla cartella del progetto. Senza la barra iniziale valevano a qualsiasi profondita' e rendevano invisibili al repository anche i tornei dentro Closed Tournaments: spostandoli, git registrava le cancellazioni e scartava in silenzio i nuovi percorsi. Da ora i tornei archiviati entrano da soli nei commit.
 	+ Fix: Lo strumento di riordino dell'archivio e dei backup e' stato spostato dalla cartella scratch, che il repository esclude, alla radice del progetto insieme agli altri strumenti di servizio, cosi' e' disponibile su tutte le macchine.

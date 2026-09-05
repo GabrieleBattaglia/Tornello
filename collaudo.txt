@@ -7,40 +7,41 @@ Gli esiti del terzo giro, le tue risposte e i lavori che ne sono nati stanno in 
 Prova 1, il nuovo avvio del torneo.
 Cosa fare: creare un torneo con otto giocatori e cinque turni, completando la procedura guidata fino all'iscrizione.
 Cosa osservare: al termine non deve piu' comparire la domanda che chiedeva se generare subito il turno 1. Il torneo resta in preparazione e il fuoco si posa sulla voce che lo avvia. Devono esserci due strade per partire, la voce calcola il turno 1 sotto la cartella turni del torneo, e la voce Avvio torneo seguita dal nome, come ultima voce del centro comandi. Provale tutte e due, in due tornei diversi. La voce in fondo al centro comandi deve sparire appena il torneo e' iniziato.
-Esito:
+Esito: ok
 
 Prova 2, il controllo fra iscritti e turni.
 Cosa fare: creare un torneo con cinque turni e cinque giocatori soltanto, poi provare ad avviarlo.
 Cosa osservare: l'avvio deve essere impedito, con un messaggio che dice quanti giocatori servono e perche'. Il torneo deve restare in preparazione, pronto da avviare dopo aver aggiunto altri iscritti. Prova poi il secondo caso: sedici giocatori e due turni soltanto, dove deve comparire un avviso che consiglia almeno quattro turni ma ti lascia procedere se confermi.
-Esito:
+Esito: ok
 
 Prova 3, ritiro impedito e due strade.
 Cosa fare: creare un torneo con sette giocatori e sei turni, avviarlo, giocare il primo turno e poi ritirare due giocatori, uno dopo l'altro.
 Cosa osservare: il primo ritiro deve andare a buon fine, il secondo deve essere impedito. Con sette giocatori scesi a sei e cinque turni ancora da giocare, un altro ritiro lascerebbe cinque attivi mentre ne servono sei, perche' fra sei giocatori si giocano al massimo cinque turni senza ripetere gli incontri. Il messaggio deve dire questi numeri e proporre di riportare il torneo alla fase di iscrizione. Rispondendo di no deve arrivare la seconda domanda, quella sull'eliminazione del torneo: rispondi di no anche a quella e verifica che non venga fatto nulla e che il torneo resti intatto, con il primo ritirato ancora ritirato.
 Nota: la soglia e' il minimo matematico e non c'e' piu' alcun margine di sicurezza, come hai chiesto. Finche' ritiri un giocatore per turno il blocco non scattera' mai, perche' ogni turno che passa abbassa di uno anche il numero di giocatori necessari.
-Esito:
+Esito: ok
 
 Prova 4, ritorno alla fase di iscrizione.
 Cosa fare: ripetere la prova 3 e questa volta accettare il ritorno alla fase di iscrizione. Il giocatore ritirato al primo passaggio serve proprio a vedere la differenza fra i ritirati e gli altri.
 Cosa osservare: i turni giocati devono sparire, i giocatori che si erano gia' ritirati devono uscire dall'elenco degli iscritti, mentre gli altri devono restare con zero punti e nessuno storico. I dati del torneo devono tornare modificabili e la voce per iscrivere altri giocatori deve essere di nuovo disponibile. Controlla infine che nella cartella backup sia comparsa la copia di sicurezza con la dicitura pre_ritorno_preparazione, che ora si trova dentro le sottocartelle dell'anno e del mese.
-Esito:
+Esito: ok
 
 Prova 5, archivio e backup ordinati per anno e mese.
 Cosa fare: portare a termine un torneo breve e finalizzarlo.
 Cosa osservare: dentro Closed Tournaments devono esserci la cartella dell'anno, dentro quella del mese con il nome scritto come 09 Settembre, e dentro ancora la cartella con il nome del torneo, che contiene il file JSON e tutti i report. Nell'albero il torneo deve comparire fra i tornei conclusi, e i sette tornei archiviati prima d'ora devono continuare a comparire dove sono sempre stati.
-Esito:
+Esito: ok
 
 Prova 5 bis, pulizia dei backup.
 Cosa fare: aprire la finestra di pulizia dei backup dal menu File, guardare l'elenco, poi eliminare un file e riaprirla.
 Cosa osservare: l'elenco deve contenere anche i file finiti nelle sottocartelle dell'anno e del mese, e le statistiche in cima devono contare quelli giusti. Dopo aver eliminato l'ultimo file di un mese, la cartella di quel mese, e quella dell'anno se resta vuota, devono sparire da sole; la cartella backup invece resta sempre.
 Nota: questa parte e' gia' stata provata a fondo fuori dal programma, costruendo davvero la finestra e facendola leggere da una cartella di prova, e la stessa cosa e' stata fatta con il controllo automatico dell'avvio. Sedici prove automatiche coprono ora le due strade. Ti chiedo comunque una passata a mano, perche' l'elenco e i pulsanti li puoi giudicare solo tu.
-Esito:
+Esito: ok
 
 Prova 6, cartella protetta e cartella di lavoro.
 Cosa fare: rimettere una copia di Tornello in Programmi e avviarla. Poi, dalla copia normale, avviare il programma da una cartella diversa dalla sua e creare un torneo indicando una cartella di lavoro tua.
 Cosa osservare: nella copia in Programmi il programma deve avvisare subito che non puo' scrivere nella propria cartella, dire cosa fare e chiudersi, senza piu' errori a ripetizione. Nell'altra prova i tornei e l'archivio devono restare accanto al programma, mentre nella cartella di lavoro che hai scelto devono comparire i report di testo e la raccolta delle partite in formato PGN.
-Esito:
+Esito: ok
 
 Prova 7, verifica generale.
 Se usando Tornello noti comportamenti anomali che non compaiono fra i rilievi, scrivili qui sotto.
 Segnalazioni aggiuntive:
+Nessuno.

@@ -802,7 +802,9 @@ class MainFrame(wx.Frame):
                         white=w_name, black=b_name, result=res_str
                     )
                 else:
-                    report += _("  {} - BYE (1.0 punti)\n").format(w_name)
+                    report += _("  {name} - BYE ({punti} punti)\n").format(
+                        name=w_name, punti=self.current_tournament.get("bye_value", 0.5)
+                    )
         else:
             report += _("Nessun abbinamento generato per questo turno.\n")
             if not rounds:

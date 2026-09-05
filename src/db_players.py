@@ -25,7 +25,12 @@ from fide_db import (
     search_players_by_name,
 )
 from stats import get_k_factor
-from utils import enter_escape, format_date_locale, format_rank_ordinal
+from utils import (
+    enter_escape,
+    format_date_locale,
+    format_rank_ordinal,
+    scrivi_json_atomico,
+)
 
 try:
     from unidecode import unidecode
@@ -794,8 +799,9 @@ def save_players_db(players_db):
         pass  # Procedi a salvare anche se vuoto
     try:
         data_to_save = {"schema_version": 2, "players": list(players_db.values())}
-        with open(PLAYER_DB_FILE, "w", encoding="utf-8") as f:
-            json.dump(data_to_save, f, indent=1, ensure_ascii=False)
+        # Scrittura atomica: il database contiene anagrafica, Elo, medaglie e
+        # storico di tutti i giocatori, e non si potrebbe ricostruire. Rilievo C1.
+        scrivi_json_atomico(PLAYER_DB_FILE, data_to_save)
         save_players_db_txt(players_db)
     except OSError as e:
         print(
