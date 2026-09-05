@@ -1,4 +1,4 @@
-MANUALE GUIDA DI TORNELLO v9.3.13
+MANUALE GUIDA DI TORNELLO v10.0.0
 =================================
 
 Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
@@ -231,6 +231,11 @@ Altre opzioni nel dialogo:
 - Pianifica Partita: Consente di inserire data e ora. La partita verrà spostata nella cartella "Pianificate".
 - Ritira Giocatore: Consente di ritirare uno dei due contendenti dal torneo a partire dal turno successivo. Il giocatore non verrà più abbinato nei turni rimanenti.
 
+6.2.1 RITIRARE UN GIOCATORE DALL'ALBERO
+A torneo iniziato, premendo CANC su un giocatore nell'elenco degli iscritti, l'iscrizione non può più essere tolta, perché i risultati già registrati resterebbero riferiti a un giocatore che non esiste più. Al suo posto il programma propone il ritiro, che è quasi sempre l'operazione cercata. Nell'albero il giocatore ritirato è segnalato dalla parola "ritirato" accanto al nome.
+Se il giocatore ha una partita del turno in corso ancora senza risultato, la proposta non compare: prima va registrato quel risultato, indicando il forfait se non si è presentato, e subito dopo il programma propone il ritiro. Se invece ha già giocato, il risultato resta valido e il ritiro vale dal turno successivo.
+Il ritiro viene impedito quando lascerebbe il torneo senza abbastanza giocatori per completare i turni che mancano: fra N giocatori esistono N-1 avversari possibili, quindi servono almeno tanti giocatori attivi quanti sono i turni rimanenti più uno. In quel caso il messaggio dice quanti ne resterebbero e quanti ne servono, e propone due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori già ritirati escono dall'elenco e tutto torna modificabile, oppure eliminare il torneo. Prima di riportare indietro il torneo viene creata una copia di sicurezza nella cartella backup.
+
 6.3 CHIUSURA DEL TURNO E GENERAZIONE DEL TURNO SUCCESSIVO
 Quando tutte le partite del turno corrente sono nella cartella "Concluse", sull'albero di destra compare la voce "Genera Turno X" (dove X è il turno successivo). Premendo INVIO, Tornello invoca bbpPairings per calcolare i nuovi abbinamenti. I nuovi accoppiamenti vengono immediatamente visualizzati nell'Area Centrale (F5).
 
@@ -381,7 +386,7 @@ Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
 ------------------------------------------------------------------------
 
 10.4 PULIZIA E MANUTENZIONE DEI BACKUP
-Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, Tornello v9.3.0 include un sistema intelligente di gestione e pulizia dei backup.
+Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, Tornello include un sistema di gestione e pulizia dei backup.
 - Controllo automatico all'avvio: Ogni volta che l'applicazione viene avviata, scansiona in background la cartella "backup/". Se rileva file modificati più di 18 mesi fa, mostra una notifica all'utente proponendo di procedere alla pulizia:
   * Scegliendo "Sì", viene aperta immediatamente la finestra di gestione dei backup.
   * Scegliendo "No", la data di ultima modifica di questi file obsoleti viene automaticamente aggiornata ad oggi. In questo modo il programma non riproporrà il controllo per altri 18 mesi.
@@ -413,4 +418,6 @@ Tornello offre una finestra di configurazione globale accessibile tramite la bar
 - Caratteri: Consente di personalizzare la dimensione del testo sia per la finestra principale che per le finestre di dialogo, ottimizzando la leggibilità per ipovedenti o schermi ad alta risoluzione.
 - Colori: Permette di definire le combinazioni cromatiche (RGB) del testo e dello sfondo sia per la finestra principale che per i dialoghi, consentendo di attivare temi ad alto contrasto o combinazioni personalizzate.
 
-
+11.4 CARTELLA DEL PROGRAMMA E PERMESSI DI SCRITTURA
+Tornello è un programma portabile: tiene accanto a sé il database dei giocatori, i tornei in corso, l'archivio dei tornei conclusi e le copie di sicurezza. Per questo, all'avvio, verifica di poter scrivere nella propria cartella. Se non ci riesce, per esempio perché il programma è stato messo in Programmi o in un'altra cartella protetta dal sistema, lo dice con un messaggio che indica quale cartella è bloccata e si chiude, invece di far fallire una operazione alla volta. La soluzione è spostare la cartella di Tornello dove hai i permessi di scrittura, per esempio nei Documenti o sul Desktop.
+I file che appartengono al singolo torneo, cioè i report di testo e la raccolta delle partite in formato PGN, vanno invece nella cartella di lavoro che hai indicato durante la creazione del torneo. Se quella cartella non è utilizzabile, per esempio perché sta su un'unità non collegata, il programma lo dice e ripiega sulla cartella del programma.
