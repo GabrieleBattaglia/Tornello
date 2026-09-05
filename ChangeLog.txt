@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.0.0 (2026.09.05)
+	Prima release della serie 10, che raccoglie il lavoro della fase 1 del refactoring generale. Le voci di dettaglio delle versioni dalla 9.3.14 alla 9.9.2 restano qui sotto.
+	In breve: i criteri di spareggio seguono ora l'articolo 16 del regolamento FIDE in vigore dal 1 marzo 2026; il torneo si avvia da una voce dell'albero e non parte se gli iscritti non reggono i turni previsti; il ritiro di un giocatore non puo' piu' bloccare l'abbinatore a meta' torneo; archivio e copie di sicurezza sono ordinati per anno e mese; i file stanno dove devono anche avviando il programma da un'altra cartella; sono spariti tutti i separatori grafici dai testi che lo screen reader legge; le quattro traduzioni sono complete e riviste.
+
 9.9.2 (2026.09.05)
 	+ Fix: Traduzioni complete e riviste in inglese, spagnolo, francese e portoghese: 1349 stringhe su 1349, nessuna incerta. Tradotte le stringhe nuove di tutte le versioni di oggi e riviste quelle esistenti.
 	+ Bugfix: Tre stringhe avevano perso o fuso i segnaposto in tutte e quattro le lingue, per esempio due valori Elo diventati uno solo: usandole, il programma si sarebbe fermato con un errore di formattazione. Ora ogni traduzione ha esattamente i segnaposto dell'originale, verificato voce per voce.
