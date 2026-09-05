@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.9.1 (2026.09.05)
+	+ Fix: Nella classifica i valori che mancano, per esempio gli spareggi di un giocatore ritirato, sono scritti n.d. invece che con tre o quattro trattini, che lo screen reader legge come una fila di trattini. La larghezza delle righe resta invariata: per la classifica una riga per giocatore vale piu' della lunghezza. Rilievo D4, ultima parte.
+	+ Fix: La funzione enter_escape non e' piu' riscritta dentro Tornello: viene usata quella di GBUtils, alla quale si passa il messaggio di guida nella lingua scelta. La copia locale era l'unica delle due a dire cosa fare quando si preme un tasto sbagliato, e per non perdere quel messaggio la funzione condivisa e' stata migliorata in GBUtils V111, dove ora accetta il testo della guida. Rilievo A3, Issue 36.
+	+ Nota: con questa versione i separatori grafici nel codice attivo sono zero.
+
 9.9.0 (2026.09.05)
 	+ Feature: Nella finestra di pulizia dei backup si possono selezionare piu' file per volta ed eliminarli in un colpo solo. Shift con le frecce verticali estende la selezione, shift con Inizio e con Fine la porta fino al bordo dell'elenco, Ctrl+A prende tutto. La conferma dice quanti file verranno spostati nel cestino, e dopo la cancellazione il fuoco resta nella lista invece di perdersi. Prima si poteva eliminare soltanto la riga con il fuoco, una conferma alla volta.
 

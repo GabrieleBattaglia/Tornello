@@ -610,12 +610,12 @@ def get_column_data(criterion, player, torneo):
         hdr = get_column_header(key, modifiers)
 
         if is_rit:
-            val = " " * max(0, len(hdr) - 4) + "----"
+            val = " " * max(0, len(hdr) - 4) + _("n.d.")
             return hdr, val
 
         raw_val = compute_tiebreak_value(p_id, torneo, key, modifiers)
         if raw_val is None:
-            val = " " * max(0, len(hdr) - 3) + "---"
+            val = " " * max(0, len(hdr) - 4) + _("n.d.")
         else:
             # Criteri che restituiscono interi
             int_criteria = {
@@ -653,31 +653,35 @@ def get_column_data(criterion, player, torneo):
             val = (
                 f"{float(compute_buchholz_cut1(p_id, torneo)):7.2f}"
                 if not is_rit
-                else "   ----"
+                else "   " + _("n.d.")
             )
         elif criterion == "buchholz":
             hdr = _("Bucch")
             val = (
                 f"{float(compute_buchholz(p_id, torneo)):5.1f}"
                 if not is_rit
-                else " ----"
+                else " " + _("n.d.")
             )
         elif criterion == "aro":
             hdr = _(" ARO")
             aro_val = compute_aro(p_id, torneo)
-            val = f"{int(aro_val):4d}" if aro_val is not None and not is_rit else " ---"
+            val = (
+                f"{int(aro_val):4d}"
+                if aro_val is not None and not is_rit
+                else _("n.d.")
+            )
         elif criterion == "sonneborn_berger":
             hdr = _("Sonn-B")
             sb_val = compute_sonneborn_berger(p_id, torneo)
-            val = f"{float(sb_val):6.2f}" if not is_rit else "  ----"
+            val = f"{float(sb_val):6.2f}" if not is_rit else "  " + _("n.d.")
         elif criterion == "direct_encounter":
             hdr = _("ScrDir")
             de_val = compute_direct_encounter(p_id, torneo)
-            val = f"{float(de_val):6.1f}" if not is_rit else "  ----"
+            val = f"{float(de_val):6.1f}" if not is_rit else "  " + _("n.d.")
         elif criterion == "played_rounds_rep":
             hdr = _("REP")
             rep_val = compute_played_rounds_rep(p_id, torneo)
-            val = f"{int(rep_val):3d}" if not is_rit else "  -"
+            val = f"{int(rep_val):3d}" if not is_rit else _("nd.")
         elif criterion == "number_of_wins":
             hdr = _("Vitt")
             wins_val = compute_number_of_wins(p_id, torneo)
@@ -1015,15 +1019,15 @@ def get_standings_text(torneo, final=False):
 
         if show_ratings:
             if player.get("withdrawn", False):
-                perf_str, elo_change_str = "----", " ---"
+                perf_str, elo_change_str = _("n.d."), _("n.d.")
             else:
                 perf_val = player.get("performance_rating")
-                perf_str = f"{int(perf_val):4d}" if perf_val is not None else "----"
+                perf_str = f"{int(perf_val):4d}" if perf_val is not None else _("n.d.")
                 elo_change_val = player.get("elo_change")
                 elo_change_str = (
                     f"{int(elo_change_val):+4d}"
                     if elo_change_val is not None
-                    else " ---"
+                    else _("n.d.")
                 )
             line += f" {perf_str} {elo_change_str}"
 

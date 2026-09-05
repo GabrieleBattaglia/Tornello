@@ -8,7 +8,7 @@ import tempfile
 from babel.dates import format_date
 from config import DATE_FORMAT_ISO, _, lingua_rilevata
 
-from GBUtils import key
+from GBUtils import enter_escape as enter_escape_condivisa
 
 
 def scrivi_json_atomico(percorso, dati, indent=1):
@@ -186,14 +186,13 @@ def rimuovi_cartelle_vuote(radice):
 
 
 def enter_escape(prompt=""):
-    """Ritorna vero su invio, falso su escape"""
-    while True:
-        k = key(prompt).strip()
-        if k == "":
-            return True
-        elif k == "\x1b":
-            return False
-        print(_("Conferma con invio o annulla con escape"))
+    """Attende Invio o Escape, restituendo vero sul primo e falso sul secondo.
+    La logica sta in GBUtils, come tutte le utilita' condivise: qui resta solo
+    il passaggio del messaggio di guida nella lingua scelta, che la funzione
+    condivisa non puo' tradurre da sola."""
+    return enter_escape_condivisa(
+        prompt, guida=_("Conferma con invio o annulla con escape")
+    )
 
 
 def format_rank_ordinal(rank):
