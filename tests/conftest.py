@@ -23,3 +23,19 @@ def sample_tournament_dict():
             with open(os.path.join(radice, atteso), "r", encoding="utf-8") as f:
                 return json.load(f)
     raise FileNotFoundError(f"Torneo di prova non trovato nell'archivio: {atteso}")
+
+
+@pytest.fixture(scope="session")
+def app_grafica():
+    """Applicazione wx condivisa da tutte le prove che costruiscono finestre.
+    Crearne una per prova fa cadere l'interprete: wx ne ammette una sola per
+    processo. Se l'interfaccia grafica non e' disponibile, le prove che la
+    chiedono vengono saltate."""
+    try:
+        import wx
+    except ImportError as errore:  # pragma: no cover
+        pytest.skip(f"wxPython non disponibile: {errore}")
+
+    applicazione = wx.App(False)
+    yield applicazione
+    applicazione.Destroy()

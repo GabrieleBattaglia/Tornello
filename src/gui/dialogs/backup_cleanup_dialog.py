@@ -153,8 +153,11 @@ class BackupCleanupDialog(wx.Dialog):
         vbox.Add(self.lbl_list, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
 
         # 3. Lista dei file di backup
+        # Senza LC_SINGLE_SEL la lista accetta la selezione multipla, quindi
+        # shift con le frecce, shift con Inizio e Fine e Ctrl+A per prendere
+        # piu' file in un colpo solo.
         self.list_ctrl = wx.ListCtrl(
-            panel, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES | wx.LC_VRULES
+            panel, style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES
         )
         self.list_ctrl.SetName(_("Elenco file di backup"))
         set_accessibility_label(self.list_ctrl, _("Elenco file di backup"))
@@ -169,7 +172,9 @@ class BackupCleanupDialog(wx.Dialog):
         # 4. Pulsanti d'azione
         btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.btn_delete_selected = wx.Button(panel, label=_("Elimina questo file"))
+        self.btn_delete_selected = wx.Button(
+            panel, label=_("Elimina i file selezionati")
+        )
         self.btn_delete_old = wx.Button(
             panel, label=_("Elimina consigliati (>18 mesi)")
         )
@@ -263,12 +268,56 @@ class BackupCleanupDialog(wx.Dialog):
                 wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
             )
 
-    def on_delete_selected(self, event):
-        """Elimina il file attualmente selezionato nella lista."""
-        selected_idx = self.list_ctrl.GetNextItem(
+    def indici_selezionati(self):
+        """Indici di tutte le righe selezionate, non solo della prima."""
+        indici = []
+        indice = self.list_ctrl.GetNextItem(
             -1, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED
         )
-        if selected_idx == -1:
+        while indice != -1:
+            indici.append(indice)
+            indice = self.list_ctrl.GetNextItem(
+                indice, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED
+            )
+        return indici
+
+    def seleziona_tutti(self):
+        for indice in range(self.list_ctrl.GetItemCount()):
+            self.list_ctrl.Select(indice, True)
+
+    def estendi_selezione_al_bordo(self, verso_inizio):
+        """Seleziona dalla riga con il fuoco fino alla prima o all'ultima,
+        cioe' quello che fanno shift con Inizio e shift con Fine."""
+        quante = self.list_ctrl.GetItemCount()
+        if not quante:
+            return
+        partenza = self.list_ctrl.GetFocusedItem()
+        if partenza == -1:
+            partenza = 0
+        arrivo = 0 if verso_inizio else quante - 1
+        primo, ultimo = sorted((partenza, arrivo))
+        for indice in range(primo, ultimo + 1):
+            self.list_ctrl.Select(indice, True)
+        self.list_ctrl.Focus(arrivo)
+        self.list_ctrl.EnsureVisible(arrivo)
+
+    def _riporta_il_fuoco(self, indice):
+        """Dopo una cancellazione il fuoco non deve restare nel vuoto: si
+        posa sulla riga che ha preso il posto di quella eliminata."""
+        quante = self.list_ctrl.GetItemCount()
+        if not quante:
+            self.list_ctrl.SetFocus()
+            return
+        destinazione = min(indice, quante - 1)
+        self.list_ctrl.Select(destinazione, True)
+        self.list_ctrl.Focus(destinazione)
+        self.list_ctrl.EnsureVisible(destinazione)
+        self.list_ctrl.SetFocus()
+
+    def on_delete_selected(self, event):
+        """Elimina tutti i file selezionati nella lista."""
+        indici = self.indici_selezionati()
+        if not indici:
             msg = _(
                 "Nessun file selezionato. Seleziona un file dall'elenco per poterlo eliminare."
             )
@@ -277,27 +326,36 @@ class BackupCleanupDialog(wx.Dialog):
             dlg.Destroy()
             return
 
-        file_info = self.files_info[selected_idx]
-        msg = _(
-            "Sei sicuro di voler spostare nel cestino il file di backup '{name}'?"
-        ).format(name=file_info["name"])
+        scelti = [self.files_info[i] for i in indici if i < len(self.files_info)]
+        if len(scelti) == 1:
+            msg = _(
+                "Sei sicuro di voler spostare nel cestino il file di backup '{name}'?"
+            ).format(name=scelti[0]["name"])
+        else:
+            msg = _(
+                "Sei sicuro di voler spostare nel cestino i {count} file di backup selezionati?"
+            ).format(count=len(scelti))
         dlg = AccessibleMsgDialog(
             self, _("Conferma Eliminazione"), msg, style=wx.YES_NO
         )
-        if dlg.ShowModal() == wx.ID_YES:
-            dlg.Destroy()
-            if delete_file_to_trash(file_info["path"]):
-                play_sound("cancellato")
-                self.populate_list()
-            else:
-                err_msg = _("Impossibile eliminare il file '{name}'.").format(
-                    name=file_info["name"]
-                )
-                err_dlg = AccessibleMsgDialog(self, _("Errore"), err_msg)
-                err_dlg.ShowModal()
-                err_dlg.Destroy()
-        else:
-            dlg.Destroy()
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+
+        non_riusciti = [
+            f["name"] for f in scelti if not delete_file_to_trash(f["path"])
+        ]
+        play_sound("cancellato")
+        self.populate_list()
+        self._riporta_il_fuoco(indici[0])
+        if non_riusciti:
+            err_msg = _("Alcuni file non sono stati eliminati:\n{files}").format(
+                files=", ".join(non_riusciti)
+            )
+            err_dlg = AccessibleMsgDialog(self, _("Errore"), err_msg)
+            err_dlg.ShowModal()
+            err_dlg.Destroy()
 
     def on_delete_old(self, event):
         """Elimina tutti i file più vecchi di 18 mesi."""
@@ -371,9 +429,17 @@ class BackupCleanupDialog(wx.Dialog):
         self.EndModal(wx.ID_CANCEL)
 
     def on_list_key_down(self, event):
-        """Intercetta il tasto Canc/Delete per eliminare il file selezionato."""
+        """Canc elimina la selezione; Ctrl+A prende tutto; shift con Inizio o
+        Fine estende la selezione fino al bordo dell'elenco. Le frecce con
+        shift le gestisce gia' la lista."""
         key_code = event.GetKeyCode()
         if key_code in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE):
             self.on_delete_selected(None)
-        else:
-            event.Skip()
+            return
+        if event.ControlDown() and key_code in (ord("A"), ord("a")):
+            self.seleziona_tutti()
+            return
+        if event.ShiftDown() and key_code in (wx.WXK_HOME, wx.WXK_END):
+            self.estendi_selezione_al_bordo(key_code == wx.WXK_HOME)
+            return
+        event.Skip()

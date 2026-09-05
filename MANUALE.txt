@@ -388,7 +388,9 @@ Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, T
 - Finestra di pulizia dei backup: Accessibile tramite il menù File -> Pulisci backup. Presenta un'interfaccia interamente accessibile divisa in tre sezioni:
   1. Statistiche generali (in alto): Un'area di testo navigabile che indica il numero totale e la dimensione (in MB) di tutti i backup e dei soli file obsoleti consigliati per la cancellazione (> 18 mesi).
   2. Elenco dei backup (al centro): Una lista ordinata cronologicamente (dal più vecchio in alto al più recente in basso) con il nome del file, la data di modifica e l'età calcolata con precisione in mesi e giorni.
-  3. Pulsanti d'azione (in basso): Consentono di eliminare il singolo file selezionato (azione attivabile anche premendo il tasto CANC/DELETE sulla tastiera), eliminare solo i file più vecchi di 18 mesi ("Elimina consigliati"), oppure svuotare interamente la cartella.
+  3. Pulsanti d'azione (in basso): Consentono di eliminare i file selezionati (azione attivabile anche premendo il tasto CANC/DELETE sulla tastiera), eliminare solo i file più vecchi di 18 mesi ("Elimina consigliati"), oppure svuotare interamente la cartella.
+  La lista accetta piu' file per volta: shift con le frecce verticali estende la selezione riga per riga, shift con Inizio e shift con Fine la estende fino in cima o fino in fondo, e Ctrl+A prende tutto l'elenco. La conferma dice quanti file stai per eliminare, e dopo la cancellazione il fuoco resta nella lista, sulla riga che ha preso il posto della prima eliminata.
+  Le cartelle dell'anno e del mese che restano senza file vengono tolte di mezzo da sole, sia dopo una cancellazione sia al controllo di avvio; la cartella backup invece resta sempre.
 - Integrazione Cestino: Per evitare perdite accidentali di dati storici dei tornei, l'eliminazione dei file non è diretta, ma tenta di spostarli nel Cestino del sistema operativo dell'utente.
 ------------------------------------------------------------------------
 

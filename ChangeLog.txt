@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.9.0 (2026.09.05)
+	+ Feature: Nella finestra di pulizia dei backup si possono selezionare piu' file per volta ed eliminarli in un colpo solo. Shift con le frecce verticali estende la selezione, shift con Inizio e con Fine la porta fino al bordo dell'elenco, Ctrl+A prende tutto. La conferma dice quanti file verranno spostati nel cestino, e dopo la cancellazione il fuoco resta nella lista invece di perdersi. Prima si poteva eliminare soltanto la riga con il fuoco, una conferma alla volta.
+
 9.8.4 (2026.09.05)
 	+ Fix: Tolti i separatori grafici da tutto il programma, da ottantasei a dieci. Sparite le righe di ottanta uguali e di ottanta trattini dai report che l'arbitro stampa e distribuisce, le righe di cinquanta uguali che punteggiavano ogni schermata dell'area centrale, e i trattini che incorniciavano i titoli. Sono le sequenze che lo screen reader legge come file di simboli e che sul display braille occupano una riga intera senza portare alcuna informazione. Rilievi C5, D3 ed E2.
 	+ Bugfix: Nella classifica finale di un torneo archiviato con le versioni piu' vecchie la colonna della posizione mostrava la parola None. Il codice controllava che il campo del piazzamento finale esistesse, ma nei vecchi file esiste e vale niente: ora conta il valore e non la presenza.

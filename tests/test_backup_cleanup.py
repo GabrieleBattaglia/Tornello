@@ -308,3 +308,164 @@ class TestRilevatoreAutomatico:
         mf.MainFrame._check_backup_on_startup(telaio)
 
         assert registro["messaggio"] is None
+
+
+class TestSelezioneMultipla:
+    """La finestra di pulizia permette di prendere piu' file in un colpo solo:
+    Ctrl+A, shift con le frecce, shift con Inizio e Fine. Prima si poteva
+    eliminare soltanto la riga con il fuoco, e per svuotare un mese di backup
+    servivano decine di conferme. Richiesta di Gabriele del 2026-09-05."""
+
+    def _finestra(self, tmp_path, monkeypatch, app_grafica, quanti=6):
+        import config
+
+        monkeypatch.setattr(config, "user_data_path", lambda p: str(tmp_path / p))
+        mese = tmp_path / "backup" / "2026" / "09 Settembre"
+        mese.mkdir(parents=True)
+        for numero in range(quanti):
+            (mese / f"Tornello - Prova{numero}_pre_prova.json").write_text(
+                "{}", encoding="utf-8"
+            )
+
+        import wx
+
+        from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+
+        telaio = wx.Frame(None)
+        return BackupCleanupDialog(telaio, {}), telaio, app_grafica
+
+    def _svuota_selezione(self, finestra):
+        for indice in finestra.indici_selezionati():
+            finestra.list_ctrl.Select(indice, False)
+
+    class _Tasto:
+        """Un evento da tastiera con il minimo che serve al gestore."""
+
+        def __init__(self, codice, ctrl=False, shift=False):
+            self.codice = codice
+            self.ctrl = ctrl
+            self.shift = shift
+            self.saltato = False
+
+        def GetKeyCode(self):
+            return self.codice
+
+        def ControlDown(self):
+            return self.ctrl
+
+        def ShiftDown(self):
+            return self.shift
+
+        def Skip(self):
+            self.saltato = True
+
+    def test_la_lista_non_e_a_selezione_singola(
+        self, tmp_path, monkeypatch, app_grafica
+    ):
+        import wx
+
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            stile = finestra.list_ctrl.GetWindowStyleFlag()
+            assert not stile & wx.LC_SINGLE_SEL
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+    def test_ctrl_a_prende_tutto(self, tmp_path, monkeypatch, app_grafica):
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            finestra.on_list_key_down(self._Tasto(ord("A"), ctrl=True))
+
+            assert len(finestra.indici_selezionati()) == 6
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+    def test_shift_fine_estende_fino_in_fondo(self, tmp_path, monkeypatch, app_grafica):
+        import wx
+
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            self._svuota_selezione(finestra)
+            finestra.list_ctrl.Focus(2)
+
+            finestra.on_list_key_down(self._Tasto(wx.WXK_END, shift=True))
+
+            assert finestra.indici_selezionati() == [2, 3, 4, 5]
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+    def test_shift_inizio_estende_fino_in_cima(
+        self, tmp_path, monkeypatch, app_grafica
+    ):
+        import wx
+
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            self._svuota_selezione(finestra)
+            finestra.list_ctrl.Focus(3)
+
+            finestra.on_list_key_down(self._Tasto(wx.WXK_HOME, shift=True))
+
+            assert finestra.indici_selezionati() == [0, 1, 2, 3]
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+    def test_gli_altri_tasti_restano_alla_lista(
+        self, tmp_path, monkeypatch, app_grafica
+    ):
+        """Le frecce con shift le gestisce gia' la lista da sola: il gestore
+        non deve mangiarsele."""
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            evento = self._Tasto(ord("Z"))
+
+            finestra.on_list_key_down(evento)
+
+            assert evento.saltato is True
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+    def test_elimina_tutti_i_file_selezionati(self, tmp_path, monkeypatch, app_grafica):
+        import os
+
+        from gui.dialogs import backup_cleanup_dialog as modulo
+
+        registro = {}
+
+        class DialogoFinto:
+            def __init__(self, parent, titolo, messaggio, style=None, settings=None):
+                registro["messaggio"] = messaggio
+
+            def ShowModal(self):
+                import wx
+
+                return wx.ID_YES
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(modulo, "AccessibleMsgDialog", DialogoFinto)
+        finestra, telaio, _app = self._finestra(tmp_path, monkeypatch, app_grafica)
+        try:
+            self._svuota_selezione(finestra)
+            for indice in (0, 1, 2):
+                finestra.list_ctrl.Select(indice, True)
+
+            finestra.on_delete_selected(None)
+
+            assert "3" in registro["messaggio"]
+            assert finestra.list_ctrl.GetItemCount() == 3
+            rimasti = sum(
+                len(files) for _r, _d, files in os.walk(str(tmp_path / "backup"))
+            )
+            assert rimasti == 3
+            # Il fuoco non deve restare nel vuoto dopo la cancellazione.
+            assert finestra.list_ctrl.GetFocusedItem() == 0
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
