@@ -1,6 +1,13 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.9.2 (2026.09.05)
+	+ Fix: Traduzioni complete e riviste in inglese, spagnolo, francese e portoghese: 1349 stringhe su 1349, nessuna incerta. Tradotte le stringhe nuove di tutte le versioni di oggi e riviste quelle esistenti.
+	+ Bugfix: Tre stringhe avevano perso o fuso i segnaposto in tutte e quattro le lingue, per esempio due valori Elo diventati uno solo: usandole, il programma si sarebbe fermato con un errore di formattazione. Ora ogni traduzione ha esattamente i segnaposto dell'originale, verificato voce per voce.
+	+ Bugfix: Il nome del programma non viene piu' tradotto. Era diventato Turnstile in inglese, Torniquete in spagnolo, Tourniquet in francese e Catraca in portoghese, cioe' il tornello girevole, e in francese finiva perfino nei nomi dei file dei report, che il programma cerca con il prefisso Tornello e non avrebbe piu' ritrovato.
+	+ Fix: Rimesso in riga il lessico scacchistico. Il turno era stato tradotto come turno di lavoro, shift in inglese, decalage, equipe e quart de travail in francese; la scacchiera come tavolo o tabella; gli abbinamenti come generiche coppie; i giocatori ritirati come pensionati. Corretti anche gli articoli francesi rimasti senza elisione.
+	+ Fix: Riscritte le quindici voci marcate come incerte, che il programma ignorava lasciando quelle righe in italiano: fra queste il fattore K era diventato l'Elo, le partite locali erano diventate partite blitz e i titoli femminile e arbitrale erano diventati il titolo FIDE.
+
 9.9.1 (2026.09.05)
 	+ Fix: Nella classifica i valori che mancano, per esempio gli spareggi di un giocatore ritirato, sono scritti n.d. invece che con tre o quattro trattini, che lo screen reader legge come una fila di trattini. La larghezza delle righe resta invariata: per la classifica una riga per giocatore vale piu' della lunghezza. Rilievo D4, ultima parte.
 	+ Fix: La funzione enter_escape non e' piu' riscritta dentro Tornello: viene usata quella di GBUtils, alla quale si passa il messaggio di guida nella lingua scelta. La copia locale era l'unica delle due a dire cosa fare quando si preme un tasto sbagliato, e per non perdere quel messaggio la funzione condivisa e' stata migliorata in GBUtils V111, dove ora accetta il testo della guida. Rilievo A3, Issue 36.
