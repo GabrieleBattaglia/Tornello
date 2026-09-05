@@ -55,7 +55,7 @@ def find_players_partial(search_term, players_db_dict):
 
 
 def display_player_details(player_data):
-    print(_("\n--- Scheda Giocatore Dettagliata ---"))
+    print(_("Scheda Giocatore Dettagliata"))
     if not player_data:
         print(_("Dati giocatore non validi o non trovati."))
         return
@@ -120,11 +120,10 @@ def display_player_details(player_data):
             print(
                 f"     Date: {start_d} - {end_d} (ID Torneo: {t_rec_item.get('tournament_id', 'N/A')})"
             )
-    print("-" * 40)
 
 
 def add_new_player(players_db_main_dict):
-    print(_("\n--- Aggiunta Nuovo Giocatore ---"))
+    print(_("Aggiunta Nuovo Giocatore"))
     first_name = get_input_with_default(_("Nome: ")).title()
     if not first_name:
         print(_("Nome richiesto."))
@@ -235,14 +234,14 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
     original_id = player_data_ref["id"]
 
     print(
-        _("\n--- Modifica Giocatore ID: {id} ({first} {last}) ---").format(
+        _("Modifica Giocatore ID: {id} ({first} {last})").format(
             id=original_id,
             first=player_data_ref.get("first_name"),
             last=player_data_ref.get("last_name"),
         )
     )
     display_player_details(player_data_ref)
-    print(_("--- Inserisci nuovi valori o premi Invio per mantenere i correnti ---"))
+    print(_("Inserisci nuovi valori o premi Invio per mantenere i correnti"))
 
     original_first_name = player_data_ref.get("first_name", "")
     new_first_name = get_input_with_default(_("Nome"), original_first_name).title()
@@ -406,7 +405,7 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
             break
         print(_("Risposta non valida. Inserisci 's' o 'n'."))
 
-    print(_("\n--- Modifica Medagliere ---"))
+    print(_("Modifica Medagliere"))
     medals_data_ref = player_data_ref.setdefault(
         "medals", {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}
     )
@@ -419,7 +418,7 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
             default=medals_data_ref.get(m_key, 0),
         )
 
-    print(_("\n--- Modifica Storico Tornei ---"))
+    print(_("Modifica Storico Tornei"))
     tournaments_data_ref = player_data_ref.setdefault("tournaments_played", [])
 
     while True:
@@ -462,7 +461,7 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
         if op_tourn == "f":
             break
         elif op_tourn == "a":
-            print(_("\n  --- Aggiunta nuovo torneo allo storico ---"))
+            print(_("Aggiunta nuovo torneo allo storico"))
             new_t_entry = {}
             new_t_entry["tournament_name"] = get_input_with_default(
                 _("  Nome torneo: ")
@@ -519,13 +518,12 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
 
 def main_interactive_db_tool_loop(players_db_main_dict):
     print(
-        _("\n--- Gestore Database Giocatori Tornello ---\n\tVersione: {vers}\n").format(
+        _("Gestore Database Giocatori Tornello\n\tVersione: {vers}\n").format(
             vers=VERSION
         )
     )
     last_managed_player_id = None
     while True:
-        print("\n" + "=" * 40)
         print(_("Giocatori nel database: {num}").format(num=len(players_db_main_dict)))
         prompt_msg_main = _(
             "Cerca giocatore (ID, nome/cognome), (L)ista tutti, (A)ggiungi nuovo, (S)alva e esci: "
@@ -548,7 +546,7 @@ def main_interactive_db_tool_loop(players_db_main_dict):
             if not players_db_main_dict:
                 print(_("Database vuoto."))
             else:
-                print(_("\n--- Lista Giocatori Completa ---"))
+                print(_("Lista Giocatori Completa"))
                 sorted_for_display = sorted(
                     list(players_db_main_dict.values()),
                     key=lambda p_sort: (

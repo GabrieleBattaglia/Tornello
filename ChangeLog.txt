@@ -1,6 +1,11 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+9.8.4 (2026.09.05)
+	+ Fix: Tolti i separatori grafici da tutto il programma, da ottantasei a dieci. Sparite le righe di ottanta uguali e di ottanta trattini dai report che l'arbitro stampa e distribuisce, le righe di cinquanta uguali che punteggiavano ogni schermata dell'area centrale, e i trattini che incorniciavano i titoli. Sono le sequenze che lo screen reader legge come file di simboli e che sul display braille occupano una riga intera senza portare alcuna informazione. Rilievi C5, D3 ed E2.
+	+ Bugfix: Nella classifica finale di un torneo archiviato con le versioni piu' vecchie la colonna della posizione mostrava la parola None. Il codice controllava che il campo del piazzamento finale esistesse, ma nei vecchi file esiste e vale niente: ora conta il valore e non la presenza.
+	+ Nota: restano da rivedere le dieci diciture dei valori mancanti nella tabella della classifica, che fanno parte del rilievo D4 insieme alla larghezza delle righe, e verranno affrontate insieme alla riprogettazione della tabella.
+
 9.8.3 (2026.09.05)
 	+ Bugfix: Riavvolgendo un torneo con la Time Machine o annullando un turno, il ritiro veniva annullato per tutti i giocatori invece che per i soli ritirati nel turno cancellato. Un giocatore ritirato al secondo turno tornava negli abbinamenti se l'arbitro riavvolgeva al settimo. Ora il ritiro si annulla soltanto per chi era ancora in gioco nel turno a cui si torna. Rilievo B3.
 	+ Bugfix: Il report del turno corrente scriveva per il bye un punto fisso di 1.0, mentre il valore e' configurabile e vale mezzo punto per impostazione predefinita: l'arbitro leggeva un punteggio diverso da quello impostato. Rilievo G2.

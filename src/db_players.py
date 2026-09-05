@@ -50,7 +50,7 @@ def _scrivi_log_errore(messaggio):
         percorso = user_data_path("error.log")
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(percorso, "a", encoding="utf-8") as f:
-            f.write(f"\n=== {messaggio} - {timestamp} ===\n")
+            f.write(f"\n{messaggio}, {timestamp}\n")
             f.write(traceback.format_exc())
     except OSError:
         pass
@@ -94,11 +94,7 @@ def sincronizza_db_personale():
         )
         print(_("Esegui prima la funzione di aggiornamento del DB FIDE."))
         return
-    print(
-        _(
-            "\n--- Avvio Sincronizzazione Database Personale con Database FIDE Locale ---"
-        )
-    )
+    print(_("Avvio Sincronizzazione Database Personale con Database FIDE Locale"))
     player_count = get_player_count()
     print(_("Database FIDE locale disponibile con {} giocatori.").format(player_count))
     players_db = load_players_db()
@@ -220,7 +216,7 @@ def sincronizza_db_personale():
         )
         return
 
-    print(_("\n--- Sommario Aggiornamenti Disponibili ---"))
+    print(_("Sommario Aggiornamenti Disponibili"))
     if stats["id_associations"] > 0:
         print(
             _(" - {num} nuovi ID FIDE da associare").format(
@@ -251,7 +247,6 @@ def sincronizza_db_personale():
                 " - {num} giocatori con omonimi multipli (richiedono risoluzione manuale)"
             ).format(num=ambiguous_count)
         )
-    print("-" * 42)
 
     # Scelta Modalità (ESCAPE = Tutto, INVIO = Passo-passo)
     print(_("Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."))
@@ -365,7 +360,7 @@ def sincronizza_db_personale():
         else:
             # Modalità "Passo-passo"
             print(
-                _("\n--- Modifiche per: {} {} (ID: {}) ---").format(
+                _("Modifiche per: {} {} (ID: {})").format(
                     player.get("first_name"), player.get("last_name"), player.get("id")
                 )
             )
@@ -833,7 +828,6 @@ def save_players_db_txt(players_db):
                     date=format_date_locale(now.date()), time=now.strftime("%H:%M:%S")
                 )
             )
-            f.write("=" * 40 + "\n\n")
             sorted_players = sorted(
                 players_db.values(),
                 key=lambda p: (p.get("last_name", ""), p.get("first_name", "")),
@@ -962,7 +956,6 @@ def save_players_db_txt(players_db):
                         f.write(f"\t{history_line}\n")
                 else:
                     f.write(_("\tNessuno\n"))
-                f.write("\t" + "-" * 30 + "\n")
     except OSError as e:
         print(
             _(

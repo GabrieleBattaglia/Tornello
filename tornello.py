@@ -14,7 +14,7 @@ def install_excepthook():
 
         err_msg = "".join(traceback.format_exception(exctype, value, traceback_obj))
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_line = f"=== UNHANDLED EXCEPTION {timestamp} ===\n{err_msg}\n"
+        log_line = f"Errore imprevisto del {timestamp}\n{err_msg}\n"
 
         # Il log va accanto all'applicazione: con un percorso relativo finiva
         # nella directory da cui il programma era stato avviato, mentre il

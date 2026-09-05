@@ -29,10 +29,8 @@ def stampa_dettagli_giocatore(player):
     Stampa i dati di un singolo giocatore in modo formattato e leggibile.
     Questa funzione centralizza la stampa dei dettagli.
     """
-    print("-" * 30)
     for key, value in player.items():
         print(f"  {key.replace('_', ' ').capitalize():<15}: {value}")
-    print("-" * 30)
 
 
 def gestisci_risultati_con_pager(results):
@@ -47,11 +45,7 @@ def gestisci_risultati_con_pager(results):
         # Calcola l'indice di fine per la pagina corrente (massimo 10 risultati)
         end_index = min(start_index + 10, num_results)
 
-        print(
-            "\n--- Pagina "
-            + str(start_index // 10 + 1)
-            + f" di {(num_results + 9) // 10} ---"
-        )
+        print(f"Pagina {start_index // 10 + 1} di {(num_results + 9) // 10}")
 
         # Stampa il riepilogo per i giocatori nella pagina corrente
         for i in range(start_index, end_index):
@@ -87,7 +81,7 @@ def gestisci_risultati_con_pager(results):
             choice_index = int(user_choice)
             if 1 <= choice_index <= num_results:
                 # L'utente ha scelto un giocatore valido, mostriamo i dettagli
-                print(f"\n--- Dettagli per il giocatore #{choice_index} ---")
+                print(f"Dettagli per il giocatore #{choice_index}")
                 stampa_dettagli_giocatore(
                     results[choice_index - 1]
                 )  # -1 perché la lista parte da 0
@@ -103,7 +97,7 @@ def main():
     Funzione principale che orchestra il funzionamento dello script.
     """
     print("Welcome - FIDE Player Checker v1.0.1 (Data: 10 Maggio 2026) by Gabriele")
-    print("--- FIDE Player Checker ---")
+    print("FIDE Player Checker")
     print("Verifica stato database FIDE locale...")
 
     db_needs_update = False
@@ -136,7 +130,7 @@ def main():
                 print("Impossibile procedere senza un database. Uscita.")
                 sys.exit(0)
 
-    print("\n--- Ricerca Giocatori ---")
+    print("Ricerca Giocatori")
     while True:
         search_term = input(
             "Inserisci parte del nome/cognome o ID FIDE (o lascia vuoto per uscire): "

@@ -433,15 +433,10 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                     start_date=format_date_locale(torneo.get("start_date")),
                 )
             )
-            f.write("=" * 80 + "\n")
             f.write(
-                "\n"
-                + "=" * 30
-                + _(" DETTAGLIO TURNO {round_num} CONCLUSO ").format(
+                _("Dettaglio del turno {round_num} concluso\n").format(
                     round_num=completed_round_number
                 )
-                + "=" * 26
-                + "\n"
             )
             round_dates_list = torneo.get("round_dates", [])
             current_round_dates = next(
@@ -463,12 +458,10 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                 )
             else:
                 f.write(_("\tPeriodo del Turno: Date non trovate\n"))
-            f.write("\t" + "-" * 76 + "\n")
             header_partite = _(
                 "Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato"
             )
             f.write(f"\t{header_partite}\n")
-            f.write("\t" + "-" * len(header_partite) + "\n")
             for board_num_idx, match in enumerate(playable_matches):
                 board_num = board_num_idx + 1
                 match_id = match.get("id", "?")
@@ -511,7 +504,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                     w_elo = white_p.get("initial_elo", "?")
                     w_pts = format_points(white_p.get("points", 0.0))
                     line = (
-                        f"{'---':<3}| "
+                        f"{_('bye'):<3}| "
                         f"{match_id:<4}| "
                         f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE"
                     )
@@ -519,7 +512,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                 else:
                     line = _(
                         "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
-                    ).format(dashes="---", match_id=match_id, player_id=white_p_id)
+                    ).format(dashes=_("bye"), match_id=match_id, player_id=white_p_id)
                     f.write(f"\t{line}\n")
 
             f.write(f"\n\nTornello ({VERSIONE})\n")
@@ -838,7 +831,7 @@ def get_standings_text(torneo, final=False):
             players_sorted = sorted(players, key=sort_key_standings)
             if not final or (
                 players_sorted
-                and "final_rank" not in players_sorted[0]
+                and players_sorted[0].get("final_rank") is None
                 and not players_sorted[0].get("withdrawn")
             ):
                 current_display_rank = 0
@@ -854,7 +847,7 @@ def get_standings_text(torneo, final=False):
                     last_sort_key_tuple = current_sort_key_tuple
             elif final:
                 for i, p_item in enumerate(players_sorted):
-                    if "final_rank" in p_item:
+                    if p_item.get("final_rank") is not None:
                         p_item["display_rank"] = p_item["final_rank"]
                     elif p_item.get("withdrawn", False):
                         p_item["display_rank"] = "RIT"
@@ -955,9 +948,7 @@ def get_standings_text(torneo, final=False):
         )
     )
 
-    out.write("-" * 80 + "\n")
     out.write(f"{status_line}\n")
-    out.write("-" * 80 + "\n")
 
     # --- HEADER TABELLA DINAMICO ---
     header_table = _("Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti")
@@ -986,7 +977,6 @@ def get_standings_text(torneo, final=False):
         header_table += " " + _("Perf") + " " + _("Elo Var.")
 
     out.write(header_table + "\n")
-    out.write("-" * len(header_table) + "\n")
 
     for player in players_sorted:
         rank_to_show = player.get("display_rank", "?")
@@ -1089,7 +1079,7 @@ def save_standings_text(torneo, final=False):
 
 def display_status(torneo):
     """Mostra lo stato attuale del torneo."""
-    print(_("\n--- Stato Torneo ---"))
+    print(_("Stato del torneo"))
     print(_("Nome: {name}").format(name=torneo.get("name", "N/D")))
     start_d_str = torneo.get("start_date")
     end_d_str = torneo.get("end_date")
@@ -1208,7 +1198,6 @@ def display_status(torneo):
                 round_num=current_r
             )
         )
-    print("--------------------\n")
 
 
 def save_suspended_tournament_summary(torneo_obj, filename_base):
@@ -1217,7 +1206,7 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
         report_filename = f"{filename_base}_sospeso.txt"
         with open(report_filename, "w", encoding="utf-8") as f:
             f.write(
-                _("--- RIEPILOGO TORNEO IN PREPARAZIONE: {} ---\n\n").format(
+                _("Riepilogo del torneo in preparazione: {}\n").format(
                     torneo_obj.get("name", _("Senza Nome"))
                 )
             )
@@ -1240,7 +1229,7 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
             )
 
             players = torneo_obj.get("players", [])
-            f.write(_("--- GIOCATORI INSERITI ({}) ---\n").format(len(players)))
+            f.write(_("Giocatori inseriti: {}\n").format(len(players)))
             if not players:
                 f.write(_("Nessun giocatore inserito finora.\n"))
             else:

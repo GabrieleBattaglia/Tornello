@@ -25,7 +25,7 @@ from utils import enter_escape
 
 
 def main():
-    print(_("\n--- Sincronizzatore Database Tornello ---"))
+    print(_("Sincronizzatore Database Tornello"))
     print(_("Questo tool confronta il tuo database giocatori personale"))
     print(_("con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"))
 

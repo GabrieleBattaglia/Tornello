@@ -54,7 +54,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
         print(_("Errore: Dati torneo o giocatori mancanti per la conferma."))
         return False
 
-    print(_("\n--- Riepilogo Giocatori Iscritti al Torneo ---"))
+    print(_("Riepilogo Giocatori Iscritti al Torneo"))
 
     while True:
         if not torneo["players"]:
@@ -178,7 +178,7 @@ def input_schedule_details(existing_details=None):
     is_modifying = existing_details is not None
     now = datetime.now()
 
-    print(_("\n--- Dettagli Pianificazione Partita ---"))
+    print(_("Dettagli Pianificazione Partita"))
     if is_modifying:
         print(_("Lasciare il campo vuoto per mantenere il valore attuale."))
     while True:
@@ -337,7 +337,7 @@ def input_players(
     players_in_tournament = existing_players.copy() if existing_players else []
     added_player_ids_to_tournament = {p["id"] for p in players_in_tournament}
 
-    print(_("\n--- Inserimento Giocatori per il Torneo ---"))
+    print(_("Inserimento Giocatori per il Torneo"))
     print(_("Inserire ID locale, ID FIDE, o parte del Nome/Cognome."))
     print(
         _(
@@ -537,7 +537,7 @@ def input_players(
                         not choice_str and has_more_pages
                     ):  # L'utente preme Invio per la pagina successiva
                         start_index += page_size
-                        print(_("--- Mostro i risultati successivi ---"))
+                        print(_("Mostro i risultati successivi"))
                         continue
                     elif not choice_str and not has_more_pages:
                         print(
@@ -991,11 +991,11 @@ def update_match_result(torneo):
         )
         prompt_lines = [
             _("Inserisci:"),
-            _("\t[r] --- per ritirare un giocatore dal torneo;"),
-            _("\t[t] --- Time Machine, per tornare all'inizio di un turno;"),
-            _("\t[cancella] --- per eliminare un risultato inserito;"),
-            _("\t[SC] --- il numero della scacchiera;"),
-            _("\t[nom*|cog*] --- parte del nome o cognome di uno dei giocatori."),
+            _("\t[r] per ritirare un giocatore dal torneo;"),
+            _("\t[t] Time Machine, per tornare all'inizio di un turno;"),
+            _("\t[cancella] per eliminare un risultato inserito;"),
+            _("\t[SC] il numero della scacchiera;"),
+            _("\t[nom*|cog*] parte del nome o cognome di uno dei giocatori."),
         ]
         prompt_finale = "\n".join(prompt_lines) + _(
             "\nR|T|SC|nome|cognome [{boards}]: "
@@ -1011,7 +1011,7 @@ def update_match_result(torneo):
                 print(_("Stato del torneo ripristinato e salvato."))
             continue
         elif user_input_str.lower() == "r":
-            print(_("\n--- Ritiro Giocatore dal Torneo ---"))
+            print(_("Ritiro Giocatore dal Torneo"))
             active_players_list = [
                 p for p in torneo["players"] if not p.get("withdrawn", False)
             ]
@@ -1486,11 +1486,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             )
         )
         return False
-    print(
-        _("\n--- Finalizzazione Torneo: {name} ---").format(
-            name=tournament_name_original
-        )
-    )
+    print(_("Finalizzazione Torneo: {name}").format(name=tournament_name_original))
 
     # --- Creazione backup pre-finalizzazione ---
     print(_("Creazione backup di sicurezza prima dell'archiviazione..."))

@@ -81,7 +81,7 @@ def time_machine_torneo(torneo):
     Restituisce True se il riavvolgimento è stato effettuato, False altrimenti.
     """
     current_round = torneo.get("current_round", 1)
-    print(_("\n--- Time Machine ---"))
+    print(_("Time Machine"))
     print(_("Questa funzione ripristina lo stato del torneo a un turno precedente."))
     prompt_template_1 = _("Puoi tornare a un qualsiasi turno da 1 a {max_round}.")
     print(prompt_template_1.format(max_round=current_round))
@@ -508,7 +508,7 @@ def generate_pairings_for_round(torneo):
     if round_number is None:
         raise ValueError(_("Numero turno corrente non definito nel torneo."))
     print(
-        _("\n--- Generazione Abbinamenti Turno {round_num} con bbpPairings ---").format(
+        _("Generazione Abbinamenti Turno {round_num} con bbpPairings").format(
             round_num=round_number
         )
     )
@@ -601,7 +601,7 @@ def generate_pairings_for_round(torneo):
                 )
             )
             return _abbinamento_fallito(torneo, bbp_message)
-    print(_("--- Abbinamenti Turno {} generati. ---").format(round_number))
+    print(_("Abbinamenti Turno {} generati.").format(round_number))
     return all_generated_matches
 
 

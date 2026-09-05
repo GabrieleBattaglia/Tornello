@@ -295,7 +295,7 @@ class TournamentController:
                 deve_creare_nuovo_torneo = True
                 nome_nuovo_torneo_suggerito = choice_str
         else:
-            self.ui.show_message(_("\n--- Tornei Esistenti Trovati ---"))
+            self.ui.show_message(_("Tornei Esistenti Trovati"))
             tournament_options = []
             for idx, filepath in enumerate(potential_tournament_files):
                 try:
@@ -448,7 +448,7 @@ class TournamentController:
             delattr(self.tournament, "creation_suspended")
 
     def _create_new_tournament(self, suggested_name: str | None = None) -> None:
-        self.ui.show_message(_("\n--- Creazione Nuovo Torneo ---"))
+        self.ui.show_message(_("Creazione Nuovo Torneo"))
         new_name = ""
 
         if suggested_name:
@@ -655,12 +655,10 @@ class TournamentController:
         valore_bye_suggerito = 0.5
         valore_alternativo = 1.0
 
-        self.ui.show_message("-" * 30)
         self.ui.show_message(_("Calcolo Valore del BYE secondo la regola FIDE"))
         self.ui.show_message(
             _("Il valore suggerito è: {val}").format(val=valore_bye_suggerito)
         )
-        self.ui.show_message("-" * 30)
         if self.ui.confirm(
             _("Accetti il valore suggerito? (No = usa {alt_val})").format(
                 alt_val=valore_alternativo
@@ -781,7 +779,7 @@ class TournamentController:
 
     def _main_loop(self) -> None:
         self.ui.show_message(
-            _("\n--- Torneo Attivo: {name} ---").format(name=self.tournament.name)
+            _("Torneo Attivo: {name}").format(name=self.tournament.name)
         )
         self.ui.show_message(
             _("Copyright 2026, dedicato all'ASCId e al gruppo Scacchierando.")
@@ -801,9 +799,7 @@ class TournamentController:
                     break
 
                 self.ui.show_message(
-                    _("\n--- Gestione Turno {round_num} ---").format(
-                        round_num=curr_round
-                    )
+                    _("Gestione Turno {round_num}").format(round_num=curr_round)
                 )
                 self.ui.display_tournament_status(self.tournament)
 
@@ -862,17 +858,13 @@ class TournamentController:
                         )
                         if self._finalize_tournament():
                             self.ui.show_message(
-                                _(
-                                    "\n--- Torneo Concluso e Finalizzato Correttamente ---"
-                                )
+                                _("Torneo Concluso e Finalizzato Correttamente")
                             )
                             self.tournament = None
                             self.active_filename = None
                         else:
                             self.ui.show_error(
-                                _(
-                                    "\n--- ERRORE durante la Finalizzazione del Torneo ---"
-                                )
+                                _("ERRORE durante la Finalizzazione del Torneo")
                             )
                             self._save_state()
                         break

@@ -775,7 +775,6 @@ class MainFrame(wx.Frame):
         report = _("Torneo: {name}\nTurno Corrente: {curr} di {total}\n").format(
             name=t_name, curr=curr_round, total=tot_rounds
         )
-        report += "-" * 40 + "\n"
 
         # Mostra abbinamenti se presenti
         rounds = self.current_tournament.get("rounds", [])
@@ -1752,7 +1751,6 @@ class MainFrame(wx.Frame):
 
         info = []
         info.append(_("INFORMAZIONI DETTAGLIATE DEL TORNEO"))
-        info.append("=" * 50)
         info.append(_("Nome Torneo: {name}").format(name=t.get("name", "N/D")))
         info.append(_("Luogo: {site}").format(site=t.get("site", "N/D")))
         info.append(
@@ -1842,7 +1840,6 @@ class MainFrame(wx.Frame):
 
         lines = []
         lines.append(_("REGOLE DI SPAREGGIO CONFIGURATE"))
-        lines.append("=" * 50)
         lines.append(_("Ordine di priorità dei criteri di spareggio attivi:\n"))
 
         for idx, entry in enumerate(tiebreak_entries, 1):
@@ -1869,7 +1866,6 @@ class MainFrame(wx.Frame):
                 nome = criteri_nomi.get(entry, entry)
             lines.append(f"  {idx}. {nome}")
 
-        lines.append("\n" + "=" * 50)
         lines.append(
             _(
                 "Fai doppio clic o premi Invio su questa voce per modificare le regole di spareggio."
@@ -1902,7 +1898,6 @@ class MainFrame(wx.Frame):
         info.append(
             _("GIOCATORI ISCRITTI ({count})").format(count=len(t.get("players", [])))
         )
-        info.append("=" * 50)
 
         for idx, p in enumerate(t.get("players", [])):
             withdrawn_str = f" [{_('RITIRATO')}]" if p.get("withdrawn") else ""
@@ -1926,7 +1921,6 @@ class MainFrame(wx.Frame):
 
         info = []
         info.append(_("SCHEDA DETTAGLIATA GIOCATORE"))
-        info.append("=" * 50)
         info.append(_("Cognome: {last_name}").format(last_name=p.get("last_name", "")))
         info.append(_("Nome: {first_name}").format(first_name=p.get("first_name", "")))
         info.append(
@@ -1954,7 +1948,6 @@ class MainFrame(wx.Frame):
         history = p.get("results_history", [])
         if history:
             info.append("\n" + _("Storico Turni e Risultati:"))
-            info.append("-" * 30)
             for h in history:
                 r_num = h.get("round")
                 opp_id = h.get("opponent_id")
@@ -1993,7 +1986,6 @@ class MainFrame(wx.Frame):
 
         info = []
         info.append(_("REPORT TURNI DEL TORNEO"))
-        info.append("=" * 50)
 
         rounds = t.get("rounds", [])
         if not rounds:
@@ -2039,7 +2031,6 @@ class MainFrame(wx.Frame):
             info.append(_("RACCOLTA PARTITE PGN - TURNO {num}").format(num=round_num))
         else:
             info.append(_("RACCOLTA PARTITE PGN"))
-        info.append("=" * 50)
 
         has_pgn = False
         for r in self.current_tournament.get("rounds", []):
@@ -2110,7 +2101,6 @@ class MainFrame(wx.Frame):
 
         info = []
         info.append(_("DETTAGLIO PARTITA - TURNO {num}").format(num=round_num))
-        info.append("=" * 50)
         info.append(_("Scacchiera Numero: {board}").format(board=board_num))
 
         players_dict = self.current_tournament.get("players_dict", {})
@@ -3097,7 +3087,6 @@ class MainFrame(wx.Frame):
                 start=data.get("start_date", _("N/D")),
                 end=data.get("end_date", _("N/D")),
             )
-            report += "-" * 50 + "\n\n"
 
             # Aggiungi classifica finale se presente nel json
             report += _("Classifica Finale:\n")
@@ -3513,8 +3502,7 @@ class MainFrame(wx.Frame):
 
         if not guide_text:
             guide_text = _(
-                "MANUALE GUIDA DI TORNELLO v9.3.0\n"
-                "================================\n\n"
+                "Manuale guida di Tornello\n"
                 "File MANUALE.txt non trovato. Consultare la guida online o ripristinare il file."
             )
         self.append_log(guide_text)
@@ -3535,8 +3523,7 @@ class MainFrame(wx.Frame):
 
         if not changelog_str:
             changelog_str = _(
-                "CHANGELOG DI TORNELLO\n"
-                "=====================\n\n"
+                "Changelog di Tornello\n"
                 "File ChangeLog.txt non trovato. Consultare la guida online o ripristinare il file."
             )
         self.append_log(changelog_str)
@@ -4609,7 +4596,6 @@ class MainFrame(wx.Frame):
         )
         if player.get("withdrawn"):
             report += _("Stato: RITIRATO DAL TORNEO\n")
-        report += "-" * 50 + "\n\n"
 
         report += _("Storico Partite nel Torneo:\n")
         history = player.get("results_history", [])

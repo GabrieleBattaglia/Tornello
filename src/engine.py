@@ -37,9 +37,9 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
         )
 
     print(
-        _(
-            "\n--- FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num}) ---"
-        ).format(round_num=round_number)
+        _("FALLIMENTO GENERAZIONE ABBINAMENTI AUTOMATICI (Turno {round_num})").format(
+            round_num=round_number
+        )
     )
     print(error_message)
     print(_("Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."))
