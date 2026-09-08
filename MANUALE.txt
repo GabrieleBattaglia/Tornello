@@ -412,6 +412,7 @@ Tornello offre una finestra di configurazione globale accessibile tramite la bar
 11.2 CONFIGURAZIONE DATABASE FIDE
 - Controlla presenza database FIDE all'avvio: Questa casella di controllo (Checkbox) permette di abilitare o disabilitare il controllo automatico del database FIDE all'avvio dell'applicazione.
   * Se abilitata (impostazione predefinita): All'avvio dell'applicazione, se il database FIDE non viene trovato localmente, il sistema mostrerà una notifica proponendone lo scaricamento immediato.
+  * Durante lo scaricamento una finestra dice a che punto è, prima in megabyte e poi in percentuale della scrittura del database. Annulla, o il tasto Esc, interrompe il lavoro al primo blocco utile: il database che avevi prima resta intatto e utilizzabile.
   * Se disabilitata: L'applicazione salterà questo controllo all'avvio, evitando la visualizzazione del messaggio per gli utenti che non necessitano o non desiderano utilizzare le funzioni di ricerca e sincronizzazione FIDE internazionale.
 
 11.3 CARATTERI E COLORI (ACCESSIBILITÀ)

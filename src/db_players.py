@@ -493,15 +493,29 @@ class ProgressFileObject:
         self.fileobj.close()
 
 
-def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
+class AggiornamentoInterrotto(Exception):
+    """L'aggiornamento del database FIDE e' stato fermato da chi lo aveva chiesto."""
+
+
+def aggiorna_db_fide_locale(progress_callback=None, stats_output=None, interrompi=None):
     """
     Scarica l'ultimo rating list FIDE (XML), lo elabora e salva i dati
     in un database SQLite locale (fide_ratings.db).
     Supporta un callback per notificare il progresso di scaricamento e analisi
     e un dizionario per salvare le statistiche dell'operazione.
+    interrompi, se indicato, e' un threading.Event: quando viene alzato il
+    lavoro si ferma al primo blocco utile, il database temporaneo viene
+    scartato e la funzione risponde come per un fallimento, con il motivo
+    nelle statistiche. Serve alla finestra di avanzamento, che prima non aveva
+    modo di fermare il thread e restava a ricevere aggiornamenti anche dopo
+    essere stata distrutta.
     Restituisce True in caso di successo, False altrimenti.
     """
     import time
+
+    def controlla_interruzione():
+        if interrompi is not None and interrompi.is_set():
+            raise AggiornamentoInterrotto()
 
     from fide_db import (
         discard_temp_db,
@@ -540,6 +554,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
             bytes_downloaded = 0
             # Usa chunk da 256KB per uno scaricamento efficiente
             for chunk in zip_response.iter_content(chunk_size=256 * 1024):
+                controlla_interruzione()
                 if chunk:
                     chunks.append(chunk)
                     bytes_downloaded += len(chunk)
@@ -646,6 +661,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
                             }
                             parse_count += 1
                             if parse_count % 5000 == 0:
+                                controlla_interruzione()
                                 time.sleep(0.001)
 
                         elem.clear()
@@ -681,6 +697,12 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None):
 
             print(_("Database FIDE locale 'fide_ratings.db' salvato con successo."))
             return True
+    except AggiornamentoInterrotto:
+        return _fallimento_aggiornamento(
+            stats_output,
+            db_temporaneo,
+            _("Aggiornamento interrotto dall'utente."),
+        )
     except requests.exceptions.Timeout:
         return _fallimento_aggiornamento(
             stats_output,

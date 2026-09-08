@@ -16,17 +16,23 @@ class FideUpdateThread(threading.Thread):
     senza bloccare l'interfaccia grafica.
     """
 
-    def __init__(self, progress_callback, completion_callback):
-        super().__init__()
+    def __init__(self, progress_callback, completion_callback, interrompi):
+        # Daemon: se il programma si chiude a meta' scaricamento, per esempio
+        # per applicare un aggiornamento, non deve restare in vita ad aspettare
+        # la fine di un lavoro che nessuno vedra' piu'.
+        super().__init__(daemon=True)
         self.progress_callback = progress_callback
         self.completion_callback = completion_callback
+        self.interrompi = interrompi
         self.success = False
         self.stats = {}
 
     def run(self):
         try:
             self.success = aggiorna_db_fide_locale(
-                progress_callback=self.progress_callback, stats_output=self.stats
+                progress_callback=self.progress_callback,
+                stats_output=self.stats,
+                interrompi=self.interrompi,
             )
         except Exception as errore:
             # Anche un errore che sfugge del tutto deve arrivare all'utente
@@ -57,12 +63,24 @@ class FideUpdateDialog(wx.Dialog):
         self.apply_theme()
         self.Centre()
 
+        # La finestra puo' sparire mentre il thread lavora: chiusa dalla X o
+        # da Alt+F4, oppure distrutta perche' il programma si chiude per
+        # applicare un aggiornamento accettato nel frattempo. Prima il thread
+        # continuava a scrivere su una barra che non esisteva piu', e ogni
+        # blocco ricevuto finiva nel log come RuntimeError sul Gauge. Ora la
+        # chiusura alza questo evento, che ferma il lavoro al primo blocco
+        # utile, e i callback controllano che la finestra esista ancora.
+        self.interrompi = threading.Event()
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
         # Avvio del thread in background
-        self.thread = FideUpdateThread(self.on_progress, self.on_update_complete)
+        self.thread = FideUpdateThread(
+            self.on_progress, self.on_update_complete, self.interrompi
+        )
         self.thread.start()
 
         # Impostiamo subito il focus sul Gauge per far sì che NVDA legga gli aggiornamenti di progresso
-        wx.CallAfter(self.gauge.SetFocus)
+        wx.CallAfter(lambda: self and self.gauge.SetFocus())
 
     def init_ui(self):
         panel = wx.Panel(self)
@@ -81,8 +99,13 @@ class FideUpdateDialog(wx.Dialog):
         self.gauge = wx.Gauge(panel, range=100, style=wx.GA_HORIZONTAL)
         vbox.Add(self.gauge, 0, wx.ALL | wx.EXPAND, 15)
 
+        # Annulla resta attivo durante l'aggiornamento, e ferma davvero il
+        # lavoro: prima era spento, e chi voleva interrompere non poteva farlo
+        # se non chiudendo la finestra, con il thread che andava avanti lo
+        # stesso. Vale anche per il tasto Esc, che in un dialogo equivale a
+        # premere il pulsante Annulla.
         self.btn_close = wx.Button(panel, wx.ID_CANCEL, _("Annulla"))
-        self.btn_close.Disable()  # Disabilitato durante l'aggiornamento
+        self.btn_close.Bind(wx.EVT_BUTTON, self.on_close)
         vbox.Add(self.btn_close, 0, wx.ALIGN_RIGHT | wx.ALL, 15)
 
         panel.SetSizer(vbox)
@@ -93,12 +116,40 @@ class FideUpdateDialog(wx.Dialog):
         for child in self.GetChildren():
             apply_visual_settings(child, self.settings)
 
+    def on_close(self, event=None):
+        """Chiusura dalla X, da Alt+F4, da Esc o dal pulsante: ferma il lavoro.
+
+        Il thread si accorge dell'evento al primo blocco utile e scarta il
+        database temporaneo; la finestra non lo aspetta, perche' l'attesa
+        potrebbe durare secondi e chi ha chiesto di chiudere vuole che
+        succeda subito. Il suo callback di completamento trovera' la
+        finestra gia' distrutta e non fara' nulla.
+        """
+        self.interrompi.set()
+        if self.IsModal():
+            self.EndModal(wx.ID_CANCEL)
+        else:
+            self.Destroy()
+
+    def _viva(self):
+        """Vero se la finestra esiste ancora e nessuno ha chiesto di fermarsi.
+
+        In wxPython una finestra distrutta vale falso: e' il controllo che
+        mancava, e senza il quale un aggiornamento arrivato dopo la
+        distruzione finiva su un Gauge che non c'era piu'. Non basta da
+        solo: la distruzione di una finestra principale e' rinviata al
+        momento di riposo del ciclo eventi, e in quell'attimo la finestra
+        vale ancora vero pur essendo condannata. IsBeingDeleted copre
+        quell'attimo.
+        """
+        return bool(self) and not self.IsBeingDeleted() and not self.interrompi.is_set()
+
     def on_progress(self, phase, current, total):
         """Callback chiamata dal thread di background per notificare l'avanzamento."""
         wx.CallAfter(self.update_progress, phase, current, total)
 
     def update_progress(self, phase, current, total):
-        if total <= 0:
+        if not self._viva() or total <= 0:
             return
 
         percent = int((current / total) * 100)
@@ -137,9 +188,13 @@ class FideUpdateDialog(wx.Dialog):
             self.gauge.SetName(f"{percent}%")
 
     def on_update_complete(self, success, stats):
+        if not self._viva():
+            # Finestra chiusa o distrutta prima della fine: il thread ha gia'
+            # scartato il database temporaneo, e non c'e' nessuno a cui
+            # riferire.
+            return
         self.gauge.SetValue(100)
         self.btn_close.SetLabel(_("Chiudi"))
-        self.btn_close.Enable()
 
         if success:
             # Funzione di supporto per formattare la durata in mm:ss:dcm
@@ -185,8 +240,14 @@ class FideUpdateDialog(wx.Dialog):
                 success_msg,
             )
             dlg.ShowModal()
-            dlg.Destroy()
-            self.EndModal(wx.ID_OK)
+            # Se il programma si chiude mentre il messaggio e' aperto, il
+            # messaggio muore insieme a tutto il resto e ShowModal torna da
+            # solo: distruggere di nuovo, o chiudere una finestra gia'
+            # condannata, darebbe lo stesso errore che si vuole evitare.
+            if dlg:
+                dlg.Destroy()
+            if self._viva() and self.IsModal():
+                self.EndModal(wx.ID_OK)
         else:
             self.status_label.SetLabel(
                 _("Errore durante l'aggiornamento del Database FIDE.")
@@ -208,5 +269,7 @@ class FideUpdateDialog(wx.Dialog):
                 messaggio,
             )
             dlg.ShowModal()
-            dlg.Destroy()
-            self.EndModal(wx.ID_CANCEL)
+            if dlg:
+                dlg.Destroy()
+            if self._viva() and self.IsModal():
+                self.EndModal(wx.ID_CANCEL)
