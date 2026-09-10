@@ -1,0 +1,30 @@
+﻿Nome Torneo: ASCId 52 Campionato Italiano
+Luogo: Galatina (LE)
+Date: Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
+Federazione Organizzante: ITA
+Arbitro Capo: N/D
+Controllo Tempo: Standard
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Data Report: Giovedì 31 luglio 2025 12:05:54
+----------------------------------------------------------------------
+CLASSIFICA FINALE
+----------------------------------------------------------------------
+Pos. Titolo Nome Cognome               [EloIni] Punti  Bucch-1  Bucch    ARO  Perf  Elo Var.
+--------------------------------------------------------------------------------------------
+  1.     Casadei, Marco              [1994]   6.0   25.50  29.00 1794 2103  +18
+  2.     Badano, Giancarlo           [1840]   5.0   27.00  29.50 1748 1906  +18
+  3.     Vrioni, Bersan              [1944]   5.0   26.00  29.50 1789 1947   +7
+  4.     Poli, Diego                 [1686]   4.5   25.00  26.50 1674 1776  +18
+  5.     Ariaudo, Claudio            [1983]   4.0   26.00  29.00 1678 1728  -27
+  6.     Vilone, Gennaro             [1478]   4.0   24.50  26.00 1696 1746  +41
+  7. 1N  Gasperoni, Claudio          [1874]   3.5   26.50  29.50 1668 1668  -28
+  8. 2N  Soppelsa, Maurizio          [1731]   3.5   24.00  26.50 1652 1652  -12
+  9.     Zenini, Simone              [1613]   3.5   23.00  26.00 1663 1663   +6
+ 10.     Pezzolato, Erica            [1621]   3.5   22.00  22.50 1692 1692   +8
+ 11. NC  Ionata, Lorenzo             [1446]   3.5   14.50  15.00 1579 1579  +23
+ 12. 3N  Battaglia, Gabriele         [1513]   3.0   21.50  24.00 1588 1538   +0
+ 13. 3N  Tolaro, Filippa             [1399]   3.0   18.00  18.50 1572 1515  +10
+ 14. NC  Ariaudo, Giuliano           [1399]   3.0   15.00  15.50 1588 1531  +29
+ 15. NC  Del Monte, Davide           [1418]   2.5   16.50  17.00 1555 1430   -2
+ 16. NC  Cibin, Silvia               [1399]   1.5   17.50  18.00 1471 1198  -58
+ 17. NC  Gori, Serena                [1399]   0.5   15.50  17.00 1447  647 -105

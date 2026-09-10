@@ -1,0 +1,23 @@
+﻿Torneo: ASCId Primavera 1
+Sito: Online, Data Inizio Torneo: Domenica 4 maggio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 4 CONCLUSO ==========================
+	Periodo del Turno: Venerdì 30 maggio 2025 - Venerdì 6 giugno 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 43  | Jiazhuang Vandelli       [1756] (3.5 ) - Claudio Gasperoni        [1859] (3.5 ) | 1/2-1/2
+	2  | 46  | Gabriele Battaglia       [1513] (2.5 ) - Fabrizio Zavan           [1671] (2.5 ) | 1/2-1/2
+	3  | 45  | Maurizio Soppelsa        [1731] (3   ) - Lorenzo Ionata           [1446] (2   ) | 1-0
+	4  | 44  | Francesco Nicolini       [1776] (4   ) - Luigi Ventura            [1399] (3   ) | 1-0
+	5  | 52  | Filippa Tolaro           [1577] (2   ) - Michele Colangelo        [1574] (1   ) | 1-0
+	6  | 48  | Giuseppe Baratta         [1450] (2   ) - Cosetta Trapletti        [1586] (2.5 ) | 0-1
+	7  | 47  | Fabrizio Manneschi       [1609] (2   ) - Rita Valleriani          [1399] (3   ) | 0-1
+	8  | 49  | Mariangela Cassano       [1399] (1.5 ) - Luca Parravano           [1506] (2.5 ) | 0-1
+	9  | 50  | Giancarlo Bosetti        [1399] (1.5 ) - Vincenzo Di Bari         [1399] (2.5 ) | F-1
+	10 | 51  | Giulia Paglia            [1399] (1.5 ) - Mathias Cicciarella      [1399] (2   ) | 0-1
+	11 | 53  | Valeria Scapin           [1399] (2   ) - Alessia Mereu            [1399] (1   ) | 1-0
+	12 | 54  | Catia Susana Brites Pereira Lima [1399] (2   ) - Virginio Paglia          [1399] (0.5 ) | 1-0
+	13 | 55  | Serena Gori              [1399] (0   ) - Valeria Calzolari        [1399] (1.5 ) | 0-1
+	14 | 56  | Alessandra Testori       [1399] (1   ) - Martina Forte            [1399] (0   ) | 1-0

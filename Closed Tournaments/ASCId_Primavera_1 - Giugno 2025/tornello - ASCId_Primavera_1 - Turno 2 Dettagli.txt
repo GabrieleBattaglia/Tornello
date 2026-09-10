@@ -1,0 +1,23 @@
+﻿Torneo: ASCId Primavera 1
+Sito: Online, Data Inizio Torneo: Domenica 4 maggio 2025
+================================================================================
+
+============================== DETTAGLIO TURNO 2 CONCLUSO ==========================
+	Periodo del Turno: Martedì 13 maggio 2025 - Martedì 20 maggio 2025
+	----------------------------------------------------------------------------
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	--------------------------------------------------------------------------------------------------------
+	1  | 15  | Filippa Tolaro           [1577] (1   ) - Claudio Gasperoni        [1859] (2   ) | 0-1
+	2  | 16  | Francesco Nicolini       [1776] (2   ) - Michele Colangelo        [1574] (1   ) | 1-0
+	3  | 17  | Gabriele Battaglia       [1513] (1   ) - Jiazhuang Vandelli       [1756] (2   ) | 0-1
+	4  | 18  | Maurizio Soppelsa        [1731] (2   ) - Luca Parravano           [1506] (1   ) | 1-0
+	5  | 19  | Giuseppe Baratta         [1450] (1   ) - Fabrizio Zavan           [1671] (2   ) | 0-1
+	6  | 20  | Fabrizio Manneschi       [1609] (2   ) - Lorenzo Ionata           [1446] (1   ) | 1-0
+	7  | 21  | Luigi Ventura            [1399] (2   ) - Cosetta Trapletti        [1586] (1   ) | 1-0
+	8  | 22  | Giancarlo Bosetti        [1399] (1   ) - Serena Gori              [1399] (0   ) | 1-0
+	9  | 23  | Catia Susana Brites Pereira Lima [1399] (0   ) - Alessia Mereu            [1399] (1   ) | 0-1
+	10 | 24  | Giulia Paglia            [1399] (0.5 ) - Valeria Calzolari        [1399] (0.5 ) | 1/2-1/2
+	11 | 25  | Mariangela Cassano       [1399] (0.5 ) - Virginio Paglia          [1399] (0.5 ) | 1/2-1/2
+	12 | 26  | Valeria Scapin           [1399] (0   ) - Mathias Cicciarella      [1399] (1   ) | 0-1
+	13 | 27  | Vincenzo Di Bari         [1399] (1   ) - Alessandra Testori       [1399] (0   ) | 1-0
+	14 | 28  | Rita Valleriani          [1399] (1   ) - Martina Forte            [1399] (0   ) | 1-0
