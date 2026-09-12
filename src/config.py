@@ -19,9 +19,11 @@ if not os.path.exists(selected_lang_file):
     import locale
 
     try:
-        system_lang, _ = locale.getdefaultlocale()
+        system_lang, _encoding = locale.getdefaultlocale()
         sys_code = system_lang.split("_")[0].lower() if system_lang else "it"
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
+        # Un locale che il sistema non sa dire, o lo dice in una forma
+        # inattesa: si riparte dall'italiano, che e' la lingua di casa.
         sys_code = "it"
     supported_langs = ["it", "en", "es", "fr", "pt"]
     default_lang = sys_code if sys_code in supported_langs else "it"
@@ -34,7 +36,10 @@ if not os.path.exists(selected_lang_file):
                 f,
                 indent=4,
             )
-    except Exception:
+    except OSError:
+        # Se il file non si scrive, per esempio in una cartella di sola
+        # lettura, non e' grave: al prossimo avvio polipo chiedera' la lingua,
+        # che e' esattamente cio' che questo blocco cerca di evitare.
         pass
 
 lingua_rilevata, _ = polipo(
