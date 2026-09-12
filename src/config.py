@@ -7,7 +7,7 @@ import os
 # perche' sono quelli con cui il resto del programma li chiede.
 from percorsi import resource_path, user_data_path
 
-from GBUtils import polipo
+from GBUtils import lingua_di_sistema, polipo
 
 locales_dir = resource_path("locales")
 project_root = user_data_path("")
@@ -16,15 +16,13 @@ project_root = user_data_path("")
 selected_lang_file = os.path.join(project_root, "selected_language.json")
 if not os.path.exists(selected_lang_file):
     import json
-    import locale
 
-    try:
-        system_lang, _encoding = locale.getdefaultlocale()
-        sys_code = system_lang.split("_")[0].lower() if system_lang else "it"
-    except (AttributeError, TypeError, ValueError):
-        # Un locale che il sistema non sa dire, o lo dice in una forma
-        # inattesa: si riparte dall'italiano, che e' la lingua di casa.
-        sys_code = "it"
+    # La lingua dell'utente la dice GBUtils, che prova le variabili
+    # d'ambiente, l'API di Windows e il locale, e non chiama la
+    # getdefaultlocale deprecata che sparisce con Python 3.15. Torna None
+    # quando non riesce a capirla, e allora si parte dall'italiano, che e' la
+    # lingua di casa.
+    sys_code = lingua_di_sistema() or "it"
     supported_langs = ["it", "en", "es", "fr", "pt"]
     default_lang = sys_code if sys_code in supported_langs else "it"
     try:
