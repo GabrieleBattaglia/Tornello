@@ -1,38 +1,13 @@
 import builtins
 import os
-import sys
+
+# I percorsi stanno in percorsi.py, nella radice del progetto: e' quella la
+# cartella a cui si riferiscono, e le funzioni di GBUtils rispondono la
+# cartella del modulo che le chiama. I due nomi restano esposti da qui,
+# perche' sono quelli con cui il resto del programma li chiede.
+from percorsi import resource_path, user_data_path
 
 from GBUtils import polipo
-
-
-def resource_path(relative_path):
-    """
-    Restituisce il percorso assoluto a una risorsa (sola lettura), funzionante sia in sviluppo
-    che per un eseguibile compilato con PyInstaller (anche con la cartella _internal).
-    """
-    if getattr(sys, "frozen", False):
-        base_path = sys._MEIPASS
-    else:
-        # In sviluppo, la radice del progetto è la cartella superiore a 'src'
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    return os.path.join(base_path, relative_path)
-
-
-def user_data_path(relative_path):
-    """
-    Restituisce il percorso assoluto a un file di dati utente (scrittura), funzionante sia in sviluppo
-    che per un eseguibile compilato con PyInstaller. I file vengono salvati nella cartella
-    dell'eseguibile, garantendo la persistenza anche in configurazione onefile.
-    """
-    if getattr(sys, "frozen", False):
-        base_path = os.path.dirname(sys.executable)
-    else:
-        # In sviluppo, la radice del progetto è la cartella superiore a 'src'
-        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    return os.path.join(base_path, relative_path)
-
 
 locales_dir = resource_path("locales")
 project_root = user_data_path("")
