@@ -11,10 +11,20 @@ gbutils_path = os.path.abspath(os.path.join(base_path, '..', 'GBUtils'))
 # play_sound si appoggia ad Acusticator e' li' che stanno tutti i preset,
 # compresi i trentuno che prima Tornello si portava in audio_presets.py.
 import os
+from pathlib import Path
 
 import GBUtils
 
 COLLEZIONE_SUONI = os.path.join(os.path.dirname(GBUtils.__file__), 'Acu_Collection.json')
+
+# Delle traduzioni al programma servono soltanto i cataloghi compilati: i .po
+# sono il testo su cui si lavora e nel pacchetto pubblico non c'entrano, come
+# dice il punto 4.6 del prontuario di rilascio. L'elenco si ricava da SPECPATH,
+# cosi' non dipende dalla cartella da cui si lancia PyInstaller.
+CATALOGHI = [
+    (str(percorso), str(percorso.parent.relative_to(Path(SPECPATH))))
+    for percorso in Path(SPECPATH, 'locales').rglob('*.mo')
+]
 
 a = Analysis(
     ['tornello.py'],
@@ -22,12 +32,11 @@ a = Analysis(
     binaries=[],
     datas=[
         ('bbppairings', 'bbppairings'),
-        ('locales', 'locales'), # La cartella locales e tutto il suo contenuto per le traduzioni
         ('MANUALE.txt', '.'),
         ('ChangeLog.txt', '.'),
         ('CREDITS.txt', '.'),
         (COLLEZIONE_SUONI, '.'),  # Collezione condivisa di GBUtils (v9.3.16)
-    ],
+    ] + CATALOGHI,
     hiddenimports=['unidecode'],
     hookspath=[],
     runtime_hooks=[],
