@@ -1,0 +1,47 @@
+# Configurazione ruff di Tornello.
+# Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5, modalità auto).
+# Nata il 17 settembre 2026: fino ad allora Tornello era uno dei due progetti
+# del parco senza configurazione propria, e ricadeva sui valori predefiniti,
+# che accendono regole mai calibrate su questo codice. Le regole spente qui
+# sotto portano il motivo scritto accanto: ogni segnalazione che resta e'
+# percio' un difetto vero, da correggere e non da nascondere.
+line-length = 200
+
+# La funzione di traduzione di gettext viene installata in builtins da polipo
+# all'avvio, quindi ogni modulo la usa senza importarla.
+builtins = ["_"]
+
+[lint]
+select = ["E", "F", "W", "B", "SIM", "UP", "I", "C4", "RET", "BLE", "S", "RUF", "DTZ"]
+ignore = [
+    # Righe lunghe: i messaggi all'utente e le stringhe da tradurre stanno su
+    # una riga sola, con la chiamata a _() e la format di seguito. Spezzarli
+    # renderebbe piu' difficile ritrovarli nei cataloghi delle cinque lingue.
+    "E501",
+    # Lo stile di Gabriele ammette l'istruzione breve sulla stessa riga.
+    "E701",
+    "E702",
+    "E741",
+    # Gli import del progetto vengono dopo, e devono: prima si sopprimono gli
+    # avvisi di deprecazione, poi si aggiunge src al percorso dei moduli, poi
+    # polipo installa _ in builtins. Solo allora i moduli di Tornello, che _
+    # la usano dalla prima riga, si possono importare. Metterli in cima
+    # romperebbe l'avvio.
+    "E402",
+    # Date e orari sono di proposito quelli locali, senza fuso: la data di un
+    # turno, quella di nascita di un giocatore e gli orari nei nomi dei file
+    # dei tornei parlano del calendario di chi arbitra, non di Greenwich.
+    "DTZ001",
+    "DTZ005",
+    "DTZ006",
+    "DTZ007",
+    "DTZ011",
+    # Gli if annidati restano dove separano condizioni di natura diversa, per
+    # esempio il tipo di torneo e lo stato del turno: unirli in una condizione
+    # sola renderebbe la riga piu' difficile da seguire a voce.
+    "SIM102",
+]
+
+[lint.per-file-ignores]
+# Nei test l'asserzione e' il punto: sono loro a dire cosa deve essere vero.
+"tests/*.py" = ["S101"]
