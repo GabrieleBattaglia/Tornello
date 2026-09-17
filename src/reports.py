@@ -1262,7 +1262,12 @@ def generate_ics_content(torneo):
     """
     Genera il contenuto di un file iCalendar (.ics) con tutte le partite
     pianificate del torneo.
+
+    Risponde con il contenuto e con l'elenco delle partite che non sono
+    entrate, come coppie di turno e identificativo: una scacchiera che manca
+    dal calendario va detta a chi esporta, non lasciata sparire.
     """
+    partite_saltate = []
     rounds = torneo.get("rounds", [])
     name = torneo.get("name", "Torneo")
     t_id = torneo.get("tournament_id", "TEST")
@@ -1320,7 +1325,10 @@ def generate_ics_content(torneo):
                         f"{date_str} {time_str}", "%Y-%m-%d %H:%M"
                     )
                     dt_end = dt_start + timedelta(minutes=game_duration)
-                except Exception:
+                except ValueError:
+                    # Le partite senza data sono gia' state scartate sopra: qui
+                    # arriva solo chi la data ce l'ha ma scritta male.
+                    partite_saltate.append((r_num, m.get("id")))
                     continue
 
                 board_num = matches_sorted.index(m) + 1
@@ -1348,4 +1356,4 @@ def generate_ics_content(torneo):
                 )
 
     lines.append("END:VCALENDAR")
-    return "\r\n".join(lines) + "\r\n"
+    return "\r\n".join(lines) + "\r\n", partite_saltate

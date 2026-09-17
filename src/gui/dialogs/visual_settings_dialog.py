@@ -370,8 +370,15 @@ class VisualSettingsDialog(wx.Dialog):
             temp_settings["volume"] = val
             with open(settings_path, "w", encoding="utf-8") as f:
                 json.dump(temp_settings, f, indent=4)
-        except Exception:
-            pass
+        except (OSError, ValueError) as errore:
+            # Il suono di prova legge il volume dal file appena scritto: se la
+            # scrittura non riesce si sente il volume vecchio mentre il cursore
+            # dice il nuovo, e chi giudica a orecchio viene ingannato. Qui non
+            # si puo' aprire una finestra, perche' succede a ogni scatto del
+            # cursore: resta il log.
+            from gui.settings import _registra
+
+            _registra(f"Volume non salvato: {errore}")
         # Il suono di prova deve farsi sentire al volume appena scelto.
         invalida_volume_audio()
         play_sound("notifica")

@@ -533,33 +533,41 @@ class MainFrame(wx.Frame):
             cleanup_legacy_json()
 
         if os.path.exists(FIDE_DB_LOCAL_FILE):
-            try:
-                from datetime import datetime
+            from datetime import datetime
 
+            # Nel try ci sta soltanto la lettura della data del file, che e'
+            # l'unica cosa che puo' fallire per un errore di sistema: prima
+            # copriva anche le finestre qui sotto, e se una di quelle si
+            # rompeva chi aveva appena risposto di si' non vedeva aprirsi
+            # niente e non sapeva perche'. Il ramo else, poche righe piu'
+            # giu', le stesse finestre le apre senza rete.
+            try:
                 file_mod_timestamp = os.path.getmtime(FIDE_DB_LOCAL_FILE)
                 file_age_days = (
                     datetime.now() - datetime.fromtimestamp(file_mod_timestamp)
                 ).days
-                if file_age_days >= 30:
-                    msg = _(
-                        "Il database FIDE locale è stato aggiornato {days} giorni fa.\n"
-                        "Si consiglia di verificare e scaricare l'aggiornamento più recente.\n"
-                        "Vuoi procedere con il controllo e lo scaricamento ora?"
-                    ).format(days=file_age_days)
-                    dlg = AccessibleMsgDialog(
-                        self, _("Aggiornamento Database FIDE"), msg, style=wx.YES_NO
-                    )
-                    if dlg.ShowModal() == wx.ID_YES:
-                        dlg.Destroy()
-                        from gui.dialogs.fide_update_dialog import FideUpdateDialog
+            except OSError:
+                # Senza la data del file non si puo' decidere niente: si tace e
+                # si lascia perdere il controllo, che e' facoltativo.
+                return
+            if file_age_days >= 30:
+                msg = _(
+                    "Il database FIDE locale è stato aggiornato {days} giorni fa.\n"
+                    "Si consiglia di verificare e scaricare l'aggiornamento più recente.\n"
+                    "Vuoi procedere con il controllo e lo scaricamento ora?"
+                ).format(days=file_age_days)
+                dlg = AccessibleMsgDialog(
+                    self, _("Aggiornamento Database FIDE"), msg, style=wx.YES_NO
+                )
+                if dlg.ShowModal() == wx.ID_YES:
+                    dlg.Destroy()
+                    from gui.dialogs.fide_update_dialog import FideUpdateDialog
 
-                        update_dlg = FideUpdateDialog(self, self.settings)
-                        update_dlg.ShowModal()
-                        update_dlg.Destroy()
-                    else:
-                        dlg.Destroy()
-            except Exception:
-                pass
+                    update_dlg = FideUpdateDialog(self, self.settings)
+                    update_dlg.ShowModal()
+                    update_dlg.Destroy()
+                else:
+                    dlg.Destroy()
         else:
             # Nessun DB FIDE trovato: proponi il download
             msg = _(
@@ -922,6 +930,12 @@ class MainFrame(wx.Frame):
 
         in_prep_files = []
         started_files = []
+        # Un file di torneo che non si apre, perche' un altro programma lo
+        # tiene bloccato o perche' un salvataggio e' finito male, sparirebbe
+        # dall'albero senza una parola: chi lo cerca penserebbe di averlo
+        # perso, mentre sul disco c'e' ancora. I nomi si raccolgono qui e si
+        # dicono alla fine, una volta sola.
+        file_illeggibili = []
         for f in active_files:
             try:
                 with open(f, encoding="utf-8") as f_in:
@@ -932,8 +946,8 @@ class MainFrame(wx.Frame):
                     in_prep_files.append((f, data))
                 else:
                     started_files.append((f, data))
-            except Exception:
-                pass
+            except Exception as errore:
+                file_illeggibili.append((os.path.basename(f), errore))
 
         closed_files = glob.glob(
             os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
@@ -945,8 +959,8 @@ class MainFrame(wx.Frame):
                 with open(f, encoding="utf-8") as f_in:
                     data = json.load(f_in)
                 concluded_files.append((f, data))
-            except Exception:
-                pass
+            except Exception as errore:
+                file_illeggibili.append((os.path.basename(f), errore))
 
         # 1. TORNEI IN CORSO (Attivi)
         for f, data in started_files:
@@ -1059,6 +1073,18 @@ class MainFrame(wx.Frame):
 
         self.update_menu_states()
         self.update_status_display()
+        if file_illeggibili:
+            self.set_status(
+                _("Attenzione: {n} file di torneo non leggibili, dettagli sotto.").format(
+                    n=len(file_illeggibili)
+                )
+            )
+            for nome, errore in file_illeggibili:
+                self.append_log(
+                    _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
+                        nome=nome, motivo=errore
+                    )
+                )
 
     def add_round_subnodes(
         self, parent_node, r, data, filepath, players_dict, is_concluded
@@ -3462,9 +3488,14 @@ class MainFrame(wx.Frame):
             new_settings = dlg.get_settings()
             new_lang = new_settings.get("language", "it")
             self.settings = new_settings
-            save_settings(self.settings)
+            salvate = save_settings(self.settings)
             self.apply_theme()
-            self.set_status("Impostazioni salvate ed applicate.")
+            if salvate:
+                self.set_status(_("Impostazioni salvate ed applicate."))
+            else:
+                self.set_status(
+                    _("Impostazioni applicate adesso, ma non salvate su disco: al prossimo avvio torneranno le precedenti. Dettagli in error.log.")
+                )
 
             if old_lang != new_lang:
                 msg = _(
@@ -4801,14 +4832,23 @@ class MainFrame(wx.Frame):
             from reports import generate_ics_content
 
             try:
-                ics_content = generate_ics_content(self.current_tournament)
+                ics_content, partite_saltate = generate_ics_content(
+                    self.current_tournament
+                )
                 with open(path, "w", encoding="utf-8", newline="\r\n") as f:
                     f.write(ics_content)
-                self.set_status(
-                    _("Calendario esportato con successo in '{path}'.").format(
-                        path=os.path.basename(path)
+                if partite_saltate:
+                    self.set_status(
+                        _("Calendario esportato in '{path}', ma {n} partite pianificate non ci sono entrate: la loro data non e' leggibile.").format(
+                            path=os.path.basename(path), n=len(partite_saltate)
+                        )
                     )
-                )
+                else:
+                    self.set_status(
+                        _("Calendario esportato con successo in '{path}'.").format(
+                            path=os.path.basename(path)
+                        )
+                    )
                 from utils import play_sound
 
                 play_sound("conferma")

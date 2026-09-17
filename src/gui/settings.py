@@ -7,6 +7,24 @@ from config import user_data_path
 
 SETTINGS_FILE = user_data_path("Tornello - Settings.json")
 
+
+def _registra(messaggio):
+    """Scrive in error.log un guasto che l'utente non vedrebbe altrimenti.
+
+    La funzione vera sta in db_players, e si importa qui dentro e non in cima
+    perche' quel modulo si porta dietro requests e mezzo programma: il costo si
+    paga solo quando qualcosa e' andato storto davvero.
+    """
+    try:
+        from db_players import _scrivi_log_errore
+
+        _scrivi_log_errore(messaggio)
+    except Exception:
+        # Siamo gia' dentro la gestione di un guasto: se anche il log non si
+        # scrive non c'e' altro da fare, e alzare qui nasconderebbe l'errore
+        # vero.
+        pass
+
 DEFAULT_SETTINGS = {
     "font_size": 12,
     "dialog_font_size": 12,
@@ -21,7 +39,15 @@ DEFAULT_SETTINGS = {
 
 
 def load_settings():
-    """Carica le impostazioni globali dal file JSON."""
+    """Carica le impostazioni globali dal file JSON.
+
+    Se il file non si legge si riparte dai valori di fabbrica, che e' l'unica
+    cosa sensata da fare: senza impostazioni il programma deve comunque
+    partire. Ma il fatto viene scritto in error.log, perche' altrimenti
+    nessuno saprebbe mai che corpo del carattere, colori, volume e lingua sono
+    tornati quelli di fabbrica per un file corrotto, e alla prima modifica
+    delle preferenze il file rovinato verrebbe sovrascritto senza rimedio.
+    """
     if os.path.exists(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, encoding="utf-8") as f:
@@ -29,18 +55,25 @@ def load_settings():
                 settings = DEFAULT_SETTINGS.copy()
                 settings.update(loaded)
                 return settings
-        except Exception:
-            pass
+        except (OSError, ValueError) as errore:
+            _registra(f"Impostazioni illeggibili, si riparte dai valori di fabbrica: {errore}")
     return DEFAULT_SETTINGS.copy()
 
 
 def save_settings(settings):
-    """Salva le impostazioni globali su file JSON."""
+    """Salva le impostazioni globali su file JSON.
+
+    Risponde vero solo se sono riuscite tutte e due le scritture, quella delle
+    impostazioni e quella della lingua: chi chiama deve poter dire la verita'
+    all'utente invece di annunciare un salvataggio che non c'e' stato.
+    """
+    riuscito = True
     try:
         with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=4)
-    except Exception:
-        pass
+    except OSError as errore:
+        _registra(f"Impostazioni non salvate: {errore}")
+        riuscito = False
 
     # Il volume dei suoni viene tenuto in memoria da utils per non rileggere il
     # file a ogni effetto: se qui e' cambiato, quella copia va buttata.
@@ -69,8 +102,14 @@ def save_settings(settings):
 
         with open(selected_lang_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
-    except Exception:
-        pass
+    except OSError as errore:
+        # La lingua all'avvio la decide polipo leggendo questo file, non le
+        # impostazioni: se la scrittura fallisce in silenzio, l'utente riavvia
+        # come gli e' stato detto e ritrova la lingua di prima.
+        _registra(f"Lingua non salvata in selected_language.json: {errore}")
+        riuscito = False
+
+    return riuscito
 
 
 def pct_to_byte(pct):

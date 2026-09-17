@@ -14,6 +14,35 @@ builtins = ["_"]
 [lint]
 select = ["E", "F", "W", "B", "SIM", "UP", "I", "C4", "RET", "BLE", "S", "RUF", "DTZ"]
 ignore = [
+    # Le eccezioni ingoiate in silenzio. Le ventitre' che restano sono state
+    # lette una per una il 17 settembre 2026, e sono tutte legittime: il
+    # gestore di ultima istanza che sta gia' trattando un errore, i callback di
+    # avanzamento che arrivano su una finestra che nel frattempo puo' essere
+    # stata chiusa, la cascata di tre modi diversi per cestinare un file dove
+    # il silenzio dei primi due e' proprio il meccanismo, le etichette che
+    # hanno gia' il loro testo di ripiego scritto nella riga sotto. I casi in
+    # cui invece il silenzio diceva il falso all'utente, cioe' un torneo che
+    # spariva dall'elenco, le impostazioni che non si salvavano mentre il
+    # programma le dava per salvate e le partite che non entravano nel
+    # calendario, sono stati corretti quel giorno e non ingoiano piu' niente.
+    "S110",
+    "S112",
+    # La query di fide_db.py e' costruita con una f-string, ma i pezzi che ci
+    # finiscono non vengono dall'utente: sono nomi di colonna scelti dal codice
+    # fra valori fissi, e i valori veri passano dai segnaposto.
+    "S608",
+    # Il sottoprocesso e' l'abbinatore svizzero bbpPairings, chiamato con sette
+    # elementi tutti costanti e senza shell: niente di scritto dall'utente
+    # finisce nella riga di comando.
+    "S603",
+    # L'XML e' il database dei giocatori FIDE, scaricato dall'indirizzo
+    # ufficiale scritto come costante in config.py, non un file che arriva da
+    # chissa' dove. Passare a defusedxml su un archivio di quella mole
+    # costerebbe piu' di quanto protegga.
+    "S314",
+    # random senza garanzie crittografiche e' cio' che serve: l'unico uso in
+    # tutto Tornello e' il sorteggio, non una chiave e non un identificativo.
+    "S311",
     # Righe lunghe: i messaggi all'utente e le stringhe da tradurre stanno su
     # una riga sola, con la chiamata a _() e la format di seguito. Spezzarli
     # renderebbe piu' difficile ritrovarli nei cataloghi delle cinque lingue.
