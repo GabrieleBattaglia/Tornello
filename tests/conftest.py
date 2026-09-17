@@ -20,7 +20,7 @@ def sample_tournament_dict():
     atteso = "Tornello - ASCId_Primavera_1.json"
     for radice, _cartelle, files in os.walk(archivio):
         if atteso in files:
-            with open(os.path.join(radice, atteso), "r", encoding="utf-8") as f:
+            with open(os.path.join(radice, atteso), encoding="utf-8") as f:
                 return json.load(f)
     raise FileNotFoundError(f"Torneo di prova non trovato nell'archivio: {atteso}")
 

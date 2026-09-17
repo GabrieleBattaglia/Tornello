@@ -4,11 +4,11 @@ import sys
 from datetime import datetime
 
 import wx
-from utils import play_sound
 
 from gui.accessibility import set_accessibility_label
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from gui.settings import apply_visual_settings
+from utils import play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 

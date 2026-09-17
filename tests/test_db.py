@@ -42,7 +42,7 @@ def test_db_migration(tmp_path, monkeypatch):
     assert p["medals"]["silver"] == 0  # Default v1
 
     # Leggi il file scritto per confermare che sia in formato v2
-    with open(db_file, "r", encoding="utf-8") as f:
+    with open(db_file, encoding="utf-8") as f:
         saved_data = json.load(f)
 
     assert isinstance(saved_data, dict)

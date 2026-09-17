@@ -2,9 +2,9 @@ import builtins
 import datetime
 
 import wx
-from utils import format_date_locale
 
 from gui.settings import apply_visual_settings
+from utils import format_date_locale
 
 _ = getattr(builtins, "_", lambda s: s)
 

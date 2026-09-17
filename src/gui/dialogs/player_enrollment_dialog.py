@@ -1,10 +1,10 @@
 import builtins
 
 import wx
-from fide_db import search_players
-from utils import match_player_query, play_sound
 
+from fide_db import search_players
 from gui.settings import apply_visual_settings
+from utils import match_player_query, play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -512,7 +512,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         if focused_win == self.list_local_results and local_sel != wx.NOT_FOUND:
             self.on_add_local(None)
             return
-        elif focused_win == self.list_fide_results and fide_sel != wx.NOT_FOUND:
+        if focused_win == self.list_fide_results and fide_sel != wx.NOT_FOUND:
             self.on_add_fide(None)
             return
 

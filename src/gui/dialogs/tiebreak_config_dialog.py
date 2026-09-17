@@ -1,6 +1,9 @@
 import builtins
 
 import wx
+
+from gui.accessibility import CustomAccessible
+from gui.settings import apply_visual_settings
 from tiebreak_criteria import (
     CRITERIA,
     MODIFIERS,
@@ -12,9 +15,6 @@ from tiebreak_criteria import (
     migrate_old_tiebreaks,
 )
 from utils import play_sound
-
-from gui.accessibility import CustomAccessible
-from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -505,10 +505,10 @@ class TiebreakConfigDialog(wx.Dialog):
             if focused == self.list_available:
                 self.move_to_applied()
                 return  # Consuma l'evento senza propagarlo al bottone OK di default
-            elif focused == self.list_applied:
+            if focused == self.list_applied:
                 self.move_to_available()
                 return  # Consuma l'evento
-            elif focused in [
+            if focused in [
                 self.btn_ok,
                 self.btn_cancel,
                 self.btn_add,
@@ -519,8 +519,7 @@ class TiebreakConfigDialog(wx.Dialog):
             ]:
                 event.Skip()
                 return
-            else:
-                event.Skip()
+            event.Skip()
         elif key_code in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE):
             if focused == self.list_applied:
                 self.move_to_available()

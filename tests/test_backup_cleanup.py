@@ -222,6 +222,7 @@ class TestRilevatoreAutomatico:
 
     def _telaio(self, monkeypatch, risposta):
         import wx
+
         from gui import main_frame as mf
 
         registro = {"messaggio": None, "pulizia_aperta": False}
@@ -248,6 +249,7 @@ class TestRilevatoreAutomatico:
 
     def test_trova_i_backup_vecchi_nelle_sottocartelle(self, tmp_path, monkeypatch):
         import wx
+
         from gui import main_frame as mf
 
         self._prepara(tmp_path, monkeypatch)
@@ -260,6 +262,7 @@ class TestRilevatoreAutomatico:
 
     def test_rispondendo_di_si_apre_la_finestra_di_pulizia(self, tmp_path, monkeypatch):
         import wx
+
         from gui import main_frame as mf
 
         self._prepara(tmp_path, monkeypatch)
@@ -273,6 +276,7 @@ class TestRilevatoreAutomatico:
         import time
 
         import wx
+
         from gui import main_frame as mf
 
         antico = self._prepara(tmp_path, monkeypatch)
@@ -285,6 +289,7 @@ class TestRilevatoreAutomatico:
 
     def test_le_cartelle_vuote_spariscono(self, tmp_path, monkeypatch):
         import wx
+
         from gui import main_frame as mf
 
         self._prepara(tmp_path, monkeypatch)
@@ -299,6 +304,7 @@ class TestRilevatoreAutomatico:
         import shutil
 
         import wx
+
         from gui import main_frame as mf
 
         self._prepara(tmp_path, monkeypatch)

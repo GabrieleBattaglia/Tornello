@@ -4,6 +4,7 @@ import os
 import sqlite3
 
 import pytest
+
 from fide_db import (
     _build_fts_query,
     _extract_first_term,
@@ -447,8 +448,9 @@ class TestFideUpdateLocale:
         import io
         import zipfile
 
-        import db_players
         import requests
+
+        import db_players
         from db_players import aggiorna_db_fide_locale
 
         # 1. Crea uno ZIP mock in memoria contenente un XML FIDE minimale
@@ -634,8 +636,9 @@ class TestImportazioneNonDistruttiva:
     Rilievi C2 e C8 dell'analisi di fase 1, confermati dalla Issue #35."""
 
     def _prepara(self, fide_db_path, monkeypatch):
-        import db_players
         import requests
+
+        import db_players
 
         db_path = fide_db_path[0]
         create_fide_db()

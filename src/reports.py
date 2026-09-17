@@ -563,25 +563,25 @@ def get_criterion_value(player_item, criterion, torneo):
         # Fallback per chiavi legacy dirette
         if criterion == "buchholz_cut1":
             return compute_buchholz_cut1(p_id, torneo)
-        elif criterion == "buchholz":
+        if criterion == "buchholz":
             return compute_buchholz(p_id, torneo)
-        elif criterion == "aro":
+        if criterion == "aro":
             val = compute_aro(p_id, torneo)
             return val if val is not None else 0.0
-        elif criterion == "initial_elo":
+        if criterion == "initial_elo":
             elo_initial_raw = float(player_item.get("initial_elo", 0))
             return elo_initial_raw if elo_initial_raw > 0 else DEFAULT_ELO
-        elif criterion == "sonneborn_berger":
+        if criterion == "sonneborn_berger":
             return compute_sonneborn_berger(p_id, torneo)
-        elif criterion == "direct_encounter":
+        if criterion == "direct_encounter":
             return compute_direct_encounter(p_id, torneo)
-        elif criterion == "played_rounds_rep":
+        if criterion == "played_rounds_rep":
             return compute_played_rounds_rep(p_id, torneo)
-        elif criterion == "number_of_wins":
+        if criterion == "number_of_wins":
             return compute_number_of_wins(p_id, torneo)
-        elif criterion == "number_of_blacks":
+        if criterion == "number_of_blacks":
             return compute_number_of_blacks(p_id, torneo)
-        elif criterion == "cumulative":
+        if criterion == "cumulative":
             return compute_cumulative(p_id, torneo)
         return 0.0
 

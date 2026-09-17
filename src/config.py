@@ -1,13 +1,13 @@
 import builtins
 import os
 
+from GBUtils import lingua_di_sistema, polipo
+
 # I percorsi stanno in percorsi.py, nella radice del progetto: e' quella la
 # cartella a cui si riferiscono, e le funzioni di GBUtils rispondono la
 # cartella del modulo che le chiama. I due nomi restano esposti da qui,
 # perche' sono quelli con cui il resto del programma li chiede.
 from percorsi import resource_path, user_data_path
-
-from GBUtils import lingua_di_sistema, polipo
 
 locales_dir = resource_path("locales")
 project_root = user_data_path("")

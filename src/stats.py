@@ -1,8 +1,9 @@
 import math
 from datetime import datetime
 
-from config import DATE_FORMAT_ISO, DEFAULT_ELO, DEFAULT_K_FACTOR
 from dateutil.relativedelta import relativedelta
+
+from config import DATE_FORMAT_ISO, DEFAULT_ELO, DEFAULT_K_FACTOR
 from utils import format_points, get_player_by_id
 
 
@@ -266,8 +267,7 @@ def calculate_elo_change(player, tournament_players_dict):
     # Arrotondamento FIDE standard
     if elo_change_raw > 0:
         return math.floor(elo_change_raw + 0.5)
-    else:
-        return math.ceil(elo_change_raw - 0.5)
+    return math.ceil(elo_change_raw - 0.5)
 
 
 def calculate_performance_rating(player, tournament_players_dict):
@@ -693,10 +693,9 @@ def classify_tournament_category(minutes: int, increment: int) -> str:
     total_time = minutes + increment
     if total_time <= 10:
         return "blitz"
-    elif total_time < 60:
+    if total_time < 60:
         return "rapid"
-    else:
-        return "standard"
+    return "standard"
 
 
 def compute_sonneborn_berger(player_id, torneo):
@@ -1412,25 +1411,25 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
 
     if criterion_key == "DE":
         return compute_direct_encounter(player_id, torneo)
-    elif criterion_key == "WIN":
+    if criterion_key == "WIN":
         return compute_wins_all(player_id, torneo)
-    elif criterion_key == "WON":
+    if criterion_key == "WON":
         return compute_wins_otb(player_id, torneo)
-    elif criterion_key == "BPG":
+    if criterion_key == "BPG":
         return compute_number_of_blacks(player_id, torneo)
-    elif criterion_key == "BWG":
+    if criterion_key == "BWG":
         return compute_black_wins(player_id, torneo)
-    elif criterion_key == "PS":
+    if criterion_key == "PS":
         return compute_progressive_scores(
             player_id, torneo, cut1=modifiers.get("cut1", False)
         )
-    elif criterion_key == "REP":
+    if criterion_key == "REP":
         return compute_played_rounds_rep(player_id, torneo)
-    elif criterion_key == "STD":
+    if criterion_key == "STD":
         return compute_standard_points(player_id, torneo)
-    elif criterion_key == "TPN":
+    if criterion_key == "TPN":
         return compute_tournament_pairing_number(player_id, torneo)
-    elif criterion_key == "BH":
+    if criterion_key == "BH":
         return compute_buchholz_generic(
             player_id,
             torneo,
@@ -1439,26 +1438,26 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
             median1=modifiers.get("median1", False),
             median2=modifiers.get("median2", False),
         )
-    elif criterion_key == "AOB":
+    if criterion_key == "AOB":
         return compute_average_opponent_buchholz(player_id, torneo)
-    elif criterion_key == "FB":
+    if criterion_key == "FB":
         return compute_fore_buchholz(
             player_id, torneo, cut1=modifiers.get("cut1", False)
         )
-    elif criterion_key == "SB":
+    if criterion_key == "SB":
         return compute_sonneborn_berger_generic(
             player_id, torneo, cut1=modifiers.get("cut1", False)
         )
-    elif criterion_key == "ARO":
+    if criterion_key == "ARO":
         return compute_aro_generic(player_id, torneo, cut1=modifiers.get("cut1", False))
-    elif criterion_key == "TPR":
+    if criterion_key == "TPR":
         return compute_tpr(player_id, torneo)
-    elif criterion_key == "PTP":
+    if criterion_key == "PTP":
         return compute_ptp(player_id, torneo)
-    elif criterion_key == "APRO":
+    if criterion_key == "APRO":
         return compute_apro(player_id, torneo)
-    elif criterion_key == "APPO":
+    if criterion_key == "APPO":
         return compute_appo(player_id, torneo)
-    elif criterion_key == "RTNG":
+    if criterion_key == "RTNG":
         return compute_rating_tiebreak(player_id, torneo)
     return 0.0

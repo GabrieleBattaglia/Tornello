@@ -4,6 +4,8 @@ import shutil
 import traceback
 from datetime import datetime
 
+from GBUtils import dgt, key
+
 from config import (
     ARCHIVED_TOURNAMENTS_DIR,
     DATE_FORMAT_ISO,
@@ -41,8 +43,6 @@ from utils import (
     sanitize_filename,
 )
 
-from GBUtils import dgt, key
-
 
 def _conferma_lista_giocatori_torneo(torneo, players_db):
     """
@@ -71,8 +71,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
                     )
                 )
                 return False  # Indica che la lista non è valida per procedere
-            else:
-                return False  # L'utente non vuole aggiungere, ma la lista è vuota.
+            return False  # L'utente non vuole aggiungere, ma la lista è vuota.
 
         print(
             _("Numero attuale di giocatori: {count}").format(
@@ -135,7 +134,7 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
 
             print(_("Lista giocatori confermata."))
             return True  # Lista confermata e valida (o utente ha forzato con meno giocatori)
-        elif choice.isdigit():
+        if choice.isdigit():
             try:
                 idx_to_remove = int(choice) - 1
                 if 0 <= idx_to_remove < len(torneo["players"]):
@@ -322,8 +321,7 @@ def get_input_with_default(prompt_message, default_value=None):
     if default_display or default_value is None:
         user_input = input(f"{prompt_message} [{default_display}]: ").strip()
         return user_input if user_input else default_value
-    else:
-        return input(f"{prompt_message}: ").strip()
+    return input(f"{prompt_message}: ").strip()
 
 
 def input_players(
@@ -362,7 +360,7 @@ def input_players(
             ).lower()
             if scelta == "c":
                 return players_in_tournament
-            elif scelta == "s":
+            if scelta == "s":
                 if torneo_obj and torneo_filename:
                     print(
                         _("\nSospensione inserimento. Salvataggio stato del torneo...")
@@ -384,13 +382,11 @@ def input_players(
                     save_suspended_tournament_summary(torneo_obj, base_name)
 
                     return None
-                else:
-                    print(
-                        _("Errore: impossibile sospendere il torneo in questo momento.")
-                    )
-                    continue
-            else:
-                return players_in_tournament  # Di default, se annulla/escape o altro, torna la lista attuale e decide la logica chiamante
+                print(
+                    _("Errore: impossibile sospendere il torneo in questo momento.")
+                )
+                continue
+            return players_in_tournament  # Di default, se annulla/escape o altro, torna la lista attuale e decide la logica chiamante
         player_id_to_add = None
         player_data_from_db = None
         was_newly_created = False
@@ -539,23 +535,22 @@ def input_players(
                         start_index += page_size
                         print(_("Mostro i risultati successivi"))
                         continue
-                    elif not choice_str and not has_more_pages:
+                    if not choice_str and not has_more_pages:
                         print(
                             _(
                                 "Non ci sono altri risultati. Scegli un numero, 0 per manuale, oppure affina la ricerca."
                             )
                         )
                         continue
-                    elif choice_str.isdigit():
+                    if choice_str.isdigit():
                         choice_num = int(choice_str)
                         if choice_num == 0:
                             selected_fide_record = None  # Attiva l'inserimento manuale
                             break
-                        elif 1 <= choice_num <= len(fide_matches):
+                        if 1 <= choice_num <= len(fide_matches):
                             selected_fide_record = fide_matches[choice_num - 1]
                             break
-                        else:
-                            print(_("Scelta non valida. Riprova."))
+                        print(_("Scelta non valida. Riprova."))
                     else:
                         # Gestione affinamento ricerca
                         if choice_str.startswith("+"):
@@ -597,7 +592,7 @@ def input_players(
                             )
                             selected_fide_record = None
                             break
-                        elif len(fide_matches) == 1:
+                        if len(fide_matches) == 1:
                             match = fide_matches[0]
                             print(_("\n-> Trovata 1 corrispondenza nel DB FIDE:"))
                             print(
@@ -616,17 +611,15 @@ def input_players(
                             ):
                                 selected_fide_record = match
                                 break
-                            else:
-                                print(_("Procedo con l'inserimento manuale."))
-                                selected_fide_record = None
-                                break
-                        else:
-                            print(
-                                _("Trovate {count} corrispondenze.").format(
-                                    count=len(fide_matches)
-                                )
+                            print(_("Procedo con l'inserimento manuale."))
+                            selected_fide_record = None
+                            break
+                        print(
+                            _("Trovate {count} corrispondenze.").format(
+                                count=len(fide_matches)
                             )
-                            continue
+                        )
+                        continue
 
             # Se è stato selezionato un giocatore dal DB FIDE, crealo nel nostro DB personale
             if selected_fide_record:
@@ -1004,13 +997,13 @@ def update_match_result(torneo):
 
         if not user_input_str:
             break
-        elif user_input_str == "t":
+        if user_input_str == "t":
             if time_machine_torneo(torneo):
                 any_changes_made_in_this_session = True
                 save_tournament(torneo)
                 print(_("Stato del torneo ripristinato e salvato."))
             continue
-        elif user_input_str.lower() == "r":
+        if user_input_str.lower() == "r":
             print(_("Ritiro Giocatore dal Torneo"))
             active_players_list = [
                 p for p in torneo["players"] if not p.get("withdrawn", False)
@@ -1175,7 +1168,7 @@ def update_match_result(torneo):
             else:
                 print(_("Cancellazione annullata."))
             continue
-        elif user_input_str.isdigit():
+        if user_input_str.isdigit():
             try:
                 board_num_choice = int(user_input_str)
                 match_found_by_board = False
@@ -1214,7 +1207,7 @@ def update_match_result(torneo):
                     ).format(search_term=user_input_str)
                 )
                 continue
-            elif len(candidate_matches_info) == 1:
+            if len(candidate_matches_info) == 1:
                 selected_match_obj_for_processing = candidate_matches_info[0][1]
                 sel_board_disp, u1, sel_w_disp, sel_b_disp = candidate_matches_info[0]
                 print(

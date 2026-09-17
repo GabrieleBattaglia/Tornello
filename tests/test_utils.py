@@ -70,7 +70,7 @@ def test_delete_active_tournament_logic():
         # Now clean up using the same logic as delete_active_tournament
         import json
 
-        with open(json_file, "r", encoding="utf-8") as f_in:
+        with open(json_file, encoding="utf-8") as f_in:
             data = json.load(f_in)
 
         t_name = data.get("name")

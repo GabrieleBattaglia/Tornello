@@ -1,11 +1,11 @@
 import builtins
 
 import wx
-from db_players import generate_player_id, load_players_db, save_players_db
-from utils import play_sound
 
+from db_players import generate_player_id, load_players_db, save_players_db
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from gui.settings import apply_visual_settings
+from utils import play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
 

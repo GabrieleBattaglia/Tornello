@@ -198,7 +198,7 @@ def add_new_player(players_db_main_dict):
         if exp_input_str == "s":
             experienced_new_val = True
             break
-        elif exp_input_str == "n":
+        if exp_input_str == "n":
             experienced_new_val = False
             break
         print(_("Risposta non valida. Inserisci 's' o 'n'."))
@@ -344,10 +344,10 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
         if sex_input_val in ["m", "w"]:
             player_data_ref["sex"] = sex_input_val
             break
-        elif not sex_input_val and sex_default_edit:
+        if not sex_input_val and sex_default_edit:
             player_data_ref["sex"] = sex_default_edit
             break
-        elif not sex_input_val and not sex_default_edit:
+        if not sex_input_val and not sex_default_edit:
             player_data_ref["sex"] = "m"
             break
         print(_("Input non valido."))
@@ -400,7 +400,7 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
         if exp_input_str_edit == "s":
             player_data_ref["experienced"] = True
             break
-        elif exp_input_str_edit == "n":
+        if exp_input_str_edit == "n":
             player_data_ref["experienced"] = False
             break
         print(_("Risposta non valida. Inserisci 's' o 'n'."))
@@ -460,7 +460,7 @@ def edit_player_data(player_id_to_edit, players_db_dict_ref):
 
         if op_tourn == "f":
             break
-        elif op_tourn == "a":
+        if op_tourn == "a":
             print(_("Aggiunta nuovo torneo allo storico"))
             new_t_entry = {}
             new_t_entry["tournament_name"] = get_input_with_default(
@@ -584,7 +584,7 @@ def main_interactive_db_tool_loop(players_db_main_dict):
                 if add_new_player(players_db_main_dict):
                     save_players_db(players_db_main_dict)
             continue
-        elif len(found_players_list_main) == 1:
+        if len(found_players_list_main) == 1:
             player_to_manage_item = found_players_list_main[0]
             current_player_id_main_ops = player_to_manage_item["id"]
             while True:
@@ -603,7 +603,7 @@ def main_interactive_db_tool_loop(players_db_main_dict):
                 if action_main == "s":
                     last_managed_player_id = current_player_id_main_ops
                     break
-                elif action_main == "c":
+                if action_main == "c":
                     if (
                         get_input_with_default(
                             _(

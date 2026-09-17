@@ -4,10 +4,10 @@ import json
 import os
 
 import wx
-from version import __authors__, __date__, __version__
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 from gui.settings import apply_visual_settings, save_settings
+from version import __authors__, __date__, __version__
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -590,9 +590,9 @@ class MainFrame(wx.Frame):
 
     def _run_update_check(self):
         try:
-            from version import __version__ as current_ver
-
             from GBUtils import update_checker
+
+            from version import __version__ as current_ver
 
             repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
             avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
@@ -728,7 +728,7 @@ class MainFrame(wx.Frame):
     def load_tournament(self, filepath, rebuild_tree=True):
         """Carica un torneo dal file JSON."""
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, encoding="utf-8") as f:
                 data = json.load(f)
             self.current_tournament = data
             self.active_filename = filepath
@@ -924,7 +924,7 @@ class MainFrame(wx.Frame):
         started_files = []
         for f in active_files:
             try:
-                with open(f, "r", encoding="utf-8") as f_in:
+                with open(f, encoding="utf-8") as f_in:
                     data = json.load(f_in)
                 if data.get("concluded"):
                     continue
@@ -942,7 +942,7 @@ class MainFrame(wx.Frame):
         concluded_files = []
         for f in closed_files:
             try:
-                with open(f, "r", encoding="utf-8") as f_in:
+                with open(f, encoding="utf-8") as f_in:
                     data = json.load(f_in)
                 concluded_files.append((f, data))
             except Exception:
@@ -1877,9 +1877,8 @@ class MainFrame(wx.Frame):
         self.main_text.ShowPosition(0)
 
     def on_configure_tiebreaks(self):
-        from utils import play_sound
-
         from gui.dialogs import TiebreakConfigDialog
+        from utils import play_sound
 
         play_sound("apertura", self.current_tournament)
         dlg = TiebreakConfigDialog(self, self.current_tournament)
@@ -2556,9 +2555,8 @@ class MainFrame(wx.Frame):
         play_sound("conferma")
 
         # Calcola la categoria del torneo in base al tempo di riflessione inserito
-        from stats import classify_tournament_category, parse_time_control
-
         from gui.dialogs import PlayerEnrollmentDialog
+        from stats import classify_tournament_category, parse_time_control
 
         tc_parsed = parse_time_control(
             self.creation_data.get("time_control", "60+0")
@@ -2707,9 +2705,7 @@ class MainFrame(wx.Frame):
             if self.active_filename:
                 import os
 
-                from utils import sanitize_filename
-
-                from utils import resolve_and_verify_save_path
+                from utils import resolve_and_verify_save_path, sanitize_filename
 
                 t_name = self.current_tournament.get("name", "Torneo_Senza_Nome")
                 sanitized_name = sanitize_filename(t_name)
@@ -2764,7 +2760,7 @@ class MainFrame(wx.Frame):
                 player_data = data.get("player")
                 self.delete_player_from_tournament(item, player_data)
                 return
-            elif action in ["select_tournament", "load_concluded"] and filepath:
+            if action in ["select_tournament", "load_concluded"] and filepath:
                 self.delete_tournament_completely(item, filepath)
                 return
 
@@ -2784,7 +2780,7 @@ class MainFrame(wx.Frame):
         from utils import play_sound
 
         try:
-            with open(filepath, "r", encoding="utf-8") as f_in:
+            with open(filepath, encoding="utf-8") as f_in:
                 t_data = json.load(f_in)
         except Exception as e:
             wx.MessageBox(
@@ -3077,7 +3073,7 @@ class MainFrame(wx.Frame):
     def load_concluded_tournament_report(self, filepath):
         """Visualizza i report e la classifica di un torneo concluso nell'area centrale."""
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, encoding="utf-8") as f:
                 data = json.load(f)
             t_name = data.get("name", _("Torneo Concluso"))
 
@@ -3139,7 +3135,7 @@ class MainFrame(wx.Frame):
             t_type = _("attivo")
 
         try:
-            with open(filepath, "r", encoding="utf-8") as f_in:
+            with open(filepath, encoding="utf-8") as f_in:
                 data = json.load(f_in)
         except Exception as e:
             wx.MessageBox(
@@ -3259,7 +3255,7 @@ class MainFrame(wx.Frame):
             player_data = data.get("player")
             self.delete_player_from_tournament(item, player_data)
             return
-        elif action in ["select_tournament", "load_concluded"]:
+        if action in ["select_tournament", "load_concluded"]:
             filepath = data.get("filepath")
             if not filepath:
                 from utils import play_sound
@@ -3275,18 +3271,17 @@ class MainFrame(wx.Frame):
                 return
             self.delete_tournament_completely(item, filepath)
             return
-        else:
-            from utils import play_sound
+        from utils import play_sound
 
-            play_sound("errore", self.current_tournament)
-            wx.MessageBox(
-                _(
-                    "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
-                ),
-                _("Avviso"),
-                wx.ICON_WARNING,
-            )
-            return
+        play_sound("errore", self.current_tournament)
+        wx.MessageBox(
+            _(
+                "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
+            ),
+            _("Avviso"),
+            wx.ICON_WARNING,
+        )
+        return
 
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""
@@ -3495,7 +3490,7 @@ class MainFrame(wx.Frame):
         guide_path = resource_path("MANUALE.txt")
         if os.path.exists(guide_path):
             try:
-                with open(guide_path, "r", encoding="utf-8") as f:
+                with open(guide_path, encoding="utf-8") as f:
                     guide_text = f.read()
             except Exception:
                 pass
@@ -3516,7 +3511,7 @@ class MainFrame(wx.Frame):
         changelog_path = resource_path("ChangeLog.txt")
         if os.path.exists(changelog_path):
             try:
-                with open(changelog_path, "r", encoding="utf-8") as f:
+                with open(changelog_path, encoding="utf-8") as f:
                     changelog_str = f.read()
             except Exception:
                 pass
@@ -3537,7 +3532,7 @@ class MainFrame(wx.Frame):
         credits_path = resource_path("CREDITS.txt")
         if os.path.exists(credits_path):
             try:
-                with open(credits_path, "r", encoding="utf-8") as f:
+                with open(credits_path, encoding="utf-8") as f:
                     credits_str = f.read()
             except Exception:
                 pass

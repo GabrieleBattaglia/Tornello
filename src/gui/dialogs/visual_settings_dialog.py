@@ -2,11 +2,11 @@ import builtins
 import os
 
 import wx
+
 from config import resource_path
+from gui.settings import apply_visual_settings
 from utils import invalida_volume_audio, play_sound
 from version import __version__
-
-from gui.settings import apply_visual_settings
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -365,7 +365,7 @@ class VisualSettingsDialog(wx.Dialog):
         try:
             temp_settings = {}
             if os.path.exists(settings_path):
-                with open(settings_path, "r", encoding="utf-8") as f:
+                with open(settings_path, encoding="utf-8") as f:
                     temp_settings = json.load(f)
             temp_settings["volume"] = val
             with open(settings_path, "w", encoding="utf-8") as f:

@@ -1,4 +1,4 @@
-﻿Report Database Giocatori Tornello - Lunedì 7 settembre 2026 10:25:11
+﻿Report Database Giocatori Tornello - Domenica 13 settembre 2026 21:01:29
 ID: ARICL001, Claudio Ariaudo
 	Sesso: M, Federazione: ITA, ID FIDE: 815535, Flag: N/D
 	Elo Standard: 1856 (Partite FIDE: 0)
@@ -165,6 +165,15 @@ ID: COLMI001, 3N Michele Colangelo
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (2) tornei:
 	18° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
 	19° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
+ID: DAVLU001, Luca Davanzo
+	Sesso: M, Federazione: ITA, ID FIDE: , Flag: N/D
+	Elo Standard: 1399 (Partite FIDE: 0)
+	Elo Rapid: 0.0 (Partite FIDE: 0, K: None)
+	Elo Blitz: 0.0 (Partite FIDE: 0, K: None)
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Domenica 13 settembre 2026
+	Data Nascita: Domenica 18 luglio 1971
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
 ID: DEFMO001, Monica De Fazio
 	Sesso: W, Federazione: ITA, ID FIDE: 28524853, Flag: N/D
 	Elo Standard: 1434 (Partite FIDE: 0)

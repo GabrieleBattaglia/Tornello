@@ -57,18 +57,18 @@ try:
 except AttributeError:
     sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), "src"))
 
+from GBUtils import Donazione
+
 from cli_adapter import CLIAdapter
 from config import BBP_SUBDIR
 from controller import TournamentController
 
-from GBUtils import Donazione
-
 
 def check_updates():
     try:
-        from version import __version__ as current_ver
-
         from GBUtils import enter_escape, perform_update, update_checker
+
+        from version import __version__ as current_ver
 
         print(_("Controllo aggiornamenti..."))
         repo_api = (

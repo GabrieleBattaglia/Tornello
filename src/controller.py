@@ -234,7 +234,7 @@ class TournamentController:
             single_found_filepath = potential_tournament_files[0]
             single_tournament_name_guess = _("Torneo Sconosciuto")
             try:
-                with open(single_found_filepath, "r", encoding="utf-8") as f_temp:
+                with open(single_found_filepath, encoding="utf-8") as f_temp:
                     data_temp = json.load(f_temp)
                 single_tournament_name_guess = data_temp.get(
                     "name",
@@ -299,7 +299,7 @@ class TournamentController:
             tournament_options = []
             for idx, filepath in enumerate(potential_tournament_files):
                 try:
-                    with open(filepath, "r", encoding="utf-8") as f_temp:
+                    with open(filepath, encoding="utf-8") as f_temp:
                         data_temp = json.load(f_temp)
                     t_name = data_temp.get("name", _("Nome Sconosciuto"))
                     t_start = data_temp.get("start_date")
@@ -338,7 +338,7 @@ class TournamentController:
                 suspended_tournaments = []
                 for opt in tournament_options:
                     try:
-                        with open(opt["filepath"], "r", encoding="utf-8") as f_temp:
+                        with open(opt["filepath"], encoding="utf-8") as f_temp:
                             data_temp = json.load(f_temp)
                         if data_temp.get("creation_suspended", False):
                             suspended_tournaments.append(opt)
@@ -646,11 +646,10 @@ class TournamentController:
 
             if self.ui.confirm_player_list(self.tournament, self.players_db):
                 break
-            else:
-                self.ui.show_message(
-                    _("\nReindirizzamento all'inserimento giocatori...")
-                )
-                existing_players = self.tournament.players
+            self.ui.show_message(
+                _("\nReindirizzamento all'inserimento giocatori...")
+            )
+            existing_players = self.tournament.players
 
         valore_bye_suggerito = 0.5
         valore_alternativo = 1.0
@@ -868,106 +867,105 @@ class TournamentController:
                             )
                             self._save_state()
                         break
-                    else:
-                        next_round = curr_round + 1
-                        if self.ui.confirm(
+                    next_round = curr_round + 1
+                    if self.ui.confirm(
+                        _(
+                            "\nVuoi procedere e generare gli abbinamenti per il Turno {round_num}?"
+                        ).format(round_num=next_round)
+                    ):
+                        self.tournament.current_round = next_round
+                        self.ui.show_message(
                             _(
-                                "\nVuoi procedere e generare gli abbinamenti per il Turno {round_num}?"
+                                "Generazione abbinamenti per il Turno {round_num}..."
                             ).format(round_num=next_round)
-                        ):
-                            self.tournament.current_round = next_round
-                            self.ui.show_message(
-                                _(
-                                    "Generazione abbinamenti per il Turno {round_num}..."
-                                ).format(round_num=next_round)
+                        )
+
+                        torneo_dict = self.tournament.to_dict()
+                        next_matches_raw = generate_pairings_for_round(torneo_dict)
+
+                        if next_matches_raw is None:
+                            user_action = handle_bbpairings_failure(
+                                torneo_dict,
+                                next_round,
+                                "Errore durante la generazione.",
                             )
-
-                            torneo_dict = self.tournament.to_dict()
-                            next_matches_raw = generate_pairings_for_round(torneo_dict)
-
-                            if next_matches_raw is None:
-                                user_action = handle_bbpairings_failure(
-                                    torneo_dict,
-                                    next_round,
-                                    "Errore durante la generazione.",
-                                )
-                                if user_action == "time_machine":
-                                    self.tournament.current_round = curr_round
-                                    torneo_dict = self.tournament.to_dict()
-                                    if time_machine_torneo(torneo_dict):
-                                        self.tournament = Tournament.from_dict(
-                                            torneo_dict
-                                        )
-                                        self._save_state()
-                                    else:
-                                        self.ui.show_message(
-                                            _(
-                                                "Time Machine annullata o fallita. Uscita per sicurezza."
-                                            )
-                                        )
-                                        break
-                                    continue
-                                elif user_action == "terminate":
-                                    self.tournament.current_round = curr_round
-                                    self._save_state()
-                                    break
-
-                            next_matches = [
-                                Match.from_dict(m) for m in next_matches_raw
-                            ]
-                            self.ui.play_sound("nuovo_turno", self.tournament)
-                            self.ui.show_message(
-                                _(
-                                    "Registrazione risultati automatici per il Turno {round_num} (BYE)..."
-                                ).format(round_num=next_round)
-                            )
-
-                            for m in next_matches:
-                                if m.result == "BYE":
-                                    bye_player = self.tournament.players_dict.get(
-                                        m.white_player_id
+                            if user_action == "time_machine":
+                                self.tournament.current_round = curr_round
+                                torneo_dict = self.tournament.to_dict()
+                                if time_machine_torneo(torneo_dict):
+                                    self.tournament = Tournament.from_dict(
+                                        torneo_dict
                                     )
-                                    if bye_player:
-                                        bye_player.points += self.tournament.bye_value
-                                        bye_player.results_history.append(
-                                            ResultEntry(
-                                                round=next_round,
-                                                opponent_id="BYE_PLAYER_ID",
-                                                color=None,
-                                                result="BYE",
-                                                score=self.tournament.bye_value,
-                                            )
+                                    self._save_state()
+                                else:
+                                    self.ui.show_message(
+                                        _(
+                                            "Time Machine annullata o fallita. Uscita per sicurezza."
                                         )
-                                        bye_player.received_bye_count += 1
-                                        bye_player.received_bye_in_round.append(
-                                            next_round
-                                        )
-                                        self.ui.show_message(
-                                            _(
-                                                " > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico aggiornati."
-                                            ).format(
-                                                name=bye_player.first_name,
-                                                id=bye_player.id,
-                                            )
-                                        )
+                                    )
+                                    break
+                                continue
+                            if user_action == "terminate":
+                                self.tournament.current_round = curr_round
+                                self._save_state()
+                                break
 
-                            self.tournament.rounds.append(
-                                Round(round=next_round, matches=next_matches)
-                            )
-                            self._save_state()
-                            self.ui.show_message(
-                                _("Turno {round_num} generato e salvato.").format(
-                                    round_num=next_round
+                        next_matches = [
+                            Match.from_dict(m) for m in next_matches_raw
+                        ]
+                        self.ui.play_sound("nuovo_turno", self.tournament)
+                        self.ui.show_message(
+                            _(
+                                "Registrazione risultati automatici per il Turno {round_num} (BYE)..."
+                            ).format(round_num=next_round)
+                        )
+
+                        for m in next_matches:
+                            if m.result == "BYE":
+                                bye_player = self.tournament.players_dict.get(
+                                    m.white_player_id
                                 )
+                                if bye_player:
+                                    bye_player.points += self.tournament.bye_value
+                                    bye_player.results_history.append(
+                                        ResultEntry(
+                                            round=next_round,
+                                            opponent_id="BYE_PLAYER_ID",
+                                            color=None,
+                                            result="BYE",
+                                            score=self.tournament.bye_value,
+                                        )
+                                    )
+                                    bye_player.received_bye_count += 1
+                                    bye_player.received_bye_in_round.append(
+                                        next_round
+                                    )
+                                    self.ui.show_message(
+                                        _(
+                                            " > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico aggiornati."
+                                        ).format(
+                                            name=bye_player.first_name,
+                                            id=bye_player.id,
+                                        )
+                                    )
+
+                        self.tournament.rounds.append(
+                            Round(round=next_round, matches=next_matches)
+                        )
+                        self._save_state()
+                        self.ui.show_message(
+                            _("Turno {round_num} generato e salvato.").format(
+                                round_num=next_round
                             )
-                        else:
-                            self.ui.show_message(
-                                _(
-                                    "Generazione prossimo turno annullata. Salvataggio stato attuale."
-                                )
+                        )
+                    else:
+                        self.ui.show_message(
+                            _(
+                                "Generazione prossimo turno annullata. Salvataggio stato attuale."
                             )
-                            self._save_state()
-                            break
+                        )
+                        self._save_state()
+                        break
 
         except KeyboardInterrupt:
             self.ui.show_message(_("\nOperazione interrotta dall'utente."))

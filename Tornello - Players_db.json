@@ -2793,6 +2793,43 @@
    "o_title": "",
    "foa_title": "",
    "flag": ""
+  },
+  {
+   "id": "DAVLU001",
+   "first_name": "Luca",
+   "last_name": "Davanzo",
+   "current_elo": 1399,
+   "registration_date": "2026-09-13",
+   "birth_date": "1971-07-18",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_title": "",
+   "club": "ASCID",
+   "games_played": 0,
+   "medals": {
+    "gold": 0,
+    "silver": 0,
+    "bronze": 0,
+    "wood": 0
+   },
+   "tournaments_played": [],
+   "fide_id_num_str": "",
+   "results_history": [],
+   "opponents": [],
+   "fide_k_factor": null,
+   "elo_club": 0.0,
+   "elo_rapid": 0.0,
+   "elo_blitz": 0.0,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": ""
   }
  ]
 }

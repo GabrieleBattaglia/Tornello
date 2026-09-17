@@ -116,7 +116,7 @@ def data_del_torneo(cartella):
     percorso_json = trova_json_del_torneo(cartella)
     if percorso_json:
         try:
-            with open(percorso_json, "r", encoding="utf-8") as f:
+            with open(percorso_json, encoding="utf-8") as f:
                 dati = json.load(f)
             fine = dati.get("end_date")
             if fine:

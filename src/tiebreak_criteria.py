@@ -516,6 +516,6 @@ def normalize_tiebreak_entry(entry):
         if entry in CRITERIA:
             return {"key": entry, "modifiers": {}}
         return None
-    elif isinstance(entry, dict) and "key" in entry:
+    if isinstance(entry, dict) and "key" in entry:
         return {"key": entry["key"], "modifiers": dict(entry.get("modifiers", {}))}
     return None

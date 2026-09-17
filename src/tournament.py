@@ -296,7 +296,7 @@ def load_tournament(filename_to_load):
     """Carica lo stato del torneo corrente dal file JSON."""
     if os.path.exists(filename_to_load):
         try:
-            with open(filename_to_load, "r", encoding="utf-8") as f:
+            with open(filename_to_load, encoding="utf-8") as f:
                 torneo_data = json.load(f)
                 torneo_data.setdefault("name", _("Torneo Sconosciuto"))
                 torneo_data.setdefault(
@@ -488,7 +488,7 @@ def _abbinamento_fallito(torneo, motivo):
     """
     if isinstance(torneo, dict):
         torneo[CHIAVE_ERRORE_ABBINAMENTO] = motivo
-    return None
+    return
 
 
 def motivo_ultimo_fallimento(torneo):
@@ -594,13 +594,12 @@ def generate_pairings_for_round(torneo):
                     "bbpPairings non ha trovato alcun abbinamento valido per questo turno."
                 ),
             )
-        else:
-            print(
-                _("ERRORE CRITICO da bbpPairings.exe: {message}").format(
-                    message=bbp_message
-                )
+        print(
+            _("ERRORE CRITICO da bbpPairings.exe: {message}").format(
+                message=bbp_message
             )
-            return _abbinamento_fallito(torneo, bbp_message)
+        )
+        return _abbinamento_fallito(torneo, bbp_message)
     print(_("Abbinamenti Turno {} generati.").format(round_number))
     return all_generated_matches
 

@@ -3,6 +3,8 @@ import subprocess
 import traceback
 from datetime import datetime
 
+from GBUtils import key
+
 from config import (
     BBP_EXE_PATH,
     BBP_INPUT_TRF,
@@ -11,8 +13,6 @@ from config import (
     BBP_SUBDIR,
     DATE_FORMAT_ISO,
 )
-
-from GBUtils import key
 
 
 def handle_bbpairings_failure(torneo, round_number, error_message):
@@ -61,10 +61,9 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
         choice = key(prompt).strip().lower()
         if choice == "t":
             return "time_machine"
-        elif choice == "u":
+        if choice == "u":
             return "terminate"
-        else:
-            print(_("Scelta non valida. Inserisci 't' o 'u'."))
+        print(_("Scelta non valida. Inserisci 't' o 'u'."))
 
 
 def genera_stringa_trf_per_bbpairings(
@@ -446,7 +445,7 @@ def run_bbpairings_engine(trf_content_string):
         # Lettura file di output se successo
         coppie_content = ""
         if os.path.exists(BBP_OUTPUT_COUPLES):
-            with open(BBP_OUTPUT_COUPLES, "r", encoding="utf-8") as f:
+            with open(BBP_OUTPUT_COUPLES, encoding="utf-8") as f:
                 coppie_content = f.read()
         else:
             return (
@@ -459,7 +458,7 @@ def run_bbpairings_engine(trf_content_string):
 
         checklist_content = ""
         if os.path.exists(BBP_OUTPUT_CHECKLIST):
-            with open(BBP_OUTPUT_CHECKLIST, "r", encoding="utf-8") as f:
+            with open(BBP_OUTPUT_CHECKLIST, encoding="utf-8") as f:
                 checklist_content = f.read()
         # Non consideriamo un errore se il checklist non c'è, ma logghiamo
 

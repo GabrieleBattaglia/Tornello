@@ -2,6 +2,7 @@ import json
 import os
 
 import wx
+
 from config import user_data_path
 
 SETTINGS_FILE = user_data_path("Tornello - Settings.json")
@@ -23,7 +24,7 @@ def load_settings():
     """Carica le impostazioni globali dal file JSON."""
     if os.path.exists(SETTINGS_FILE):
         try:
-            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            with open(SETTINGS_FILE, encoding="utf-8") as f:
                 loaded = json.load(f)
                 settings = DEFAULT_SETTINGS.copy()
                 settings.update(loaded)
@@ -57,7 +58,7 @@ def save_settings(settings):
         data = {}
         if os.path.exists(selected_lang_file):
             try:
-                with open(selected_lang_file, "r", encoding="utf-8") as f:
+                with open(selected_lang_file, encoding="utf-8") as f:
                     data = json.load(f)
             except Exception:
                 pass

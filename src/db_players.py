@@ -7,6 +7,7 @@ import zipfile
 from datetime import datetime
 
 import requests
+
 from config import (
     DATE_FORMAT_ISO,
     FIDE_DB_LOCAL_FILE,
@@ -747,7 +748,7 @@ def load_players_db():
     """Carica il database dei giocatori dal file JSON, eseguendo la migrazione se necessario."""
     if os.path.exists(PLAYER_DB_FILE):
         try:
-            with open(PLAYER_DB_FILE, "r", encoding="utf-8") as f:
+            with open(PLAYER_DB_FILE, encoding="utf-8") as f:
                 raw_data = json.load(f)
 
             # Rileva schema

@@ -6,9 +6,9 @@ import shutil
 import tempfile
 
 from babel.dates import format_date
-from config import DATE_FORMAT_ISO, _, lingua_rilevata
-
 from GBUtils import enter_escape as enter_escape_condivisa
+
+from config import DATE_FORMAT_ISO, _, lingua_rilevata
 
 
 def scrivi_json_atomico(percorso, dati, indent=1):
@@ -382,10 +382,9 @@ def get_relevance_score(player, query_terms):
     first_term = query_terms[0] if query_terms else ""
     if last_name.startswith(first_term):
         return (1, last_name, first_name)
-    elif first_name.startswith(first_term):
+    if first_name.startswith(first_term):
         return (2, last_name, first_name)
-    else:
-        return (3, last_name, first_name)
+    return (3, last_name, first_name)
 
 
 def match_player_query(player, query):

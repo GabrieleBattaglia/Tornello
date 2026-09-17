@@ -86,8 +86,7 @@ def gestisci_risultati_con_pager(results):
                     results[choice_index - 1]
                 )  # -1 perché la lista parte da 0
                 break  # Esce dal ciclo del pager dopo aver mostrato i dettagli
-            else:
-                print(f"ERRORE: Inserisci un numero tra 1 e {num_results}.")
+            print(f"ERRORE: Inserisci un numero tra 1 e {num_results}.")
         else:
             print("ERRORE: Input non valido.")
 

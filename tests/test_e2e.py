@@ -285,9 +285,9 @@ def test_e2e_complex_tournament_flow_bye_withdrawals(tmp_path, monkeypatch):
     def get_scores(res_str):
         if res_str in ("1-0", "1-F"):
             return 1.0, 0.0
-        elif res_str in ("0-1", "F-1"):
+        if res_str in ("0-1", "F-1"):
             return 0.0, 1.0
-        elif res_str == "1/2-1/2":
+        if res_str == "1/2-1/2":
             return 0.5, 0.5
         return 0.0, 0.0
 
