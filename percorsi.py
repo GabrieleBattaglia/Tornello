@@ -15,7 +15,8 @@ di GBUtils risponde la cartella del modulo che la chiama. Tenerlo qui rende
 Tornello uguale agli altri progetti del parco software, che sono piatti e non
 hanno questo problema.
 
-Due regole, prese dal memorandum sui percorsi in docs. Cio' che il programma
+Due regole, che stanno scritte per esteso nelle docstring di
+cartella_applicazione e percorso_risorsa di GBUtils. Cio' che il programma
 scrive, cioe' tornei, archivio, database dei giocatori e impostazioni, sta
 accanto al programma: accanto all'eseguibile quando e' compilato, accanto ai
 sorgenti altrimenti. Cio' che il programma legge soltanto, cioe' i cataloghi
