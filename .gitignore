@@ -16,8 +16,12 @@ selected_language.json
 # stanno i file di lavoro. Senza, valevano a qualsiasi profondita' e rendevano
 # invisibili anche i tornei dentro Closed Tournaments: spostandoli, git li
 # registrava come cancellati e non riprendeva i nuovi percorsi.
+# Le impostazioni parlano di questa macchina e restano fuori. I json dei
+# tornei invece si salvano: dal 17 settembre 2026, perche' un torneo in
+# corso che vive su un disco solo e' un torneo che si puo' perdere, e
+# perche' Gabriele arbitra da piu' macchine. I .txt restano fuori: sono i
+# report, che il programma rigenera dal json quando servono.
 /Tornello - Settings.json
-/Tornello - *.json
 /Tornello - *.txt
 /Tornello - *.ics
 bbppairings/input_bbp.trf
