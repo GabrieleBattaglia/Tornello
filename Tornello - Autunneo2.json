@@ -255,8 +255,16 @@
    "federation": "ITA",
    "fide_id_num_str": "2854606",
    "birth_date": "1965-01-01",
-   "points": 0.0,
-   "results_history": [],
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "CASMA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -883,7 +891,15 @@
    "fide_id_num_str": "653009215",
    "birth_date": "1958-01-01",
    "points": 0.0,
-   "results_history": [],
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "VILGE001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
    "opponents": [],
    "white_games": 0,
    "black_games": 0,
@@ -1369,8 +1385,8 @@
      "round": 1,
      "white_player_id": "VILGE001",
      "black_player_id": "CASMA001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-09-17",
       "time": "21:00",
