@@ -969,13 +969,12 @@ class MainFrame(wx.Frame):
                 if self.active_filename and os.path.abspath(f) == os.path.abspath(
                     self.active_filename
                 ):
+                    # Si apre il torneo, cosi' i suoi rami si vedono, ma i rami
+                    # partono chiusi: e' l'utente a decidere cosa espandere, e
+                    # per il resto della sessione l'albero ricorda come li ha
+                    # lasciati. Fino alla 10.0.0 si aprivano iscritti e turni
+                    # (issue 46).
                     self.tree_ctrl.Expand(t_node)
-                    child, cookie = self.tree_ctrl.GetFirstChild(t_node)
-                    while child.IsOk():
-                        lbl = self.tree_ctrl.GetItemText(child)
-                        if lbl.startswith(_("iscritti")) or lbl.startswith(_("turni")):
-                            self.tree_ctrl.Expand(child)
-                        child, cookie = self.tree_ctrl.GetNextChild(t_node, cookie)
 
         # 2. TORNEI IN PREPARAZIONE
         if in_prep_files:
