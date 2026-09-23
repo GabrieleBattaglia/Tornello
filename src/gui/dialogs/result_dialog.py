@@ -114,13 +114,15 @@ class ScheduleDialog(wx.Dialog):
 
         lbl_hour = wx.StaticText(panel, label=_("Ora:"))
         self.choice_hour = wx.Choice(panel, choices=[f"{h:02d}" for h in range(24)])
-        self.choice_hour.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
+        self.choice_hour.Bind(wx.EVT_SET_FOCUS, self.on_choice_focus)
+        self.choice_hour.Bind(wx.EVT_CHOICE, self.on_choice_changed)
 
         lbl_min = wx.StaticText(panel, label=_("Minuto:"))
         self.choice_min = wx.Choice(
             panel, choices=[f"{m:02d}" for m in range(0, 60, 5)]
         )
-        self.choice_min.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
+        self.choice_min.Bind(wx.EVT_SET_FOCUS, self.on_choice_focus)
+        self.choice_min.Bind(wx.EVT_CHOICE, self.on_choice_changed)
 
         curr_time_str = self.schedule_info.get("time", "15:00")
         c_hour, c_min = "15", "00"
@@ -212,18 +214,40 @@ class ScheduleDialog(wx.Dialog):
     def apply_theme(self):
         apply_visual_settings(self, self.settings)
 
+    # Issue 48, la campanella era troppo invadente. Dalla 10.3.0 le scelte
+    # hanno un bip la cui altezza dice la posizione della voce, un semitono
+    # per voce; dalla 10.3.1 i controlli hanno una sinusoide brevissima.
+
     def on_rb_focus(self, event):
         rb = event.GetEventObject()
         rb.SetValue(True)
-        from utils import play_sound
+        from utils import bip_di_scelta
 
-        play_sound("notifica")
+        indice = next(
+            (i for i, (_d, r) in enumerate(self.radio_buttons) if r is rb), 0
+        )
+        bip_di_scelta(indice, len(self.radio_buttons), self.tournament_data)
         event.Skip()
+
+    def on_choice_focus(self, event):
+        self._bip_della_scelta(event.GetEventObject())
+        event.Skip()
+
+    def on_choice_changed(self, event):
+        self._bip_della_scelta(event.GetEventObject())
+        event.Skip()
+
+    def _bip_della_scelta(self, scelta):
+        from utils import bip_di_scelta
+
+        indice = scelta.GetSelection()
+        if indice != wx.NOT_FOUND:
+            bip_di_scelta(indice, scelta.GetCount(), self.tournament_data)
 
     def on_control_focus(self, event):
         from utils import play_sound
 
-        play_sound("notifica")
+        play_sound("controllo_programmazione", self.tournament_data)
         event.Skip()
 
     def on_key_down(self, event):

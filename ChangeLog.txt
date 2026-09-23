@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.3.1 (in lavorazione, non ancora pubblicata)
+	+ Modifica: Nella finestra di programmazione i campi e la casella dell'arbitro non suonano piu' la campanella, troppo invadente, ma una sinusoide di 45 millesimi di secondo, il preset meditimer_giro della collezione. Issue 48.
+
+10.3.0 (in lavorazione, non ancora pubblicata)
+	+ Novita': Nella finestra di programmazione giorno, ora e minuto suonano un bip la cui altezza dice la posizione della voce, un semitono per voce a partire dal do centrale: ventiquattro altezze per le ore, dodici per i minuti, una per giorno. Il bip si sente arrivando sulla scelta e a ogni cambio, cosi' la posizione si capisce prima che la dica lo screen reader. Issue 48.
+
 10.2.0 (in lavorazione, non ancora pubblicata)
 	+ Novita': Nella finestra di programmazione di una partita c'e' la casella Arbitro non necessario, spenta di serie, subito prima del campo dell'arbitro nell'ordine di tabulazione. Chi programma decide se l'arbitro serve: con la casella attiva il campo si spegne e la partita porta la dicitura Non necessario. Le programmazioni vecchie con Non necessario o no scritti a mano la trovano gia' attiva. Riconoscere il no dentro il testo avrebbe escluso anche arbitri come Bruno o Stefano.
 

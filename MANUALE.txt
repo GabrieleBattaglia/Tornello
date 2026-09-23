@@ -292,6 +292,8 @@ Nel file di configurazione "Acu_Collection.json" sono mappati tutti i suoni di s
 - Iscrizione giocatore: Tono acuto di conferma.
 - Rimozione/Ritiro giocatore: Tono discendente.
 - Partita pianificata/modificata: Segnale acustico di transizione.
+- Finestra di programmazione, campi e casella: una sinusoide brevissima ogni volta che ci si arriva.
+- Finestra di programmazione, giorno, ora e minuto: un bip la cui altezza dice la posizione della voce scelta, un semitono per voce a partire dal do centrale. Le ore vanno dalla mezzanotte al do, alle 23 al si di due ottave sopra; i minuti salgono di un semitono ogni cinque minuti; i giorni di un semitono ogni giorno a partire da oggi. Il bip si sente quando ci si arriva e a ogni cambio di scelta.
 - Fine Turno: Suono celebrativo ("conclusione_turno") quando si inserisce l'ultimo risultato.
 - Fine Torneo: Una melodia complessa ("conclusione_torneo") all'atto della finalizzazione.
 - Time Machine: Un caratteristico suono di "riavvolgimento del nastro" ("time_machine").

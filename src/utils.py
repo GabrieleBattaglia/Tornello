@@ -351,6 +351,9 @@ EVENTI = {
     "risultato_F-1": "tornello_risultato_F_1",
     "risultato_0-0F": "tornello_risultato_0_0F",
     "notifica": "notifica",
+    # Dalla 10.3.1 i controlli della finestra di programmazione hanno una
+    # sinusoide di 45 ms al posto della campanella, troppo invadente (issue 48).
+    "controllo_programmazione": "meditimer_giro",
 }
 
 
@@ -371,6 +374,24 @@ def play_sound(event_name, torneo=None, sync=False):
     return Acusticator.play(
         EVENTI.get(event_name, event_name), sync=sync, volume=volume
     )
+
+
+def bip_di_scelta(indice, quante, torneo=None):
+    """Un bip sinusoidale breve, tanto piu' acuto quanto piu' avanti e' la
+    voce scelta in un elenco: ventiquattro altezze per le ventiquattro ore,
+    dodici per i minuti, una per ogni giorno. Serve alle scelte della finestra
+    di programmazione, dalla 10.3.0 (issue 48): la posizione si sente prima
+    che la dica lo screen reader. Un semitono per voce a partire dal do
+    centrale, piu' stretti se le voci superano le tre ottave.
+    """
+    from GBUtils import Acusticator
+
+    volume = _volume_base()
+    if torneo and isinstance(torneo, dict):
+        volume = torneo.get("base_volume", volume)
+    passo = min(1.0, 36 / max(quante - 1, 1))
+    frequenza = 261.63 * 2 ** (indice * passo / 12)
+    Acusticator([frequenza, 0.04, 0, volume], kind=1, adsr=[10, 0, 100, 30])
 
 
 def _ensure_players_dict(torneo):
