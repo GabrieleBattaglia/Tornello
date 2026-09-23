@@ -1,4 +1,5 @@
 import math
+from collections import Counter
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
@@ -1463,6 +1464,22 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
     return 0.0
 
 
+def _giorni_trascorsi(inizio, fine, adesso, concluso):
+    """Giorni trascorsi fra due date del calendario e giorni in tutto, estremi
+    compresi; None se le date mancano o non si leggono. Prima dell'inizio vale
+    zero, dopo la fine o a cose concluse l'ultimo giorno.
+    """
+    try:
+        dt_inizio = datetime.strptime(inizio, DATE_FORMAT_ISO)
+        dt_fine = datetime.strptime(fine, DATE_FORMAT_ISO)
+    except (TypeError, ValueError):
+        return None
+    totale = max((dt_fine - dt_inizio).days + 1, 1)
+    if concluso:
+        return totale, totale
+    return min(max((adesso - dt_inizio).days + 1, 0), totale), totale
+
+
 def giorno_del_torneo(torneo, adesso):
     """Il giorno del torneo e i giorni in tutto, dalle date di inizio e di
     fine; None se le date mancano o non si leggono.
@@ -1471,15 +1488,34 @@ def giorno_del_torneo(torneo, adesso):
     Autunneo2, cominciato il 15 settembre, il 23 diceva ancora giorno 1 di 98
     (issue 44). Prima dell'inizio vale zero, a torneo concluso l'ultimo.
     """
-    try:
-        inizio = datetime.strptime(torneo.get("start_date"), DATE_FORMAT_ISO)
-        fine = datetime.strptime(torneo.get("end_date"), DATE_FORMAT_ISO)
-    except (TypeError, ValueError):
+    return _giorni_trascorsi(
+        torneo.get("start_date"),
+        torneo.get("end_date"),
+        adesso,
+        torneo.get("concluded", False),
+    )
+
+
+def tempo_del_turno(torneo, adesso):
+    """Giorni trascorsi del turno in corso e giorni del turno, dalle date del
+    calendario dei turni; None se il turno non ha date.
+    """
+    turno = next(
+        (
+            rd
+            for rd in torneo.get("round_dates", [])
+            if rd.get("round") == torneo.get("current_round")
+        ),
+        None,
+    )
+    if not turno:
         return None
-    totale = max((fine - inizio).days + 1, 1)
-    if torneo.get("concluded", False):
-        return totale, totale
-    return min(max((adesso - inizio).days + 1, 0), totale), totale
+    return _giorni_trascorsi(
+        turno.get("start_date"),
+        turno.get("end_date"),
+        adesso,
+        torneo.get("concluded", False),
+    )
 
 
 def partite_previste(torneo):
@@ -1496,3 +1532,97 @@ def partite_previste(torneo):
     in_gara = sum(1 for p in torneo.get("players", []) if not p.get("withdrawn", False))
     mancanti = max(torneo.get("total_rounds", 5) - len(abbinati), 0)
     return partite + mancanti * ((in_gara + 1) // 2)
+
+
+# Le soglie che fanno scattare le due manutenzioni, gli stessi valori degli
+# avvisi all'avvio: 18 mesi per la pulizia dei backup, 30 giorni per
+# l'aggiornamento del database FIDE.
+SOGLIA_BACKUP_GIORNI = 548
+SOGLIA_FIDE_GIORNI = 30
+ESITI_SULLA_SCACCHIERA = ("1-0", "0-1", "1/2-1/2")
+
+
+def arbitro_non_necessario(programmazione):
+    """Se chi ha programmato la partita ha detto che l'arbitro non serve.
+    Dalla 10.2.0 lo dice la casella della finestra di programmazione; le
+    programmazioni precedenti lo scrivevano a mano nel campo, come Non
+    necessario o no, e valgono lo stesso. Il confronto e' sul campo intero:
+    cercare "no" dentro il testo escluderebbe Bruno, Stefano o Luciano.
+    """
+    if programmazione.get("arbiter_not_needed"):
+        return True
+    testo = (programmazione.get("arbiter") or "").strip().lower()
+    return testo in ("no", "non necessario")
+
+
+def _percentuale(parte, totale):
+    """Una percentuale con un decimale, oppure -- se non c'e' niente da contare."""
+    return f"{parte / totale * 100:.1f}%" if totale else "--"
+
+
+def indicatori_pie_di_pagina(torneo, adesso, giorni_backup=None, giorni_fide=None):
+    """Le percentuali del pie' di pagina, per acronimo, dalla 10.1.0.
+    Ogni valore e' gia' scritto come xx.y%, oppure -- quando manca il dato o
+    il totale e' zero. Gli acronimi sono spiegati nel manuale. Esiti, PGN e
+    punteggio del bianco non contano i bye; PGN e punteggio del bianco non
+    contano nemmeno i forfeit, che sulla scacchiera non si sono giocati.
+    """
+    turni = torneo.get("rounds", [])
+    partite = [m for r in turni for m in r.get("matches", [])]
+    vere = [m for m in partite if m.get("black_player_id") != "BYE_PLAYER_ID"]
+    decise = [m for m in vere if m.get("result")]
+    sulla_scacchiera = [m for m in decise if m.get("result") in ESITI_SULLA_SCACCHIERA]
+    in_attesa = [m for m in vere if not m.get("result")]
+    programmate = [m for m in in_attesa if (m.get("schedule_info") or {}).get("date")]
+    con_arbitro_da_dare = [
+        m for m in programmate if not arbitro_non_necessario(m["schedule_info"])
+    ]
+    esiti = Counter(m.get("result") for m in decise)
+    turno = next(
+        (r for r in turni if r.get("round") == torneo.get("current_round")), None
+    )
+    partite_turno = turno.get("matches", []) if turno else []
+    conclusi = sum(
+        1
+        for r in turni
+        if r.get("matches") and all(m.get("result") for m in r["matches"])
+    )
+    giorni = giorno_del_torneo(torneo, adesso)
+    tempo = tempo_del_turno(torneo, adesso)
+    return {
+        "gt": _percentuale(*giorni) if giorni else "--",
+        "tt": _percentuale(*tempo) if tempo else "--",
+        "tc": _percentuale(conclusi, torneo.get("total_rounds", 5)),
+        "pg": _percentuale(
+            sum(1 for m in partite if m.get("result")), partite_previste(torneo)
+        ),
+        "rt": _percentuale(
+            sum(1 for m in partite_turno if m.get("result")), len(partite_turno)
+        ),
+        "pr": _percentuale(len(programmate), len(in_attesa)),
+        "ar": _percentuale(
+            sum(
+                1
+                for m in con_arbitro_da_dare
+                if (m["schedule_info"].get("arbiter") or "").strip()
+            ),
+            len(con_arbitro_da_dare),
+        ),
+        "pn": _percentuale(
+            sum(1 for m in sulla_scacchiera if m.get("pgn")), len(sulla_scacchiera)
+        ),
+        "vb": _percentuale(esiti["1-0"], len(decise)),
+        "pa": _percentuale(esiti["1/2-1/2"], len(decise)),
+        "vn": _percentuale(esiti["0-1"], len(decise)),
+        "fb": _percentuale(esiti["1-F"], len(decise)),
+        "fn": _percentuale(esiti["F-1"], len(decise)),
+        "pb": _percentuale(
+            esiti["1-0"] + esiti["1/2-1/2"] / 2, len(sulla_scacchiera)
+        ),
+        "bk": "--"
+        if giorni_backup is None
+        else _percentuale(giorni_backup, SOGLIA_BACKUP_GIORNI),
+        "fd": "--"
+        if giorni_fide is None
+        else _percentuale(giorni_fide, SOGLIA_FIDE_GIORNI),
+    }

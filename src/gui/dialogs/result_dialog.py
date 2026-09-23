@@ -156,13 +156,30 @@ class ScheduleDialog(wx.Dialog):
         self.txt_room.SetValue(self.schedule_info.get("channel", ""))
         self.txt_room.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
 
+        # Dalla 10.2.0 chi programma dice se l'arbitro serve. La casella viene
+        # prima del campo nell'ordine di tabulazione, ed e' creata prima della
+        # sua etichetta, cosi' il campo tiene la propria; attiva, spegne il
+        # campo. Le programmazioni vecchie con scritto Non necessario la
+        # trovano gia' attiva.
+        from stats import arbitro_non_necessario
+
+        non_serve = arbitro_non_necessario(self.schedule_info)
+        self.chk_no_arbiter = wx.CheckBox(panel, label=_("Arbitro non necessario"))
+        self.chk_no_arbiter.SetValue(non_serve)
+        self.chk_no_arbiter.Bind(wx.EVT_CHECKBOX, self.on_no_arbiter)
+        self.chk_no_arbiter.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
+
         lbl_arbiter = wx.StaticText(panel, label=_("Arbitro designato:"))
         self.txt_arbiter = wx.TextCtrl(panel)
-        self.txt_arbiter.SetValue(self.schedule_info.get("arbiter", ""))
+        self.txt_arbiter.SetValue(
+            "" if non_serve else self.schedule_info.get("arbiter", "")
+        )
+        self.txt_arbiter.Enable(not non_serve)
         self.txt_arbiter.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
 
         sbs_details.Add(lbl_room, 0, wx.TOP | wx.BOTTOM, 2)
         sbs_details.Add(self.txt_room, 0, wx.EXPAND | wx.BOTTOM, 8)
+        sbs_details.Add(self.chk_no_arbiter, 0, wx.BOTTOM, 8)
         sbs_details.Add(lbl_arbiter, 0, wx.TOP | wx.BOTTOM, 2)
         sbs_details.Add(self.txt_arbiter, 0, wx.EXPAND)
 
@@ -185,7 +202,12 @@ class ScheduleDialog(wx.Dialog):
         panel.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.txt_room.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
+        self.chk_no_arbiter.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.txt_arbiter.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
+
+    def on_no_arbiter(self, event):
+        self.txt_arbiter.Enable(not self.chk_no_arbiter.GetValue())
+        event.Skip()
 
     def apply_theme(self):
         apply_visual_settings(self, self.settings)
@@ -235,11 +257,18 @@ class ScheduleDialog(wx.Dialog):
             selected_date = datetime.date.today().strftime("%Y-%m-%d")
 
         selected_time = f"{self.choice_hour.GetStringSelection()}:{self.choice_min.GetStringSelection()}"
+        non_serve = self.chk_no_arbiter.GetValue()
+        # Con la casella attiva il campo porta la dicitura, cosi' resoconti,
+        # albero e console, che leggono solo il campo, dicono Non necessario;
+        # l'indicatore e' quello che conta per l'AR del pie' di pagina.
         return {
             "date": selected_date,
             "time": selected_time,
             "channel": self.txt_room.GetValue().strip(),
-            "arbiter": self.txt_arbiter.GetValue().strip(),
+            "arbiter": _("Non necessario")
+            if non_serve
+            else self.txt_arbiter.GetValue().strip(),
+            "arbiter_not_needed": non_serve,
         }
 
 

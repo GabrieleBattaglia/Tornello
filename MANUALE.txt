@@ -45,8 +45,25 @@ Costituisce il vero e proprio "pannello di controllo" di Tornello. Si tratta di 
 - Come si usa: Premendo F6, il focus si sposta sull'albero. Si usano le frecce verticali per scorrere le voci e le frecce orizzontali per espandere o comprimere i rami dell'albero. Premendo INVIO su una voce, viene attivata l'azione corrispondente (es. si apre il wizard di configurazione o il dialogo dei risultati).
 
 2.3 LA BARRA DI STATO INFERIORE (Tasto F7)
-È una riga di testo situata in fondo alla finestra. Mostra informazioni rapide sul contesto corrente, come il turno attivo, la cadenza di gioco impostata o messaggi di aiuto contestuali.
-- Come si usa: Premendo F7, il focus si sposta sulla barra per consentire allo screen reader di rileggere l'ultimo messaggio di stato.
+È il piè di pagina, in fondo alla finestra. La prima riga è l'ultimo messaggio di stato. Con un torneo aperto seguono due righe di sole percentuali, una fotografia immediata dello stato del torneo: i numeri assoluti si trovano nella plancia di comando. Ogni percentuale è preceduta dal suo acronimo, spiegato qui sotto, e vale -- quando manca il dato o non c'è ancora niente da contare.
+- Come si usa: Premendo F7, il focus si sposta sulla barra per consentire allo screen reader di rileggere il messaggio di stato e le percentuali.
+
+2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA
+Seconda riga, l'avanzamento del torneo:
+- GT, giorno del torneo: il giorno di oggi sui giorni fra la data di inizio e quella di fine.
+- TT, tempo del turno: i giorni trascorsi del turno in corso sui giorni che il calendario gli assegna.
+- TC, turni conclusi: i turni con tutti i risultati sul numero di turni previsto.
+- PG, partite giocate: i risultati inseriti su tutte le partite del torneo, comprese quelle dei turni ancora da abbinare, stimate dai giocatori in gara.
+- RT, risultati del turno: i risultati inseriti sulle partite del turno in corso. Confrontato con TT dice se il turno è in anticipo o in ritardo.
+- PR, partite programmate: quelle con data e ora, fra le partite abbinate ancora da giocare.
+- AR, arbitri: le partite programmate e da giocare che hanno un arbitro, fra quelle che ne hanno bisogno. Non contano quelle con la casella Arbitro non necessario.
+- PN, PGN: le partite con il PGN inserito, fra quelle giocate sulla scacchiera, cioè senza bye e forfeit.
+Terza riga, gli esiti e la manutenzione:
+- VB, PA e VN: vittorie del bianco, patte e vittorie del nero, sulle partite decise, bye esclusi.
+- FB e FN: vittorie a forfeit del bianco e del nero, sulle stesse partite.
+- PB, punteggio del bianco: vittorie del bianco più mezzo punto per ogni patta, sulle partite giocate sulla scacchiera. Sopra il 50% il bianco sta rendendo più del nero.
+- BK, backup: l'età della copia di sicurezza più vecchia rispetto ai 18 mesi. Al 100% è ora di aprire la pulizia dei backup dal menu File.
+- FD, database FIDE: l'età del database FIDE locale rispetto ai 30 giorni. Al 100% è ora di aggiornarlo.
 
 2.4 ACCESSIBILITÀ DEI DIALOGHI
 Tutti i dialoghi di Tornello (messaggi di errore, conferme, avvisi) evitano l'uso di controlli nativi inaccessibili. Al loro posto, viene utilizzata una finestra di dialogo personalizzata con un controllo di testo multilinee in sola lettura per il messaggio. All'apertura, il focus viene spostato automaticamente sul testo, permettendo allo screen reader di leggere subito l'avviso e all'utente di esplorarlo con le frecce.
@@ -215,7 +232,7 @@ Prima di generarli controlla che gli iscritti bastino per i turni previsti: fra 
 6.1 LA STRUTTURA DELLE PARTITE NELL'ALBERO
 Nell'albero di destra compare la cartella "Partite" del turno corrente, suddivisa in tre sotto-cartelle:
 1. Partite Non Pianificate: Le partite appena abbinate di cui non è ancora stato inserito il risultato.
-2. Partite Pianificate: Partite per cui l'arbitro ha impostato una data e un'ora specifiche (utile per tornei a turni settimanali).
+2. Partite Pianificate: Partite per cui l'arbitro ha impostato una data e un'ora specifiche (utile per tornei a turni settimanali). Nella finestra di programmazione si scelgono data, ora, sala o URL e arbitro designato. La casella Arbitro non necessario, subito prima del campo dell'arbitro, dice che la partita non ne ha bisogno e spegne il campo: la partita non conta nell'AR del piè di pagina.
 3. Partite Concluse: Partite di cui è già stato registrato il risultato.
 
 6.2 REGISTRAZIONE DEI RISULTATI

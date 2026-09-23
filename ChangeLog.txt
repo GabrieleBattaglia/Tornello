@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.2.0 (in lavorazione, non ancora pubblicata)
+	+ Novita': Nella finestra di programmazione di una partita c'e' la casella Arbitro non necessario, spenta di serie, subito prima del campo dell'arbitro nell'ordine di tabulazione. Chi programma decide se l'arbitro serve: con la casella attiva il campo si spegne e la partita porta la dicitura Non necessario. Le programmazioni vecchie con Non necessario o no scritti a mano la trovano gia' attiva. Riconoscere il no dentro il testo avrebbe escluso anche arbitri come Bruno o Stefano.
+
+10.1.0 (in lavorazione, non ancora pubblicata)
+	+ Novita': Il pie' di pagina, che si raggiunge con F7, e' fatto di sole percentuali con il loro acronimo, per avere una fotografia immediata dello stato del torneo; i numeri assoluti restano nella plancia. Sotto il messaggio di stato, due righe: avanzamento, cioe' giorno del torneo, tempo del turno, turni conclusi, partite giocate, risultati del turno, partite programmate, arbitri e PGN; poi esiti e manutenzione, cioe' vittorie del bianco, patte, vittorie del nero, forfeit dei due colori, punteggio del bianco, eta' del backup piu' vecchio sui 18 mesi e del database FIDE sui 30 giorni. Gli acronimi sono spiegati nel manuale, sezione 2.3.1. Nelle altre lingue le due righe restano in italiano finche' i cataloghi non vengono tradotti.
+
 10.0.4 (in lavorazione, non ancora pubblicata)
 	+ Fix: La percentuale dei risultati nel pie' di pagina, quello che si raggiunge con F3, dice adesso quanto e' avanti il torneo. Contava solo le partite dei turni gia' abbinati, quindi diceva quanto era avanti il turno: al primo turno di sei, con 10 risultati su 13, segnava 76,9 per cento. Adesso il totale comprende anche i turni da abbinare, una partita ogni due giocatori in gara, e la stessa situazione segna 10 su 78, 12,8 per cento. Issue 44.
 

@@ -305,90 +305,58 @@ class MainFrame(wx.Frame):
         lines = [self.last_status_msg]
 
         if self.current_tournament:
-            # 1. Progress. Giorno x/y (zz.z%), turno x/y, risult.x/y (zz.z%), PGN x.
+            # Dalla 10.1.0 il pie' di pagina e' fatto di sole percentuali, per
+            # acronimo, spiegate nel manuale: i numeri assoluti stanno nella
+            # plancia, qui serve la fotografia dello stato del torneo.
             from datetime import datetime
 
-            from stats import giorno_del_torneo, partite_previste
+            from stats import indicatori_pie_di_pagina
 
-            giorni = giorno_del_torneo(self.current_tournament, datetime.now())
-            if giorni:
-                x_day, y_days = giorni
-                day_pct = (x_day / y_days) * 100.0
-            else:
-                # Senza date leggibili si ripiega sulle date dei turni, come
-                # prima della 10.0.3.
-                round_dates = self.current_tournament.get("round_dates", [])
-                dates = sorted(
-                    list(
-                        set(
-                            rd.get("start_date")
-                            for rd in round_dates
-                            if rd.get("start_date")
-                        )
-                    )
+            valori = indicatori_pie_di_pagina(
+                self.current_tournament,
+                datetime.now(),
+                self._giorni_backup_piu_vecchio(),
+                self._giorni_database_fide(),
+            )
+            lines.append(
+                _("GT {gt} TT {tt} TC {tc} PG {pg} RT {rt} PR {pr} AR {ar} PN {pn}").format(
+                    **valori
                 )
-                y_days = len(dates) if len(dates) > 0 else 1
-                curr_round = self.current_tournament.get("current_round", 1)
-                x_day = min(curr_round, y_days)
-                day_pct = (x_day / y_days) * 100.0 if y_days > 0 else 100.0
-
-            curr_round = self.current_tournament.get("current_round", 1)
-            tot_rounds = self.current_tournament.get("total_rounds", 5)
-
-            # Il totale e' quello di tutto il torneo, turni da abbinare compresi:
-            # la percentuale dice quanto e' avanti il torneo, non il turno.
-            total_matches = partite_previste(self.current_tournament)
-            played_matches = 0
-            pgn_count = 0
-            white_wins = 0
-            draws = 0
-            black_wins = 0
-
-            for r in self.current_tournament.get("rounds", []):
-                for m in r.get("matches", []):
-                    if m.get("result") is not None:
-                        played_matches += 1
-
-                    if m.get("pgn"):
-                        pgn_count += 1
-
-                    b_id = m.get("black_player_id")
-                    if b_id and b_id != "BYE_PLAYER_ID":
-                        res = m.get("result")
-                        if res in ["1-0", "1-F"]:
-                            white_wins += 1
-                        elif res == "1/2-1/2":
-                            draws += 1
-                        elif res in ["0-1", "F-1"]:
-                            black_wins += 1
-
-            res_pct = (
-                (played_matches / total_matches * 100.0) if total_matches > 0 else 0.0
             )
-
-            prog_line = _(
-                "Progress. Giorno {}/{} ({:.1f}%), turno {}/{}, risult.{}/{} ({:.1f}%), PGN {}."
-            ).format(
-                x_day,
-                y_days,
-                day_pct,
-                curr_round,
-                tot_rounds,
-                played_matches,
-                total_matches,
-                res_pct,
-                pgn_count,
+            lines.append(
+                _("VB {vb} PA {pa} VN {vn} FB {fb} FN {fn} PB {pb} BK {bk} FD {fd}").format(
+                    **valori
+                )
             )
-            lines.append(prog_line)
-
-            # 2. Vittorie: Bianco x, patte y, nero z.
-            vit_line = _("Vittorie: Bianco {}, patte {}, nero {}.").format(
-                white_wins, draws, black_wins
-            )
-            lines.append(vit_line)
 
         self.status_text.SetValue("\n".join(lines))
         apply_visual_settings(self.status_text, self.settings, force_dialog=True)
+
+    @staticmethod
+    def _giorni_backup_piu_vecchio():
+        """Eta' in giorni del backup piu' vecchio; None se non ce ne sono."""
+        from datetime import datetime
+
+        from config import user_data_path
+        from utils import elenca_file_di_backup
+
+        tutti, _vecchi = elenca_file_di_backup(user_data_path("backup"))
+        if not tutti:
+            return None
+        return (datetime.now() - min(f["mtime"] for f in tutti)).days
+
+    @staticmethod
+    def _giorni_database_fide():
+        """Eta' in giorni del database FIDE locale; None se non c'e'."""
+        from datetime import datetime
+
+        from config import FIDE_DB_LOCAL_FILE
+
+        try:
+            aggiornato = datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))
+        except OSError:
+            return None
+        return (datetime.now() - aggiornato).days
 
     def append_log(self, text):
         """Aggiunge testo all'area centrale posizionando il cursore all'inizio del blocco inserito."""
