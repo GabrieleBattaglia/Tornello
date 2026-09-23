@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.0.4 (in lavorazione, non ancora pubblicata)
+	+ Fix: La percentuale dei risultati nel pie' di pagina, quello che si raggiunge con F3, dice adesso quanto e' avanti il torneo. Contava solo le partite dei turni gia' abbinati, quindi diceva quanto era avanti il turno: al primo turno di sei, con 10 risultati su 13, segnava 76,9 per cento. Adesso il totale comprende anche i turni da abbinare, una partita ogni due giocatori in gara, e la stessa situazione segna 10 su 78, 12,8 per cento. Issue 44.
+
+10.0.3 (in lavorazione, non ancora pubblicata)
+	+ Fix: Il giorno del torneo nel pie' di pagina e' quello di oggi. Era la data d'inizio del turno in corso, quindi restava fermo per tutto il turno e poi saltava: Autunneo2, cominciato il 15 settembre, il 23 diceva ancora giorno 1 di 98 invece di 9 di 98. Prima dell'inizio il giorno vale zero, a torneo concluso l'ultimo. Issue 44.
+
 10.0.2 (in lavorazione, non ancora pubblicata)
 	+ Fix: Le copie di sicurezza si fanno anche nell'uso di tutti i giorni. Fino alla 10.0.1 nascevano solo prima di finalizzazione, Time Machine, annullamento di un turno e ritorno alla preparazione: chi inseriva risultati e abbinava turni ogni giorno non ne vedeva nessuna, e le sole presenti nella cartella backup erano quelle dei tornei di prova, scritte dalle verifiche automatiche fra l'1 e il 5 settembre. Adesso la cartella backup, divisa per anno e mese, riceve una copia del torneo quando nasce, una a ogni turno abbinato e una, insieme all'archivio dei giocatori, alla chiusura del programma, sia dalla finestra sia da console. Le copie prima della finalizzazione restano come prima. Issue 45.
 	+ Le verifiche automatiche mandano le copie di sicurezza in una cartella temporanea, cosi' la cartella backup vera non si riempie di tornei di prova.

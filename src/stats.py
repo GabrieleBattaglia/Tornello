@@ -1461,3 +1461,38 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
     if criterion_key == "RTNG":
         return compute_rating_tiebreak(player_id, torneo)
     return 0.0
+
+
+def giorno_del_torneo(torneo, adesso):
+    """Il giorno del torneo e i giorni in tutto, dalle date di inizio e di
+    fine; None se le date mancano o non si leggono.
+    Il giorno e' quello di oggi. Fino alla 10.0.2 era la data d'inizio del
+    turno in corso, e il pie' di pagina restava fermo per tutto il turno:
+    Autunneo2, cominciato il 15 settembre, il 23 diceva ancora giorno 1 di 98
+    (issue 44). Prima dell'inizio vale zero, a torneo concluso l'ultimo.
+    """
+    try:
+        inizio = datetime.strptime(torneo.get("start_date"), DATE_FORMAT_ISO)
+        fine = datetime.strptime(torneo.get("end_date"), DATE_FORMAT_ISO)
+    except (TypeError, ValueError):
+        return None
+    totale = max((fine - inizio).days + 1, 1)
+    if torneo.get("concluded", False):
+        return totale, totale
+    return min(max((adesso - inizio).days + 1, 0), totale), totale
+
+
+def partite_previste(torneo):
+    """Le partite di tutto il torneo: quelle dei turni gia' abbinati, bye
+    compresi, piu' quelle dei turni ancora da abbinare, una ogni due
+    giocatori in gara, arrotondando per eccesso per il bye.
+    Fino alla 10.0.3 il pie' di pagina contava solo i turni abbinati, e la
+    percentuale dei risultati diceva quanto era avanti il turno, non il
+    torneo: 10 partite su 13, il 76,9 per cento, al primo turno di sei
+    (issue 44).
+    """
+    abbinati = torneo.get("rounds", [])
+    partite = sum(len(r.get("matches", [])) for r in abbinati)
+    in_gara = sum(1 for p in torneo.get("players", []) if not p.get("withdrawn", False))
+    mancanti = max(torneo.get("total_rounds", 5) - len(abbinati), 0)
+    return partite + mancanti * ((in_gara + 1) // 2)

@@ -306,50 +306,17 @@ class MainFrame(wx.Frame):
 
         if self.current_tournament:
             # 1. Progress. Giorno x/y (zz.z%), turno x/y, risult.x/y (zz.z%), PGN x.
-            t_start_str = self.current_tournament.get("start_date")
-            t_end_str = self.current_tournament.get("end_date")
+            from datetime import datetime
 
-            y_days = 1
-            x_day = 1
-            day_pct = 100.0
+            from stats import giorno_del_torneo, partite_previste
 
-            is_concluded = self.current_tournament.get("concluded", False)
-
-            try:
-                from datetime import datetime
-
-                from config import DATE_FORMAT_ISO
-
-                dt_start = datetime.strptime(t_start_str, DATE_FORMAT_ISO)
-                dt_end = datetime.strptime(t_end_str, DATE_FORMAT_ISO)
-                y_days = (dt_end - dt_start).days + 1
-                if y_days <= 0:
-                    y_days = 1
-
-                if is_concluded:
-                    x_day = y_days
-                else:
-                    curr_round = self.current_tournament.get("current_round", 1)
-                    round_dates = self.current_tournament.get("round_dates", [])
-                    curr_rd_data = next(
-                        (rd for rd in round_dates if rd.get("round") == curr_round),
-                        None,
-                    )
-                    curr_date_str = (
-                        curr_rd_data.get("start_date") if curr_rd_data else None
-                    )
-
-                    if curr_date_str:
-                        dt_curr = datetime.strptime(curr_date_str, DATE_FORMAT_ISO)
-                        x_day = (dt_curr - dt_start).days + 1
-                    else:
-                        x_day = 1
-
-                    x_day = max(x_day, 1)
-                    x_day = min(x_day, y_days)
-
+            giorni = giorno_del_torneo(self.current_tournament, datetime.now())
+            if giorni:
+                x_day, y_days = giorni
                 day_pct = (x_day / y_days) * 100.0
-            except Exception:
+            else:
+                # Senza date leggibili si ripiega sulle date dei turni, come
+                # prima della 10.0.3.
                 round_dates = self.current_tournament.get("round_dates", [])
                 dates = sorted(
                     list(
@@ -368,7 +335,9 @@ class MainFrame(wx.Frame):
             curr_round = self.current_tournament.get("current_round", 1)
             tot_rounds = self.current_tournament.get("total_rounds", 5)
 
-            total_matches = 0
+            # Il totale e' quello di tutto il torneo, turni da abbinare compresi:
+            # la percentuale dice quanto e' avanti il torneo, non il turno.
+            total_matches = partite_previste(self.current_tournament)
             played_matches = 0
             pgn_count = 0
             white_wins = 0
@@ -377,7 +346,6 @@ class MainFrame(wx.Frame):
 
             for r in self.current_tournament.get("rounds", []):
                 for m in r.get("matches", []):
-                    total_matches += 1
                     if m.get("result") is not None:
                         played_matches += 1
 
