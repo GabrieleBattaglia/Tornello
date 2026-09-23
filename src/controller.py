@@ -1152,6 +1152,9 @@ class TournamentController:
         )
 
     def _exit_program(self, code: int = 0) -> None:
+        from utils import copie_di_chiusura
+
+        copie_di_chiusura(self.active_filename)
         # Tempo massimo invece di attesa senza limite: vedi il commento
         # gemello in gui/main_frame.py on_close.
         self.ui.play_sound("chiusura", self.tournament, sync=1.5)

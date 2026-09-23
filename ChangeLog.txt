@@ -1,6 +1,10 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.0.2 (in lavorazione, non ancora pubblicata)
+	+ Fix: Le copie di sicurezza si fanno anche nell'uso di tutti i giorni. Fino alla 10.0.1 nascevano solo prima di finalizzazione, Time Machine, annullamento di un turno e ritorno alla preparazione: chi inseriva risultati e abbinava turni ogni giorno non ne vedeva nessuna, e le sole presenti nella cartella backup erano quelle dei tornei di prova, scritte dalle verifiche automatiche fra l'1 e il 5 settembre. Adesso la cartella backup, divisa per anno e mese, riceve una copia del torneo quando nasce, una a ogni turno abbinato e una, insieme all'archivio dei giocatori, alla chiusura del programma, sia dalla finestra sia da console. Le copie prima della finalizzazione restano come prima. Issue 45.
+	+ Le verifiche automatiche mandano le copie di sicurezza in una cartella temporanea, cosi' la cartella backup vera non si riempie di tornei di prova.
+
 10.0.1 (in lavorazione, non ancora pubblicata)
 	+ Fix: All'apertura, nella plancia di comando, i rami iscritti e turni del torneo in corso non sono piu' espansi d'ufficio. Partono chiusi come tutti gli altri ed e' l'utente a scegliere cosa aprire; il torneo resta aperto, cosi' i suoi rami si vedono subito, e per il resto della sessione l'albero ricorda come li ha lasciati. Issue 46.
 	+ Fix: Un file di torneo che non si apre non sparisce piu' dall'elenco in silenzio. Se un salvataggio e' finito male, o se un altro programma tiene il file bloccato, il torneo semplicemente non compariva nell'albero e nessuno diceva perche': chi lo cercava poteva credere di averlo perso, mentre sul disco c'e' ancora. Adesso i nomi dei file illeggibili compaiono nella barra di stato e nel riquadro centrale, con il motivo, e vale sia per i tornei attivi sia per quelli archiviati.

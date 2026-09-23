@@ -125,6 +125,18 @@ def create_backup(filepath, context="backup"):
         return False
 
 
+def copie_di_chiusura(percorso_torneo):
+    """Le copie di sicurezza fatte alla chiusura del programma: il torneo
+    aperto, se c'e', e l'archivio dei giocatori. Con quelle di ogni turno
+    proteggono il lavoro di tutti i giorni (issue 45).
+    """
+    from config import PLAYER_DB_FILE
+
+    if percorso_torneo:
+        create_backup(percorso_torneo, "chiusura_torneo")
+    create_backup(PLAYER_DB_FILE, "chiusura_db")
+
+
 def elenca_file_di_backup(cartella_backup, limite_data=None):
     """Elenca i file di backup, scendendo nelle sottocartelle dell'anno e del
     mese. Restituisce due liste: tutti i file, dal piu' vecchio al piu'

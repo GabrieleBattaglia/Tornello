@@ -342,6 +342,33 @@ def load_tournament(filename_to_load):
     return None
 
 
+def _turni_nel_file(percorso):
+    """Quanti turni ha il torneo gia' salvato su disco; None se il file non
+    c'e' ancora, zero se c'e' ma non si legge.
+    """
+    if not os.path.exists(percorso):
+        return None
+    try:
+        with open(percorso, encoding="utf-8") as f_in:
+            return len(json.load(f_in).get("rounds", []))
+    except (OSError, ValueError, AttributeError):
+        return 0
+
+
+def _copia_se_torneo_avanza(percorso, turni_prima, turni_ora):
+    """Copia di sicurezza quando il torneo nasce e a ogni turno nuovo.
+    Fino alla 10.0.1 le copie nascevano solo prima di finalizzazione, Time
+    Machine, annullamento e ritorno alla preparazione: nell'uso di tutti i
+    giorni non se ne faceva nessuna (issue 45). La copia si fa dopo la
+    scrittura, quindi contiene i risultati fin qui e gli abbinamenti del
+    turno appena nato.
+    """
+    if turni_prima is None:
+        create_backup(percorso, "creazione")
+    elif turni_ora > turni_prima:
+        create_backup(percorso, f"turno_{turni_ora}")
+
+
 def save_tournament(torneo, filepath=None):
     """Salva lo stato corrente del torneo nel file JSON."""
     tournament_name_for_file = None  # Inizializza a None
@@ -373,7 +400,13 @@ def save_tournament(torneo, filepath=None):
             del torneo_to_save["players_dict"]
         # Scrittura atomica: il file buono viene sostituito solo a
         # salvataggio completato. Rilievo C1.
+        turni_sul_disco = _turni_nel_file(dynamic_tournament_filename)
         scrivi_json_atomico(dynamic_tournament_filename, torneo_to_save)
+        _copia_se_torneo_avanza(
+            dynamic_tournament_filename,
+            turni_sul_disco,
+            len(torneo_to_save.get("rounds", [])),
+        )
     except OSError as e:
         print(
             _("Errore durante il salvataggio del torneo ({filename}): {error}").format(

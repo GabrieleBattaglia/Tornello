@@ -3665,7 +3665,9 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_close(self, event):
-        from utils import play_sound
+        from utils import copie_di_chiusura, play_sound
+
+        copie_di_chiusura(self.active_filename)
 
         # sync=True aspetterebbe senza limite che l'audio segnali la fine:
         # se lo stream smette di rispondere, per esempio subito dopo un

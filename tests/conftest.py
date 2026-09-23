@@ -10,6 +10,26 @@ sys.path.insert(
 )
 
 
+@pytest.fixture(autouse=True)
+def backup_in_cartella_temporanea(tmp_path, monkeypatch):
+    """Le copie di sicurezza delle prove finiscono in una cartella temporanea.
+    Dalla 10.0.2 ogni salvataggio di un torneo nuovo o di un turno nuovo fa
+    una copia: senza questa deviazione, ogni prova che salva un torneo
+    tornerebbe a riempire la cartella backup vera, come accadeva fino alla
+    9.8.1 con le finalizzazioni dei tornei di prova.
+    """
+    import config
+
+    originale = config.user_data_path
+
+    def percorso(nome):
+        if nome == "backup":
+            return str(tmp_path / "backup")
+        return originale(nome)
+
+    monkeypatch.setattr(config, "user_data_path", percorso)
+
+
 @pytest.fixture
 def sample_tournament_dict():
     """Carica un torneo reale salvato per i test."""
