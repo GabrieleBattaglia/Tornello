@@ -1,7 +1,7 @@
 import math
 import re
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -1465,31 +1465,42 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
     return 0.0
 
 
-def _giorni_trascorsi(inizio, fine, adesso, concluso):
-    """Giorni trascorsi fra due date del calendario e giorni in tutto, estremi
-    compresi; None se le date mancano o non si leggono. Prima dell'inizio vale
-    zero, dopo la fine o a cose concluse l'ultimo giorno.
+SECONDI_AL_GIORNO = 24 * 60 * 60
+
+
+def _secondi_trascorsi(inizio, fine, adesso, concluso):
+    """Secondi trascorsi fra due date del calendario e secondi in tutto;
+    None se le date mancano o non si leggono. Il tempo comincia alla
+    mezzanotte della data d'inizio e finisce alla mezzanotte dopo la data di
+    fine, cosi' l'ultimo giorno e' compreso e i turni del calendario si
+    toccano senza buchi. Prima dell'inizio vale zero, dopo la fine o a cose
+    concluse il totale.
+    Fino alla 10.4.1 il conto era a giorni interi: la percentuale restava
+    ferma per tutto il giorno e a mezzanotte saltava, di 6,25 punti in un
+    turno di 16 giorni (issue 53). Le date sono dell'ora locale: il cambio
+    dell'ora sposta il conto di un'ora, lo 0,04 per cento su 98 giorni.
     """
     try:
         dt_inizio = datetime.strptime(inizio, DATE_FORMAT_ISO)
-        dt_fine = datetime.strptime(fine, DATE_FORMAT_ISO)
+        dt_fine = datetime.strptime(fine, DATE_FORMAT_ISO) + timedelta(days=1)
     except (TypeError, ValueError):
         return None
-    totale = max((dt_fine - dt_inizio).days + 1, 1)
+    totale = max((dt_fine - dt_inizio).total_seconds(), 1)
     if concluso:
         return totale, totale
-    return min(max((adesso - dt_inizio).days + 1, 0), totale), totale
+    return min(max((adesso - dt_inizio).total_seconds(), 0), totale), totale
 
 
 def giorno_del_torneo(torneo, adesso):
-    """Il giorno del torneo e i giorni in tutto, dalle date di inizio e di
-    fine; None se le date mancano o non si leggono.
-    Il giorno e' quello di oggi. Fino alla 10.0.2 era la data d'inizio del
-    turno in corso, e il pie' di pagina restava fermo per tutto il turno:
-    Autunneo2, cominciato il 15 settembre, il 23 diceva ancora giorno 1 di 98
-    (issue 44). Prima dell'inizio vale zero, a torneo concluso l'ultimo.
+    """Il tempo trascorso del torneo e il tempo in tutto, in secondi, dalle
+    date di inizio e di fine; None se le date mancano o non si leggono.
+    Il conto arriva fino a questo momento. Fino alla 10.0.2 partiva dalla data
+    d'inizio del turno in corso, e il pie' di pagina restava fermo per tutto
+    il turno: Autunneo2, cominciato il 15 settembre, il 23 diceva ancora
+    giorno 1 di 98 (issue 44). Dalla 10.4.2 si conta in secondi (issue 53).
+    Prima dell'inizio vale zero, a torneo concluso il totale.
     """
-    return _giorni_trascorsi(
+    return _secondi_trascorsi(
         torneo.get("start_date"),
         torneo.get("end_date"),
         adesso,
@@ -1498,8 +1509,8 @@ def giorno_del_torneo(torneo, adesso):
 
 
 def tempo_del_turno(torneo, adesso):
-    """Giorni trascorsi del turno in corso e giorni del turno, dalle date del
-    calendario dei turni; None se il turno non ha date.
+    """Secondi trascorsi del turno in corso e secondi del turno, dalle date
+    del calendario dei turni; None se il turno non ha date.
     """
     turno = next(
         (
@@ -1511,7 +1522,7 @@ def tempo_del_turno(torneo, adesso):
     )
     if not turno:
         return None
-    return _giorni_trascorsi(
+    return _secondi_trascorsi(
         turno.get("start_date"),
         turno.get("end_date"),
         adesso,
@@ -1673,12 +1684,30 @@ def _percentuale(parte, totale):
     return f"{parte / totale * 100:.1f}%" if totale else "--"
 
 
-def indicatori_pie_di_pagina(torneo, adesso, giorni_backup=None, giorni_fide=None):
+def _eta_in_percentuale(data, adesso, soglia_giorni):
+    """L'eta' di un file, dalla data dell'ultima modifica, in percentuale
+    sulla soglia in giorni; -- se il file non c'e'. Il conto e' in secondi,
+    come quello di GT e TT. Un file con la data nel futuro, per esempio dopo
+    che l'orologio e' stato rimesso indietro, ha eta' zero: fino alla 10.4.1
+    dava una percentuale negativa."""
+    if data is None:
+        return "--"
+    eta = max((adesso - data).total_seconds(), 0)
+    return _percentuale(eta, soglia_giorni * SECONDI_AL_GIORNO)
+
+
+def indicatori_pie_di_pagina(
+    torneo, adesso, backup_piu_vecchio=None, aggiornamento_fide=None
+):
     """Le percentuali del pie' di pagina, per acronimo, dalla 10.1.0.
     Ogni valore e' gia' scritto come xx.y%, oppure -- quando manca il dato o
     il totale e' zero. Gli acronimi sono spiegati nel manuale. Esiti, PGN e
     punteggio del bianco non contano i bye; PGN e punteggio del bianco non
     contano nemmeno i forfeit, che sulla scacchiera non si sono giocati.
+    backup_piu_vecchio e aggiornamento_fide sono le date di modifica della
+    copia di sicurezza piu' vecchia e del database FIDE, None se mancano.
+    Dalla 10.4.2 tutto il conto del tempo sta qui, sullo stesso adesso: fino
+    alla 10.4.1 BK e FD arrivavano gia' come eta' in giorni interi.
     """
     turni = torneo.get("rounds", [])
     partite = [m for r in turni for m in r.get("matches", [])]
@@ -1732,10 +1761,80 @@ def indicatori_pie_di_pagina(torneo, adesso, giorni_backup=None, giorni_fide=Non
         "pb": _percentuale(
             esiti["1-0"] + esiti["1/2-1/2"] / 2, len(sulla_scacchiera)
         ),
-        "bk": "--"
-        if giorni_backup is None
-        else _percentuale(giorni_backup, SOGLIA_BACKUP_GIORNI),
-        "fd": "--"
-        if giorni_fide is None
-        else _percentuale(giorni_fide, SOGLIA_FIDE_GIORNI),
+        "bk": _eta_in_percentuale(backup_piu_vecchio, adesso, SOGLIA_BACKUP_GIORNI),
+        "fd": _eta_in_percentuale(aggiornamento_fide, adesso, SOGLIA_FIDE_GIORNI),
     }
+
+
+# Le due righe di indicatori del pie' di pagina, nell'ordine di lettura.
+# Dalla 10.5.0 si aggiornano da sole e sono dati in tempo reale, quindi a
+# larghezza fissa per la barra braille: ogni indicatore occupa 10 caratteri,
+# cioe' acronimo in 2, spazio, valore allineato a destra in 6 caratteri e
+# spazio. Quattro indicatori fanno un blocco da 40, il secondo blocco parte
+# dal carattere 41, e un valore resta nelle stesse celle quando passa da 9.9%
+# a 10.0% o arriva a 100.0%.
+RIGHE_DEL_PIE_DI_PAGINA = (
+    ("gt", "tt", "tc", "pg", "rt", "pr", "ar", "pn"),
+    ("vb", "pa", "vn", "fb", "fn", "pb", "bk", "fd"),
+)
+LETTERE_DELLA_SIGLA = 2
+CIFRE_DEL_VALORE = 6
+
+
+def sigle_del_pie_di_pagina():
+    """Gli acronimi del pie' di pagina nella lingua in uso, per chiave di
+    indicatori_pie_di_pagina. Passano da _() come ogni testo mostrato, e si
+    leggono a ogni chiamata; il manuale, solo in italiano, li spiega nella
+    sezione 2.3.1. Fino alla 10.4.2 stavano dentro le due righe, tradotte
+    intere: con la larghezza fissa della 10.5.0 si traducono uno per uno."""
+    # Per chi traduce: ogni acronimo deve restare di due lettere. Le righe
+    # sono impaginate a blocchi da 40 caratteri per la barra braille, e
+    # righe_pie_di_pagina taglia o completa con uno spazio quello che non ci
+    # sta.
+    return {
+        "gt": _("GT"),
+        "tt": _("TT"),
+        "tc": _("TC"),
+        "pg": _("PG"),
+        "rt": _("RT"),
+        "pr": _("PR"),
+        "ar": _("AR"),
+        "pn": _("PN"),
+        "vb": _("VB"),
+        "pa": _("PA"),
+        "vn": _("VN"),
+        "fb": _("FB"),
+        "fn": _("FN"),
+        "pb": _("PB"),
+        "bk": _("BK"),
+        "fd": _("FD"),
+    }
+
+
+def _sigla_in_due(sigla):
+    """L'acronimo in 2 caratteri esatti, cosi' l'indicatore resta di 10 con
+    qualunque traduzione: una piu' lunga si taglia, una piu' corta si completa
+    con uno spazio."""
+    return sigla[:LETTERE_DELLA_SIGLA].ljust(LETTERE_DELLA_SIGLA)
+
+
+def _valore_in_sei(valore):
+    """Il valore di un indicatore in 6 caratteri al massimo. Li superano solo
+    BK e FD, da 1000.0% in su, cioe' dopo 15 anni senza pulizia dei backup o
+    dopo 300 giorni senza aggiornare il database FIDE: diventano >999%."""
+    return valore if len(valore) <= CIFRE_DEL_VALORE else ">999%"
+
+
+def righe_pie_di_pagina(valori):
+    """Le due righe di indicatori del pie' di pagina, dai valori di
+    indicatori_pie_di_pagina: 80 caratteri ciascuna, cioe' due blocchi da 40
+    di quattro indicatori, per esempio "GT  10.7% TT  65.6% TC   0.0% ..."."""
+    sigle = sigle_del_pie_di_pagina()
+    return [
+        "".join(
+            f"{_sigla_in_due(sigle[chiave])} "
+            f"{_valore_in_sei(valori[chiave]):>{CIFRE_DEL_VALORE}} "
+            for chiave in riga
+        )
+        for riga in RIGHE_DEL_PIE_DI_PAGINA
+    ]

@@ -133,7 +133,7 @@ class TestChiusura:
         from gui import main_frame as mf
         from gui import settings as modulo_settings
 
-        passi = {"copie": [], "suoni": [], "log": [], "skip": 0}
+        passi = {"copie": [], "suoni": [], "log": [], "skip": 0, "timer": []}
         monkeypatch.setattr(utils, "copie_di_chiusura", lambda nome: passi["copie"].append(nome))
         monkeypatch.setattr(
             utils, "play_sound", lambda nome, *resto, **opzioni: passi["suoni"].append(nome)
@@ -148,6 +148,11 @@ class TestChiusura:
                 self.active_filename = "Tornello - Prova.json"
                 self.current_tournament = None
                 self.settings = {"language": "it"}
+                # Dalla 10.5.0 on_close ferma per primo il timer del pie' di
+                # pagina (issue 53).
+                self._timer_pie_di_pagina = SimpleNamespace(
+                    Stop=lambda: passi["timer"].append("stop")
+                )
 
         class EventoFinto:
             def Skip(self):
@@ -199,6 +204,7 @@ class TestChiusura:
 
         mf.MainFrame.on_close(telaio, evento)
 
+        assert passi["timer"] == ["stop"]
         assert passi["copie"] == ["Tornello - Prova.json"]
         assert passi["suoni"] == ["chiusura"]
         assert chiamate[0]["argomenti"] == {"lang": "it", "stampa": False}

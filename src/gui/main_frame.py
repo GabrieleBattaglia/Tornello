@@ -14,6 +14,11 @@ _ = getattr(builtins, "_", lambda s: s)
 
 from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
 
+# Ogni quanto il pie' di pagina ricalcola le sue percentuali quando non ha il
+# focus. Il valore che si muove piu' in fretta, TT, con un decimale cambia
+# ogni 23 minuti circa in un turno di 16 giorni: un minuto basta e avanza.
+INTERVALLO_PIE_DI_PAGINA_MS = 60 * 1000
+
 
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
@@ -55,9 +60,28 @@ class MainFrame(wx.Frame):
             False  # True se stiamo compilando l'albero per il Nuovo Torneo
         )
         self.last_status_msg = _("Pronto.")
+        # L'ultimo testo scritto nel pie' di pagina, per non riscriverlo se
+        # non cambia (vedi update_status_display).
+        self._testo_pie_di_pagina = None
+        # Vero quando il focus logico e' sul pie' di pagina: ce l'ha, oppure
+        # ce l'aveva quando Tornello e' passato in secondo piano o si e'
+        # aperta una finestra di sistema (vedi _on_focus_pie_di_pagina).
+        self._pie_di_pagina_col_focus = False
+        # Vero dopo un guasto del ricalcolo automatico gia' scritto in
+        # error.log, perche' non si ripeta a ogni minuto.
+        self._guasto_pie_di_pagina = False
 
         self._init_ui()
         self._setup_shortcuts()
+        # Dalla 10.5.0 il pie' di pagina si aggiorna da solo ogni minuto,
+        # finche' non ha il focus (issue 53): il timer gira sul thread
+        # principale, solo quando il ciclo degli eventi e' libero, e legge
+        # soltanto.
+        self._timer_pie_di_pagina = wx.Timer(self)
+        self.Bind(
+            wx.EVT_TIMER, self._on_timer_pie_di_pagina, self._timer_pie_di_pagina
+        )
+        self._timer_pie_di_pagina.Start(INTERVALLO_PIE_DI_PAGINA_MS)
         wx.CallAfter(self._check_fide_db_on_startup)
         wx.CallAfter(self._check_backup_on_startup)
         wx.CallAfter(self._scan_and_load_initial_tournament)
@@ -123,6 +147,8 @@ class MainFrame(wx.Frame):
             size=(-1, 60),
         )
         self.status_text.SetName(_("Barra di stato"))
+        self.status_text.Bind(wx.EVT_SET_FOCUS, self._on_focus_pie_di_pagina)
+        self.status_text.Bind(wx.EVT_KILL_FOCUS, self._on_uscita_pie_di_pagina)
         main_layout.Add(self.lbl_status, 0, wx.LEFT | wx.RIGHT, 5)
         main_layout.Add(
             self.status_text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
@@ -268,6 +294,12 @@ class MainFrame(wx.Frame):
             self.tree_ctrl.SetFocus()
         elif key_code == wx.WXK_F7:
             play_sound("spostamento_f7")
+            # Se il focus e' gia' sul pie' di pagina SetFocus non genera
+            # EVT_SET_FOCUS, e il ricalcolo va fatto qui, prima. Negli altri
+            # casi lo fa _on_focus_pie_di_pagina, e rifarlo qui costerebbe un
+            # secondo giro nella cartella dei backup prima che NVDA legga.
+            if self.status_text.HasFocus():
+                self.update_status_display()
             self.status_text.SetFocus()
         else:
             event.Skip()
@@ -295,7 +327,9 @@ class MainFrame(wx.Frame):
         self.update_status_display(text)
 
     def update_status_display(self, action_msg=None):
-        """Calcola e visualizza le metriche avanzate di progresso e statistiche di gioco."""
+        """Calcola e visualizza le metriche avanzate di progresso e statistiche di gioco.
+        Oltre che dopo ogni azione, dalla 10.5.0 la chiamano il timer di un
+        minuto, l'arrivo del focus sul pie' di pagina e F7 (issue 53)."""
         if action_msg is not None:
             self.last_status_msg = action_msg
         else:
@@ -308,55 +342,135 @@ class MainFrame(wx.Frame):
             # Dalla 10.1.0 il pie' di pagina e' fatto di sole percentuali, per
             # acronimo, spiegate nel manuale: i numeri assoluti stanno nella
             # plancia, qui serve la fotografia dello stato del torneo.
+            # Dalla 10.5.0 le due righe sono a larghezza fissa, due blocchi
+            # da 40 caratteri ciascuna, per la barra braille.
             from datetime import datetime
 
-            from stats import indicatori_pie_di_pagina
+            from stats import indicatori_pie_di_pagina, righe_pie_di_pagina
 
             valori = indicatori_pie_di_pagina(
                 self.current_tournament,
                 datetime.now(),
-                self._giorni_backup_piu_vecchio(),
-                self._giorni_database_fide(),
+                self._data_backup_piu_vecchio(),
+                self._data_database_fide(),
             )
-            lines.append(
-                _("GT {gt} TT {tt} TC {tc} PG {pg} RT {rt} PR {pr} AR {ar} PN {pn}").format(
-                    **valori
-                )
-            )
-            lines.append(
-                _("VB {vb} PA {pa} VN {vn} FB {fb} FN {fn} PB {pb} BK {bk} FD {fd}").format(
-                    **valori
-                )
-            )
+            lines.extend(righe_pie_di_pagina(valori))
 
-        self.status_text.SetValue("\n".join(lines))
+        # Dalla 10.5.0 il testo si riscrive solo se cambia (issue 53). Anche
+        # quando cambia, in wxMSW la scrittura riporta il cursore all'inizio
+        # e lo stile si applica selezionando tutto il testo: su un campo con
+        # il focus la barra braille salterebbe alla prima riga e NVDA potrebbe
+        # annunciare la selezione. Il confronto e' con l'ultimo testo scritto
+        # e non con GetValue, che nel RichEdit puo' restituire i ritorni a
+        # capo in un'altra forma; ChangeValue non genera EVT_TEXT.
+        testo = "\n".join(lines)
+        if testo == self._testo_pie_di_pagina:
+            return
+        self._testo_pie_di_pagina = testo
+        self.status_text.ChangeValue(testo)
         apply_visual_settings(self.status_text, self.settings, force_dialog=True)
 
-    @staticmethod
-    def _giorni_backup_piu_vecchio():
-        """Eta' in giorni del backup piu' vecchio; None se non ce ne sono."""
-        from datetime import datetime
+    def _on_timer_pie_di_pagina(self, event):
+        """Ricalcola il pie' di pagina ogni minuto, ma non mentre ha il focus
+        logico: sotto il cursore di chi legge non deve cambiare niente. I
+        valori si rinfrescano comunque all'arrivo del focus e con F7.
+        HasFocus da solo non basta: in wxMSW, con Tornello in secondo piano,
+        nessuna finestra ha il focus, e il timer riscriverebbe la barra
+        lasciata con il cursore sulla terza riga. Al ritorno la scrittura
+        avrebbe riportato il cursore all'inizio, e la barra braille
+        ripartirebbe dal messaggio di stato."""
+        if self.status_text.HasFocus():
+            return
+        finestra = self.FindFocus()
+        if finestra is not None and finestra is not self:
+            # Il focus e' su un'altra finestra di Tornello, quindi non sulla
+            # barra, anche se ci e' arrivato passando da una finestra di
+            # sistema, senza lasciare traccia in _on_uscita_pie_di_pagina.
+            self._pie_di_pagina_col_focus = False
+        elif self._pie_di_pagina_col_focus:
+            # Tornello e' in secondo piano, o sopra c'e' una finestra di
+            # sistema, e il focus tornera' sulla barra: resta com'e'.
+            return
+        self._ricalcola_pie_di_pagina()
 
+    def _ricalcola_pie_di_pagina(self):
+        """Il ricalcolo che nessuno ha chiesto con un'azione, cioe' quello del
+        timer e dell'arrivo del focus. Un guasto qui non apre la finestra
+        dell'errore imprevisto: dal timer tornerebbe ogni minuto, e dal focus
+        senza fine, perche' chiudendola il focus torna sulla barra e il
+        ricalcolo si guasta di nuovo. Il guasto va in error.log, con il
+        traceback, una volta sola finche' un ricalcolo non riesce; il timer
+        continua a girare, cosi' l'aggiornamento riprende da se' appena i dati
+        tornano leggibili. Le azioni e F7 premuto sulla barra seguono la
+        strada di sempre."""
+        try:
+            self.update_status_display()
+        except Exception as errore:  # noqa: BLE001
+            if not self._guasto_pie_di_pagina:
+                self._guasto_pie_di_pagina = True
+                from gui.settings import _registra
+
+                _registra(f"Aggiornamento automatico del pie' di pagina non riuscito: {errore}")
+        else:
+            self._guasto_pie_di_pagina = False
+
+    def _on_focus_pie_di_pagina(self, event):
+        """Ricalcola il pie' di pagina quando il focus ci arriva, da F7, da
+        Tab o dal mouse, prima che lo screen reader lo legga. Il ricalcolo e'
+        sincrono: NVDA interroga il controllo solo dopo che il gestore ha
+        restituito il thread, e trova gia' i valori nuovi. event.Skip() serve
+        perche' il controllo nativo prenda il cursore.
+        Non ricalcola quando il focus torna sulla barra che ce l'aveva gia',
+        cioe' al ritorno da un'altra applicazione o dopo una finestra di
+        sistema: allora il focus non arriva da un'altra finestra di Tornello,
+        ma dal nulla o, di passaggio, dalla cornice, e la barra si ritrova
+        com'era, con il cursore dove era rimasto. F7 la rinfresca, e
+        un'azione fatta nel frattempo l'ha gia' riscritta."""
+        event.Skip()
+        provenienza = event.GetWindow()
+        ritorno = self._pie_di_pagina_col_focus and (
+            provenienza is None or provenienza is self
+        )
+        self._pie_di_pagina_col_focus = True
+        if not ritorno:
+            self._ricalcola_pie_di_pagina()
+
+    def _on_uscita_pie_di_pagina(self, event):
+        """Il focus lascia il pie' di pagina. Se va su un'altra finestra di
+        Tornello, dialoghi compresi, il focus logico se ne va con lui. Se va in
+        un'altra applicazione o in una finestra di sistema, come quella per
+        aprire i file, wx non la conosce e GetWindow vale None; se va sulla
+        cornice, ci passa soltanto. In quei casi il focus logico resta sulla
+        barra, dove tornera'."""
+        event.Skip()
+        destinazione = event.GetWindow()
+        if destinazione is not None and destinazione is not self:
+            self._pie_di_pagina_col_focus = False
+
+    @staticmethod
+    def _data_backup_piu_vecchio():
+        """Data di modifica del backup piu' vecchio; None se non ce ne sono.
+        Fino alla 10.4.1 restituiva l'eta' in giorni interi: dalla 10.4.2 il
+        conto lo fa indicatori_pie_di_pagina, in secondi."""
         from config import user_data_path
         from utils import elenca_file_di_backup
 
         tutti, _vecchi = elenca_file_di_backup(user_data_path("backup"))
         if not tutti:
             return None
-        return (datetime.now() - min(f["mtime"] for f in tutti)).days
+        return min(f["mtime"] for f in tutti)
 
     @staticmethod
-    def _giorni_database_fide():
-        """Eta' in giorni del database FIDE locale; None se non c'e'."""
+    def _data_database_fide():
+        """Data di modifica del database FIDE locale; None se non c'e'."""
         from datetime import datetime
 
         from config import FIDE_DB_LOCAL_FILE
 
         try:
-            aggiornato = datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))
+            return datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))
         except OSError:
             return None
-        return (datetime.now() - aggiornato).days
 
     def append_log(self, text):
         """Aggiunge testo all'area centrale posizionando il cursore all'inizio del blocco inserito."""
@@ -3617,6 +3731,11 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_close(self, event):
+        # Il timer del pie' di pagina si ferma per primo: l'invito alla
+        # donazione, con la sua finestra modale, fa girare il ciclo degli
+        # eventi, e un timer ancora acceso dopo la chiusura scatterebbe su
+        # controlli ormai distrutti.
+        self._timer_pie_di_pagina.Stop()
         from utils import copie_di_chiusura, play_sound
 
         copie_di_chiusura(self.active_filename)
