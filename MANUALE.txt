@@ -1,14 +1,10 @@
 MANUALE GUIDA DI TORNELLO v10.0.0
-=================================
 
 Benvenuto in Tornello, il software gestionale per tornei di scacchi con sistema svizzero. Questo documento unisce il manuale operativo e la documentazione tecnica del progetto in una guida unica, coerente e dettagliata, ricca di spiegazioni teoriche ed esempi pratici.
 
 Tornello è stato progettato con una priorità assoluta per l'accessibilità da parte di utenti non vedenti o ipovedenti, offrendo piena compatibilità con gli screen reader (es. NVDA e JAWS) e una navigazione interamente gestibile da tastiera.
 
-
-========================================================================
 1. INTRODUZIONE E STORIA DEL PROGETTO
-========================================================================
 
 1.1 LA FILOSOFIA DI TORNELLO
 Tornello nasce dall'esigenza reale di semplificare la gestione dei tornei di scacchi all'interno dei circoli, eliminando il carico di lavoro manuale che spesso rallenta le competizioni. Il progetto è dedicato in modo particolare all'Associazione Scacchisti Ciechi e Ipovedenti Italiani (ASCI) e alla comunità di Scacchierando, ponendo l'inclusione e l'accessibilità digitale come pilastri fondanti. Lo sviluppo, guidato da Gabriele Battaglia (Gabry) con la collaborazione dell'intelligenza artificiale ClaudIA, e con quella di Stella fino alla versione 9.3.14, punta a fornire uno strumento che sia al contempo potente per gli arbitri esperti e semplice da usare per i principianti.
@@ -27,10 +23,7 @@ Oggi, Tornello funge da interfaccia e gestore dei dati, mentre delega il calcolo
 3. Invoca silenziosamente il motore bbpPairings passandogli questo file.
 4. Legge il file di output generato dal motore e aggiorna istantaneamente i tavoli all'interno del programma.
 
-
-========================================================================
 2. ARCHITETTURA DELL'INTERFACCIA E NAVIGAZIONE ACCESSIBILE
-========================================================================
 
 Per consentire una navigazione rapida e intuitiva, la finestra principale di Tornello è suddivisa in tre grandi aree logiche. Ciascuna area è associata a un tasto funzione (F5, F6, F7) che sposta immediatamente il focus su di essa.
 
@@ -71,10 +64,7 @@ GT, TT, BK e FD contano il tempo in secondi: i valori crescono durante la giorna
 2.4 ACCESSIBILITÀ DEI DIALOGHI
 Tutti i dialoghi di Tornello (messaggi di errore, conferme, avvisi) evitano l'uso di controlli nativi inaccessibili. Al loro posto, viene utilizzata una finestra di dialogo personalizzata con un controllo di testo multilinee in sola lettura per il messaggio. All'apertura, il focus viene spostato automaticamente sul testo, permettendo allo screen reader di leggere subito l'avviso e all'utente di esplorarlo con le frecce.
 
-
-========================================================================
 3. SCORCIATOIE DA TASTIERA GLOBALI
-========================================================================
 
 Tornello può essere controllato interamente tramite tastiera. Di seguito viene riportata la lista completa dei tasti di scelta rapida:
 
@@ -103,10 +93,7 @@ Tasti per la Gestione dei Database:
 - Ctrl+K: Finestra di consultazione rapida del Database Ratings FIDE.
 - Ctrl+Y: Sincronizzazione del Database locale con l'ultimo file FIDE scaricato.
 
-
-========================================================================
 4. CREAZIONE DI UN NUOVO TORNEO (IL WIZARD)
-========================================================================
 
 4.1 SPIEGAZIONE TEORICA DEI PARAMETRI
 La creazione di un torneo avviene tramite una procedura guidata (Wizard) integrata direttamente nell'Albero di Destra. Questo evita l'apertura di finestre sovrapposte e permette di configurare ogni aspetto passo-passo. I parametri da definire sono:
@@ -129,7 +116,6 @@ La creazione di un torneo avviene tramite una procedura guidata (Wizard) integra
 3. Per modificare un parametro, posizionati su di esso e premi INVIO. Inserisci il valore nel campo di testo che appare (o seleziona l'opzione desiderata) e premi INVIO per confermare.
 4. Una volta configurati i parametri, comparirà in fondo alla lista la voce "Avanti". Posizionati su di essa e premi INVIO per accedere alla finestra di iscrizione dei giocatori.
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Configurazione di un torneo sociale Rapid
 Vogliamo organizzare il "Torneo Sociale di Primavera" del nostro club.
 - Nome: Torneo Sociale di Primavera
@@ -140,7 +126,6 @@ Vogliamo organizzare il "Torneo Sociale di Primavera" del nostro club.
 - Colore al più forte: Casuale.
 - Valore BYE: 1.0.
 Dopo aver inserito questi dati nell'albero di destra, scendiamo con le frecce fino a "Avanti" e premiamo INVIO. Il torneo è pronto per ricevere gli iscritti.
-------------------------------------------------------------------------
 
 4.3 CONFIGURAZIONE DEI CRITERI DI SPAREGGIO TECNICO
 Gli spareggi tecnici sono fondamentali per stabilire la classifica finale quando più giocatori terminano il torneo a pari punti. In conformità con le direttive FIDE Handbook, Tornello offre un sistema di configurazione altamente flessibile.
@@ -162,7 +147,6 @@ Gli spareggi tecnici sono fondamentali per stabilire la classifica finale quando
   4. Ciascun modificatore mostrerà l'etichetta "- attivo" o "- disattivo". Premi INVIO o clicca per effettuarne il toggle (accensione/spegnimento). La lista si aggiornerà mostrando la regola modificata (es. "1. Buchholz [Cut-1]").
   5. Il pannello informativo in fondo mostrerà la spiegazione teorica dettagliata del criterio selezionato con i relativi modificatori attivi.
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Configurazione di uno spareggio FIDE Standard
 Vogliamo impostare come criteri per il nostro torneo standard l'ordine consigliato dalla FIDE:
 1. Scontro Diretto (Direct Encounter - DE)
@@ -178,13 +162,8 @@ Passaggi per l'arbitro:
 6. Seleziona nuovamente "Buchholz" a sinistra e premi INVIO. Apparirà a destra come "3. Buchholz" (senza modificatori).
 7. Seleziona "ARO" a sinistra e premi INVIO. Apparirà a destra come "4. ARO".
 8. Premi INVIO su "Conferma" (pulsante OK). Le regole sono attive.
-------------------------------------------------------------------------
 
-
-
-========================================================================
 5. ISCRIZIONE GIOCATORI E RICERCA NEI DATABASE (LOCAL E FIDE)
-========================================================================
 
 La finestra di iscrizione (attivabile anche con Ctrl+I prima dell'inizio del torneo) consente di registrare i partecipanti cercandoli all'interno del Database Locale del circolo o nel Database Ratings FIDE globale (che contiene oltre 1 milione di record).
 
@@ -210,7 +189,6 @@ Per trovare rapidamente un giocatore in mezzo a centinaia di migliaia di record,
 - Paginazione: Per evitare di rallentare il sistema e lo screen reader con ricerche che restituiscono migliaia di risultati, i dati FIDE vengono mostrati a blocchi di 100. Se ci sono più di 100 risultati, in fondo alla lista compare la riga "-- Mostra altri risultati (X rimanenti) --". Premendo INVIO su questa riga, verranno caricati i 100 record successivi.
 - Focus Jump: Quando si seleziona un giocatore dai risultati e si preme INVIO per iscriverlo, il programma esegue un "salto di focus" automatico spostando la selezione sulla lista dei "Giocatori Iscritti al Torneo" e posizionando il cursore esattamente sul giocatore appena inserito. Lo screen reader annuncerà immediatamente il nome del giocatore iscritto e la sua posizione in tabellone (es. "1. Rossi Mario (ITA) 1850").
 
-------------------------------------------------------------------------
 ESEMPI PRATICI DI RICERCA
 - Scenario A: Cerchiamo una giocatrice italiana di nome Simona, nata nel 1985, ma vogliamo escludere le giocatrici che vivono o sono registrate a Milano.
   * Query di ricerca: "simona +ita -milano 1985"
@@ -222,12 +200,8 @@ ESEMPI PRATICI DI RICERCA
   3. Scorri la lista dei risultati con le frecce. Trovato "Girasole Marco (1673 ELO)", premi INVIO.
   4. Il focus salta a destra sulla lista degli iscritti. Sentirai il lettore di schermo dire: "1. Girasole Marco (ITA) 1673".
   5. Per aggiungere un altro giocatore, premi di nuovo TAB per tornare al campo di ricerca.
-------------------------------------------------------------------------
 
-
-========================================================================
 6. GESTIONE DEI TURNI E INSERIMENTO RISULTATI
-========================================================================
 
 Il torneo appena creato resta in preparazione: puoi rivedere i dati, aggiungere o togliere iscritti quante volte vuoi. Quando la lista e' al completo, lo avvii premendo INVIO sulla voce "calcola il turno 1", che trovi sotto la cartella "turni" del torneo, oppure sulla voce "Avvio torneo" in fondo al centro comandi (F6). Tornello genera cosi' gli abbinamenti del primo turno.
 Prima di generarli controlla che gli iscritti bastino per i turni previsti: fra N giocatori esistono N-1 avversari possibili, quindi servono almeno tanti iscritti quanti sono i turni piu' uno, altrimenti l'abbinatore resterebbe senza incontri nuovi prima della fine. Se il numero non basta l'avvio viene impedito e il torneo resta in preparazione. Se invece i turni sono meno di quelli consigliati per il numero di iscritti, ricevi solo un avviso e decidi tu se procedere.
@@ -243,48 +217,60 @@ Una partita da giocare non programmata si legge così: "Scacchiera 13: Neri Paol
 - L'arbitro vale "No" quando la partita non ne ha bisogno: nella finestra di programmazione è attiva la casella Arbitro non necessario, oppure nel campo era stato scritto a mano "Non necessario" o "no", anche con un punto o altra punteggiatura in fondo. Il no dentro un nome, come Bruno o Stefano, non conta. Queste partite non entrano nell'AR del piè di pagina.
 - Una sala o un arbitro lasciati vuoti valgono "N/D".
 I valori interi restano a portata di mano: spostandosi con le frecce su una partita, l'area centrale (F5) ne mostra il dettaglio, con giorno, ora, sala o URL e arbitro per esteso.
-La partita si programma dalla sua finestra del risultato, con il pulsante "Pianifica Partita". Nella finestra di programmazione si scelgono giorno, ora, sala o URL e arbitro designato; la casella Arbitro non necessario, subito prima del campo dell'arbitro, dice che la partita non ne ha bisogno e spegne il campo.
+La partita si programma dalla sua finestra del risultato, con il pulsante "Pianifica Partita...": la finestra di programmazione, dove si scelgono giorno, ora, sala o URL e arbitro designato, è descritta nella sezione 6.2.1.
 
 6.2 REGISTRAZIONE DEI RISULTATI
-Per inserire il risultato di una partita, selezionala dall'elenco "Non pianificate" (o "Pianificate") e premi INVIO. Si aprirà il dialogo dei risultati, dove potrai scegliere tra le seguenti opzioni tramite pulsanti radio:
-- 1 - 0: Vittoria del Bianco.
-- 0 - 1: Vittoria del Nero.
-- 1/2 - 1/2: Partita patta (pareggio).
-- 1 - 0 Forfeit (1 - 0F): Il Nero è assente o perde a tavolino; il Bianco ottiene il punto intero ma la partita non viene considerata per la variazione Elo.
-- 0 - 1 Forfeit (0F - 1): Il Bianco è assente o perde a tavolino; il Nero ottiene il punto.
-- 0 - 0 Forfeit (0F - 0F): Entrambi i giocatori sono assenti (doppia sconfitta a tavolino).
+Per inserire il risultato di una partita, selezionala nell'albero, nel ramo "da giocare" del turno corrente (sezione 6.1), e premi INVIO. Si aprirà la finestra del risultato, intitolata con il numero della scacchiera, per esempio "Risultato Scacchiera 3". Nel riquadro "Seleziona Risultato" si sceglie il risultato, con le frecce o con la barra spaziatrice, fra sei pulsanti radio: le quattro vittorie, sulla scacchiera o a tavolino, portano i nomi dei giocatori, la patta e l'assenza di entrambi no. Con Bianchi Luca che ha il Bianco e Russo Marco che ha il Nero, le voci sono queste:
+- "1 - 0 (Vince Bianchi Luca)": vittoria del Bianco.
+- "0 - 1 (Vince Russo Marco)": vittoria del Nero.
+- "1/2 - 1/2 (Patta)": partita patta (pareggio).
+- "1 - F (vince Bianchi Luca a tavolino, non si e' presentato Russo Marco)": il Nero è assente o perde a tavolino; il Bianco ottiene il punto intero ma la partita non viene considerata per la variazione Elo.
+- "F - 1 (vince Russo Marco a tavolino, non si e' presentato Bianchi Luca)": il Bianco è assente o perde a tavolino; il Nero ottiene il punto.
+- "0 - 0F (non si e' presentato nessuno dei due)": entrambi i giocatori sono assenti (doppia sconfitta a tavolino).
+Sotto le voci c'è il campo "Incolla qui il pgn della partita (opzionale):", per la partita in formato PGN. Un testo che non è un PGN valido spegne il pulsante di conferma, finché non viene corretto o cancellato.
 
 Altre opzioni nel dialogo:
-- Pianifica Partita: Consente di inserire data e ora. La partita verrà spostata nella cartella "Pianificate".
-- Ritira Giocatore: Consente di ritirare uno dei due contendenti dal torneo a partire dal turno successivo. Il giocatore non verrà più abbinato nei turni rimanenti.
+- "Pianifica Partita...": apre la finestra di programmazione, descritta nella sezione 6.2.1, dove si scelgono giorno, ora, sala o URL e arbitro.
+- "Ritira Giocatore...": chiede quale dei due contendenti ritirare dal torneo, a partire dal turno successivo. Il giocatore non verrà più abbinato nei turni rimanenti. Scelto il giocatore, la finestra del risultato si chiude subito e il risultato eventualmente selezionato non viene registrato. Per chi non si è presentato conviene registrare il forfait: dopo 1 - F o F - 1, quando manca uno solo dei due, il programma propone subito il ritiro di chi non si è presentato, come nell'esempio pratico che segue la sezione 6.3. Dopo 0 - 0F non propone niente: il ritiro si fa poi dall'albero, come spiega la sezione 6.2.2.
+In fondo ci sono i pulsanti "Annulla" e "Conferma Risultato"; ESC annulla. Quando tutte le partite del turno hanno il risultato, o quando il torneo è concluso, il risultato non si può più cambiare: le voci e i pulsanti "Pianifica Partita..." e "Ritira Giocatore..." sono spenti, e al posto di "Conferma Risultato" c'è "Salva PGN", che registra il solo PGN.
 
-6.2.1 RITIRARE UN GIOCATORE DALL'ALBERO
+6.2.1 LA FINESTRA DI PROGRAMMAZIONE DI UNA PARTITA
+La finestra "Pianificazione Partita" si apre premendo il pulsante "Pianifica Partita..." della finestra del risultato. Il pulsante è spento quando tutte le partite del turno hanno il risultato o quando il torneo è concluso. All'apertura il fuoco è sul giorno già scelto. I controlli, nell'ordine in cui li percorre il tasto TAB, sono questi:
+- Il giorno, nel riquadro "Seleziona Giorno": un gruppo di pulsanti radio, uno per giorno, con la data per esteso, per esempio "Venerdì 25 settembre 2026". Si scorre con le frecce, e il giorno su cui ci si ferma è già quello scelto; TAB passa al controllo successivo senza attraversare gli altri giorni. L'elenco parte da oggi e arriva a tre giorni dopo la fine del turno in corso, secondo il calendario dei turni: se il turno finisce il 30 settembre e la finestra si apre il 25, i giorni vanno dal 25 settembre al 3 ottobre. L'elenco comprende sempre almeno i tre giorni dopo oggi, anche quando il turno è già scaduto, e non va mai oltre trenta giorni da oggi. Se il calendario non indica la fine del turno vale la data di fine del torneo, e se manca anche quella la fine si pone a sette giorni da oggi. Una partita già programmata ritrova il suo giorno; se quel giorno è passato o è fuori dall'elenco, la scelta riparte da oggi, e confermando senza cambiarla la partita viene spostata a oggi.
+- L'ora, nella casella combinata "Ora:", con le ventiquattro ore da 00 a 23. Una partita non ancora programmata parte dalle 15.
+- I minuti, nella casella combinata "Minuto:", da 00 a 55 a passi di cinque. Una partita non ancora programmata parte da 00. Un orario scritto con la versione a riga di comando, con minuti fuori dai passi di cinque, viene portato al passo più vicino, e dal minuto 58 in su diventa 55 senza passare all'ora dopo.
+- Il campo "Sala / URL:", testo libero: la sala, la piattaforma o il collegamento dell'incontro.
+- La casella "Arbitro non necessario", spenta di serie, che si attiva e si spegne con la barra spaziatrice. Attiva, dice che la partita non ha bisogno di un arbitro: il campo seguente si spegne e TAB lo salta, al posto del nome viene registrata la dicitura "Non necessario" e la partita non conta nell'AR del piè di pagina. Le programmazioni in cui nel campo dell'arbitro era stato scritto a mano "Non necessario" o "no" la trovano già attiva.
+- Il campo "Arbitro designato:", testo libero con il nome dell'arbitro.
+- Il pulsante "Annulla", poi il pulsante "Conferma".
+INVIO conferma da qualunque punto della finestra; solo sul pulsante Annulla, come succede con ogni pulsante che ha il fuoco, INVIO annulla. ESC annulla da qualunque punto. Confermando si chiude anche la finestra del risultato: nell'albero la partita ancora da giocare passa fra le programmate del ramo "da giocare", con giorno, ora, sala e arbitro nell'etichetta (sezione 6.1), e la barra di stato dice, per esempio, "Partita pianificata per il Venerdì 25 settembre 2026 alle 17:30.", oppure "Nessuna modifica alla pianificazione." se non è cambiato niente. Un risultato o un PGN inseriti nella finestra del risultato prima di aprire la programmazione non vengono registrati: si inseriscono riaprendo la partita. Annullando si torna alla finestra del risultato e la programmazione resta quella di prima.
+Dalla finestra una programmazione si può cambiare ma non togliere: una volta programmata, la partita resta programmata. Per ora la toglie soltanto la versione a riga di comando di Tornello, quella che si avvia con l'opzione --cli, con due avvertenze. Prima di avviarla va chiusa la finestra di Tornello: la finestra salva il torneo che ha in memoria, e al primo salvataggio rimetterebbe la programmazione tolta. Inoltre la versione a riga di comando, salvando, perde i criteri di spareggio scelti, che tornano quelli predefiniti: riaperta la finestra, vanno ricontrollati e se serve scelti di nuovo con INVIO sulla voce "regole di spareggio" del torneo, nell'albero.
+I suoni della finestra:
+- Giorno, ora e minuto: un bip sinusoidale di 40 millesimi di secondo, la cui altezza dice la posizione della voce scelta, un semitono per voce a partire dal do centrale. Oggi è il do e ogni giorno sale di un semitono; le 00 sono il do e le 23 il si ventitré semitoni più in alto, subito sotto il do di due ottave sopra; i minuti 00 sono il do e i 55 il si undici semitoni più in alto. Il bip si sente arrivando sulla scelta e a ogni cambio.
+- Sala / URL, Arbitro non necessario e Arbitro designato: una sinusoide acuta di 45 millesimi di secondo, quando ci si arriva.
+- I pulsanti Annulla e Conferma non suonano quando ci si arriva. Alla conferma si sente il suono della partita pianificata.
+
+6.2.2 RITIRARE UN GIOCATORE DALL'ALBERO
 A torneo iniziato, premendo CANC su un giocatore nell'elenco degli iscritti, l'iscrizione non può più essere tolta, perché i risultati già registrati resterebbero riferiti a un giocatore che non esiste più. Al suo posto il programma propone il ritiro, che è quasi sempre l'operazione cercata. Nell'albero il giocatore ritirato è segnalato dalla parola "ritirato" accanto al nome.
-Se il giocatore ha una partita del turno in corso ancora senza risultato, la proposta non compare: prima va registrato quel risultato, indicando il forfait se non si è presentato, e subito dopo il programma propone il ritiro. Se invece ha già giocato, il risultato resta valido e il ritiro vale dal turno successivo.
+Se il giocatore ha una partita del turno in corso ancora senza risultato, la proposta non compare: prima va registrato quel risultato, indicando il forfait se non si è presentato. Con 1 - F o F - 1 il programma propone subito il ritiro di chi non si è presentato; con 0 - 0F no, e il ritiro si chiede poi di nuovo con CANC. Se invece ha già giocato, il risultato resta valido e il ritiro vale dal turno successivo.
 Il ritiro viene impedito quando lascerebbe il torneo senza abbastanza giocatori per completare i turni che mancano: fra N giocatori esistono N-1 avversari possibili, quindi servono almeno tanti giocatori attivi quanti sono i turni rimanenti più uno. In quel caso il messaggio dice quanti ne resterebbero e quanti ne servono, e propone due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori già ritirati escono dall'elenco e tutto torna modificabile, oppure eliminare il torneo. Prima di riportare indietro il torneo viene creata una copia di sicurezza nella cartella backup.
 
 6.3 CHIUSURA DEL TURNO E GENERAZIONE DEL TURNO SUCCESSIVO
-Quando tutte le partite del turno corrente sono nella cartella "Concluse", sull'albero di destra compare la voce "Genera Turno X" (dove X è il turno successivo). Premendo INVIO, Tornello invoca bbpPairings per calcolare i nuovi abbinamenti. I nuovi accoppiamenti vengono immediatamente visualizzati nell'Area Centrale (F5).
+Quando tutte le partite del turno corrente hanno il risultato, sotto il ramo "turni" dell'albero di destra compare la voce "calcola il turno successivo" (sezione 6.1). Premendo INVIO, Tornello invoca bbpPairings per calcolare i nuovi abbinamenti. I nuovi accoppiamenti vengono immediatamente visualizzati nell'Area Centrale (F5).
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Inserimento di un risultato e ritiro
-Al tavolo 3 giocano Bianchi (Bianco) contro Neri (Nero). Neri non si presenta entro il tempo massimo di tolleranza (tempo di caduta).
-1. Sull'albero di destra (F6), espandi "Partite", poi "Non pianificate".
-2. Seleziona la riga "Tavolo 3: Bianchi - Neri" e premi INVIO.
-3. Nel dialogo, usa le frecce per selezionare il pulsante radio "1 - 0 Forfeit".
-4. Poiché sappiamo che Neri ha deciso di abbandonare il torneo e non giocherà i turni successivi, premiamo TAB fino al pulsante "Ritira Giocatore" e premiamo SPAZIO o INVIO. Selezioniamo il giocatore Neri dal menu e confermiamo.
-5. Premiamo TAB fino al pulsante "OK" del dialogo dei risultati e premiamo INVIO.
-6. La partita si sposta sotto "Partite Concluse", il punto va a Bianchi e Neri viene rimosso dai futuri abbinamenti.
-------------------------------------------------------------------------
+Alla scacchiera 3 giocano Bianchi Luca (Bianco) contro Neri Paolo (Nero). Neri non si presenta entro il tempo massimo di tolleranza (tempo di caduta).
+1. Sull'albero di destra (F6), apri il ramo "turni" del torneo, poi "Turno corrente" e "da giocare".
+2. Seleziona la riga "Scacchiera 3: Bianchi Luca vs Neri Paolo (Non pianificata)" e premi INVIO.
+3. Nel dialogo, usa le frecce per selezionare il pulsante radio "1 - F (vince Bianchi Luca a tavolino, non si e' presentato Neri Paolo)".
+4. Premiamo INVIO, oppure TAB fino al pulsante "Conferma Risultato" e SPAZIO.
+5. Subito dopo il programma chiede se Paolo Neri si ritira definitivamente dal torneo. Poiché sappiamo che ha deciso di abbandonare il torneo e non giocherà i turni successivi, rispondiamo "Sì".
+6. La partita passa nel ramo "giocate", il punto va a Bianchi e Neri non verrà più abbinato nei turni successivi.
 
 6.4 ESPORTAZIONE ICS E PIANIFICAZIONE CALENDARI
-Dalla cartella "Partite" nell'albero, o premendo Ctrl+Shift+E, è possibile esportare tutte le partite pianificate in un file di formato standard iCalendar (.ics). Questo file può essere importato in applicazioni esterne (Google Calendar, Outlook, Apple Calendar) per consentire ai giocatori e agli arbitri di visualizzare i propri turni direttamente sui propri dispositivi mobili o PC.
+Dal menu File, con la voce "Esporta partite pianificate...", o premendo Ctrl+Shift+E, è possibile esportare tutte le partite pianificate in un file di formato standard iCalendar (.ics). Questo file può essere importato in applicazioni esterne (Google Calendar, Outlook, Apple Calendar) per consentire ai giocatori e agli arbitri di visualizzare i propri turni direttamente sui propri dispositivi mobili o PC.
 
-
-
-========================================================================
 7. IL SISTEMA DI FEEDBACK ACUSTICI (ACUSTICATOR)
-========================================================================
 
 Tornello v9 integra il modulo "Acusticator" per fornire feedback acustici in tempo reale. Questo sistema è pensato per dare conferma immediata delle operazioni effettuate anche senza leggere lo schermo.
 
@@ -303,21 +289,17 @@ Nel file di configurazione "Acu_Collection.json" sono mappati tutti i suoni di s
 - Rimozione/Ritiro giocatore: Tono discendente.
 - Partita pianificata/modificata: Segnale acustico di transizione.
 - Finestra di programmazione, campi e casella: una sinusoide brevissima ogni volta che ci si arriva.
-- Finestra di programmazione, giorno, ora e minuto: un bip la cui altezza dice la posizione della voce scelta, un semitono per voce a partire dal do centrale. Le ore vanno dalla mezzanotte al do, alle 23 al si di due ottave sopra; i minuti salgono di un semitono ogni cinque minuti; i giorni di un semitono ogni giorno a partire da oggi. Il bip si sente quando ci si arriva e a ogni cambio di scelta.
+- Finestra di programmazione, giorno, ora e minuto: un bip la cui altezza dice la posizione della voce scelta, un semitono per voce a partire dal do centrale. Le ore vanno dal do della mezzanotte al si delle 23, ventitré semitoni più in alto, subito sotto il do di due ottave sopra; i minuti salgono di un semitono ogni cinque minuti; i giorni di un semitono ogni giorno a partire da oggi. Il bip si sente quando ci si arriva e a ogni cambio di scelta. La finestra è descritta nella sezione 6.2.1.
 - Fine Turno: Suono celebrativo ("conclusione_turno") quando si inserisce l'ultimo risultato.
 - Fine Torneo: Una melodia complessa ("conclusione_torneo") all'atto della finalizzazione.
 - Time Machine: Un caratteristico suono di "riavvolgimento del nastro" ("time_machine").
 
-
-========================================================================
 8. LA MACCHINA DEL TEMPO (TIME MACHINE - Ctrl+Z)
-========================================================================
 
 8.1 SPIEGAZIONE TEORICA
 Durante la conduzione di un torneo, può capitare di commettere un errore grave, come inserire un risultato errato al turno precedente o accorgersi che un giocatore iscritto in ritardo doveva essere inserito prima di generare il turno corrente.
 Il comando "Time Machine" (attivabile premendo Ctrl+Z o selezionando "Time Machine" dall'albero) consente di annullare l'ultimo turno generato e riportare il torneo allo stato immediatamente precedente alla chiusura del turno precedente. Tutti i risultati inseriti nel turno annullato verranno persi, consentendo all'arbitro di correggere i dati e rigenerare gli abbinamenti in modo corretto.
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Uso della Time Machine
 Abbiamo appena generato gli abbinamenti per il Turno 3. Ci accorgiamo che al Turno 2 abbiamo inserito per errore una vittoria del Bianco al tavolo 1, mentre la partita era finita patta.
 1. Premiamo Ctrl+Z.
@@ -327,12 +309,8 @@ Abbiamo appena generato gli abbinamenti per il Turno 3. Ci accorgiamo che al Tur
 5. Sull'albero di destra (F6), andiamo su "Partite Concluse", selezioniamo il tavolo 1 e premiamo INVIO.
 6. Cambiamo il risultato in "1/2 - 1/2" e premiamo OK.
 7. Selezioniamo "Genera Turno 3" e premiamo INVIO. I nuovi abbinamenti del Turno 3 verranno ricalcolati da bbpPairings tenendo conto del risultato corretto del Turno 2.
-------------------------------------------------------------------------
 
-
-========================================================================
 9. CONCLUSIONE E FINALIZZAZIONE DEL TORNEO (Ctrl+F)
-========================================================================
 
 Al termine dell'ultimo turno, dopo aver inserito tutti i risultati, compare la voce "Finalizza Torneo" (attivabile anche premendo Ctrl+F). Questa operazione chiude ufficialmente il torneo ed esegue una serie di operazioni matematiche ed archivistiche.
 
@@ -373,19 +351,14 @@ Il torneo viene archiviato dentro la cartella "Closed Tournaments", che sta acca
 9.4 ELIMINAZIONE DI UN TORNEO ATTIVO
 Se si desidera eliminare definitivamente un torneo e tutti i suoi report dal disco, è possibile farlo in due modi: selezionando il menù File -> Elimina Torneo Attivo, oppure posizionandosi sul nodo del torneo attivo nell'albero di destra (F6) e premendo il tasto CANC/DELETE. Verrà mostrato un dialogo di conferma accessibile che elenca tutti i file che saranno rimossi (incluso il JSON del torneo, i report .txt della classifica e dei turni, e i calendari .ics). Se confermato, Tornello ripulirà completamente le directory del disco e riporterà l'albero allo stato iniziale.
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Chiusura del torneo e verifica dei dati
 Il torneo Rapid a 5 turni è terminato. Tutti i risultati del turno 5 sono stati inseriti.
 1. Premiamo Ctrl+F (o selezioniamo "Finalizza Torneo" dall'albero).
 2. Viene riprodotto il suono celebrativo di fine torneo.
 3. Nell'Area Centrale (F5) appare la classifica finale con colonne dedicate a Punti e ai criteri di spareggio ordinati come impostato (es. Scontro Diretto, Buchholz [Cut-1], Buchholz Totale, ARO).
 4. Se apriamo la gestione del Database Locale (Ctrl+D) e selezioniamo il vincitore del torneo, vedremo che nel suo storico è presente il "Torneo Sociale di Primavera", il suo Elo Rapid locale è stato aggiornato con il delta calcolato, e nel suo medagliere è stata aggiunta una medaglia d'oro.
-------------------------------------------------------------------------
 
-
-========================================================================
 10. STRUMENTI E MANUTENZIONE DEI DATABASE
-========================================================================
 
 Tornello offre tre strumenti avanzati per la gestione dell'anagrafica dei giocatori, accessibili in qualunque momento tramite scorciatoie da tastiera dedicate.
 
@@ -402,7 +375,6 @@ Permette di tenere aggiornato il Database Locale confrontandolo con l'ultimo fil
 - Modalità Massiva (In Blocco): Il software analizza tutti i giocatori del database locale e aggiorna automaticamente i loro Elo FIDE all'ultimo valore pubblicato, senza richiedere interventi.
 - Modalità Passo-Passo (Consigliata): Il programma mostra a schermo ogni giocatore locale e la corrispondente scheda FIDE trovata per conferma. Questa modalità è cruciale in caso di omonimie: se nel database FIDE sono presenti più giocatori con lo stesso nome e cognome (es. due giocatori di nome "Rossi Mario"), il sistema mostra l'elenco di tutte le corrispondenze trovate con il relativo anno di nascita e nazione, permettendo all'arbitro di selezionare manualmente la persona corretta prima di procedere all'aggiornamento.
 
-------------------------------------------------------------------------
 ESEMPIO PRATICO: Risoluzione di un'omonimia durante la sincronizzazione
 Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
 1. Il sistema incontra il giocatore locale "Bianchi Giovanni" (anno di nascita 1990).
@@ -412,7 +384,6 @@ Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
 3. Il programma apre una finestra di dialogo accessibile elencando i due record FIDE trovati e chiedendo di selezionare quello corretto.
 4. Utilizzando le frecce verticali, ci posizioniamo sul secondo record (anno 1990) e premiamo INVIO.
 5. Il sistema aggiorna la scheda locale di "Bianchi Giovanni" con l'Elo corretto di 1750 e passa al giocatore successivo della lista.
-------------------------------------------------------------------------
 
 10.4 PULIZIA E MANUTENZIONE DEI BACKUP
 Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, Tornello include un sistema di gestione e pulizia dei backup.
@@ -426,11 +397,8 @@ Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, T
   La lista accetta piu' file per volta: shift con le frecce verticali estende la selezione riga per riga, shift con Inizio e shift con Fine la estende fino in cima o fino in fondo, e Ctrl+A prende tutto l'elenco. La conferma dice quanti file stai per eliminare, e dopo la cancellazione il fuoco resta nella lista, sulla riga che ha preso il posto della prima eliminata.
   Le cartelle dell'anno e del mese che restano senza file vengono tolte di mezzo da sole, sia dopo una cancellazione sia al controllo di avvio; la cartella backup invece resta sempre.
 - Integrazione Cestino: Per evitare perdite accidentali di dati storici dei tornei, l'eliminazione dei file non è diretta, ma tenta di spostarli nel Cestino del sistema operativo dell'utente.
-------------------------------------------------------------------------
 
-========================================================================
 11. IMPOSTAZIONI DELL'APPLICAZIONE (AUDIO, LINGUA E DATABASE)
-========================================================================
 
 Tornello offre una finestra di configurazione globale accessibile tramite la barra dei menù (Strumenti -> Impostazioni). Questo dialogo è strutturato in schede (Tab) navigabili tramite la tastiera ed è interamente accessibile:
 
