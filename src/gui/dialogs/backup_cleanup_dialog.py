@@ -26,6 +26,7 @@ from copie_di_sicurezza import (
     copie_da_scartare,
     dettagli_della_copia,
     elenca_copie,
+    eta_a_parole,
     leggi_copia,
     momento_in_parole,
     percorsi_del_programma,
@@ -235,7 +236,7 @@ class BackupCleanupDialog(wx.Dialog):
                     copia.data.strftime("%Y-%m-%d %H:%M:%S"),
                     momento_in_parole(copia.contesto),
                     contenuto_breve(copia, con_origine=con_origine),
-                    _("{m} mesi, {d} giorni").format(m=mesi, d=giorni),
+                    eta_a_parole(mesi, giorni),
                 )
             )
         return testi

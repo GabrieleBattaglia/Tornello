@@ -164,6 +164,26 @@ def _finalizza(banco, avvisi=None):
     )
 
 
+def _finalizza_in_console(banco):
+    """Finalizza come fa la versione a riga di comando: il controller con il
+    suo modello del torneo e il database che tiene aperto."""
+    import controller
+    from db_players import load_players_db
+    from models import Tournament
+
+    messaggi = []
+    interfaccia = types.SimpleNamespace(
+        show_message=messaggi.append, show_error=messaggi.append
+    )
+    finto = types.SimpleNamespace(
+        tournament=Tournament.from_dict(copy.deepcopy(banco.torneo)),
+        players_db=load_players_db(),
+        active_filename=banco.file_torneo,
+        ui=interfaccia,
+    )
+    return controller.TournamentController._finalize_tournament(finto)
+
+
 def _json_in_archivio(cartella=None):
     return os.path.join(cartella or _cartella_archivio(), f"Tornello - {NOME}.json")
 
@@ -286,6 +306,30 @@ class TestFinalizzazioneRipetuta:
         assert any(c.endswith(".txt") for c in messi_da_parte)
         assert _copie(banco.backup, "pre_archiviazione") == []
         assert any("già finalizzato e archiviato" in a for a in avvisi)
+
+    def test_un_giocatore_solo_senza_lo_storico_e_al_singolare(self, banco):
+        """La finalizzazione ripetuta, con un K ricalcolato, trova un solo
+        giocatore senza il torneo nello storico: lo aggiorna, e l'avviso lo
+        dice al singolare. Fino alla 10.13.5 si leggeva per 1 giocatori, che
+        non avevano il torneo nello storico."""
+        dati = _leggi(banco.db)
+        for giocatore in dati["players"]:
+            giocatore["games_played"] = 29
+        _scrivi(banco.db, dati)
+        assert _finalizza(banco) is True
+        dati = _leggi(banco.db)
+        dati["players"][0]["tournaments_played"] = []
+        _scrivi(banco.db, dati)
+
+        _scrivi(banco.file_torneo, banco.torneo)
+        avvisi = []
+        assert _finalizza(banco, avvisi) is True
+
+        assert (
+            "Il database ha però ricevuto questa finalizzazione per un giocatore, che non aveva il torneo nello storico: per lui l'archivio non coincide con il database."
+            in avvisi
+        )
+        assert not any("per 1 giocatori" in a for a in avvisi)
 
 
 class TestArchiviazione:
@@ -601,24 +645,10 @@ class TestFinalizzazioneInConsole:
     database lo tocca solo la finalizzazione comune, una volta."""
 
     def test_elo_applicato_una_volta_e_copia_del_database_pulita(self, banco):
-        import controller
-        from db_players import load_players_db
-        from models import Tournament
-
         with open(banco.db, "rb") as f:
             database_prima = f.read()
-        messaggi = []
-        interfaccia = types.SimpleNamespace(
-            show_message=messaggi.append, show_error=messaggi.append
-        )
-        finto = types.SimpleNamespace(
-            tournament=Tournament.from_dict(copy.deepcopy(banco.torneo)),
-            players_db=load_players_db(),
-            active_filename=banco.file_torneo,
-            ui=interfaccia,
-        )
 
-        assert controller.TournamentController._finalize_tournament(finto) is True
+        assert _finalizza_in_console(banco) is True
 
         archiviato = _leggi(
             os.path.join(_cartella_archivio(), f"Tornello - {NOME}.json")
@@ -635,3 +665,143 @@ class TestFinalizzazioneInConsole:
         with open(copie_db[0], "rb") as f:
             assert f.read() == database_prima
         assert len(_copie(banco.backup, "pre_finalize_torneo")) == 1
+
+
+# Gli Elo delle cadenze nel database della prova. G4 non ne ha nessuno: nei
+# rapid e nei blitz parte dal suo current_elo, come nel calcolo dell'Elo di
+# partenza.
+ELO_RAPID = {"G1": 1700, "G2": 1650, "G3": 1600, "G4": 0}
+ELO_BLITZ = {"G1": 1750, "G2": 1600, "G3": 1580, "G4": 0}
+CADENZE = {
+    "standard": {"minutes": 90, "increment": 30, "pgn_value": "5400+30"},
+    "rapid": {"minutes": 15, "increment": 10, "pgn_value": "900+10"},
+    "blitz": {"minutes": 3, "increment": 2, "pgn_value": "180+2"},
+}
+
+
+def _con_la_cadenza(banco, categoria):
+    """Il database con gli Elo rapid e blitz, e il torneo della cadenza
+    scelta, con l'Elo di partenza che gli darebbe l'iscrizione. Restituisce
+    le schede del database come sono prima della finalizzazione."""
+    from stats import get_initial_elo_for_tournament
+
+    dati = _leggi(banco.db)
+    for giocatore in dati["players"]:
+        giocatore["elo_rapid"] = ELO_RAPID[giocatore["id"]]
+        giocatore["elo_blitz"] = ELO_BLITZ[giocatore["id"]]
+    _scrivi(banco.db, dati)
+    schede = {g["id"]: g for g in dati["players"]}
+    banco.torneo["tournament_category"] = categoria
+    banco.torneo["time_control"] = CADENZE[categoria]
+    for giocatore in banco.torneo["players"]:
+        giocatore["initial_elo"] = get_initial_elo_for_tournament(
+            schede[giocatore["id"]], categoria
+        )
+    _scrivi(banco.file_torneo, banco.torneo)
+    return copy.deepcopy(schede)
+
+
+def _variazioni_archiviate():
+    return {p["id"]: p["elo_change"] for p in _leggi(_json_in_archivio())["players"]}
+
+
+class TestEloDellaCadenza:
+    """Dalla 10.13.4 la variazione Elo dei tornei rapid e blitz va sull'Elo
+    della cadenza, lo stesso da cui viene l'Elo di partenza, e non piu' su
+    current_elo; negli standard resta su current_elo. Decisione di Gabriele
+    come arbitro: la 10.8.10 aveva lasciato current_elo in via provvisoria."""
+
+    @pytest.mark.parametrize(
+        ("categoria", "campo", "altro"),
+        [("rapid", "elo_rapid", "elo_blitz"), ("blitz", "elo_blitz", "elo_rapid")],
+    )
+    def test_cambia_solo_l_elo_della_cadenza(self, banco, categoria, campo, altro):
+        prima = _con_la_cadenza(banco, categoria)
+
+        assert _finalizza(banco) is True
+
+        variazioni = _variazioni_archiviate()
+        dopo = _giocatori_del_db(banco.db)
+        # La prova ha senso solo con variazioni vere, anche per G4.
+        assert variazioni["G1"] > 0 and variazioni["G4"] != 0
+        for pid in ELO_INIZIALI:
+            base = prima[pid][campo] or prima[pid]["current_elo"]
+            assert dopo[pid][campo] == base + variazioni[pid], pid
+            assert dopo[pid]["current_elo"] == prima[pid]["current_elo"], pid
+            assert dopo[pid][altro] == prima[pid][altro], pid
+            assert dopo[pid]["games_played"] == 11, pid
+        # G4 non aveva l'Elo della cadenza: nasce dal suo current_elo, da
+        # cui e' partito nel torneo, piu' la variazione.
+        assert dopo["G4"][campo] == ELO_INIZIALI["G4"] + variazioni["G4"]
+        # La voce dello storico dice il campo, il valore di prima e quello
+        # scritto, per lo storno della riapertura.
+        for pid in ELO_INIZIALI:
+            voce = dopo[pid]["tournaments_played"][-1]
+            assert voce["elo_field"] == campo, pid
+            assert voce["elo_before"] == prima[pid][campo], pid
+            assert voce["elo_after"] == dopo[pid][campo], pid
+
+    def test_negli_standard_resta_current_elo(self, banco):
+        prima = _con_la_cadenza(banco, "standard")
+
+        assert _finalizza(banco) is True
+
+        variazioni = _variazioni_archiviate()
+        dopo = _giocatori_del_db(banco.db)
+        assert variazioni["G1"] > 0
+        for pid in ELO_INIZIALI:
+            attesa = prima[pid]["current_elo"] + variazioni[pid]
+            assert dopo[pid]["current_elo"] == attesa, pid
+            assert dopo[pid]["elo_rapid"] == prima[pid]["elo_rapid"], pid
+            assert dopo[pid]["elo_blitz"] == prima[pid]["elo_blitz"], pid
+            voce = dopo[pid]["tournaments_played"][-1]
+            assert (voce["elo_field"], voce["elo_before"], voce["elo_after"]) == (
+                "current_elo",
+                prima[pid]["current_elo"],
+                attesa,
+            ), pid
+
+    def test_un_ritirato_non_ha_l_elo_nella_voce(self, banco):
+        """Un ritirato non ha variazione, e la sua voce dello storico non ha
+        i campi dell'Elo: lo storno non ne tocca nessuno."""
+        _con_la_cadenza(banco, "rapid")
+        banco.torneo["players"][3]["withdrawn"] = True
+        _scrivi(banco.file_torneo, banco.torneo)
+
+        assert _finalizza(banco) is True
+
+        voce = _giocatori_del_db(banco.db)["G4"]["tournaments_played"][-1]
+        assert not {"elo_field", "elo_before", "elo_after"} & voce.keys()
+        assert _giocatori_del_db(banco.db)["G4"]["elo_rapid"] == 0
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz", "standard"])
+    def test_la_console_fa_come_la_finestra(self, banco, categoria):
+        """Lo stesso torneo finalizzato dalla finestra e, rimesso tutto
+        com'era, dalla console: il database deve venire uguale."""
+        import shutil
+
+        prima = _con_la_cadenza(banco, categoria)
+        database_prima = _leggi_byte(banco.db)
+        assert _finalizza(banco) is True
+        dalla_finestra = _giocatori_del_db(banco.db)
+
+        with open(banco.db, "wb") as f:
+            f.write(database_prima)
+        _scrivi(banco.file_torneo, banco.torneo)
+        shutil.rmtree(_cartella_archivio())
+        assert _finalizza_in_console(banco) is True
+
+        assert _giocatori_del_db(banco.db) == dalla_finestra
+        campo = {"rapid": "elo_rapid", "blitz": "elo_blitz"}.get(categoria, "current_elo")
+        assert dalla_finestra["G1"][campo] > prima["G1"][campo]
+
+    def test_una_seconda_finalizzazione_non_raddoppia_l_elo_rapid(self, banco):
+        """La guardia della 10.8.8 vale anche per l'Elo della cadenza."""
+        _con_la_cadenza(banco, "rapid")
+        assert _finalizza(banco) is True
+        dopo_la_prima = _leggi_byte(banco.db)
+
+        _scrivi(banco.file_torneo, banco.torneo)
+        assert _finalizza(banco, []) is True
+
+        assert _leggi_byte(banco.db) == dopo_la_prima

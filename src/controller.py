@@ -1110,7 +1110,10 @@ class TournamentController:
         # ogni giocatore riceveva le partite due volte, e due volte la
         # variazione Elo, nei tornei standard tutte e due sull'Elo principale,
         # nei rapid e nei blitz una su quello della cadenza e una sul
-        # principale.
+        # principale. Dalla 10.13.4 ui.finalize_tournament mette la
+        # variazione sull'Elo della cadenza, per la console e per la finestra
+        # insieme: la 10.8.10 l'aveva lasciata su current_elo in via
+        # provvisoria.
 
         # Archiviazione
         # Richiama la finalizzazione/archiviazione dei report

@@ -16,7 +16,7 @@ import types
 from datetime import datetime
 
 import pytest
-from test_finalizzazione import ELO_INIZIALI, INIZIO, NOME, _torneo_finito
+from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _torneo_finito
 
 MESE = os.path.join("2026", "09 Settembre")
 
@@ -329,10 +329,20 @@ class TestElenco:
         righe = dettagli_della_copia(copia, datetime(2026, 9, 25, 10, 0, 0))
 
         assert "Momento: alla chiusura del programma" in righe
-        assert "Età: 0 mesi, 1 giorni" in righe
+        assert "Età: 0 mesi, 1 giorno" in righe
         assert "Stato: in preparazione" in righe
         assert "Turni abbinati: 0 su 6" in righe
         assert all(len(r) <= 40 for r in righe if r != copia.nome)
+
+    def test_l_eta_con_una_sola_unita_e_al_singolare(self):
+        """Fino alla 10.13.5 si leggeva 0 mesi, 1 giorni, nei dettagli e
+        nella colonna dell'elenco."""
+        from copie_di_sicurezza import eta_a_parole
+
+        assert eta_a_parole(0, 1) == "0 mesi, 1 giorno"
+        assert eta_a_parole(1, 0) == "1 mese, 0 giorni"
+        assert eta_a_parole(1, 1) == "1 mese, 1 giorno"
+        assert eta_a_parole(14, 22) == "14 mesi, 22 giorni"
 
 
 class TestConfrontoTorneo:
@@ -428,7 +438,47 @@ class TestConfrontoDatabase:
         assert [(pid, oggi, nella_copia) for pid, _c, oggi, nella_copia in esito["elo"]] == [("G1", 1845, 1829), ("G2", 1500, 1499)]
         assert "  Rossi Nome, Elo 1845 a 1829 (-16)" in righe
         assert "Tornei che uscirebbero dagli storici: 1" in righe
+        assert "  Primavera, 1 giocatore" in righe
         assert "  Coppa: Verdi Nome" in righe
+
+    def test_un_giocatore_solo_e_al_singolare(self):
+        """Partite, storici e medaglie contano i giocatori: fino alla 10.13.5
+        anche uno solo era al plurale."""
+        from copie_di_sicurezza import confronta_database, righe_del_confronto_database
+
+        primavera = {"tournament_name": "Primavera", "tournament_id": "P", "date_started": "2026-05-01"}
+        estate = {"tournament_name": "Estate", "tournament_id": "E", "date_started": "2026-07-01"}
+        attuale = {
+            "schema_version": 2,
+            "players": [
+                _giocatore("G1", "Rossi", games_played=11, medals={"gold": 1}, tournaments_played=[primavera, estate]),
+                _giocatore("G2", "Bianchi", games_played=5, tournaments_played=[primavera]),
+            ],
+        }
+        copia = {
+            "schema_version": 2,
+            "players": [
+                _giocatore("G1", "Rossi", games_played=10, medals={"gold": 0}, tournaments_played=[]),
+                _giocatore("G2", "Bianchi", games_played=5, tournaments_played=[]),
+            ],
+        }
+
+        righe = righe_del_confronto_database(confronta_database(copia, attuale))
+
+        assert "Partite giocate diverse: 1 giocatore" in righe
+        assert "Medaglie diverse: 1 giocatore" in righe
+        assert "  Estate, 1 giocatore" in righe
+        assert "  Primavera, 2 giocatori" in righe
+
+    def test_una_voce_sola_oltre_l_elenco_e_al_singolare(self):
+        """Rilievo della revisione: con una voce in piu' di quelle che
+        l'elenco mostra, fino alla 10.13.5 si leggeva e altre 1."""
+        from copie_di_sicurezza import RIGHE_PER_ELENCO, _elenco
+
+        titolo = "Voci: {numero}"
+        assert _elenco(titolo, list(range(RIGHE_PER_ELENCO + 1)))[-1] == "  e un'altra"
+        assert _elenco(titolo, list(range(RIGHE_PER_ELENCO + 2)))[-1] == "  e altre 2"
+        assert _elenco(titolo, list(range(RIGHE_PER_ELENCO)))[-1] == f"  {RIGHE_PER_ELENCO - 1}"
 
 
 def _giocatori_db(voci=None):
@@ -515,6 +565,187 @@ class TestStorno:
 
         assert esito["giocatori"]["G2"]["games_played"] == 0
         assert esito["giocatori"]["G2"]["medals"]["gold"] == 1
+
+    def _rapid(self):
+        torneo = self._archiviato()
+        torneo["tournament_category"] = "rapid"
+        return torneo
+
+    def _voce_con_l_elo(self, campo, prima, dopo):
+        """La voce come la scrive la finalizzazione dalla 10.13.4: il campo
+        dell'Elo che ha ricevuto la variazione, il valore di prima, se il
+        campo c'era, e quello scritto. prima None vuol dire che il campo non
+        c'era."""
+        voce = self._voce()
+        voce["elo_field"] = campo
+        if prima is not None:
+            voce["elo_before"] = prima
+        voce["elo_after"] = dopo
+        return voce
+
+    def test_un_rapid_torna_all_elo_rapid_della_copia(self):
+        """Dalla 10.13.4 la finalizzazione di un rapid scrive su elo_rapid, e
+        lo storno toglie la variazione da li': current_elo non cambia. G4
+        non aveva l'Elo rapid, e la finalizzazione glielo ha dato dal suo
+        current_elo: torna a zero, e la copia lo conferma."""
+        from copie_di_sicurezza import righe_dello_storno, storno_finalizzazione
+
+        di_prima = _giocatori_db()
+        schede = _giocatori_db()
+        for pid, variazione in zip(ELO_INIZIALI, (16, -16, 2, -2), strict=True):
+            di_prima[pid]["elo_rapid"] = 1650.0
+            schede[pid]["elo_rapid"] = 1650 + variazione
+            schede[pid]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 1650.0, 1650 + variazione)]
+        di_prima["G4"]["elo_rapid"] = 0.0
+        schede["G4"]["elo_rapid"] = ELO_INIZIALI["G4"] - 2
+        schede["G4"]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 0.0, ELO_INIZIALI["G4"] - 2)]
+
+        esito = storno_finalizzazione(schede, self._rapid(), di_prima)
+
+        for pid in ELO_INIZIALI:
+            assert esito["giocatori"][pid]["elo_rapid"] == di_prima[pid]["elo_rapid"], pid
+            assert esito["giocatori"][pid]["current_elo"] == ELO_INIZIALI[pid], pid
+        assert all(s["da_copia"] and s["campo"] == "elo_rapid" for s in esito["stornati"])
+        assert esito["segnalazioni"] == []
+        assert "CognomeG1 NomeG1: Elo rapid 1666 a 1650 (-16), partite 10 a 9, un oro in meno" in righe_dello_storno(esito)
+
+    def test_senza_la_copia_l_elo_rapid_di_prima_viene_dallo_storico(self):
+        """Senza la copia pre_finalize_db, per esempio riaprendo da una copia
+        di un turno, il valore di prima viene dalla voce dello storico, ed e'
+        esatto: G3 aveva l'Elo rapid a zero e ci torna, G4 non aveva il campo
+        e il campo se ne va. Rilievo della revisione: la 10.13.4 in
+        lavorazione sottraeva la variazione, e all'Elo rapid nato alla
+        finalizzazione restava il current_elo di quel giorno. Nelle righe
+        della conferma il campo che se ne va si dice a parole, non None."""
+        from copie_di_sicurezza import righe_dello_storno, storno_finalizzazione
+
+        schede = _giocatori_db()
+        for pid, variazione in zip(("G1", "G2"), (16, -16), strict=True):
+            schede[pid]["elo_rapid"] = 1650 + variazione
+            schede[pid]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 1650, 1650 + variazione)]
+        schede["G3"]["elo_rapid"] = ELO_INIZIALI["G3"] + 2
+        schede["G3"]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 0.0, ELO_INIZIALI["G3"] + 2)]
+        schede["G4"]["elo_rapid"] = ELO_INIZIALI["G4"] - 2
+        schede["G4"]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", None, ELO_INIZIALI["G4"] - 2)]
+
+        esito = storno_finalizzazione(schede, self._rapid())
+
+        g = esito["giocatori"]
+        assert (g["G1"]["elo_rapid"], g["G2"]["elo_rapid"], g["G3"]["elo_rapid"]) == (1650, 1650, 0.0)
+        assert "elo_rapid" not in g["G4"]
+        for pid in ELO_INIZIALI:
+            assert g[pid]["current_elo"] == ELO_INIZIALI[pid], pid
+        assert all(s["dallo_storico"] and not s["sottratto"] for s in esito["stornati"])
+        assert esito["segnalazioni"] == []
+        righe = righe_dello_storno(esito)
+        assert "CognomeG4 NomeG4: Elo rapid 1498 a nessuno, partite 10 a 9, un oro in meno" in righe
+        assert not any("None" in r for r in righe)
+
+    def test_un_elo_rapid_cambiato_dopo_la_finalizzazione_si_sottrae(self):
+        """Se l'Elo rapid non e' piu' quello scritto dalla finalizzazione, il
+        valore di prima non vale piu': si toglie la variazione da quello di
+        oggi, e lo si segnala."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        schede = _giocatori_db()
+        for pid, variazione in zip(ELO_INIZIALI, (16, -16, 2, -2), strict=True):
+            schede[pid]["elo_rapid"] = 1650 + variazione + 5
+            schede[pid]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 1650, 1650 + variazione)]
+
+        esito = storno_finalizzazione(schede, self._rapid())
+
+        for pid in ELO_INIZIALI:
+            assert esito["giocatori"][pid]["elo_rapid"] == 1655, pid
+            assert esito["giocatori"][pid]["current_elo"] == ELO_INIZIALI[pid], pid
+        assert all(s["sottratto"] and s["campo"] == "elo_rapid" for s in esito["stornati"])
+        assert sum("togliendo la variazione" in s for s in esito["segnalazioni"]) == 4
+
+    def test_un_rapid_finalizzato_prima_della_10_13_4_torna_su_current_elo(self):
+        """Fino alla 10.13.3 la variazione di un rapid andava su current_elo,
+        e la voce dello storico non ha elo_field: lo storno la toglie da li',
+        lasciando elo_rapid com'e', e la copia pre_finalize_db fa tornare il
+        valore esatto. La segnalazione e' una sola per tutti i giocatori:
+        nella 10.13.4 in lavorazione si ripeteva, uguale, per ciascuno."""
+        from copie_di_sicurezza import righe_dello_storno, storno_finalizzazione
+
+        di_prima = _giocatori_db()
+        schede = _giocatori_db([self._voce()])
+        for pid, variazione in zip(ELO_INIZIALI, (16, -16, 2, -2), strict=True):
+            di_prima[pid]["elo_rapid"] = schede[pid]["elo_rapid"] = 1650
+            schede[pid]["current_elo"] = ELO_INIZIALI[pid] + variazione
+
+        esito = storno_finalizzazione(schede, self._rapid(), di_prima)
+
+        for pid in ELO_INIZIALI:
+            assert esito["giocatori"][pid]["current_elo"] == ELO_INIZIALI[pid], pid
+            assert esito["giocatori"][pid]["elo_rapid"] == 1650, pid
+        assert all(s["da_copia"] and s["campo"] == "current_elo" for s in esito["stornati"])
+        assert esito["segnalazioni"] == [
+            "La variazione di questo torneo è sull'Elo principale, dove la mettevano le finalizzazioni fatte prima della versione 10.13.4, e si toglie da lì: 4 giocatori."
+        ]
+        assert any(r.startswith("CognomeG1 NomeG1: Elo 1816 a 1800 (-16)") for r in righe_dello_storno(esito))
+
+    def test_un_rapid_di_prima_della_10_13_4_senza_la_copia_si_sottrae_da_current_elo(self):
+        """Rilievo bloccante della revisione: senza la copia pre_finalize_db,
+        un rapid finalizzato fino alla 10.13.3 perdeva la variazione
+        dall'Elo rapid, che non l'aveva mai ricevuta, e la teneva su
+        current_elo. G4 senza Elo rapid finiva a -2, Elo di partenza del
+        rapid successivo. La voce senza elo_field dice current_elo."""
+        from copie_di_sicurezza import righe_dello_storno, storno_finalizzazione
+
+        schede = _giocatori_db([self._voce()])
+        for pid, variazione in zip(ELO_INIZIALI, (16, -16, 2, -2), strict=True):
+            schede[pid]["elo_rapid"] = ELO_RAPID[pid]
+            schede[pid]["current_elo"] = ELO_INIZIALI[pid] + variazione
+
+        esito = storno_finalizzazione(schede, self._rapid())
+
+        for pid in ELO_INIZIALI:
+            assert esito["giocatori"][pid]["current_elo"] == ELO_INIZIALI[pid], pid
+            assert esito["giocatori"][pid]["elo_rapid"] == ELO_RAPID[pid], pid
+        assert all(s["sottratto"] and s["campo"] == "current_elo" for s in esito["stornati"])
+        assert esito["segnalazioni"][-1].endswith("e si toglie da lì: 4 giocatori.")
+        assert not any("Elo rapid" in r or "None" in r for r in righe_dello_storno(esito))
+
+        # Con un giocatore solo, il singolare.
+        solo = _giocatori_db()
+        solo["G1"]["tournaments_played"] = [self._voce()]
+        solo["G1"]["current_elo"] = 1816
+        esito = storno_finalizzazione(solo, self._rapid())
+        assert esito["giocatori"]["G1"]["current_elo"] == 1800
+        assert esito["segnalazioni"][-1].endswith("e si toglie da lì: un giocatore.")
+
+    def test_una_variazione_nulla_non_toglie_niente(self):
+        """Un giocatore con variazione zero, per esempio con sole partite a
+        forfait: non c'e' niente da togliere, e niente da segnalare. Nella
+        10.13.4 in lavorazione, in un rapid di prima della 10.13.4, si
+        leggeva l'Elo di prima si ricava togliendo la variazione del
+        torneo, 0."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        torneo = self._rapid()
+        for giocatore in torneo["players"]:
+            if giocatore["id"] in ("G3", "G4"):
+                giocatore["elo_change"] = 0
+        di_prima = _giocatori_db()
+        schede = _giocatori_db([self._voce()])
+        for pid in ELO_INIZIALI:
+            di_prima[pid]["elo_rapid"] = schede[pid]["elo_rapid"] = 0.0
+        schede["G1"]["current_elo"] = 1816
+        schede["G2"]["current_elo"] = 1684
+        # Un aggiornamento FIDE dopo la finalizzazione: la copia non torna.
+        schede["G3"]["current_elo"] = 1610
+
+        for copia in (None, di_prima):
+            esito = storno_finalizzazione(schede, torneo, copia)
+
+            g = esito["giocatori"]
+            assert (g["G3"]["current_elo"], g["G4"]["current_elo"]) == (1610, 1500)
+            assert all(g[pid]["elo_rapid"] == 0.0 for pid in ELO_INIZIALI)
+            nulli = [s for s in esito["stornati"] if s["id"] == "G3"]
+            assert not nulli[0]["sottratto"] and not nulli[0]["da_copia"]
+            assert not any(", 0." in s or "NomeG3" in s or "NomeG4" in s for s in esito["segnalazioni"])
+            assert esito["segnalazioni"][-1].endswith("e si toglie da lì: 2 giocatori."), copia
 
 
 @pytest.fixture
@@ -793,6 +1024,146 @@ class TestCicloCompleto:
         assert _leggi(ambiente.percorsi.database) == database_finalizzato
         assert _leggi(os.path.join(_cartella_d_archivio(ambiente), f"Tornello - {NOME}.json")) == archiviato
 
+    def _rapid(self, ambiente):
+        """Il database con gli Elo rapid, G4 senza, e il torneo della prova
+        fatto rapid, con l'Elo di partenza che gli darebbe l'iscrizione.
+        Restituisce il database come e' sul disco prima della
+        finalizzazione."""
+        from db_players import load_players_db, save_players_db
+        from stats import get_initial_elo_for_tournament
+
+        giocatori = load_players_db()
+        for pid, elo in ELO_RAPID.items():
+            giocatori[pid]["elo_rapid"] = elo
+        assert save_players_db(giocatori)
+        ambiente.torneo["tournament_category"] = "rapid"
+        ambiente.torneo["time_control"] = {"minutes": 15, "increment": 10, "pgn_value": "900+10"}
+        for giocatore in ambiente.torneo["players"]:
+            giocatore["initial_elo"] = get_initial_elo_for_tournament(giocatori[giocatore["id"]], "rapid")
+        _scrivi(ambiente.file_torneo, ambiente.torneo)
+        return _leggi(ambiente.percorsi.database)
+
+    def _copia_di_un_turno(self, ambiente):
+        """Una copia del torneo con turno_1 nel nome, con il contenuto di
+        quella di prima della finalizzazione: una copia di un turno non ha
+        la compagna pre_finalize_db, e la riapertura non ha il database di
+        prima."""
+        from copie_di_sicurezza import database_di_prima
+
+        copia = os.path.join(ambiente.percorsi.backup, f"Tornello - {NOME}_turno_1_20260701_120000.json")
+        _scrivi(copia, _leggi(_copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]))
+        assert database_di_prima(copia, ambiente.percorsi.backup) is None
+        return copia
+
+    def test_un_rapid_riaperto_rida_il_database_di_prima(self, ambiente):
+        """Un torneo rapid: la finalizzazione cambia elo_rapid e lascia
+        current_elo, e la riapertura dalla copia di prima della
+        finalizzazione rimette il database identico a prima, anche l'Elo
+        rapid di G4, che non lo aveva e lo ha avuto dal suo current_elo.
+        Rifinalizzando si torna al database della prima finalizzazione."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        database_iniziale = self._rapid(ambiente)
+
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        database_finalizzato = _leggi(ambiente.percorsi.database)
+        iniziali = {g["id"]: g for g in database_iniziale["players"]}
+        finalizzati = {g["id"]: g for g in database_finalizzato["players"]}
+        for pid in ELO_INIZIALI:
+            assert finalizzati[pid]["current_elo"] == iniziali[pid]["current_elo"], pid
+        assert finalizzati["G1"]["elo_rapid"] > ELO_RAPID["G1"]
+        assert finalizzati["G4"]["elo_rapid"] != 0
+
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+        assert piano.rifiuto is None
+        assert any("NomeG1" in r and ": Elo rapid " in r for r in piano.righe)
+        assert any(r.startswith("Gli Elo di prima vengono dalla copia Tornello - Players_db_pre_finalize_db_") for r in piano.righe)
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino)
+
+        assert esito.riuscito, esito.righe
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+        assert _finalizza(_leggi(ambiente.file_torneo), ambiente.file_torneo) is True
+        assert _leggi(ambiente.percorsi.database) == database_finalizzato
+
+    def test_un_rapid_riaperto_da_una_copia_di_un_turno_rida_il_database_di_prima(self, ambiente):
+        """Senza la copia del database di prima gli Elo tornano dalla voce
+        dello storico, esatti: anche l'Elo rapid di G4, nato alla
+        finalizzazione, torna a zero. Rilievo della revisione: la 10.13.4 in
+        lavorazione sottraeva la variazione, e gli lasciava il suo
+        current_elo."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        database_iniziale = self._rapid(ambiente)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        copia = self._copia_di_un_turno(ambiente)
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert any(r.startswith("  CognomeG4 NomeG4: Elo rapid ") and " a 0 (" in r for r in piano.righe)
+        assert not any("togliendo" in r or "Gli Elo di prima vengono" in r or "None" in r for r in piano.righe)
+        assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+    def test_un_rapid_di_prima_della_10_13_4_riaperto_da_una_copia_di_un_turno(self, ambiente):
+        """Rilievo bloccante della revisione. Un rapid finalizzato fino alla
+        10.13.3 ha la variazione su current_elo, e le voci dello storico
+        senza i campi dell'Elo; riaperto da una copia di un turno, che non
+        ha il database di prima, la 10.13.4 in lavorazione toglieva la
+        variazione da elo_rapid, dove non era mai stata, e lasciava
+        current_elo com'era: sbagliati tutti e due, e l'Elo rapid di G4
+        sotto zero. Adesso il database torna identico a prima."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        database_iniziale = self._rapid(ambiente)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        # Il database come lo lasciava la finalizzazione fino alla 10.13.3.
+        archiviato = _leggi(os.path.join(_cartella_d_archivio(ambiente), f"Tornello - {NOME}.json"))
+        variazioni = {g["id"]: g["elo_change"] for g in archiviato["players"]}
+        iniziali = {g["id"]: g for g in database_iniziale["players"]}
+        dati = _leggi(ambiente.percorsi.database)
+        for giocatore in dati["players"]:
+            pid = giocatore["id"]
+            giocatore["current_elo"] = int(iniziali[pid]["current_elo"]) + variazioni[pid]
+            giocatore["elo_rapid"] = iniziali[pid]["elo_rapid"]
+            for chiave in ("elo_field", "elo_before", "elo_after"):
+                giocatore["tournaments_played"][-1].pop(chiave)
+        _scrivi(ambiente.percorsi.database, dati)
+        assert all(variazioni.values())
+        copia = self._copia_di_un_turno(ambiente)
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert any(r.startswith("  CognomeG1 NomeG1: Elo ") for r in piano.righe)
+        assert not any("Elo rapid" in r or "None" in r for r in piano.righe)
+        assert (
+            "La variazione di questo torneo è sull'Elo principale, dove la mettevano le finalizzazioni fatte prima della versione 10.13.4, e si toglie da lì: 4 giocatori."
+            in piano.righe
+        )
+        assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+    def test_un_giocatore_solo_da_stornare_e_al_singolare(self, ambiente):
+        """Fino alla 10.13.5 la conferma diceva si toglie questo torneo, per
+        1 giocatori."""
+        from copie_di_sicurezza import prepara_ripristino
+
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        dati = _leggi(ambiente.percorsi.database)
+        for giocatore in dati["players"][1:]:
+            giocatore["tournaments_played"] = []
+        _scrivi(ambiente.percorsi.database, dati)
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert "dal database dei giocatori si toglie questo torneo, per un giocatore:" in piano.righe
+
     def test_un_torneo_finalizzato_dopo_ferma_la_riapertura(self, ambiente):
         """Un secondo torneo con gli stessi giocatori, finalizzato dopo:
         riaprire il primo si rifiuta, dice quale riaprire prima e non
@@ -972,6 +1343,16 @@ class TestCicloCompleto:
         assert "il database dei giocatori lo ha nello storico di 4 giocatori" in piano.rifiuto
         assert "lo contiene già concluso" not in piano.rifiuto
 
+        # Con il torneo nello storico di un giocatore solo, il singolare:
+        # fino alla 10.13.5 si leggeva nello storico di 1 giocatori.
+        dati = _leggi(ambiente.percorsi.database)
+        for giocatore in dati["players"][1:]:
+            giocatore["tournaments_played"] = []
+        _scrivi(ambiente.percorsi.database, dati)
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert "il database dei giocatori lo ha nello storico di un giocatore;" in piano.rifiuto
+
     def test_un_torneo_aperto_da_un_file_con_un_altro_nome(self, ambiente):
         """Il json archiviato ha il nome del file da cui il torneo e' stato
         aperto: si trova dal contenuto, e il torneo si riapre."""
@@ -1091,6 +1472,23 @@ class TestRipristinoDelDatabase:
         assert piano.avvertenze[0].startswith("Attenzione: sparirebbero 3 dei 4 giocatori di oggi, più della metà.")
         assert piano.righe[0] == f"Il database dei giocatori tornerebbe com'era nella copia {os.path.basename(copia)}."
 
+    def test_l_unico_giocatore_che_sparirebbe_e_al_singolare(self, ambiente):
+        """Uno che sparisce e' piu' della meta' solo in un database di un
+        giocatore: fino alla 10.13.5 si leggeva sparirebbero 1 dei 1
+        giocatori."""
+        from copie_di_sicurezza import prepara_ripristino
+
+        oggi = _leggi(ambiente.percorsi.database)
+        vecchio = copy.deepcopy(oggi)
+        oggi["players"] = oggi["players"][:1]
+        vecchio["players"] = vecchio["players"][1:]
+        _scrivi(ambiente.percorsi.database, oggi)
+        copia = self._copia(ambiente, vecchio)
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.avvertenze[0] == "Attenzione: sparirebbe l'unico giocatore di oggi. Controlla che la copia sia quella giusta."
+
     def test_un_database_attuale_illeggibile_si_puo_sostituire(self, ambiente):
         from copie_di_sicurezza import ripristina
 
@@ -1151,6 +1549,16 @@ class TestConservazione:
 
         assert copie_da_scartare([]) == []
         assert righe_della_conservazione([])[0].startswith("Nessuna copia")
+
+    def test_una_copia_sola_e_al_singolare(self):
+        """Fino alla 10.13.5 si leggeva Andrebbero nel cestino 1 copie."""
+        from copie_di_sicurezza import righe_della_conservazione
+
+        righe = righe_della_conservazione([types.SimpleNamespace(origine="Coppa")])
+
+        assert "Andrebbe nel cestino una copia:" in righe
+        assert "  Coppa: 1" in righe
+        assert not any(r.startswith("Andrebbero") for r in righe)
 
     def test_le_chiusure_identiche_non_si_ripetono(self, tmp_path):
         import config

@@ -36,6 +36,7 @@ from db_players import (
     togli_torneo_dallo_storico,
     voce_di_questo_torneo,
 )
+from stats import campo_elo_della_cadenza
 from utils import (
     copia_di_sicurezza,
     data_della_copia,
@@ -175,6 +176,15 @@ def calcola_eta(nascita, oggi):
         return giorni // 30, giorni % 30
     differenza = relativedelta(oggi, nascita)
     return differenza.years * 12 + differenza.months, differenza.days
+
+
+def eta_a_parole(mesi, giorni):
+    """L'eta' di calcola_eta a parole, per la colonna della finestra e per i
+    dettagli, con il singolare quando l'unita' e' una sola: 1 mese, 1
+    giorno. Fino alla 10.13.5 si leggeva 0 mesi, 1 giorni."""
+    testo_mesi = _("1 mese") if mesi == 1 else _("{mesi} mesi").format(mesi=mesi)
+    testo_giorni = _("1 giorno") if giorni == 1 else _("{giorni} giorni").format(giorni=giorni)
+    return f"{testo_mesi}, {testo_giorni}"
 
 
 def tipo_del_contenuto(dati):
@@ -430,7 +440,7 @@ def dettagli_della_copia(copia, oggi):
         _("Origine: {origine}").format(origine=copia.origine),
         _("Momento: {momento}").format(momento=momento_in_parole(copia.contesto)),
         _("Data: {data}").format(data=copia.data.strftime("%Y-%m-%d %H:%M:%S")),
-        _("Età: {mesi} mesi, {giorni} giorni").format(mesi=mesi, giorni=giorni),
+        _("Età: {eta}").format(eta=eta_a_parole(mesi, giorni)),
     ]
     r = copia.riassunto
     if copia.tipo == "torneo":
@@ -502,7 +512,11 @@ def _elenco(titolo, voci):
         return []
     righe = [titolo.format(numero=len(voci))]
     righe += [f"  {v}" for v in voci[:RIGHE_PER_ELENCO]]
-    if len(voci) > RIGHE_PER_ELENCO:
+    # Con una voce sola in piu' il singolare: fino alla 10.13.5 si leggeva e
+    # altre 1.
+    if len(voci) == RIGHE_PER_ELENCO + 1:
+        righe.append(_("  e un'altra"))
+    elif len(voci) > RIGHE_PER_ELENCO:
         righe.append(_("  e altre {numero}").format(numero=len(voci) - RIGHE_PER_ELENCO))
     return righe
 
@@ -730,6 +744,12 @@ def confronta_database(copia, attuale, tornei_attivi=()):
     }
 
 
+def _giocatori_contati(numero):
+    """Un numero di giocatori nelle righe del confronto: 1 giocatore, 2
+    giocatori. Fino alla 10.13.5 anche uno solo era al plurale."""
+    return _("1 giocatore") if numero == 1 else _("{numero} giocatori").format(numero=numero)
+
+
 def righe_del_confronto_database(esito):
     """Il confronto di confronta_database in righe da leggere."""
     if esito["identico"]:
@@ -752,17 +772,17 @@ def righe_del_confronto_database(esito):
         ],
     )
     if esito["partite"]:
-        righe.append(_("Partite giocate diverse: {numero} giocatori").format(numero=len(esito["partite"])))
+        righe.append(_("Partite giocate diverse: {giocatori}").format(giocatori=_giocatori_contati(len(esito["partite"]))))
     righe += _elenco(
         _("Tornei che uscirebbero dagli storici: {numero}"),
-        [_("{torneo}, {numero} giocatori").format(torneo=t, numero=len(p)) for t, p in sorted(esito["storici_persi"].items())],
+        [_("{torneo}, {giocatori}").format(torneo=t, giocatori=_giocatori_contati(len(p))) for t, p in sorted(esito["storici_persi"].items())],
     )
     righe += _elenco(
         _("Tornei che tornerebbero negli storici: {numero}"),
-        [_("{torneo}, {numero} giocatori").format(torneo=t, numero=len(p)) for t, p in sorted(esito["storici_ritrovati"].items())],
+        [_("{torneo}, {giocatori}").format(torneo=t, giocatori=_giocatori_contati(len(p))) for t, p in sorted(esito["storici_ritrovati"].items())],
     )
     if esito["medaglie"]:
-        righe.append(_("Medaglie diverse: {numero} giocatori").format(numero=len(esito["medaglie"])))
+        righe.append(_("Medaglie diverse: {giocatori}").format(giocatori=_giocatori_contati(len(esito["medaglie"]))))
     righe += _elenco(
         _("Iscritti ai tornei in corso che la copia non ha: {numero}"),
         [f"{torneo}: {nomi.get(pid, pid)}" for torneo, pid in esito["assenti_dai_tornei"]],
@@ -777,6 +797,67 @@ def _medaglia_a_parole(chiave):
     return {"gold": _("oro"), "silver": _("argento"), "bronze": _("bronzo"), "wood": _("legno")}.get(chiave, chiave)
 
 
+# I campi dell'Elo su cui una finalizzazione puo' aver messo la variazione di
+# un torneo.
+CAMPI_DELL_ELO = ("current_elo", "elo_rapid", "elo_blitz")
+
+
+def campo_della_variazione(voce):
+    """Il campo dell'Elo su cui la finalizzazione ha messo la variazione del
+    torneo, letto dalla voce dello storico del giocatore: dalla 10.13.4
+    ui.finalize_tournament lo scrive in elo_field, con il valore di prima,
+    elo_before, se il campo c'era, e quello scritto, elo_after. Una voce
+    senza elo_field e' di una finalizzazione fino alla 10.13.3, che la
+    variazione la metteva sempre su current_elo, anche nei rapid e nei
+    blitz: la cadenza del torneo da sola non dice dove sta."""
+    campo = voce.get("elo_field")
+    return campo if campo in CAMPI_DELL_ELO else "current_elo"
+
+
+def _stesso_elo(uno, altro):
+    """Due valori dello stesso campo dell'Elo sono uguali, e un campo che
+    manca vale zero, come per l'Elo di partenza."""
+    return (uno or 0) == (altro or 0)
+
+
+def _storna_l_elo(scheda, voce, variazione, scheda_di_prima):
+    """Toglie dalla scheda la variazione Elo del torneo, dal campo su cui la
+    finalizzazione l'ha messa, e dice come:
+    "storico" se l'Elo e' ancora quello scritto dalla finalizzazione, e torna
+    il valore di prima scritto nella voce, o il campo se ne va se prima non
+    c'era; "copia" se in piu' la copia pre_finalize_db ha lo stesso valore
+    di prima, oppure, per una voce fino alla 10.13.3, se current_elo vale
+    quello della copia piu' la variazione, e torna quello della copia, come
+    nella 10.13.3; "sottratto" se la variazione si toglie dall'Elo di oggi;
+    "manca" se l'Elo di oggi non c'e' o non e' un numero; None se la
+    variazione e' zero e non c'e' niente da togliere."""
+    campo = campo_della_variazione(voce)
+    attuale = scheda.get(campo)
+    copia = scheda_di_prima if isinstance(scheda_di_prima, dict) else None
+    if "elo_field" in voce and "elo_after" in voce and attuale is not None and attuale == voce["elo_after"]:
+        if "elo_before" in voce:
+            scheda[campo] = voce["elo_before"]
+        else:
+            scheda.pop(campo, None)
+        if copia is not None and _stesso_elo(copia.get(campo), scheda.get(campo)):
+            return "copia"
+        return "storico"
+    if "elo_field" not in voce and copia is not None:
+        try:
+            if int(copia.get(campo)) + variazione == attuale:
+                scheda[campo] = copia[campo]
+                return "copia"
+        except (TypeError, ValueError):
+            pass
+    if not variazione:
+        return None
+    try:
+        scheda[campo] = attuale - variazione
+    except TypeError:
+        return "manca"
+    return "sottratto"
+
+
 def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     """Toglie dal database gli effetti della finalizzazione di un torneo:
     Elo, partite giocate, voce dello storico e medaglia. Non scrive niente:
@@ -784,10 +865,16 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     identificativo, e restituisce un dizionario con le schede stornate, i
     giocatori stornati, i conflitti e le segnalazioni.
     I valori da togliere vengono dal json archiviato, perche' sono quelli che
-    il database ha davvero ricevuto (10.8.9). Se c'e' il database di prima,
-    cioe' la copia pre_finalize_db, e l'Elo di oggi vale quello di prima piu'
-    la variazione, come lo scrive la finalizzazione, si rimette il valore di
-    prima; altrimenti si sottrae la variazione, e lo si segnala.
+    il database ha davvero ricevuto (10.8.9). La variazione si toglie dal
+    campo su cui la finalizzazione l'ha messa, scritto nella voce dello
+    storico: dalla 10.13.4 l'Elo della cadenza del torneo, e se l'Elo e'
+    ancora quello scritto dalla finalizzazione torna il valore di prima,
+    anche senza la copia pre_finalize_db. Una voce fino alla 10.13.3 ha la
+    variazione su current_elo, anche nei rapid e nei blitz: se c'e' il
+    database di prima, cioe' la copia pre_finalize_db, e current_elo vale
+    quello di prima piu' la variazione, si rimette il valore di prima. In
+    tutti gli altri casi si sottrae la variazione, e lo si segnala; una
+    variazione nulla non toglie niente. _storna_l_elo fa il lavoro.
     Un giocatore che dopo questo torneo ne ha nello storico un altro e' un
     conflitto: l'Elo del torneo successivo e' calcolato su quello da togliere,
     e prima va riaperto quello (decisione di Gabriele)."""
@@ -796,6 +883,11 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     nome = torneo_archiviato.get("name")
     nel_torneo = {g.get("id"): g for g in _giocatori_del_torneo(torneo_archiviato)}
     prima = giocatori_prima or {}
+    # Un rapid o un blitz con voci fino alla 10.13.3 ha la variazione
+    # sull'Elo principale: lo si dice una volta sola, con il numero dei
+    # giocatori, dopo le segnalazioni di ciascuno.
+    cadenza_a_parte = campo_elo_della_cadenza(torneo_archiviato.get("tournament_category", "standard")) != "current_elo"
+    sull_elo_principale = 0
     esito = {"giocatori": schede, "stornati": [], "conflitti": [], "segnalazioni": []}
     for pid, scheda in schede.items():
         storico = scheda.get("tournaments_played") or []
@@ -818,15 +910,18 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
             )
         voce = storico[indice]
         giocatore = nel_torneo.get(pid)
+        campo = campo_della_variazione(voce)
         stornato = {
             "id": pid,
             "nome": nome_giocatore,
-            "elo_da": scheda.get("current_elo"),
-            "elo_a": scheda.get("current_elo"),
+            "campo": campo,
+            "elo_da": scheda.get(campo),
+            "elo_a": scheda.get(campo),
             "partite_da": scheda.get("games_played", 0),
             "partite_a": scheda.get("games_played", 0),
             "sottratto": False,
             "da_copia": False,
+            "dallo_storico": False,
             "medaglia": None,
         }
         if giocatore is None:
@@ -838,29 +933,29 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
         else:
             variazione = giocatore.get("elo_change")
             if variazione is not None:
-                attuale = scheda.get("current_elo")
-                di_prima = (prima.get(pid) or {}).get("current_elo")
-                try:
-                    coincide = di_prima is not None and int(di_prima) + variazione == attuale
-                except (TypeError, ValueError):
-                    coincide = False
-                if coincide:
-                    scheda["current_elo"] = di_prima
-                    stornato["da_copia"] = True
-                else:
-                    try:
-                        scheda["current_elo"] = attuale - variazione
-                    except TypeError:
-                        esito["segnalazioni"].append(
-                            _("{nome}: l'Elo {elo} non è un numero e resta com'è.").format(nome=nome_giocatore, elo=attuale)
+                attuale = scheda.get(campo)
+                come = _storna_l_elo(scheda, voce, variazione, prima.get(pid))
+                if cadenza_a_parte and "elo_field" not in voce and variazione and come in ("copia", "sottratto"):
+                    sull_elo_principale += 1
+                stornato["da_copia"] = come == "copia"
+                stornato["dallo_storico"] = come == "storico"
+                stornato["sottratto"] = come == "sottratto"
+                if come == "sottratto":
+                    esito["segnalazioni"].append(
+                        _("{nome}: l'Elo di prima si ricava togliendo la variazione del torneo, {variazione}.").format(
+                            nome=nome_giocatore, variazione=_numero_leggibile(variazione)
                         )
-                    else:
-                        stornato["sottratto"] = True
-                        esito["segnalazioni"].append(
-                            _("{nome}: l'Elo di prima si ricava togliendo la variazione del torneo, {variazione}.").format(
-                                nome=nome_giocatore, variazione=_numero_leggibile(variazione)
-                            )
+                    )
+                elif come == "manca" and attuale is None:
+                    esito["segnalazioni"].append(
+                        _("{nome}: l'Elo da cui togliere la variazione del torneo non c'è, e la scheda resta com'è.").format(
+                            nome=nome_giocatore
                         )
+                    )
+                elif come == "manca":
+                    esito["segnalazioni"].append(
+                        _("{nome}: l'Elo {elo} non è un numero e resta com'è.").format(nome=nome_giocatore, elo=attuale)
+                    )
             partite = giocatore.get("games_this_tournament") or 0
             try:
                 scheda["games_played"] = max(0, int(scheda.get("games_played") or 0) - int(partite))
@@ -873,11 +968,23 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
         for chiave in ("gold", "silver", "bronze", "wood"):
             if (scheda.get("medals") or {}).get(chiave, 0) < medaglie_prima.get(chiave, 0):
                 stornato["medaglia"] = chiave
-        stornato["elo_a"] = scheda.get("current_elo")
+        stornato["elo_a"] = scheda.get(campo)
         stornato["partite_a"] = scheda.get("games_played", 0)
         stornato["voce"] = voce
         esito["stornati"].append(stornato)
     esito["stornati"].sort(key=lambda s: s["nome"])
+    if sull_elo_principale == 1:
+        esito["segnalazioni"].append(
+            _(
+                "La variazione di questo torneo è sull'Elo principale, dove la mettevano le finalizzazioni fatte prima della versione 10.13.4, e si toglie da lì: un giocatore."
+            )
+        )
+    elif sull_elo_principale > 1:
+        esito["segnalazioni"].append(
+            _(
+                "La variazione di questo torneo è sull'Elo principale, dove la mettevano le finalizzazioni fatte prima della versione 10.13.4, e si toglie da lì: {numero} giocatori."
+            ).format(numero=sull_elo_principale)
+        )
     return esito
 
 
@@ -886,7 +993,19 @@ def righe_dello_storno(storno):
     che cosa, e la medaglia che se ne va."""
     righe = []
     for s in storno["stornati"]:
-        riga = _("{nome}: Elo {da} a {a}").format(nome=s["nome"], da=_numero_leggibile(s["elo_da"]), a=_numero_leggibile(s["elo_a"]))
+        # Il campo toccato dallo storno: dalla 10.13.4, nei rapid e nei
+        # blitz, e' l'Elo della cadenza.
+        if s.get("campo") == "elo_rapid":
+            modello = _("{nome}: Elo rapid {da} a {a}")
+        elif s.get("campo") == "elo_blitz":
+            modello = _("{nome}: Elo blitz {da} a {a}")
+        else:
+            modello = _("{nome}: Elo {da} a {a}")
+        # Un Elo che manca, come quello della cadenza che lo storno toglie
+        # perche' prima della finalizzazione non c'era, si dice a parole:
+        # _numero_leggibile scriverebbe None.
+        da, a = (_("nessuno") if v is None else _numero_leggibile(v) for v in (s["elo_da"], s["elo_a"]))
+        riga = modello.format(nome=s["nome"], da=da, a=a)
         try:
             differenza = float(s["elo_a"]) - float(s["elo_da"])
         except (TypeError, ValueError):
@@ -1203,12 +1322,15 @@ def _prepara_database(piano, percorsi):
             righe += righe_del_confronto_database(esito)
             oggi = len(giocatori_del_database(attuale))
             if oggi and len(esito["sparirebbero"]) * 2 > oggi:
-                piano.avvertenze.insert(
-                    0,
-                    _(
+                # Uno solo che sparisce e' piu' della meta' solo se oggi il
+                # database ha un giocatore solo.
+                if oggi == 1:
+                    avvertenza = _("Attenzione: sparirebbe l'unico giocatore di oggi. Controlla che la copia sia quella giusta.")
+                else:
+                    avvertenza = _(
                         "Attenzione: sparirebbero {numero} dei {totale} giocatori di oggi, più della metà. Controlla che la copia sia quella giusta."
-                    ).format(numero=len(esito["sparirebbero"]), totale=oggi),
-                )
+                    ).format(numero=len(esito["sparirebbero"]), totale=oggi)
+                piano.avvertenze.insert(0, avvertenza)
         else:
             righe.append(_("Il database attuale non si legge: {errore}").format(errore=errore or tipo))
         righe.append(_("Prima di scriverlo, il database attuale va in una copia di sicurezza con pre_ripristino nel nome."))
@@ -1300,9 +1422,12 @@ def _finalizzato_fuori_archivio(dati, attuale, destinazione, percorsi):
     if schede:
         con = giocatori_con_il_torneo(list(schede.values()), dati)
         if con:
-            motivi.append(
-                _("  il database dei giocatori lo ha nello storico di {numero} giocatori;").format(numero=len(con))
-            )
+            if len(con) == 1:
+                motivi.append(_("  il database dei giocatori lo ha nello storico di un giocatore;"))
+            else:
+                motivi.append(
+                    _("  il database dei giocatori lo ha nello storico di {numero} giocatori;").format(numero=len(con))
+                )
     if attuale is not None and attuale.get("concluded"):
         motivi.append(_("  il file {file} lo contiene già concluso;").format(file=_file_da_mostrare(destinazione, percorsi)))
     if not motivi:
@@ -1380,24 +1505,32 @@ def _prepara_finalizzato(piano, percorsi, trovato):
         righe.append(_("il file del torneo che oggi c'è al suo posto viene sostituito;"))
     if piano.json_esterno:
         righe.append(_("il file concluso della cartella di lavoro esterna, {file}, va nel cestino;").format(file=piano.json_esterno))
-    righe.append(
-        _("dal database dei giocatori si toglie questo torneo, per {numero} giocatori:").format(numero=len(storno["stornati"]))
-    )
+    if len(storno["stornati"]) == 1:
+        righe.append(_("dal database dei giocatori si toglie questo torneo, per un giocatore:"))
+    else:
+        righe.append(
+            _("dal database dei giocatori si toglie questo torneo, per {numero} giocatori:").format(numero=len(storno["stornati"]))
+        )
     righe += [f"  {r}" for r in righe_dello_storno(storno)]
     righe += storno["segnalazioni"]
     # La copia del database di prima si nomina solo se almeno un Elo viene
-    # davvero da li'; se non torna con nessuno, lo si dice.
+    # davvero da li'; se non torna con nessuno, lo si dice. Gli Elo rimessi
+    # dalla voce dello storico, dalla 10.13.4, sono esatti anche senza la
+    # copia; se la copia c'e' e per qualcuno di loro dice un altro valore, la
+    # frase che nomina la copia non si scrive.
     dalla_copia = sum(1 for s in storno["stornati"] if s["da_copia"])
+    dallo_storico = sum(1 for s in storno["stornati"] if s["dallo_storico"])
     sottratti = sum(1 for s in storno["stornati"] if s["sottratto"])
-    if di_prima and dalla_copia and sottratti:
+    copia_confermata = di_prima and dalla_copia and not dallo_storico
+    if copia_confermata and sottratti:
         righe.append(
             _("Gli Elo di prima vengono dalla copia {file}, tranne quelli dei giocatori segnalati sopra.").format(
                 file=os.path.basename(di_prima)
             )
         )
-    elif di_prima and dalla_copia:
+    elif copia_confermata:
         righe.append(_("Gli Elo di prima vengono dalla copia {file}.").format(file=os.path.basename(di_prima)))
-    elif di_prima and sottratti:
+    elif di_prima and sottratti and not dalla_copia:
         righe.append(
             _("La copia {file}, del database di prima della finalizzazione, non torna con il database di oggi: gli Elo di prima si ricavano togliendo le variazioni.").format(
                 file=os.path.basename(di_prima)
@@ -1706,9 +1839,13 @@ def righe_della_conservazione(scarto, quante=COPIE_DA_TENERE):
     per_origine = {}
     for c in scarto:
         per_origine[c.origine] = per_origine.get(c.origine, 0) + 1
-    righe = [
-        *righe_della_regola(quante),
-        _("Andrebbero nel cestino {numero} copie:").format(numero=len(scarto)),
-    ]
+    # Con una copia sola il singolare: fino alla 10.13.5 si leggeva
+    # Andrebbero nel cestino 1 copie.
+    annuncio = (
+        _("Andrebbe nel cestino una copia:")
+        if len(scarto) == 1
+        else _("Andrebbero nel cestino {numero} copie:").format(numero=len(scarto))
+    )
+    righe = [*righe_della_regola(quante), annuncio]
     righe += [f"  {origine}: {numero}" for origine, numero in sorted(per_origine.items(), key=lambda v: v[0].lower())]
     return righe

@@ -385,8 +385,14 @@ class PlayerEnrollmentDialog(wx.Dialog):
         if self.fide_displayed_count < len(self.all_fide_matches):
             total = len(self.all_fide_matches)
             rem = total - self.fide_displayed_count
-            lbl = _("Mostra altri risultati ({rem} rimanenti su {total})").format(
-                rem=rem, total=total
+            # Con un solo risultato che resta il singolare: fino alla
+            # 10.13.5 la riga diceva 1 rimanenti.
+            lbl = (
+                _("Mostra altri risultati (1 rimanente su {total})").format(total=total)
+                if rem == 1
+                else _("Mostra altri risultati ({rem} rimanenti su {total})").format(
+                    rem=rem, total=total
+                )
             )
             self.list_fide_results.Append(lbl)
 

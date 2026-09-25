@@ -251,11 +251,12 @@ class MainFrame(wx.Frame):
         )
         self.menu_bar.Append(db_menu, _("&Database"))
 
-        # Visualizza
+        # Visualizza. Ogni voce ha la sua lettera: fino alla 10.13.4 Albero
+        # di Destra e Barra di Stato avevano tutte e due la B.
         view_menu = wx.Menu()
         self.item_view_central = view_menu.Append(wx.ID_ANY, _("&Area Centrale\tF5"))
         self.item_view_tree = view_menu.Append(wx.ID_ANY, _("Al&bero di Destra\tF6"))
-        self.item_view_status = view_menu.Append(wx.ID_ANY, _("&Barra di Stato\tF7"))
+        self.item_view_status = view_menu.Append(wx.ID_ANY, _("Barra di &Stato\tF7"))
         self.menu_bar.Append(view_menu, _("&Visualizza"))
 
         # Strumenti
@@ -1404,11 +1405,18 @@ class MainFrame(wx.Frame):
         self.update_menu_states()
         self.update_status_display()
         if file_illeggibili:
-            self.set_status(
-                _("Attenzione: {n} file di torneo non leggibili, dettagli sotto.").format(
-                    n=len(file_illeggibili)
+            # Con un file solo la frase va al singolare: fino alla 10.13.5
+            # diceva 1 file di torneo non leggibili.
+            if len(file_illeggibili) == 1:
+                self.set_status(
+                    _("Attenzione: un file di torneo non leggibile, dettagli sotto.")
                 )
-            )
+            else:
+                self.set_status(
+                    _(
+                        "Attenzione: {n} file di torneo non leggibili, dettagli sotto."
+                    ).format(n=len(file_illeggibili))
+                )
             for nome, errore in file_illeggibili:
                 self.append_log(
                     _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
@@ -3398,11 +3406,20 @@ class MainFrame(wx.Frame):
         from utils import create_backup, play_sound
 
         play_sound("errore")
-        messaggio = _(
-            "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano.\n\n"
+        # Con un giocatore solo che resterebbe, la prima frase va al
+        # singolare: fino alla 10.13.5 diceva resterebbero 1 giocatori.
+        if resterebbero == 1:
+            premessa = _(
+                "Ritirando {name} resterebbe un solo giocatore attivo: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+            ).format(name=nome_giocatore)
+        else:
+            premessa = _(
+                "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+            ).format(name=nome_giocatore, resterebbero=resterebbero)
+        messaggio = premessa + "\n\n" + _(
             "Il ritiro non viene registrato, perche' il torneo si fermerebbe a meta' senza possibilita' di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori gia' ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
             "Vuoi riportare il torneo alla fase di iscrizione? Prima dell'operazione viene creata una copia di sicurezza."
-        ).format(name=nome_giocatore, resterebbero=resterebbero)
+        )
         dlg = AccessibleMsgDialog(
             self,
             _("Il torneo non potrebbe proseguire"),

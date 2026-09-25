@@ -265,6 +265,38 @@ class TestMenuVisualizza:
         for voce, tasto, _suono, _controllo in self.VOCI:
             assert getattr(principale, voce).GetItemLabel().endswith("\t" + tasto)
 
+    def test_ogni_voce_ha_la_sua_lettera(self, principale):
+        """Fino alla 10.13.4 Albero di Destra e Barra di Stato avevano tutte
+        e due la B sottolineata, e la lettera non sceglieva nessuna delle
+        due. Dalla 10.13.5 Barra di Stato ha la S."""
+        etichette = [v.GetItemLabel() for v in principale.item_view_central.GetMenu().GetMenuItems()]
+        lettere = [e[e.index("&") + 1].lower() for e in etichette]
+        assert lettere == ["a", "b", "s"]
+        assert etichette[2] == "Barra di &Stato\tF7"
+
+
+class TestFileDiTorneoNonLeggibili:
+    """La barra di stato dice quanti file di torneo non si leggono. Fino
+    alla 10.13.5 anche un file solo era al plurale."""
+
+    @pytest.mark.parametrize(
+        ("quanti", "attesa"),
+        [
+            (1, "Attenzione: un file di torneo non leggibile, dettagli sotto."),
+            (2, "Attenzione: 2 file di torneo non leggibili, dettagli sotto."),
+        ],
+    )
+    def test_il_conteggio(self, principale, quanti, attesa):
+        from config import user_data_path
+
+        for numero in range(quanti):
+            with open(user_data_path(f"Tornello - Rovinato{numero}.json"), "w", encoding="utf-8") as f:
+                f.write("{rovinato")
+
+        principale.populate_tree()
+
+        assert principale.last_status_msg == attesa
+
 
 def _risultati_fide(quanti):
     return [
@@ -323,6 +355,29 @@ class TestRigaMostraAltri:
             assert lista.GetSelection() == 100
             assert dlg.enrolled_players == []
             assert len(dlg.fide_results_map) == 150
+        finally:
+            _chiudi(dlg)
+
+    def test_un_solo_risultato_che_resta_e_al_singolare(self, telaio, suoni, monkeypatch):
+        """Con 101 risultati ne resta uno solo: fino alla 10.13.5 la riga
+        diceva 1 rimanenti."""
+        from gui.dialogs import fide_query_dialog, player_enrollment_dialog
+
+        for modulo in (fide_query_dialog, player_enrollment_dialog):
+            monkeypatch.setattr(modulo, "search_players", lambda query, **k: _risultati_fide(101))
+        attesa = "Mostra altri risultati (1 rimanente su 101)"
+        dlg = fide_query_dialog.FideQueryDialog(telaio, {}, telaio.settings)
+        try:
+            dlg.search_input.ChangeValue("rossi")
+            dlg._on_debounced_search(None)
+            assert dlg.list_results.GetString(100) == attesa
+        finally:
+            _chiudi(dlg)
+        dlg = player_enrollment_dialog.PlayerEnrollmentDialog(telaio, {}, [], telaio.settings)
+        try:
+            dlg.search_fide.ChangeValue("rossi")
+            dlg.esegui_ricerca_fide()
+            assert dlg.list_fide_results.GetString(100) == attesa
         finally:
             _chiudi(dlg)
 

@@ -656,6 +656,43 @@ def get_initial_elo_for_tournament(player_db_data: dict, category: str) -> float
     return float(elo)
 
 
+def campo_elo_della_cadenza(category) -> str:
+    """Il campo della scheda del database che riceve la variazione Elo di un
+    torneo alla finalizzazione: elo_blitz nei blitz, elo_rapid nei rapid,
+    current_elo negli standard. E' il primo campo che
+    get_initial_elo_for_tournament guarda per l'Elo di partenza, e una
+    categoria mancante vale standard, come li'. Fino alla 10.13.3 la
+    variazione andava sempre su current_elo, anche nei rapid e nei blitz;
+    dalla 10.13.4 va sull'Elo della cadenza, per decisione di Gabriele come
+    arbitro, nella finestra e nella console. La finalizzazione scrive il
+    campo nella voce dello storico, elo_field, e lo storno della riapertura
+    la toglie da li'."""
+    categoria = str(category or "standard").lower()
+    if categoria == "blitz":
+        return "elo_blitz"
+    if categoria == "rapid":
+        return "elo_rapid"
+    return "current_elo"
+
+
+def elo_a_cui_sommare_la_variazione(player_db_data: dict, category) -> int:
+    """L'Elo della scheda a cui la finalizzazione somma la variazione del
+    torneo, per scriverla nel campo di campo_elo_della_cadenza.
+    Negli standard e' current_elo, come e' sempre stato: DEFAULT_ELO se manca
+    o non e' un numero. Nei rapid e nei blitz e' l'Elo della cadenza, e se il
+    giocatore non lo ha, perche' manca o vale zero, si fa come per l'Elo di
+    partenza del torneo, con get_initial_elo_for_tournament: l'Elo FIDE della
+    cadenza, poi current_elo, poi l'Elo club, poi DEFAULT_ELO. Cosi' l'Elo
+    della cadenza nasce dall'Elo con cui il giocatore ha cominciato il
+    torneo, piu' la variazione, e current_elo resta com'e'."""
+    try:
+        if campo_elo_della_cadenza(category) == "current_elo":
+            return int(player_db_data.get("current_elo", DEFAULT_ELO))
+        return int(get_initial_elo_for_tournament(player_db_data, str(category)))
+    except (ValueError, TypeError):
+        return int(DEFAULT_ELO)
+
+
 def parse_time_control(time_control_str: str) -> dict | None:
     """
     Parsa una stringa di controllo del tempo (es. "15+10", "90+30", "3+2")

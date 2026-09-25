@@ -32,9 +32,11 @@ from reports import save_standings_text, save_suspended_tournament_summary
 from stats import (
     calculate_elo_change,
     calculate_performance_rating,
+    campo_elo_della_cadenza,
     compute_aro,
     compute_buchholz,
     compute_buchholz_cut1,
+    elo_a_cui_sommare_la_variazione,
     get_initial_elo_for_tournament,
     get_k_factor,
 )
@@ -1817,6 +1819,11 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # aperto, e alla finalizzazione successiva le voci di storico rimaste in
     # memoria farebbero passare i giocatori per gia' aggiornati.
     schede_di_prima = {}
+    # La cadenza del torneo, letta come la legge l'Elo di partenza, e il
+    # campo dell'Elo che riceve la variazione (decisione di Gabriele come
+    # arbitro, 10.13.4).
+    categoria = torneo.get("tournament_category", "standard")
+    campo_elo = campo_elo_della_cadenza(categoria)
     for p_final_data in torneo.get("players", []):
         player_id = p_final_data.get("id")
         if not player_id:
@@ -1852,18 +1859,27 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             elo_change_from_tournament = p_final_data.get("elo_change")
             games_played_in_tournament = p_final_data.get("games_this_tournament", 0)
 
+            # La variazione va sull'Elo della cadenza del torneo, quello da
+            # cui viene l'Elo di partenza: current_elo negli standard,
+            # elo_rapid nei rapid, elo_blitz nei blitz. Fino alla 10.13.3
+            # andava sempre su current_elo; la base, per chi non ha l'Elo
+            # della cadenza, e' in elo_a_cui_sommare_la_variazione.
+            # La voce dello storico si ricorda il campo, il valore di prima,
+            # se il campo c'era, e quello scritto: lo storno della riapertura
+            # (copie_di_sicurezza) toglie la variazione dallo stesso campo e
+            # rimette il valore di prima anche senza la copia pre_finalize_db.
+            # Una voce senza elo_field e' di una finalizzazione fino alla
+            # 10.13.3, che la variazione la metteva su current_elo.
+            elo_nello_storico = {}
             if elo_change_from_tournament is not None:
-                try:
-                    current_elo_in_db = int(
-                        db_player_record.get("current_elo", DEFAULT_ELO)
-                    )
-                    db_player_record["current_elo"] = (
-                        current_elo_in_db + elo_change_from_tournament
-                    )
-                except (ValueError, TypeError):  # Fallback se current_elo non è valido
-                    db_player_record["current_elo"] = (
-                        int(DEFAULT_ELO) + elo_change_from_tournament
-                    )
+                elo_nello_storico["elo_field"] = campo_elo
+                if campo_elo in db_player_record:
+                    elo_nello_storico["elo_before"] = db_player_record[campo_elo]
+                db_player_record[campo_elo] = (
+                    elo_a_cui_sommare_la_variazione(db_player_record, categoria)
+                    + elo_change_from_tournament
+                )
+                elo_nello_storico["elo_after"] = db_player_record[campo_elo]
 
             db_player_record["games_played"] = (
                 db_player_record.get("games_played", 0) + games_played_in_tournament
@@ -1878,6 +1894,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                 "date_completed": torneo.get(
                     "end_date", datetime.now().strftime(DATE_FORMAT_ISO)
                 ),
+                **elo_nello_storico,
             }
             db_player_record["tournaments_played"].append(tournament_history_entry)
 
@@ -2095,7 +2112,13 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             da_mettere_da_parte += report_files
         for percorso in da_mettere_da_parte:
             _metti_da_parte(percorso, avvisa)
-        if db_updated_count > 0:
+        if db_updated_count == 1:
+            avvisa(
+                _(
+                    "Il database ha però ricevuto questa finalizzazione per un giocatore, che non aveva il torneo nello storico: per lui l'archivio non coincide con il database."
+                )
+            )
+        elif db_updated_count > 1:
             avvisa(
                 _(
                     "Il database ha però ricevuto questa finalizzazione per {count} giocatori, che non avevano il torneo nello storico: per loro l'archivio non coincide con il database."

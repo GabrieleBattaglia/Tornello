@@ -649,6 +649,10 @@ class TestIlBivioDallaFinestraDelRisultato:
         self._apri_partita(telaio, monkeypatch, strada)
 
         assert finestre.aperte[-1][0] == "Il torneo non potrebbe proseguire"
+        # Fra due attivi ne resterebbe uno: fino alla 10.13.5 la frase
+        # diceva resterebbero 1 giocatori attivi.
+        assert " resterebbe un solo giocatore attivo: con meno di due giocatori" in finestre.aperte[-1][1]
+        assert "\n\nIl ritiro non viene registrato" in finestre.aperte[-1][1]
         assert torneo["rounds"] == []
         assert telaio.current_tournament is torneo
         assert registro.stati[-1] == self.FASE_DI_ISCRIZIONE
