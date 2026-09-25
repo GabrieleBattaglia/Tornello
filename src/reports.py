@@ -308,6 +308,20 @@ def get_current_round_report_text(torneo, round_num=None):
     return out.getvalue()
 
 
+def _nella_cartella_dei_report(torneo, nome_file):
+    """Il percorso completo di un report del torneo: nella cartella scelta
+    per il torneo, e senza una cartella scelta accanto al programma. Fino
+    alla 10.3.2 in quel caso restava il solo nome del file, e il report
+    finiva nella cartella da cui Tornello era stato avviato, dove la
+    finalizzazione non lo trovava piu' per archiviarlo."""
+    from utils import resolve_and_verify_save_path
+
+    cartella, avviso = resolve_and_verify_save_path(torneo.get("custom_save_path"))
+    if avviso:
+        print(avviso)
+    return os.path.join(cartella, nome_file)
+
+
 def save_current_tournament_round_file(torneo):
     """
     Salva lo stato del turno corrente in un file TXT che viene sovrascritto.
@@ -320,14 +334,7 @@ def save_current_tournament_round_file(torneo):
     tournament_name_for_file = torneo.get("name", "Torneo_Senza_Nome")
     sanitized_name = sanitize_filename(tournament_name_for_file)
     filename = _("Tornello - {name} - Turno corrente.txt").format(name=sanitized_name)
-    custom_path = torneo.get("custom_save_path")
-    if custom_path:
-        from utils import resolve_and_verify_save_path
-
-        resolved_path, warning = resolve_and_verify_save_path(custom_path)
-        if warning:
-            print(warning)
-        filename = os.path.join(resolved_path, filename)
+    filename = _nella_cartella_dei_report(torneo, filename)
 
     try:
         text = get_current_round_report_text(torneo, current_round_num)
@@ -362,14 +369,7 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
     filename = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
         name=sanitized_name, round_num=completed_round_number
     )
-    custom_path = torneo.get("custom_save_path")
-    if custom_path:
-        from utils import resolve_and_verify_save_path
-
-        resolved_path, warning = resolve_and_verify_save_path(custom_path)
-        if warning:
-            print(warning)
-        filename = os.path.join(resolved_path, filename)
+    filename = _nella_cartella_dei_report(torneo, filename)
 
     round_data = None
     for rnd in torneo.get("rounds", []):
@@ -1052,14 +1052,7 @@ def save_standings_text(torneo, final=False):
     tournament_name_file = torneo.get("name", "Torneo_Senza_Nome")
     sanitized_name_file = sanitize_filename(tournament_name_file)
     filename = _("Tornello - {name} - Classifica.txt").format(name=sanitized_name_file)
-    custom_path = torneo.get("custom_save_path")
-    if custom_path:
-        from utils import resolve_and_verify_save_path
-
-        resolved_path, warning = resolve_and_verify_save_path(custom_path)
-        if warning:
-            print(warning)
-        filename = os.path.join(resolved_path, filename)
+    filename = _nella_cartella_dei_report(torneo, filename)
 
     try:
         text = get_standings_text(torneo, final)

@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.3.3 (in lavorazione, non ancora pubblicata)
+	+ Fix: I report di un torneo senza cartella di salvataggio, cioe' la classifica, il turno corrente e i dettagli dei turni, vanno accanto al programma. Prima finivano nella cartella da cui Tornello era stato avviato, per esempio quella di un collegamento sul desktop, e alla finalizzazione non venivano archiviati, perche' il programma li cercava accanto a se'. I tornei creati dalla finestra hanno sempre una cartella di salvataggio, quindi il difetto toccava quelli nati con versioni vecchie e quelli delle verifiche automatiche: e' venuto a galla proprio isolandole, con la 10.3.2.
+
+10.3.2 (in lavorazione, non ancora pubblicata)
+	+ Le verifiche automatiche non possono piu' toccare i file veri del programma. Fino alla 10.3.1 mandavano in una cartella temporanea le sole copie di sicurezza: il torneo in corso e il database dei giocatori restavano fuori dalla loro portata solo perche' ogni prova si proteggeva da se'. Due prove scrivevano per un attimo i loro tornei nella cartella del programma, e quelle sull'abbinamento riscrivevano i file che il motore usa quando si abbina un turno vero. Adesso ogni file che il programma scrive, compresi archivio, impostazioni, error.log e file del motore, finisce in una cartella temporanea. In piu' una sentinella fa fallire le verifiche se alla fine anche un solo file vero risulta cambiato, comparso o sparito, e mette in salvo la versione di prima.
+
 10.3.1 (in lavorazione, non ancora pubblicata)
 	+ Modifica: Nella finestra di programmazione i campi e la casella dell'arbitro non suonano piu' la campanella, troppo invadente, ma una sinusoide di 45 millesimi di secondo, il preset meditimer_giro della collezione. Issue 48.
 

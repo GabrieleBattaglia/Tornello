@@ -28,3 +28,37 @@ class TestCartellaDiLavoro:
         monkeypatch.setattr(ui, "user_data_path", lambda _p: r"C:\Tornello")
 
         assert ui.cartella_di_lavoro_esterna(r"C:\Tornei\Circolo") is True
+
+
+class TestReportAccantoAlProgramma:
+    """Senza una cartella scelta per il torneo i report vanno accanto al
+    programma, non nella cartella da cui e' stato avviato. Fino alla 10.3.2
+    il nome restava relativo: lanciando le prove dalla radice del progetto, le
+    classifiche dei tornei di prova finivano proprio li'."""
+
+    def test_la_classifica_va_accanto_al_programma(
+        self, tmp_path, monkeypatch, sample_tournament_dict
+    ):
+        from reports import save_standings_text
+
+        altrove = tmp_path / "altrove"
+        altrove.mkdir()
+        monkeypatch.chdir(altrove)
+        torneo = dict(sample_tournament_dict)
+        torneo.pop("custom_save_path", None)
+
+        save_standings_text(torneo)
+
+        classifiche = [p.name for p in tmp_path.glob("*Classifica.txt")]
+        assert len(classifiche) == 1
+        assert list(altrove.iterdir()) == []
+
+    def test_la_cartella_scelta_resta_quella(self, tmp_path):
+        import os
+
+        from reports import _nella_cartella_dei_report
+
+        scelta = tmp_path / "circolo"
+        percorso = _nella_cartella_dei_report({"custom_save_path": str(scelta)}, "x.txt")
+
+        assert percorso == os.path.join(str(scelta), "x.txt")
