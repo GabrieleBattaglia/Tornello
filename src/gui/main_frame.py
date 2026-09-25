@@ -4,6 +4,7 @@ import json
 import os
 
 import wx
+from GBwx import dentro_area_utile
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 from gui.settings import apply_visual_settings, save_settings
@@ -54,7 +55,14 @@ class MainFrame(wx.Frame):
     def __init__(self, parent, title, settings):
         # Titolo iniziale dell'app
         title_str = f"Tornello - {_('Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]').format(__version__, __date__)}"
-        super().__init__(parent, title=title_str, size=(1024, 768))
+        super().__init__(parent, title=title_str)
+        # Dalla 10.6.3 la finestra ripristinata, quella che torna con
+        # Win+freccia giu', sta dentro lo schermo (issue 49): i 768 pixel di
+        # prima, con la scala dello schermo al 150 per cento, erano piu' dei
+        # 688 disponibili, e il pie' di pagina finiva sotto il bordo. Le
+        # misure sono in pixel al 100 per cento, anche il minimo.
+        dentro_area_utile(self, (1024, 768))
+        self.SetMinSize(self.FromDIP(wx.Size(480, 360)))
 
         self.settings = settings
         self.current_tournament = None
@@ -138,17 +146,19 @@ class MainFrame(wx.Frame):
         self.right_pane.SetSizer(right_sizer)
 
         # Configurazione splitter
-        self.splitter.SplitVertically(self.left_pane, self.right_pane, 700)
-        self.splitter.SetMinimumPaneSize(150)
+        self.splitter.SplitVertically(
+            self.left_pane, self.right_pane, self.FromDIP(700)
+        )
+        self.splitter.SetMinimumPaneSize(self.FromDIP(150))
 
         main_layout.Add(self.splitter, 1, wx.EXPAND | wx.ALL, 5)
 
         # Barra di Stato personalizzata in basso (con etichetta adiacente precedente)
         self.lbl_status = wx.StaticText(self.top_panel, label=_("Barra di stato"))
+        # L'altezza la decide apply_theme, dal carattere.
         self.status_text = wx.TextCtrl(
             self.top_panel,
             style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
-            size=(-1, 60),
         )
         self.status_text.SetName(_("Barra di stato"))
         self.status_text.Bind(wx.EVT_SET_FOCUS, self._on_focus_pie_di_pagina)
@@ -325,6 +335,16 @@ class MainFrame(wx.Frame):
             apply_visual_settings(self.lbl_tree, self.settings)
         if hasattr(self, "lbl_status") and self.lbl_status:
             apply_visual_settings(self.lbl_status, self.settings)
+
+        # Il pie' di pagina e' alto tre righe del suo carattere, piu' il bordo
+        # e mezza riga di margine. Fino alla 10.6.2 era alto 60 pixel fissi, e
+        # con i caratteri dei dialoghi sopra i 12 punti la terza riga spariva;
+        # dalla 10.6.3 segue il carattere, anche quando cambia dalle
+        # preferenze, che passano di qui (issue 49).
+        riga = self.status_text.GetCharHeight()
+        bordo = self.status_text.GetSize().height - self.status_text.GetClientSize().height
+        self.status_text.SetMinSize(wx.Size(-1, riga * 3 + riga // 2 + bordo))
+        self.top_panel.Layout()
 
     def set_status(self, text):
         """Aggiorna il contenuto della barra di stato personalizzata in basso."""

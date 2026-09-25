@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -16,8 +17,7 @@ class AccessibleMsgDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(600, 450),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         if settings is None:
@@ -29,7 +29,7 @@ class AccessibleMsgDialog(wx.Dialog):
                 settings = load_settings()
         self.settings = settings
 
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Area Messaggio (Navigabile con screen reader)
@@ -77,7 +77,9 @@ class AccessibleMsgDialog(wx.Dialog):
         else:
             apply_visual_settings(btn_ok, self.settings)
 
-        self.Centre()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 600 per 450 resta come minimo (issue 49).
+        adatta_finestra(self, self.pannello, (600, 450))
 
         # Sposta il focus sul controllo di testo all'avvio per attivare la lettura automatica di NVDA
         wx.CallAfter(self.msg_text.SetFocus)

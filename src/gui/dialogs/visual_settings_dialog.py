@@ -2,8 +2,10 @@ import builtins
 import os
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from config import resource_path
+from gui.accessibility import NomeAccessibile, NomeAccessibileTesto
 from gui.settings import apply_visual_settings
 from utils import invalida_volume_audio, play_sound
 from version import __version__
@@ -19,7 +21,11 @@ class VisualSettingsDialog(wx.Dialog):
 
     def __init__(self, parent, current_settings):
         title = _("Impostazioni (Audio/Video/Lingua)")
-        super().__init__(parent, title=title, size=(550, 750))
+        # Dalla 10.6.3 la finestra si ridimensiona e prende la misura dal
+        # contenuto, dentro lo schermo; quella che aveva al 100 per cento
+        # resta come minimo (issue 49). Progettata alta 750 pixel e senza
+        # bordo ridimensionabile, al 150 per cento poteva uscire dallo schermo.
+        super().__init__(parent, title=title, style=STILE_ADATTABILE)
 
         self.settings = current_settings.copy()
 
@@ -61,11 +67,20 @@ class VisualSettingsDialog(wx.Dialog):
 
         self._init_ui()
         self._update_preview()
-        self.Centre()
+        adatta_finestra(self, self.pannello, (326, 544))
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         main_vbox = wx.BoxSizer(wx.VERTICAL)
+
+        # Dalla 10.6.4 i controlli di ogni riquadro sono figli del riquadro e
+        # non del pannello o della pagina, come vuole wxPython: e' da li' che
+        # lo screen reader ricava il nome del gruppo (issue 49). Ogni riquadro
+        # nasce subito prima dei suoi controlli, quindi l'ordine del tasto Tab
+        # resta quello di prima. L'anteprima e la lingua non hanno
+        # un'etichetta davanti, e senza NomeAccessibile lo screen reader le
+        # leggerebbe senza nome: prima lo prendevano dal riquadro. L'anteprima
+        # e' un TextCtrl ricco, e vuole NomeAccessibileTesto.
 
         # --- ANTEPRIMA (Sempre visibile in alto) ---
         preview_label = _("Anteprima Visuale")
@@ -78,9 +93,14 @@ class VisualSettingsDialog(wx.Dialog):
             + _("Sistema pronto ed accessibile.")
         )
         self.preview_text = wx.TextCtrl(
-            panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 80)
+            sb_preview,
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
+            size=self.FromDIP(wx.Size(-1, 80)),
         )
         self.preview_text.SetValue(preview_val)
+        self.preview_text.SetAccessible(
+            NomeAccessibileTesto(self.preview_text, preview_label)
+        )
         sb_sizer.Add(self.preview_text, 1, wx.EXPAND | wx.ALL, 5)
         main_vbox.Add(sb_sizer, 0, wx.EXPAND | wx.ALL, 10)
 
@@ -91,9 +111,11 @@ class VisualSettingsDialog(wx.Dialog):
         tab_audio = wx.Panel(self.notebook)
         vbox_audio = wx.BoxSizer(wx.VERTICAL)
 
-        sb_lang = wx.StaticBox(tab_audio, label=_("Lingua (Language)"))
+        lang_label = _("Lingua (Language)")
+        sb_lang = wx.StaticBox(tab_audio, label=lang_label)
         sbs_lang = wx.StaticBoxSizer(sb_lang, wx.VERTICAL)
-        self.choice_lang = wx.Choice(tab_audio, choices=self.lang_choices)
+        self.choice_lang = wx.Choice(sb_lang, choices=self.lang_choices)
+        self.choice_lang.SetAccessible(NomeAccessibile(self.choice_lang, lang_label))
         current_lang = self.settings.get("language", "it")
         if current_lang in self.lang_codes:
             self.choice_lang.SetSelection(self.lang_codes.index(current_lang))
@@ -106,13 +128,13 @@ class VisualSettingsDialog(wx.Dialog):
         sbs_audio = wx.StaticBoxSizer(sb_audio, wx.VERTICAL)
         hbox_vol = wx.BoxSizer(wx.HORIZONTAL)
         hbox_vol.Add(
-            wx.StaticText(tab_audio, label=_("Volume Master (%):")),
+            wx.StaticText(sb_audio, label=_("Volume Master (%):")),
             0,
             wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
             10,
         )
         self.slider_vol = wx.Slider(
-            tab_audio,
+            sb_audio,
             value=self.settings.get("volume", 50),
             minValue=0,
             maxValue=100,
@@ -127,7 +149,7 @@ class VisualSettingsDialog(wx.Dialog):
         sb_fide = wx.StaticBox(tab_audio, label=_("Database FIDE"))
         sbs_fide = wx.StaticBoxSizer(sb_fide, wx.VERTICAL)
         self.chk_fide = wx.CheckBox(
-            tab_audio, label=_("Controlla presenza database FIDE all'avvio")
+            sb_fide, label=_("Controlla presenza database FIDE all'avvio")
         )
         self.chk_fide.SetValue(self.settings.get("check_fide_at_startup", True))
         sbs_fide.Add(self.chk_fide, 0, wx.ALL | wx.EXPAND, 5)
@@ -144,13 +166,13 @@ class VisualSettingsDialog(wx.Dialog):
         sbs_font_main = wx.StaticBoxSizer(sb_font_main, wx.VERTICAL)
         hbox_fm = wx.BoxSizer(wx.HORIZONTAL)
         hbox_fm.Add(
-            wx.StaticText(tab_font, label=_("Dimensione (pt):")),
+            wx.StaticText(sb_font_main, label=_("Dimensione (pt):")),
             0,
             wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
             10,
         )
         self.spin_size = wx.SpinCtrl(
-            tab_font, min=8, max=72, initial=self.settings.get("font_size", 12)
+            sb_font_main, min=8, max=72, initial=self.settings.get("font_size", 12)
         )
         self.spin_size.Bind(wx.EVT_SPINCTRL, self.on_change)
         self.spin_size.Bind(wx.EVT_TEXT, self.on_change)
@@ -162,13 +184,13 @@ class VisualSettingsDialog(wx.Dialog):
         sbs_font_dlg = wx.StaticBoxSizer(sb_font_dlg, wx.VERTICAL)
         hbox_fd = wx.BoxSizer(wx.HORIZONTAL)
         hbox_fd.Add(
-            wx.StaticText(tab_font, label=_("Dimensione (pt):")),
+            wx.StaticText(sb_font_dlg, label=_("Dimensione (pt):")),
             0,
             wx.ALIGN_CENTER_VERTICAL | wx.RIGHT,
             10,
         )
         self.spin_dialog_size = wx.SpinCtrl(
-            tab_font, min=8, max=72, initial=self.settings.get("dialog_font_size", 12)
+            sb_font_dlg, min=8, max=72, initial=self.settings.get("dialog_font_size", 12)
         )
         self.spin_dialog_size.Bind(wx.EVT_SPINCTRL, self.on_change)
         self.spin_dialog_size.Bind(wx.EVT_TEXT, self.on_change)
@@ -193,23 +215,23 @@ class VisualSettingsDialog(wx.Dialog):
         curr_text = self.settings.get("rgb_text", [0, 100, 0])
 
         grid_fg_m.Add(
-            wx.StaticText(tab_fg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_main, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_tr = wx.SpinCtrl(tab_fg, min=0, max=100, initial=curr_text[0])
+        self.spin_tr = wx.SpinCtrl(sb_fg_main, min=0, max=100, initial=curr_text[0])
         self.spin_tr.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_m.Add(self.spin_tr, 1, wx.EXPAND)
 
         grid_fg_m.Add(
-            wx.StaticText(tab_fg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_main, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_tg = wx.SpinCtrl(tab_fg, min=0, max=100, initial=curr_text[1])
+        self.spin_tg = wx.SpinCtrl(sb_fg_main, min=0, max=100, initial=curr_text[1])
         self.spin_tg.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_m.Add(self.spin_tg, 1, wx.EXPAND)
 
         grid_fg_m.Add(
-            wx.StaticText(tab_fg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_main, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_tb = wx.SpinCtrl(tab_fg, min=0, max=100, initial=curr_text[2])
+        self.spin_tb = wx.SpinCtrl(sb_fg_main, min=0, max=100, initial=curr_text[2])
         self.spin_tb.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_m.Add(self.spin_tb, 1, wx.EXPAND)
 
@@ -223,28 +245,28 @@ class VisualSettingsDialog(wx.Dialog):
         curr_dlg_text = self.settings.get("dialog_rgb_text", [0, 100, 0])
 
         grid_fg_d.Add(
-            wx.StaticText(tab_fg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_dlg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_tr = wx.SpinCtrl(
-            tab_fg, min=0, max=100, initial=curr_dlg_text[0]
+            sb_fg_dlg, min=0, max=100, initial=curr_dlg_text[0]
         )
         self.spin_dialog_tr.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_d.Add(self.spin_dialog_tr, 1, wx.EXPAND)
 
         grid_fg_d.Add(
-            wx.StaticText(tab_fg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_dlg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_tg = wx.SpinCtrl(
-            tab_fg, min=0, max=100, initial=curr_dlg_text[1]
+            sb_fg_dlg, min=0, max=100, initial=curr_dlg_text[1]
         )
         self.spin_dialog_tg.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_d.Add(self.spin_dialog_tg, 1, wx.EXPAND)
 
         grid_fg_d.Add(
-            wx.StaticText(tab_fg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_fg_dlg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_tb = wx.SpinCtrl(
-            tab_fg, min=0, max=100, initial=curr_dlg_text[2]
+            sb_fg_dlg, min=0, max=100, initial=curr_dlg_text[2]
         )
         self.spin_dialog_tb.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_fg_d.Add(self.spin_dialog_tb, 1, wx.EXPAND)
@@ -266,23 +288,23 @@ class VisualSettingsDialog(wx.Dialog):
         curr_back = self.settings.get("rgb_back", [0, 0, 0])
 
         grid_bg_m.Add(
-            wx.StaticText(tab_bg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_main, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_br = wx.SpinCtrl(tab_bg, min=0, max=100, initial=curr_back[0])
+        self.spin_br = wx.SpinCtrl(sb_bg_main, min=0, max=100, initial=curr_back[0])
         self.spin_br.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_m.Add(self.spin_br, 1, wx.EXPAND)
 
         grid_bg_m.Add(
-            wx.StaticText(tab_bg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_main, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_bg = wx.SpinCtrl(tab_bg, min=0, max=100, initial=curr_back[1])
+        self.spin_bg = wx.SpinCtrl(sb_bg_main, min=0, max=100, initial=curr_back[1])
         self.spin_bg.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_m.Add(self.spin_bg, 1, wx.EXPAND)
 
         grid_bg_m.Add(
-            wx.StaticText(tab_bg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_main, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
-        self.spin_bb = wx.SpinCtrl(tab_bg, min=0, max=100, initial=curr_back[2])
+        self.spin_bb = wx.SpinCtrl(sb_bg_main, min=0, max=100, initial=curr_back[2])
         self.spin_bb.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_m.Add(self.spin_bb, 1, wx.EXPAND)
 
@@ -296,28 +318,28 @@ class VisualSettingsDialog(wx.Dialog):
         curr_dlg_back = self.settings.get("dialog_rgb_back", [0, 0, 0])
 
         grid_bg_d.Add(
-            wx.StaticText(tab_bg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_dlg, label=red_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_br = wx.SpinCtrl(
-            tab_bg, min=0, max=100, initial=curr_dlg_back[0]
+            sb_bg_dlg, min=0, max=100, initial=curr_dlg_back[0]
         )
         self.spin_dialog_br.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_d.Add(self.spin_dialog_br, 1, wx.EXPAND)
 
         grid_bg_d.Add(
-            wx.StaticText(tab_bg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_dlg, label=green_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_bg = wx.SpinCtrl(
-            tab_bg, min=0, max=100, initial=curr_dlg_back[1]
+            sb_bg_dlg, min=0, max=100, initial=curr_dlg_back[1]
         )
         self.spin_dialog_bg.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_d.Add(self.spin_dialog_bg, 1, wx.EXPAND)
 
         grid_bg_d.Add(
-            wx.StaticText(tab_bg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
+            wx.StaticText(sb_bg_dlg, label=blue_label), 0, wx.ALIGN_CENTER_VERTICAL
         )
         self.spin_dialog_bb = wx.SpinCtrl(
-            tab_bg, min=0, max=100, initial=curr_dlg_back[2]
+            sb_bg_dlg, min=0, max=100, initial=curr_dlg_back[2]
         )
         self.spin_dialog_bb.Bind(wx.EVT_SPINCTRL, self.on_change)
         grid_bg_d.Add(self.spin_dialog_bb, 1, wx.EXPAND)
@@ -350,7 +372,6 @@ class VisualSettingsDialog(wx.Dialog):
         main_vbox.Add(btn_sizer, 0, wx.EXPAND | wx.ALL, 10)
 
         panel.SetSizer(main_vbox)
-        main_vbox.Fit(self)
 
     def on_change(self, event):
         self._update_preview()

@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from fide_db import search_players
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
@@ -22,8 +23,7 @@ class FideQueryDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(900, 550),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -37,12 +37,20 @@ class FideQueryDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # quella che la finestra aveva al 100 per cento resta come minimo
+        # (issue 49). Lista e dettagli si riempiono dopo: la loro misura
+        # minima resta quella di adesso, come col Fit di prima, altrimenti la
+        # voce piu' lunga allargherebbe il contenuto e il pannello mostrerebbe
+        # le barre invece di lasciar scorrere la lista.
+        for controllo in (self.list_results, self.detail_text):
+            controllo.SetMinSize(controllo.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (823, 205))
 
         self.on_search_changed(None)
-        self.Centre()
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox_main = wx.BoxSizer(wx.VERTICAL)
 
         # Filtro di Ricerca
@@ -67,7 +75,7 @@ class FideQueryDialog(wx.Dialog):
             wx.StaticText(panel, label=_("Giocatori Trovati:")), 0, wx.BOTTOM, 5
         )
         self.list_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
-        self.list_results.SetMinSize((300, -1))
+        self.list_results.SetMinSize(self.FromDIP(wx.Size(300, -1)))
         self.list_results.Bind(wx.EVT_LISTBOX, self.on_item_selected)
         self.list_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_import_player)
         self.list_results.Bind(wx.EVT_CHAR_HOOK, self.on_list_key)
@@ -83,7 +91,7 @@ class FideQueryDialog(wx.Dialog):
         self.detail_text = wx.TextCtrl(
             panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2
         )
-        self.detail_text.SetMinSize((450, -1))
+        self.detail_text.SetMinSize(self.FromDIP(wx.Size(450, -1)))
         vbox_right.Add(self.detail_text, 1, wx.EXPAND)
 
         hbox_views.Add(vbox_right, 4, wx.EXPAND)
@@ -102,7 +110,6 @@ class FideQueryDialog(wx.Dialog):
         vbox_main.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 10)
 
         panel.SetSizer(vbox_main)
-        vbox_main.Fit(self)
 
     def apply_theme(self):
         apply_visual_settings(self.search_input, self.settings)

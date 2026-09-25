@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from db_players import generate_player_id, load_players_db, save_players_db
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
@@ -21,8 +22,7 @@ class PlayersDbDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(900, 600),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -31,12 +31,20 @@ class PlayersDbDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # quella che la finestra aveva al 100 per cento resta come minimo
+        # (issue 49). Lista e albero si riempiono dopo: la loro misura minima
+        # resta quella di adesso, come col Fit di prima, altrimenti il nome
+        # piu' lungo allargherebbe il contenuto e il pannello mostrerebbe le
+        # barre invece di lasciar scorrere la lista.
+        for controllo in (self.list_players, self.tree_ctrl):
+            controllo.SetMinSize(controllo.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (565, 200))
 
         self.on_search_changed(None)
-        self.Centre()
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         # --- COLONNA SINISTRA: RICERCA E LISTA ---
@@ -80,7 +88,6 @@ class PlayersDbDialog(wx.Dialog):
         main_hbox.Add(right_vbox, 2, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_hbox)
-        main_hbox.Fit(self)
 
     def apply_theme(self):
         apply_visual_settings(self.search_input, self.settings)

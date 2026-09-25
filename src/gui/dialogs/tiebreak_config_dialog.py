@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from gui.accessibility import CustomAccessible
 from gui.settings import apply_visual_settings
@@ -34,8 +35,7 @@ class TiebreakConfigDialog(wx.Dialog):
         super().__init__(
             parent,
             title=_("Configura Regole di Spareggio"),
-            size=(800, 600),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.torneo = torneo
@@ -62,7 +62,7 @@ class TiebreakConfigDialog(wx.Dialog):
             for entry in self.applied_entries:
                 entry["modifiers"] = dict(entry.get("modifiers", {}))
 
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         main_vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Creiamo i controlli nel preciso ordine in cui vogliamo siano tabulati
@@ -85,7 +85,9 @@ class TiebreakConfigDialog(wx.Dialog):
         # 2. Spiegazione regola
         self.lbl_expl = wx.StaticText(panel, label=_("Spiegazione regola"))
         self.text_expl = wx.TextCtrl(
-            panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 100)
+            panel,
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
+            size=self.FromDIP(wx.Size(-1, 100)),
         )
         self.text_expl.SetName(_("Spiegazione regola"))
         self.text_expl.SetAccessible(
@@ -219,10 +221,6 @@ class TiebreakConfigDialog(wx.Dialog):
         self.btn_ok.Bind(wx.EVT_BUTTON, self.on_ok)
         self.btn_cancel.Bind(wx.EVT_BUTTON, self.on_cancel)
 
-        # Popola le liste
-        self.populate_available()
-        self.populate_applied()
-
         # Applicazione temi e stili a tutti i controlli
         for ctrl in [
             self,
@@ -243,7 +241,20 @@ class TiebreakConfigDialog(wx.Dialog):
         ]:
             apply_visual_settings(ctrl, self.settings)
 
-        self.Centre()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 800 per 600 resta come minimo (issue 49). Si misura dopo il tema,
+        # che cambia i caratteri, e a liste vuote: la loro misura minima
+        # resta quella di adesso, come con la misura fissa di prima, altrimenti
+        # il nome piu' lungo allargherebbe il contenuto e il pannello
+        # mostrerebbe le barre invece di lasciar scorrere la lista. Per questo
+        # le liste si riempiono dopo, e non piu' prima del tema.
+        for lista in (self.list_available, self.list_applied):
+            lista.SetMinSize(lista.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (800, 600))
+
+        # Popola le liste
+        self.populate_available()
+        self.populate_applied()
 
         # Sposta il focus sulla prima lista all'avvio
         wx.CallAfter(self.list_available.SetFocus)

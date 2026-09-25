@@ -2,6 +2,7 @@ import builtins
 import webbrowser
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from gui.settings import apply_visual_settings
 
@@ -18,15 +19,14 @@ class DonationDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(600, 450),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
         from utils import play_sound
 
         play_sound("donazione")
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Area Messaggio (Navigabile con screen reader)
@@ -66,7 +66,9 @@ class DonationDialog(wx.Dialog):
             )
             self.msg_text.SetFont(font)
 
-        self.Centre()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 600 per 450 resta come minimo (issue 49).
+        adatta_finestra(self, self.pannello, (600, 450))
         wx.CallAfter(self.msg_text.SetFocus)
 
     def on_donate(self, event):

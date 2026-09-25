@@ -2,11 +2,21 @@ import builtins
 import datetime
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from gui.settings import apply_visual_settings
 from utils import format_date_locale
 
 _ = getattr(builtins, "_", lambda s: s)
+
+# Dalla 10.6.3 le finestre prendono la misura dal contenuto, dentro lo
+# schermo, e scorrono se non ci stanno (issue 49): con i caratteri di Windows
+# al 150 per cento, o con quelli dei dialoghi grandi, i pulsanti finivano
+# fuori. Queste sono le misure che le due finestre avevano al 100 per cento,
+# e restano come minimo. La programmazione cresce in altezza con i giorni
+# proposti: il minimo e' quello dei quattro giorni che propone sempre.
+MISURA_PROGRAMMAZIONE = (242, 435)
+MISURA_RISULTATO = (457, 547)
 
 
 class ScheduleDialog(wx.Dialog):
@@ -20,18 +30,17 @@ class ScheduleDialog(wx.Dialog):
         super().__init__(
             parent,
             title=_("Pianificazione Partita"),
-            size=(500, 600),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
         self.settings = settings
         self.schedule_info = schedule_info or {}
         self.tournament_data = tournament_data or {}
         self._init_ui()
         self.apply_theme()
-        self.Centre()
+        adatta_finestra(self, self.pannello, MISURA_PROGRAMMAZIONE)
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # 1. Calcolo intervallo date (da oggi fino a scadenza turno + 3 giorni)
@@ -76,7 +85,13 @@ class ScheduleDialog(wx.Dialog):
             dates_list.append(curr)
             curr += datetime.timedelta(days=1)
 
-        # Box di selezione giorno
+        # Box di selezione giorno. Dalla 10.6.4 i controlli dei tre riquadri
+        # sono figli del riquadro e non del pannello, come vuole wxPython: e'
+        # da li' che lo screen reader ricava il nome del gruppo, e all'apertura
+        # non compare piu' un avviso per controllo (issue 49). Ogni riquadro
+        # nasce subito prima dei suoi controlli, quindi l'ordine del tasto Tab
+        # resta quello di prima, e i pulsanti dei giorni restano un gruppo solo
+        # perche' sono tutti figli dello stesso riquadro.
         sb_date = wx.StaticBox(panel, label=_("Seleziona Giorno"))
         sbs_date = wx.StaticBoxSizer(sb_date, wx.VERTICAL)
 
@@ -94,7 +109,7 @@ class ScheduleDialog(wx.Dialog):
         for d in dates_list:
             style = wx.RB_GROUP if first else 0
             lbl = format_date_locale(d)
-            rb = wx.RadioButton(panel, label=lbl, style=style)
+            rb = wx.RadioButton(sb_date, label=lbl, style=style)
             rb.Bind(wx.EVT_SET_FOCUS, self.on_rb_focus)
 
             if curr_date:
@@ -112,14 +127,14 @@ class ScheduleDialog(wx.Dialog):
         sb_time = wx.StaticBox(panel, label=_("Seleziona Ora"))
         sbs_time = wx.StaticBoxSizer(sb_time, wx.HORIZONTAL)
 
-        lbl_hour = wx.StaticText(panel, label=_("Ora:"))
-        self.choice_hour = wx.Choice(panel, choices=[f"{h:02d}" for h in range(24)])
+        lbl_hour = wx.StaticText(sb_time, label=_("Ora:"))
+        self.choice_hour = wx.Choice(sb_time, choices=[f"{h:02d}" for h in range(24)])
         self.choice_hour.Bind(wx.EVT_SET_FOCUS, self.on_choice_focus)
         self.choice_hour.Bind(wx.EVT_CHOICE, self.on_choice_changed)
 
-        lbl_min = wx.StaticText(panel, label=_("Minuto:"))
+        lbl_min = wx.StaticText(sb_time, label=_("Minuto:"))
         self.choice_min = wx.Choice(
-            panel, choices=[f"{m:02d}" for m in range(0, 60, 5)]
+            sb_time, choices=[f"{m:02d}" for m in range(0, 60, 5)]
         )
         self.choice_min.Bind(wx.EVT_SET_FOCUS, self.on_choice_focus)
         self.choice_min.Bind(wx.EVT_CHOICE, self.on_choice_changed)
@@ -153,8 +168,8 @@ class ScheduleDialog(wx.Dialog):
         sb_details = wx.StaticBox(panel, label=_("Dettagli Sede e Arbitro"))
         sbs_details = wx.StaticBoxSizer(sb_details, wx.VERTICAL)
 
-        lbl_room = wx.StaticText(panel, label=_("Sala / URL:"))
-        self.txt_room = wx.TextCtrl(panel)
+        lbl_room = wx.StaticText(sb_details, label=_("Sala / URL:"))
+        self.txt_room = wx.TextCtrl(sb_details)
         self.txt_room.SetValue(self.schedule_info.get("channel", ""))
         self.txt_room.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
 
@@ -166,13 +181,13 @@ class ScheduleDialog(wx.Dialog):
         from stats import arbitro_non_necessario
 
         non_serve = arbitro_non_necessario(self.schedule_info)
-        self.chk_no_arbiter = wx.CheckBox(panel, label=_("Arbitro non necessario"))
+        self.chk_no_arbiter = wx.CheckBox(sb_details, label=_("Arbitro non necessario"))
         self.chk_no_arbiter.SetValue(non_serve)
         self.chk_no_arbiter.Bind(wx.EVT_CHECKBOX, self.on_no_arbiter)
         self.chk_no_arbiter.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
 
-        lbl_arbiter = wx.StaticText(panel, label=_("Arbitro designato:"))
-        self.txt_arbiter = wx.TextCtrl(panel)
+        lbl_arbiter = wx.StaticText(sb_details, label=_("Arbitro designato:"))
+        self.txt_arbiter = wx.TextCtrl(sb_details)
         self.txt_arbiter.SetValue(
             "" if non_serve else self.schedule_info.get("arbiter", "")
         )
@@ -198,7 +213,6 @@ class ScheduleDialog(wx.Dialog):
         vbox.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
 
         panel.SetSizer(vbox)
-        vbox.Fit(self)
 
         # Associazione tasti
         panel.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
@@ -316,8 +330,7 @@ class ResultDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(550, 650),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -336,7 +349,7 @@ class ResultDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
-        self.Centre()
+        adatta_finestra(self, self.pannello, MISURA_RISULTATO)
 
         # Il suono dell'apertura, dalla 10.6.1 al posto della campanella
         # (issue 51). Se il focus arriva poi su un risultato, subito dopo si
@@ -346,7 +359,7 @@ class ResultDialog(wx.Dialog):
         play_sound("apertura_risultati")
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # --- DETTAGLI PARTITA ---
@@ -394,11 +407,15 @@ class ResultDialog(wx.Dialog):
             ("0-0F", _("0 - 0F (non si e' presentato nessuno dei due)")),
         ]
 
+        # Dalla 10.6.4 i pulsanti sono figli del riquadro, come vuole
+        # wxPython, e lo screen reader ne ricava il nome del gruppo (issue
+        # 49). Tutti e sei hanno lo stesso genitore, quindi restano un gruppo
+        # solo, con un solo risultato scelto alla volta.
         self.radio_buttons = []
         first = True
         for val, desc in self.options:
             style = wx.RB_GROUP if first else 0
-            rb = wx.RadioButton(panel, label=desc, style=style)
+            rb = wx.RadioButton(sb_options, label=desc, style=style)
             rb.SetValue(val == self.current_result)
             sbs_options.Add(rb, 0, wx.ALL | wx.EXPAND, 6)
 
@@ -415,7 +432,9 @@ class ResultDialog(wx.Dialog):
         self.lbl_pgn = wx.StaticText(
             panel, label=_("Incolla qui il pgn della partita (opzionale):")
         )
-        self.txt_pgn = wx.TextCtrl(panel, style=wx.TE_MULTILINE, size=(-1, 100))
+        self.txt_pgn = wx.TextCtrl(
+            panel, style=wx.TE_MULTILINE, size=self.FromDIP(wx.Size(-1, 100))
+        )
         self.txt_pgn.SetValue(self.pgn_text)
         self.txt_pgn.Bind(wx.EVT_TEXT, self.on_pgn_changed)
 
@@ -466,7 +485,6 @@ class ResultDialog(wx.Dialog):
             self.btn_withdraw.Enable(False)
 
         panel.SetSizer(vbox)
-        vbox.Fit(self)
 
         # Bind generali keydown
         panel.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
@@ -538,10 +556,21 @@ class ResultDialog(wx.Dialog):
         else:
             event.Skip()
 
+    def _esito_del_pgn(self, testo, colore=None):
+        """Scrive sotto il campo l'esito della verifica del PGN.
+        Dalla 10.6.3 il pannello scorre (issue 49): un messaggio piu' largo
+        della finestra ne allarga il contenuto, e FitInside aggiorna lo
+        scorrimento perche' lo si possa leggere per intero.
+        """
+        self.lbl_validation_error.SetLabel(testo)
+        if colore is not None:
+            self.lbl_validation_error.SetForegroundColour(colore)
+        self.pannello.FitInside()
+
     def on_pgn_changed(self, event):
         val = self.txt_pgn.GetValue().strip()
         if not val:
-            self.lbl_validation_error.SetLabel("")
+            self._esito_del_pgn("")
             self.btn_ok.Enable(True)
             return
 
@@ -553,39 +582,38 @@ class ResultDialog(wx.Dialog):
         try:
             game = chess.pgn.read_game(pgn_io)
             if game is None:
-                self.lbl_validation_error.SetLabel(
-                    _("Formato PGN non valido: nessun dato letto.")
+                self._esito_del_pgn(
+                    _("Formato PGN non valido: nessun dato letto."),
+                    wx.Colour(200, 0, 0),
                 )
-                self.lbl_validation_error.SetForegroundColour(wx.Colour(200, 0, 0))
                 self.btn_ok.Enable(False)
                 return
             if game.errors:
                 err_msg = str(game.errors[0])
-                self.lbl_validation_error.SetLabel(
-                    _("Formato PGN non valido: {err}").format(err=err_msg)
+                self._esito_del_pgn(
+                    _("Formato PGN non valido: {err}").format(err=err_msg),
+                    wx.Colour(200, 0, 0),
                 )
-                self.lbl_validation_error.SetForegroundColour(wx.Colour(200, 0, 0))
                 self.btn_ok.Enable(False)
                 return
 
             has_moves = any(True for _ in game.mainline_moves())
             has_brackets = "[" in val and "]" in val
             if not has_moves and not has_brackets:
-                self.lbl_validation_error.SetLabel(
-                    _("Formato PGN non valido: testo non riconosciuto come PGN.")
+                self._esito_del_pgn(
+                    _("Formato PGN non valido: testo non riconosciuto come PGN."),
+                    wx.Colour(200, 0, 0),
                 )
-                self.lbl_validation_error.SetForegroundColour(wx.Colour(200, 0, 0))
                 self.btn_ok.Enable(False)
                 return
 
-            self.lbl_validation_error.SetLabel(_("Formato PGN valido."))
-            self.lbl_validation_error.SetForegroundColour(wx.Colour(0, 150, 0))
+            self._esito_del_pgn(_("Formato PGN valido."), wx.Colour(0, 150, 0))
             self.btn_ok.Enable(True)
         except Exception as e:
-            self.lbl_validation_error.SetLabel(
-                _("Errore validazione PGN: {err}").format(err=str(e))
+            self._esito_del_pgn(
+                _("Errore validazione PGN: {err}").format(err=str(e)),
+                wx.Colour(200, 0, 0),
             )
-            self.lbl_validation_error.SetForegroundColour(wx.Colour(200, 0, 0))
             self.btn_ok.Enable(False)
 
     def on_schedule(self, event):

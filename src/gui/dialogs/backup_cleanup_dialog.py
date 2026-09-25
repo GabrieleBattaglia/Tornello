@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from gui.accessibility import set_accessibility_label
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
@@ -108,8 +109,7 @@ class BackupCleanupDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(800, 550),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -128,20 +128,24 @@ class BackupCleanupDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 800 per 550 resta come minimo (issue 49). Si misura dopo il tema,
+        # che cambia i caratteri, e prima di riempire la lista.
+        adatta_finestra(self, self.pannello, (800, 550))
         self.populate_list()
-
-        self.Centre()
 
         # Sposta il focus iniziale sul controllo di testo per consentire allo screen reader di leggerlo
         wx.CallAfter(self.stats_text.SetFocus)
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # 1. Area Statistiche (TextCtrl multilinee, in sola lettura ed accessibile)
         self.stats_text = wx.TextCtrl(
-            panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 100)
+            panel,
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
+            size=self.FromDIP(wx.Size(-1, 100)),
         )
         self.stats_text.SetName(_("Statistiche backup"))
         vbox.Add(self.stats_text, 0, wx.EXPAND | wx.ALL, 10)
@@ -162,9 +166,9 @@ class BackupCleanupDialog(wx.Dialog):
         self.list_ctrl.SetName(_("Elenco file di backup"))
         set_accessibility_label(self.list_ctrl, _("Elenco file di backup"))
 
-        self.list_ctrl.InsertColumn(0, _("Nome file"), width=320)
-        self.list_ctrl.InsertColumn(1, _("Data di modifica"), width=180)
-        self.list_ctrl.InsertColumn(2, _("Età"), width=220)
+        self.list_ctrl.InsertColumn(0, _("Nome file"), width=self.FromDIP(320))
+        self.list_ctrl.InsertColumn(1, _("Data di modifica"), width=self.FromDIP(180))
+        self.list_ctrl.InsertColumn(2, _("Età"), width=self.FromDIP(220))
 
         self.list_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_list_key_down)
         vbox.Add(self.list_ctrl, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)

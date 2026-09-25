@@ -1,8 +1,10 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from fide_db import search_players
+from gui.accessibility import NomeAccessibile
 from gui.settings import apply_visual_settings
 from utils import match_player_query, play_sound
 
@@ -23,8 +25,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(900, 650),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -41,17 +42,32 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 900 per 650 resta come minimo (issue 49); via il minimo di 850 per
+        # 600 in pixel, che lo scorrimento rende inutile. Le liste si
+        # riempiono dopo: la loro misura minima resta quella di adesso, come
+        # prima, altrimenti il nome piu' lungo allargherebbe il contenuto e il
+        # pannello mostrerebbe le barre invece di lasciar scorrere la lista.
+        for lista in (self.list_local_results, self.list_fide_results, self.list_enrolled):
+            lista.SetMinSize(lista.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (900, 650))
 
         # Inizializza le liste
         self.update_enrolled_list()
         self.on_search_local_changed(None)
         self.on_search_fide_changed(None)
 
-        self.Centre()
-
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Dalla 10.6.4 i controlli dei tre riquadri sono figli del riquadro e
+        # non del pannello, come vuole wxPython: e' da li' che lo screen
+        # reader ricava il nome del gruppo (issue 49). Ogni riquadro nasce
+        # subito prima dei suoi controlli, quindi l'ordine del tasto Tab resta
+        # quello di prima. Il primo controllo di ogni riquadro non ha
+        # un'etichetta davanti, e senza NomeAccessibile lo screen reader lo
+        # leggerebbe senza nome: prima lo prendeva dal riquadro.
 
         # --- COLONNA SINISTRA: RICERCA (Locali + FIDE) ---
         left_vbox = wx.BoxSizer(wx.VERTICAL)
@@ -62,19 +78,24 @@ class PlayerEnrollmentDialog(wx.Dialog):
         )
         sbs_local = wx.StaticBoxSizer(self.sb_local, wx.VERTICAL)
 
-        self.search_local = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
+        self.search_local = wx.TextCtrl(self.sb_local, style=wx.TE_PROCESS_ENTER)
         self.search_local.SetName(_("Filtra per nome o cognome nel database locale"))
+        self.search_local.SetAccessible(
+            NomeAccessibile(self.search_local, self.search_local.GetName())
+        )
         self.search_local.Bind(wx.EVT_TEXT, self.on_search_local_changed)
         sbs_local.Add(self.search_local, 0, wx.EXPAND | wx.ALL, 5)
 
-        self.lbl_local_status = wx.StaticText(panel, label=_("Giocatori trovati: 0"))
+        self.lbl_local_status = wx.StaticText(
+            self.sb_local, label=_("Giocatori trovati: 0")
+        )
         self.lbl_local_status.SetName(_("Stato ricerca locale"))
         sbs_local.Add(
             self.lbl_local_status, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
         )
 
         self.list_local_results = wx.ListBox(
-            panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
+            self.sb_local, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
         )
         self.list_local_results.SetName(_("Risultati Ricerca Locale"))
         self.list_local_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_local)
@@ -89,22 +110,27 @@ class PlayerEnrollmentDialog(wx.Dialog):
         )
         sbs_fide = wx.StaticBoxSizer(self.sb_fide, wx.VERTICAL)
 
-        self.search_fide = wx.TextCtrl(panel, style=wx.TE_PROCESS_ENTER)
+        self.search_fide = wx.TextCtrl(self.sb_fide, style=wx.TE_PROCESS_ENTER)
         self.search_fide.SetName(
             _("Filtra per nome o cognome nel database FIDE (minimo 3 caratteri)")
+        )
+        self.search_fide.SetAccessible(
+            NomeAccessibile(self.search_fide, self.search_fide.GetName())
         )
         self.search_fide.Bind(wx.EVT_TEXT, self.on_search_fide_changed)
         sbs_fide.Add(self.search_fide, 0, wx.EXPAND | wx.ALL, 5)
 
         self.lbl_fide_status = wx.StaticText(
-            panel, label=_("Digita almeno 3 caratteri per cercare.")
+            self.sb_fide, label=_("Digita almeno 3 caratteri per cercare.")
         )
         self.lbl_fide_status.SetName(_("Stato ricerca FIDE"))
         sbs_fide.Add(
             self.lbl_fide_status, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
         )
 
-        self.list_fide_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        self.list_fide_results = wx.ListBox(
+            self.sb_fide, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
+        )
         self.list_fide_results.SetName(_("Risultati Ricerca FIDE"))
         self.list_fide_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_fide)
         self.list_fide_results.Bind(wx.EVT_CHAR_HOOK, self.on_fide_key)
@@ -136,15 +162,23 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.sb_enrolled = wx.StaticBox(panel, label=_("Giocatori Iscritti al Torneo"))
         sbs_enrolled = wx.StaticBoxSizer(self.sb_enrolled, wx.VERTICAL)
 
-        self.list_enrolled = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        self.list_enrolled = wx.ListBox(
+            self.sb_enrolled, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
+        )
+        # Il nome e' l'etichetta del riquadro, con il numero degli iscritti:
+        # update_enrolled_list li aggiorna insieme.
+        self._nome_iscritti = NomeAccessibile(
+            self.list_enrolled, self.sb_enrolled.GetLabel()
+        )
+        self.list_enrolled.SetAccessible(self._nome_iscritti)
         self.list_enrolled.Bind(wx.EVT_LISTBOX_DCLICK, self.on_remove_enrolled)
         self.list_enrolled.Bind(wx.EVT_CHAR_HOOK, self.on_enrolled_key)
         sbs_enrolled.Add(self.list_enrolled, 1, wx.EXPAND | wx.ALL, 5)
 
         # Bottoni OK/Annulla posizionati in fondo alla colonna destra
         btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        btn_cancel = wx.Button(panel, wx.ID_CANCEL, _("Annulla"))
-        btn_ok = wx.Button(panel, wx.ID_OK, _("OK"))
+        btn_cancel = wx.Button(self.sb_enrolled, wx.ID_CANCEL, _("Annulla"))
+        btn_ok = wx.Button(self.sb_enrolled, wx.ID_OK, _("OK"))
         btn_ok.SetDefault()
         btn_ok.Bind(wx.EVT_BUTTON, self.on_ok_clicked)
 
@@ -157,14 +191,6 @@ class PlayerEnrollmentDialog(wx.Dialog):
         main_hbox.Add(right_vbox, 1, wx.EXPAND)
 
         panel.SetSizer(main_hbox)
-
-        # Sizer principale per il Dialog stesso (self) per garantire elasticità al ridimensionamento
-        dialog_sizer = wx.BoxSizer(wx.VERTICAL)
-        dialog_sizer.Add(panel, 1, wx.EXPAND)
-        self.SetSizer(dialog_sizer)
-
-        self.SetMinSize((850, 600))
-        self.Layout()
 
     def apply_theme(self):
         apply_visual_settings(self.search_local, self.settings)
@@ -206,6 +232,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         self.sb_enrolled.SetLabel(
             _("Giocatori Iscritti al Torneo ({total})").format(total=total_enrolled)
         )
+        self._nome_iscritti.nome = self.sb_enrolled.GetLabel()
 
     def on_search_local_changed(self, event):
         """Filtra e aggiorna i risultati del DB locale in ordine di ELO decrescente."""

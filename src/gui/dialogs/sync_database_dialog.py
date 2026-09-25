@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from db_players import load_players_db, save_players_db
 from fide_db import (
@@ -27,8 +28,7 @@ class SyncDatabaseDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(750, 500),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -41,7 +41,10 @@ class SyncDatabaseDialog(wx.Dialog):
         self._collect_changes()
         self._init_ui()
         self.apply_theme()
-        self.Centre()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # quella che la finestra aveva al 100 per cento resta come minimo
+        # (issue 49).
+        adatta_finestra(self, self.pannello, (434, 345))
 
     def _collect_changes(self):
         """Confronta il DB locale e FIDE raccogliendo le discrepanze."""
@@ -106,7 +109,7 @@ class SyncDatabaseDialog(wx.Dialog):
                 )
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Titolo / Stato
@@ -141,7 +144,9 @@ class SyncDatabaseDialog(wx.Dialog):
             )
 
         self.txt_summary = wx.TextCtrl(
-            panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2, size=(-1, 200)
+            panel,
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
+            size=self.FromDIP(wx.Size(-1, 200)),
         )
         self.txt_summary.SetValue(summary_text)
         vbox.Add(self.txt_summary, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
@@ -166,7 +171,6 @@ class SyncDatabaseDialog(wx.Dialog):
         vbox.Add(btn_sizer, 0, wx.EXPAND | wx.ALL, 15)
 
         panel.SetSizer(vbox)
-        vbox.Fit(self)
 
     def apply_theme(self):
         apply_visual_settings(self.txt_summary, self.settings)
