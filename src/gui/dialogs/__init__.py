@@ -2,6 +2,7 @@ from .accessible_msg_dialog import AccessibleMsgDialog as AccessibleMsgDialog
 from .backup_cleanup_dialog import BackupCleanupDialog as BackupCleanupDialog
 from .donation_dialog import DonationDialog as DonationDialog
 from .fide_query_dialog import FideQueryDialog as FideQueryDialog
+from .manual_pairing_dialog import ManualPairingDialog as ManualPairingDialog
 from .player_enrollment_dialog import PlayerEnrollmentDialog as PlayerEnrollmentDialog
 from .players_db_dialog import PlayersDbDialog as PlayersDbDialog
 from .result_dialog import ResultDialog as ResultDialog

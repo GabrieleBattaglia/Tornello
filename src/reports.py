@@ -214,6 +214,9 @@ def get_current_round_report_text(torneo, round_num=None):
     out = io.StringIO()
     out.write(_("Nome Torneo: {} - ").format(tournament_name_for_file))
     out.write(_("Turno: {}\n").format(round_num))
+    # Dalla 10.12.0 il turno composto a mano dall'arbitro lo dice (issue 38).
+    if round_data and round_data.get("manual_pairing"):
+        out.write(_(" Abbinamenti composti a mano dall'arbitro\n"))
     out.write(
         _(" Periodo Turno: {} - {}\n").format(
             start_date_turn_display, end_date_turn_display
@@ -438,6 +441,8 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
                     round_num=completed_round_number
                 )
             )
+            if round_data.get("manual_pairing"):
+                f.write(_("\tAbbinamenti composti a mano dall'arbitro\n"))
             round_dates_list = torneo.get("round_dates", [])
             current_round_dates = next(
                 (

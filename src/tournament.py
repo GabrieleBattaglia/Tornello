@@ -390,6 +390,11 @@ def save_tournament(torneo, filepath=None):
                 f"Tornello - {sanitized_name}.json"
             )
         torneo_to_save = torneo.copy()
+        # L'esito dell'ultimo abbinamento fallito vale solo finche' il
+        # programma e' aperto: fino alla 10.13.1 finiva nel json al primo
+        # salvataggio dopo il fallimento, e ci restava.
+        for chiave in CHIAVI_ESITO_ABBINAMENTO:
+            torneo_to_save.pop(chiave, None)
         # Prepara i dati per il salvataggio JSON
         if "players" in torneo_to_save:
             temp_players = []
@@ -512,9 +517,16 @@ def calculate_dates(start_date_str, end_date_str, total_rounds):
 
 
 CHIAVE_ERRORE_ABBINAMENTO = "_errore_abbinamento"
+# Dalla 10.12.0: vero quando bbpPairings ha risposto con il codice 1, cioe'
+# che nessun abbinamento rispetta i criteri assoluti. E' il solo caso in cui
+# l'arbitro puo' comporre il turno a mano (issue 38).
+CHIAVE_ABBINAMENTO_ESAURITO = "_abbinamento_esaurito"
+# Le chiavi dell'esito, che valgono solo in memoria: save_tournament non le
+# scrive nel json, e le toglie chi registra un turno.
+CHIAVI_ESITO_ABBINAMENTO = (CHIAVE_ERRORE_ABBINAMENTO, CHIAVE_ABBINAMENTO_ESAURITO)
 
 
-def _abbinamento_fallito(torneo, motivo):
+def _abbinamento_fallito(torneo, motivo, esaurito=False):
     """
     Registra il motivo del fallimento sul torneo e restituisce None.
 
@@ -525,9 +537,14 @@ def _abbinamento_fallito(torneo, motivo):
     raggiunto e nell'interfaccia grafica l'eccezione finiva nel gestore
     globale come errore imprevisto. Ora il fallimento si riconosce dal None e
     il motivo resta leggibile con motivo_ultimo_fallimento.
+    esaurito dice se il motore ha risposto che non esiste un abbinamento
+    valido: dalla 10.12.0 lo legge abbinamento_esaurito, e chi chiama sa
+    distinguere l'esaurimento delle coppie da un file rifiutato o da un
+    eseguibile mancante.
     """
     if isinstance(torneo, dict):
         torneo[CHIAVE_ERRORE_ABBINAMENTO] = motivo
+        torneo[CHIAVE_ABBINAMENTO_ESAURITO] = bool(esaurito)
     return
 
 
@@ -536,6 +553,48 @@ def motivo_ultimo_fallimento(torneo):
     if isinstance(torneo, dict):
         return torneo.get(CHIAVE_ERRORE_ABBINAMENTO)
     return None
+
+
+def abbinamento_esaurito(torneo):
+    """Vero se l'ultimo abbinamento e' fallito perche' bbpPairings non ha
+    trovato nessun abbinamento valido, il suo codice di uscita 1: i giocatori
+    rimasti hanno esaurito le coppie ammesse. Falso per ogni altro errore."""
+    if isinstance(torneo, dict):
+        return bool(torneo.get(CHIAVE_ABBINAMENTO_ESAURITO))
+    return False
+
+
+def pulisci_esito_abbinamento(torneo):
+    """Toglie dal torneo l'esito dell'ultimo abbinamento fallito, quando un
+    turno viene registrato: il motivo non vale piu'."""
+    if isinstance(torneo, dict):
+        for chiave in CHIAVI_ESITO_ABBINAMENTO:
+            torneo.pop(chiave, None)
+
+
+def _elo_per_lo_start_rank(giocatore):
+    elo = float(giocatore.get("initial_elo", DEFAULT_ELO))
+    return elo if elo > 0 else DEFAULT_ELO
+
+
+def ordina_per_start_rank(giocatori):
+    """I giocatori nell'ordine dello start rank: Elo dal piu' alto, poi
+    cognome e nome. E' l'ordine con cui il TRF numera i giocatori, e dalla
+    10.12.0 serve anche alla composizione manuale del turno, per l'ordine
+    delle scacchiere e per i colori."""
+    return sorted(
+        giocatori,
+        key=lambda p: (
+            -_elo_per_lo_start_rank(p),
+            p.get("last_name", "").lower(),
+            p.get("first_name", "").lower(),
+        ),
+    )
+
+
+def mappa_start_rank(giocatori):
+    """Lo start rank di ogni giocatore, da 1, come dizionario per id."""
+    return {p["id"]: i + 1 for i, p in enumerate(ordina_per_start_rank(giocatori))}
 
 
 def generate_pairings_for_round(torneo):
@@ -565,18 +624,7 @@ def generate_pairings_for_round(torneo):
         return []
 
     # 1. Creare mappa ID Tornello -> StartRank e viceversa
-    def get_effective_elo(p):
-        elo = float(p.get("initial_elo", DEFAULT_ELO))
-        return elo if elo > 0 else DEFAULT_ELO
-
-    players_sorted_for_start_rank = sorted(
-        lista_giocatori_attivi,
-        key=lambda p: (
-            -get_effective_elo(p),
-            p.get("last_name", "").lower(),
-            p.get("first_name", "").lower(),
-        ),
-    )
+    players_sorted_for_start_rank = ordina_per_start_rank(lista_giocatori_attivi)
 
     mappa_id_a_start_rank = {
         p["id"]: i + 1 for i, p in enumerate(players_sorted_for_start_rank)
@@ -633,6 +681,7 @@ def generate_pairings_for_round(torneo):
                 _(
                     "bbpPairings non ha trovato alcun abbinamento valido per questo turno."
                 ),
+                esaurito=True,
             )
         print(
             _("ERRORE CRITICO da bbpPairings.exe: {message}").format(
@@ -724,7 +773,7 @@ def riporta_torneo_alla_preparazione(torneo):
     torneo["rounds"] = []
     torneo["current_round"] = 1
     torneo["next_match_id"] = 1
-    torneo.pop(CHIAVE_ERRORE_ABBINAMENTO, None)
+    pulisci_esito_abbinamento(torneo)
     torneo["concluded"] = False
     rimasti = [p for p in torneo.get("players", []) if not p.get("withdrawn")]
     torneo["players"] = rimasti
@@ -751,6 +800,9 @@ def riporta_torneo_alla_preparazione(torneo):
 # sistema svizzero esaurisce ugualmente le combinazioni prima del limite, la
 # via prevista e' l'abbinamento manuale dell'arbitro, Issue 38.
 MARGINE_GIOCATORI = 0
+# Sotto questo numero di giocatori attivi non si abbina piu' niente, nemmeno a
+# mano: e' il solo caso in cui, dalla 10.13.1, il ritiro resta un bivio.
+MINIMO_GIOCATORI_ATTIVI = 2
 
 
 def controlla_ritiro_possibile(torneo, player_id):
@@ -777,6 +829,32 @@ def controlla_ritiro_possibile(torneo, player_id):
 
     necessari = turni_rimanenti + 1 + MARGINE_GIOCATORI
     return resterebbero >= necessari, resterebbero, necessari, turni_rimanenti
+
+
+def valuta_ritiro(torneo, player_id):
+    """Che cosa fare davanti al ritiro di un giocatore, per le tre strade
+    della finestra: il tasto CANC nell'albero, il pulsante Ritira Giocatore
+    della finestra del risultato e la domanda dopo un forfait. Restituisce
+    una tupla: l'esito, quanti resterebbero attivi, quanti ne servirebbero,
+    quanti turni restano da giocare. L'esito e':
+    libero, se i giocatori bastano per i turni che restano;
+    avviso, se non bastano: dalla 10.13.1 il ritiro si conferma dopo un
+    avviso, perche' se il motore non riesce ad abbinare un turno l'arbitro
+    lo compone a mano (issue 38), mentre fino alla 10.13.0 veniva impedito;
+    bivio, se resterebbero meno di MINIMO_GIOCATORI_ATTIVI giocatori con dei
+    turni ancora da giocare, o nessuno all'ultimo turno: il ritiro non si
+    registra e restano il ritorno alla fase di iscrizione e l'eliminazione.
+    """
+    si_puo, resterebbero, necessari, turni_rimanenti = controlla_ritiro_possibile(
+        torneo, player_id
+    )
+    if turni_rimanenti > 0 and resterebbero < MINIMO_GIOCATORI_ATTIVI:
+        esito = "bivio"
+    elif si_puo:
+        esito = "libero"
+    else:
+        esito = "avviso" if turni_rimanenti > 0 else "bivio"
+    return esito, resterebbero, necessari, turni_rimanenti
 
 
 def registra_bye_del_turno(torneo, matches, round_number):
@@ -821,6 +899,28 @@ def registra_bye_del_turno(torneo, matches, round_number):
         giocatore.setdefault("received_bye_in_round", []).append(round_number)
         assegnati.append(bye_id)
     return assegnati
+
+
+def registra_turno(torneo, matches, round_number, manuale=False):
+    """Aggiunge al torneo il turno appena abbinato e restituisce il suo
+    dizionario. Fa cio' che la finestra ripeteva in due punti, all'avvio del
+    torneo e a ogni turno successivo: il turno diventa quello corrente, il bye
+    riceve i suoi punti, le partite passano da Match e Round per avere la
+    forma di sempre, e l'esito dell'ultimo abbinamento fallito si toglie.
+    Dalla 10.12.0 la usa anche il turno composto a mano, con manuale vero:
+    il turno porta allora il contrassegno manual_pairing (issue 38)."""
+    from models import Match, Round
+
+    torneo["current_round"] = round_number
+    registra_bye_del_turno(torneo, matches, round_number)
+    round_obj = Round(
+        round=round_number,
+        matches=[Match.from_dict(m) for m in matches],
+        manual_pairing=manuale,
+    )
+    torneo.setdefault("rounds", []).append(round_obj.to_dict())
+    pulisci_esito_abbinamento(torneo)
+    return torneo["rounds"][-1]
 
 
 def ricalcola_punti_tutti_giocatori(torneo):

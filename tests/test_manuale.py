@@ -6,7 +6,9 @@ programmazione di una partita, e la vecchia 6.2.1, sul ritiro dall'albero,
 diventa la 6.2.2; dalla 10.5.2 la 6.2 cita voci e pulsanti della finestra
 del risultato come il programma li scrive; dalla 10.5.3 i tre testi non hanno
 piu' righe di separatori, che lo screen reader leggeva come una fila di
-simboli. Le prove leggono i file come testo e non importano i moduli di
+simboli; dalla 10.12.0 la nuova 6.3.1 spiega la composizione manuale del
+turno, e le sue citazioni si cercano nella sua finestra, in turno_manuale.py,
+nella finestra principale e nei report (issue 38). Le prove leggono i file come testo e non importano i moduli di
 Tornello: le etichette si cercano fra le stringhe dei sorgenti, lette con
 ast, cosi' un'etichetta cambiata nel codice e non nel manuale non passa
 inosservata.
@@ -296,6 +298,31 @@ class TestCitazioniDelManuale:
             assert not citazione.startswith("-"), citazione
             for relativo in sorgenti:
                 assert any(m.fullmatch(citazione) for m in modelli_del_sorgente(relativo)), (relativo, citazione)
+
+    def test_la_composizione_manuale_sta_fra_la_6_3_e_la_6_4(self):
+        elenco = {parti: testo for parti, testo, _i in titoli(leggi("MANUALE.txt"))}
+        numeri = list(elenco)
+        assert numeri.index((6, 3)) < numeri.index((6, 3, 1)) < numeri.index((6, 4))
+        assert elenco[(6, 3, 1)] == "LA COMPOSIZIONE MANUALE DI UN TURNO"
+
+    def test_le_citazioni_della_composizione_manuale_sono_scritte_dal_programma(self):
+        """La 6.3.1, sulla composizione manuale del turno (issue 38), cita la
+        domanda, la finestra con le voci delle sue liste, gli avvertimenti,
+        l'albero e i report. Nelle etichette la & della lettera di scelta
+        rapida non si scrive, e le righe dei report si leggono senza gli spazi
+        e gli a capo intorno."""
+        sorgenti = (os.path.join("gui", "dialogs", "manual_pairing_dialog.py"), os.path.join("gui", "main_frame.py"), "turno_manuale.py", "reports.py")
+        modelli = []
+        for relativo in sorgenti:
+            for stringa in stringhe_del_sorgente(relativo):
+                stringa = stringa.replace("&", "").strip()
+                if any(c.isalpha() for c in SEGNAPOSTO.sub("", stringa)):
+                    modelli.append(re.compile(".+".join(re.escape(p) for p in SEGNAPOSTO.split(stringa)), re.DOTALL))
+        trovate = citazioni(sezione(leggi("MANUALE.txt"), (6, 3, 1)))
+        assert len(trovate) >= 20
+        for citazione in trovate:
+            assert any(m.fullmatch(citazione) for m in modelli), citazione
+        assert not any(m.fullmatch("Scacchiera 1: Rossi Mario - Verdi Anna") for m in modelli)
 
     def test_la_prova_riconosce_una_citazione_sbagliata(self):
         """Le etichette di prima non passano: la prova le avrebbe fermate."""

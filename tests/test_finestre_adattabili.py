@@ -58,6 +58,8 @@ FINESTRE = (
     # (issue 37).
     "aggiornamento",
     "scaricamento aggiornamento",
+    # La composizione manuale del turno, nata con la 10.12.0 (issue 38).
+    "composizione manuale",
 )
 
 # Le finestre con i riquadri, e quanti ne hanno almeno: senza, la prova sui
@@ -120,6 +122,7 @@ def ambiente(app_grafica, monkeypatch):
         backup_cleanup_dialog,
         fide_query_dialog,
         fide_update_dialog,
+        manual_pairing_dialog,
         player_enrollment_dialog,
         players_db_dialog,
         sync_database_dialog,
@@ -131,7 +134,7 @@ def ambiente(app_grafica, monkeypatch):
     monkeypatch.setattr(GBwx, "area_utile", lambda finestra: wx.Rect(*AREA))
     monkeypatch.setattr(utils, "play_sound", _muto)
     monkeypatch.setattr(utils, "bip_di_scelta", _muto)
-    for modulo in (backup_cleanup_dialog, fide_query_dialog, player_enrollment_dialog, players_db_dialog, sync_database_dialog, tiebreak_config_dialog, visual_settings_dialog):
+    for modulo in (backup_cleanup_dialog, manual_pairing_dialog, fide_query_dialog, player_enrollment_dialog, players_db_dialog, sync_database_dialog, tiebreak_config_dialog, visual_settings_dialog):
         monkeypatch.setattr(modulo, "play_sound", _muto)
     monkeypatch.setattr(fide_update_dialog, "FideUpdateThread", _ThreadFinto)
     for modulo in (players_db_dialog, sync_database_dialog):
@@ -150,6 +153,7 @@ def _crea(nome, a):
     from gui.dialogs.donation_dialog import DonationDialog
     from gui.dialogs.fide_query_dialog import FideQueryDialog
     from gui.dialogs.fide_update_dialog import FideUpdateDialog
+    from gui.dialogs.manual_pairing_dialog import ManualPairingDialog
     from gui.dialogs.player_enrollment_dialog import PlayerEnrollmentDialog
     from gui.dialogs.players_db_dialog import PlayersDbDialog
     from gui.dialogs.result_dialog import ResultDialog, ScheduleDialog
@@ -177,6 +181,7 @@ def _crea(nome, a):
         "spareggi": lambda: TiebreakConfigDialog(t, _torneo(5)),
         "aggiornamento": lambda: UpdateDialog(t, "10.6.5", "10.7.0", "* Riga delle note della release\n" * 40, s),
         "scaricamento aggiornamento": lambda: UpdateProgressDialog(t, s),
+        "composizione manuale": lambda: ManualPairingDialog(t, _torneo_da_comporre(), 2, s),
     }
     return costruttori[nome]()
 
@@ -498,3 +503,38 @@ def test_finestra_principale_dentro_lo_schermo_e_pie_di_pagina_di_tre_righe(ambi
         assert testo.GetNumberOfLines() == 3
     finally:
         principale.Destroy()
+
+
+def _torneo_da_comporre():
+    """Sedici giocatori dai nomi lunghi, al turno 2: la proposta riempie la
+    lista delle coppie con voci lunghe e con gli avvertimenti."""
+    giocatori = list(_giocatori(16).values())
+    for posizione, giocatore in enumerate(giocatori):
+        giocatore.update(initial_elo=2000 - posizione, withdrawn=False, results_history=[])
+    for posizione in range(0, 16, 2):
+        bianco, nero = giocatori[posizione], giocatori[posizione + 1]
+        bianco["results_history"].append({"round": 1, "opponent_id": nero["id"], "color": "white", "result": "1-0", "score": 1.0})
+        nero["results_history"].append({"round": 1, "opponent_id": bianco["id"], "color": "black", "result": "1-0", "score": 0.0})
+    return {"name": "Prova", "total_rounds": 5, "current_round": 1, "players": giocatori}
+
+
+@solo_windows
+def test_le_liste_della_composizione_hanno_il_nome_dell_etichetta(ambiente):
+    """Le tre liste e la scelta del bianco prendono il nome dall'etichetta
+    che le precede, e le voci tengono il loro testo, con gli avvertimenti
+    (issue 38)."""
+    dlg = _crea("composizione manuale", ambiente)
+    try:
+        for controllo, etichetta in (
+            (dlg.lista_liberi, dlg.lbl_liberi),
+            (dlg.lista_avversari, dlg.lbl_avversari),
+            (dlg.lista_coppie, dlg.lbl_coppie),
+            (dlg.situazione, dlg.lbl_situazione),
+        ):
+            assert _msaa(controllo)[1][0][0] == etichetta.GetLabelText()
+        quante, voci = _msaa(dlg.lista_coppie, 2)
+        assert quante == dlg.lista_coppie.GetCount() == 8
+        assert voci[1][:2] == (dlg.lista_coppie.GetString(0), RUOLO_VOCE)
+        assert voci[2][:2] == (dlg.lista_coppie.GetString(1), RUOLO_VOCE)
+    finally:
+        _chiudi(dlg)

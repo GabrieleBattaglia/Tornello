@@ -40,8 +40,10 @@ from tiebreak_criteria import (
     migrate_old_tiebreaks,
 )
 from tournament import (
+    abbinamento_esaurito,
     generate_pairings_for_round,
     load_tournament,
+    motivo_ultimo_fallimento,
     save_tournament,
     time_machine_torneo,
 )
@@ -882,10 +884,15 @@ class TournamentController:
                         next_matches_raw = generate_pairings_for_round(torneo_dict)
 
                         if next_matches_raw is None:
+                            # Dalla 10.13.3 il motivo vero, e se le coppie
+                            # sono esaurite il rimando alla finestra, dove il
+                            # turno si compone a mano (issue 38).
                             user_action = handle_bbpairings_failure(
                                 torneo_dict,
                                 next_round,
-                                "Errore durante la generazione.",
+                                motivo_ultimo_fallimento(torneo_dict)
+                                or _("Errore durante la generazione."),
+                                esaurito=abbinamento_esaurito(torneo_dict),
                             )
                             if user_action == "time_machine":
                                 self.tournament.current_round = curr_round

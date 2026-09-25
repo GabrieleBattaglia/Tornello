@@ -251,3 +251,20 @@ class TestDettaglioNellAreaCentrale:
 
         assert f"{_('Sala/URL')}: {_('N/D')}" in testo
         assert f"{_('Arbitro')}: Non necessario" in testo
+
+
+def test_il_turno_composto_a_mano_si_riconosce_nell_albero():
+    """Dalla 10.12.0 il turno composto a mano dall'arbitro si chiama Turno N,
+    abbinamenti manuali (issue 38): anche quando e' il turno corrente."""
+    torneo = _torneo()
+    torneo["rounds"][0]["manual_pairing"] = True
+    telaio = _telaio(torneo)
+
+    assert telaio.tree_ctrl.voci[0].etichetta == "Turno corrente (1/5), abbinamenti manuali"
+
+    for partita in torneo["rounds"][0]["matches"]:
+        partita["result"] = "1-0"
+    concluso = _telaio(torneo)
+    assert concluso.tree_ctrl.voci[0].etichetta == "Turno 1, abbinamenti manuali"
+    del torneo["rounds"][0]["manual_pairing"]
+    assert _telaio(torneo).tree_ctrl.voci[0].etichetta == "Turno 1"

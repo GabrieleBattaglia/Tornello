@@ -1120,6 +1120,8 @@ class MainFrame(wx.Frame):
         )
         if active_round_data:
             report += _("Abbinamenti Turno {}:\n").format(curr_round)
+            if active_round_data.get("manual_pairing"):
+                report += _("Abbinamenti composti a mano dall'arbitro.\n")
             matches = active_round_data.get("matches", [])
             for m in matches:
                 w_id = m.get("white_player_id")
@@ -1433,6 +1435,10 @@ class MainFrame(wx.Frame):
                     break
             if not all_done:
                 r_label = _("Turno corrente ({}/{})").format(r_num, tot_rounds)
+        # Dalla 10.12.0 un turno composto a mano dall'arbitro si riconosce
+        # dal nome (issue 38).
+        if r.get("manual_pairing"):
+            r_label = _("{turno}, abbinamenti manuali").format(turno=r_label)
 
         r_node = self.tree_ctrl.AppendItem(parent_node, r_label)
         self.tree_ctrl.SetItemData(
@@ -3238,7 +3244,6 @@ class MainFrame(wx.Frame):
         l'arbitro sta cercando davvero."""
         import os
 
-        from tournament import controlla_ritiro_possibile
         from utils import play_sound
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
@@ -3280,18 +3285,6 @@ class MainFrame(wx.Frame):
             )
             return
 
-        # Il ritiro non deve mai lasciare il torneo senza abbastanza giocatori
-        # per arrivare in fondo, altrimenti l'abbinatore si fermerebbe a meta'
-        # torneo senza che si possa piu' rimediare.
-        si_puo, resterebbero, necessari, turni_rimanenti = controlla_ritiro_possibile(
-            self.current_tournament, giocatore.get("id")
-        )
-        if not si_puo:
-            self._bivio_torneo_non_proseguibile(
-                filepath, p_name, resterebbero, necessari, turni_rimanenti
-            )
-            return
-
         if stato == "giocata":
             messaggio = _(
                 "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? La partita che ha gia' giocato nel turno {round} resta valida e il ritiro vale dal turno successivo."
@@ -3301,16 +3294,7 @@ class MainFrame(wx.Frame):
                 "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verra' piu' abbinato nei turni successivi."
             ).format(name=p_name)
 
-        dlg = AccessibleMsgDialog(
-            self,
-            _("Ritiro dal torneo"),
-            messaggio,
-            style=wx.YES_NO,
-            settings=self.settings,
-        )
-        conferma = dlg.ShowModal()
-        dlg.Destroy()
-        if conferma != wx.ID_YES:
+        if not self._conferma_ritiro(giocatore.get("id"), filepath, domanda=messaggio):
             return
 
         self.withdraw_player(giocatore.get("id"))
@@ -3318,27 +3302,107 @@ class MainFrame(wx.Frame):
         self.populate_tree()
         self.show_players_list_verbose()
 
+    def _conferma_ritiro(self, player_id, filepath, domanda=None):
+        """Il controllo sul ritiro, uguale nelle tre strade da cui si ritira un
+        giocatore: il tasto CANC nell'albero, il pulsante Ritira Giocatore
+        della finestra del risultato e la domanda dopo un forfait. Fino alla
+        10.13.0 lo facevano solo il tasto CANC, e le altre due lo saltavano.
+        Risponde vero se il ritiro va registrato.
+        Quando i giocatori attivi non bastano per i turni che restano, dalla
+        10.13.1 il ritiro non e' piu' impedito: un avviso, con No come
+        pulsante predefinito, dice che il motore potrebbe non riuscire ad
+        abbinare un turno, e che in quel caso il turno si compone a mano
+        (issue 38). Il bivio fra ritorno all'iscrizione ed eliminazione resta
+        solo quando i giocatori attivi scenderebbero sotto due, e risponde
+        falso: la finestra del risultato controlla poi con
+        _bivio_ha_cambiato_il_torneo se il torneo e' cambiato sotto di lei.
+        domanda e' la domanda di conferma della strada, se ne ha una: senza
+        avviso si pone da sola, con l'avviso ne diventa l'inizio."""
+        from tournament import valuta_ritiro
+
+        giocatore = self.current_tournament.get("players_dict", {}).get(player_id, {})
+        nome = f"{giocatore.get('last_name', '')} {giocatore.get('first_name', '')}".strip()
+        esito, resterebbero, necessari, turni_rimanenti = valuta_ritiro(
+            self.current_tournament, player_id
+        )
+        if esito == "bivio":
+            self._bivio_torneo_non_proseguibile(
+                filepath, nome, resterebbero, necessari, turni_rimanenti
+            )
+            return False
+        if esito == "avviso":
+            from utils import play_sound
+
+            play_sound("errore")
+            # Con l'avviso restano almeno due giocatori e due turni: fra due
+            # giocatori l'avversario possibile e' uno solo, e la frase va al
+            # singolare. Il numero che servirebbe e' di giocatori, non di
+            # avversari, e la frase lo dice.
+            if resterebbero - 1 == 1:
+                avviso = _(
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori c'e' un solo avversario possibile a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                )
+            else:
+                avviso = _(
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori ci sono solo {avversari} avversari possibili a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                )
+            avviso = avviso.format(
+                name=nome,
+                resterebbero=resterebbero,
+                avversari=max(resterebbero - 1, 0),
+                turni=turni_rimanenti,
+                necessari=necessari,
+            )
+            testo = "\n\n".join(
+                [
+                    *([domanda] if domanda else []),
+                    avviso,
+                    _("Vuoi ritirarlo comunque? Il pulsante predefinito e' No."),
+                ]
+            )
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Ritiro con pochi giocatori"),
+                testo,
+                style=wx.YES_NO,
+                settings=self.settings,
+                no_predefinito=True,
+            )
+            conferma = dlg.ShowModal()
+            dlg.Destroy()
+            return conferma == wx.ID_YES
+        if domanda:
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Ritiro dal torneo"),
+                domanda,
+                style=wx.YES_NO,
+                settings=self.settings,
+            )
+            conferma = dlg.ShowModal()
+            dlg.Destroy()
+            return conferma == wx.ID_YES
+        return True
+
     def _bivio_torneo_non_proseguibile(
         self, filepath, nome_giocatore, resterebbero, necessari, turni_rimanenti
     ):
-        """Il ritiro renderebbe impossibile completare il torneo. Il ritiro non
+        """Il ritiro lascerebbe il torneo con meno di due giocatori attivi, e
+        nessun turno si potrebbe piu' abbinare, nemmeno a mano. Il ritiro non
         viene registrato e restano due strade: riportare il torneo alla fase di
         iscrizione, che conserva tutto e permette di rifarlo, oppure eliminarlo.
-        In nessun caso l'abbinatore viene messo nella condizione di fallire."""
+        Fino alla 10.13.0 il bivio arrivava gia' quando i giocatori non
+        bastavano per i turni rimanenti: dalla 10.13.1 quello e' un avviso di
+        _conferma_ritiro."""
         from tournament import riporta_torneo_alla_preparazione
         from utils import create_backup, play_sound
 
         play_sound("errore")
         messaggio = _(
-            "Ritirando {name} resterebbero {resterebbero} giocatori attivi, mentre per portare a termine i {turni} turni che mancano ne servono almeno {necessari}.\n\n"
+            "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano.\n\n"
             "Il ritiro non viene registrato, perche' il torneo si fermerebbe a meta' senza possibilita' di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori gia' ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
             "Vuoi riportare il torneo alla fase di iscrizione? Prima dell'operazione viene creata una copia di sicurezza."
-        ).format(
-            name=nome_giocatore,
-            resterebbero=resterebbero,
-            turni=turni_rimanenti,
-            necessari=necessari,
-        )
+        ).format(name=nome_giocatore, resterebbero=resterebbero)
         dlg = AccessibleMsgDialog(
             self,
             _("Il torneo non potrebbe proseguire"),
@@ -3373,6 +3437,20 @@ class MainFrame(wx.Frame):
                 "Torneo riportato alla fase di iscrizione. I turni sono stati cancellati."
             )
         )
+
+    def _bivio_ha_cambiato_il_torneo(self, torneo, turno):
+        """Vero se il bivio di _conferma_ritiro, raggiunto dalla finestra del
+        risultato, ha riportato il torneo alla fase di iscrizione, e il turno
+        della partita non c'e' piu', oppure lo ha eliminato, e il torneo
+        aperto non e' piu' quello. Dalla 10.13.1 il bivio si raggiunge anche
+        dal pulsante Ritira Giocatore e dalla domanda dopo un forfait: in quel
+        caso on_activate_match esce subito, e barra di stato, albero e area
+        centrale restano come li ha lasciati il bivio. Se l'arbitro ha
+        rifiutato entrambe le strade il torneo e' quello di prima, e la
+        finestra del risultato prosegue come sempre."""
+        if self.current_tournament is not torneo:
+            return True
+        return turno is not None and not any(r is turno for r in torneo.get("rounds", []))
 
     def _proponi_eliminazione_torneo(self, filepath):
         """Seconda strada del bivio: eliminare il torneo. Si riusa la stessa
@@ -4728,6 +4806,7 @@ class MainFrame(wx.Frame):
         pgn_text = actual_match.get("pgn", "")
 
         # Determinazione se il turno è concluso o il torneo è closed/concluded
+        torneo = self.current_tournament
         is_tournament_concluded = self.current_tournament.get("concluded", False)
         is_round_concluded = False
         round_obj = next(
@@ -4790,7 +4869,13 @@ class MainFrame(wx.Frame):
                 else:
                     self.set_status(_("Nessuna modifica alla pianificazione."))
             elif dlg.selected_action == "withdraw":
-                self.withdraw_player(dlg.withdrawn_player_id)
+                # Dalla 10.13.1 anche questa strada passa dal controllo sul
+                # ritiro, con l'avviso quando i giocatori non bastano.
+                if self._conferma_ritiro(dlg.withdrawn_player_id, self.active_filename):
+                    self.withdraw_player(dlg.withdrawn_player_id)
+                elif self._bivio_ha_cambiato_il_torneo(torneo, round_obj):
+                    dlg.Destroy()
+                    return
             else:
                 res = dlg.get_selected_result()
                 if res:
@@ -4890,6 +4975,12 @@ class MainFrame(wx.Frame):
                         self.apply_match_result(
                             actual_match, res, is_pgn_only=disable_result_change
                         )
+                        # Dopo un forfait la domanda sul ritiro puo' arrivare
+                        # al bivio, che riporta il torneo all'iscrizione o lo
+                        # elimina: allora il risultato non va annunciato.
+                        if self._bivio_ha_cambiato_il_torneo(torneo, round_obj):
+                            dlg.Destroy()
+                            return
                         if disable_result_change:
                             self.set_status(_("Partita aggiornata con PGN."))
                         else:
@@ -5063,9 +5154,15 @@ class MainFrame(wx.Frame):
                 dlg = AccessibleMsgDialog(
                     self, _("Ritiro dopo Forfait"), msg, style=wx.YES_NO
                 )
-                if dlg.ShowModal() == wx.ID_YES:
-                    self.withdraw_player(forfeiting_id)
+                risposta = dlg.ShowModal()
                 dlg.Destroy()
+                # Dalla 10.13.1 anche il ritiro dopo un forfait passa dal
+                # controllo sul ritiro, con l'avviso quando i giocatori non
+                # bastano.
+                if risposta == wx.ID_YES and self._conferma_ritiro(
+                    forfeiting_id, self.active_filename
+                ):
+                    self.withdraw_player(forfeiting_id)
 
     def withdraw_player(self, player_id):
         players_dict = self.current_tournament.get("players_dict", {})
@@ -5125,26 +5222,44 @@ class MainFrame(wx.Frame):
         self.set_status(_("Visualizzazione scheda di {name}.").format(name=p_name))
 
     def start_tournament_matchmaking(self):
-        from tournament import generate_pairings_for_round
-        from utils import play_sound
+        from tournament import abbinamento_esaurito, generate_pairings_for_round
 
         if not self._torneo_puo_partire(self.current_tournament):
             return
 
         matches = generate_pairings_for_round(self.current_tournament)
         if matches is None:
-            self._avvisa_abbinamento_fallito(self.current_tournament)
+            if abbinamento_esaurito(self.current_tournament):
+                self._proponi_abbinamento_manuale(1)
+            else:
+                self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
-        from models import Match, Round
-        from tournament import registra_bye_del_turno
+        self._registra_nuovo_turno(
+            matches, 1, _("Torneo iniziato. Generati abbinamenti per il Turno 1.")
+        )
+
+    def _registra_nuovo_turno(self, matches, numero, stato, manuale=False):
+        """Registra il turno appena abbinato, salva e mostra il turno nuovo.
+        Fino alla 10.11.0 le stesse righe stavano due volte, all'avvio del
+        torneo e in generate_next_round; dalla 10.12.0 servono anche al turno
+        composto a mano (issue 38), e il lavoro sui dati lo fa registra_turno,
+        senza wx: il turno del motore resta registrato come prima. stato e' la
+        frase della barra di stato."""
+        from tournament import registra_turno
+        from utils import play_sound
 
         # Il giocatore senza avversario prende i punti previsti dal torneo:
-        # prima li assegnava solo il percorso testuale.
-        registra_bye_del_turno(self.current_tournament, matches, 1)
-
-        round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
-        self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
+        # prima li assegnava solo il percorso testuale. Al giocatore ritirato
+        # non va scritta alcuna voce di storico per i turni che non gioca.
+        # Prima gliene veniva messa una di BYE con zero punti: nel file TRF
+        # diventava il codice U, cioe' bye assegnato, che per bbpPairings vale
+        # il punteggio del bye e non zero. Il totale dichiarato non tornava
+        # piu' con i risultati e il motore rifiutava il file con "The score
+        # for player N does not match the game results", bloccando la
+        # generazione del turno successivo. Ci pensa gia' engine.py, che per i
+        # ritirati riempie con il codice Z i turni non giocati.
+        registra_turno(self.current_tournament, matches, numero, manuale=manuale)
         self._save_state()
 
         play_sound("nuovo_turno", self.current_tournament)
@@ -5153,12 +5268,96 @@ class MainFrame(wx.Frame):
         self._tree_restore_target = {
             "action": "show_round_report",
             "filepath": self.active_filename,
-            "round": 1,
+            "round": numero,
         }
 
         self.populate_tree()
         self.show_current_round_report()
-        self.set_status(_("Torneo iniziato. Generati abbinamenti per il Turno 1."))
+        self.set_status(stato)
+
+    def _proponi_abbinamento_manuale(self, numero):
+        """bbpPairings ha risposto che nessun abbinamento del turno rispetta i
+        criteri assoluti: con i giocatori rimasti le coppie ammesse sono
+        esaurite. Il regolamento lascia la decisione all'arbitro capo
+        (C.04.3, articolo 1.9.3), e dalla 10.12.0 Tornello propone di comporre
+        il turno a mano (issue 38). Per gli altri errori resta l'avviso di
+        _avvisa_abbinamento_fallito."""
+        from utils import play_sound
+
+        play_sound("errore", self.current_tournament)
+        messaggio = _(
+            "bbpPairings non ha trovato nessun abbinamento del turno {turno} che rispetti i criteri assoluti del sistema svizzero: con i giocatori rimasti, ogni combinazione ripeterebbe un incontro gia' giocato, darebbe un secondo bye a chi l'ha gia' avuto o farebbe incontrare due giocatori che devono avere lo stesso colore.\n\n"
+            "In questo caso il regolamento FIDE (C.04.3, articolo 1.9.3) lascia la decisione all'arbitro capo. Puoi comporre a mano gli abbinamenti del turno {turno}: con non piu' di 16 giocatori attivi Tornello propone le coppie da cui partire, e segnala sempre gli incontri ripetuti, i bye e i colori fuori regola, che restano avvertimenti e non divieti. Prima di registrare il turno viene creata una copia di sicurezza, e nell'albero il turno si chiamera' Turno {turno}, abbinamenti manuali.\n\n"
+            "Vuoi comporre a mano il turno {turno}? Se rispondi No il torneo resta com'e'."
+        ).format(turno=numero)
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Nessun abbinamento valido"),
+            messaggio,
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        if risposta != wx.ID_YES:
+            self.set_status(
+                _("Turno {turno} non abbinato: il torneo resta com'era.").format(
+                    turno=numero
+                )
+            )
+            return
+
+        from gui.dialogs.manual_pairing_dialog import ManualPairingDialog
+
+        dlg = ManualPairingDialog(self, self.current_tournament, numero, self.settings)
+        esito = dlg.ShowModal()
+        coppie = dlg.coppie_confermate
+        dlg.Destroy()
+        if esito != wx.ID_OK or not coppie:
+            self.set_status(
+                _(
+                    "Composizione manuale annullata: il turno {turno} non e' stato registrato."
+                ).format(turno=numero)
+            )
+            return
+        self._registra_turno_manuale(coppie, numero)
+
+    def _registra_turno_manuale(self, coppie, numero):
+        """Registra le coppie confermate nella finestra di composizione. Prima
+        fa la copia di sicurezza pre_turno_manuale; se non riesce, chiede se
+        registrare lo stesso, con il No predefinito."""
+        from turno_manuale import crea_partite_turno_manuale, valida_turno_manuale
+        from utils import create_backup, play_sound
+
+        errori, _avvertimenti = valida_turno_manuale(self.current_tournament, coppie)
+        if errori:
+            play_sound("errore", self.current_tournament)
+            self._dialogo_informativo(_("Turno non registrato"), "\n".join(errori))
+            return
+        if not create_backup(self.active_filename, "pre_turno_manuale"):
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Copia di sicurezza non riuscita"),
+                _(
+                    "Non e' stato possibile creare la copia di sicurezza del torneo prima del turno composto a mano. Registrare lo stesso il turno {turno}? Il pulsante predefinito e' No."
+                ).format(turno=numero),
+                style=wx.YES_NO,
+                settings=self.settings,
+                no_predefinito=True,
+            )
+            risposta = dlg.ShowModal()
+            dlg.Destroy()
+            if risposta != wx.ID_YES:
+                return
+        partite = crea_partite_turno_manuale(self.current_tournament, coppie, numero)
+        self._registra_nuovo_turno(
+            partite,
+            numero,
+            _("Registrati gli abbinamenti composti a mano del Turno {num}.").format(
+                num=numero
+            ),
+            manuale=True,
+        )
 
     def _avvisa_abbinamento_fallito(self, torneo):
         """
@@ -5219,53 +5418,26 @@ class MainFrame(wx.Frame):
                     return
 
         next_round_num = curr_round + 1
-        filepath = self.active_filename
 
-        from tournament import generate_pairings_for_round
-        from utils import play_sound
+        from tournament import abbinamento_esaurito, generate_pairings_for_round
 
         self.current_tournament["current_round"] = next_round_num
 
         next_matches = generate_pairings_for_round(self.current_tournament)
         if next_matches is None:
             self.current_tournament["current_round"] = curr_round
-            self._avvisa_abbinamento_fallito(self.current_tournament)
+            # Dalla 10.12.0 l'esaurimento delle coppie ha la sua strada, la
+            # composizione manuale; gli altri errori restano un avviso.
+            if abbinamento_esaurito(self.current_tournament):
+                self._proponi_abbinamento_manuale(next_round_num)
+            else:
+                self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
-        # Al giocatore ritirato non va scritta alcuna voce di storico per i
-        # turni che non gioca. Prima gliene veniva messa una di BYE con zero
-        # punti: nel file TRF diventava il codice U, cioe' bye assegnato, che
-        # per bbpPairings vale il punteggio del bye e non zero. Il totale
-        # dichiarato non tornava piu' con i risultati e il motore rifiutava il
-        # file con "The score for player N does not match the game results",
-        # bloccando la generazione del turno successivo. Ci pensa gia'
-        # engine.py, che per i ritirati riempie con il codice Z i turni non
-        # giocati.
-        from tournament import registra_bye_del_turno
-
-        registra_bye_del_turno(self.current_tournament, next_matches, next_round_num)
-
-        from models import Match, Round
-
-        round_obj = Round(
-            round=next_round_num, matches=[Match.from_dict(m) for m in next_matches]
-        )
-        self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
-        self._save_state()
-
-        play_sound("nuovo_turno", self.current_tournament)
-
-        # Imposta il target per ripristinare il focus del cursore sul nuovo turno
-        self._tree_restore_target = {
-            "action": "show_round_report",
-            "filepath": filepath,
-            "round": next_round_num,
-        }
-
-        self.populate_tree()
-        self.show_current_round_report()
-        self.set_status(
-            _("Generati abbinamenti per il Turno {num}.").format(num=next_round_num)
+        self._registra_nuovo_turno(
+            next_matches,
+            next_round_num,
+            _("Generati abbinamenti per il Turno {num}.").format(num=next_round_num),
         )
 
     def on_export_ics(self, event):

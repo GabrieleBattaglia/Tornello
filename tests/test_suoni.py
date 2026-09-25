@@ -8,7 +8,11 @@ due eventi suoi, uno per l'apertura e uno per i pulsanti, con due preset che
 Tornello non usa per nient'altro: una regola del parco vuole un suono per
 ogni evento. Dalla 10.6.2 l'annullamento della programmazione suona una
 volta sola, e non piu' due. Dalla 10.10.0 anche il ripristino riuscito di
-una copia di sicurezza ha il suo evento, con le stesse regole (issue 39).
+una copia di sicurezza ha il suo evento, con le stesse regole (issue 39), e
+dalla 10.12.0 la finestra della composizione manuale del turno ne ha tre, per
+la coppia aggiunta, la coppia con avvertimenti e la coppia tolta, piu' due
+per Inverti colori, senza e con avvertimenti, e dalla 10.13.0 altri due per
+Proposta automatica (issue 38).
 Niente suona davvero: la collezione dei preset si legge come json, i
 sorgenti come testo, e dove servono le finestre vere play_sound e' sostituita
 da una finta che annota gli eventi.
@@ -26,9 +30,21 @@ RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CARTELLA_SRC = os.path.join(RADICE, "src")
 FINESTRA_DEI_RISULTATI = os.path.join(CARTELLA_SRC, "gui", "dialogs", "result_dialog.py")
 
-# I due eventi nati con la 10.6.1, e quello del ripristino, nato con la
-# 10.10.0.
-EVENTI_NUOVI = ("apertura_risultati", "controllo_risultati", "ripristino")
+# I due eventi nati con la 10.6.1, quello del ripristino, nato con la
+# 10.10.0, e i sette della composizione manuale del turno, nati con la
+# 10.12.0 e la 10.13.0.
+EVENTI_NUOVI = (
+    "apertura_risultati",
+    "controllo_risultati",
+    "ripristino",
+    "coppia_aggiunta",
+    "coppia_avvertimento",
+    "coppia_tolta",
+    "coppia_invertita",
+    "coppia_invertita_avvertimento",
+    "proposta_coppie",
+    "proposta_coppie_avvertimento",
+)
 
 # Le chiamate con il nome scritto per intero, play_sound("...") oppure
 # Acusticator.play("..."). Le f-string, come risultato_{val}, restano fuori:

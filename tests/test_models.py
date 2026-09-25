@@ -74,8 +74,10 @@ CHIAVI_ESCLUSE = {
     # caricamento, e save_tournament la toglie prima di scrivere.
     "players_dict",
     # Il motivo dell'ultimo abbinamento fallito, che serve solo al messaggio
-    # della sessione in corso (tournament.py, CHIAVE_ERRORE_ABBINAMENTO).
+    # della sessione in corso (tournament.py, CHIAVE_ERRORE_ABBINAMENTO), e
+    # dalla 10.12.0 il suo compagno, che dice se le coppie erano esaurite.
     "_errore_abbinamento",
+    "_abbinamento_esaurito",
     # Il fattore K del torneo, scritto dalle versioni vecchie, come nel
     # torneo campione: oggi il K e' di ogni giocatore, e nessuno lo rilegge.
     "k_factor",
@@ -111,7 +113,8 @@ def torneo_della_finestra():
     I valori sono gia' nella forma del modello, cosi' la riscrittura deve
     restituirli identici. L'elenco e' fermo alla 10.8.3: ogni chiave nuova
     della finestra, del torneo, dei giocatori o delle partite, va aggiunta
-    qui."""
+    qui. Dalla 10.12.0 il turno 2 e' composto a mano, con il suo
+    contrassegno, e c'e' la seconda chiave dell'abbinamento fallito."""
     giocatrice = {
         "id": "BIANA001",
         "first_name": "Anna",
@@ -223,6 +226,7 @@ def torneo_della_finestra():
                 "matches": [
                     {"id": 2, "round": 2, "white_player_id": "BIANA001", "black_player_id": None, "result": "BYE", "is_scheduled": False},
                 ],
+                "manual_pairing": True,
             },
         ],
         "next_match_id": 3,
@@ -239,6 +243,7 @@ def torneo_della_finestra():
             {"key": "ARO", "modifiers": {}},
         ],
         "_errore_abbinamento": "Nessun abbinamento possibile.",
+        "_abbinamento_esaurito": True,
         "players_dict": {"BIANA001": giocatrice, "ROSMA001": avversario},
     }
 
@@ -301,3 +306,20 @@ def test_la_prova_riconosce_una_chiave_persa():
     del riscritto["tiebreaks"]
     del riscritto["rounds"][0]["matches"][0]["schedule_info"]["arbiter_not_needed"]
     assert chiavi_perse(torneo, riscritto) == ["rounds[0].matches[0].schedule_info.arbiter_not_needed", "tiebreaks"]
+
+
+def test_il_turno_composto_a_mano_si_riconosce():
+    """Il contrassegno manual_pairing della 10.12.0 (issue 38): nel json
+    compare solo quando e' vero, e un turno che non lo ha vale falso, cosi' i
+    file di prima si leggono come sempre e i turni del motore restano scritti
+    come prima."""
+    from models import Round
+
+    manuale = {"round": 4, "matches": [], "manual_pairing": True}
+    del_motore = {"round": 3, "matches": []}
+
+    assert Round.from_dict(manuale).manual_pairing is True
+    assert Round.from_dict(manuale).to_dict() == manuale
+    assert Round.from_dict(del_motore).manual_pairing is False
+    assert Round.from_dict(del_motore).to_dict() == del_motore
+    assert "manual_pairing" not in Round(round=1).to_dict()

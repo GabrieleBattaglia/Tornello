@@ -644,6 +644,24 @@ EVENTI = {
     # sicurezza: tre tic veloci che salgono, un preset che Tornello non usa
     # per nient'altro. Provvisorio fino all'ascolto di Gabriele (issue 39).
     "ripristino": "meditimer_banco_salvato",
+    # Dalla 10.12.0 la finestra della composizione manuale del turno: due
+    # tic che salgono per una coppia aggiunta senza avvertimenti, una nota
+    # sola che si spegne per una coppia con avvertimenti, una scivolata
+    # verso il basso per una coppia tolta. Tre preset che Tornello non usa
+    # per nient'altro, provvisori fino all'ascolto di Gabriele (issue 38).
+    "coppia_aggiunta": "doppio_tic_conferma",
+    "coppia_avvertimento": "avviso_di_sistema",
+    "coppia_tolta": "espelli",
+    # Nella stessa finestra, Inverti colori e Proposta automatica hanno i
+    # loro suoni, due ciascuno, senza e con avvertimenti, perche' nessun
+    # preset si divide fra due eventi: per i colori invertiti due note uguali
+    # allo specchio fra sinistra e destra, oppure due note uguali che si
+    # spengono in un tonfo; per la proposta due accordi in portamento, oppure
+    # un arpeggio minore lento. Anche questi provvisori (issue 38).
+    "coppia_invertita": "pokermachine_coppia_gemella",
+    "coppia_invertita_avvertimento": "pokermachine_coppia_muta",
+    "proposta_coppie": "perfect_match",
+    "proposta_coppie_avvertimento": "arpeggio_pensoso",
 }
 
 

@@ -266,15 +266,27 @@ class RoundDate:
 class Round:
     round: int
     matches: list[Match] = field(default_factory=list)
+    # Dalla 10.12.0: vero per un turno composto a mano dall'arbitro, perche'
+    # bbpPairings non trovava un abbinamento valido (issue 38). Nel json la
+    # chiave compare solo quando e' vera, e un file che non la ha vale falso:
+    # i turni del motore restano scritti come prima.
+    manual_pairing: bool = False
 
     def to_dict(self) -> dict[str, Any]:
-        return {"round": self.round, "matches": [m.to_dict() for m in self.matches]}
+        d = {"round": self.round, "matches": [m.to_dict() for m in self.matches]}
+        if self.manual_pairing:
+            d["manual_pairing"] = True
+        return d
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Round":
         matches_list = d.get("matches", [])
         matches = [Match.from_dict(m) for m in matches_list]
-        return cls(round=d.get("round", 0), matches=matches)
+        return cls(
+            round=d.get("round", 0),
+            matches=matches,
+            manual_pairing=bool(d.get("manual_pairing", False)),
+        )
 
 
 @dataclass

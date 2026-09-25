@@ -118,6 +118,7 @@ class TestNomi:
             "pre_ripristino",
             "pre_archiviazione",
             "rifinalizzazione",
+            "pre_turno_manuale",
         ):
             parti = analizza_nome(f"Tornello - Coppa_{contesto}_20260923_160512.json")
             assert parti["contesto"] == contesto
@@ -160,6 +161,7 @@ class TestNomi:
         assert momento_in_parole("turno_3") == "al turno 3 abbinato"
         assert momento_in_parole("chiusura_db") == "alla chiusura del programma"
         assert momento_in_parole("pre_ripristino") == "prima di un ripristino"
+        assert momento_in_parole("pre_turno_manuale") == "prima di un turno composto a mano"
         assert momento_in_parole(None) == "momento sconosciuto"
 
 

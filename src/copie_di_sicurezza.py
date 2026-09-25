@@ -61,6 +61,8 @@ CONTESTI_NOTI = (
     "pre_ripristino",
     "pre_archiviazione",
     "rifinalizzazione",
+    # Dalla 10.12.0, prima di registrare un turno composto a mano (issue 38).
+    "pre_turno_manuale",
 )
 
 # Il nome di una copia: il file d'origine, il momento, la data, l'ora, il
@@ -154,6 +156,7 @@ def momento_in_parole(contesto):
         "pre_ripristino": _("prima di un ripristino"),
         "pre_archiviazione": _("prima di una sostituzione in archivio"),
         "rifinalizzazione": _("da una finalizzazione ripetuta"),
+        "pre_turno_manuale": _("prima di un turno composto a mano"),
     }
     return parole.get(contesto, contesto)
 
