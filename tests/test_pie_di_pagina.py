@@ -493,6 +493,9 @@ class TestRegolaDiAggiornamento:
             status_text=Campo(),
             update_status_display=lambda: registro.append("calcolo"),
         )
+        # Dalla 10.8.5 F7 passa dal gestore della voce Barra di Stato del
+        # menu Visualizza.
+        telaio.on_view_status = lambda e: main_frame.MainFrame.on_view_status(telaio, e)
         evento = SimpleNamespace(GetKeyCode=lambda: wx.WXK_F7)
         main_frame.MainFrame.on_key_hook(telaio, evento)
         assert registro == ["focus"]

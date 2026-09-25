@@ -493,6 +493,24 @@ class ResultDialog(wx.Dialog):
         self.btn_withdraw.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.btn_ok.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         btn_cancel.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_char_hook)
+
+    def on_char_hook(self, event):
+        """INVIO con la conferma spenta, cioe' con un PGN non valido, fa
+        suonare l'errore e lascia la finestra aperta, dalla 10.8.4. Il gancio
+        arriva prima di ogni altro trattamento del tasto: senza, INVIO su una
+        voce del risultato finiva a Windows, che con il pulsante predefinito
+        spento lo scartava in silenzio, e on_key_down non lo vedeva. Sui
+        pulsanti INVIO resta loro e li preme, come prima; nel campo del PGN va
+        a capo."""
+        if event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER) and not self.btn_ok.IsEnabled():
+            fuoco = self.FindFocus()
+            if fuoco != self.txt_pgn and not isinstance(fuoco, wx.Button):
+                from utils import play_sound
+
+                play_sound("errore")
+                return
+        event.Skip()
 
     def apply_theme(self):
         apply_visual_settings(self.lbl_info, self.settings)
@@ -543,6 +561,17 @@ class ResultDialog(wx.Dialog):
             return
 
         if key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER:
+            # Con la conferma spenta, cioe' con un PGN non valido, Invio non
+            # registra niente: suona l'errore e la finestra resta aperta.
+            # Fino alla 10.8.3 qui si confermava senza guardare il pulsante.
+            # Di solito il tasto lo ferma prima on_char_hook; questo controllo
+            # vale per quando arriva lo stesso. Dalla 10.8.4 decide il
+            # pulsante, che on_pgn_changed accende e spegne.
+            if not self.btn_ok.IsEnabled():
+                from utils import play_sound
+
+                play_sound("errore")
+                return
             # Invio dentro il gruppo delle opzioni non conferma piu' da solo:
             # insieme alla selezione automatica sul focus bastavano un
             # tabulatore e un Invio per registrare un risultato non voluto.

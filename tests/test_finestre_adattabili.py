@@ -465,7 +465,10 @@ def test_finestra_principale_dentro_lo_schermo_e_pie_di_pagina_di_tre_righe(ambi
     """La finestra principale non scorre: ripristinata sta dentro lo schermo,
     e il pie' di pagina mostra le sue tre righe intere anche a 36 punti.
     Maximize e' sostituita da una finta che annota la misura del momento,
-    cioe' quella che torna con Win+freccia giu'."""
+    cioe' quella che torna con Win+freccia giu'. Dalla 10.8.7 il pie' di
+    pagina non va a capo: le righe da 80 caratteri restano tre anche quando
+    non ci stanno in larghezza, e l'altezza comprende la barra di
+    scorrimento orizzontale, che non copre la terza riga."""
     wx = ambiente.wx
     import gui.main_frame as mf
 
@@ -478,10 +481,20 @@ def test_finestra_principale_dentro_lo_schermo_e_pie_di_pagina_di_tre_righe(ambi
         principale._timer_pie_di_pagina.Stop()
         assert ripristinata and wx.Rect(*AREA).Contains(ripristinata[0])
         testo = principale.status_text
-        testo.SetValue("Pronto.\nseconda riga\nterza riga")
+        assert testo.GetWindowStyleFlag() & wx.TE_DONTWRAP
+        barra = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y, testo)
+        assert testo.GetSize().height - testo.GetClientSize().height >= barra
+        riga = testo.GetCharHeight()
+        assert testo.GetMinSize().height >= riga * 3 + riga // 2 + barra
+        # Due righe da 80 caratteri, come quelle degli indicatori: a 36 punti
+        # non ci stanno nei 1280 pixel dello schermo simulato.
+        testo.SetValue("Pronto.\n" + "GT  10.7% " * 8 + "\n" + "VB  50.0% " * 8)
+        assert testo.GetNumberOfLines() == 3
         righe = [testo.PositionToCoords(testo.XYToPosition(0, r)).y for r in range(3)]
         passo = righe[1] - righe[0]
         assert passo > 0
         assert righe[2] + passo <= testo.GetClientSize().height
+        testo.SetSize(wx.Size(testo.GetSize().width // 4, testo.GetSize().height))
+        assert testo.GetNumberOfLines() == 3
     finally:
         principale.Destroy()

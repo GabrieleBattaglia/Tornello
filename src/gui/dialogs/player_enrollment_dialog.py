@@ -344,12 +344,17 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         play_sound("fide_pronto")
 
+    def _e_la_riga_mostra_altri(self, indice):
+        """Vero per la riga che carica i risultati FIDE seguenti, l'ultima,
+        che non ha un giocatore dietro. Dalla 10.8.6 la si riconosce dalla
+        posizione: il testo non comincia piu' con i due trattini, che NVDA
+        leggeva, e nelle altre lingue potrebbe cominciare in qualunque modo."""
+        return indice >= len(self.fide_results_map)
+
     def load_more_fide_results(self):
         # Rimuovi l'eventuale precedente item "Mostra altri..."
         last_idx = self.list_fide_results.GetCount() - 1
-        if last_idx >= 0 and self.list_fide_results.GetString(last_idx).startswith(
-            "--"
-        ):
+        if last_idx >= 0 and self._e_la_riga_mostra_altri(last_idx):
             self.list_fide_results.Delete(last_idx)
 
         start = self.fide_displayed_count
@@ -380,7 +385,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         if self.fide_displayed_count < len(self.all_fide_matches):
             total = len(self.all_fide_matches)
             rem = total - self.fide_displayed_count
-            lbl = _("-- Mostra altri risultati ({rem} rimanenti su {total}) --").format(
+            lbl = _("Mostra altri risultati ({rem} rimanenti su {total})").format(
                 rem=rem, total=total
             )
             self.list_fide_results.Append(lbl)
@@ -423,7 +428,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
             return
 
         # Controlla se è la riga speciale "Mostra altri..."
-        if self.list_fide_results.GetString(sel).startswith("--"):
+        if self._e_la_riga_mostra_altri(sel):
             self.load_more_fide_results()
             new_sel = sel
             if new_sel < self.list_fide_results.GetCount():

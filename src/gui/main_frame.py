@@ -168,10 +168,14 @@ class MainFrame(wx.Frame):
 
         # Barra di Stato personalizzata in basso (con etichetta adiacente precedente)
         self.lbl_status = wx.StaticText(self.top_panel, label=_("Barra di stato"))
-        # L'altezza la decide apply_theme, dal carattere.
+        # L'altezza la decide apply_theme, dal carattere. Dalla 10.8.7 il
+        # testo non va mai a capo: ogni riga di indicatori, da 80 caratteri,
+        # resta una riga, e i due blocchi da 40 restano intatti anche con un
+        # carattere grande o la finestra stretta. Chi vede scorre di lato con
+        # la barra orizzontale; lo screen reader legge la riga intera.
         self.status_text = wx.TextCtrl(
             self.top_panel,
-            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2 | wx.TE_DONTWRAP,
         )
         self.status_text.SetName(_("Barra di stato"))
         self.status_text.Bind(wx.EVT_SET_FOCUS, self._on_focus_pie_di_pagina)
@@ -295,6 +299,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_view_standings, self.item_standings)
         self.Bind(wx.EVT_MENU, self.on_rollback_round, self.item_rollback)
         self.Bind(wx.EVT_MENU, self.on_finalize_tournament, self.item_finalize)
+        self.Bind(wx.EVT_MENU, self.on_view_central, self.item_view_central)
+        self.Bind(wx.EVT_MENU, self.on_view_tree, self.item_view_tree)
+        self.Bind(wx.EVT_MENU, self.on_view_status, self.item_view_status)
 
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
@@ -314,22 +321,44 @@ class MainFrame(wx.Frame):
             play_sound("melodia_del_campanello_1")
             self.on_credits(None)
         elif key_code == wx.WXK_F5:
-            play_sound("spostamento_f5")
-            self.main_text.SetFocus()
+            self.on_view_central(None)
         elif key_code == wx.WXK_F6:
-            play_sound("spostamento_f6")
-            self.tree_ctrl.SetFocus()
+            self.on_view_tree(None)
         elif key_code == wx.WXK_F7:
-            play_sound("spostamento_f7")
-            # Se il focus e' gia' sul pie' di pagina SetFocus non genera
-            # EVT_SET_FOCUS, e il ricalcolo va fatto qui, prima. Negli altri
-            # casi lo fa _on_focus_pie_di_pagina, e rifarlo qui costerebbe un
-            # secondo giro nella cartella dei backup prima che NVDA legga.
-            if self.status_text.HasFocus():
-                self.update_status_display()
-            self.status_text.SetFocus()
+            self.on_view_status(None)
         else:
             event.Skip()
+
+    # F5, F6 e F7 e le tre voci del menu Visualizza passano dagli stessi
+    # gestori, con lo stesso suono e lo stesso effetto. Fino alla 10.8.4 le
+    # voci del menu non avevano gestore, e scelte dal menu non facevano
+    # niente. Il menu non sposta il focus: quando la voce arriva, il focus e'
+    # ancora dove l'utente l'aveva lasciato, e l'arrivo sul pie' di pagina
+    # segue la strada di F7, ricalcolo e sezione degli acronimi compresi.
+
+    def on_view_central(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f5")
+        self.main_text.SetFocus()
+
+    def on_view_tree(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f6")
+        self.tree_ctrl.SetFocus()
+
+    def on_view_status(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f7")
+        # Se il focus e' gia' sul pie' di pagina SetFocus non genera
+        # EVT_SET_FOCUS, e il ricalcolo va fatto qui, prima. Negli altri
+        # casi lo fa _on_focus_pie_di_pagina, e rifarlo qui costerebbe un
+        # secondo giro nella cartella dei backup prima che NVDA legga.
+        if self.status_text.HasFocus():
+            self.update_status_display()
+        self.status_text.SetFocus()
 
     def apply_theme(self):
         """Applica la combinazione di colori ed il font impostati in settings a tutti i controlli."""
@@ -354,9 +383,16 @@ class MainFrame(wx.Frame):
         # con i caratteri dei dialoghi sopra i 12 punti la terza riga spariva;
         # dalla 10.6.3 segue il carattere, anche quando cambia dalle
         # preferenze, che passano di qui (issue 49).
+        # Dalla 10.8.7 sotto le righe c'e' la barra di scorrimento
+        # orizzontale, che sta fuori dall'area del testo: si conta anche
+        # quando, nel momento della misura, non e' ancora comparsa. Il
+        # RichEdit la mostra sempre, spenta quando non serve, e allora la
+        # differenza fra le due misure la comprende gia'.
         riga = self.status_text.GetCharHeight()
-        bordo = self.status_text.GetSize().height - self.status_text.GetClientSize().height
-        self.status_text.SetMinSize(wx.Size(-1, riga * 3 + riga // 2 + bordo))
+        fuori = self.status_text.GetSize().height - self.status_text.GetClientSize().height
+        barra = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y, self.status_text)
+        fuori = max(fuori, self.status_text.GetWindowBorderSize().height + barra)
+        self.status_text.SetMinSize(wx.Size(-1, riga * 3 + riga // 2 + fuori))
         self.top_panel.Layout()
 
     def set_status(self, text):

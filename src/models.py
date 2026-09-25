@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -53,6 +54,13 @@ class Player:
     received_bye_in_round: list[int] = field(default_factory=list)
     buchholz: float = 0.0
     buchholz_cut1: float | None = None
+    # L'ARO si ricalcola ogni volta che serve, dallo storico: il valore
+    # salvato e' la fotografia scritta con la classifica, come il Buchholz, e
+    # nessun calcolo lo rilegge. Dalla 10.8.3 il modello lo conserva, cosi' il
+    # json salvato dalla console ha le stesse chiavi di quello della finestra,
+    # e l'ARO che la finalizzazione della console assegna al giocatore arriva
+    # nel dizionario come gli altri spareggi (issue 56).
+    aro: float | None = None
     performance_rating: float | None = None
     elo_change: float | None = None
     k_factor: int | None = None
@@ -103,6 +111,7 @@ class Player:
             "received_bye_in_round": self.received_bye_in_round,
             "buchholz": self.buchholz,
             "buchholz_cut1": self.buchholz_cut1,
+            "aro": self.aro,
             "performance_rating": self.performance_rating,
             "elo_change": self.elo_change,
             "k_factor": self.k_factor,
@@ -163,6 +172,7 @@ class Player:
             received_bye_in_round=list(d.get("received_bye_in_round", [])),
             buchholz=float(d.get("buchholz", 0.0)),
             buchholz_cut1=d.get("buchholz_cut1"),
+            aro=d.get("aro"),
             performance_rating=d.get("performance_rating"),
             elo_change=d.get("elo_change"),
             k_factor=d.get("k_factor"),
@@ -292,6 +302,14 @@ class Tournament:
     concluded: bool = False
     custom_save_path: str = ""
     save_path: str = ""
+    # I criteri di spareggio scelti dall'arbitro, come li scrive la finestra
+    # degli spareggi: una lista di voci {"key", "modifiers"}, oppure, nei file
+    # vecchi, di nomi. None vuol dire mai scelti, cioe' quelli predefiniti, e
+    # la chiave non si scrive. Fino alla 10.8.2 il modello non li conosceva:
+    # la console classificava e finalizzava con quelli predefiniti, e salvando
+    # li perdeva (issue 56). Il formato vecchio resta com'e': lo convertono
+    # migrate_old_tiebreaks e chi li legge.
+    tiebreaks: list[Any] | None = None
 
     # players_dict is a cache of player objects, not saved directly to file
     players_dict: dict[str, Player] = field(
@@ -305,7 +323,7 @@ class Tournament:
         self.players_dict = {p.id: p for p in self.players}
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "launch_count": self.launch_count,
             "name": self.name,
             "tournament_id": self.tournament_id,
@@ -330,6 +348,11 @@ class Tournament:
             "custom_save_path": self.custom_save_path,
             "save_path": self.save_path,
         }
+        # Una copia: il dizionario va ai calcoli e al salvataggio, e le voci
+        # hanno dentro il dizionario dei modificatori.
+        if self.tiebreaks is not None:
+            d["tiebreaks"] = copy.deepcopy(self.tiebreaks)
+        return d
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Tournament":
@@ -368,4 +391,5 @@ class Tournament:
             concluded=bool(d.get("concluded", False)),
             custom_save_path=d.get("custom_save_path", ""),
             save_path=d.get("save_path", ""),
+            tiebreaks=copy.deepcopy(d.get("tiebreaks")),
         )

@@ -284,6 +284,19 @@ class TestCitazioniDelManuale:
                 continue
             assert any(m.fullmatch(citazione) for relativo in sorgenti for m in modelli_del_sorgente(relativo)), citazione
 
+    def test_la_riga_dei_risultati_fide_e_quella_del_codice(self):
+        """La 5.3 cita la riga che carica altri risultati FIDE come la
+        scrivono l'iscrizione e la consultazione del database FIDE. Fino alla
+        10.8.5 citava un testo diverso da quello del codice, che aveva anche
+        due trattini per parte, letti da NVDA."""
+        sorgenti = (os.path.join("gui", "dialogs", "fide_query_dialog.py"), os.path.join("gui", "dialogs", "player_enrollment_dialog.py"))
+        trovate = [c for c in citazioni(sezione(leggi("MANUALE.txt"), (5, 3))) if "Mostra altri" in c]
+        assert trovate
+        for citazione in trovate:
+            assert not citazione.startswith("-"), citazione
+            for relativo in sorgenti:
+                assert any(m.fullmatch(citazione) for m in modelli_del_sorgente(relativo)), (relativo, citazione)
+
     def test_la_prova_riconosce_una_citazione_sbagliata(self):
         """Le etichette di prima non passano: la prova le avrebbe fermate."""
         assert scritta_dal_programma("1 - 0 (Vince Bianchi Luca)")
