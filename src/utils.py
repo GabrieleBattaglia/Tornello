@@ -261,6 +261,25 @@ def sanitize_filename(name):
     return name
 
 
+def file_del_torneo(nome_file, nome_sanitizzato):
+    """Vero se nome_file, senza cartella, e' uno dei file del torneo il cui
+    nome ripulito da sanitize_filename e' nome_sanitizzato: il json, un
+    report, oppure il riepilogo della creazione sospesa.
+    Non basta che il file cominci allo stesso modo, e fino alla 10.3.3 era
+    proprio cosi': eliminare il torneo Autunneo cancellava anche i file di
+    Autunneo2, uno chiamato P si portava via il database Players_db, e la
+    finalizzazione spostava in archivio i file degli altri tornei con lo
+    stesso inizio. Il nome deve finire dove cominciano i suffissi che Tornello
+    aggiunge; il nome ripulito non contiene spazi, quindi " - " dopo di lui
+    e' un confine sicuro anche per i report tradotti.
+    """
+    radice = f"Tornello - {nome_sanitizzato}"
+    return (
+        nome_file in (f"{radice}.json", f"{radice}_sospeso.txt")
+        or nome_file.startswith(f"{radice} - ")
+    )
+
+
 def parse_flexible_date(date_input_str):
     """
     Tenta di parsare una data da vari formati, incluso ISO (YYYY-MM-DD)

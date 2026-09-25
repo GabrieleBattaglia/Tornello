@@ -173,12 +173,25 @@ def test_e2e_tournament_flow(tmp_path, monkeypatch):
     # Salva prima di finalizzare
     save_helper(torneo_dict, tournament_filename)
 
+    # Esche: i file di altri tornei con lo stesso inizio non devono seguire
+    # questo in archivio. Fino alla 10.3.3 bastava che cominciassero allo
+    # stesso modo.
+    esche = [
+        tmp_path / "Tornello - Super_E2E_Cup2.json",
+        tmp_path / "Tornello - Super_E2E_Cup2 - Classifica.txt",
+        tmp_path / "Tornello - Super_E2E_Cup_Junior - Turno corrente.txt",
+    ]
+    for esca in esche:
+        esca.write_text("{}", encoding="utf-8")
+
     # 5. Finalizza il torneo
     players_db = load_players_db()
     finalize_success = finalize_tournament(
         torneo_dict, players_db, str(tournament_filename)
     )
     assert finalize_success is True
+    for esca in esche:
+        assert esca.exists(), esca.name
 
     # Verifica che il torneo sia stato archiviato nella cartella Closed Tournaments
     archived_files = os.listdir(closed_dir)

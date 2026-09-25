@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.3.4 (in lavorazione, non ancora pubblicata)
+	+ Fix: Eliminare o finalizzare un torneo non tocca piu' i file degli altri tornei il cui nome comincia allo stesso modo. Il programma riconosceva i file di un torneo dal solo inizio del nome: eliminando un torneo chiamato Autunneo sarebbero spariti anche i file di Autunneo2, senza passare dal cestino, e un torneo chiamato P si sarebbe portato via il database dei giocatori. Finalizzando Autunneo, il json di Autunneo2 sarebbe finito nel suo archivio, sparendo dai tornei in corso. Adesso conta il nome intero. Issue 55.
+
 10.3.3 (in lavorazione, non ancora pubblicata)
 	+ Fix: I report di un torneo senza cartella di salvataggio, cioe' la classifica, il turno corrente e i dettagli dei turni, vanno accanto al programma. Prima finivano nella cartella da cui Tornello era stato avviato, per esempio quella di un collegamento sul desktop, e alla finalizzazione non venivano archiviati, perche' il programma li cercava accanto a se'. I tornei creati dalla finestra hanno sempre una cartella di salvataggio, quindi il difetto toccava quelli nati con versioni vecchie e quelli delle verifiche automatiche: e' venuto a galla proprio isolandole, con la 10.3.2.
 

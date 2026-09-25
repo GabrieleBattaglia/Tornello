@@ -260,3 +260,34 @@ class TestScritturaAtomica:
 
         assert scrivi_json_atomico(str(percorso), {"a": 1}) is True
         assert percorso.exists()
+
+
+class TestFileDelTorneo:
+    """Eliminazione e finalizzazione riconoscono i file di un torneo dal nome
+    intero, non dal solo inizio. Fino alla 10.3.3 il torneo Autunneo si
+    portava via i file di Autunneo2, e un torneo chiamato P il database."""
+
+    def test_riconosce_json_report_e_riepilogo_sospeso(self):
+        from utils import file_del_torneo
+
+        assert file_del_torneo("Tornello - Autunneo.json", "Autunneo")
+        assert file_del_torneo("Tornello - Autunneo - Classifica.txt", "Autunneo")
+        assert file_del_torneo("Tornello - Autunneo - Turno 3 Dettagli.txt", "Autunneo")
+        assert file_del_torneo("Tornello - Autunneo - Standings.txt", "Autunneo")
+        assert file_del_torneo("Tornello - Autunneo_sospeso.txt", "Autunneo")
+
+    def test_non_prende_i_file_di_un_altro_torneo(self):
+        from utils import file_del_torneo
+
+        assert not file_del_torneo("Tornello - Autunneo2.json", "Autunneo")
+        assert not file_del_torneo("Tornello - Autunneo2 - Classifica.txt", "Autunneo")
+        assert not file_del_torneo("Tornello - Autunneo_bis - Classifica.txt", "Autunneo")
+        assert not file_del_torneo("Tornello - Autunneo2_sospeso.txt", "Autunneo")
+
+    def test_non_prende_database_e_impostazioni(self):
+        from utils import file_del_torneo
+
+        assert not file_del_torneo("Tornello - Players_db.json", "P")
+        assert not file_del_torneo("Tornello - Players_db.json", "Players")
+        assert not file_del_torneo("Tornello - Players_DB.txt", "Players")
+        assert not file_del_torneo("Tornello - Settings.json", "S")

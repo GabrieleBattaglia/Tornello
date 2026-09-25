@@ -3136,17 +3136,20 @@ class MainFrame(wx.Frame):
                     set([os.path.abspath(p) for p in paths_to_clean if p])
                 )
 
-                # 3. Nome sanificato per trovare i file correlati
+                # 3. Nome sanificato per trovare i file correlati. Il nome
+                # deve corrispondere per intero: con il solo prefisso,
+                # eliminando il torneo Autunneo sparivano anche i file di
+                # Autunneo2.
                 from tournament import sanitize_filename
+                from utils import file_del_torneo
 
                 sanitized_name = sanitize_filename(t_name)
-                prefix_to_match = f"Tornello - {sanitized_name}"
 
                 deleted_count = 0
                 for folder in paths_to_clean:
                     if os.path.exists(folder):
                         for f_name in os.listdir(folder):
-                            if f_name.startswith(prefix_to_match):
+                            if file_del_torneo(f_name, sanitized_name):
                                 f_path = os.path.join(folder, f_name)
                                 if os.path.isfile(f_path):
                                     try:

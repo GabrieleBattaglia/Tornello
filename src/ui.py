@@ -38,6 +38,7 @@ from tournament import (
 from utils import (
     create_backup,
     enter_escape,
+    file_del_torneo,
     format_date_locale,
     play_sound,
     sanitize_filename,
@@ -1786,7 +1787,12 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         file_pattern_prefix = user_data_path(f"Tornello - {sanitized_tournament_name}")
 
     for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
-        if os.path.isfile(file_in_dir):
+        # Il glob prende tutto cio' che comincia con il nome del torneo,
+        # quindi anche i file di Autunneo2 finalizzando Autunneo: si tengono
+        # solo quelli che portano il nome per intero.
+        if os.path.isfile(file_in_dir) and file_del_torneo(
+            os.path.basename(file_in_dir), sanitized_tournament_name
+        ):
             # Escludiamo il file JSON del torneo attivo da questa lista per gestirlo separatamente
             if not local_json_path or os.path.abspath(file_in_dir) != os.path.abspath(
                 local_json_path
