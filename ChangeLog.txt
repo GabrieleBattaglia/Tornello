@@ -1,6 +1,12 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.4.1 (in lavorazione, non ancora pubblicata)
+	+ Fix: Un arbitro scritto a mano come "Non necessario." col punto finale vale come arbitro non necessario, al pari di "Non necessario" e "no": spazi, spazi doppi e punteggiatura ai bordi non contano piu'. Prima la partita risultava affidata a un arbitro di nome "Non necessario.": contava nell'AR del pie' di pagina e la finestra di programmazione si apriva con la casella Arbitro non necessario spenta. Nell'archivio dei tornei c'era un caso cosi'. Arbitri come Bruno o Stefano restano arbitri: il no conta solo quando e' tutto il campo. Issue 52.
+
+10.4.0 (in lavorazione, non ancora pubblicata)
+	+ Novita': Nella plancia di comando le partite da giocare programmate dicono anche sala e arbitro, dopo giorno e ora, per esempio "Scacchiera 11: Bianchi Luca vs Russo Marco (Pianificata: Venerdi' 25 settembre 2026 17:30, sala WA, arbitro Gabry)". Perche' l'etichetta resti breve, la sala mostra i primi 8 caratteri e l'arbitro i primi 12. Un indirizzo internet scritto nella sala diventa il nome del servizio, come WhatsApp, Lichess o Meet, oppure il nome del sito, e una parola ripetuta di seguito si legge una volta sola: "whatsapp https://call.whatsapp.com/voice/..." diventa whatsapp. Se la partita non ha bisogno di arbitro compare No, se un campo e' vuoto N/D. I valori interi li mostra l'area centrale appena ci si ferma sulla partita con le frecce. Le partite non programmate restano come prima. La sezione 6.1 del manuale spiega la nuova etichetta e descrive l'albero delle partite com'e' davvero: il ramo turni, i turni completati, il turno corrente con i rami giocate e da giocare. Parlava ancora di tre cartelle, Non pianificate, Pianificate e Concluse, che nell'albero non esistono piu'. Issue 52.
+
 10.3.5 (in lavorazione, non ancora pubblicata)
 	+ Fix: L'invito a offrire un caffe', che ogni tanto compare chiudendo la finestra, si mostra senza piu' passare dalla console. Se non si riesce a mostrarlo, la finestra si chiude comunque come prima, ma il motivo adesso finisce in error.log invece di sparire in silenzio. Issue 40.
 

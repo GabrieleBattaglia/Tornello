@@ -1,4 +1,5 @@
 import math
+import re
 from collections import Counter
 from datetime import datetime
 
@@ -1542,17 +1543,129 @@ SOGLIA_FIDE_GIORNI = 30
 ESITI_SULLA_SCACCHIERA = ("1-0", "0-1", "1/2-1/2")
 
 
+def _testo_nudo(testo):
+    """Il testo in minuscolo, con gli spazi interni ridotti a uno e senza
+    spazi ne' punteggiatura ai bordi: "  Non necessario. " diventa
+    "non necessario"."""
+    testo = " ".join(str(testo or "").split()).lower()
+    return re.sub(r"^[\W_]+|[\W_]+$", "", testo)
+
+
 def arbitro_non_necessario(programmazione):
     """Se chi ha programmato la partita ha detto che l'arbitro non serve.
     Dalla 10.2.0 lo dice la casella della finestra di programmazione; le
     programmazioni precedenti lo scrivevano a mano nel campo, come Non
     necessario o no, e valgono lo stesso. Il confronto e' sul campo intero:
     cercare "no" dentro il testo escluderebbe Bruno, Stefano o Luciano.
+    Dalla 10.4.1 spazi e punteggiatura ai bordi non contano: in un torneo
+    archiviato c'era "Non necessario." col punto, e la partita risultava
+    avere un arbitro.
     """
     if programmazione.get("arbiter_not_needed"):
         return True
-    testo = (programmazione.get("arbiter") or "").strip().lower()
-    return testo in ("no", "non necessario")
+    return _testo_nudo(programmazione.get("arbiter")) in ("no", "non necessario")
+
+
+# I servizi che capita di trovare nel campo Sala / URL, riconosciuti dal
+# dominio: vale il dominio stesso o uno qualunque dei suoi sottodomini, come
+# call.whatsapp.com o chat.whatsapp.com. Ogni nome sta negli 8 caratteri
+# della sala: Chess.com, tagliato, diventerebbe Chess.co, che e' un altro
+# dominio.
+SERVIZI_NOTI = (
+    ("whatsapp.com", "WhatsApp"),
+    ("whatsapp.net", "WhatsApp"),
+    ("wa.me", "WhatsApp"),
+    ("lichess.org", "Lichess"),
+    ("chess.com", "Chesscom"),
+    ("meet.google.com", "Meet"),
+    ("teams.microsoft.com", "Teams"),
+    ("teams.live.com", "Teams"),
+    ("zoom.us", "Zoom"),
+    ("zoom.com", "Zoom"),
+    ("discord.com", "Discord"),
+    ("discord.gg", "Discord"),
+    ("discordapp.com", "Discord"),
+    ("jit.si", "Jitsi"),
+    ("jitsi.org", "Jitsi"),
+    ("skype.com", "Skype"),
+)
+# Un indirizzo comincia con http://, https:// o www., oppure e' un dominio
+# scritto da solo, come lichess.org/abc. Nel secondo caso l'estensione deve
+# essere fra queste: con una qualunque, anche Sala.Blu passerebbe per un
+# indirizzo.
+_ESTENSIONI = (
+    "com", "org", "net", "it", "eu", "io", "me", "gg", "us", "si", "co",
+    "uk", "ch", "de", "fr", "es", "pt", "app", "info", "tv", "ly", "live",
+)
+_INDIRIZZO = re.compile(
+    r"(?:https?://|www\.)\S+"
+    r"|(?<![\w@.-])[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:" + "|".join(_ESTENSIONI) + r")(?![\w-])(?:[/?#:]\S*)?",
+    re.IGNORECASE,
+)
+# Le estensioni doppie, come co.uk: il nome sta un'etichetta piu' a sinistra.
+_SECONDI_LIVELLI = ("co", "com", "org", "net", "gov", "edu", "ac")
+
+
+def _nome_del_servizio(indirizzo):
+    """La parte significativa di un indirizzo: il nome del servizio, se e'
+    fra quelli noti, altrimenti il nome del dominio con l'iniziale
+    maiuscola, per esempio Scacchierando per www.scacchierando.it/sala."""
+    dominio = re.sub(r"^[a-z]+://", "", indirizzo, flags=re.IGNORECASE)
+    dominio = re.split(r"[/?#]", dominio, maxsplit=1)[0].rsplit("@", 1)[-1]
+    dominio = re.match(r"[a-z0-9.-]*", dominio.lower()).group()
+    etichette = [e for e in dominio.split(".") if e]
+    if etichette[:1] == ["www"]:
+        etichette = etichette[1:]
+    dominio = ".".join(etichette)
+    for noto, nome in SERVIZI_NOTI:
+        if dominio == noto or dominio.endswith("." + noto):
+            return nome
+    if len(etichette) >= 3 and etichette[-2] in _SECONDI_LIVELLI and len(etichette[-1]) == 2:
+        nome = etichette[-3]
+    elif len(etichette) >= 2:
+        nome = etichette[-2]
+    elif etichette:
+        nome = etichette[0]
+    else:
+        return indirizzo
+    return nome[:1].upper() + nome[1:]
+
+
+def _chiave_di_parola(parola):
+    """La parola in minuscolo e senza punteggiatura, per confrontarla."""
+    return re.sub(r"[\W_]", "", parola).casefold()
+
+
+def sala_breve(canale, cifre=8):
+    """Il campo Sala / URL accorciato per l'etichetta della plancia.
+    Ogni indirizzo diventa il nome del suo servizio, poi le parole
+    consecutive uguali a meno di maiuscole e punteggiatura si fondono,
+    tenendo la prima: "whatsapp https://call.whatsapp.com/voice/..." diventa
+    "whatsapp". Infine il taglio, a 8 caratteri se non si chiede altro,
+    senza spazi in coda. Il campo vuoto resta vuoto."""
+    testo = _INDIRIZZO.sub(lambda m: _nome_del_servizio(m.group()), str(canale or ""))
+    parole = []
+    for parola in testo.split():
+        chiave = _chiave_di_parola(parola)
+        if parole and chiave and chiave == _chiave_di_parola(parole[-1]):
+            continue
+        parole.append(parola)
+    return " ".join(parole)[:cifre].rstrip()
+
+
+def sala_e_arbitro_brevi(programmazione, cifre_sala=8, cifre_arbitro=12):
+    """Sala e arbitro di una partita programmata, accorciati per l'etichetta
+    delle partite da giocare nella plancia (issue 52): la sala come dice
+    sala_breve, l'arbitro ai primi 12 caratteri, oppure No se la partita non
+    ne ha bisogno. Un campo vuoto o assente vale N/D. I valori interi restano
+    nel dettaglio della partita, nell'area centrale."""
+    sala = sala_breve(programmazione.get("channel"), cifre_sala)
+    if arbitro_non_necessario(programmazione):
+        arbitro = _("No")
+    else:
+        arbitro = " ".join(str(programmazione.get("arbiter") or "").split())
+        arbitro = arbitro[:cifre_arbitro].rstrip()
+    return sala or _("N/D"), arbitro or _("N/D")
 
 
 def _percentuale(parte, totale):

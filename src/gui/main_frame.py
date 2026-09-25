@@ -1151,12 +1151,25 @@ class MainFrame(wx.Frame):
 
                 if m.get("is_scheduled") and m.get("schedule_info"):
                     sched = m["schedule_info"]
+                    from stats import sala_e_arbitro_brevi
                     from utils import format_date_locale
 
-                    f_date = format_date_locale(sched.get("date"))
+                    # Dalla 10.4.0 anche sala e arbitro, accorciati perche'
+                    # l'etichetta resti leggibile: i valori interi li mostra
+                    # il dettaglio della partita nell'area centrale, appena
+                    # la voce prende il fuoco (issue 52).
+                    sala, arbitro = sala_e_arbitro_brevi(sched)
                     match_label = _(
-                        "Scacchiera {}: {} vs {} (Pianificata: {} {})"
-                    ).format(board_num, w_name, b_name, f_date, sched.get("time"))
+                        "Scacchiera {board}: {white} vs {black} (Pianificata: {date} {time}, sala {room}, arbitro {arbiter})"
+                    ).format(
+                        board=board_num,
+                        white=w_name,
+                        black=b_name,
+                        date=format_date_locale(sched.get("date")),
+                        time=sched.get("time"),
+                        room=sala,
+                        arbiter=arbitro,
+                    )
                 else:
                     match_label = _("Scacchiera {}: {} vs {} (Non pianificata)").format(
                         board_num, w_name, b_name

@@ -1,3 +1,5 @@
+import pytest
+
 from stats import (
     calculate_elo_change,
     calculate_performance_rating,
@@ -819,3 +821,155 @@ class TestArticolo16:
         rimasti = _taglia_contributi([3.0, 1.0, 2.0], 1, [False, False, False])
 
         assert sorted(valore for valore, _vur in rimasti) == [2.0, 3.0]
+
+
+class TestArbitroNonNecessario:
+    """La regola che dice se una partita programmata puo' fare a meno
+    dell'arbitro: la casella della 10.2.0, oppure le diciture scritte a mano
+    nelle programmazioni precedenti. Fino alla 10.4.0 non aveva prove, e
+    "Non necessario." col punto, trovato in un torneo archiviato, non era
+    riconosciuto."""
+
+    def test_la_casella_basta(self):
+        from stats import arbitro_non_necessario
+
+        assert arbitro_non_necessario({"arbiter_not_needed": True})
+        assert arbitro_non_necessario(
+            {"arbiter": "Non necessario", "arbiter_not_needed": True}
+        )
+
+    @pytest.mark.parametrize(
+        "scritto",
+        [
+            "Non necessario",
+            "non necessario",
+            "Non necessario.",
+            "  NON NECESSARIO  ",
+            "non  necessario",
+            "no",
+            "No",
+            "No!",
+            "(no)",
+        ],
+    )
+    def test_le_diciture_scritte_a_mano(self, scritto):
+        from stats import arbitro_non_necessario
+
+        assert arbitro_non_necessario({"arbiter": scritto})
+
+    @pytest.mark.parametrize(
+        "scritto",
+        ["Bruno", "Stefano", "Luciano", "Gabry", "Cercasi", "no, grazie", "", None],
+    )
+    def test_il_no_dentro_un_nome_non_conta(self, scritto):
+        from stats import arbitro_non_necessario
+
+        assert not arbitro_non_necessario({"arbiter": scritto})
+        assert not arbitro_non_necessario(
+            {"arbiter": scritto, "arbiter_not_needed": False}
+        )
+
+    def test_la_programmazione_senza_arbitro(self):
+        from stats import arbitro_non_necessario
+
+        assert not arbitro_non_necessario({})
+
+
+class TestSalaEArbitroBrevi:
+    """Sala e arbitro nell'etichetta delle partite da giocare della plancia,
+    dalla 10.4.0 (issue 52): la sala ai primi 8 caratteri, con gli indirizzi
+    ridotti al nome del servizio, l'arbitro ai primi 12, No se non serve e
+    N/D se manca. I casi vengono dalle 103 programmazioni dei tornei
+    archiviati e da Autunneo2."""
+
+    def _brevi(self, **programmazione):
+        from stats import sala_e_arbitro_brevi
+
+        return sala_e_arbitro_brevi(programmazione)
+
+    @pytest.mark.parametrize(
+        ("canale", "atteso"),
+        [
+            ("WhatsApp", "WhatsApp"),
+            ("whatsapp", "whatsapp"),
+            ("WA", "WA"),
+            ("  WA  ", "WA"),
+            ("Lichess", "Lichess"),
+            ("whatsapp https://call.whatsapp.com/voice/AbC123xyz", "whatsapp"),
+            ("https://chat.whatsapp.com/AbC123xyz", "WhatsApp"),
+            ("wa.me/393331234567", "WhatsApp"),
+            ("lichess.org/AbCdEfGh", "Lichess"),
+            ("https://lichess.org/AbCdEfGh Lichess", "Lichess"),
+            ("https://www.chess.com/play/online", "Chesscom"),
+            ("chess.com", "Chesscom"),
+            ("Chess.com", "Chesscom"),
+            ("https://meet.google.com/abc-defg-hij", "Meet"),
+            ("https://teams.microsoft.com/l/meetup-join/abc", "Teams"),
+            ("https://us02web.zoom.us/j/123456789", "Zoom"),
+            ("https://discord.gg/AbCd", "Discord"),
+            ("https://meet.jit.si/TorneoScacchi", "Jitsi"),
+            ("https://join.skype.com/AbCd", "Skype"),
+            ("www.scacchierando.it/sala", "Scacchie"),
+            ("http://www.bbc.co.uk/sala", "Bbc"),
+            ("Sala.Blu", "Sala.Blu"),
+            ("lichess maurixio - lollo1978", "lichess"),
+            ("Sala 12 terra", "Sala 12"),
+        ],
+    )
+    def test_la_sala(self, canale, atteso):
+        sala, _arbitro = self._brevi(channel=canale, arbiter="Gabry")
+
+        assert sala == atteso
+
+    def test_i_nomi_dei_servizi_non_si_tagliano(self):
+        """Un nome oltre gli 8 caratteri uscirebbe mozzato dal taglio, come
+        Chess.co per Chess.com."""
+        from stats import SERVIZI_NOTI
+
+        assert all(len(nome) <= 8 for _dominio, nome in SERVIZI_NOTI)
+
+    @pytest.mark.parametrize(
+        ("arbitro", "atteso"),
+        [
+            ("Gabry", "Gabry"),
+            ("  Gabry ", "Gabry"),
+            ("Giuseppe Baratta", "Giuseppe Bar"),
+            ("Mario Rossi Bianchi", "Mario Rossi"),
+            ("Bruno", "Bruno"),
+            ("Stefano", "Stefano"),
+            ("Cercasi", "Cercasi"),
+        ],
+    )
+    def test_l_arbitro(self, arbitro, atteso):
+        _sala, breve = self._brevi(channel="WA", arbiter=arbitro)
+
+        assert breve == atteso
+
+    @pytest.mark.parametrize(
+        "programmazione",
+        [
+            {"arbiter": "Non necessario", "arbiter_not_needed": True},
+            {"arbiter": "", "arbiter_not_needed": True},
+            {"arbiter": "Non necessario"},
+            {"arbiter": "non necessario"},
+            {"arbiter": "Non necessario."},
+            {"arbiter": "no"},
+        ],
+    )
+    def test_l_arbitro_non_necessario_vale_no(self, programmazione):
+        _sala, arbitro = self._brevi(channel="WA", **programmazione)
+
+        assert arbitro == _("No")
+
+    def test_i_campi_vuoti_o_assenti_valgono_n_d(self):
+        assert self._brevi(channel="", arbiter="") == (_("N/D"), _("N/D"))
+        assert self._brevi(channel="   ", arbiter="  ") == (_("N/D"), _("N/D"))
+        assert self._brevi(channel=None, arbiter=None) == (_("N/D"), _("N/D"))
+        assert self._brevi(date="2026-09-25", time="17:30") == (_("N/D"), _("N/D"))
+
+    def test_le_misure_si_possono_cambiare(self):
+        from stats import sala_e_arbitro_brevi
+
+        programmazione = {"channel": "WhatsApp", "arbiter": "Giuseppe Baratta"}
+
+        assert sala_e_arbitro_brevi(programmazione, 7, 8) == ("WhatsAp", "Giuseppe")
