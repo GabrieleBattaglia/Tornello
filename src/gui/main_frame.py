@@ -3617,32 +3617,38 @@ class MainFrame(wx.Frame):
         play_sound("chiusura", self.current_tournament, sync=1.5)
 
         try:
-            import io
-            import sys
+            self._invito_donazione()
+        except Exception as errore:  # noqa: BLE001
+            # Largo di proposito: un'eccezione che uscisse da on_close
+            # salterebbe event.Skip() e la finestra non si chiuderebbe piu',
+            # per colpa di un invito che non serve a niente del lavoro fatto.
+            # Ma non tace piu' come l'except: pass di prima: il guasto finisce
+            # in error.log, con il suo traceback.
+            from gui.settings import _registra
 
-            from GBUtils import Donazione
-
-            old_stdout = sys.stdout
-            sys.stdout = io.StringIO()
-            try:
-                current_lang = self.settings.get("language") if self.settings else None
-                Donazione(lang=current_lang)
-                donation_msg = sys.stdout.getvalue().strip()
-            finally:
-                sys.stdout = old_stdout
-
-            if donation_msg:
-                from gui.dialogs.donation_dialog import DonationDialog
-
-                dlg = DonationDialog(
-                    self, _("Offri un caffè"), donation_msg, self.settings
-                )
-                dlg.ShowModal()
-                dlg.Destroy()
-        except Exception:
-            pass
+            _registra(f"Invito alla donazione non mostrato: {errore}")
 
         event.Skip()
+
+    def _invito_donazione(self):
+        """L'invito a offrire un caffe', nella lingua delle impostazioni.
+
+        Donazione, dalla V2.1.0 di GBUtils, restituisce il messaggio, o None se
+        il sorteggio non passa, e con stampa=False non stampa niente. Fino alla
+        10.3.4 la stampa si catturava deviando sys.stdout su uno StringIO, un
+        aggiramento nato quando Donazione sapeva soltanto stampare.
+        """
+        from GBUtils import Donazione
+
+        lingua = self.settings.get("language") if self.settings else None
+        testo = Donazione(lang=lingua, stampa=False)
+        if testo is None:
+            return
+        from gui.dialogs.donation_dialog import DonationDialog
+
+        dlg = DonationDialog(self, _("Offri un caffè"), testo, self.settings)
+        dlg.ShowModal()
+        dlg.Destroy()
 
     def on_new_tournament(self, event):
         self.start_new_tournament_wizard()

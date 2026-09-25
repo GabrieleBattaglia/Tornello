@@ -1,6 +1,9 @@
 --- CHANGELOG DI TORNELLO ---
 =============================
 
+10.3.5 (in lavorazione, non ancora pubblicata)
+	+ Fix: L'invito a offrire un caffe', che ogni tanto compare chiudendo la finestra, si mostra senza piu' passare dalla console. Se non si riesce a mostrarlo, la finestra si chiude comunque come prima, ma il motivo adesso finisce in error.log invece di sparire in silenzio. Issue 40.
+
 10.3.4 (in lavorazione, non ancora pubblicata)
 	+ Fix: Eliminare o finalizzare un torneo non tocca piu' i file degli altri tornei il cui nome comincia allo stesso modo. Il programma riconosceva i file di un torneo dal solo inizio del nome: eliminando un torneo chiamato Autunneo sarebbero spariti anche i file di Autunneo2, senza passare dal cestino, e un torneo chiamato P si sarebbe portato via il database dei giocatori. Finalizzando Autunneo, il json di Autunneo2 sarebbe finito nel suo archivio, sparendo dai tornei in corso. Adesso conta il nome intero. Issue 55.
 
