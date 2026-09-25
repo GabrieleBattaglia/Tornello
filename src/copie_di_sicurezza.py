@@ -809,7 +809,12 @@ def campo_della_variazione(voce):
     elo_before, se il campo c'era, e quello scritto, elo_after. Una voce
     senza elo_field e' di una finalizzazione fino alla 10.13.3, che la
     variazione la metteva sempre su current_elo, anche nei rapid e nei
-    blitz: la cadenza del torneo da sola non dice dove sta."""
+    blitz: la cadenza del torneo da sola non dice dove sta. Oppure e' di un
+    giocatore che la variazione non l'ha ricevuta: un ritirato, che non ne
+    ha, o dalla 10.13.7 chi in un rapid o in un blitz e' rimasto senza l'Elo
+    della cadenza, perche' non lo aveva e non ha giocato nessuna partita
+    valida per l'Elo, con la variazione zero. In tutti e due i casi non c'e'
+    niente da togliere, e l'Elo resta com'e'."""
     campo = voce.get("elo_field")
     return campo if campo in CAMPI_DELL_ELO else "current_elo"
 
@@ -834,6 +839,14 @@ def _storna_l_elo(scheda, voce, variazione, scheda_di_prima):
     campo = campo_della_variazione(voce)
     attuale = scheda.get(campo)
     copia = scheda_di_prima if isinstance(scheda_di_prima, dict) else None
+    # Una voce senza elo_field con la variazione zero non ha niente da
+    # togliere, e nessun Elo viene dalla copia: dalla 10.13.7 e' anche quella
+    # di chi, in un rapid o in un blitz, non ha ricevuto l'Elo della cadenza,
+    # e su current_elo la variazione non e' mai andata. Fino alla 10.13.6 la
+    # si rimetteva dalla copia, con lo stesso valore, e il giocatore contava
+    # fra gli Elo che vengono dalla copia.
+    if "elo_field" not in voce and not variazione:
+        return None
     if "elo_field" in voce and "elo_after" in voce and attuale is not None and attuale == voce["elo_after"]:
         if "elo_before" in voce:
             scheda[campo] = voce["elo_before"]
@@ -874,7 +887,10 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     database di prima, cioe' la copia pre_finalize_db, e current_elo vale
     quello di prima piu' la variazione, si rimette il valore di prima. In
     tutti gli altri casi si sottrae la variazione, e lo si segnala; una
-    variazione nulla non toglie niente. _storna_l_elo fa il lavoro.
+    variazione nulla non toglie niente, e nemmeno la voce di chi, dalla
+    10.13.7, in un rapid o in un blitz non ha ricevuto l'Elo della cadenza:
+    non ha elo_field, e la sua variazione e' zero. _storna_l_elo fa il
+    lavoro.
     Un giocatore che dopo questo torneo ne ha nello storico un altro e' un
     conflitto: l'Elo del torneo successivo e' calcolato su quello da togliere,
     e prima va riaperto quello (decisione di Gabriele)."""

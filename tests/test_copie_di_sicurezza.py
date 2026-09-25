@@ -16,7 +16,7 @@ import types
 from datetime import datetime
 
 import pytest
-from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _torneo_finito
+from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _g3_vince_a_forfait, _torneo_finito
 
 MESE = os.path.join("2026", "09 Settembre")
 
@@ -747,6 +747,36 @@ class TestStorno:
             assert not any(", 0." in s or "NomeG3" in s or "NomeG4" in s for s in esito["segnalazioni"])
             assert esito["segnalazioni"][-1].endswith("e si toglie da lì: 2 giocatori."), copia
 
+    def test_chi_non_ha_ricevuto_l_elo_della_cadenza_resta_com_e(self):
+        """Dalla 10.13.7 chi in un rapid non aveva l'Elo rapid e non ha
+        giocato nessuna partita valida per l'Elo non lo riceve, e la sua voce
+        non ha elo_field, con la variazione zero: lo storno non tocca ne'
+        l'Elo rapid ne' current_elo, e con la copia del database di prima non
+        lo conta fra gli Elo che vengono dalla copia."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        torneo = self._rapid()
+        torneo["players"][3]["elo_change"] = 0
+        di_prima = _giocatori_db()
+        schede = _giocatori_db()
+        for pid, variazione in zip(("G1", "G2", "G3"), (16, -16, 2), strict=True):
+            di_prima[pid]["elo_rapid"] = 1650.0
+            schede[pid]["elo_rapid"] = 1650 + variazione
+            schede[pid]["tournaments_played"] = [self._voce_con_l_elo("elo_rapid", 1650.0, 1650 + variazione)]
+        di_prima["G4"]["elo_rapid"] = schede["G4"]["elo_rapid"] = 0.0
+        schede["G4"]["tournaments_played"] = [self._voce(rango=4)]
+
+        for copia in (None, di_prima):
+            esito = storno_finalizzazione(schede, torneo, copia)
+
+            g4 = esito["giocatori"]["G4"]
+            assert (g4["elo_rapid"], g4["current_elo"], g4["tournaments_played"]) == (0.0, ELO_INIZIALI["G4"], [])
+            stornato = next(s for s in esito["stornati"] if s["id"] == "G4")
+            assert not (stornato["da_copia"] or stornato["dallo_storico"] or stornato["sottratto"]), copia
+            assert esito["segnalazioni"] == [], copia
+            for pid in ("G1", "G2", "G3"):
+                assert esito["giocatori"][pid]["elo_rapid"] == 1650, pid
+
 
 @pytest.fixture
 def ambiente(tmp_path, monkeypatch):
@@ -1107,6 +1137,36 @@ class TestCicloCompleto:
         assert not any("togliendo" in r or "Gli Elo di prima vengono" in r or "None" in r for r in piano.righe)
         assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
         assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+    @pytest.mark.parametrize("da_dove", ["pre_finalize", "turno"])
+    def test_un_rapid_con_un_giocatore_a_soli_forfait_riaperto_rida_il_database_di_prima(self, ambiente, da_dove):
+        """Dalla 10.13.7 G4, senza Elo rapid e a soli forfait, non riceve
+        l'Elo rapid, e la sua voce non ha elo_field. Finalizza e riapri,
+        dalla copia di prima della finalizzazione o da quella di un turno: il
+        database torna identico a prima, e la conferma non segnala niente
+        per G4. Rifinalizzando si torna alla prima finalizzazione."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        _g3_vince_a_forfait(ambiente.torneo)
+        database_iniziale = self._rapid(ambiente)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        database_finalizzato = _leggi(ambiente.percorsi.database)
+        g4 = next(g for g in database_finalizzato["players"] if g["id"] == "G4")
+        assert g4["elo_rapid"] == 0
+        assert "elo_field" not in g4["tournaments_played"][-1]
+        copia = self._copia_di_un_turno(ambiente) if da_dove == "turno" else _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert not any("togliendo" in r or "Elo principale" in r or "None" in r for r in piano.righe)
+        dalla_copia = any(r.startswith("Gli Elo di prima vengono dalla copia") for r in piano.righe)
+        assert dalla_copia == (da_dove == "pre_finalize")
+        assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+        assert _finalizza(_leggi(ambiente.file_torneo), ambiente.file_torneo) is True
+        assert _leggi(ambiente.percorsi.database) == database_finalizzato
 
     def test_un_rapid_di_prima_della_10_13_4_riaperto_da_una_copia_di_un_turno(self, ambiente):
         """Rilievo bloccante della revisione. Un rapid finalizzato fino alla

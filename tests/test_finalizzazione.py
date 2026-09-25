@@ -705,6 +705,23 @@ def _variazioni_archiviate():
     return {p["id"]: p["elo_change"] for p in _leggi(_json_in_archivio())["players"]}
 
 
+def _g3_vince_a_forfait(torneo):
+    """G3 e G4 non giocano, e G3 vince a forfait: nessuno dei due ha una
+    partita valida per l'Elo, e la loro variazione e' zero. G1 e G2 giocano
+    come prima."""
+    for giocatore in torneo["players"]:
+        if giocatore["id"] == "G3":
+            giocatore["results_history"] = [_voce(1, "G4", "white", "1-F", 1.0)]
+            giocatore["points"] = 1.0
+        elif giocatore["id"] == "G4":
+            giocatore["results_history"] = [_voce(1, "G3", "black", "1-F", 0.0)]
+            giocatore["points"] = 0.0
+    for partita in torneo["rounds"][0]["matches"]:
+        if partita["white_player_id"] == "G3":
+            partita["result"] = "1-F"
+    return torneo
+
+
 class TestEloDellaCadenza:
     """Dalla 10.13.4 la variazione Elo dei tornei rapid e blitz va sull'Elo
     della cadenza, lo stesso da cui viene l'Elo di partenza, e non piu' su
@@ -805,3 +822,108 @@ class TestEloDellaCadenza:
         assert _finalizza(banco, []) is True
 
         assert _leggi_byte(banco.db) == dopo_la_prima
+
+
+class TestEloDellaCadenzaSenzaPartiteValide:
+    """Dalla 10.13.7, decisione di Gabriele come arbitro: nei rapid e nei
+    blitz l'Elo della cadenza nasce solo con almeno una partita valida per
+    l'Elo. Chi non lo ha, e nel torneo ha solo forfait, bye o nessuna
+    partita, resta senza, e la sua voce dello storico non registra
+    variazione. Nella 10.13.4 gli nasceva uguale all'Elo di partenza. Chi lo
+    ha gia' lo tiene com'e', con la variazione zero."""
+
+    @pytest.mark.parametrize(
+        ("categoria", "campo"), [("rapid", "elo_rapid"), ("blitz", "elo_blitz")]
+    )
+    def test_a_soli_forfait_l_elo_della_cadenza_non_nasce(self, banco, categoria, campo):
+        _g3_vince_a_forfait(banco.torneo)
+        prima = _con_la_cadenza(banco, categoria)
+        # Nel database di prova G4 ha l'Elo della cadenza a zero, G3 no.
+        assert prima["G4"][campo] == 0 and prima["G3"][campo] > 0
+
+        assert _finalizza(banco) is True
+
+        variazioni = _variazioni_archiviate()
+        dopo = _giocatori_del_db(banco.db)
+        assert variazioni["G3"] == variazioni["G4"] == 0
+        assert dopo["G4"][campo] == 0
+        assert dopo["G4"]["current_elo"] == prima["G4"]["current_elo"]
+        voce = dopo["G4"]["tournaments_played"][-1]
+        assert not {"elo_field", "elo_before", "elo_after"} & voce.keys()
+        # La voce dello storico c'e', senza i campi dell'Elo.
+        assert voce["tournament_id"] == "COPPA_PROVA"
+        # G3 aveva l'Elo della cadenza, e lo tiene uguale.
+        assert dopo["G3"][campo] == prima["G3"][campo]
+        voce = dopo["G3"]["tournaments_played"][-1]
+        assert (voce["elo_field"], voce["elo_before"], voce["elo_after"]) == (campo, prima["G3"][campo], prima["G3"][campo])
+        # G1 e G2 hanno giocato: la variazione va sull'Elo della cadenza.
+        for pid in ("G1", "G2"):
+            assert dopo[pid][campo] == prima[pid][campo] + variazioni[pid], pid
+
+    def test_con_l_elo_della_cadenza_mancante_il_campo_non_nasce(self, banco):
+        """Una scheda senza il campo, in memoria, resta senza: il database
+        di prova passa da load_players_db, che lo metterebbe a zero, e
+        questa prova gli toglie il campo dopo."""
+        from db_players import load_players_db
+        from ui import finalize_tournament
+
+        _g3_vince_a_forfait(banco.torneo)
+        _con_la_cadenza(banco, "rapid")
+        giocatori = load_players_db()
+        del giocatori["G4"]["elo_rapid"]
+
+        assert finalize_tournament(copy.deepcopy(banco.torneo), giocatori, banco.file_torneo, []) is True
+
+        dopo = _giocatori_del_db(banco.db)
+        assert "elo_rapid" not in dopo["G4"]
+        assert "elo_field" not in dopo["G4"]["tournaments_played"][-1]
+
+    def test_con_l_elo_rapid_gia_presente_resta_invariato(self, banco):
+        """Lo stesso G4, a soli forfait, con l'Elo rapid che ha gia': resta
+        quello, e la voce dello storico lo dice prima e dopo."""
+        _g3_vince_a_forfait(banco.torneo)
+        _con_la_cadenza(banco, "rapid")
+        dati = _leggi(banco.db)
+        for giocatore in dati["players"]:
+            if giocatore["id"] == "G4":
+                giocatore["elo_rapid"] = 1450
+        _scrivi(banco.db, dati)
+
+        assert _finalizza(banco) is True
+
+        g4 = _giocatori_del_db(banco.db)["G4"]
+        assert g4["elo_rapid"] == 1450
+        assert g4["current_elo"] == ELO_INIZIALI["G4"]
+        voce = g4["tournaments_played"][-1]
+        assert (voce["elo_field"], voce["elo_before"], voce["elo_after"]) == ("elo_rapid", 1450, 1450)
+
+    def test_con_una_partita_valida_l_elo_della_cadenza_nasce(self, banco):
+        """G4 senza Elo rapid che gioca, come nella 10.13.4: l'Elo rapid
+        nasce dall'Elo di partenza piu' la variazione."""
+        _con_la_cadenza(banco, "rapid")
+
+        assert _finalizza(banco) is True
+
+        g4 = _giocatori_del_db(banco.db)["G4"]
+        assert g4["elo_rapid"] == ELO_INIZIALI["G4"] + _variazioni_archiviate()["G4"]
+        assert g4["tournaments_played"][-1]["elo_field"] == "elo_rapid"
+
+    def test_la_console_fa_come_la_finestra(self, banco):
+        """Il torneo con i forfait, finalizzato dalla finestra e, rimesso
+        tutto com'era, dalla console: il database deve venire uguale."""
+        import shutil
+
+        _g3_vince_a_forfait(banco.torneo)
+        _con_la_cadenza(banco, "rapid")
+        database_prima = _leggi_byte(banco.db)
+        assert _finalizza(banco) is True
+        dalla_finestra = _giocatori_del_db(banco.db)
+
+        with open(banco.db, "wb") as f:
+            f.write(database_prima)
+        _scrivi(banco.file_torneo, banco.torneo)
+        shutil.rmtree(_cartella_archivio())
+        assert _finalizza_in_console(banco) is True
+
+        assert _giocatori_del_db(banco.db) == dalla_finestra
+        assert dalla_finestra["G4"]["elo_rapid"] == 0

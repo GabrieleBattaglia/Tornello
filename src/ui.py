@@ -39,6 +39,7 @@ from stats import (
     elo_a_cui_sommare_la_variazione,
     get_initial_elo_for_tournament,
     get_k_factor,
+    partite_valide_per_elo,
 )
 from tournament import (
     _apply_match_result_to_players,
@@ -1869,9 +1870,24 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             # (copie_di_sicurezza) toglie la variazione dallo stesso campo e
             # rimette il valore di prima anche senza la copia pre_finalize_db.
             # Una voce senza elo_field e' di una finalizzazione fino alla
-            # 10.13.3, che la variazione la metteva su current_elo.
+            # 10.13.3, che la variazione la metteva su current_elo, oppure di
+            # un giocatore senza variazione: un ritirato, o chi resta senza
+            # l'Elo della cadenza, qui sotto.
             elo_nello_storico = {}
-            if elo_change_from_tournament is not None:
+            # Nei rapid e nei blitz l'Elo della cadenza nasce solo con almeno
+            # una partita valida per l'Elo, scelta come la sceglie il calcolo
+            # della variazione: non un bye, non un forfait (decisione di
+            # Gabriele come arbitro, 10.13.7). Chi non lo ha, perche' manca o
+            # vale zero, e nel torneo non ha nessuna partita cosi', ha la
+            # variazione zero e non lo riceve: il campo resta com'era, e la
+            # sua voce dello storico non registra variazione. Nella 10.13.4
+            # l'Elo della cadenza gli nasceva uguale all'Elo di partenza.
+            resta_senza_elo_della_cadenza = (
+                campo_elo != "current_elo"
+                and not db_player_record.get(campo_elo)
+                and not partite_valide_per_elo(p_final_data, torneo["players_dict"])
+            )
+            if elo_change_from_tournament is not None and not resta_senza_elo_della_cadenza:
                 elo_nello_storico["elo_field"] = campo_elo
                 if campo_elo in db_player_record:
                     elo_nello_storico["elo_before"] = db_player_record[campo_elo]

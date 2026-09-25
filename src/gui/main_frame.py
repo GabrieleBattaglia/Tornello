@@ -3471,12 +3471,13 @@ class MainFrame(wx.Frame):
 
     def _proponi_eliminazione_torneo(self, filepath):
         """Seconda strada del bivio: eliminare il torneo. Si riusa la stessa
-        funzione dell'albero, che chiede conferma e cancella anche i file."""
+        funzione dell'albero, che chiede conferma elencando i file e li manda
+        nel cestino."""
         dlg = AccessibleMsgDialog(
             self,
             _("Eliminare il torneo"),
             _(
-                "Vuoi allora eliminare definitivamente il torneo e tutti i suoi file? Se rispondi di no non viene fatto nulla, e il torneo resta come si trova ora."
+                "Vuoi allora mandare nel cestino di Windows il torneo e tutti i suoi file? Se rispondi di no non viene fatto nulla, e il torneo resta come si trova ora."
             ),
             style=wx.YES_NO,
             settings=self.settings,
@@ -3571,11 +3572,129 @@ class MainFrame(wx.Frame):
                 wx.ICON_ERROR,
             )
 
-    def delete_tournament_completely(self, item, filepath):
-        """Rimuove fisicamente dal disco un torneo (attivo, concluso o in preparazione) e tutti i file correlati."""
-        import json
-        import os
+    def _nel_cestino(self, percorso):
+        """Il cestino di Windows, con la finestra principale come proprietaria
+        della domanda che Windows fa prima di cancellare per sempre un file
+        che il cestino non puo' prendere, come nella finestra Copie di
+        sicurezza: cosi' la domanda prende il fuoco, invece di restare
+        nascosta. Su un disco senza cestino il file resta dov'e', e la
+        risposta e' falso."""
+        from utils import delete_file_to_trash
 
+        return delete_file_to_trash(percorso, finestra=self.GetHandle())
+
+    def _file_correlati_del_torneo(self, filepath, data, t_name):
+        """I file che vanno nel cestino insieme al file del torneo, e le
+        cartelle che non si sono potute leggere: li elenca la conferma, e li
+        manda nel cestino delete_tournament_completely.
+        Sono i file che portano il nome intero del torneo, riconosciuti con
+        file_del_torneo come dalla 10.3.4, nella cartella del file del torneo
+        e nella sua cartella di salvataggio. Dalla 10.13.8 un json ci va solo
+        se e' la copia dello stesso torneo nell'altra cartella, cioe' quella
+        del torneo concluso nella cartella di lavoro esterna: stesso nome di
+        file, stesso nome del torneo e stessa edizione. Ogni altro json e' un
+        altro torneo, o un file del programma: l'edizione in corso accanto a
+        quella conclusa, la copia che Esplora risorse chiama "- Copia", il
+        torneo vero accanto a un file aperto con un altro nome, il database
+        dei giocatori e le impostazioni per un torneo di nome Players db o
+        Settings. Fino alla 10.13.7 sparivano insieme al torneo.
+        La cartella di salvataggio si prende com'e', senza
+        resolve_and_verify_save_path, che la crea se manca e ripiega sulla
+        cartella del programma se manca la sua unita'. Per un torneo in
+        archivio conta solo se e' una cartella esterna, come per la
+        finalizzazione: altrimenti i suoi report sono gia' in archivio, e
+        quelli con lo stesso nome accanto al programma sono di un'altra
+        edizione. Una cartella scritta con maiuscole diverse si legge una
+        volta sola."""
+        from copie_di_sicurezza import stessa_edizione
+        from tournament import sanitize_filename
+        from ui import cartella_di_lavoro_esterna
+        from utils import file_del_torneo
+
+        def chiave(percorso):
+            return os.path.normcase(os.path.abspath(percorso))
+
+        cartella_del_file = os.path.dirname(os.path.abspath(filepath))
+        cartelle = [cartella_del_file]
+        custom_path = data.get("custom_save_path") or data.get("save_path")
+        in_archivio = chiave(filepath).startswith(
+            chiave(ARCHIVED_TOURNAMENTS_DIR) + os.sep
+        )
+        if (
+            custom_path
+            and os.path.isdir(custom_path)
+            and (not in_archivio or cartella_di_lavoro_esterna(custom_path))
+        ):
+            cartelle.append(os.path.abspath(custom_path))
+
+        sanitized_name = sanitize_filename(t_name)
+        nome_del_json = f"Tornello - {sanitized_name}.json"
+        correlati, illeggibili, lette = [], [], set()
+        for cartella in cartelle:
+            if chiave(cartella) in lette:
+                continue
+            lette.add(chiave(cartella))
+            try:
+                nomi = sorted(os.listdir(cartella))
+            except OSError:
+                illeggibili.append(cartella)
+                continue
+            for f_name in nomi:
+                f_path = os.path.join(cartella, f_name)
+                if not file_del_torneo(f_name, sanitized_name) or not os.path.isfile(
+                    f_path
+                ):
+                    continue
+                if f_name.lower().endswith(".json"):
+                    if chiave(cartella) == chiave(cartella_del_file):
+                        continue
+                    if f_name != nome_del_json:
+                        continue
+                    try:
+                        with open(f_path, encoding="utf-8") as f_in:
+                            altro = json.load(f_in)
+                    except (OSError, ValueError):
+                        continue
+                    if not (
+                        isinstance(altro, dict)
+                        and altro.get("name") == t_name
+                        and stessa_edizione(data, altro)
+                    ):
+                        continue
+                correlati.append(f_path)
+        return correlati, illeggibili
+
+    @staticmethod
+    def _righe_per_cartella(percorsi):
+        """I percorsi raggruppati per cartella: una riga con la cartella e
+        una per ogni file, perche' sulla barra braille il nome di un file si
+        legge meglio senza la cartella davanti."""
+        gruppi = {}
+        for percorso in percorsi:
+            cartella = os.path.dirname(percorso)
+            gruppi.setdefault(os.path.normcase(cartella), (cartella, []))[1].append(
+                os.path.basename(percorso)
+            )
+        righe = []
+        for cartella, nomi in gruppi.values():
+            righe.append(_("Nella cartella {cartella}:").format(cartella=cartella))
+            righe.extend(nomi)
+        return righe
+
+    def delete_tournament_completely(self, item, filepath):
+        """Manda nel cestino di Windows un torneo (attivo, concluso o in
+        preparazione) e i suoi file correlati, quelli di
+        _file_correlati_del_torneo, che la conferma elenca cartella per
+        cartella. Fino alla 10.13.7 li cancellava per sempre con os.remove, e
+        si recuperavano solo da GitHub; dalla 10.13.8 passano da _nel_cestino,
+        e un file che il cestino non prende resta dov'e', senza ripiegare su
+        os.remove (decisione di Gabriele, avvertenza della issue 55). Il file
+        del torneo va per primo: se non va nel cestino non si tocca
+        nient'altro, e il torneo resta intero; se ci va, il torneo esce subito
+        dall'albero e dalla memoria, e un file correlato rimasto fuori, o una
+        cartella che non si legge, li nomina il messaggio finale, con il suono
+        dell'errore. Un errore a meta' dice anche che il file del torneo e'
+        gia' nel cestino."""
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -3611,80 +3730,138 @@ class MainFrame(wx.Frame):
         if not t_name:
             t_name = t_label
 
-        msg = _(
-            "Sei sicuro di voler eliminare definitivamente il torneo {t_type} '{t_name}'?\nQuesta azione rimuoverà il file JSON centrale e TUTTI i report generati per questo torneo, sia nella cartella principale che nella cartella di salvataggio custom."
-        ).format(t_type=t_type, t_name=t_name)
-        dlg = AccessibleMsgDialog(
-            self, _("Conferma Eliminazione Torneo"), msg, style=wx.YES_NO
+        correlati, illeggibili = self._file_correlati_del_torneo(
+            filepath, data, t_name
         )
-        if dlg.ShowModal() == wx.ID_YES:
-            try:
-                # 1. Rimuove il file JSON centrale
-                if os.path.exists(filepath):
-                    os.remove(filepath)
+        if len(illeggibili) == 1:
+            frase_illeggibili = _(
+                "Una cartella non si è potuta leggere, e i file del torneo che contiene restano dove sono:"
+            )
+        else:
+            frase_illeggibili = _(
+                "{count} cartelle non si sono potute leggere, e i file del torneo che contengono restano dove sono:"
+            ).format(count=len(illeggibili))
 
-                # 2. Ottiene i percorsi di salvataggio per ripulire i file correlati
-                paths_to_clean = [os.path.dirname(filepath)]
-                custom_path = data.get("custom_save_path") or data.get("save_path")
-                if custom_path:
-                    from utils import resolve_and_verify_save_path
+        # La conferma elenca i file che vanno nel cestino, un nome per riga
+        # sotto la sua cartella, da leggere con le frecce.
+        righe = [
+            _("Vuoi mandare nel cestino di Windows il torneo {t_type} '{t_name}'?").format(
+                t_type=t_type, t_name=t_name
+            )
+        ]
+        if correlati:
+            righe.append(
+                _(
+                    "Ci vanno {count} file, quello del torneo e quelli che portano il suo nome intero, e dal cestino si possono recuperare:"
+                ).format(count=len(correlati) + 1)
+            )
+        else:
+            righe.append(
+                _("Ci va il file del torneo, e dal cestino si può recuperare:")
+            )
+        righe.extend(
+            self._righe_per_cartella([os.path.abspath(filepath), *correlati])
+        )
+        if illeggibili:
+            righe.append(frase_illeggibili)
+            righe.extend(illeggibili)
+        dlg = AccessibleMsgDialog(
+            self, _("Conferma Eliminazione Torneo"), "\n".join(righe), style=wx.YES_NO
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+        torneo_nel_cestino = False
+        try:
+            # 1. Il file JSON del torneo, per primo. Se il cestino non lo
+            # prende, per esempio su un disco senza cestino, il torneo resta
+            # com'e', report compresi, e non si cancella niente per sempre.
+            if os.path.exists(filepath) and not self._nel_cestino(filepath):
+                play_sound("errore", self.current_tournament)
+                err_msg = _(
+                    "Il file del torneo {path} non è andato nel cestino, e il torneo '{t_name}' resta com'è, con tutti i suoi file. Succede su un disco senza cestino, per esempio una cartella di rete, con un file tenuto bloccato da un altro programma, oppure se hai risposto No alla domanda di Windows di cancellarlo per sempre."
+                ).format(t_name=t_name, path=filepath)
+                self.set_status(err_msg)
+                print(err_msg)
+                self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
+                return
+            torneo_nel_cestino = True
 
-                    resolved_path, _discard = resolve_and_verify_save_path(custom_path)
-                    if resolved_path and os.path.exists(resolved_path):
-                        paths_to_clean.append(resolved_path)
+            # 2. Il torneo non c'e' piu': esce subito dall'albero e, se era
+            # quello aperto, dalla memoria, prima dei file correlati. Cosi' un
+            # errore che arrivasse dopo non lo lascerebbe aperto, a rinascere
+            # nella cartella del programma al primo salvataggio.
+            self.tree_ctrl.Delete(item)
+            if self.active_filename and os.path.normcase(
+                os.path.abspath(filepath)
+            ) == os.path.normcase(os.path.abspath(self.active_filename)):
+                self.current_tournament = None
+                self.active_filename = None
+                self.show_intro_message()
 
-                paths_to_clean = list(
-                    set([os.path.abspath(p) for p in paths_to_clean if p])
-                )
+            # 3. I file correlati vanno nel cestino uno per uno: quelli che non
+            # ci vanno restano dove sono, e il messaggio finale li nomina.
+            deleted_count = 0
+            non_andati = []
+            for f_path in correlati:
+                if not os.path.isfile(f_path):
+                    continue
+                if self._nel_cestino(f_path):
+                    deleted_count += 1
+                else:
+                    non_andati.append(f_path)
 
-                # 3. Nome sanificato per trovare i file correlati. Il nome
-                # deve corrispondere per intero: con il solo prefisso,
-                # eliminando il torneo Autunneo sparivano anche i file di
-                # Autunneo2.
-                from tournament import sanitize_filename
-                from utils import file_del_torneo
-
-                sanitized_name = sanitize_filename(t_name)
-
-                deleted_count = 0
-                for folder in paths_to_clean:
-                    if os.path.exists(folder):
-                        for f_name in os.listdir(folder):
-                            if file_del_torneo(f_name, sanitized_name):
-                                f_path = os.path.join(folder, f_name)
-                                if os.path.isfile(f_path):
-                                    try:
-                                        os.remove(f_path)
-                                        deleted_count += 1
-                                    except Exception:
-                                        pass
-
-                # 4. Rimuove il nodo dall'albero
-                self.tree_ctrl.Delete(item)
-
-                # Se è stato cancellato il torneo attivo corrente, ripristina lo stato a vuoto
-                if self.active_filename and os.path.abspath(
-                    filepath
-                ) == os.path.abspath(self.active_filename):
-                    self.current_tournament = None
-                    self.active_filename = None
-                    self.show_intro_message()
-
-                play_sound("cancellato", self.current_tournament)
+            if deleted_count == 0:
                 info_msg = _(
-                    "Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati."
+                    "Torneo '{t_name}' mandato nel cestino di Windows."
+                ).format(t_name=t_name)
+            elif deleted_count == 1:
+                info_msg = _(
+                    "Torneo '{t_name}' mandato nel cestino di Windows, con un file correlato."
+                ).format(t_name=t_name)
+            else:
+                info_msg = _(
+                    "Torneo '{t_name}' mandato nel cestino di Windows, con {deleted_count} file correlati."
                 ).format(t_name=t_name, deleted_count=deleted_count)
+            righe_finali = [info_msg]
+            stato = [info_msg]
+            if non_andati:
+                if len(non_andati) == 1:
+                    frase = _(
+                        "Un file correlato non è andato nel cestino, e resta dov'è:"
+                    )
+                else:
+                    frase = _(
+                        "{count} file correlati non sono andati nel cestino, e restano dove sono:"
+                    ).format(count=len(non_andati))
+                righe_finali += [frase, *non_andati]
+                stato.append(f"{frase} {', '.join(non_andati)}")
+            if illeggibili:
+                righe_finali += [frase_illeggibili, *illeggibili]
+                stato.append(f"{frase_illeggibili} {', '.join(illeggibili)}")
+            if len(righe_finali) == 1:
+                play_sound("cancellato", self.current_tournament)
                 self.set_status(info_msg)
                 print(info_msg)
-            except Exception as e:
-                err_msg = _("Errore durante l'eliminazione del torneo: {}").format(e)
-                print(err_msg)
-                wx.MessageBox(
-                    err_msg,
-                    _("Errore"),
-                    wx.ICON_ERROR,
-                )
-        dlg.Destroy()
+                return
+            # Qualcosa e' rimasto fuori: il suono dell'errore, e non quello del
+            # successo pieno, poi una finestra con un percorso per riga.
+            play_sound("errore", self.current_tournament)
+            self.set_status(" ".join(stato))
+            testo = "\n".join(righe_finali)
+            print(testo)
+            self._dialogo_informativo(_("File rimasti fuori dal cestino"), testo)
+        except Exception as e:
+            play_sound("errore", self.current_tournament)
+            err_msg = _("Errore durante l'eliminazione del torneo: {}").format(e)
+            if torneo_nel_cestino:
+                err_msg += " " + _(
+                    "Il file del torneo {path} è già nel cestino di Windows, e da lì si può recuperare."
+                ).format(path=filepath)
+            self.set_status(err_msg)
+            print(err_msg)
+            self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
 
     def on_delete_active_tournament_menu(self, event):
         item = self.tree_ctrl.GetSelection()

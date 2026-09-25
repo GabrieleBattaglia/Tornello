@@ -187,6 +187,56 @@ def calculate_expected_score(player_elo, opponent_elo):
         return 0.5  # Ritorna 0.5 in caso di Elo non validi
 
 
+def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
+    """Le partite del giocatore che concorrono alla variazione Elo, come
+    coppie (Elo di partenza dell'avversario, punteggio). Restano fuori i bye,
+    le voci senza avversario o senza punteggio, le partite non giocate, cioe'
+    vinte o perse a forfait, e quelle con un avversario che non si trova o
+    che ha un Elo o un punteggio non validi; per queste ultime avvisa, se
+    c'e', riceve il motivo. calculate_elo_change calcola la variazione su
+    queste partite, e dalla 10.13.7 la finalizzazione le guarda per decidere
+    se l'Elo della cadenza di un rapid o di un blitz puo' nascere: una
+    funzione sola, perche' le due scelte non si separino."""
+    partite = []
+    for result_entry in player.get("results_history") or []:
+        opponent_id = result_entry.get("opponent_id")
+        score = result_entry.get("score")
+
+        # Salta BYE e partite senza avversario o punteggio valido
+        if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
+            continue
+
+        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
+        # forfait vale in classifica ma non concorre alla variazione Elo.
+        if is_forfeit_result(result_entry.get("result")):
+            continue
+
+        opponent = tournament_players_dict.get(opponent_id)
+        if not opponent or "initial_elo" not in opponent:
+            if avvisa:
+                avvisa(
+                    _(
+                        "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo Elo."
+                    ).format(opponent_id=opponent_id)
+                )
+            continue
+
+        try:
+            opponent_elo = float(opponent["initial_elo"])
+            score = float(score)
+        except (ValueError, TypeError):
+            if avvisa:
+                avvisa(
+                    _(
+                        "Warning: Elo avversario ({}) o score ({}) non validi per partita contro {}."
+                    ).format(opponent.get("initial_elo"), score, opponent_id)
+                )
+            continue
+
+        partite.append((opponent_elo, score))
+    return partite
+
+
 def calculate_elo_change(player, tournament_players_dict):
     """Calcola la variazione Elo per un giocatore basata sulle partite del torneo."""
     if not player or "initial_elo" not in player or "results_history" not in player:
@@ -222,39 +272,11 @@ def calculate_elo_change(player, tournament_players_dict):
         )
         initial_elo = DEFAULT_ELO
 
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        score = result_entry.get("score")
-
-        # Salta BYE e partite senza avversario o punteggio valido
-        if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
-            continue
-
-        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
-        # forfait vale in classifica ma non concorre alla variazione Elo.
-        if is_forfeit_result(result_entry.get("result")):
-            continue
-
-        opponent = tournament_players_dict.get(opponent_id)
-        if not opponent or "initial_elo" not in opponent:
-            print(
-                _(
-                    "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo Elo."
-                ).format(opponent_id=opponent_id)
-            )
-            continue
-
-        try:
-            opponent_elo = float(opponent["initial_elo"])
-            score = float(score)
-        except (ValueError, TypeError):
-            print(
-                _(
-                    "Warning: Elo avversario ({}) o score ({}) non validi per partita contro {}."
-                ).format(opponent.get("initial_elo"), score, opponent_id)
-            )
-            continue
-
+    # Le partite valide per l'Elo le sceglie partite_valide_per_elo, la
+    # stessa funzione che la finalizzazione usa per l'Elo della cadenza.
+    for opponent_elo, score in partite_valide_per_elo(
+        player, tournament_players_dict, avvisa=print
+    ):
         expected_score = calculate_expected_score(initial_elo, opponent_elo)
         total_expected_score += expected_score
         actual_score += score

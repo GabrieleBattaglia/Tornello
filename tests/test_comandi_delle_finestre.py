@@ -7,11 +7,13 @@ Windows, e on_key_down, per quando il tasto gli arriva lo stesso; sui
 pulsanti e nel campo del PGN il tasto resta loro. Dalla 10.8.5 le voci del menu Visualizza, che prima non avevano
 un gestore, fanno quello che fanno F5, F6 e F7, con lo stesso suono. Dalla
 10.8.6 la riga che carica altri risultati FIDE non ha piu' i trattini che
-NVDA leggeva, e si riconosce dalla posizione invece che dal testo.
+NVDA leggeva, e si riconosce dalla posizione invece che dal testo. Dalla
+10.13.8 eliminare un torneo manda i suoi file nel cestino, finto nelle prove.
 Nessuna finestra viene mostrata, niente suona: i suoni si annotano, e le
 chiusure delle finestre modali pure.
 """
 
+import os
 from types import SimpleNamespace
 
 import pytest
@@ -394,3 +396,405 @@ class TestRigaMostraAltri:
             assert not any(voce.startswith(("-", "Mostra")) for voce in voci)
         finally:
             _chiudi(dlg)
+
+
+class TestEliminazioneDelTorneo:
+    """Dalla 10.13.8 eliminare un torneo manda i suoi file nel cestino di
+    Windows, con la finestra principale come proprietaria della domanda che
+    Windows puo' fare, e non li cancella piu' per sempre con os.remove
+    (decisione di Gabriele, avvertenza della issue 55). Il cestino e' finto;
+    quello non disponibile e' la funzione vera del programma con
+    cestino_disponibile che risponde di no, e lascia tutto dov'e'. I file di
+    Autunneo2 restano: dalla 10.3.4 i file si riconoscono dal nome intero.
+    La conferma elenca i file, cartella per cartella. Un altro json con il
+    nome del torneo resta, tranne la copia dello stesso torneo concluso nella
+    cartella di lavoro esterna; per un torneo in archivio la cartella di
+    salvataggio conta solo se e' esterna, e una cartella che manca non si
+    crea. Una cartella che non si legge, o un errore a meta', li dice il
+    messaggio finale, con il suono dell'errore.
+    Le finestre di messaggio sono finte, e annotano titolo e testo."""
+
+    DEL_TORNEO = ("Tornello - Autunneo.json", "Tornello - Autunneo - Classifica.txt", "Tornello - Autunneo_sospeso.txt")
+    DEGLI_ALTRI = ("Tornello - Autunneo2.json", "Tornello - Autunneo2 - Classifica.txt")
+    NELLA_CARTELLA_ESTERNA = ("Tornello - Autunneo - Classifica.txt", "Tornello - Autunneo2 - Classifica.txt")
+
+    @staticmethod
+    def _json(percorso, **dati):
+        """Un file di torneo, in preparazione se dati non dice altro."""
+        import json
+
+        os.makedirs(os.path.dirname(percorso), exist_ok=True)
+        torneo = {"start_date": "2026-09-01", "end_date": "2026-10-15", "rounds": [], "players": []}
+        torneo.update(dati)
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(torneo, f)
+
+    @staticmethod
+    def _report(percorso):
+        os.makedirs(os.path.dirname(percorso), exist_ok=True)
+        with open(percorso, "w", encoding="utf-8") as f:
+            f.write("report")
+
+    @staticmethod
+    def _nodo(principale, percorso):
+        """L'albero ricostruito e il nodo del torneo di quel file."""
+        principale.populate_tree()
+        nodo = principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": percorso})
+        assert nodo and nodo.IsOk()
+        return nodo
+
+    @staticmethod
+    def _dialoghi_finti(monkeypatch):
+        """Le finestre di messaggio annotate, con il Si' a ogni conferma."""
+        import wx
+
+        import gui.main_frame as mf
+
+        finestre = []
+
+        class DialogoFinto:
+            def __init__(self, genitore, titolo, messaggio, style=wx.OK, **altro):
+                finestre.append((titolo, messaggio))
+                self.style = style
+
+            def ShowModal(self):
+                return wx.ID_YES if self.style & wx.YES_NO else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
+        return finestre
+
+    def _prepara(self, principale, monkeypatch, tmp_path):
+        """I file dei due tornei nella cartella del programma e nella
+        cartella di salvataggio di Autunneo, l'albero ricostruito e il nodo
+        di Autunneo. Restituisce il nodo, il file del torneo, la cartella
+        esterna e le finestre di messaggio annotate."""
+        from config import user_data_path
+
+        esterna = tmp_path / "esterna"
+        esterna.mkdir()
+        for nome in self.DEL_TORNEO + self.DEGLI_ALTRI:
+            if nome.endswith(".json"):
+                torneo = nome.removeprefix("Tornello - ").removesuffix(".json")
+                cartella = {"custom_save_path": str(esterna)} if torneo == "Autunneo" else {}
+                self._json(user_data_path(nome), name=torneo, **cartella)
+            else:
+                self._report(user_data_path(nome))
+        for nome in self.NELLA_CARTELLA_ESTERNA:
+            self._report(str(esterna / nome))
+        file_torneo = user_data_path("Tornello - Autunneo.json")
+        nodo = self._nodo(principale, file_torneo)
+        return nodo, file_torneo, esterna, self._dialoghi_finti(monkeypatch)
+
+    def _cestino_finto(self, monkeypatch, cartella, rifiuta=()):
+        """Al posto di delete_file_to_trash: sposta i file in una cartella
+        della prova e annota la finestra che li manda; i percorsi di rifiuta
+        restano dove sono, come su un disco senza cestino."""
+        import shutil
+
+        import utils
+
+        ricevuti, finestre = [], []
+
+        def cestino(percorso, finestra=None):
+            finestre.append(finestra)
+            if percorso in rifiuta:
+                return False
+            cartella.mkdir(exist_ok=True)
+            shutil.move(percorso, str(cartella / f"{len(ricevuti)}_{os.path.basename(percorso)}"))
+            ricevuti.append(percorso)
+            return True
+
+        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+        return ricevuti, finestre
+
+    def test_i_file_del_torneo_vanno_nel_cestino_e_gli_altri_restano(self, principale, suoni, monkeypatch, tmp_path):
+        from config import user_data_path
+
+        nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
+        ricevuti, proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        attesi = [user_data_path(n) for n in self.DEL_TORNEO] + [str(esterna / "Tornello - Autunneo - Classifica.txt")]
+        assert sorted(ricevuti) == sorted(attesi)
+        assert ricevuti[0] == file_torneo
+        assert proprietarie == [principale.GetHandle()] * len(attesi)
+        assert not any(os.path.exists(p) for p in attesi)
+        for nome in self.DEGLI_ALTRI:
+            assert os.path.exists(user_data_path(nome)), nome
+        assert (esterna / "Tornello - Autunneo2 - Classifica.txt").exists()
+        assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": file_torneo}) is None
+        # La conferma dice il cestino ed elenca i file, un nome per riga
+        # sotto la sua cartella; il messaggio finale conta i file correlati,
+        # e nessuna finestra per i file rimasti fuori.
+        assert len(finestre) == 1
+        assert finestre[0][1].split("\n") == [
+            "Vuoi mandare nel cestino di Windows il torneo in preparazione 'Autunneo'?",
+            "Ci vanno 4 file, quello del torneo e quelli che portano il suo nome intero, e dal cestino si possono recuperare:",
+            f"Nella cartella {os.path.dirname(file_torneo)}:",
+            "Tornello - Autunneo.json",
+            "Tornello - Autunneo - Classifica.txt",
+            "Tornello - Autunneo_sospeso.txt",
+            f"Nella cartella {esterna}:",
+            "Tornello - Autunneo - Classifica.txt",
+        ]
+        assert principale.last_status_msg == "Torneo 'Autunneo' mandato nel cestino di Windows, con 3 file correlati."
+        assert suoni == ["cancellato"]
+
+    def test_con_il_cestino_non_disponibile_nessun_file_sparisce(self, principale, suoni, monkeypatch, tmp_path):
+        """La funzione vera, su un disco senza cestino: il file del torneo non
+        ci va, non si cancella per sempre, e nient'altro viene toccato."""
+        import utils
+        from config import user_data_path
+
+        nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
+        monkeypatch.setattr(utils, "cestino_disponibile", lambda percorso: False)
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        for nome in self.DEL_TORNEO + self.DEGLI_ALTRI:
+            assert os.path.exists(user_data_path(nome)), nome
+        for nome in self.NELLA_CARTELLA_ESTERNA:
+            assert (esterna / nome).exists(), nome
+        assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": file_torneo}) is not None
+        titolo, testo = finestre[-1]
+        assert titolo == "Eliminazione non riuscita"
+        assert testo.startswith(f"Il file del torneo {file_torneo} non è andato nel cestino, e il torneo 'Autunneo' resta com'è")
+        # Fra le cause anche il No alla domanda di Windows.
+        assert "se hai risposto No alla domanda di Windows" in testo
+        assert principale.last_status_msg == testo
+        assert suoni == ["errore"]
+
+    @pytest.mark.parametrize("quanti", [1, 2])
+    def test_i_file_rimasti_fuori_dal_cestino_si_nominano(self, principale, suoni, monkeypatch, tmp_path, quanti):
+        """Il torneo va nel cestino, ma un report, o due, no: restano dove
+        sono, e il messaggio finale li nomina, uno per riga nella finestra,
+        con il suono dell'errore invece di quello del successo pieno."""
+        from config import user_data_path
+
+        nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
+        fuori = [str(esterna / "Tornello - Autunneo - Classifica.txt"), user_data_path("Tornello - Autunneo_sospeso.txt")][:quanti]
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino", rifiuta=fuori)
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        assert file_torneo in ricevuti
+        assert all(os.path.exists(p) for p in fuori)
+        titolo, testo = finestre[-1]
+        assert titolo == "File rimasti fuori dal cestino"
+        righe = testo.split("\n")
+        if quanti == 1:
+            assert righe[:2] == [
+                "Torneo 'Autunneo' mandato nel cestino di Windows, con 2 file correlati.",
+                "Un file correlato non è andato nel cestino, e resta dov'è:",
+            ]
+        else:
+            assert righe[:2] == [
+                "Torneo 'Autunneo' mandato nel cestino di Windows, con un file correlato.",
+                "2 file correlati non sono andati nel cestino, e restano dove sono:",
+            ]
+        assert sorted(righe[2:]) == sorted(fuori)
+        assert all(p in principale.last_status_msg for p in fuori)
+        assert suoni == ["errore"]
+
+    @pytest.mark.parametrize("cartella", ["programma", "assente"])
+    def test_un_torneo_in_archivio_non_porta_via_l_edizione_in_corso(self, principale, suoni, monkeypatch, tmp_path, cartella):
+        """L'edizione 2025 di Sociale, conclusa e in archivio, con la cartella
+        di salvataggio del programma, che la procedura guidata propone, o con
+        una cartella che non c'e' piu', come una chiavetta non inserita: fino
+        alla 10.13.7 nel secondo caso si ripiegava sulla cartella del
+        programma. Nel cestino vanno il json archiviato e il suo report;
+        l'edizione 2026 in corso accanto al programma resta, con il suo
+        report, e la cartella che manca non nasce."""
+        from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
+
+        assente = tmp_path / "chiavetta" / "Sociale"
+        salvataggio = user_data_path("") if cartella == "programma" else str(assente)
+        in_archivio = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2025", "10 Ottobre", "Sociale")
+        archiviato = os.path.join(in_archivio, "Tornello - Sociale.json")
+        self._json(archiviato, name="Sociale", start_date="2025-09-01", end_date="2025-10-15", concluded=True, custom_save_path=salvataggio)
+        self._report(os.path.join(in_archivio, "Tornello - Sociale - Classifica.txt"))
+        in_corso = user_data_path("Tornello - Sociale.json")
+        self._json(in_corso, name="Sociale", custom_save_path=user_data_path(""))
+        report_in_corso = user_data_path("Tornello - Sociale - Classifica.txt")
+        self._report(report_in_corso)
+        nodo = self._nodo(principale, archiviato)
+        finestre = self._dialoghi_finti(monkeypatch)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, archiviato)
+
+        assert ricevuti == [archiviato, os.path.join(in_archivio, "Tornello - Sociale - Classifica.txt")]
+        assert os.path.exists(in_corso)
+        assert os.path.exists(report_in_corso)
+        assert not (tmp_path / "chiavetta").exists()
+        assert finestre[0][1].split("\n")[0] == "Vuoi mandare nel cestino di Windows il torneo concluso 'Sociale'?"
+        assert suoni == ["cancellato"]
+
+    @pytest.mark.parametrize(("nome", "file_del_programma"), [("Players db", "Tornello - Players_db.json"), ("Settings", "Tornello - Settings.json")])
+    def test_i_file_del_programma_restano(self, principale, suoni, monkeypatch, tmp_path, nome, file_del_programma):
+        """Un torneo concluso di nome Players db o Settings, con la cartella di
+        salvataggio del programma: il database dei giocatori e le impostazioni
+        portano il suo nome intero, e fino alla 10.13.7 andavano con lui."""
+        from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
+
+        in_archivio = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2025", "10 Ottobre", "X")
+        archiviato = os.path.join(in_archivio, file_del_programma)
+        self._json(archiviato, name=nome, concluded=True, custom_save_path=user_data_path(""))
+        del_programma = user_data_path(file_del_programma)
+        with open(del_programma, "w", encoding="utf-8") as f:
+            f.write('{"players": []}')
+        nodo = self._nodo(principale, archiviato)
+        self._dialoghi_finti(monkeypatch)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+
+        principale.delete_tournament_completely(nodo, archiviato)
+
+        assert ricevuti == [archiviato]
+        assert os.path.exists(del_programma)
+
+    @pytest.mark.parametrize(("inizio", "va_nel_cestino"), [("2026-09-01", True), ("2027-09-01", False)])
+    def test_la_copia_conclusa_nella_cartella_esterna(self, principale, suoni, monkeypatch, tmp_path, inizio, va_nel_cestino):
+        """Un torneo in archivio con una cartella di lavoro esterna: la
+        finalizzazione vi ha lasciato i report e la copia del torneo
+        concluso, che vanno nel cestino con lui. Un json con lo stesso nome
+        ma un'altra data di inizio e' un'altra edizione, e resta; la copia
+        che Esplora risorse chiama "- Copia" resta sempre."""
+        from config import ARCHIVED_TOURNAMENTS_DIR
+
+        esterna = tmp_path / "esterna" / "Autunneo"
+        in_archivio = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2026", "10 Ottobre", "Autunneo")
+        archiviato = os.path.join(in_archivio, "Tornello - Autunneo.json")
+        self._json(archiviato, name="Autunneo", concluded=True, custom_save_path=str(esterna))
+        nell_esterna = str(esterna / "Tornello - Autunneo.json")
+        self._json(nell_esterna, name="Autunneo", start_date=inizio, concluded=True, custom_save_path=str(esterna))
+        copia = str(esterna / "Tornello - Autunneo - Copia.json")
+        self._json(copia, name="Autunneo", concluded=True, custom_save_path=str(esterna))
+        report = str(esterna / "Tornello - Autunneo - Classifica.txt")
+        self._report(report)
+        nodo = self._nodo(principale, archiviato)
+        self._dialoghi_finti(monkeypatch)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+
+        principale.delete_tournament_completely(nodo, archiviato)
+
+        attesi = [archiviato, report, nell_esterna] if va_nel_cestino else [archiviato, report]
+        assert ricevuti == attesi
+        assert os.path.exists(nell_esterna) is not va_nel_cestino
+        assert os.path.exists(copia)
+
+    def test_gli_altri_json_con_il_nome_del_torneo_restano(self, principale, suoni, monkeypatch, tmp_path):
+        """Un file aperto con un nome diverso da quello del torneo, Autunneo
+        in Tornello - Autunneo_copia.json: il torneo vero con quel nome resta,
+        e resta anche la copia che Esplora risorse chiama "- Copia"."""
+        from config import user_data_path
+
+        vero = user_data_path("Tornello - Autunneo.json")
+        self._json(vero, name="Autunneo")
+        di_esplora_risorse = user_data_path("Tornello - Autunneo - Copia.json")
+        self._json(di_esplora_risorse, name="Autunneo")
+        aperto = user_data_path("Tornello - Autunneo_copia.json")
+        self._json(aperto, name="Autunneo")
+        nodo = self._nodo(principale, aperto)
+        self._dialoghi_finti(monkeypatch)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+
+        principale.delete_tournament_completely(nodo, aperto)
+
+        assert ricevuti == [aperto]
+        assert os.path.exists(vero)
+        assert os.path.exists(di_esplora_risorse)
+
+    def test_una_cartella_scritta_con_altre_maiuscole_si_legge_una_volta(self, principale, suoni, monkeypatch, tmp_path):
+        """La cartella di salvataggio e' quella del programma scritta in
+        minuscolo: si legge una volta sola, e un report che il cestino
+        rifiuta si prova una volta e si nomina una volta."""
+        from config import user_data_path
+
+        file_torneo = user_data_path("Tornello - Autunneo.json")
+        self._json(file_torneo, name="Autunneo", custom_save_path=user_data_path("").lower())
+        report = user_data_path("Tornello - Autunneo - Classifica.txt")
+        self._report(report)
+        nodo = self._nodo(principale, file_torneo)
+        finestre = self._dialoghi_finti(monkeypatch)
+        ricevuti, proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino", rifiuta=(report,))
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        assert ricevuti == [file_torneo]
+        assert len(proprietarie) == 2
+        assert os.path.exists(report)
+        assert finestre[-1][1].split("\n") == [
+            "Torneo 'Autunneo' mandato nel cestino di Windows.",
+            "Un file correlato non è andato nel cestino, e resta dov'è:",
+            report,
+        ]
+
+    def test_una_cartella_che_non_si_legge_si_nomina(self, principale, suoni, monkeypatch, tmp_path):
+        """La cartella di salvataggio non si legge, per esempio una cartella
+        di rete sparita: il torneo va nel cestino con i file della cartella
+        del programma, esce dall'albero e dalla memoria, e la conferma e il
+        messaggio finale nominano la cartella, con il suono dell'errore."""
+        nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
+        principale.active_filename = file_torneo
+        principale.current_tournament = {"name": "Autunneo"}
+        vero = os.listdir
+
+        def listdir(percorso="."):
+            if os.path.normcase(os.path.abspath(percorso)) == os.path.normcase(str(esterna)):
+                raise PermissionError(13, "Accesso negato", str(percorso))
+            return vero(percorso)
+
+        monkeypatch.setattr(os, "listdir", listdir)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        assert ricevuti[0] == file_torneo
+        assert len(ricevuti) == 3
+        for nome in self.NELLA_CARTELLA_ESTERNA:
+            assert (esterna / nome).exists(), nome
+        assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": file_torneo}) is None
+        assert principale.active_filename is None
+        assert principale.current_tournament is None
+        frase = "Una cartella non si è potuta leggere, e i file del torneo che contiene restano dove sono:"
+        assert finestre[0][1].split("\n")[-2:] == [frase, str(esterna)]
+        assert finestre[-1] == (
+            "File rimasti fuori dal cestino",
+            "\n".join(["Torneo 'Autunneo' mandato nel cestino di Windows, con 2 file correlati.", frase, str(esterna)]),
+        )
+        assert suoni == ["errore"]
+
+    def test_un_errore_a_meta_dice_che_il_torneo_e_gia_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+        """Un errore dopo che il file del torneo e' andato nel cestino: il
+        torneo e' gia' fuori dalla memoria, e non rinasce al primo
+        salvataggio; il messaggio dice dov'e' il file, nella finestra
+        accessibile e con il suono dell'errore."""
+        nodo, file_torneo, _esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
+        principale.active_filename = file_torneo
+        principale.current_tournament = {"name": "Autunneo"}
+
+        def guasto():
+            raise RuntimeError("guasto finto")
+
+        monkeypatch.setattr(principale, "show_intro_message", guasto)
+        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
+        suoni.clear()
+
+        principale.delete_tournament_completely(nodo, file_torneo)
+
+        assert ricevuti == [file_torneo]
+        assert principale.active_filename is None
+        assert principale.current_tournament is None
+        testo = f"Errore durante l'eliminazione del torneo: guasto finto Il file del torneo {file_torneo} è già nel cestino di Windows, e da lì si può recuperare."
+        assert finestre[-1] == ("Eliminazione non riuscita", testo)
+        assert principale.last_status_msg == testo
+        assert suoni == ["errore"]

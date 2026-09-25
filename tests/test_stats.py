@@ -297,6 +297,44 @@ def test_forfeit_esclusi_da_elo_e_performance():
     assert calculate_performance_rating(solo_forfeit, avversari) == 1500
 
 
+def test_partite_valide_per_elo():
+    """Le partite che contano per la variazione Elo, scelte da una funzione
+    sola: dalla 10.13.7 la finalizzazione la usa per decidere se nei rapid e
+    nei blitz l'Elo della cadenza puo' nascere, e calculate_elo_change ci fa
+    il suo calcolo. Restano fuori il bye, il forfait, la voce senza
+    punteggio e l'avversario che non si trova, di cui si avvisa."""
+    from stats import partite_valide_per_elo
+
+    avversari = {"AVV001": {"id": "AVV001", "initial_elo": 1650.0}}
+
+    def voce(turno, avversario, risultato, punti):
+        return {"round": turno, "opponent_id": avversario, "color": "white", "result": risultato, "score": punti}
+
+    giocatore = {
+        "id": "TST004",
+        "initial_elo": 1600.0,
+        "k_factor": 20,
+        "results_history": [
+            voce(1, "BYE_PLAYER_ID", "BYE", 1.0),
+            voce(2, "AVV001", "1-F", 1.0),
+            voce(3, "AVV001", None, None),
+            voce(4, "SCONOSCIUTO", "1-0", 1.0),
+            voce(5, "AVV001", "0-1", 0.0),
+        ],
+    }
+    avvisi = []
+
+    assert partite_valide_per_elo(giocatore, avversari, avvisa=avvisi.append) == [(1650.0, 0.0)]
+    assert len(avvisi) == 1 and "SCONOSCIUTO" in avvisi[0]
+    # Senza avvisa non si dice niente, e senza partite l'elenco e' vuoto.
+    assert partite_valide_per_elo({"id": "TST005", "results_history": giocatore["results_history"][:4]}, avversari) == []
+    assert partite_valide_per_elo({"id": "TST006"}, avversari) == []
+    # La variazione e' quella della sola partita valida: una sconfitta con
+    # un avversario piu' forte di 50 punti, con K 20.
+    solo_la_valida = dict(giocatore, results_history=[voce(5, "AVV001", "0-1", 0.0)])
+    assert calculate_elo_change(giocatore, avversari) == calculate_elo_change(solo_la_valida, avversari) == -9
+
+
 class TestTabellaPerformanceFIDE:
     """La tabella che converte la percentuale di punteggio nella differenza di
     performance esisteva in due copie e la seconda si fermava a 0.89, cosi' il
