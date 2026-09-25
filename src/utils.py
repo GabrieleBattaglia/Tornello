@@ -422,6 +422,13 @@ EVENTI = {
     # Dalla 10.3.1 i controlli della finestra di programmazione hanno una
     # sinusoide di 45 ms al posto della campanella, troppo invadente (issue 48).
     "controllo_programmazione": "meditimer_giro",
+    # Dalla 10.6.1 anche la finestra dei risultati lascia la campanella, troppo
+    # aggressiva: un suono all'apertura e uno diverso sui quattro pulsanti
+    # Pianifica, Ritira, Annulla e Conferma. Due preset che in Tornello non
+    # suonano per nient'altro, scelti in prova: quelli definitivi li decide
+    # l'ascolto di Gabriele (issue 51).
+    "apertura_risultati": "meditimer_tempo_trascorso",
+    "controllo_risultati": "gabryscola_gioca_carta",
 }
 
 

@@ -250,6 +250,10 @@ class ScheduleDialog(wx.Dialog):
         play_sound("controllo_programmazione", self.tournament_data)
         event.Skip()
 
+    # Gli esiti, conferma e annullamento, non li suona questa finestra ma
+    # on_schedule della ResultDialog, che la apre: dalla 10.6.2 non c'e' piu'
+    # un EndModal che suonava l'annullamento una seconda volta.
+
     def on_key_down(self, event):
         key = event.GetKeyCode()
         if key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER:
@@ -258,16 +262,6 @@ class ScheduleDialog(wx.Dialog):
             self.EndModal(wx.ID_CANCEL)
         else:
             event.Skip()
-
-    def EndModal(self, retCode):
-        from utils import play_sound
-
-        if retCode == wx.ID_OK:
-            # Viene gestito in on_schedule di ResultDialog
-            pass
-        else:
-            play_sound("cancellato")
-        return super().EndModal(retCode)
 
     def get_schedule_info(self):
         selected_date = None
@@ -344,10 +338,12 @@ class ResultDialog(wx.Dialog):
         self.apply_theme()
         self.Centre()
 
-        # Audio feedback all'apertura del dialogo
+        # Il suono dell'apertura, dalla 10.6.1 al posto della campanella
+        # (issue 51). Se il focus arriva poi su un risultato, subito dopo si
+        # sente anche il suo arpeggio.
         from utils import play_sound
 
-        play_sound("notifica")
+        play_sound("apertura_risultati")
 
     def _init_ui(self):
         panel = wx.Panel(self)
@@ -512,10 +508,14 @@ class ResultDialog(wx.Dialog):
                 break
         event.Skip()
 
+    # Issue 51, la campanella era troppo aggressiva anche qui. Dalla 10.6.1 i
+    # quattro pulsanti, Pianifica, Ritira, Annulla e Conferma, hanno un suono
+    # breve tutto loro, diverso da quello dell'apertura.
+
     def on_control_focus(self, event):
         from utils import play_sound
 
-        play_sound("notifica")
+        play_sound("controllo_risultati")
         event.Skip()
 
     def on_key_down(self, event):
@@ -589,9 +589,16 @@ class ResultDialog(wx.Dialog):
             self.btn_ok.Enable(False)
 
     def on_schedule(self, event):
+        # Premendo Pianifica non suona niente: la finestra di programmazione,
+        # appena riceve il focus, suona gia' il bip del giorno, e fino alla
+        # 10.6.0 la campanella gli finiva sopra (issue 51). Gli esiti li suona
+        # questo metodo: la partita pianificata o, dalla 10.6.2, l'annullamento,
+        # che prima suonava anche la ScheduleDialog e si sentiva due volte.
+        # Chiusa la programmazione, Windows riattiva questa finestra e rimette
+        # il fuoco su btn_schedule: on_control_focus suona il tocco del
+        # pulsante insieme all'esito. Lo stesso succede in on_withdraw, con il
+        # fuoco su btn_withdraw. Il manuale lo dice nella 6.2.1 e nella 7.2.
         from utils import play_sound
-
-        play_sound("notifica")
 
         parent_frame = self.GetParent()
         t_data = getattr(parent_frame, "current_tournament", {})
