@@ -97,9 +97,25 @@ def create_backup(filepath, context="backup"):
     accanto all'applicazione, dentro le sottocartelle dell'anno e del mese in
     cui la copia viene fatta.
     Aggiunge un timestamp e il contesto al nome del file per non sovrascrivere backup precedenti.
+    Risponde vero se la copia e' nata; il lavoro lo fa copia_di_sicurezza,
+    che dice anche dove.
+    """
+    return copia_di_sicurezza(filepath, context) is not None
+
+
+def copia_di_sicurezza(filepath, context="backup"):
+    """La copia di create_backup, che restituisce il percorso della copia
+    appena nata, oppure None se la copia non si e' potuta fare. Serve a chi
+    deve rileggerla prima di togliere l'originale, come la finalizzazione
+    ripetuta che mette da parte i suoi file (10.8.9).
+    Due copie dello stesso file e dello stesso contesto nello stesso secondo
+    avrebbero lo stesso nome: fino alla 10.8.10 la seconda cancellava la
+    prima senza dire niente, per esempio le due copie pre_finalize_db che la
+    console faceva di fila. Adesso la seconda prende il suffisso _2, la terza
+    _3 e cosi' via, e nessuna copia viene mai sovrascritta.
     """
     if not os.path.exists(filepath):
-        return False
+        return None
 
     # La cartella va accanto all'applicazione, non nella directory da cui e'
     # stata avviata: con un percorso relativo le copie di sicurezza fatte prima
@@ -110,18 +126,72 @@ def create_backup(filepath, context="backup"):
     adesso = datetime.datetime.now()
     backup_dir = cartella_per_data(user_data_path("backup"), adesso)
     if not backup_dir:
-        return False
+        return None
 
     filename = os.path.basename(filepath)
     name, ext = os.path.splitext(filename)
     timestamp = adesso.strftime("%Y%m%d_%H%M%S")
     backup_filename = f"{name}_{context}_{timestamp}{ext}"
     backup_path = os.path.join(backup_dir, backup_filename)
+    numero = 2
+    while os.path.exists(backup_path):
+        backup_path = os.path.join(
+            backup_dir, f"{name}_{context}_{timestamp}_{numero}{ext}"
+        )
+        numero += 1
 
     try:
         shutil.copy2(filepath, backup_path)
-        return True
     except OSError:
+        return None
+    return backup_path
+
+
+# La data scritta da create_backup in fondo al nome, prima dell'estensione,
+# con il suffisso _2, _3 delle copie nate nello stesso secondo.
+DATA_NEL_NOME_DELLA_COPIA = re.compile(r"_(\d{8})_(\d{6})(?:_\d+)?$")
+
+
+def data_della_copia(percorso):
+    """Il momento in cui e' nata una copia di sicurezza, letto dalla data che
+    create_backup scrive nel nome del file, per esempio
+    Tornello - Autunneo2_chiusura_torneo_20260923_160512.json.
+    La data di modifica del file non dice quando e' nata la copia: shutil.copy2
+    conserva quella dell'originale, e le copie di chiusura del database fatte
+    il 23 settembre risultavano del 13, l'ultimo giorno in cui il database era
+    cambiato. Fino alla 10.8.10 l'eta' delle copie si misurava cosi', e con
+    lei il consiglio dei 18 mesi e l'indicatore BK del pie' di pagina.
+    Solo per i file senza la data nel nome, o con una data impossibile, si
+    ripiega sulla data di modifica. Nata come data_del_backup in
+    riordina_archivio_e_backup.py, che ora la importa da qui.
+    """
+    base = os.path.splitext(os.path.basename(percorso))[0]
+    trovata = DATA_NEL_NOME_DELLA_COPIA.search(base)
+    if trovata:
+        try:
+            return datetime.datetime.strptime(
+                trovata.group(1) + trovata.group(2), "%Y%m%d%H%M%S"
+            )
+        except ValueError:
+            pass
+    return datetime.datetime.fromtimestamp(os.path.getmtime(percorso))
+
+
+def dentro_la_cartella(percorso, cartella):
+    """Vero se il percorso sta dentro la cartella, a qualunque profondita'.
+    Il confronto si fa sui percorsi assoluti e risolti, senza badare alle
+    maiuscole come fa Windows."""
+    if not percorso or not cartella:
+        return False
+    try:
+        file_risolto = os.path.normcase(os.path.realpath(percorso))
+        cartella_risolta = os.path.normcase(os.path.realpath(cartella))
+        return (
+            os.path.commonpath([file_risolto, cartella_risolta]) == cartella_risolta
+            and file_risolto != cartella_risolta
+        )
+    except (OSError, ValueError):
+        # Unita' diverse o percorso illeggibile: non sta dentro.
         return False
 
 
@@ -141,8 +211,9 @@ def elenca_file_di_backup(cartella_backup, limite_data=None):
     """Elenca i file di backup, scendendo nelle sottocartelle dell'anno e del
     mese. Restituisce due liste: tutti i file, dal piu' vecchio al piu'
     recente, e quelli piu' vecchi della data limite, se indicata.
-    Ogni file e' un dizionario con nome, percorso, dimensione e data di
-    ultima modifica."""
+    Ogni file e' un dizionario con nome, percorso, dimensione e data della
+    copia, letta dal nome con data_della_copia. Fino alla 10.8.10 la chiave
+    era mtime e conteneva la data di modifica, cioe' quella dell'originale."""
     tutti = []
     vecchi = []
     if not cartella_backup or not os.path.isdir(cartella_backup):
@@ -155,21 +226,21 @@ def elenca_file_di_backup(cartella_backup, limite_data=None):
                 if not os.path.isfile(percorso):
                     continue
                 dati = os.stat(percorso)
-                modifica = datetime.datetime.fromtimestamp(dati.st_mtime)
+                nascita = data_della_copia(percorso)
                 informazioni = {
                     "name": nome,
                     "path": percorso,
                     "size": dati.st_size,
-                    "mtime": modifica,
+                    "data": nascita,
                 }
                 tutti.append(informazioni)
-                if limite_data is not None and modifica < limite_data:
+                if limite_data is not None and nascita < limite_data:
                     vecchi.append(informazioni)
     except OSError:
         return tutti, vecchi
 
-    tutti.sort(key=lambda f: f["mtime"])
-    vecchi.sort(key=lambda f: f["mtime"])
+    tutti.sort(key=lambda f: f["data"])
+    vecchi.sort(key=lambda f: f["data"])
     return tutti, vecchi
 
 

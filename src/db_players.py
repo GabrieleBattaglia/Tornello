@@ -812,7 +812,12 @@ def load_players_db():
 
 
 def save_players_db(players_db):
-    """Salva il database dei giocatori nel file JSON e genera il file TXT."""
+    """Salva il database dei giocatori nel file JSON e genera il file TXT.
+    Risponde vero se il file JSON e' stato scritto; il TXT e' un riassunto
+    che si rigenera, e un suo errore non conta. Fino alla 10.8.8 l'errore
+    restava soltanto stampato, e la finalizzazione andava avanti come se gli
+    Elo fossero arrivati nel database: archiviava il torneo e diceva i
+    giocatori aggiornati quando non lo erano."""
     if not players_db:
         pass  # Procedi a salvare anche se vuoto
     try:
@@ -820,19 +825,22 @@ def save_players_db(players_db):
         # Scrittura atomica: il database contiene anagrafica, Elo, medaglie e
         # storico di tutti i giocatori, e non si potrebbe ricostruire. Rilievo C1.
         scrivi_json_atomico(PLAYER_DB_FILE, data_to_save)
-        save_players_db_txt(players_db)
     except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
             ).format(filename=PLAYER_DB_FILE, error=e)
         )
+        return False
     except Exception as e:
         print(
             _("Errore imprevisto durante il salvataggio del DB: {error}").format(
                 error=e
             )
         )
+        return False
+    save_players_db_txt(players_db)
+    return True
 
 
 def save_players_db_txt(players_db):

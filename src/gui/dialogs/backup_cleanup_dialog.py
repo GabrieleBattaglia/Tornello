@@ -1,7 +1,7 @@
 import builtins
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import wx
 from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
@@ -167,7 +167,9 @@ class BackupCleanupDialog(wx.Dialog):
         set_accessibility_label(self.list_ctrl, _("Elenco file di backup"))
 
         self.list_ctrl.InsertColumn(0, _("Nome file"), width=self.FromDIP(320))
-        self.list_ctrl.InsertColumn(1, _("Data di modifica"), width=self.FromDIP(180))
+        # La data in cui e' nata la copia, letta dal nome del file: la data di
+        # modifica, mostrata fino alla 10.8.10, era quella dell'originale.
+        self.list_ctrl.InsertColumn(1, _("Data della copia"), width=self.FromDIP(180))
         self.list_ctrl.InsertColumn(2, _("Età"), width=self.FromDIP(220))
 
         self.list_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_list_key_down)
@@ -220,7 +222,10 @@ class BackupCleanupDialog(wx.Dialog):
 
             limit_date = today - relativedelta(months=18)
         except ImportError:
-            limit_date = today - datetime.timedelta(days=548)
+            # Fino alla 10.8.10 qui c'era datetime.timedelta, che su
+            # datetime, la classe, non esiste: senza dateutil la finestra
+            # si fermava con un errore invece di usare i 548 giorni.
+            limit_date = today - timedelta(days=548)
 
         # Le cancellazioni lasciano indietro le cartelle dell'anno e del mese
         # ormai vuote: si tolgono di mezzo prima di rileggere l'elenco.
@@ -257,10 +262,10 @@ class BackupCleanupDialog(wx.Dialog):
         for idx, f in enumerate(self.files_info):
             self.list_ctrl.InsertItem(idx, f["name"])
 
-            mtime_str = f["mtime"].strftime("%Y-%m-%d %H:%M:%S")
-            self.list_ctrl.SetItem(idx, 1, mtime_str)
+            data_str = f["data"].strftime("%Y-%m-%d %H:%M:%S")
+            self.list_ctrl.SetItem(idx, 1, data_str)
 
-            months, days = calculate_age(f["mtime"], today)
+            months, days = calculate_age(f["data"], today)
             age_str = _("{m} mesi, {d} giorni").format(m=months, d=days)
             self.list_ctrl.SetItem(idx, 2, age_str)
 

@@ -370,14 +370,18 @@ def _copia_se_torneo_avanza(percorso, turni_prima, turni_ora):
 
 
 def save_tournament(torneo, filepath=None):
-    """Salva lo stato corrente del torneo nel file JSON."""
+    """Salva lo stato corrente del torneo nel file JSON.
+    Risponde vero se il file e' stato scritto. Gli errori restano stampati e
+    non salgono, come sempre, ma chi deve fermarsi davanti a un salvataggio
+    mancato ora lo sa: la finalizzazione, fino alla 10.8.8, archiviava e
+    toglieva il file di prima, che non conteneva la conclusione."""
     tournament_name_for_file = None  # Inizializza a None
     dynamic_tournament_filename = None  # Inizializza a None
     try:
         tournament_name_for_file = torneo.get("name")
         if not tournament_name_for_file:
             print(_("Errore: Nome del torneo non presente. Impossibile salvare."))
-            return  # O gestisci diversamente, es. nome file di default
+            return False
         sanitized_name = sanitize_filename(tournament_name_for_file)
         if filepath:
             dynamic_tournament_filename = filepath
@@ -413,9 +417,12 @@ def save_tournament(torneo, filepath=None):
                 filename=dynamic_tournament_filename, error=e
             )
         )
+        return False
     except Exception as e:
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))
         traceback.print_exc()  # Stampa più dettagli in caso di errore non previsto
+        return False
+    return True
 
 
 def calculate_dates(start_date_str, end_date_str, total_rounds):

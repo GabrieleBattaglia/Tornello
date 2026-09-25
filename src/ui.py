@@ -1,4 +1,6 @@
+import copy
 import glob
+import json
 import os
 import shutil
 import traceback
@@ -36,6 +38,7 @@ from tournament import (
     time_machine_torneo,
 )
 from utils import (
+    copia_di_sicurezza,
     create_backup,
     enter_escape,
     file_del_torneo,
@@ -1466,21 +1469,201 @@ def cartella_di_lavoro_esterna(custom_path):
         return True
 
 
-def finalize_tournament(torneo, players_db, current_tournament_filename):
+def _stesso_file(primo, secondo):
+    """Vero se i due percorsi portano allo stesso file sul disco."""
+    try:
+        return os.path.exists(secondo) and os.path.samefile(primo, secondo)
+    except OSError:
+        return False
+
+
+def _stessi_byte(primo, secondo):
+    """Vero se i due file si leggono e hanno esattamente lo stesso contenuto."""
+    try:
+        with open(primo, "rb") as f_primo, open(secondo, "rb") as f_secondo:
+            return f_primo.read() == f_secondo.read()
+    except OSError:
+        return False
+
+
+def _copia_verificata(origine, destinazione, avvisa):
+    """Copia un file del torneo concluso, il json o un report, in
+    destinazione, in archivio o nella cartella di lavoro esterna, e rilegge
+    la copia.
+    Restituisce vero solo se alla fine la destinazione ha gli stessi byte
+    dell'origine. Un file diverso che c'era gia' passa prima da una copia di
+    sicurezza, e se quella non riesce resta com'e'. Fino alla 10.8.8 un file
+    gia' presente non veniva sostituito e il json del torneo veniva cancellato
+    lo stesso: una seconda finalizzazione lasciava in archivio il file della
+    prima e perdeva quello giusto. avvisa riceve le frasi per l'utente.
+    """
+    nome = os.path.basename(destinazione)
+    cartella = os.path.dirname(destinazione)
+    if os.path.exists(destinazione):
+        if _stessi_byte(origine, destinazione):
+            return True
+        if not create_backup(destinazione, "pre_archiviazione"):
+            avvisa(
+                _(
+                    "Il file {name} in {path} non è stato sostituito: la copia di sicurezza del file che c'era non è riuscita."
+                ).format(name=nome, path=cartella)
+            )
+            return False
+        avvisa(
+            _(
+                "In {path} c'era già un file {name}: prima di sostituirlo ne è stata fatta una copia di sicurezza, nella cartella backup."
+            ).format(name=nome, path=cartella)
+        )
+    try:
+        shutil.copy2(origine, destinazione)
+    except OSError as errore:
+        avvisa(
+            _("Copia di {name} in {path} non riuscita: {error}").format(
+                name=nome, path=cartella, error=errore
+            )
+        )
+        return False
+    if not _stessi_byte(origine, destinazione):
+        avvisa(
+            _(
+                "La copia di {name} in {path}, riletta, non è uguale all'originale."
+            ).format(name=nome, path=cartella)
+        )
+        return False
+    return True
+
+
+def _metti_da_parte(percorso, avvisa):
+    """Porta un file nella cartella backup, con rifinalizzazione nel nome, e
+    lo toglie dal suo posto solo dopo aver riletto la copia. Serve ai file
+    di una finalizzazione ripetuta che non entrano in archivio. Se la copia
+    non torna il file resta dov'e', e avvisa lo dice."""
+    copia = copia_di_sicurezza(percorso, "rifinalizzazione")
+    if copia and _stessi_byte(percorso, copia):
+        try:
+            os.remove(percorso)
+            return True
+        except OSError as errore:
+            avvisa(
+                _("Il file {name} non si è potuto togliere da {path}: {error}").format(
+                    name=os.path.basename(percorso),
+                    path=os.path.dirname(percorso),
+                    error=errore,
+                )
+            )
+            return False
+    avvisa(
+        _(
+            "Il file {name} resta in {path}: la sua copia nella cartella backup non è riuscita."
+        ).format(name=os.path.basename(percorso), path=os.path.dirname(percorso))
+    )
+    return False
+
+
+def _identita_del_torneo(dati):
+    """Identificativo e data di inizio di un torneo, come li usa lo storico
+    dei giocatori: un identificativo vuoto lascia il posto al nome."""
+    return (dati.get("tournament_id") or dati.get("name"), dati.get("start_date"))
+
+
+def _voce_di_questo_torneo(voce, identificativo, nome, inizio):
+    """Vero se la voce dello storico di un giocatore e' quella del torneo con
+    questo identificativo, nome e data di inizio.
+    La data di inizio deve coincidere: due edizioni con lo stesso nome hanno
+    lo stesso identificativo, perche' la finestra lo ricava dal nome. Una
+    voce senza identificativo si riconosce dal nome: la console, fino alla
+    10.8.7, scriveva nello storico l'identificativo vuoto dei tornei che non
+    lo avevano, e senza questo confronto una seconda finalizzazione sommava
+    di nuovo Elo, partite, voce e medaglia."""
+    if voce.get("date_started") != inizio:
+        return False
+    identificativo_della_voce = voce.get("tournament_id")
+    if identificativo_della_voce:
+        return identificativo_della_voce == identificativo
+    return voce.get("tournament_name") == nome
+
+
+def _leggi_json_del_torneo(percorso):
+    """Il contenuto di un json di torneo come dizionario, o None se il file
+    non si legge o non contiene un dizionario."""
+    try:
+        with open(percorso, encoding="utf-8") as f:
+            dati = json.load(f)
+    except (OSError, ValueError):
+        return None
+    return dati if isinstance(dati, dict) else None
+
+
+def _cartella_d_archivio(cartella_del_mese, nome_cartella, nome_json, identita):
+    """La cartella d'archivio del torneo dentro quella del mese: la cartella
+    con il suo nome, se non contiene il json di un altro torneo; altrimenti
+    la stessa seguita dalla data di inizio, e poi da _2, _3.
+    Due edizioni con lo stesso nome concluse nello stesso mese finivano nella
+    stessa cartella, e il json della seconda prendeva il posto di quello
+    della prima, che spariva dai tornei conclusi. Un json che non si legge
+    conta come quello di un altro torneo: meglio una cartella in piu' che
+    sostituire un file di cui non si sa niente."""
+
+    def adatta(cartella):
+        json_presente = os.path.join(cartella, nome_json)
+        if not os.path.exists(json_presente):
+            return True
+        dati = _leggi_json_del_torneo(json_presente)
+        return dati is not None and _identita_del_torneo(dati) == identita
+
+    base = os.path.join(cartella_del_mese, nome_cartella)
+    if adatta(base):
+        return base
+    inizio = identita[1]
+    if inizio:
+        base = f"{base}_{inizio}"
+        if adatta(base):
+            return base
+    numero = 2
+    while not adatta(f"{base}_{numero}"):
+        numero += 1
+    return f"{base}_{numero}"
+
+
+def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=None):
     """
     Completa il torneo: calcola Elo/Performance/Spareggi, aggiorna DB giocatori,
     e archivia tutti i file del torneo in una sottocartella dedicata.
     Restituisce True se la finalizzazione (inclusa l'archiviazione) ha avuto successo, False altrimenti.
+    Dalla 10.8.9 e' False anche quando il database e' aggiornato ma il json
+    del torneo non ha raggiunto l'archivio: prima la finestra annunciava il
+    torneo concluso e archiviato, e il file restava nella radice, nascosto
+    dall'albero perche' concluso.
+    avvisi, se c'e', e' una lista che riceve le frasi da mostrare all'utente,
+    le stesse che vengono stampate: la finestra non vede la console, e senza
+    di loro non saprebbe dei giocatori lasciati come erano o del file del
+    torneo rimasto al suo posto.
     """
+    if avvisi is None:
+        avvisi = []
+
+    def avvisa(frase):
+        print(frase)
+        avvisi.append(frase)
+
     tournament_name_original = torneo.get("name")
     if not tournament_name_original:
-        print(
+        avvisa(
             _(
                 "ERRORE CRITICO: Nome del torneo non presente nell'oggetto torneo. Impossibile finalizzare."
             )
         )
         return False
     print(_("Finalizzazione Torneo: {name}").format(name=tournament_name_original))
+    sanitized_tournament_name = sanitize_filename(tournament_name_original)
+    # Il torneo concluso si salva nel file da cui e' stato aperto. Fino alla
+    # 10.8.8 si salvava sempre nella radice: con un torneo aperto da un'altra
+    # cartella, in archivio andava il file aperto, ancora da concludere, e
+    # nella radice nasceva un json concluso che l'albero non mostrava, sopra
+    # un eventuale torneo con lo stesso nome.
+    percorso_del_torneo = current_tournament_filename or user_data_path(
+        f"Tornello - {sanitized_tournament_name}.json"
+    )
 
     # --- Creazione backup pre-finalizzazione ---
     print(_("Creazione backup di sicurezza prima dell'archiviazione..."))
@@ -1492,7 +1675,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         )
 
     if not backup_db_ok or not backup_torneo_ok:
-        print(
+        avvisa(
             _(
                 "ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo ugualmente..."
             )
@@ -1506,7 +1689,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
     num_players = len(torneo.get("players", []))
     if num_players == 0:
-        print(_("Nessun giocatore nel torneo, impossibile finalizzare."))
+        avvisa(_("Nessun giocatore nel torneo, impossibile finalizzare."))
         return False
     # --- Fase 1: Determina K-Factor e conta partite giocate nel torneo ---
     print(_("Accesso al DB e calcolo K-Factor e partite giocate..."))
@@ -1592,6 +1775,8 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             chiave.append(-get_criterion_value(player, criterio, torneo))
         return tuple(chiave)
 
+    # Resta None se l'ordinamento si ferma prima del salvataggio.
+    torneo_salvato = None
     try:
         players_sorted = sorted(torneo.get("players", []), key=sort_key_final)
         current_visual_rank = 0
@@ -1610,7 +1795,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         torneo["players"] = players_sorted
         # Segna il torneo come concluso e salva lo stato su file prima di archiviarlo
         torneo["concluded"] = True
-        save_tournament(torneo)
+        torneo_salvato = save_tournament(torneo, filepath=percorso_del_torneo)
     except Exception as e_sort:
         print(
             _(
@@ -1620,6 +1805,20 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         traceback.print_exc()
         # Non interrompere la finalizzazione, ma la classifica potrebbe non essere ordinata.
 
+    # Senza il file salvato ci si ferma prima di toccare il database e
+    # l'archivio. Fino alla 10.8.8 si andava avanti: in archivio finiva il
+    # file di prima, ancora da concludere, "verificato" contro se stesso, e
+    # il json attivo veniva tolto. Il torneo in memoria torna da concludere,
+    # cosi' la finestra permette di riprovare.
+    if torneo_salvato is False:
+        torneo["concluded"] = False
+        avvisa(
+            _(
+                "Il file del torneo non si è potuto salvare in {path}: la finalizzazione si ferma qui, e il database dei giocatori e l'archivio restano come erano. Il motivo più comune è un file tenuto bloccato da un altro programma, per esempio Dropbox o l'antivirus: riprova la finalizzazione più tardi."
+            ).format(path=percorso_del_torneo)
+        )
+        return False
+
     # --- Fase 4: Salva Classifica Finale TXT (nella directory corrente, prima dell'archiviazione) ---
     print(_("Salvataggio classifica finale su file di testo..."))
     save_standings_text(torneo, final=True)
@@ -1627,6 +1826,19 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     # --- Fase 5: Aggiornamento Database Giocatori ---
     print(_("Aggiornamento Database Giocatori (Elo, partite, storico tornei)..."))
     db_updated_count = 0
+    # Il torneo si riconosce nello storico dall'identificativo e dalla data di
+    # inizio. L'identificativo da solo non basta: la finestra lo ricava dal
+    # nome, e due edizioni con lo stesso nome avrebbero lo stesso. Un
+    # identificativo vuoto, come nei file che non lo hanno mai avuto, lascia
+    # il posto al nome, e _voce_di_questo_torneo riconosce anche le voci
+    # scritte senza identificativo.
+    id_nello_storico, inizio_nello_storico = _identita_del_torneo(torneo)
+    gia_registrati = []
+    # Le schede come erano prima di questa finalizzazione, per rimetterle in
+    # memoria se il database non si salva: la console tiene il suo database
+    # aperto, e alla finalizzazione successiva le voci di storico rimaste in
+    # memoria farebbero passare i giocatori per gia' aggiornati.
+    schede_di_prima = {}
     for p_final_data in torneo.get("players", []):
         player_id = p_final_data.get("id")
         if not player_id:
@@ -1634,6 +1846,31 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
 
         if player_id in players_db:
             db_player_record = players_db[player_id]
+            scheda_di_prima = copy.deepcopy(db_player_record)
+            if "tournaments_played" not in db_player_record:
+                db_player_record["tournaments_played"] = []
+            # Se il torneo e' gia' nello storico, questa finalizzazione ha
+            # gia' scritto tutto del giocatore, e lui resta com'e'. Fino alla
+            # 10.8.7 la guardia valeva solo per storico e medaglie: una
+            # seconda finalizzazione, per esempio di un torneo rimesso in uso
+            # da una copia di sicurezza, sommava di nuovo Elo e partite.
+            if any(
+                _voce_di_questo_torneo(
+                    t, id_nello_storico, tournament_name_original, inizio_nello_storico
+                )
+                for t in db_player_record["tournaments_played"]
+            ):
+                nome_completo = " ".join(
+                    parte
+                    for parte in (
+                        p_final_data.get("first_name", ""),
+                        p_final_data.get("last_name", ""),
+                    )
+                    if parte
+                )
+                gia_registrati.append(nome_completo or player_id)
+                continue
+            schede_di_prima[player_id] = scheda_di_prima
             elo_change_from_tournament = p_final_data.get("elo_change")
             games_played_in_tournament = p_final_data.get("games_this_tournament", 0)
 
@@ -1656,52 +1893,68 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
 
             tournament_history_entry = {
                 "tournament_name": tournament_name_original,
-                "tournament_id": torneo.get(
-                    "tournament_id", tournament_name_original
-                ),  # Usa ID torneo se disponibile
+                "tournament_id": id_nello_storico,
                 "rank": p_final_data.get("final_rank", "N/A"),
                 "total_players": num_players,
-                "date_started": torneo.get("start_date"),
+                "date_started": inizio_nello_storico,
                 "date_completed": torneo.get(
                     "end_date", datetime.now().strftime(DATE_FORMAT_ISO)
                 ),
             }
-            if "tournaments_played" not in db_player_record:
-                db_player_record["tournaments_played"] = []
+            db_player_record["tournaments_played"].append(tournament_history_entry)
 
-            # Evita di aggiungere lo stesso record di torneo più volte
-            if not any(
-                t.get("tournament_id") == tournament_history_entry["tournament_id"]
-                for t in db_player_record["tournaments_played"]
-            ):
-                db_player_record["tournaments_played"].append(tournament_history_entry)
+            player_final_rank = p_final_data.get("final_rank")
+            if isinstance(player_final_rank, int) and player_final_rank in [
+                1,
+                2,
+                3,
+                4,
+            ]:
+                if "medals" not in db_player_record:
+                    db_player_record["medals"] = {
+                        "gold": 0,
+                        "silver": 0,
+                        "bronze": 0,
+                        "wood": 0,
+                    }
+                # Assicura tutte le chiavi medaglia per sicurezza
+                for medal_key_init in ["gold", "silver", "bronze", "wood"]:
+                    db_player_record["medals"].setdefault(medal_key_init, 0)
 
-                player_final_rank = p_final_data.get("final_rank")
-                if isinstance(player_final_rank, int) and player_final_rank in [
-                    1,
-                    2,
-                    3,
-                    4,
-                ]:
-                    if "medals" not in db_player_record:
-                        db_player_record["medals"] = {
-                            "gold": 0,
-                            "silver": 0,
-                            "bronze": 0,
-                            "wood": 0,
-                        }
-                    # Assicura tutte le chiavi medaglia per sicurezza
-                    for medal_key_init in ["gold", "silver", "bronze", "wood"]:
-                        db_player_record["medals"].setdefault(medal_key_init, 0)
-
-                    medal_map = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
-                    medal_type_to_add = medal_map.get(player_final_rank)
-                    if medal_type_to_add:
-                        db_player_record["medals"][medal_type_to_add] += 1
+                medal_map = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
+                medal_type_to_add = medal_map.get(player_final_rank)
+                if medal_type_to_add:
+                    db_player_record["medals"][medal_type_to_add] += 1
             db_updated_count += 1
 
+    if gia_registrati:
+        avvisa(
+            _(
+                "Giocatori che avevano già questo torneo nello storico: {count}. Elo, partite giocate, storico e medaglie restano come erano per: {names}."
+            ).format(count=len(gia_registrati), names=", ".join(gia_registrati))
+        )
     if db_updated_count > 0:
-        save_players_db(players_db)  # Salva sia JSON che TXT del DB giocatori
+        # Salva sia JSON che TXT del DB giocatori. Se il JSON non si scrive ci
+        # si ferma: fino alla 10.8.8 la finalizzazione andava avanti, toglieva
+        # il json attivo e diceva i giocatori aggiornati, mentre il database
+        # sul disco era quello di prima. Adesso tutto torna com'era prima
+        # della finalizzazione, schede in memoria e torneo da concludere, e
+        # si puo' riprovare.
+        if not save_players_db(players_db):
+            players_db.update(schede_di_prima)
+            torneo["concluded"] = False
+            avvisa(
+                _(
+                    "Il database dei giocatori non si è potuto salvare: Elo, partite giocate, storico e medaglie restano come erano, il torneo torna da concludere e non viene archiviato. Il motivo più comune è un file tenuto bloccato da un altro programma, per esempio Dropbox o l'antivirus: riprova la finalizzazione più tardi."
+                )
+            )
+            if not save_tournament(torneo, filepath=percorso_del_torneo):
+                avvisa(
+                    _(
+                        "Anche il file del torneo, in {path}, non si è potuto riportare allo stato di prima: sul disco risulta concluso, anche se il database non ha ricevuto niente."
+                    ).format(path=percorso_del_torneo)
+                )
+            return False
         print(
             _("Database Giocatori aggiornato per {count} giocatori e salvato.").format(
                 count=db_updated_count
@@ -1713,7 +1966,6 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     print(
         _("Archiviazione del torneo '{name}'...").format(name=tournament_name_original)
     )
-    sanitized_tournament_name = sanitize_filename(tournament_name_original)
     # L'archivio e' ordinato per anno e per mese di conclusione del torneo, e
     # le due sottocartelle nascono solo quando c'e' un torneo da metterci.
     end_date_str = torneo.get("end_date")
@@ -1732,21 +1984,6 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     cartella_del_mese = cartella_per_data(ARCHIVED_TOURNAMENTS_DIR, data_archivio)
     if not cartella_del_mese:
         cartella_del_mese = ARCHIVED_TOURNAMENTS_DIR
-    full_archive_path = os.path.join(cartella_del_mese, sanitized_tournament_name)
-    try:
-        os.makedirs(full_archive_path, exist_ok=True)
-    except OSError as e:
-        print(
-            _(
-                "ERRORE: Creazione cartella di archivio '{path}' fallita: {error}"
-            ).format(path=full_archive_path, error=e)
-        )
-        print(
-            _(
-                "I file del torneo non saranno archiviati ma il resto della finalizzazione è completo."
-            )
-        )
-        return False  # L'archiviazione è una parte importante della finalizzazione
 
     custom_path = torneo.get("custom_save_path")
     if custom_path:
@@ -1776,6 +2013,56 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
                 " Warning: File JSON principale del torneo ('{current_filename}') non trovato per l'archiviazione."
             ).format(current_filename=current_tournament_filename)
         )
+    nome_json_del_torneo = f"Tornello - {sanitized_tournament_name}.json"
+    json_filename_only = (
+        os.path.basename(local_json_path) if local_json_path else nome_json_del_torneo
+    )
+
+    # La cartella del torneo in archivio. Un'altra edizione con lo stesso nome
+    # conclusa nello stesso mese ha gia' la sua: questa ne prende una con la
+    # data di inizio nel nome, invece di sostituirle il json.
+    full_archive_path = _cartella_d_archivio(
+        cartella_del_mese,
+        sanitized_tournament_name,
+        json_filename_only,
+        (id_nello_storico, inizio_nello_storico),
+    )
+    try:
+        os.makedirs(full_archive_path, exist_ok=True)
+    except OSError as e:
+        avvisa(
+            _(
+                "ERRORE: Creazione cartella di archivio '{path}' fallita: {error}"
+            ).format(path=full_archive_path, error=e)
+        )
+        avvisa(
+            _(
+                "I file del torneo non saranno archiviati ma il resto della finalizzazione è completo."
+            )
+        )
+        return False  # L'archiviazione è una parte importante della finalizzazione
+    if os.path.basename(full_archive_path) != sanitized_tournament_name:
+        avvisa(
+            _(
+                "Nell'archivio di questo mese c'è già un altro torneo con il nome {name}: questo va nella cartella {path}."
+            ).format(name=tournament_name_original, path=full_archive_path)
+        )
+
+    destination_json = os.path.join(full_archive_path, json_filename_only)
+    json_gia_in_archivio = os.path.exists(destination_json)
+    # Il file aperto puo' essere gia' quello dell'archivio, o quello della
+    # cartella di lavoro esterna: allora non va tolto, perche' e' lui la copia
+    # da tenere, e da quando la conclusione si salva nel file aperto contiene
+    # davvero il torneo concluso.
+    gia_al_suo_posto = bool(local_json_path) and _stesso_file(
+        local_json_path, destination_json
+    )
+    custom_json_dest = (
+        os.path.join(custom_path, json_filename_only) if conserva_originali else None
+    )
+    copia_di_lavoro = bool(local_json_path and custom_json_dest) and _stesso_file(
+        local_json_path, custom_json_dest
+    )
 
     # 2. Trova gli altri file di testo (.txt) associati al torneo (nella cartella custom o in locale)
     report_files = []
@@ -1789,9 +2076,15 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
     for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
         # Il glob prende tutto cio' che comincia con il nome del torneo,
         # quindi anche i file di Autunneo2 finalizzando Autunneo: si tengono
-        # solo quelli che portano il nome per intero.
-        if os.path.isfile(file_in_dir) and file_del_torneo(
-            os.path.basename(file_in_dir), sanitized_tournament_name
+        # solo quelli che portano il nome per intero. Il json del torneo non
+        # e' un report: quello della cartella esterna lo tratta il ramo del
+        # json, e preso anche qui passava due volte dalla copia di sicurezza,
+        # con un avviso su un file che in archivio non c'era.
+        nome_del_file = os.path.basename(file_in_dir)
+        if (
+            os.path.isfile(file_in_dir)
+            and nome_del_file != nome_json_del_torneo
+            and file_del_torneo(nome_del_file, sanitized_tournament_name)
         ):
             # Escludiamo il file JSON del torneo attivo da questa lista per gestirlo separatamente
             if not local_json_path or os.path.abspath(file_in_dir) != os.path.abspath(
@@ -1799,54 +2092,109 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
             ):
                 report_files.append(file_in_dir)
 
+    # Una finalizzazione ripetuta di un torneo gia' archiviato: l'archivio ha
+    # il json della stessa edizione, e almeno un giocatore aveva gia' la voce
+    # nello storico, quindi non ha ricevuto niente. Il json in archivio
+    # contiene i valori che il database ha ricevuto la prima volta, e resta
+    # com'e': quello nuovo li ricalcola sul database gia' aggiornato, per
+    # esempio con un K diverso, e se sostituisse l'archivio lo storno dei
+    # valori applicati non avrebbe piu' da dove prenderli. I file nuovi vanno
+    # nella cartella backup, cosi' non restano nella radice.
+    if (
+        gia_registrati
+        and local_json_path
+        and json_gia_in_archivio
+        and not gia_al_suo_posto
+        and not _stessi_byte(local_json_path, destination_json)
+    ):
+        avvisa(
+            _(
+                "Il torneo {name} era già finalizzato e archiviato in {path}, con i valori che il database dei giocatori ha ricevuto allora: l'archivio resta com'era, e questa finalizzazione non lo sostituisce. Se il torneo aveva risultati diversi, il database e l'archivio non li hanno ricevuti. I file che ha prodotto nella cartella del programma sono stati messi nella cartella backup, con rifinalizzazione nel nome; quelli della cartella di lavoro esterna, se ne hai scelta una, restano dove sono."
+            ).format(name=tournament_name_original, path=full_archive_path)
+        )
+        da_mettere_da_parte = [] if copia_di_lavoro else [local_json_path]
+        if not conserva_originali:
+            da_mettere_da_parte += report_files
+        for percorso in da_mettere_da_parte:
+            _metti_da_parte(percorso, avvisa)
+        if db_updated_count > 0:
+            avvisa(
+                _(
+                    "Il database ha però ricevuto questa finalizzazione per {count} giocatori, che non avevano il torneo nello storico: per loro l'archivio non coincide con il database."
+                ).format(count=db_updated_count)
+            )
+        print(
+            _("Torneo '{name}' finalizzato e archiviato.").format(
+                name=tournament_name_original
+            )
+        )
+        play_sound("conclusione_torneo", torneo)
+        return True
+
     moved_files_count = 0
-    # Processa e copia/sposta i report di testo
+    # Processa e copia/sposta i report di testo. Passano dalla stessa copia
+    # riletta del json: fino alla 10.8.8 un report gia' presente in archivio
+    # non veniva sostituito, e senza cartella esterna quello nuovo restava
+    # per sempre nella radice, mentre l'archivio mescolava il json nuovo con
+    # i report vecchi.
     for filepath in report_files:
         try:
             filename_only = os.path.basename(filepath)
             destination_path = os.path.join(full_archive_path, filename_only)
-            if os.path.exists(destination_path):
-                print(
-                    _(
-                        " Warning: File '{filename}' esiste già in '{path}'. Non verrà sovrascritto."
-                    ).format(filename=filename_only, path=full_archive_path)
-                )
-                continue
-            if conserva_originali:
-                shutil.copy2(
-                    filepath, destination_path
-                )  # Copia in archivio lasciando l'originale nella cartella scelta
-            else:
-                shutil.move(
-                    filepath, destination_path
-                )  # Sposta direttamente in archivio
-            moved_files_count += 1
+            if _copia_verificata(filepath, destination_path, avvisa):
+                moved_files_count += 1
+                if not conserva_originali:
+                    # Sposta: l'originale se ne va solo dopo la copia riletta.
+                    os.remove(filepath)
         except Exception as e_move:
             print(
                 f"  Errore durante lo spostamento di '{os.path.basename(filepath)}': {e_move}"
             )
 
     # Processa e archivia il file JSON locale
+    archiviato = True
     if local_json_path:
         try:
-            json_filename_only = os.path.basename(local_json_path)
-            destination_path = os.path.join(full_archive_path, json_filename_only)
-            if not os.path.exists(destination_path):
-                shutil.copy2(local_json_path, destination_path)
+            archiviato = gia_al_suo_posto or _copia_verificata(
+                local_json_path, destination_json, avvisa
+            )
+            if archiviato and not gia_al_suo_posto:
                 moved_files_count += 1
 
             # Se l'utente ha una cartella personalizzata, salva una copia del JSON concluso anche lì
-            if conserva_originali:
-                custom_json_dest = os.path.join(custom_path, json_filename_only)
-                if not os.path.exists(custom_json_dest):
-                    shutil.copy2(local_json_path, custom_json_dest)
+            if conserva_originali and not copia_di_lavoro:
+                _copia_verificata(local_json_path, custom_json_dest, avvisa)
 
-            # Elimina il file JSON attivo locale
-            os.remove(local_json_path)
+            # Il file JSON attivo si toglie solo quando la copia in archivio
+            # e' stata riletta ed e' uguale: fino alla 10.8.8 si cancellava
+            # comunque, anche quando in archivio non era stato copiato niente.
+            # La copia nella cartella esterna non conta: se non riesce, lo
+            # dicono i suoi avvisi.
+            if archiviato and not (gia_al_suo_posto or copia_di_lavoro):
+                os.remove(local_json_path)
+            elif not archiviato:
+                avvisa(
+                    _(
+                        "Il file del torneo resta in {path}: la sua copia in archivio non è verificata, e senza quella il file non si toglie. Il torneo è concluso e il database dei giocatori lo contiene già, ma l'archiviazione non è completa: risolto il problema, per completarla sposta a mano quel file nella cartella {folder}."
+                    ).format(path=local_json_path, folder=full_archive_path)
+                )
         except Exception as e_json:
-            print(
-                f"  Errore durante l'archiviazione del file JSON '{os.path.basename(local_json_path)}': {e_json}"
+            archiviato = False
+            avvisa(
+                _("Errore durante l'archiviazione del file JSON '{name}': {error}").format(
+                    name=os.path.basename(local_json_path), error=e_json
+                )
             )
+
+    # Senza una finalizzazione gia' archiviata con cui confrontarsi, i valori
+    # di chi aveva gia' il torneo nello storico sono ricalcolati sul database
+    # che li contiene gia', e possono non essere quelli che ha ricevuto.
+    if gia_registrati and not json_gia_in_archivio:
+        avvisa(
+            _(
+                "Per i giocatori che avevano già questo torneo nello storico, le variazioni Elo scritte nel file archiviato sono ricalcolate adesso, e possono non coincidere con quelle che il database ha ricevuto la prima volta."
+            )
+        )
 
     if moved_files_count > 0:
         print(
@@ -1856,6 +2204,11 @@ def finalize_tournament(torneo, players_db, current_tournament_filename):
         )
     else:
         print(_("Nessun file del torneo è stato spostato nella cartella di archivio."))
+    # Un torneo il cui json non ha raggiunto l'archivio non e' archiviato, e
+    # la finestra non deve dirlo: fino alla 10.8.8 si rispondeva vero lo
+    # stesso.
+    if not archiviato:
+        return False
     print(
         _("Torneo '{name}' finalizzato e archiviato.").format(
             name=tournament_name_original

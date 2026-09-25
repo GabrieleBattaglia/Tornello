@@ -220,7 +220,7 @@ class TestRilevatoreAutomatico:
         (tmp_path / "backup" / "2022" / "03 Marzo").mkdir(parents=True)
         return antico
 
-    def _telaio(self, monkeypatch, risposta):
+    def _telaio(self, monkeypatch, risposta, impostazioni=None):
         import wx
 
         from gui import main_frame as mf
@@ -240,7 +240,8 @@ class TestRilevatoreAutomatico:
         monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
 
         class TelaioFinto:
-            settings = {}
+            def __init__(self):
+                self.settings = {} if impostazioni is None else impostazioni
 
             def on_backup_cleanup(self, event):
                 registro["pulizia_aperta"] = True
@@ -272,20 +273,197 @@ class TestRilevatoreAutomatico:
 
         assert registro["pulizia_aperta"] is True
 
-    def test_rispondendo_di_no_le_date_vengono_aggiornate(self, tmp_path, monkeypatch):
+    def test_rispondendo_di_no_il_rinvio_va_nelle_impostazioni(
+        self, tmp_path, monkeypatch
+    ):
+        """Fino alla 10.8.10 il No portava a oggi la data di modifica dei
+        file vecchi, e le copie perdevano la loro eta'. Adesso i file restano
+        come sono, e nelle impostazioni, salvate su disco, resta la data fino
+        alla quale l'avviso non torna."""
         import time
+        from datetime import datetime, timedelta
 
         import wx
 
         from gui import main_frame as mf
+        from gui import settings as modulo_impostazioni
 
         antico = self._prepara(tmp_path, monkeypatch)
+        assert modulo_impostazioni.SETTINGS_FILE.startswith(str(tmp_path))
         telaio, _registro, _wx = self._telaio(monkeypatch, wx.ID_NO)
 
         mf.MainFrame._check_backup_on_startup(telaio)
 
         eta_in_giorni = (time.time() - os.path.getmtime(str(antico))) / 86400
-        assert eta_in_giorni < 1
+        assert eta_in_giorni > 899
+        rinvio = datetime.strptime(telaio.settings[mf.RINVIO_AVVISO_BACKUP], "%Y-%m-%d")
+        assert rinvio > datetime.now() + timedelta(days=540)
+        with open(modulo_impostazioni.SETTINGS_FILE, encoding="utf-8") as f:
+            salvate = f.read()
+        assert telaio.settings[mf.RINVIO_AVVISO_BACKUP] in salvate
+
+    def test_il_no_non_cambia_la_lingua_del_programma(self, tmp_path, monkeypatch):
+        """Chi non ha mai salvato le Preferenze ha le impostazioni di
+        fabbrica, con la lingua italiana, mentre selected_language.json ha la
+        lingua del sistema, scritta da config al primo avvio. Salvare il
+        rinvio con save_settings riportava all'italiano un programma inglese:
+        sul disco va la sola chiave del rinvio."""
+        import json
+
+        import wx
+
+        from gui import main_frame as mf
+        from gui import settings as modulo_impostazioni
+
+        self._prepara(tmp_path, monkeypatch)
+        lingua = tmp_path / "selected_language.json"
+        lingua.write_text(
+            json.dumps({"language_code": "en", "available_languages": ["en", "it"]}),
+            encoding="utf-8",
+        )
+        assert not os.path.exists(modulo_impostazioni.SETTINGS_FILE)
+        telaio, _registro, _wx = self._telaio(
+            monkeypatch, wx.ID_NO, modulo_impostazioni.load_settings()
+        )
+        assert telaio.settings["language"] == "it"
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        assert json.loads(lingua.read_text(encoding="utf-8"))["language_code"] == "en"
+        with open(modulo_impostazioni.SETTINGS_FILE, encoding="utf-8") as f:
+            salvate = json.load(f)
+        assert salvate == {
+            mf.RINVIO_AVVISO_BACKUP: telaio.settings[mf.RINVIO_AVVISO_BACKUP]
+        }
+
+    def test_le_preferenze_salvate_dopo_tengono_il_rinvio(self, tmp_path, monkeypatch):
+        """Le Preferenze conoscono solo le chiavi che mostrano: salvandole,
+        il rinvio spariva dal file, e l'avviso tornava al primo avvio."""
+        import json
+
+        import wx
+
+        from gui import main_frame as mf
+        from gui import settings as modulo_impostazioni
+
+        self._prepara(tmp_path, monkeypatch)
+        telaio, _registro, _wx = self._telaio(
+            monkeypatch, wx.ID_NO, modulo_impostazioni.load_settings()
+        )
+        mf.MainFrame._check_backup_on_startup(telaio)
+        rinvio = telaio.settings[mf.RINVIO_AVVISO_BACKUP]
+
+        scelte = dict(modulo_impostazioni.DEFAULT_SETTINGS, volume=80)
+
+        class PreferenzeFinte:
+            def __init__(self, parent, settings):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def get_settings(self):
+                return dict(scelte)
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(mf, "VisualSettingsDialog", PreferenzeFinte)
+        telaio.apply_theme = lambda: None
+        telaio.set_status = lambda testo: None
+
+        mf.MainFrame.on_preferences(telaio, None)
+
+        assert telaio.settings[mf.RINVIO_AVVISO_BACKUP] == rinvio
+        assert telaio.settings["volume"] == 80
+        with open(modulo_impostazioni.SETTINGS_FILE, encoding="utf-8") as f:
+            salvate = json.load(f)
+        assert salvate[mf.RINVIO_AVVISO_BACKUP] == rinvio
+        assert salvate["volume"] == 80
+
+    def test_un_file_di_impostazioni_illeggibile_non_si_riscrive(self, tmp_path):
+        """Riscrivere un file che non si legge ne perderebbe il contenuto: il
+        rinvio non si salva, e l'avviso torna al prossimo avvio."""
+        from gui import settings as modulo_impostazioni
+
+        assert modulo_impostazioni.SETTINGS_FILE.startswith(str(tmp_path))
+        with open(modulo_impostazioni.SETTINGS_FILE, "w", encoding="utf-8") as f:
+            f.write("{rovinato")
+
+        assert modulo_impostazioni.salva_impostazione("chiave", "valore") is False
+
+        with open(modulo_impostazioni.SETTINGS_FILE, encoding="utf-8") as f:
+            assert f.read() == "{rovinato"
+
+    def test_durante_il_rinvio_l_avviso_tace(self, tmp_path, monkeypatch):
+        import wx
+
+        from gui import main_frame as mf
+
+        self._prepara(tmp_path, monkeypatch)
+        telaio, registro, _wx = self._telaio(
+            monkeypatch, wx.ID_NO, {mf.RINVIO_AVVISO_BACKUP: "2999-01-01"}
+        )
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        assert registro["messaggio"] is None
+
+    def test_un_rinvio_scaduto_o_illeggibile_non_ferma_l_avviso(
+        self, tmp_path, monkeypatch
+    ):
+        import wx
+
+        from gui import main_frame as mf
+
+        self._prepara(tmp_path, monkeypatch)
+        for rinvio in ("2020-01-01", "domani"):
+            telaio, registro, _wx = self._telaio(
+                monkeypatch, wx.ID_YES, {mf.RINVIO_AVVISO_BACKUP: rinvio}
+            )
+
+            mf.MainFrame._check_backup_on_startup(telaio)
+
+            assert registro["messaggio"] is not None, rinvio
+
+    def test_conta_la_data_nel_nome_non_quella_di_modifica(
+        self, tmp_path, monkeypatch
+    ):
+        """Una copia fatta ieri di un file vecchio ha la data di modifica
+        vecchia, perche' shutil.copy2 la conserva: non e' da pulire. Una
+        copia nata tre anni fa lo e', anche se qualcuno ne ha cambiato la
+        data di modifica."""
+        import shutil
+        import time
+        from datetime import datetime, timedelta
+
+        import wx
+
+        from gui import main_frame as mf
+
+        self._prepara(tmp_path, monkeypatch)
+        shutil.rmtree(tmp_path / "backup" / "2023")
+        recente = tmp_path / "backup" / "2026" / "09 Settembre"
+        ieri = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d_%H%M%S")
+        di_ieri = recente / f"Tornello - Players_db_chiusura_db_{ieri}.json"
+        di_ieri.write_text("{}", encoding="utf-8")
+        quando = time.time() - 900 * 86400
+        os.utime(di_ieri, (quando, quando))
+        telaio, registro, _wx = self._telaio(monkeypatch, wx.ID_NO)
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        assert registro["messaggio"] is None
+
+        vecchia = tmp_path / "backup" / "2023" / "05 Maggio"
+        vecchia.mkdir(parents=True)
+        (vecchia / "Tornello - Antico_pre_rollback_20230510_090000.json").write_text(
+            "{}", encoding="utf-8"
+        )
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        assert registro["messaggio"] is not None
 
     def test_le_cartelle_vuote_spariscono(self, tmp_path, monkeypatch):
         import wx
@@ -475,3 +653,221 @@ class TestSelezioneMultipla:
         finally:
             finestra.Destroy()
             telaio.Destroy()
+
+
+class TestDataDellaCopia:
+    """L'eta' di una copia di sicurezza si legge dalla data che
+    create_backup scrive nel nome. La data di modifica e' quella
+    dell'originale, perche' shutil.copy2 la conserva: le copie di chiusura
+    del database fatte il 23 settembre 2026 risultavano del 13 (issue 39)."""
+
+    def _copia(self, cartella, nome, giorni_fa=0):
+        import time
+
+        cartella.mkdir(parents=True, exist_ok=True)
+        percorso = cartella / nome
+        percorso.write_text("{}", encoding="utf-8")
+        if giorni_fa:
+            quando = time.time() - giorni_fa * 86400
+            os.utime(percorso, (quando, quando))
+        return percorso
+
+    def test_la_data_nel_nome_prevale_su_quella_di_modifica(self, tmp_path):
+        from utils import data_della_copia
+
+        copia = self._copia(
+            tmp_path, "Tornello - Players_db_chiusura_db_20250101_120000.json"
+        )
+
+        assert data_della_copia(str(copia)) == datetime(2025, 1, 1, 12, 0, 0)
+
+    def test_il_suffisso_delle_copie_nate_nello_stesso_secondo(self, tmp_path):
+        from utils import data_della_copia
+
+        copia = self._copia(
+            tmp_path, "Tornello - Autunneo2_chiusura_torneo_20260923_160512_2.json"
+        )
+
+        assert data_della_copia(str(copia)) == datetime(2026, 9, 23, 16, 5, 12)
+
+    def test_senza_data_nel_nome_si_ripiega_sulla_modifica(self, tmp_path):
+        from utils import data_della_copia
+
+        senza = self._copia(tmp_path, "Tornello - Vecchio.json", giorni_fa=100)
+        impossibile = self._copia(
+            tmp_path, "Tornello - Rotto_pre_rollback_20261399_250000.json", giorni_fa=100
+        )
+
+        for percorso in (senza, impossibile):
+            attesa = datetime.fromtimestamp(os.path.getmtime(str(percorso)))
+            assert data_della_copia(str(percorso)) == attesa
+
+    def test_l_elenco_usa_la_data_del_nome(self, tmp_path):
+        from datetime import timedelta
+
+        from utils import elenca_file_di_backup
+
+        mese = tmp_path / "2026" / "09 Settembre"
+        oggi = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self._copia(mese, f"Tornello - Players_db_chiusura_db_{oggi}.json", giorni_fa=900)
+        self._copia(mese, "Tornello - Antico_pre_rollback_20200101_080000.json")
+        limite = datetime.now() - timedelta(days=548)
+
+        tutti, vecchi = elenca_file_di_backup(str(tmp_path), limite)
+
+        assert [f["name"] for f in vecchi] == [
+            "Tornello - Antico_pre_rollback_20200101_080000.json"
+        ]
+        assert tutti[0]["data"] == datetime(2020, 1, 1, 8, 0, 0)
+
+    def test_l_indicatore_bk_usa_la_data_del_nome(self, tmp_path):
+        from gui import main_frame as mf
+
+        mese = tmp_path / "backup" / "2026" / "09 Settembre"
+        self._copia(mese, "Tornello - Players_db_chiusura_db_20260923_101500.json", giorni_fa=400)
+
+        assert mf.MainFrame._data_backup_piu_vecchio() == datetime(2026, 9, 23, 10, 15, 0)
+
+    def test_la_finestra_mostra_la_data_della_copia(self, tmp_path, app_grafica):
+        import wx
+
+        from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+
+        mese = tmp_path / "backup" / "2025" / "01 Gennaio"
+        self._copia(mese, "Tornello - Prova_pre_prova_20250101_120000.json")
+        telaio = wx.Frame(None)
+        finestra = BackupCleanupDialog(telaio, {})
+        try:
+            assert finestra.list_ctrl.GetItemText(0, 1) == "2025-01-01 12:00:00"
+        finally:
+            finestra.Destroy()
+            telaio.Destroy()
+
+
+class TestCopieMaiSovrascritte:
+    """Due copie dello stesso file e dello stesso contesto nello stesso
+    secondo avevano lo stesso nome, e la seconda cancellava la prima. Succedeva
+    alle due pre_finalize_db della console. Dalla 10.8.11 la seconda prende il
+    suffisso _2, la terza _3."""
+
+    def test_la_stessa_copia_nello_stesso_secondo_prende_un_suffisso(
+        self, tmp_path, monkeypatch
+    ):
+        import types
+        from datetime import datetime as vera_datetime
+
+        import utils
+
+        class Fermo(vera_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return cls(2026, 9, 25, 10, 0, 0)
+
+        monkeypatch.setattr(utils, "datetime", types.SimpleNamespace(datetime=Fermo))
+        origine = tmp_path / "Tornello - Prova.json"
+        for contenuto in ("uno", "due", "tre"):
+            origine.write_text(contenuto, encoding="utf-8")
+            assert utils.create_backup(str(origine), "pre_prova") is True
+
+        cartella = utils.cartella_per_data(
+            str(tmp_path / "backup"), Fermo.now(), crea=False
+        )
+        base = "Tornello - Prova_pre_prova_20260925_100000"
+        attese = {
+            f"{base}.json": "uno",
+            f"{base}_2.json": "due",
+            f"{base}_3.json": "tre",
+        }
+        assert sorted(os.listdir(cartella)) == sorted(attese)
+        for nome, contenuto in attese.items():
+            with open(os.path.join(cartella, nome), encoding="utf-8") as f:
+                assert f.read() == contenuto
+        assert utils.data_della_copia(os.path.join(cartella, f"{base}_3.json")) == Fermo.now()
+
+
+class TestAperturaDentroBackup:
+    """Apri torneo su una copia di sicurezza la rendeva il file attivo: ogni
+    salvataggio la modificava, e riscriveva i report del torneo vero con lo
+    stato vecchio. Dalla 10.8.12 Tornello la rifiuta e spiega perche'."""
+
+    def test_riconosce_i_file_dentro_la_cartella(self, tmp_path):
+        from utils import dentro_la_cartella
+
+        backup = tmp_path / "backup"
+        dentro = backup / "2026" / "09 Settembre" / "Tornello - X_chiusura_torneo_20260923_160512.json"
+        dentro.parent.mkdir(parents=True)
+        dentro.write_text("{}", encoding="utf-8")
+        vicina = tmp_path / "backup2" / "Tornello - X.json"
+        vicina.parent.mkdir()
+        vicina.write_text("{}", encoding="utf-8")
+
+        assert dentro_la_cartella(str(dentro), str(backup)) is True
+        assert dentro_la_cartella(str(dentro).upper(), str(backup)) is True
+        assert dentro_la_cartella(str(tmp_path / "Tornello - X.json"), str(backup)) is False
+        assert dentro_la_cartella(str(vicina), str(backup)) is False
+        assert dentro_la_cartella(str(backup), str(backup)) is False
+        assert dentro_la_cartella("", str(backup)) is False
+
+    def _apri(self, monkeypatch, scelto):
+        import types
+
+        import wx
+
+        import utils
+        from gui import main_frame as mf
+
+        registro = {"messaggio": None, "caricato": None, "suoni": []}
+
+        class SceltaFinta:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetPath(self):
+                return scelto
+
+            def Destroy(self):
+                pass
+
+        class DialogoFinto:
+            def __init__(self, parent, titolo, messaggio, style=None, settings=None):
+                registro["messaggio"] = messaggio
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(mf.wx, "FileDialog", SceltaFinta)
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
+        monkeypatch.setattr(utils, "play_sound", lambda nome, *a, **k: registro["suoni"].append(nome))
+        telaio = types.SimpleNamespace(
+            settings={},
+            load_tournament=lambda percorso: registro.update(caricato=percorso),
+        )
+        mf.MainFrame.on_open_tournament(telaio, None)
+        return registro
+
+    def test_una_copia_di_sicurezza_non_si_apre(self, tmp_path, monkeypatch):
+        copia = tmp_path / "backup" / "2026" / "09 Settembre" / "Tornello - X_chiusura_torneo_20260923_160512.json"
+        copia.parent.mkdir(parents=True)
+        copia.write_text("{}", encoding="utf-8")
+
+        registro = self._apri(monkeypatch, str(copia))
+
+        assert registro["caricato"] is None
+        assert copia.name in registro["messaggio"]
+        assert registro["suoni"] == ["errore"]
+        assert copia.read_text(encoding="utf-8") == "{}"
+
+    def test_un_torneo_fuori_dalla_cartella_si_apre(self, tmp_path, monkeypatch):
+        torneo = tmp_path / "Tornello - X.json"
+        torneo.write_text("{}", encoding="utf-8")
+
+        registro = self._apri(monkeypatch, str(torneo))
+
+        assert registro["caricato"] == str(torneo)
+        assert registro["messaggio"] is None

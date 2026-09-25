@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from config import (
     DATE_FORMAT_ISO,
-    DEFAULT_ELO,
     DEFAULT_K_FACTOR,
     FIDE_DB_JSON_LEGACY,
     FIDE_DB_LOCAL_FILE,
@@ -47,7 +46,6 @@ from tournament import (
     time_machine_torneo,
 )
 from utils import (
-    create_backup,
     format_date_locale,
     parse_flexible_date,
     sanitize_filename,
@@ -989,24 +987,10 @@ class TournamentController:
         if not self.tournament:
             return False
 
-        # Creazione backup
-        self.ui.show_message(
-            _("Creazione backup di sicurezza prima dell'archiviazione...")
-        )
-        backup_db_ok = create_backup(PLAYER_DB_FILE, "pre_finalize_db")
-        backup_torneo_ok = True
-        if self.active_filename and os.path.exists(self.active_filename):
-            backup_torneo_ok = create_backup(
-                self.active_filename, "pre_finalize_torneo"
-            )
-
-        if not backup_db_ok or not backup_torneo_ok:
-            self.ui.show_message(
-                _(
-                    "ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo ugualmente..."
-                )
-            )
-
+        # Le copie di sicurezza pre_finalize_db e pre_finalize_torneo le fa
+        # ui.finalize_tournament, chiamata in fondo, prima di toccare il
+        # database. Fino alla 10.8.9 le faceva anche questa funzione, e la
+        # seconda pre_finalize_db nasceva quando gli Elo erano gia' scritti.
         self.tournament.update_players_dict()
         if not self.tournament.players:
             self.ui.show_error(
@@ -1112,33 +1096,14 @@ class TournamentController:
         self.tournament.players = players_sorted
         self.tournament.update_players_dict()
 
-        # Update players database
-        # ... logic to save to players_db
-        from db_players import save_players_db
-
-        # finalizza database
-        for p in self.tournament.players:
-            if p.withdrawn or p.final_rank is None:
-                continue
-            if p.id in self.players_db:
-                local_p = self.players_db[p.id]
-                category_lower = self.tournament.tournament_category.lower()
-                change = p.elo_change if p.elo_change is not None else 0.0
-
-                if category_lower == "blitz":
-                    old_elo = local_p.get("elo_blitz", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["elo_blitz"] = max(100.0, old_elo + change)
-                elif category_lower == "rapid":
-                    old_elo = local_p.get("elo_rapid", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["elo_rapid"] = max(100.0, old_elo + change)
-                else:
-                    old_elo = local_p.get("current_elo", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["current_elo"] = max(100.0, old_elo + change)
-
-                local_p["games_played"] = (
-                    local_p.get("games_played", 0) + p.games_this_tournament
-                )
-        save_players_db(self.players_db)
+        # Elo, partite, storico e medaglie li scrive nel database soltanto
+        # ui.finalize_tournament, come nella finestra. Fino alla 10.8.9 qui
+        # c'era un primo aggiornamento di Elo e partite, salvato su disco, e
+        # poi ui.finalize_tournament li sommava una seconda volta: in console
+        # ogni giocatore riceveva le partite due volte, e due volte la
+        # variazione Elo, nei tornei standard tutte e due sull'Elo principale,
+        # nei rapid e nei blitz una su quello della cadenza e una sul
+        # principale.
 
         # Archiviazione
         # Richiama la finalizzazione/archiviazione dei report

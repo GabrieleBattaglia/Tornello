@@ -7,7 +7,7 @@ import wx
 from GBwx import dentro_area_utile
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
-from gui.settings import apply_visual_settings, save_settings
+from gui.settings import apply_visual_settings, salva_impostazione, save_settings
 from version import __authors__, __date__, __version__
 
 _ = getattr(builtins, "_", lambda s: s)
@@ -27,6 +27,10 @@ SEZIONE_DEGLI_ACRONIMI = "2.3.1"
 # Ogni quanto riprovano la proposta di aggiornamento, i suoi esiti e le
 # domande dell'avvio quando li trovano con un dialogo aperto (issue 37).
 RIPROVA_A_FINESTRA_LIBERA_MS = 1000
+
+# La chiave delle impostazioni con la data, nel formato AAAA-MM-GG, fino alla
+# quale l'avviso di avvio sulle copie di sicurezza vecchie resta rinviato.
+RINVIO_AVVISO_BACKUP = "backup_check_postponed_until"
 
 
 def _cartella_predefinita_tornei():
@@ -555,16 +559,18 @@ class MainFrame(wx.Frame):
 
     @staticmethod
     def _data_backup_piu_vecchio():
-        """Data di modifica del backup piu' vecchio; None se non ce ne sono.
+        """Data del backup piu' vecchio; None se non ce ne sono.
         Fino alla 10.4.1 restituiva l'eta' in giorni interi: dalla 10.4.2 il
-        conto lo fa indicatori_pie_di_pagina, in secondi."""
+        conto lo fa indicatori_pie_di_pagina, in secondi. Dalla 10.8.11 e' la
+        data in cui la copia e' nata, letta dal nome del file, e non piu'
+        quella di modifica, che la copia eredita dall'originale."""
         from config import user_data_path
         from utils import elenca_file_di_backup
 
         tutti, _vecchi = elenca_file_di_backup(user_data_path("backup"))
         if not tutti:
             return None
-        return min(f["mtime"] for f in tutti)
+        return min(f["data"] for f in tutti)
 
     @staticmethod
     def _data_database_fide():
@@ -959,7 +965,9 @@ class MainFrame(wx.Frame):
         if not os.path.exists(backup_dir):
             return
 
-        from datetime import datetime
+        from datetime import datetime, timedelta
+
+        from config import DATE_FORMAT_ISO
 
         try:
             from dateutil.relativedelta import relativedelta
@@ -969,29 +977,42 @@ class MainFrame(wx.Frame):
             has_dateutil = False
 
         today = datetime.now()
-        if has_dateutil:
-            limit_date = today - relativedelta(months=18)
-        else:
-            limit_date = today - datetime.timedelta(days=548)  # ~18 mesi
+        # Fino alla 10.8.10 il ripiego senza dateutil era datetime.timedelta,
+        # che sulla classe datetime non esiste, e il controllo si fermava.
+        diciotto_mesi = relativedelta(months=18) if has_dateutil else timedelta(days=548)
+        limit_date = today - diciotto_mesi
 
         # Stessa lettura della finestra di pulizia, e come li' si tolgono
         # prima le cartelle dell'anno e del mese rimaste vuote.
         from utils import elenca_file_di_backup, rimuovi_cartelle_vuote
 
         rimuovi_cartelle_vuote(backup_dir)
-        _tutti, vecchi = elenca_file_di_backup(backup_dir, limit_date)
-        old_files = [(f["path"], f["mtime"]) for f in vecchi]
 
-        if not old_files:
+        # Il No di un avvio precedente rinvia l'avviso di 18 mesi. Fino alla
+        # 10.8.10 il rinvio si otteneva portando a oggi la data di modifica
+        # dei file vecchi: le copie cambiavano data, e la loro eta' non si
+        # poteva piu' ricostruire. Adesso la data sta nelle impostazioni e i
+        # file restano come sono; una data illeggibile non rinvia niente.
+        impostazioni = self.settings
+        rinvio = impostazioni.get(RINVIO_AVVISO_BACKUP) if impostazioni else None
+        if rinvio:
+            try:
+                if today.date() < datetime.strptime(rinvio, DATE_FORMAT_ISO).date():
+                    return
+            except (TypeError, ValueError):
+                pass
+
+        _tutti, vecchi = elenca_file_di_backup(backup_dir, limit_date)
+        if not vecchi:
             return
 
-        old_count = len(old_files)
+        old_count = len(vecchi)
         msg = _(
             "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
             "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
             "Vuoi aprire la finestra di pulizia dei backup adesso?\n\n"
-            "Nota: Scegliendo 'No', la data di modifica di questi file verrà aggiornata a oggi "
-            "e non ti verrà riproposto questo controllo per altri 18 mesi."
+            "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
+            "e i file restano come sono."
         ).format(count=old_count)
 
         dlg = AccessibleMsgDialog(
@@ -1003,13 +1024,20 @@ class MainFrame(wx.Frame):
         if res == wx.ID_YES:
             # Mostra la finestra di pulizia
             self.on_backup_cleanup(None)
-        else:
-            # Aggiorna mtime a oggi per non riproporlo
-            for filepath, _discard in old_files:
-                try:
-                    os.utime(filepath, None)  # imposta mtime e atime a oggi/ora
-                except Exception:
-                    pass
+        elif impostazioni is not None:
+            impostazioni[RINVIO_AVVISO_BACKUP] = (today + diciotto_mesi).strftime(
+                DATE_FORMAT_ISO
+            )
+            # Sul disco va la sola chiave del rinvio. save_settings riscrive
+            # anche selected_language.json con la lingua delle impostazioni:
+            # a chi non ha mai salvato le Preferenze avrebbe rimesso
+            # l'italiano dei valori di fabbrica al posto della lingua del
+            # sistema. salva_impostazione scrive gia' in error.log il motivo
+            # di un salvataggio mancato: in quel caso l'avviso torna al
+            # prossimo avvio, che e' il male minore.
+            salva_impostazione(
+                RINVIO_AVVISO_BACKUP, impostazioni[RINVIO_AVVISO_BACKUP]
+            )
 
     def _scan_and_load_initial_tournament(self):
         """Scansiona i file torneo in corso ed effettua il caricamento automatico se ce n'è solo uno."""
@@ -3799,7 +3827,10 @@ class MainFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             new_settings = dlg.get_settings()
             new_lang = new_settings.get("language", "it")
-            self.settings = new_settings
+            # Le Preferenze conoscono solo le chiavi che mostrano: le altre,
+            # come il rinvio dell'avviso sulle copie di sicurezza vecchie,
+            # restano quelle di prima invece di sparire dal file.
+            self.settings = {**self.settings, **new_settings}
             salvate = save_settings(self.settings)
             self.apply_theme()
             if salvate:
@@ -4047,9 +4078,32 @@ class MainFrame(wx.Frame):
             wildcard="JSON files (*.json)|*.json",
             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
         )
-        if dlg.ShowModal() == wx.ID_OK:
-            self.load_tournament(dlg.GetPath())
+        scelto = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
         dlg.Destroy()
+        if not scelto:
+            return
+        # Una copia di sicurezza aperta come torneo diventava il file attivo:
+        # ogni salvataggio la modificava sul posto, e rigenerava classifica,
+        # turni e raccolta delle partite del torneo vero con lo stato vecchio
+        # della copia. Fino alla 10.8.11 Tornello la apriva senza dire niente.
+        from utils import dentro_la_cartella, play_sound
+
+        if dentro_la_cartella(scelto, user_data_path("backup")):
+            play_sound("errore")
+            dlg_rifiuto = AccessibleMsgDialog(
+                self,
+                _("Copia di sicurezza"),
+                _(
+                    "Il file {name} è una copia di sicurezza: sta nella cartella backup, e Tornello non lo apre come torneo.\n"
+                    "Aperto così, verrebbe modificato a ogni salvataggio, e classifica, turni e raccolta delle partite del torneo verrebbero riscritti con lo stato vecchio della copia.\n"
+                    "Le copie di sicurezza si useranno dalla finestra delle copie di sicurezza."
+                ).format(name=os.path.basename(scelto)),
+                settings=self.settings,
+            )
+            dlg_rifiuto.ShowModal()
+            dlg_rifiuto.Destroy()
+            return
+        self.load_tournament(scelto)
 
     def on_enroll_players(self, event):
         if not self.current_tournament:
@@ -4169,6 +4223,27 @@ class MainFrame(wx.Frame):
                 )
         dlg.Destroy()
 
+    @staticmethod
+    def _esito_della_finalizzazione(riuscita, avvisi):
+        """Titolo e testo della finestra che chiude la finalizzazione, oppure
+        None quando basta il messaggio di successo, cioe' quando la
+        finalizzazione e' riuscita e non ha niente da segnalare.
+        Con degli avvisi il messaggio di successo non compare: diceva i
+        giocatori aggiornati anche quando nessuno lo era, e arrivava a NVDA
+        prima degli avvisi che lo smentivano. La prima riga dice com'e' andata,
+        le altre sono gli avvisi."""
+        if riuscita and not avvisi:
+            return None
+        if riuscita:
+            apertura = _(
+                "Il torneo è concluso e archiviato, ma non tutto è andato come al solito: leggi gli avvisi qui sotto."
+            )
+        else:
+            apertura = _(
+                "La finalizzazione non è andata fino in fondo: gli avvisi qui sotto dicono che cosa è stato fatto e che cosa no."
+            )
+        return _("Avvisi della finalizzazione"), "\n".join([apertura, *avvisi])
+
     def on_finalize_tournament(self, event):
         if not self.current_tournament:
             wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
@@ -4233,10 +4308,16 @@ class MainFrame(wx.Frame):
 
             from ui import finalize_tournament
 
+            # Gli avvisi che la finalizzazione stampa in console, qui
+            # altrimenti invisibili: giocatori che avevano gia' il torneo
+            # nello storico, copie di sicurezza non riuscite, file del torneo
+            # rimasto al suo posto perche' la copia in archivio non torna.
+            avvisi = []
             success = finalize_tournament(
-                self.current_tournament, players_db, self.active_filename
+                self.current_tournament, players_db, self.active_filename, avvisi
             )
-            if success:
+            esito = self._esito_della_finalizzazione(success, avvisi)
+            if esito is None:
                 wx.MessageBox(
                     _(
                         "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."
@@ -4244,6 +4325,14 @@ class MainFrame(wx.Frame):
                     _("Successo"),
                     wx.ICON_INFORMATION,
                 )
+            else:
+                titolo, testo = esito
+                dlg_avvisi = AccessibleMsgDialog(
+                    self, titolo, testo, settings=self.settings
+                )
+                dlg_avvisi.ShowModal()
+                dlg_avvisi.Destroy()
+            if success:
                 self.current_tournament = None
                 self.active_filename = None
                 # Dopo la finestra di conferma il focus resterebbe nel vuoto:

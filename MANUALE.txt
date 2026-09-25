@@ -60,7 +60,7 @@ Terza riga, gli esiti e la manutenzione, con VB, PA, VN e FB nel primo blocco e 
 - VB, PA e VN: vittorie del bianco, patte e vittorie del nero, sulle partite decise, bye esclusi.
 - FB e FN: vittorie a forfeit del bianco e del nero, sulle stesse partite.
 - PB, punteggio del bianco: vittorie del bianco più mezzo punto per ogni patta, sulle partite giocate sulla scacchiera. Sopra il 50% il bianco sta rendendo più del nero.
-- BK, backup: l'età della copia di sicurezza più vecchia rispetto ai 18 mesi, cioè 548 giorni. Al 100% è ora di aprire la pulizia dei backup dal menu File.
+- BK, backup: l'età della copia di sicurezza più vecchia rispetto ai 18 mesi, cioè 548 giorni. L'età si conta dal momento in cui la copia è nata, scritto nel nome del file (sezione 10.4). Al 100% è ora di aprire la pulizia dei backup dal menu File.
 - FD, database FIDE: l'età del database FIDE locale, dall'ultimo aggiornamento, rispetto ai 30 giorni. Al 100% è ora di aggiornarlo.
 GT, TT, BK e FD contano il tempo in secondi: i valori crescono durante la giornata, un decimo alla volta, invece di restare fermi e saltare a mezzanotte. In un turno di 16 giorni TT sale di un decimo ogni 23 minuti circa, GT in un torneo di 98 giorni ogni 2 ore e 20 minuti circa.
 
@@ -84,7 +84,7 @@ F5, F6 e F7 si trovano anche nel menu Visualizza, alle voci Area Centrale, Alber
 
 Tasti di Gestione Torneo:
 - Ctrl+N: Avvia il Wizard per creare un Nuovo Torneo.
-- Ctrl+O: Apre un torneo esistente caricando il relativo file JSON.
+- Ctrl+O: Apre un torneo esistente caricando il relativo file JSON. Un file che sta nella cartella backup, cioè una copia di sicurezza, non si apre: aperto come torneo verrebbe modificato a ogni salvataggio, e classifica, turni e raccolta delle partite del torneo verrebbero riscritti con lo stato vecchio della copia. Tornello lo dice con un messaggio e il suono dell'errore.
 - Ctrl+S: Esegue un salvataggio manuale istantaneo del torneo corrente.
 - Ctrl+I: Apre la finestra di Iscrizione dei giocatori (attiva prima dell'inizio del turno 1).
 - Ctrl+G: Mostra l'elenco dei giocatori iscritti nell'Area Centrale.
@@ -346,15 +346,22 @@ Tornello supporta l'applicazione dinamica di tutti i 19 criteri di spareggio pre
 17. Elo Iniziale (RTNG): Il rating Elo di inizio torneo del giocatore.
 
 9.2 CALCOLO DELLE VARIAZIONI ELO E AGGIORNAMENTO DEL DATABASE LOCALE
-In base alla cadenza impostata per il torneo, Tornello determina la tipologia di Elo da aggiornare (Standard, Rapid o Blitz).
+La variazione Elo si somma all'Elo principale del giocatore, anche nei tornei Rapid e Blitz, dove l'Elo di partenza è quello della cadenza. La finestra e la versione a riga di comando fanno la stessa cosa: fino alla versione 10.8.9 la riga di comando la sommava due volte, e nei Rapid e nei Blitz una delle due andava sull'Elo della cadenza.
 - Formula FIDE: Il programma calcola la variazione Elo (il cosiddetto "Delta Elo") per ciascun giocatore in base ai risultati ottenuti e all'Elo degli avversari affrontati, applicando le formule ufficiali FIDE.
 - Aggiornamento delle schede: Al termine del calcolo, le schede dei giocatori nel Database Locale vengono aggiornate automaticamente:
   * Viene sommata o sottratta la variazione Elo.
   * Il torneo viene inserito nello storico delle partecipazioni del giocatore.
   * Viene aggiornato il medagliere personale (conteggio dei primi, secondi e terzi posti).
+- Una finalizzazione per giocatore: se un giocatore ha già nello storico questo torneo, cioè lo stesso identificativo e la stessa data di inizio, oppure, per le voci scritte senza identificativo, lo stesso nome e la stessa data di inizio, la finalizzazione lo lascia com'è, senza toccare Elo, partite giocate, storico e medaglie. Succede quando si finalizza di nuovo un torneo già finalizzato, per esempio dopo averlo rimesso in uso da una copia di sicurezza: fino alla versione 10.8.7 Elo e partite si sommavano una seconda volta. Un'edizione successiva con lo stesso nome ha un'altra data di inizio, e conta come un torneo nuovo.
+- Avvisi della finalizzazione: quello che la finalizzazione deve farti sapere, per esempio i giocatori lasciati come erano, una copia di sicurezza non riuscita o il file del torneo rimasto al suo posto, compare alla fine in una finestra di testo, Avvisi della finalizzazione, da leggere con le frecce. Quando ci sono avvisi, questa finestra prende il posto del messaggio di successo, e la sua prima riga dice com'è andata: il torneo è concluso e archiviato, oppure la finalizzazione non è andata fino in fondo, e allora gli avvisi dicono che cosa è stato fatto e che cosa no. Nella versione a riga di comando le stesse frasi si leggono sulla console.
 
 9.3 ARCHIVIAZIONE E CLASSIFICA
 Il torneo viene archiviato dentro la cartella "Closed Tournaments", che sta accanto al programma, ordinata per anno e per mese di conclusione: per esempio un torneo finito a settembre 2026 finisce in "Closed Tournaments", poi "2026", poi "09 Settembre", e infine in una cartella con il nome del torneo, dove vanno il file JSON e tutti i report. Le cartelle dell'anno e del mese nascono solo quando c'e' davvero un torneo da metterci dentro, e i nomi dei mesi seguono la lingua scelta. La stessa struttura per anno e mese vale per la cartella "backup", dove il criterio e' la data in cui la copia di sicurezza viene creata. Contemporaneamente, la classifica finale ufficiale viene stampata in formato testuale leggibile nell'Area Centrale (F5), pronta per essere copiata, stampata o inviata ai partecipanti.
+Il file JSON del torneo e i suoi report vanno in archivio con una copia che viene riletta e confrontata con l'originale. Se in archivio c'è già un file del torneo con un contenuto diverso, per esempio lasciato da una finalizzazione precedente, prima ne viene fatta una copia di sicurezza nella cartella backup, con pre_archiviazione nel nome, e poi lo si sostituisce. Il file JSON lascia la cartella del programma solo dopo che la sua copia in archivio è stata riletta e trovata identica: se la copia di sicurezza non riesce, o la copia in archivio riletta non torna, il file resta dov'è, la finalizzazione risulta non andata fino in fondo, e la finestra Avvisi della finalizzazione dice in quale cartella spostarlo a mano per completare l'archiviazione. Fino alla versione 10.8.8 un file già presente in archivio restava com'era, e il file del torneo veniva cancellato lo stesso.
+La copia del torneo concluso nella cartella di lavoro esterna, se ne hai scelta una, segue la stessa regola della copia di sicurezza. Se però quella copia non riesce, lo dice soltanto la finestra Avvisi della finalizzazione, e il file del torneo lascia comunque la cartella del programma, perché la sua copia in archivio c'è. Un torneo aperto con Apri Torneo da un'altra cartella si salva concluso nel file da cui è stato aperto, che resta al suo posto, ed è quello che va in archivio.
+Due edizioni con lo stesso nome concluse nello stesso mese hanno ciascuna la sua cartella: la seconda prende il nome del torneo seguito dalla data di inizio, per esempio "Coppa_2026-07-15", e la finestra Avvisi della finalizzazione lo dice.
+Se finalizzi di nuovo un torneo già finalizzato e archiviato, l'archivio resta com'era, perché contiene le variazioni Elo che il database dei giocatori ha ricevuto la prima volta; la nuova finalizzazione le ricalcolerebbe sul database già aggiornato, per esempio con un fattore K diverso. I file della nuova finalizzazione vanno nella cartella backup, con rifinalizzazione nel nome. Risultati diversi, se ce n'erano, non arrivano né al database né all'archivio, e la finestra Avvisi della finalizzazione lo dice.
+Se il file del torneo o il database dei giocatori non si possono salvare, per esempio perché Dropbox o l'antivirus li tengono bloccati, la finalizzazione si ferma e lascia tutto com'era: il database non cambia, il torneo resta da concludere e non viene archiviato, e la si può ripetere più tardi.
 
 9.4 ELIMINAZIONE DI UN TORNEO ATTIVO
 Se si desidera eliminare definitivamente un torneo e tutti i suoi report dal disco, è possibile farlo in due modi: selezionando il menù File -> Elimina Torneo Attivo, oppure posizionandosi sul nodo del torneo attivo nell'albero di destra (F6) e premendo il tasto CANC/DELETE. Verrà mostrato un dialogo di conferma accessibile che elenca tutti i file che saranno rimossi (incluso il JSON del torneo, i report .txt della classifica e dei turni, e i calendari .ics). Se confermato, Tornello ripulirà completamente le directory del disco e riporterà l'albero allo stato iniziale.
@@ -364,7 +371,7 @@ Il torneo Rapid a 5 turni è terminato. Tutti i risultati del turno 5 sono stati
 1. Premiamo Ctrl+F (o selezioniamo "Finalizza Torneo" dall'albero).
 2. Viene riprodotto il suono celebrativo di fine torneo.
 3. Nell'Area Centrale (F5) appare la classifica finale con colonne dedicate a Punti e ai criteri di spareggio ordinati come impostato (es. Scontro Diretto, Buchholz [Cut-1], Buchholz Totale, ARO).
-4. Se apriamo la gestione del Database Locale (Ctrl+D) e selezioniamo il vincitore del torneo, vedremo che nel suo storico è presente il "Torneo Sociale di Primavera", il suo Elo Rapid locale è stato aggiornato con il delta calcolato, e nel suo medagliere è stata aggiunta una medaglia d'oro.
+4. Se apriamo la gestione del Database Locale (Ctrl+D) e selezioniamo il vincitore del torneo, vedremo che nel suo storico è presente il "Torneo Sociale di Primavera", il suo Elo principale è stato aggiornato con il delta calcolato, e nel suo medagliere è stata aggiunta una medaglia d'oro.
 
 10. STRUMENTI E MANUTENZIONE DEI DATABASE
 
@@ -395,12 +402,13 @@ Avviamo la sincronizzazione in modalità passo-passo con Ctrl+Y.
 
 10.4 PULIZIA E MANUTENZIONE DEI BACKUP
 Per evitare l'accumulo di file obsoleti che occupano spazio inutile sul disco, Tornello include un sistema di gestione e pulizia dei backup.
-- Controllo automatico all'avvio: Ogni volta che l'applicazione viene avviata, scansiona in background la cartella "backup/". Se rileva file modificati più di 18 mesi fa, mostra una notifica all'utente proponendo di procedere alla pulizia:
+- La data di una copia: il nome di ogni copia di sicurezza porta il nome del file d'origine, il momento in cui è stata fatta e la data con l'ora, per esempio "Tornello - Autunneo2_chiusura_torneo_20260923_160512.json", nata il 23 settembre 2026 alle 16:05:12. L'età delle copie si conta da quella data, nel controllo all'avvio, nella finestra di pulizia e nell'indicatore BK del piè di pagina. La data di modifica del file non serve, perché la copia la eredita dal file originale: fino alla versione 10.8.10 si contava da quella, e una copia fatta ieri di un database fermo da mesi risultava vecchia di mesi. Due copie dello stesso file fatte nello stesso secondo, con lo stesso momento, non si sovrascrivono: la seconda finisce con _2, la terza con _3.
+- Controllo automatico all'avvio: Ogni volta che l'applicazione viene avviata, scansiona in background la cartella "backup/". Se trova copie nate più di 18 mesi fa, mostra una notifica all'utente proponendo di procedere alla pulizia:
   * Scegliendo "Sì", viene aperta immediatamente la finestra di gestione dei backup.
-  * Scegliendo "No", la data di ultima modifica di questi file obsoleti viene automaticamente aggiornata ad oggi. In questo modo il programma non riproporrà il controllo per altri 18 mesi.
+  * Scegliendo "No", il programma non riproporrà il controllo per altri 18 mesi: la data fino alla quale il controllo tace si salva nelle impostazioni, e i file restano come sono. Fino alla versione 10.8.10 il rinvio portava a oggi la data di modifica dei file vecchi.
 - Finestra di pulizia dei backup: Accessibile tramite il menù File -> Pulisci backup. Presenta un'interfaccia interamente accessibile divisa in tre sezioni:
   1. Statistiche generali (in alto): Un'area di testo navigabile che indica il numero totale e la dimensione (in MB) di tutti i backup e dei soli file obsoleti consigliati per la cancellazione (> 18 mesi).
-  2. Elenco dei backup (al centro): Una lista ordinata cronologicamente (dal più vecchio in alto al più recente in basso) con il nome del file, la data di modifica e l'età calcolata con precisione in mesi e giorni.
+  2. Elenco dei backup (al centro): Una lista ordinata cronologicamente (dal più vecchio in alto al più recente in basso) con il nome del file, la data della copia e l'età calcolata con precisione in mesi e giorni.
   3. Pulsanti d'azione (in basso): Consentono di eliminare i file selezionati (azione attivabile anche premendo il tasto CANC/DELETE sulla tastiera), eliminare solo i file più vecchi di 18 mesi ("Elimina consigliati"), oppure svuotare interamente la cartella.
   La lista accetta piu' file per volta: shift con le frecce verticali estende la selezione riga per riga, shift con Inizio e shift con Fine la estende fino in cima o fino in fondo, e Ctrl+A prende tutto l'elenco. La conferma dice quanti file stai per eliminare, e dopo la cancellazione il fuoco resta nella lista, sulla riga che ha preso il posto della prima eliminata.
   Le cartelle dell'anno e del mese che restano senza file vengono tolte di mezzo da sole, sia dopo una cancellazione sia al controllo di avvio; la cartella backup invece resta sempre.
