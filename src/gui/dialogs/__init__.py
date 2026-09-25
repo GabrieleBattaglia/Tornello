@@ -7,4 +7,6 @@ from .players_db_dialog import PlayersDbDialog as PlayersDbDialog
 from .result_dialog import ResultDialog as ResultDialog
 from .sync_database_dialog import SyncDatabaseDialog as SyncDatabaseDialog
 from .tiebreak_config_dialog import TiebreakConfigDialog as TiebreakConfigDialog
+from .update_dialog import UpdateDialog as UpdateDialog
+from .update_dialog import UpdateProgressDialog as UpdateProgressDialog
 from .visual_settings_dialog import VisualSettingsDialog as VisualSettingsDialog

@@ -65,61 +65,21 @@ from controller import TournamentController
 
 
 def check_updates():
+    """L'aggiornamento della versione a riga di comando. Dalla 10.8.0 la
+    conversazione la conduce gestisci_aggiornamento di GBUtils, attraverso
+    aggiornamenti.aggiorna_da_console: le note della release si leggono a
+    pagine prima della domanda, mentre fino alla 10.6.5 si decideva sulle sole
+    due versioni. Si chiama prima di registrare l'invito alla donazione, cosi'
+    chi esce per aggiornarsi non lo riceve: lo script che applica
+    l'aggiornamento aspetta la chiusura del programma una trentina di secondi
+    soltanto.
+    """
     try:
-        from GBUtils import enter_escape, perform_update, update_checker
+        from aggiornamenti import aggiorna_da_console
 
-        from version import __version__ as current_ver
-
-        print(_("Controllo aggiornamenti..."))
-        repo_api = (
-            "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
-        )
-        avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
-        if avail:
-            if dl_url:
-                print(_("\n*** AGGIORNAMENTO DISPONIBILE! ***"))
-                print(
-                    _("Versione corrente: {curr} | Nuova versione: {latest}").format(
-                        curr=current_ver, latest=latest_ver
-                    )
-                )
-                if enter_escape(
-                    _(
-                        "Vuoi scaricare e installare l'aggiornamento ora? (INVIO per Sì | ESCAPE per ignorare)"
-                    )
-                ):
-                    print(
-                        _(
-                            "Scaricamento e installazione in corso. Il programma si chiuderà per l'aggiornamento..."
-                        )
-                    )
-                    if perform_update(dl_url, "tornello"):
-                        sys.exit(0)
-                    else:
-                        print(
-                            _(
-                                "Impossibile avviare l'aggiornamento automatico (la funzione è disponibile solo per la versione compilata)."
-                            )
-                        )
-            else:
-                print(_("\n*** AGGIORNAMENTO DISPONIBILE ***"))
-                print(
-                    _(
-                        "E' disponibile la nuova versione {latest_ver}, ma i file di installazione non sono ancora pronti per il download."
-                    ).format(latest_ver=latest_ver)
-                )
-                print(_("Riprova più tardi."))
-        elif latest_ver:
-            print(_("Nessun aggiornamento disponibile: hai già l'ultima versione."))
-        else:
-            # update_checker restituisce una versione vuota anche quando la rete
-            # non è raggiungibile: è un evento normale, non un errore del programma.
-            print(
-                _(
-                    "Controllo aggiornamenti non riuscito, probabilmente manca la connessione. Il programma funziona ugualmente."
-                )
-            )
-    except Exception as e_update:
+        if aggiorna_da_console():
+            sys.exit(0)
+    except Exception as e_update:  # noqa: BLE001 - un controllo aggiornamenti guasto non deve impedire l'avvio
         print(_("Controllo aggiornamenti fallito: {}").format(e_update))
 
 

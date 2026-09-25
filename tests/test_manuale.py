@@ -271,6 +271,19 @@ class TestCitazioniDelManuale:
         for cartella in CARTELLE_SPARITE:
             assert cartella not in trovate, cartella
 
+    def test_le_citazioni_degli_aggiornamenti_sono_scritte_dal_programma(self):
+        """La 11.5, sugli aggiornamenti del programma (issue 37), cita le due
+        finestre, la barra di stato e le frasi della versione a riga di
+        comando, che Tornello passa alla traduzione nella tupla delle frasi di
+        GBUtils. Il prompt del paginatore lo compone manuale di GBUtils."""
+        sorgenti = (os.path.join("gui", "dialogs", "update_dialog.py"), os.path.join("gui", "main_frame.py"), "aggiornamenti.py")
+        trovate = citazioni(sezione(leggi("MANUALE.txt"), (11, 5)))
+        assert len(trovate) >= 10
+        for citazione in trovate:
+            if citazione == "Novita' (1 / 3)":
+                continue
+            assert any(m.fullmatch(citazione) for relativo in sorgenti for m in modelli_del_sorgente(relativo)), citazione
+
     def test_la_prova_riconosce_una_citazione_sbagliata(self):
         """Le etichette di prima non passano: la prova le avrebbe fermate."""
         assert scritta_dal_programma("1 - 0 (Vince Bianchi Luca)")

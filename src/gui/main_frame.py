@@ -24,6 +24,10 @@ INTERVALLO_PIE_DI_PAGINA_MS = 60 * 1000
 # nell'area principale quando il focus arriva sulla barra (issue 54).
 SEZIONE_DEGLI_ACRONIMI = "2.3.1"
 
+# Ogni quanto riprovano la proposta di aggiornamento, i suoi esiti e le
+# domande dell'avvio quando li trovano con un dialogo aperto (issue 37).
+RIPROVA_A_FINESTRA_LIBERA_MS = 1000
+
 
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
@@ -82,6 +86,13 @@ class MainFrame(wx.Frame):
         # Vero dopo un guasto del ricalcolo automatico gia' scritto in
         # error.log, perche' non si ripeta a ogni minuto.
         self._guasto_pie_di_pagina = False
+        # L'aggiornamento del programma (issue 37): la finestra che accompagna
+        # lo scaricamento, il blocco delle altre finestre finche' dura, e il
+        # segnale che la chiusura serve ad applicarlo, per la quale on_close
+        # salta l'invito alla donazione.
+        self._dialogo_avanzamento = None
+        self._disabilitatore = None
+        self._chiusura_per_aggiornamento = False
 
         self._init_ui()
         self._setup_shortcuts()
@@ -94,8 +105,10 @@ class MainFrame(wx.Frame):
             wx.EVT_TIMER, self._on_timer_pie_di_pagina, self._timer_pie_di_pagina
         )
         self._timer_pie_di_pagina.Start(INTERVALLO_PIE_DI_PAGINA_MS)
-        wx.CallAfter(self._check_fide_db_on_startup)
-        wx.CallAfter(self._check_backup_on_startup)
+        # Dalla 10.8.2 le domande sul database FIDE e sui backup non partono
+        # da qui ma da _controlli_di_avvio, quando l'aggiornamento del
+        # programma ha finito di parlare: prima si aprivano tutte insieme, e
+        # la proposta di aggiornamento compariva sopra la finestra FIDE.
         wx.CallAfter(self._scan_and_load_initial_tournament)
         wx.CallAfter(self._check_updates_async)
         self.Maximize(True)
@@ -672,7 +685,11 @@ class MainFrame(wx.Frame):
 
                     update_dlg = FideUpdateDialog(self, self.settings)
                     update_dlg.ShowModal()
-                    update_dlg.Destroy()
+                    # Se nel frattempo la finestra e' stata distrutta, per
+                    # esempio perche' il programma si chiude, non c'e' piu'
+                    # niente da distruggere.
+                    if update_dlg:
+                        update_dlg.Destroy()
                 else:
                     dlg.Destroy()
         else:
@@ -692,9 +709,49 @@ class MainFrame(wx.Frame):
 
                 update_dlg = FideUpdateDialog(self, self.settings)
                 update_dlg.ShowModal()
-                update_dlg.Destroy()
+                if update_dlg:
+                    update_dlg.Destroy()
             else:
                 dlg.Destroy()
+
+    def _controlli_di_avvio(self):
+        """Le domande dell'avvio sul database FIDE e sui backup, una dopo
+        l'altra. Le chiama la fine del controllo aggiornamenti, dalla 10.8.2:
+        prima partivano insieme a lui, ciascuna con il suo CallAfter, e il
+        ciclo modale della prima faceva aprire le altre sopra di lei. Da
+        sorgente il controllo aggiornamenti finisce subito, e la domanda FIDE
+        arriva come prima.
+        Un guasto della domanda FIDE non fa saltare quella sui backup, come
+        quando partivano separate: la domanda sui backup arriva lo stesso, e
+        il guasto va poi alla finestra dell'errore imprevisto."""
+        try:
+            self._check_fide_db_on_startup()
+        finally:
+            self._check_backup_on_startup()
+
+    def _finestra_libera(self):
+        """Vero se nessun dialogo modale e' aperto. Un dialogo modale di wx,
+        o una finestra di sistema come quella di scelta di un file, disabilita
+        la finestra principale; i dialoghi di wx si riconoscono anche da
+        IsModal."""
+        if not self.IsEnabled():
+            return False
+        return not any(
+            isinstance(finestra, wx.Dialog) and finestra.IsModal()
+            for finestra in wx.GetTopLevelWindows()
+        )
+
+    def _quando_libera(self, funzione, *argomenti):
+        """Chiama funzione subito se la finestra e' libera, altrimenti
+        riprova ogni secondo finche' non lo diventa: cosi' un messaggio o una
+        domanda non si aprono mai sopra un dialogo che l'utente sta usando.
+        Se nel frattempo la finestra principale si chiude, lascia perdere."""
+        if not self or self.IsBeingDeleted():
+            return
+        if self._finestra_libera():
+            funzione(*argomenti)
+        else:
+            wx.CallLater(RIPROVA_A_FINESTRA_LIBERA_MS, self._quando_libera, funzione, *argomenti)
 
     def _check_updates_async(self):
         """Avvia il controllo aggiornamenti in un thread asincrono per non bloccare l'avvio della GUI."""
@@ -704,64 +761,161 @@ class MainFrame(wx.Frame):
         t.start()
 
     def _run_update_check(self):
+        """Nel thread: il giro intero dell'aggiornamento, condotto da
+        gestisci_aggiornamento di GBUtils (issue 37). Tace finche' non c'e'
+        una versione nuova, e da sorgente non fa niente. La proposta con le
+        note la fa _proponi_aggiornamento, lo scaricamento lo segue
+        _avanzamento_aggiornamento, e gli esiti, pochi e tutti utili, si
+        raccolgono per mostrarli alla fine, sul thread della finestra.
+        Fino alla 10.6.5 il controllo chiamava update_checker, ignorava le
+        note e ingoiava qualunque errore con un except: pass."""
+        avvisi = []
         try:
-            from GBUtils import update_checker
+            from GBUtils import gestisci_aggiornamento
 
-            from version import __version__ as current_ver
+            from aggiornamenti import API_RELEASE, NOME_APP
 
-            repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
-            avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
-            if avail and dl_url:
-                wx.CallAfter(self._prompt_update_gui, latest_ver, dl_url, changelog)
-        except Exception:
-            pass
-
-    def _prompt_update_gui(self, latest_ver, dl_url, changelog):
-        from version import __version__ as current_ver
-
-        msg = _(
-            "È disponibile un nuovo aggiornamento!\n\n"
-            "Versione corrente: {curr}\n"
-            "Nuova versione: {latest}\n\n"
-            "Vuoi scaricare e installare l'aggiornamento ora? (L'applicazione si riavvierà)"
-        ).format(curr=current_ver, latest=latest_ver)
-        dlg = AccessibleMsgDialog(
-            self, _("Aggiornamento Disponibile"), msg, style=wx.YES_NO
-        )
-        if dlg.ShowModal() == wx.ID_YES:
-            dlg.Destroy()
-            self.set_status(_("Scaricamento e installazione aggiornamento in corso..."))
-            import threading
-
-            t = threading.Thread(
-                target=self._run_perform_update, args=(dl_url,), daemon=True
+            pronto = gestisci_aggiornamento(
+                NOME_APP,
+                __version__,
+                API_RELEASE,
+                proponi=self._proponi_aggiornamento,
+                avvisa=avvisi.append,
+                avanzamento=self._avanzamento_aggiornamento,
+                traduci=_,
             )
-            t.start()
-        else:
-            dlg.Destroy()
+        except Exception as errore:  # noqa: BLE001 - il thread non ha nessuno a cui passare un guasto
+            # Senza aggiornamento il programma prosegue, e le domande
+            # dell'avvio devono arrivare lo stesso: il guasto va in error.log.
+            from gui.settings import _registra
 
-    def _run_perform_update(self, dl_url):
+            _registra(f"Controllo aggiornamenti non riuscito: {errore}")
+            pronto = False
+        wx.CallAfter(self._fine_aggiornamento, pronto, avvisi)
+
+    def _proponi_aggiornamento(self, versione_attuale, versione_nuova, note):
+        """La risposta dell'utente, che gestisci_aggiornamento aspetta.
+
+        Arriva dal thread del controllo, ma la finestra vive su quello
+        principale: la domanda si porta li' con CallAfter e il thread resta
+        fermo finche' non si sa la risposta, perche' e' lei a dire se
+        scaricare. La finestra si apre soltanto quando nessun dialogo modale
+        e' aperto, altrimenti si riprova dopo un secondo senza rispondere.
+        Col si' si apre la finestra dello scaricamento prima di rispondere,
+        cosi' il resto del programma e' gia' bloccato quando lo scaricamento
+        comincia. E' il ponte di Dadillo e di Cartella.
+        """
+        import threading
+
+        risposta = []
+        risposto = threading.Event()
+
+        def nella_finestra():
+            if not self or self.IsBeingDeleted():
+                # La finestra principale non c'e' piu': si risponde di no.
+                risposto.set()
+                return
+            if not self._finestra_libera():
+                wx.CallLater(RIPROVA_A_FINESTRA_LIBERA_MS, nella_finestra)
+                return
+            try:
+                if self._chiedi_aggiornamento(versione_attuale, versione_nuova, note):
+                    self._apri_avanzamento()
+                    risposta.append(True)
+            finally:
+                risposto.set()
+
+        wx.CallAfter(nella_finestra)
+        risposto.wait()
+        return bool(risposta)
+
+    def _chiedi_aggiornamento(self, versione_attuale, versione_nuova, note):
+        """La finestra con le due versioni e le note: vero per Aggiorna
+        adesso, falso per Non adesso, ESC o la chiusura della finestra."""
+        from gui.dialogs.update_dialog import UpdateDialog
+
+        dlg = UpdateDialog(self, versione_attuale, versione_nuova, note, self.settings)
+        scelta = dlg.ShowModal()
+        dlg.Destroy()
+        return scelta == wx.ID_YES
+
+    def _apri_avanzamento(self):
+        """Apre la finestra dello scaricamento e blocca tutte le altre. Il
+        blocco e' un wx.WindowDisabler e non un ShowModal: il ciclo modale
+        annidato non tornerebbe finche' la finestra resta aperta, e il thread
+        del controllo aspetterebbe la risposta per tutto quel tempo, senza
+        mai scaricare. Durante lo scaricamento non si puo' cominciare niente,
+        per esempio l'inserimento di un risultato, che la chiusura per
+        l'aggiornamento interromperebbe a meta'."""
+        from gui.dialogs.update_dialog import UpdateProgressDialog
+
+        dialogo = UpdateProgressDialog(self, self.settings)
+        dialogo.Show()
+        self._dialogo_avanzamento = dialogo
+        self._disabilitatore = wx.WindowDisabler(dialogo)
+
+    def _avanzamento_aggiornamento(self, preso, totale):
+        """Nel thread dello scaricamento: i byte presi e il totale, a ogni
+        punto percentuale, passano alla finestra sul thread principale."""
+        wx.CallAfter(self._mostra_avanzamento, preso, totale)
+
+    def _mostra_avanzamento(self, preso, totale):
+        if self and self._dialogo_avanzamento:
+            self._dialogo_avanzamento.aggiorna(preso, totale)
+
+    def _chiudi_avanzamento(self):
+        """Toglie il blocco e poi chiude la finestra dello scaricamento. In
+        quest'ordine: chiusa per prima, con il resto ancora disabilitato,
+        Windows darebbe il fuoco a un'altra applicazione."""
+        self._disabilitatore = None
+        if self._dialogo_avanzamento:
+            self._dialogo_avanzamento.Destroy()
+        self._dialogo_avanzamento = None
+
+    def _fine_aggiornamento(self, pronto, avvisi):
+        """Sul thread della finestra, quando gestisci_aggiornamento ha finito.
+
+        Se l'aggiornamento e' pronto lo script che lo applica e' gia' partito
+        e aspetta la chiusura del programma soltanto una trentina di secondi:
+        l'esito va nella barra di stato e non in una finestra modale, che
+        aspetterebbe chi la chiude, e il programma si chiude da solo, con le
+        copie di chiusura di sempre ma senza l'invito alla donazione.
+        Altrimenti si mostrano gli esiti raccolti, se ce ne sono, per esempio
+        lo scaricamento non riuscito, e poi arrivano le domande dell'avvio.
+        """
+        if not self:
+            return
+        self._chiudi_avanzamento()
+        if pronto:
+            # La chiusura non dipende dal messaggio: scriverlo ricalcola il
+            # pie' di pagina, che legge la cartella dei backup e la data del
+            # database FIDE, e un guasto li' lascerebbe il programma aperto,
+            # con la finestra dell'errore imprevisto e lo script che dopo
+            # trenta secondi rinuncia all'aggiornamento. Il guasto va in
+            # error.log, come quelli del ricalcolo automatico.
+            self._chiusura_per_aggiornamento = True
+            if avvisi:
+                try:
+                    self.set_status(avvisi[-1])
+                except Exception as errore:  # noqa: BLE001 - la chiusura che applica l'aggiornamento viene prima del messaggio
+                    from gui.settings import _registra
+
+                    _registra(f"Esito dell'aggiornamento non scritto nella barra di stato: {errore}")
+            self.Close()
+            return
+        self._quando_libera(self._dopo_aggiornamento, list(avvisi))
+
+    def _dopo_aggiornamento(self, avvisi):
+        """Gli esiti dell'aggiornamento non applicato, se ce ne sono, e poi le
+        domande dell'avvio, che arrivano anche se il messaggio degli esiti si
+        guasta: il guasto va poi alla finestra dell'errore imprevisto."""
         try:
-            from GBUtils import perform_update
-
-            if perform_update(dl_url, "tornello"):
-                wx.CallAfter(self.Close)
-            else:
-                wx.CallAfter(
-                    wx.MessageBox,
-                    _(
-                        "Impossibile avviare l'aggiornamento automatico (funzione disponibile solo nella versione compilata)."
-                    ),
-                    _("Errore Aggiornamento"),
-                    wx.ICON_ERROR,
-                )
-        except Exception as e:
-            wx.CallAfter(
-                wx.MessageBox,
-                _("Errore durante l'aggiornamento: {}").format(e),
-                _("Errore Aggiornamento"),
-                wx.ICON_ERROR,
-            )
+            if avvisi:
+                dlg = AccessibleMsgDialog(self, _("Aggiornamento di Tornello"), "\n".join(avvisi))
+                dlg.ShowModal()
+                dlg.Destroy()
+        finally:
+            self._controlli_di_avvio()
 
     def _check_backup_on_startup(self):
         """Scansiona la cartella dei backup alla ricerca di file più vecchi di 18 mesi."""
@@ -3808,17 +3962,22 @@ class MainFrame(wx.Frame):
         # dell'audio.
         play_sound("chiusura", self.current_tournament, sync=1.5)
 
-        try:
-            self._invito_donazione()
-        except Exception as errore:  # noqa: BLE001
-            # Largo di proposito: un'eccezione che uscisse da on_close
-            # salterebbe event.Skip() e la finestra non si chiuderebbe piu',
-            # per colpa di un invito che non serve a niente del lavoro fatto.
-            # Ma non tace piu' come l'except: pass di prima: il guasto finisce
-            # in error.log, con il suo traceback.
-            from gui.settings import _registra
+        # Dalla 10.8.1 la chiusura che applica un aggiornamento salta
+        # l'invito: lo script che sostituisce il programma aspetta la sua
+        # uscita una trentina di secondi soltanto, e chi leggeva l'invito con
+        # calma si ritrovava con l'aggiornamento non applicato.
+        if not self._chiusura_per_aggiornamento:
+            try:
+                self._invito_donazione()
+            except Exception as errore:  # noqa: BLE001
+                # Largo di proposito: un'eccezione che uscisse da on_close
+                # salterebbe event.Skip() e la finestra non si chiuderebbe piu',
+                # per colpa di un invito che non serve a niente del lavoro fatto.
+                # Ma non tace piu' come l'except: pass di prima: il guasto finisce
+                # in error.log, con il suo traceback.
+                from gui.settings import _registra
 
-            _registra(f"Invito alla donazione non mostrato: {errore}")
+                _registra(f"Invito alla donazione non mostrato: {errore}")
 
         event.Skip()
 

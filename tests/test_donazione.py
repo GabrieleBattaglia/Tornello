@@ -153,6 +153,9 @@ class TestChiusura:
                 self._timer_pie_di_pagina = SimpleNamespace(
                     Stop=lambda: passi["timer"].append("stop")
                 )
+                # Dalla 10.8.1 la chiusura per aggiornamento salta l'invito
+                # (issue 37).
+                self._chiusura_per_aggiornamento = False
 
         class EventoFinto:
             def Skip(self):
@@ -209,5 +212,24 @@ class TestChiusura:
         assert passi["suoni"] == ["chiusura"]
         assert chiamate[0]["argomenti"] == {"lang": "it", "stampa": False}
         assert registro["mostrati"] == 1
+        assert passi["log"] == []
+        assert passi["skip"] == 1
+
+    def test_la_chiusura_per_aggiornamento_salta_l_invito(self, monkeypatch, registro):
+        """Dalla 10.8.1 (issue 37): lo script che applica l'aggiornamento
+        aspetta la chiusura una trentina di secondi, e un invito lasciato
+        aperto la farebbe scadere. Copie e suono restano quelli di sempre."""
+        from gui import main_frame as mf
+
+        chiamate = _donazione_finta(monkeypatch, "Un caffe'?")
+        telaio, evento, passi = self._telaio(monkeypatch)
+        telaio._chiusura_per_aggiornamento = True
+
+        mf.MainFrame.on_close(telaio, evento)
+
+        assert chiamate == []
+        assert registro["dialoghi"] == []
+        assert passi["copie"] == ["Tornello - Prova.json"]
+        assert passi["suoni"] == ["chiusura"]
         assert passi["log"] == []
         assert passi["skip"] == 1

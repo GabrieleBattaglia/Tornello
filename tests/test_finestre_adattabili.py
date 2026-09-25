@@ -31,6 +31,7 @@ CORPO = 36
 RUOLO_LISTA = 0x21
 RUOLO_VOCE = 0x22
 RUOLO_TESTO = 0x2A
+RUOLO_BARRA = 0x30
 STATO_SOLA_LETTURA = 0x40
 STATO_FOCALIZZABILE = 0x100000
 
@@ -53,6 +54,10 @@ FINESTRE = (
     "pulizia backup",
     "iscrizione",
     "spareggi",
+    # Le due finestre dell'aggiornamento del programma, nate con la 10.7.0
+    # (issue 37).
+    "aggiornamento",
+    "scaricamento aggiornamento",
 )
 
 # Le finestre con i riquadri, e quanti ne hanno almeno: senza, la prova sui
@@ -150,6 +155,7 @@ def _crea(nome, a):
     from gui.dialogs.result_dialog import ResultDialog, ScheduleDialog
     from gui.dialogs.sync_database_dialog import SyncDatabaseDialog
     from gui.dialogs.tiebreak_config_dialog import TiebreakConfigDialog
+    from gui.dialogs.update_dialog import UpdateDialog, UpdateProgressDialog
     from gui.dialogs.visual_settings_dialog import VisualSettingsDialog
 
     t, s = a.telaio, a.impostazioni
@@ -169,6 +175,8 @@ def _crea(nome, a):
         "pulizia backup": lambda: BackupCleanupDialog(t, s),
         "iscrizione": lambda: PlayerEnrollmentDialog(t, _giocatori(30), iscritti, s),
         "spareggi": lambda: TiebreakConfigDialog(t, _torneo(5)),
+        "aggiornamento": lambda: UpdateDialog(t, "10.6.5", "10.7.0", "* Riga delle note della release\n" * 40, s),
+        "scaricamento aggiornamento": lambda: UpdateProgressDialog(t, s),
     }
     return costruttori[nome]()
 
@@ -379,6 +387,37 @@ def test_l_anteprima_resta_un_testo_in_sola_lettura(ambiente):
         nome, ruolo, stato = _msaa(anteprima)[1][0]
         assert (nome, ruolo) == (anteprima.GetParent().GetLabel(), RUOLO_TESTO)
         assert stato & STATO_SOLA_LETTURA and stato & STATO_FOCALIZZABILE
+    finally:
+        _chiudi(dlg)
+
+
+@solo_windows
+def test_le_note_dell_aggiornamento_hanno_il_nome_dell_etichetta(ambiente):
+    """Il campo delle note, un RICHEDIT50W senza oggetto accessibile di wx,
+    prende il nome dall'etichetta che lo precede e resta un testo in sola
+    lettura (issue 37)."""
+    dlg = _crea("aggiornamento", ambiente)
+    try:
+        nome, ruolo, stato = _msaa(dlg.campo_note)[1][0]
+        assert (nome, ruolo) == (dlg.etichetta_note.GetLabel(), RUOLO_TESTO)
+        assert stato & STATO_SOLA_LETTURA and stato & STATO_FOCALIZZABILE
+    finally:
+        _chiudi(dlg)
+
+
+@solo_windows
+def test_la_barra_dello_scaricamento_si_chiama_come_il_messaggio(ambiente, monkeypatch):
+    """Il nome MSAA della barra segue il messaggio, e la barra resta una
+    barra di avanzamento per NVDA (issue 37). La notifica allo screen reader
+    e' sostituita da una finta."""
+    wx = ambiente.wx
+    monkeypatch.setattr(wx.Accessible, "NotifyEvent", lambda *argomenti: None)
+    dlg = _crea("scaricamento aggiornamento", ambiente)
+    try:
+        assert _msaa(dlg.gauge)[1][0][:2] == (dlg.status_label.GetLabel(), RUOLO_BARRA)
+        dlg.aggiorna(40, 100)
+        assert _msaa(dlg.gauge)[1][0][:2] == (dlg.status_label.GetLabel(), RUOLO_BARRA)
+        assert dlg.status_label.GetLabel().startswith("40%")
     finally:
         _chiudi(dlg)
 
