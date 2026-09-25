@@ -19,6 +19,10 @@ from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
 # ogni 23 minuti circa in un turno di 16 giorni: un minuto basta e avanza.
 INTERVALLO_PIE_DI_PAGINA_MS = 60 * 1000
 
+# La sezione del manuale che spiega gli acronimi del pie' di pagina, mostrata
+# nell'area principale quando il focus arriva sulla barra (issue 54).
+SEZIONE_DEGLI_ACRONIMI = "2.3.1"
+
 
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
@@ -425,7 +429,12 @@ class MainFrame(wx.Frame):
         sistema: allora il focus non arriva da un'altra finestra di Tornello,
         ma dal nulla o, di passaggio, dalla cornice, e la barra si ritrova
         com'era, con il cursore dove era rimasto. F7 la rinfresca, e
-        un'azione fatta nel frattempo l'ha gia' riscritta."""
+        un'azione fatta nel frattempo l'ha gia' riscritta.
+        Dalla 10.6.0, se il focus arriva dall'albero o dall'area principale,
+        cioe' con F7, Tab, Maiusc+Tab o un clic, l'area principale mostra la
+        sezione del manuale sugli acronimi (issue 54). Non quando torna da un
+        dialogo chiuso o da un'altra applicazione: cancellerebbe il report
+        appena scritto dall'azione lanciata dalla barra."""
         event.Skip()
         provenienza = event.GetWindow()
         ritorno = self._pie_di_pagina_col_focus and (
@@ -434,6 +443,34 @@ class MainFrame(wx.Frame):
         self._pie_di_pagina_col_focus = True
         if not ritorno:
             self._ricalcola_pie_di_pagina()
+        if provenienza is self.main_text or provenienza is self.tree_ctrl:
+            self._mostra_acronimi()
+
+    def _mostra_acronimi(self):
+        """Scrive nell'area principale la sezione del manuale che spiega gli
+        acronimi del pie' di pagina, da leggere con F5. La sezione resta
+        finche' un'altra azione non riscrive l'area: l'albero, F1, un report o
+        un messaggio; il timer del pie' di pagina non la tocca mai.
+        Non fa niente senza un torneo aperto, perche' senza percentuali non
+        c'e' niente da spiegare, ne' durante la procedura guidata, dove l'area
+        spiega il campo dell'albero. Se l'area mostra gia' la sezione non la
+        riscrive, cosi' il cursore resta dove l'aveva lasciato chi la stava
+        leggendo. Non sposta il focus: NVDA non legge i cambi di un controllo
+        che non ce l'ha, e la sostituzione e' silenziosa."""
+        if not self.current_tournament or self.creation_mode:
+            return
+        from utils import sezione_del_manuale
+
+        sezione = sezione_del_manuale(self._leggi_manuale(), SEZIONE_DEGLI_ACRONIMI)
+        if not sezione:
+            return
+        # Il RichEdit puo' restituire i ritorni a capo in un'altra forma, e
+        # append_log aggiunge quello finale.
+        attuale = self.main_text.GetValue().replace("\r\n", "\n").replace("\r", "\n")
+        if attuale.rstrip() == sezione.rstrip():
+            return
+        self.main_text.Clear()
+        self.append_log(sezione)
 
     def _on_uscita_pie_di_pagina(self, event):
         """Il focus lascia il pie' di pagina. Se va su un'altra finestra di
@@ -3577,20 +3614,23 @@ class MainFrame(wx.Frame):
                 dlg_msg.Destroy()
         dlg.Destroy()
 
+    @staticmethod
+    def _leggi_manuale():
+        """Il testo di MANUALE.txt, o una stringa vuota se manca o non si
+        legge. Lo usano F1, che lo mostra intero, e l'arrivo del focus sul pie'
+        di pagina, che ne mostra la sezione degli acronimi."""
+        from config import resource_path
+
+        try:
+            with open(resource_path("MANUALE.txt"), encoding="utf-8") as f:
+                return f.read()
+        except (OSError, ValueError):
+            return ""
+
     def on_help(self, event):
         # Visualizza la guida accessibile caricandola da file
         self.main_text.Clear()
-        guide_text = ""
-        from config import resource_path
-
-        guide_path = resource_path("MANUALE.txt")
-        if os.path.exists(guide_path):
-            try:
-                with open(guide_path, encoding="utf-8") as f:
-                    guide_text = f.read()
-            except Exception:
-                pass
-
+        guide_text = self._leggi_manuale()
         if not guide_text:
             guide_text = _(
                 "Manuale guida di Tornello\n"

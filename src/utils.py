@@ -280,6 +280,55 @@ def file_del_torneo(nome_file, nome_sanitizzato):
     )
 
 
+# Un titolo del manuale comincia con il numero della sezione: "3. " per un
+# capitolo, "2.3.1 " per una sezione interna.
+_TITOLO_DEL_MANUALE = re.compile(r"^(\d+(?:\.\d+)*)(\.?) (\S.*)$")
+
+
+def _numero_del_titolo(righe, i):
+    """Il numero della riga i, come "2.3.1" o "3", se e' un titolo del
+    manuale; altrimenti None. Il testo di un titolo e' tutto maiuscolo fuori
+    dalle parentesi, come "2.3 LA BARRA DI STATO INFERIORE (Tasto F7)". Un
+    capitolo ha il punto dopo il numero e la riga vuota prima, che lo
+    distingue dalle voci degli elenchi numerati come "4. ARO (Average Rating
+    of Opponents)"; una sezione interna no, perche' gli elenchi non usano mai
+    il numero col punto in mezzo. E' la stessa regola che tests/test_manuale.py
+    controlla su tutto il manuale."""
+    m = _TITOLO_DEL_MANUALE.match(righe[i])
+    if not m:
+        return None
+    numero, punto, testo = m.groups()
+    capitolo = "." not in numero
+    if capitolo != (punto == "."):
+        return None
+    if capitolo and i > 0 and righe[i - 1].strip():
+        return None
+    fuori = re.sub(r"\([^)]*\)", "", testo)
+    if fuori != fuori.upper() or not any(c.isalpha() for c in fuori):
+        return None
+    return numero
+
+
+def sezione_del_manuale(testo, numero):
+    """La sezione del manuale con il numero dato, per esempio "2.3.1": dal
+    suo titolo compreso fino al titolo seguente escluso, di qualunque livello,
+    senza le righe vuote in coda. La sezione di un capitolo si ferma quindi
+    alla sua prima sezione interna. None se nel testo non c'e'.
+    Dalla 10.5.3 il manuale non ha piu' righe di separatori: la fine la segna
+    soltanto il titolo seguente. Issue 54."""
+    righe = testo.splitlines()
+    titoli = [i for i in range(len(righe)) if _numero_del_titolo(righe, i)]
+    for posizione, inizio in enumerate(titoli):
+        if _numero_del_titolo(righe, inizio) != numero:
+            continue
+        fine = titoli[posizione + 1] if posizione + 1 < len(titoli) else len(righe)
+        sezione = righe[inizio:fine]
+        while sezione and not sezione[-1].strip():
+            sezione.pop()
+        return "\n".join(sezione)
+    return None
+
+
 def parse_flexible_date(date_input_str):
     """
     Tenta di parsare una data da vari formati, incluso ISO (YYYY-MM-DD)

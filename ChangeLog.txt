@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.6.0 (in lavorazione, non ancora pubblicata)
+	+ Novita': Quando il focus arriva sul pie' di pagina dall'albero o dall'area centrale, con F7, con Tab o con il mouse, l'area centrale mostra la sezione 2.3.1 del manuale, quella che spiega gli acronimi delle percentuali: la si legge con F5, senza cercarla nel manuale intero. La sezione resta finche' un'altra azione non riscrive l'area centrale, per esempio uno spostamento nell'albero, F1 o un report, e l'aggiornamento automatico del pie' di pagina non la tocca. Non compare senza un torneo aperto, durante la creazione di un torneo nuovo, ne' quando il focus torna sul pie' di pagina dopo la chiusura di un dialogo o da un'altra applicazione: cosi' il report appena scritto da un comando lanciato dal pie' di pagina non si perde. Se l'area centrale mostra gia' la sezione non la riscrive, e chi la stava leggendo ritrova il cursore dove l'aveva lasciato. Il manuale lo spiega nella sezione 2.3 e nella riga di F7. Issue 54.
+
 10.5.3 (in lavorazione, non ancora pubblicata)
 	+ Fix: Manuale, ChangeLog e crediti, che il programma mostra nell'area centrale con F1, F2 e F3, non hanno piu' le righe fatte solo di segni uguale o di trattini, che lo screen reader leggeva come una fila di simboli: erano 38 nel manuale e una sotto il titolo negli altri due. Anche il titolo del ChangeLog perde i tre trattini che aveva per parte. La 10.0.0 aveva tolto i separatori dai testi scritti dal programma, ma non da questi tre file. I titoli restano su una riga a se', e le sezioni del manuale si riconoscono dal numero all'inizio della riga. Issue 50.
 

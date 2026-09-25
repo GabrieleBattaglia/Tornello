@@ -40,6 +40,7 @@ Costituisce il vero e proprio "pannello di controllo" di Tornello. Si tratta di 
 2.3 LA BARRA DI STATO INFERIORE (Tasto F7)
 È il piè di pagina, in fondo alla finestra. La prima riga è l'ultimo messaggio di stato. Con un torneo aperto seguono due righe di sole percentuali, una fotografia immediata dello stato del torneo: i numeri assoluti si trovano nella plancia di comando. Ogni percentuale è preceduta dal suo acronimo, spiegato qui sotto, e vale -- quando manca il dato o non c'è ancora niente da contare.
 - Come si usa: Premendo F7, il focus si sposta sulla barra per consentire allo screen reader di rileggere il messaggio di stato e le percentuali.
+- Spiegazione degli acronimi: quando il focus arriva sulla barra dall'albero o dall'Area Centrale, con F7, con Tab o con il mouse, l'Area Centrale mostra la sezione 2.3.1 di questo manuale, da leggere con F5. La sezione resta finché un'altra azione non riscrive l'Area Centrale, per esempio uno spostamento nell'albero, F1 o un report; l'aggiornamento automatico delle percentuali non la tocca. Non compare senza un torneo aperto né durante la creazione di un nuovo torneo, e nemmeno quando il focus torna sulla barra dopo la chiusura di un dialogo o da un'altra applicazione: in quei casi l'Area Centrale conserva quello che l'ultima azione ci ha scritto.
 - Aggiornamento: le percentuali si ricalcolano dopo ogni azione sul torneo, da sole ogni minuto finché la barra non ha il focus, e ogni volta che la barra riceve il focus, con F7, con Tab o con il mouse. Finché il focus resta sulla barra il testo non cambia da solo, così il cursore e la barra braille restano dove sono, anche se nel frattempo si passa a un'altra applicazione: al ritorno la barra è come la si era lasciata. Per rinfrescare i valori senza uscire si preme di nuovo F7. La barra viene riscritta solo quando qualcosa è cambiato, e in quel caso il cursore torna all'inizio.
 - Impaginazione: le due righe di percentuali sono dati in tempo reale, impaginati per la barra braille. Ogni indicatore occupa sempre 10 caratteri: l'acronimo, uno spazio, il valore allineato a destra in 6 caratteri e un altro spazio. Quattro indicatori fanno un blocco da 40 caratteri, due blocchi fanno una riga: il secondo blocco comincia sempre dal carattere 41, e su un display da 40 celle ogni valore sta sempre nelle stesse celle, anche quando passa da 9.9% a 10.0%. Un valore che non sta in 6 caratteri, cioè BK o FD da 1000% in su, si legge >999%.
 
@@ -74,7 +75,7 @@ Tasti Funzione (Focus e Guida):
 - F3: Visualizza la schermata dei Crediti e dei ringraziamenti.
 - F5: Sposta il focus sull'Area Centrale (visualizzatore dei report).
 - F6: Sposta il focus sull'Albero di Destra (pannello di controllo).
-- F7: Sposta il focus sulla Barra di Stato inferiore e ne ricalcola le percentuali, anche quando il focus è già lì.
+- F7: Sposta il focus sulla Barra di Stato inferiore e ne ricalcola le percentuali, anche quando il focus è già lì. Se il focus arriva dall'albero o dall'Area Centrale, l'Area Centrale mostra la sezione 2.3.1, la spiegazione degli acronimi della barra, da leggere con F5.
 
 Tasti di Gestione Torneo:
 - Ctrl+N: Avvia il Wizard per creare un Nuovo Torneo.

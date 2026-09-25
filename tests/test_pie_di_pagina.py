@@ -1,13 +1,15 @@
-"""Il pie' di pagina, la barra di stato che si raggiunge con F7. Issue 53.
+"""Il pie' di pagina, la barra di stato che si raggiunge con F7. Issue 53 e 54.
 
 Dalla 10.4.2 le percentuali del tempo, cioe' GT, TT, BK e FD, si calcolano in
 secondi invece che a giorni interi; dalla 10.5.0 il pie' di pagina si
 aggiorna da solo e le due righe di indicatori sono a larghezza fissa, due
 blocchi da 40 caratteri per la barra braille, anche con gli acronimi
-tradotti. Le percentuali si provano con un orologio fisso; la regola di
-aggiornamento, con il focus logico che resta sulla barra quando Tornello
-passa in secondo piano, gira su un telaio finto, e una sola prova usa un
-campo di testo vero, in una finestra mai mostrata.
+tradotti; dalla 10.6.0 il focus che arriva sulla barra dall'albero o
+dall'area principale mostra nell'area la sezione del manuale sugli acronimi.
+Le percentuali si provano con un orologio fisso; la regola di aggiornamento,
+con il focus logico che resta sulla barra quando Tornello passa in secondo
+piano, gira su un telaio finto, e poche prove usano un campo di testo vero,
+in una finestra mai mostrata.
 """
 
 from datetime import datetime, timedelta
@@ -248,7 +250,15 @@ def _telaio_del_focus(mf, **attributi):
     class Telaio(SimpleNamespace):
         _ricalcola_pie_di_pagina = mf.MainFrame._ricalcola_pie_di_pagina
 
-    stato = {"_pie_di_pagina_col_focus": False, "_guasto_pie_di_pagina": False}
+    stato = {
+        "_pie_di_pagina_col_focus": False,
+        "_guasto_pie_di_pagina": False,
+        # L'area principale e l'albero: dalla 10.6.0 il focus che arriva da
+        # loro mostra anche gli acronimi del manuale.
+        "main_text": object(),
+        "tree_ctrl": object(),
+        "_mostra_acronimi": lambda: None,
+    }
     stato.update(attributi)
     return Telaio(**stato)
 
@@ -538,3 +548,233 @@ class TestRegolaDiAggiornamento:
         with pytest.raises(RuntimeError):
             main_frame.MainFrame.on_close(telaio, None)
         assert registro == ["stop"]
+
+
+# Un manuale in miniatura, con la sezione degli acronimi fra altre due.
+MANUALE_IN_MINIATURA = "\n".join(
+    [
+        "2.3 LA BARRA DI STATO INFERIORE (Tasto F7)",
+        "La barra.",
+        "",
+        "2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA",
+        "- GT, giorno del torneo.",
+        "- TT, tempo del turno.",
+        "",
+        "2.4 ACCESSIBILITÀ DEI DIALOGHI",
+        "I dialoghi.",
+    ]
+)
+SEZIONE_IN_MINIATURA = (
+    "2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA\n- GT, giorno del torneo.\n- TT, tempo del turno."
+)
+UN_TORNEO = {"total_rounds": 5}
+
+
+class _AreaFinta:
+    """Il minimo dell'area principale che serve agli acronimi: il testo, e
+    il registro di cancellazioni, scritture e spostamenti del focus."""
+
+    def __init__(self, testo=""):
+        self.testo = testo
+        self.registro = []
+
+    def GetValue(self):
+        return self.testo
+
+    def Clear(self):
+        self.testo = ""
+        self.registro.append("clear")
+
+    def SetFocus(self):
+        self.registro.append("focus")
+
+    def scrivi(self, testo):
+        """Come append_log: accoda, con il ritorno a capo finale."""
+        self.testo += testo if testo.endswith("\n") else testo + "\n"
+        self.registro.append("scrivi")
+
+
+class TestAcronimiAlFocus:
+    """Issue 54: il focus che arriva sulla barra dall'albero o dall'area
+    principale mostra nell'area la sezione 2.3.1 del manuale, che resta
+    finche' un'altra azione non la riscrive."""
+
+    def _telaio(self, area, torneo=UN_TORNEO, creazione=False, manuale=MANUALE_IN_MINIATURA):
+        return SimpleNamespace(
+            current_tournament=torneo,
+            creation_mode=creazione,
+            main_text=area,
+            append_log=area.scrivi,
+            _leggi_manuale=lambda: manuale,
+        )
+
+    def test_dall_albero_e_dall_area_si_mostrano(self, main_frame):
+        # F7, Tab, Maiusc+Tab o un clic: prima il ricalcolo della barra, che
+        # NVDA sta per leggere, poi l'area, che nessuno sta leggendo.
+        registro = []
+        telaio = _telaio_del_focus(
+            main_frame,
+            _ricalcola_pie_di_pagina=lambda: registro.append("calcolo"),
+            _mostra_acronimi=lambda: registro.append("acronimi"),
+        )
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(telaio.tree_ctrl, registro)
+        )
+        assert registro == ["skip", "calcolo", "acronimi"]
+        registro.clear()
+        telaio._pie_di_pagina_col_focus = False
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(telaio.main_text, registro)
+        )
+        assert registro == ["skip", "calcolo", "acronimi"]
+
+    def test_da_un_dialogo_o_da_un_altra_applicazione_no(self, main_frame):
+        # Il focus che torna da un dialogo chiuso, per esempio dopo Ctrl+P
+        # lanciato dalla barra, o da un'altra applicazione: la sezione
+        # cancellerebbe il report appena scritto.
+        registro = []
+        telaio = _telaio_del_focus(
+            main_frame,
+            _ricalcola_pie_di_pagina=lambda: registro.append("calcolo"),
+            _mostra_acronimi=lambda: registro.append("acronimi"),
+        )
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(object(), registro)
+        )
+        telaio._pie_di_pagina_col_focus = False
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(None, registro)
+        )
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(None, registro)
+        )
+        main_frame.MainFrame._on_focus_pie_di_pagina(
+            telaio, _EventoDelFocus(telaio, registro)
+        )
+        assert "acronimi" not in registro
+        assert registro == ["skip", "calcolo", "skip", "calcolo", "skip", "skip"]
+
+    def test_scrive_la_sezione_senza_spostare_il_focus(self, main_frame):
+        area = _AreaFinta("Classifica dopo il turno 3\n")
+        main_frame.MainFrame._mostra_acronimi(self._telaio(area))
+        assert area.testo == SEZIONE_IN_MINIATURA + "\n"
+        assert area.registro == ["clear", "scrivi"]
+
+    def test_se_la_sezione_c_e_gia_non_la_riscrive(self, main_frame):
+        # Con i ritorni a capo come puo' restituirli il RichEdit: chi la stava
+        # leggendo ritrova il cursore dove l'aveva lasciato.
+        area = _AreaFinta(SEZIONE_IN_MINIATURA.replace("\n", "\r\n") + "\r\n")
+        main_frame.MainFrame._mostra_acronimi(self._telaio(area))
+        assert area.registro == []
+
+    def test_senza_torneo_nella_procedura_guidata_o_senza_manuale(self, main_frame):
+        area = _AreaFinta("Benvenuto in Tornello\n")
+        main_frame.MainFrame._mostra_acronimi(self._telaio(area, torneo=None))
+        main_frame.MainFrame._mostra_acronimi(self._telaio(area, creazione=True))
+        main_frame.MainFrame._mostra_acronimi(self._telaio(area, manuale=""))
+        assert area.registro == []
+        assert area.testo == "Benvenuto in Tornello\n"
+
+    def test_il_timer_non_tocca_l_area(self, main_frame, monkeypatch):
+        # Il ricalcolo di ogni minuto non conta come un'altra informazione:
+        # la sezione resta. Il timer fa tutta la strada vera, fino a
+        # update_status_display con un torneo aperto; un torneo senza date
+        # rende il testo indipendente dall'orologio. Una scrittura sull'area
+        # finirebbe nel suo registro; un metodo che l'area finta non ha
+        # solleverebbe un errore, che il ricalcolo protetto manda nel log.
+        # Per questo la barra deve risultare scritta e il log vuoto.
+        from gui import settings as modulo_settings
+
+        log = []
+        monkeypatch.setattr(modulo_settings, "_registra", log.append)
+        monkeypatch.setattr(main_frame, "apply_visual_settings", lambda *a, **k: None)
+        area = _AreaFinta(SEZIONE_IN_MINIATURA + "\n")
+        telaio = _telaio_del_focus(
+            main_frame,
+            status_text=_CampoFinto(),
+            FindFocus=lambda: None,
+            main_text=area,
+            append_log=area.scrivi,
+            current_tournament=UN_TORNEO,
+            last_status_msg="Pronto.",
+            _testo_pie_di_pagina=None,
+            settings={},
+            _data_backup_piu_vecchio=lambda: None,
+            _data_database_fide=lambda: None,
+        )
+        telaio.update_status_display = lambda action_msg=None: (
+            main_frame.MainFrame.update_status_display(telaio, action_msg)
+        )
+        main_frame.MainFrame._on_timer_pie_di_pagina(telaio, None)
+        assert log == []
+        assert telaio._guasto_pie_di_pagina is False
+        assert len(telaio.status_text.scritture) == 1
+        assert telaio.status_text.scritture[0].startswith("Pronto.\n")
+        assert area.registro == []
+        assert area.testo == SEZIONE_IN_MINIATURA + "\n"
+
+    def test_sul_campo_vero(self, main_frame, app_grafica):
+        # Un TextCtrl vero, come l'area principale, in una finestra mai
+        # mostrata: la sezione prende il posto del report, e la seconda volta
+        # il cursore resta dov'era.
+        import wx
+
+        cornice = wx.Frame(None)
+        try:
+            campo = wx.TextCtrl(
+                cornice, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2
+            )
+            campo.SetValue("Classifica dopo il turno 3")
+            telaio = SimpleNamespace(
+                current_tournament=UN_TORNEO,
+                creation_mode=False,
+                main_text=campo,
+                _leggi_manuale=lambda: MANUALE_IN_MINIATURA,
+            )
+            telaio.append_log = lambda testo: main_frame.MainFrame.append_log(telaio, testo)
+            main_frame.MainFrame._mostra_acronimi(telaio)
+            assert campo.GetValue().splitlines() == SEZIONE_IN_MINIATURA.split("\n")
+            campo.SetInsertionPoint(20)
+            main_frame.MainFrame._mostra_acronimi(telaio)
+            assert campo.GetInsertionPoint() == 20
+        finally:
+            cornice.Destroy()
+
+    def test_la_provenienza_con_controlli_veri(self, main_frame, app_grafica):
+        # Il confronto e' per identita': wx deve restituire da GetWindow lo
+        # stesso oggetto Python dell'albero e dell'area, non un involucro
+        # nuovo attorno allo stesso controllo.
+        import wx
+
+        cornice = wx.Frame(None)
+        try:
+            registro = []
+            telaio = _telaio_del_focus(
+                main_frame,
+                main_text=wx.TextCtrl(cornice, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2),
+                tree_ctrl=wx.TreeCtrl(cornice),
+                _ricalcola_pie_di_pagina=lambda: registro.append("calcolo"),
+                _mostra_acronimi=lambda: registro.append("acronimi"),
+            )
+            for provenienza in (telaio.tree_ctrl, telaio.main_text, wx.Button(cornice)):
+                evento = wx.FocusEvent(wx.wxEVT_SET_FOCUS)
+                evento.SetWindow(provenienza)
+                telaio._pie_di_pagina_col_focus = False
+                main_frame.MainFrame._on_focus_pie_di_pagina(telaio, evento)
+            assert registro == ["calcolo", "acronimi", "calcolo", "acronimi", "calcolo"]
+        finally:
+            cornice.Destroy()
+
+    def test_la_costante_trova_la_sezione_nel_manuale_vero(self, main_frame):
+        # MANUALE.txt letto come lo legge F1, in sola lettura.
+        from utils import sezione_del_manuale
+
+        testo = main_frame.MainFrame._leggi_manuale()
+        sezione = sezione_del_manuale(testo, main_frame.SEZIONE_DEGLI_ACRONIMI)
+        assert sezione.startswith("2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA\n")
+
+    def test_manuale_mancante(self, main_frame, monkeypatch, tmp_path):
+        import config
+
+        monkeypatch.setattr(config, "resource_path", lambda nome: str(tmp_path / nome))
+        assert main_frame.MainFrame._leggi_manuale() == ""
