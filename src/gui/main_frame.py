@@ -212,7 +212,9 @@ class MainFrame(wx.Frame):
         self.item_delete_tournament = file_menu.Append(
             wx.ID_ANY, _("&Elimina Torneo Attivo...\tDelete")
         )
-        self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Pulisci backup..."))
+        # Dalla 10.9.0 la finestra di pulizia e' la finestra Copie di
+        # sicurezza, che legge, confronta e ripristina le copie (issue 39).
+        self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Copie di sicurezza..."))
         file_menu.AppendSeparator()
         file_menu.Append(wx.ID_EXIT, _("&Esci\tCtrl+Q"))
         self.menu_bar.Append(file_menu, _("&File"))
@@ -1010,7 +1012,7 @@ class MainFrame(wx.Frame):
         msg = _(
             "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
             "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
-            "Vuoi aprire la finestra di pulizia dei backup adesso?\n\n"
+            "Vuoi aprire la finestra delle copie di sicurezza adesso? Le copie più vecchie di 18 mesi saranno già selezionate.\n\n"
             "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
             "e i file restano come sono."
         ).format(count=old_count)
@@ -1022,8 +1024,10 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
         if res == wx.ID_YES:
-            # Mostra la finestra di pulizia
-            self.on_backup_cleanup(None)
+            # La finestra delle copie, con le copie vecchie gia' selezionate:
+            # dalla 10.9.0 non c'e' piu' il pulsante Elimina consigliati, e
+            # basta premere Elimina selezionati.
+            self.on_backup_cleanup(None, seleziona=[f["path"] for f in vecchi])
         elif impostazioni is not None:
             impostazioni[RINVIO_AVVISO_BACKUP] = (today + diciotto_mesi).strftime(
                 DATE_FORMAT_ISO
@@ -3931,12 +3935,50 @@ class MainFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def on_backup_cleanup(self, event):
+    def on_backup_cleanup(self, event, seleziona=None):
+        """La finestra Copie di sicurezza, dal menu File, dalla domanda
+        dell'avvio e da Apri Torneo su una copia. seleziona e' l'elenco delle
+        copie da trovare gia' selezionate. Alla chiusura l'albero si rilegge:
+        un ripristino o una cancellazione possono averlo cambiato."""
         from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
 
-        dlg = BackupCleanupDialog(self, self.settings)
+        dlg = BackupCleanupDialog(
+            self,
+            self.settings,
+            torneo_aperto=self.active_filename,
+            seleziona=seleziona,
+            dopo_il_ripristino=self._dopo_il_ripristino,
+        )
         dlg.ShowModal()
         dlg.Destroy()
+        self.populate_tree()
+        self.update_status_display()
+
+    def _dopo_il_ripristino(self, esito):
+        """Riallinea la finestra a un ripristino riuscito, subito, mentre la
+        finestra delle copie e' ancora aperta. Se il torneo ripristinato e'
+        quello aperto, o il file aperto se n'e' andato nel cestino con
+        l'archivio, o non c'e' un torneo aperto, il torneo ripristinato si
+        carica: tenuto in memoria quello di prima, il primo salvataggio lo
+        riscriverebbe sul disco al posto della copia. Poi _save_state
+        rigenera classifica, turno e raccolta delle partite. Con un altro
+        torneo aperto basta rileggere l'albero, e durante la creazione di un
+        torneo nuovo nemmeno quello: la procedura guidata resta com'e'."""
+        if getattr(self, "creation_mode", False):
+            return
+        if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
+            self.populate_tree()
+            return
+        aperto = self.active_filename
+        stesso = bool(aperto) and os.path.normcase(os.path.abspath(aperto)) == os.path.normcase(
+            os.path.abspath(esito.destinazione)
+        )
+        if stesso or not self.current_tournament or not (aperto and os.path.exists(aperto)):
+            self.load_tournament(esito.destinazione)
+            if self.current_tournament:
+                self._save_state()
+            return
+        self.populate_tree()
 
     def on_fide_update(self, event):
         import os
@@ -4090,18 +4132,28 @@ class MainFrame(wx.Frame):
 
         if dentro_la_cartella(scelto, user_data_path("backup")):
             play_sound("errore")
+            # Dalla 10.9.0 le copie si usano dalla finestra delle copie di
+            # sicurezza, e la domanda la propone con la copia gia'
+            # selezionata. Si' e' il predefinito: aprire la finestra non
+            # cambia niente. ESC vale No: senza un pulsante Annulla o OK il
+            # dialogo non saprebbe che cosa fare del tasto, e resterebbe
+            # aperto, mentre il rifiuto con il solo OK ESC lo chiudeva.
             dlg_rifiuto = AccessibleMsgDialog(
                 self,
                 _("Copia di sicurezza"),
                 _(
                     "Il file {name} è una copia di sicurezza: sta nella cartella backup, e Tornello non lo apre come torneo.\n"
                     "Aperto così, verrebbe modificato a ogni salvataggio, e classifica, turni e raccolta delle partite del torneo verrebbero riscritti con lo stato vecchio della copia.\n"
-                    "Le copie di sicurezza si useranno dalla finestra delle copie di sicurezza."
+                    "Vuoi aprire la finestra delle copie di sicurezza, con questa copia già selezionata? Da lì puoi leggerla, confrontarla con lo stato attuale e ripristinarla."
                 ).format(name=os.path.basename(scelto)),
+                style=wx.YES_NO,
                 settings=self.settings,
             )
-            dlg_rifiuto.ShowModal()
+            dlg_rifiuto.SetEscapeId(wx.ID_NO)
+            risposta = dlg_rifiuto.ShowModal()
             dlg_rifiuto.Destroy()
+            if risposta == wx.ID_YES:
+                self.on_backup_cleanup(None, seleziona=[scelto])
             return
         self.load_tournament(scelto)
 

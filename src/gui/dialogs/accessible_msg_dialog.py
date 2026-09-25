@@ -13,7 +13,12 @@ class AccessibleMsgDialog(wx.Dialog):
     permettendo la navigazione con le frecce (screen reader friendly).
     """
 
-    def __init__(self, parent, title, message, style=wx.OK, settings=None):
+    def __init__(self, parent, title, message, style=wx.OK, settings=None, no_predefinito=False):
+        """no_predefinito, con style=wx.YES_NO, fa del No il pulsante
+        predefinito e di ESC un No esplicito: serve alle conferme che
+        sostituiscono dei file, come il ripristino di una copia di sicurezza
+        (10.10.0), dove un INVIO di troppo non deve bastare. Senza, tutto
+        resta come prima: predefinito il Si'."""
         super().__init__(
             parent,
             title=title,
@@ -48,7 +53,12 @@ class AccessibleMsgDialog(wx.Dialog):
             btn_no = wx.Button(panel, wx.ID_NO, _("No"))
 
             # Imposta default sul NO se richiesto o sul YES
-            btn_yes.SetDefault()
+            if no_predefinito:
+                btn_no.SetDefault()
+                self.SetEscapeId(wx.ID_NO)
+            else:
+                btn_yes.SetDefault()
+            self.pulsante_si, self.pulsante_no = btn_yes, btn_no
 
             btn_yes.Bind(wx.EVT_BUTTON, lambda evt: self.EndModal(wx.ID_YES))
             btn_no.Bind(wx.EVT_BUTTON, lambda evt: self.EndModal(wx.ID_NO))

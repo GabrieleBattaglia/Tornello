@@ -46,6 +46,36 @@ def test_delete_file_to_trash():
     assert not os.path.exists(tmp_path)
 
 
+def test_senza_cestino_il_file_resta(tmp_path, monkeypatch):
+    """Su un disco senza cestino, per esempio una cartella di rete, il file
+    resta dov'e' e la risposta e' falso: la Shell non viene nemmeno
+    chiamata, e non puo' chiedere di cancellarlo per sempre."""
+    import pytest
+
+    import utils
+
+    if sys.platform != "win32":
+        pytest.skip("il cestino di Windows c'e' solo su Windows")
+    percorso = tmp_path / "copia.json"
+    percorso.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(utils, "cestino_disponibile", lambda p: False)
+
+    assert utils.delete_file_to_trash(str(percorso)) is False
+    assert percorso.read_text(encoding="utf-8") == "{}"
+
+
+def test_il_disco_delle_prove_ha_il_cestino(tmp_path):
+    """La domanda alla Shell, in sola lettura, sul disco della cartella
+    temporanea, che il cestino ce l'ha."""
+    import pytest
+
+    import utils
+
+    if sys.platform != "win32":
+        pytest.skip("il cestino di Windows c'e' solo su Windows")
+    assert utils.cestino_disponibile(str(tmp_path)) is True
+
+
 class TestElencoDeiBackup:
     """La lettura dei file di backup, usata sia dalla pulizia automatica
     all'avvio sia dalla finestra di pulizia manuale. Dalla versione 9.7.0 i
@@ -225,7 +255,7 @@ class TestRilevatoreAutomatico:
 
         from gui import main_frame as mf
 
-        registro = {"messaggio": None, "pulizia_aperta": False}
+        registro = {"messaggio": None, "pulizia_aperta": False, "seleziona": None}
 
         class DialogoFinto:
             def __init__(self, parent, titolo, messaggio, style=None, settings=None):
@@ -243,8 +273,9 @@ class TestRilevatoreAutomatico:
             def __init__(self):
                 self.settings = {} if impostazioni is None else impostazioni
 
-            def on_backup_cleanup(self, event):
+            def on_backup_cleanup(self, event, seleziona=None):
                 registro["pulizia_aperta"] = True
+                registro["seleziona"] = seleziona
 
         return TelaioFinto(), registro, wx
 
@@ -262,16 +293,20 @@ class TestRilevatoreAutomatico:
         assert "1" in registro["messaggio"]
 
     def test_rispondendo_di_si_apre_la_finestra_di_pulizia(self, tmp_path, monkeypatch):
+        """Dalla 10.9.0 la finestra e' quella delle copie di sicurezza, e le
+        copie vecchie ci arrivano gia' selezionate: il pulsante Elimina
+        consigliati non c'e' piu'."""
         import wx
 
         from gui import main_frame as mf
 
-        self._prepara(tmp_path, monkeypatch)
+        antico = self._prepara(tmp_path, monkeypatch)
         telaio, registro, _wx = self._telaio(monkeypatch, wx.ID_YES)
 
         mf.MainFrame._check_backup_on_startup(telaio)
 
         assert registro["pulizia_aperta"] is True
+        assert registro["seleziona"] == [str(antico)]
 
     def test_rispondendo_di_no_il_rinvio_va_nelle_impostazioni(
         self, tmp_path, monkeypatch
@@ -729,6 +764,8 @@ class TestDataDellaCopia:
         assert mf.MainFrame._data_backup_piu_vecchio() == datetime(2026, 9, 23, 10, 15, 0)
 
     def test_la_finestra_mostra_la_data_della_copia(self, tmp_path, app_grafica):
+        """Dalla 10.9.0 la data e ora e' la prima colonna della finestra
+        Copie di sicurezza, e il momento, qui sconosciuto, la seconda."""
         import wx
 
         from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
@@ -738,7 +775,8 @@ class TestDataDellaCopia:
         telaio = wx.Frame(None)
         finestra = BackupCleanupDialog(telaio, {})
         try:
-            assert finestra.list_ctrl.GetItemText(0, 1) == "2025-01-01 12:00:00"
+            assert finestra.list_ctrl.GetItemText(0, 0) == "2025-01-01 12:00:00"
+            assert finestra.list_ctrl.GetItemText(0, 1) == "momento sconosciuto"
         finally:
             finestra.Destroy()
             telaio.Destroy()
@@ -808,7 +846,7 @@ class TestAperturaDentroBackup:
         assert dentro_la_cartella(str(backup), str(backup)) is False
         assert dentro_la_cartella("", str(backup)) is False
 
-    def _apri(self, monkeypatch, scelto):
+    def _apri(self, monkeypatch, scelto, risposta=None):
         import types
 
         import wx
@@ -816,7 +854,9 @@ class TestAperturaDentroBackup:
         import utils
         from gui import main_frame as mf
 
-        registro = {"messaggio": None, "caricato": None, "suoni": []}
+        registro = {"messaggio": None, "caricato": None, "suoni": [], "finestra": None, "esc": None}
+        if risposta is None:
+            risposta = wx.ID_NO
 
         class SceltaFinta:
             def __init__(self, *args, **kwargs):
@@ -835,8 +875,11 @@ class TestAperturaDentroBackup:
             def __init__(self, parent, titolo, messaggio, style=None, settings=None):
                 registro["messaggio"] = messaggio
 
+            def SetEscapeId(self, identificativo):
+                registro["esc"] = identificativo
+
             def ShowModal(self):
-                return wx.ID_OK
+                return risposta
 
             def Destroy(self):
                 pass
@@ -847,6 +890,7 @@ class TestAperturaDentroBackup:
         telaio = types.SimpleNamespace(
             settings={},
             load_tournament=lambda percorso: registro.update(caricato=percorso),
+            on_backup_cleanup=lambda evento, seleziona=None: registro.update(finestra=seleziona),
         )
         mf.MainFrame.on_open_tournament(telaio, None)
         return registro
@@ -856,12 +900,32 @@ class TestAperturaDentroBackup:
         copia.parent.mkdir(parents=True)
         copia.write_text("{}", encoding="utf-8")
 
+        import wx
+
         registro = self._apri(monkeypatch, str(copia))
 
         assert registro["caricato"] is None
         assert copia.name in registro["messaggio"]
         assert registro["suoni"] == ["errore"]
         assert copia.read_text(encoding="utf-8") == "{}"
+        assert registro["finestra"] is None
+        # ESC vale No: senza, un dialogo con Si' e No non lo usa, e resta aperto.
+        assert registro["esc"] == wx.ID_NO
+
+    def test_col_si_si_apre_la_finestra_delle_copie(self, tmp_path, monkeypatch):
+        """Dalla 10.10.0 il rifiuto propone la finestra delle copie di
+        sicurezza, con la copia scelta gia' selezionata."""
+        import wx
+
+        copia = tmp_path / "backup" / "2026" / "09 Settembre" / "Tornello - X_chiusura_torneo_20260923_160512.json"
+        copia.parent.mkdir(parents=True)
+        copia.write_text("{}", encoding="utf-8")
+
+        registro = self._apri(monkeypatch, str(copia), wx.ID_YES)
+
+        assert registro["caricato"] is None
+        assert registro["finestra"] == [str(copia)]
+        assert "finestra delle copie di sicurezza" in registro["messaggio"]
 
     def test_un_torneo_fuori_dalla_cartella_si_apre(self, tmp_path, monkeypatch):
         torneo = tmp_path / "Tornello - X.json"

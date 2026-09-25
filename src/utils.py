@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import tempfile
 
 from babel.dates import format_date
@@ -91,7 +92,7 @@ def cartella_per_data(radice, data=None, crea=True):
     return percorso
 
 
-def create_backup(filepath, context="backup"):
+def create_backup(filepath, context="backup", cartella_backup=None):
     """
     Crea una copia di backup del file specificato nella cartella 'backup'
     accanto all'applicazione, dentro le sottocartelle dell'anno e del mese in
@@ -100,10 +101,10 @@ def create_backup(filepath, context="backup"):
     Risponde vero se la copia e' nata; il lavoro lo fa copia_di_sicurezza,
     che dice anche dove.
     """
-    return copia_di_sicurezza(filepath, context) is not None
+    return copia_di_sicurezza(filepath, context, cartella_backup) is not None
 
 
-def copia_di_sicurezza(filepath, context="backup"):
+def copia_di_sicurezza(filepath, context="backup", cartella_backup=None):
     """La copia di create_backup, che restituisce il percorso della copia
     appena nata, oppure None se la copia non si e' potuta fare. Serve a chi
     deve rileggerla prima di togliere l'originale, come la finalizzazione
@@ -113,6 +114,9 @@ def copia_di_sicurezza(filepath, context="backup"):
     prima senza dire niente, per esempio le due copie pre_finalize_db che la
     console faceva di fila. Adesso la seconda prende il suffisso _2, la terza
     _3 e cosi' via, e nessuna copia viene mai sovrascritta.
+    cartella_backup e' la radice delle copie; senza, quella accanto al
+    programma. Dalla 10.10.0 la passa il ripristino (copie_di_sicurezza.py),
+    che riceve tutti i suoi percorsi da chi lo chiama.
     """
     if not os.path.exists(filepath):
         return None
@@ -121,10 +125,13 @@ def copia_di_sicurezza(filepath, context="backup"):
     # stata avviata: con un percorso relativo le copie di sicurezza fatte prima
     # di finalizzazione, Time Machine e rollback finivano dove capitava, e
     # l'utente che doveva recuperare un torneo non le trovava.
-    from config import user_data_path
+    if cartella_backup is None:
+        from config import user_data_path
+
+        cartella_backup = user_data_path("backup")
 
     adesso = datetime.datetime.now()
-    backup_dir = cartella_per_data(user_data_path("backup"), adesso)
+    backup_dir = cartella_per_data(cartella_backup, adesso)
     if not backup_dir:
         return None
 
@@ -195,16 +202,149 @@ def dentro_la_cartella(percorso, cartella):
         return False
 
 
+def stessi_byte(primo, secondo):
+    """Vero se i due file si leggono e hanno esattamente lo stesso contenuto."""
+    try:
+        with open(primo, "rb") as f_primo, open(secondo, "rb") as f_secondo:
+            return f_primo.read() == f_secondo.read()
+    except OSError:
+        return False
+
+
 def copie_di_chiusura(percorso_torneo):
     """Le copie di sicurezza fatte alla chiusura del programma: il torneo
     aperto, se c'e', e l'archivio dei giocatori. Con quelle di ogni turno
     proteggono il lavoro di tutti i giorni (issue 45).
+    Dalla 10.11.0 una copia identica, byte per byte, all'ultima copia dello
+    stesso file non nasce: le tre copie di chiusura del database fatte il 23
+    settembre 2026 erano uguali fra loro e al database, e ogni chiusura senza
+    lavoro ne aggiungeva un'altra (issue 39).
     """
-    from config import PLAYER_DB_FILE
+    from config import PLAYER_DB_FILE, user_data_path
 
+    cartella = user_data_path("backup")
     if percorso_torneo:
-        create_backup(percorso_torneo, "chiusura_torneo")
-    create_backup(PLAYER_DB_FILE, "chiusura_db")
+        _copia_se_cambiato(percorso_torneo, "chiusura_torneo", cartella)
+    _copia_se_cambiato(PLAYER_DB_FILE, "chiusura_db", cartella)
+
+
+def _copia_se_cambiato(percorso, contesto, cartella_backup):
+    """La copia di chiusura di un file, se il file e' diverso dalla sua
+    ultima copia, di qualunque momento."""
+    from copie_di_sicurezza import ultima_copia_di
+
+    ultima = ultima_copia_di(percorso, cartella_backup)
+    if ultima and stessi_byte(percorso, ultima):
+        return
+    create_backup(percorso, contesto, cartella_backup)
+
+
+def cestino_disponibile(percorso):
+    """Vero se il disco del percorso ha il cestino di Windows. Lo chiede alla
+    Shell con SHQueryRecycleBinW sulla radice del disco: su una cartella di
+    rete risponde con un errore. Fuori da Windows risponde vero, e decide
+    send2trash."""
+    if sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class SHQUERYRBINFO(ctypes.Structure):
+            _fields_ = [
+                ("cbSize", wintypes.DWORD),
+                ("i64Size", ctypes.c_longlong),
+                ("i64NumItems", ctypes.c_longlong),
+            ]
+
+        radice = os.path.splitdrive(os.path.abspath(percorso))[0] + "\\"
+        informazioni = SHQUERYRBINFO()
+        informazioni.cbSize = ctypes.sizeof(SHQUERYRBINFO)
+        esito = ctypes.windll.shell32.SHQueryRecycleBinW(
+            radice, ctypes.byref(informazioni)
+        )
+    except (OSError, AttributeError, ValueError, TypeError):
+        return False
+    return esito == 0
+
+
+def delete_file_to_trash(path, finestra=None):
+    """Manda nel Cestino di Windows un file o una cartella, e risponde vero
+    solo se dal suo posto e' sparito davvero.
+    Fino alla 10.9.0 l'ultimo ripiego era os.remove, che cancella per sempre:
+    dalla 10.10.0 le cancellazioni vanno sempre nel cestino (decisione di
+    Gabriele). Su un disco senza cestino, per esempio una cartella di rete,
+    il file resta dov'e' e la risposta e' falso, senza chiedere niente: la
+    Shell, a cui non arriva nemmeno, chiederebbe se cancellarlo per sempre.
+    Se il cestino c'e' ma non puo' prendere il file, per esempio perche' e'
+    piu' grande del cestino o perche' il cestino di quel disco e' impostato
+    per cancellare subito, la Shell riceve FOF_WANTNUKEWARNING e chiede prima
+    di cancellare per sempre, invece di farlo in silenzio. finestra e'
+    l'handle della finestra da cui parte la cancellazione: la domanda le
+    appartiene, e prende il fuoco invece di restare nascosta dietro una
+    finestra modale. Su Windows, dopo la Shell, non si ritenta con
+    send2trash, che la stessa domanda non la farebbe.
+    Nata in backup_cleanup_dialog.py, che la importa da qui, come
+    copie_di_sicurezza.py (issue 39).
+    """
+    path_abs = os.path.abspath(path)
+    if not os.path.exists(path_abs):
+        return False
+    if sys.platform == "win32":
+        if not cestino_disponibile(path_abs):
+            return False
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            class SHFILEOPSTRUCTW(ctypes.Structure):
+                _fields_ = [
+                    ("hwnd", wintypes.HWND),
+                    ("wFunc", wintypes.UINT),
+                    ("pFrom", wintypes.LPCWSTR),
+                    ("pTo", wintypes.LPCWSTR),
+                    ("fFlags", ctypes.c_ushort),
+                    ("fAnyOperationsAborted", wintypes.BOOL),
+                    ("hNameMappings", wintypes.LPVOID),
+                    ("lpszProgressTitle", wintypes.LPCWSTR),
+                ]
+
+            FO_DELETE = 3
+            FOF_ALLOWUNDO = 0x0040
+            FOF_NOCONFIRMATION = 0x0010
+            FOF_NOERRORUI = 0x0400
+            FOF_SILENT = 0x0004
+            FOF_WANTNUKEWARNING = 0x4000
+
+            fileop = SHFILEOPSTRUCTW()
+            fileop.hwnd = finestra
+            fileop.wFunc = FO_DELETE
+            # La Shell vuole l'elenco dei percorsi chiuso da due caratteri nulli.
+            fileop.pFrom = path_abs + "\0\0"
+            fileop.pTo = None
+            fileop.fFlags = (
+                FOF_ALLOWUNDO
+                | FOF_NOCONFIRMATION
+                | FOF_NOERRORUI
+                | FOF_SILENT
+                | FOF_WANTNUKEWARNING
+            )
+            fileop.fAnyOperationsAborted = False
+            fileop.hNameMappings = None
+            fileop.lpszProgressTitle = None
+
+            esito = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(fileop))
+        except (OSError, AttributeError, ValueError, TypeError):
+            return False
+        return esito == 0 and not os.path.exists(path_abs)
+
+    try:
+        from send2trash import send2trash
+
+        send2trash(path_abs)
+    except (ImportError, OSError):
+        return False
+    return not os.path.exists(path_abs)
 
 
 def elenca_file_di_backup(cartella_backup, limite_data=None):
@@ -500,6 +640,10 @@ EVENTI = {
     # l'ascolto di Gabriele (issue 51).
     "apertura_risultati": "meditimer_tempo_trascorso",
     "controllo_risultati": "gabryscola_gioca_carta",
+    # Dalla 10.10.0 un ripristino riuscito dalla finestra Copie di
+    # sicurezza: tre tic veloci che salgono, un preset che Tornello non usa
+    # per nient'altro. Provvisorio fino all'ascolto di Gabriele (issue 39).
+    "ripristino": "meditimer_banco_salvato",
 }
 
 

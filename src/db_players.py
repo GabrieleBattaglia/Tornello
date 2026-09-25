@@ -843,12 +843,70 @@ def save_players_db(players_db):
     return True
 
 
-def save_players_db_txt(players_db):
+def identita_del_torneo(dati):
+    """Identificativo e data di inizio di un torneo, come li usa lo storico
+    dei giocatori: un identificativo vuoto lascia il posto al nome.
+    Nata in ui.py con la 10.8.8; sta qui dalla 10.10.0, perche' la usa anche
+    lo storno del ripristino (copie_di_sicurezza.py)."""
+    return (dati.get("tournament_id") or dati.get("name"), dati.get("start_date"))
+
+
+def voce_di_questo_torneo(voce, identificativo, nome, inizio):
+    """Vero se la voce dello storico di un giocatore e' quella del torneo con
+    questo identificativo, nome e data di inizio.
+    La data di inizio deve coincidere: due edizioni con lo stesso nome hanno
+    lo stesso identificativo, perche' la finestra lo ricava dal nome. Una
+    voce senza identificativo si riconosce dal nome: la console, fino alla
+    10.8.7, scriveva nello storico l'identificativo vuoto dei tornei che non
+    lo avevano, e senza questo confronto una seconda finalizzazione sommava
+    di nuovo Elo, partite, voce e medaglia."""
+    if voce.get("date_started") != inizio:
+        return False
+    identificativo_della_voce = voce.get("tournament_id")
+    if identificativo_della_voce:
+        return identificativo_della_voce == identificativo
+    return voce.get("tournament_name") == nome
+
+
+# La medaglia di ogni piazzamento, come la assegna la finalizzazione.
+MEDAGLIE_DEI_PIAZZAMENTI = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
+
+
+def togli_torneo_dallo_storico(scheda, indice):
+    """Toglie dallo storico di un giocatore la voce in posizione indice, e
+    con lei la medaglia che quel piazzamento gli aveva dato, mai sotto zero.
+    Restituisce la voce tolta, oppure None se l'indice non c'e'.
+    Nata nella finestra del database dei giocatori, che la usa per il tasto
+    Canc sulle voci dello storico; dalla 10.10.0 la usa anche lo storno di un
+    torneo riaperto da una copia di sicurezza (issue 39)."""
+    storico = scheda.get("tournaments_played") or []
+    if not 0 <= indice < len(storico):
+        return None
+    voce = storico.pop(indice)
+    try:
+        piazzamento = int(voce.get("rank"))
+    except (ValueError, TypeError):
+        piazzamento = None
+    medaglia = MEDAGLIE_DEI_PIAZZAMENTI.get(piazzamento)
+    if medaglia:
+        medaglie = scheda.setdefault(
+            "medals", {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}
+        )
+        if medaglie.get(medaglia, 0) > 0:
+            medaglie[medaglia] -= 1
+    return voce
+
+
+def save_players_db_txt(players_db, percorso=None):
     """Genera un file TXT leggibile con lo stato del database giocatori,
-    includendo partite giocate totali e K-Factor attuale."""
+    includendo partite giocate totali e K-Factor attuale.
+    percorso e' il file da scrivere; senza, quello accanto al programma. Lo
+    passa il ripristino del database, che riceve i suoi percorsi da chi lo
+    chiama (10.10.0)."""
+    destinazione = percorso or PLAYER_DB_TXT_FILE
     try:
         with open(
-            PLAYER_DB_TXT_FILE, "w", encoding="utf-8-sig"
+            destinazione, "w", encoding="utf-8-sig"
         ) as f:  # Usiamo utf-8-sig
             now = datetime.now()
             current_date_iso = now.strftime(
@@ -991,7 +1049,7 @@ def save_players_db_txt(players_db):
         print(
             _(
                 "Errore durante il salvataggio del file TXT del DB giocatori ({filename}): {error}"
-            ).format(filename=PLAYER_DB_TXT_FILE, error=e)
+            ).format(filename=destinazione, error=e)
         )
     except Exception as e:
         print(

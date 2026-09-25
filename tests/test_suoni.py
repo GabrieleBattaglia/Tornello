@@ -7,7 +7,8 @@ la finestra di programmazione suonava il bip del giorno. Dalla 10.6.1 ci sono
 due eventi suoi, uno per l'apertura e uno per i pulsanti, con due preset che
 Tornello non usa per nient'altro: una regola del parco vuole un suono per
 ogni evento. Dalla 10.6.2 l'annullamento della programmazione suona una
-volta sola, e non piu' due.
+volta sola, e non piu' due. Dalla 10.10.0 anche il ripristino riuscito di
+una copia di sicurezza ha il suo evento, con le stesse regole (issue 39).
 Niente suona davvero: la collezione dei preset si legge come json, i
 sorgenti come testo, e dove servono le finestre vere play_sound e' sostituita
 da una finta che annota gli eventi.
@@ -25,8 +26,9 @@ RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CARTELLA_SRC = os.path.join(RADICE, "src")
 FINESTRA_DEI_RISULTATI = os.path.join(CARTELLA_SRC, "gui", "dialogs", "result_dialog.py")
 
-# I due eventi nati con la 10.6.1.
-EVENTI_NUOVI = ("apertura_risultati", "controllo_risultati")
+# I due eventi nati con la 10.6.1, e quello del ripristino, nato con la
+# 10.10.0.
+EVENTI_NUOVI = ("apertura_risultati", "controllo_risultati", "ripristino")
 
 # Le chiamate con il nome scritto per intero, play_sound("...") oppure
 # Acusticator.play("..."). Le f-string, come risultato_{val}, restano fuori:
@@ -76,10 +78,15 @@ class TestEventiNuovi:
         for evento in EVENTI_NUOVI:
             assert evento in EVENTI, f"manca l'evento {evento}"
 
-    def test_i_due_preset_sono_diversi_fra_loro(self):
+    def test_i_preset_sono_diversi_fra_loro(self):
         from utils import EVENTI
 
-        assert EVENTI["apertura_risultati"] != EVENTI["controllo_risultati"]
+        preset = [EVENTI[evento] for evento in EVENTI_NUOVI]
+        assert len(set(preset)) == len(preset)
+
+    def test_la_finestra_delle_copie_suona_il_ripristino(self):
+        nomi = {n for n, file in chiamate_letterali() if file == os.path.join("gui", "dialogs", "backup_cleanup_dialog.py")}
+        assert "ripristino" in nomi
 
     @pytest.mark.parametrize("evento", EVENTI_NUOVI)
     def test_nessun_altro_evento_usa_il_preset(self, evento):
@@ -141,7 +148,7 @@ class TestFinestraDeiRisultati:
 
     def test_la_finestra_usa_i_due_eventi(self):
         nomi = {n for n, file in chiamate_letterali() if file == os.path.relpath(FINESTRA_DEI_RISULTATI, CARTELLA_SRC)}
-        assert set(EVENTI_NUOVI) <= nomi
+        assert {"apertura_risultati", "controllo_risultati"} <= nomi
 
 
 @pytest.fixture

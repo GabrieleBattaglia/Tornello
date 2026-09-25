@@ -22,6 +22,12 @@ from db_players import (
     crea_nuovo_giocatore_nel_db,
     save_players_db,
 )
+
+# Le due funzioni che riconoscono il torneo nello storico dei giocatori
+# stanno in db_players dalla 10.10.0: le usa anche lo storno del ripristino,
+# che deve trovare le stesse voci che la finalizzazione ha scritto.
+from db_players import identita_del_torneo as _identita_del_torneo
+from db_players import voce_di_questo_torneo as _voce_di_questo_torneo
 from reports import save_standings_text, save_suspended_tournament_summary
 from stats import (
     calculate_elo_change,
@@ -46,6 +52,10 @@ from utils import (
     play_sound,
     sanitize_filename,
 )
+
+# Il confronto dei byte sta in utils dalla 10.10.0, condiviso con il
+# ripristino delle copie di sicurezza e con le copie di chiusura.
+from utils import stessi_byte as _stessi_byte
 
 
 def _conferma_lista_giocatori_torneo(torneo, players_db):
@@ -1477,15 +1487,6 @@ def _stesso_file(primo, secondo):
         return False
 
 
-def _stessi_byte(primo, secondo):
-    """Vero se i due file si leggono e hanno esattamente lo stesso contenuto."""
-    try:
-        with open(primo, "rb") as f_primo, open(secondo, "rb") as f_secondo:
-            return f_primo.read() == f_secondo.read()
-    except OSError:
-        return False
-
-
 def _copia_verificata(origine, destinazione, avvisa):
     """Copia un file del torneo concluso, il json o un report, in
     destinazione, in archivio o nella cartella di lavoro esterna, e rilegge
@@ -1558,29 +1559,6 @@ def _metti_da_parte(percorso, avvisa):
         ).format(name=os.path.basename(percorso), path=os.path.dirname(percorso))
     )
     return False
-
-
-def _identita_del_torneo(dati):
-    """Identificativo e data di inizio di un torneo, come li usa lo storico
-    dei giocatori: un identificativo vuoto lascia il posto al nome."""
-    return (dati.get("tournament_id") or dati.get("name"), dati.get("start_date"))
-
-
-def _voce_di_questo_torneo(voce, identificativo, nome, inizio):
-    """Vero se la voce dello storico di un giocatore e' quella del torneo con
-    questo identificativo, nome e data di inizio.
-    La data di inizio deve coincidere: due edizioni con lo stesso nome hanno
-    lo stesso identificativo, perche' la finestra lo ricava dal nome. Una
-    voce senza identificativo si riconosce dal nome: la console, fino alla
-    10.8.7, scriveva nello storico l'identificativo vuoto dei tornei che non
-    lo avevano, e senza questo confronto una seconda finalizzazione sommava
-    di nuovo Elo, partite, voce e medaglia."""
-    if voce.get("date_started") != inizio:
-        return False
-    identificativo_della_voce = voce.get("tournament_id")
-    if identificativo_della_voce:
-        return identificativo_della_voce == identificativo
-    return voce.get("tournament_name") == nome
 
 
 def _leggi_json_del_torneo(percorso):

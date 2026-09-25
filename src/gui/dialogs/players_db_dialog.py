@@ -3,7 +3,12 @@ import builtins
 import wx
 from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
-from db_players import generate_player_id, load_players_db, save_players_db
+from db_players import (
+    generate_player_id,
+    load_players_db,
+    save_players_db,
+    togli_torneo_dallo_storico,
+)
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from gui.settings import apply_visual_settings
 from utils import play_sound
@@ -583,23 +588,10 @@ class PlayersDbDialog(wx.Dialog):
                     settings=self.settings,
                 )
                 if dlg.ShowModal() == wx.ID_YES:
-                    history = p.get("tournaments_played", [])
-                    if 0 <= idx < len(history):
-                        removed_entry = history.pop(idx)
-                        rank = removed_entry.get("rank")
-                        try:
-                            rank_int = int(rank)
-                        except (ValueError, TypeError):
-                            rank_int = None
-                        if rank_int in [1, 2, 3, 4]:
-                            medals = p.setdefault(
-                                "medals",
-                                {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
-                            )
-                            medal_map = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
-                            medal_key = medal_map.get(rank_int)
-                            if medal_key and medals.get(medal_key, 0) > 0:
-                                medals[medal_key] -= 1
+                    # La voce se ne va con la sua medaglia: lo stesso lavoro
+                    # dello storno di un torneo riaperto da una copia di
+                    # sicurezza, scritto una volta sola in db_players.
+                    togli_torneo_dallo_storico(p, idx)
                     save_players_db(self.players_db)
                     self.populate_player_tree()
                 dlg.Destroy()
