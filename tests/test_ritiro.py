@@ -379,6 +379,7 @@ def _telaio(torneo, monkeypatch, finestre, **altri):
         on_activate_match = mf.MainFrame.on_activate_match
         apply_match_result = mf.MainFrame.apply_match_result
         get_board_num = mf.MainFrame.get_board_num
+        _e_il_torneo_aperto = mf.MainFrame._e_il_torneo_aperto
 
         def __init__(self):
             self.current_tournament = torneo

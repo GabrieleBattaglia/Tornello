@@ -889,8 +889,9 @@ class TestAperturaDentroBackup:
         monkeypatch.setattr(utils, "play_sound", lambda nome, *a, **k: registro["suoni"].append(nome))
         telaio = types.SimpleNamespace(
             settings={},
-            load_tournament=lambda percorso: registro.update(caricato=percorso),
+            load_tournament=lambda percorso, **opzioni: registro.update(caricato=percorso),
             on_backup_cleanup=lambda evento, seleziona=None: registro.update(finestra=seleziona),
+            _e_il_torneo_aperto=lambda percorso: False,
         )
         mf.MainFrame.on_open_tournament(telaio, None)
         return registro

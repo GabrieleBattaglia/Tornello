@@ -127,6 +127,7 @@ def _telaio(torneo):
         add_round_subnodes = MainFrame.add_round_subnodes
         on_tree_selection_changed = MainFrame.on_tree_selection_changed
         show_match_detail_verbose = MainFrame.show_match_detail_verbose
+        _e_il_torneo_aperto = MainFrame._e_il_torneo_aperto
 
         def __init__(self):
             self.tree_ctrl = _AlberoFinto()

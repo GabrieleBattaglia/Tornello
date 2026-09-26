@@ -2,6 +2,7 @@ import builtins
 import glob
 import json
 import os
+from contextlib import contextmanager
 
 import wx
 from GBwx import dentro_area_utile
@@ -38,6 +39,39 @@ def _cartella_predefinita_tornei():
     programma. Prima veniva proposta la directory di lavoro corrente, che
     coincide con quella del programma solo se lo si avvia da li'."""
     return os.path.abspath(user_data_path(""))
+
+
+def _chiave_del_percorso(percorso):
+    """Il percorso nella forma in cui si confronta con un altro: assoluto e,
+    su Windows, senza differenze di maiuscole e di barre. None e la stringa
+    vuota restano come sono."""
+    if not percorso:
+        return percorso
+    return os.path.normcase(os.path.abspath(percorso))
+
+
+def _nome_della_cartella(percorso):
+    """Il nome della cartella che contiene il file, da dire a voce. La radice
+    di un disco, che un nome non ce l'ha, si dice per intero."""
+    cartella = os.path.dirname(os.path.abspath(percorso))
+    return os.path.basename(cartella) or cartella
+
+
+class FileNonTorneo(ValueError):
+    """Un file JSON che non e' un torneo di Tornello, per esempio il database
+    dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
+
+
+def _ha_la_forma_di_un_torneo(dati):
+    """Vero se i dati letti da un file hanno la forma di un torneo di
+    Tornello: un dizionario con il nome, gli iscritti e i turni. Il database
+    dei giocatori, per esempio, ha gli iscritti ma non il nome."""
+    return (
+        isinstance(dati, dict)
+        and isinstance(dati.get("name"), str)
+        and isinstance(dati.get("players"), list)
+        and isinstance(dati.get("rounds", []), list)
+    )
 
 
 class CustomAccessible(wx.Accessible):
@@ -97,6 +131,14 @@ class MainFrame(wx.Frame):
         self._dialogo_avanzamento = None
         self._disabilitatore = None
         self._chiusura_per_aggiornamento = False
+        # Vero mentre l'albero si svuota e si ricostruisce: gli eventi di
+        # selezione che il controllo di Windows manda in quel momento non
+        # caricano tornei (vedi _albero_senza_caricamenti).
+        self._albero_in_ricostruzione = False
+        # I file di torneo non leggibili gia' segnalati, perche' la riga
+        # nell'area centrale e l'avviso nella barra non si ripetano a ogni
+        # ricostruzione dell'albero.
+        self._illeggibili_segnalati = set()
 
         self._init_ui()
         self._setup_shortcuts()
@@ -1046,15 +1088,7 @@ class MainFrame(wx.Frame):
 
     def _scan_and_load_initial_tournament(self):
         """Scansiona i file torneo in corso ed effettua il caricamento automatico se ce n'è solo uno."""
-        from config import PLAYER_DB_FILE
-
-        tournament_files = [
-            f
-            for f in glob.glob(user_data_path("Tornello - *.json"))
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        tournament_files = self._file_dei_tornei()[0]
 
         # Se c'è esattamente un solo torneo attivo, lo carichiamo all'avvio
         if len(tournament_files) == 1:
@@ -1063,42 +1097,203 @@ class MainFrame(wx.Frame):
         else:
             self.populate_tree()
 
-    def load_tournament(self, filepath, rebuild_tree=True):
-        """Carica un torneo dal file JSON."""
+    def load_tournament(self, filepath, rebuild_tree=True, tieni_il_precedente=False):
+        """Carica un torneo dal file JSON. Se il file non si legge, o non e'
+        un torneo, lo dicono un messaggio e la barra di stato. Con
+        tieni_il_precedente, che passa Apri Torneo, il torneo aperto prima
+        resta aperto, se e' un altro file (vedi _torneo_non_aperto)."""
         try:
-            with open(filepath, encoding="utf-8") as f:
-                data = json.load(f)
+            data = self._leggi_il_torneo(filepath)
+        except (OSError, ValueError) as errore:
+            # ValueError comprende il JSON rovinato, il testo che non e'
+            # UTF-8 e FileNonTorneo.
+            self._torneo_non_aperto(filepath, errore, rebuild_tree, tieni_il_precedente)
+            return
+        try:
             self.current_tournament = data
-            self.active_filename = filepath
+            # Il percorso si tiene nella forma in cui lo scrive l'albero:
+            # Apri Torneo puo' restituire lo stesso file con altre maiuscole,
+            # e i confronti esatti fra percorsi, come i bersagli del cursore
+            # dopo un risultato, non lo riconoscerebbero.
+            self.active_filename, elencato = self._percorso_come_nell_albero(filepath)
 
             # Ricostruisce players_dict per l'interfaccia grafica
             self.current_tournament["players_dict"] = {
                 p["id"]: p for p in self.current_tournament.get("players", [])
             }
 
-            # Aggiorna titolo finestra
             t_name = data.get("name", _("Torneo Sconosciuto"))
-            title_str = f"Tornello - {_('Versione {version} - Data Rilascio {date} - [{name}]').format(version=__version__, date=__date__, name=t_name)}"
-            self.SetTitle(title_str)
+            self._aggiorna_titolo()
+            # Il menu Torneo segue il torneo appena caricato, qualunque strada
+            # lo abbia caricato. Fino alla 10.13.12 lo accendeva solo la
+            # ricostruzione dell'albero: scegliendo un torneo con le frecce
+            # le voci restavano spente, e Ctrl+L e Ctrl+F tacevano.
+            self.update_menu_states()
 
             # Carica il report del turno corrente nell'area centrale
             self.show_current_round_report()
 
             if rebuild_tree:
                 self.populate_tree()
-            self.set_status(
-                _("Torneo '{name}' caricato con successo.").format(name=t_name)
+            if elencato:
+                esito = _("Torneo '{name}' caricato con successo.").format(name=t_name)
+            else:
+                # Un file preso fuori dalla cartella del programma e
+                # dall'archivio puo' avere lo stesso nome di un torneo
+                # dell'albero: la cartella li distingue.
+                esito = _(
+                    "Torneo '{name}' caricato con successo, dalla cartella {cartella}."
+                ).format(name=t_name, cartella=_nome_della_cartella(filepath))
+            self.set_status(esito)
+        except Exception as errore:
+            self._torneo_non_aperto(filepath, errore, rebuild_tree, False)
+
+    def _leggi_il_torneo(self, filepath):
+        """I dati del torneo scritto nel file. Un file del programma, come il
+        database dei giocatori, le impostazioni o la lingua scelta, e un JSON
+        senza la forma di un torneo sollevano FileNonTorneo: fino alla
+        10.13.11 Apri Torneo li apriva come tornei, e con il database dei
+        giocatori CANC su una persona la toglieva dal database, con il suo
+        Elo e il suo storico."""
+        from config import PLAYER_DB_FILE
+        from gui.settings import SETTINGS_FILE
+
+        nome = os.path.basename(filepath)
+        del_programma = {
+            _chiave_del_percorso(f)
+            for f in (
+                PLAYER_DB_FILE,
+                SETTINGS_FILE,
+                user_data_path("selected_language.json"),
             )
-        except Exception as e:
+        }
+        if _chiave_del_percorso(filepath) in del_programma:
+            raise FileNonTorneo(
+                _(
+                    "Il file {name} è un file del programma, non un torneo, e Tornello non lo apre come torneo."
+                ).format(name=nome)
+            )
+        with open(filepath, encoding="utf-8") as f:
+            data = json.load(f)
+        if not _ha_la_forma_di_un_torneo(data):
+            raise FileNonTorneo(
+                _("Il file {name} non è un torneo di Tornello, e non si apre.").format(
+                    name=nome
+                )
+            )
+        return data
+
+    def _torneo_non_aperto(self, filepath, errore, rebuild_tree, tieni_il_precedente):
+        """Dice perche' il file non si e' aperto, e lascia il torneo aperto
+        in uno stato vero. Con tieni_il_precedente resta aperto il torneo di
+        prima, se c'e' ed e' un altro file, e la barra di stato lo dice: fino
+        alla 10.13.9 lo riapriva per caso il ridisegno dell'albero, e la
+        barra diceva caricato con successo. Altrimenti nessun torneo resta
+        aperto: un torneo che non si rilegge non resta in memoria in una
+        versione vecchia, che il primo salvataggio riscriverebbe sul file."""
+        from utils import play_sound
+
+        if isinstance(errore, FileNonTorneo):
+            play_sound("errore")
+            self._dialogo_informativo(_("Non è un torneo"), str(errore))
+        else:
             wx.MessageBox(
-                _("Errore nel caricamento del torneo: {}").format(e),
+                _("Errore nel caricamento del torneo: {}").format(errore),
                 _("Errore"),
                 wx.ICON_ERROR,
             )
-            self.current_tournament = None
-            self.active_filename = None
-            if rebuild_tree:
-                self.populate_tree()
+        if (
+            tieni_il_precedente
+            and self.current_tournament
+            and not self._e_il_torneo_aperto(filepath)
+        ):
+            self.set_status(
+                _("Il torneo non si è aperto: resta aperto '{name}'.").format(
+                    name=self.current_tournament.get("name", _("Torneo Sconosciuto"))
+                )
+            )
+            return
+        self._nessun_torneo_aperto()
+        if rebuild_tree:
+            self.populate_tree()
+        self.set_status(_("Il torneo non si è aperto: nessun torneo aperto."))
+
+    def _file_dei_tornei(self):
+        """I file che l'albero legge da se': i tornei della cartella del
+        programma, senza il database dei giocatori e le impostazioni, e
+        quelli dell'archivio dei tornei conclusi. Due elenchi, in quest'ordine."""
+        from config import PLAYER_DB_FILE
+
+        in_cartella = [
+            f
+            for f in glob.glob(user_data_path("Tornello - *.json"))
+            if "- concluso_" not in os.path.basename(f).lower()
+            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
+            and os.path.basename(f) != "Tornello - Settings.json"
+        ]
+        in_archivio = glob.glob(
+            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
+            recursive=True,
+        )
+        return in_cartella, in_archivio
+
+    def _percorso_come_nell_albero(self, filepath):
+        """Il percorso del file nella forma in cui lo scrive l'albero, e se
+        l'albero lo trova da se'. Un file fuori dalla cartella del programma
+        e dall'archivio resta com'e', reso assoluto."""
+        chiave = _chiave_del_percorso(filepath)
+        in_cartella, in_archivio = self._file_dei_tornei()
+        for f in in_cartella + in_archivio:
+            if _chiave_del_percorso(f) == chiave:
+                return f, True
+        return os.path.abspath(filepath), False
+
+    def _aggiorna_titolo(self):
+        """Il titolo della finestra dice il torneo aperto, oppure che non ce
+        n'e' nessuno."""
+        if self.current_tournament:
+            t_name = self.current_tournament.get("name", _("Torneo Sconosciuto"))
+            titolo = _("Versione {version} - Data Rilascio {date} - [{name}]").format(
+                version=__version__, date=__date__, name=t_name
+            )
+        else:
+            titolo = _(
+                "Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]"
+            ).format(__version__, __date__)
+        self.SetTitle(f"Tornello - {titolo}")
+
+    def _nessun_torneo_aperto(self):
+        """Toglie dalla memoria il torneo aperto, e il titolo e il menu
+        Torneo lo dicono subito. Fino alla 10.13.9, dopo una finalizzazione,
+        il titolo restava sul torneo appena chiuso."""
+        self.current_tournament = None
+        self.active_filename = None
+        self._aggiorna_titolo()
+        self.update_menu_states()
+
+    def _e_il_torneo_aperto(self, filepath):
+        """Vero se filepath e' il file del torneo aperto, anche scritto con
+        altre maiuscole o in un'altra forma."""
+        if not (filepath and self.current_tournament and self.active_filename):
+            return False
+        return _chiave_del_percorso(filepath) == _chiave_del_percorso(
+            self.active_filename
+        )
+
+    @contextmanager
+    def _albero_senza_caricamenti(self):
+        """Il blocco in cui l'albero si svuota o perde una voce. Cancellando
+        la voce selezionata il controllo di Windows sposta la selezione su
+        un'altra voce, e manda un evento di selezione per ognuna: fino alla
+        10.13.9 on_tree_selection_changed caricava il torneo di ciascuna,
+        cosi' a ogni ricostruzione dell'albero passavano in memoria tutti i
+        tornei, e alla fine ne restava aperto uno che nessuno aveva scelto."""
+        prima = self._albero_in_ricostruzione
+        self._albero_in_ricostruzione = True
+        try:
+            yield
+        finally:
+            self._albero_in_ricostruzione = prima
 
     def show_current_round_report(self):
         """Visualizza l'abbinamento del turno corrente o lo stato del torneo concluso."""
@@ -1194,10 +1389,18 @@ class MainFrame(wx.Frame):
                 and isinstance(saved_data, dict)
             ):
                 match = True
-                for k in ["action", "filepath", "field_active", "round", "board_num"]:
+                for k in ["action", "field_active", "round", "board_num"]:
                     if saved_data.get(k) != child_data.get(k):
                         match = False
                         break
+                # Il file si riconosce anche scritto con altre maiuscole: i
+                # bersagli del cursore scritti con il percorso del torneo
+                # aperto altrimenti non si trovavano, e l'albero restava
+                # senza voce scelta.
+                if match and _chiave_del_percorso(
+                    saved_data.get("filepath")
+                ) != _chiave_del_percorso(child_data.get("filepath")):
+                    match = False
                 if match:
                     if "player" in saved_data and "player" in child_data:
                         if saved_data["player"].get("id") != child_data["player"].get(
@@ -1246,32 +1449,162 @@ class MainFrame(wx.Frame):
         except Exception:
             pass
 
+        with self._albero_senza_caricamenti():
+            file_illeggibili = self._ricostruisci_albero(expanded_actions)
+
+        if saved_data:
+            target_item = self._find_matching_item(self.tree_root, saved_data)
+            if target_item and target_item.IsOk():
+                self._ripristina_la_selezione(target_item)
+        if not self.tree_ctrl.GetSelection().IsOk():
+            self._cursore_senza_caricare()
+
+        self.update_menu_states()
+        self.update_status_display()
+        self._segnala_i_file_non_leggibili(file_illeggibili)
+
+    def _cursore_senza_caricare(self):
+        """Mette il cursore sulla voce del torneo aperto o, senza torneo
+        aperto, sulla voce Nuovo torneo, senza caricare niente. Un albero
+        senza voce scelta, per esempio all'avvio o quando la voce di prima
+        non c'e' piu', la sceglie da se' quando riceve il fuoco, con F6, TAB
+        o un clic: il controllo di Windows prende la prima voce e manda
+        l'evento di selezione, e fino alla 10.13.9 si apriva il primo torneo
+        dell'elenco, anche al posto di quello aperto. Nuovo torneo non apre
+        niente, e un torneo si apre spostandosi con le frecce sulla sua
+        voce, come sempre: il cursore fermo sulla voce di un torneo chiuso
+        lo farebbe credere aperto."""
+        voce = self._voce_del_torneo_aperto()
+        if voce is None:
+            voce = self._find_matching_item(
+                self.tree_root, {"action": "start_new_tournament"}
+            )
+        if voce and voce.IsOk():
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+
+    def _ripristina_la_selezione(self, voce):
+        """Rimette il cursore sulla voce che aveva prima della ricostruzione.
+        Una voce di un altro torneo non si sceglie come farebbero le frecce,
+        perche' caricherebbe quel torneo al posto di quello aperto: fino alla
+        10.13.9 Apri Torneo, con il cursore su un altro torneo, lasciava
+        aperto quello, mentre la barra diceva caricato il torneo scelto. Con
+        un torneo aperto il cursore va sulla sua voce; senza, per esempio
+        dopo l'eliminazione del torneo aperto, resta dov'era, senza caricare
+        niente."""
+        dati = self.tree_ctrl.GetItemData(voce)
+        percorso = dati.get("filepath") if isinstance(dati, dict) else None
+        if percorso and not self._e_il_torneo_aperto(percorso):
+            voce = self._voce_del_torneo_aperto() or voce
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+        else:
+            self.tree_ctrl.SelectItem(voce)
+        self.tree_ctrl.EnsureVisible(voce)
+        self.tree_ctrl.SetFocus()
+
+    def _voce_del_torneo_aperto(self):
+        """La voce del torneo aperto nell'albero, None se non c'e' un torneo
+        aperto. Le voci dei tornei stanno al primo livello e nelle due
+        categorie In Preparazione e Tornei Conclusi."""
+        if not self.current_tournament:
+            return None
+        da_guardare = [self.tree_root]
+        while da_guardare:
+            genitore = da_guardare.pop(0)
+            voce, cookie = self.tree_ctrl.GetFirstChild(genitore)
+            while voce.IsOk():
+                dati = self.tree_ctrl.GetItemData(voce)
+                azione = dati.get("action") if isinstance(dati, dict) else None
+                if azione == "select_tournament" and self._e_il_torneo_aperto(
+                    dati.get("filepath")
+                ):
+                    return voce
+                if azione in ("category_prep", "category_closed"):
+                    da_guardare.append(voce)
+                voce, cookie = self.tree_ctrl.GetNextChild(genitore, cookie)
+        return None
+
+    def _segnala_i_file_non_leggibili(self, file_illeggibili):
+        """Dice nella barra di stato, e con una riga per file nell'area
+        centrale, i file di torneo che non si leggono, quando si scoprono.
+        Fino alla 10.13.10 lo ripeteva a ogni ricostruzione dell'albero: la
+        riga si accodava di nuovo all'area centrale, e l'avviso prendeva il
+        posto dell'esito dell'azione appena fatta. Un file rimesso a posto
+        esce dall'elenco, e se si rovina di nuovo si segnala di nuovo.
+        La segnalazione arriva ad azione finita, con wx.CallAfter: molte azioni,
+        dopo aver ridisegnato l'albero, riscrivono l'area centrale e la barra
+        di stato, e l'avrebbero cancellata prima che qualcuno la leggesse."""
+        chiavi = {_chiave_del_percorso(f): (f, e) for f, e in file_illeggibili}
+        nuovi = [
+            valore
+            for chiave, valore in chiavi.items()
+            if chiave not in self._illeggibili_segnalati
+        ]
+        self._illeggibili_segnalati = set(chiavi)
+        if nuovi:
+            wx.CallAfter(self._mostra_i_file_non_leggibili, nuovi)
+
+    def _mostra_i_file_non_leggibili(self, nuovi):
+        """L'avviso in coda all'esito dell'azione nella barra di stato, e una
+        riga per file in fondo all'area centrale."""
+        if not self:
+            return
+        # Con un file solo la frase va al singolare: fino alla 10.13.5
+        # diceva 1 file di torneo non leggibili.
+        avviso = (
+            _("Attenzione: un file di torneo non leggibile, dettagli sotto.")
+            if len(nuovi) == 1
+            else _(
+                "Attenzione: {n} file di torneo non leggibili, dettagli sotto."
+            ).format(n=len(nuovi))
+        )
+        # Il messaggio di riposo non e' un esito da conservare.
+        esito = getattr(self, "last_status_msg", "")
+        if esito and esito not in (_("Pronto."), _("Pronto. Nessun torneo caricato.")):
+            avviso = f"{esito} {avviso}"
+        self.set_status(avviso)
+        for percorso, errore in nuovi:
+            self.append_log(
+                _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
+                    nome=os.path.basename(percorso), motivo=errore
+                )
+            )
+
+    def _ricostruisci_albero(self, expanded_actions):
+        """Svuota l'albero e lo riempie con i tornei in corso, in preparazione
+        e conclusi. Il torneo aperto ha sempre la sua voce, anche se il suo
+        file sta fuori dalla cartella del programma e dall'archivio.
+        Restituisce i file di torneo che non si leggono, come coppie di
+        percorso ed errore. populate_tree la chiama dentro
+        _albero_senza_caricamenti."""
         self.tree_ctrl.DeleteAllItems()
         self.tree_root = self.tree_ctrl.AddRoot("Root")
 
         # Scansiona file
-        from config import PLAYER_DB_FILE
-
-        active_files = [
-            f
-            for f in glob.glob(user_data_path("Tornello - *.json"))
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        active_files, closed_files = self._file_dei_tornei()
 
         in_prep_files = []
         started_files = []
         # Un file di torneo che non si apre, perche' un altro programma lo
         # tiene bloccato o perche' un salvataggio e' finito male, sparirebbe
         # dall'albero senza una parola: chi lo cerca penserebbe di averlo
-        # perso, mentre sul disco c'e' ancora. I nomi si raccolgono qui e si
-        # dicono alla fine, una volta sola.
+        # perso, mentre sul disco c'e' ancora. I file si raccolgono qui, e
+        # _segnala_i_file_non_leggibili li dice una volta sola.
         file_illeggibili = []
+
+        def leggi(f):
+            with open(f, encoding="utf-8") as f_in:
+                data = json.load(f_in)
+            # Un JSON che non e' un torneo non ha una voce: scelta, non si
+            # aprirebbe, perche' load_tournament lo rifiuta.
+            if not _ha_la_forma_di_un_torneo(data):
+                raise FileNonTorneo(_("non ha la forma di un torneo di Tornello"))
+            return data
+
         for f in active_files:
             try:
-                with open(f, encoding="utf-8") as f_in:
-                    data = json.load(f_in)
+                data = leggi(f)
                 if data.get("concluded"):
                     continue
                 if len(data.get("rounds", [])) == 0:
@@ -1279,28 +1612,58 @@ class MainFrame(wx.Frame):
                 else:
                     started_files.append((f, data))
             except Exception as errore:
-                file_illeggibili.append((os.path.basename(f), errore))
+                file_illeggibili.append((f, errore))
 
-        closed_files = glob.glob(
-            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
-            recursive=True,
-        )
         concluded_files = []
         for f in closed_files:
             try:
-                with open(f, encoding="utf-8") as f_in:
-                    data = json.load(f_in)
-                concluded_files.append((f, data))
+                concluded_files.append((f, leggi(f)))
             except Exception as errore:
-                file_illeggibili.append((os.path.basename(f), errore))
+                file_illeggibili.append((f, errore))
+
+        # Il torneo aperto ha sempre la sua voce, con i suoi rami, anche
+        # quando Apri Torneo lo ha preso da una cartella che l'albero non
+        # legge: fino alla 10.13.11 non compariva, e le sue partite non si
+        # potevano aprire. I dati sono quelli in memoria, e il ramo e' quello
+        # del suo stato. La sua voce dice fra parentesi la cartella da cui
+        # e' stato aperto: un torneo con lo stesso nome, come la copia su una
+        # chiavetta o l'edizione archiviata, altrimenti avrebbe nell'albero
+        # una voce identica, e con NVDA non si distinguerebbero.
+        dalla_memoria = None
+        if self.current_tournament and self.active_filename:
+            elencati = {
+                _chiave_del_percorso(f)
+                for f, _data in started_files + in_prep_files + concluded_files
+            }
+            if _chiave_del_percorso(self.active_filename) not in elencati:
+                dalla_memoria = _chiave_del_percorso(self.active_filename)
+                aperto = (self.active_filename, self.current_tournament)
+                if self.current_tournament.get("concluded"):
+                    concluded_files.append(aperto)
+                elif self.current_tournament.get("rounds"):
+                    started_files.append(aperto)
+                else:
+                    in_prep_files.append(aperto)
+
+        def tra_parentesi(f, *parti):
+            """Il seguito dell'etichetta di un torneo: le parti fra parentesi,
+            con la cartella in coda per la voce aggiunta dalla memoria."""
+            parti = [p for p in parti if p]
+            if dalla_memoria and _chiave_del_percorso(f) == dalla_memoria:
+                parti.append(
+                    _("dalla cartella {cartella}").format(
+                        cartella=_nome_della_cartella(f)
+                    )
+                )
+            return f" ({', '.join(parti)})" if parti else ""
 
         # 1. TORNEI IN CORSO (Attivi)
         for f, data in started_files:
-            t_node = self.add_tournament_node(self.tree_root, f, data)
+            t_node = self.add_tournament_node(
+                self.tree_root, f, data, label_suffix=tra_parentesi(f)
+            )
             if not expanded_actions:
-                if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                    self.active_filename
-                ):
+                if self._e_il_torneo_aperto(f):
                     # Si apre il torneo, cosi' i suoi rami si vedono, ma i rami
                     # partono chiusi: e' l'utente a decidere cosa espandere, e
                     # per il resto della sessione l'albero ricorda come li ha
@@ -1315,11 +1678,11 @@ class MainFrame(wx.Frame):
             )
             self.tree_ctrl.SetItemData(prep_parent, {"action": "category_prep"})
             for f, data in in_prep_files:
-                t_node = self.add_tournament_node(prep_parent, f, data)
+                t_node = self.add_tournament_node(
+                    prep_parent, f, data, label_suffix=tra_parentesi(f)
+                )
                 if not expanded_actions:
-                    if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                        self.active_filename
-                    ):
+                    if self._e_il_torneo_aperto(f):
                         self.tree_ctrl.Expand(t_node)
                         self.tree_ctrl.Expand(prep_parent)
 
@@ -1331,7 +1694,7 @@ class MainFrame(wx.Frame):
             self.tree_ctrl.SetItemData(closed_parent, {"action": "category_closed"})
             for f, data in concluded_files:
                 end_date_str = data.get("end_date")
-                month_year = ""
+                month_year = None
                 if end_date_str:
                     try:
                         from datetime import datetime
@@ -1352,17 +1715,15 @@ class MainFrame(wx.Frame):
                             _("dicembre"),
                         ]
                         month_name = mesi[dt.month - 1].capitalize()
-                        month_year = f" ({month_name} {dt.year})"
+                        month_year = f"{month_name} {dt.year}"
                     except Exception:
                         pass
-                label_suffix = month_year
+                label_suffix = tra_parentesi(f, month_year)
                 t_node = self.add_tournament_node(
                     closed_parent, f, data, label_suffix=label_suffix
                 )
                 if not expanded_actions:
-                    if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                        self.active_filename
-                    ):
+                    if self._e_il_torneo_aperto(f):
                         self.tree_ctrl.Expand(t_node)
                         self.tree_ctrl.Expand(closed_parent)
 
@@ -1394,35 +1755,7 @@ class MainFrame(wx.Frame):
 
         if expanded_actions:
             self._restore_tree_expansion_state(self.tree_root, expanded_actions)
-
-        if saved_data:
-            target_item = self._find_matching_item(self.tree_root, saved_data)
-            if target_item and target_item.IsOk():
-                self.tree_ctrl.SelectItem(target_item)
-                self.tree_ctrl.EnsureVisible(target_item)
-                self.tree_ctrl.SetFocus()
-
-        self.update_menu_states()
-        self.update_status_display()
-        if file_illeggibili:
-            # Con un file solo la frase va al singolare: fino alla 10.13.5
-            # diceva 1 file di torneo non leggibili.
-            if len(file_illeggibili) == 1:
-                self.set_status(
-                    _("Attenzione: un file di torneo non leggibile, dettagli sotto.")
-                )
-            else:
-                self.set_status(
-                    _(
-                        "Attenzione: {n} file di torneo non leggibili, dettagli sotto."
-                    ).format(n=len(file_illeggibili))
-                )
-            for nome, errore in file_illeggibili:
-                self.append_log(
-                    _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
-                        nome=nome, motivo=errore
-                    )
-                )
+        return file_illeggibili
 
     def add_round_subnodes(
         self, parent_node, r, data, filepath, players_dict, is_concluded
@@ -1930,6 +2263,10 @@ class MainFrame(wx.Frame):
     def on_tree_selection_changed(self, event):
         if not self or not getattr(self, "tree_ctrl", None) or not self.tree_ctrl:
             return
+        # Le selezioni che il controllo fa da se' mentre l'albero si svuota
+        # non sono scelte di chi usa il programma.
+        if getattr(self, "_albero_in_ricostruzione", False):
+            return
         try:
             item = event.GetItem()
             if not item or not item.IsOk():
@@ -2036,9 +2373,12 @@ class MainFrame(wx.Frame):
             return
 
         filepath = data.get("filepath")
-        if filepath:
-            if not self.current_tournament or self.active_filename != filepath:
-                self.load_tournament(filepath, rebuild_tree=False)
+        if filepath and not self._e_il_torneo_aperto(filepath):
+            self.load_tournament(filepath, rebuild_tree=False)
+            # Un file che non si e' aperto l'ha gia' detto il messaggio, e
+            # quello che segue non vale per un altro torneo.
+            if not self._e_il_torneo_aperto(filepath):
+                return
 
         action = data.get("action")
         if action == "select_tournament":
@@ -2634,10 +2974,14 @@ class MainFrame(wx.Frame):
         action = data.get("action")
         filepath = data.get("filepath")
 
-        if filepath and (
-            not self.current_tournament or self.active_filename != filepath
-        ):
+        if filepath and not self._e_il_torneo_aperto(filepath):
             self.load_tournament(filepath, rebuild_tree=False)
+            # Se il torneo della voce non si e' aperto, per esempio perche'
+            # il suo file non c'e' piu', l'azione non parte: fino alla
+            # 10.13.9 Avvio torneo proseguiva dopo il messaggio d'errore,
+            # senza un torneo da avviare.
+            if not self._e_il_torneo_aperto(filepath):
+                return
 
         if action == "add_player_action":
             self.on_enroll_players(None)
@@ -3156,7 +3500,6 @@ class MainFrame(wx.Frame):
             return
 
         import json
-        import os
 
         from utils import play_sound
 
@@ -3195,9 +3538,7 @@ class MainFrame(wx.Frame):
                     with open(filepath, "w", encoding="utf-8") as f_out:
                         json.dump(t_data, f_out, indent=4)
 
-                    if self.active_filename and os.path.abspath(
-                        self.active_filename
-                    ) == os.path.abspath(filepath):
+                    if self._e_il_torneo_aperto(filepath):
                         self.current_tournament = t_data
 
                     self._tree_restore_target = {
@@ -3207,9 +3548,7 @@ class MainFrame(wx.Frame):
                     self.populate_tree()
                     play_sound("rimozione_giocatore")
 
-                    if self.active_filename and os.path.abspath(
-                        self.active_filename
-                    ) == os.path.abspath(filepath):
+                    if self._e_il_torneo_aperto(filepath):
                         self.show_players_list_verbose()
 
                     self.set_status(
@@ -3250,15 +3589,10 @@ class MainFrame(wx.Frame):
         lascerebbe abbinamenti e risultati riferiti a un giocatore che non
         esiste piu'. Al suo posto si offre il ritiro, che e' l'operazione che
         l'arbitro sta cercando davvero."""
-        import os
-
         from utils import play_sound
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
-        e_il_torneo_attivo = bool(self.active_filename) and os.path.abspath(
-            self.active_filename
-        ) == os.path.abspath(filepath)
-        if not e_il_torneo_attivo or not self.current_tournament:
+        if not self._e_il_torneo_aperto(filepath):
             play_sound("errore")
             self._dialogo_informativo(
                 _("Torneo non aperto"),
@@ -3791,14 +4125,21 @@ class MainFrame(wx.Frame):
             # 2. Il torneo non c'e' piu': esce subito dall'albero e, se era
             # quello aperto, dalla memoria, prima dei file correlati. Cosi' un
             # errore che arrivasse dopo non lo lascerebbe aperto, a rinascere
-            # nella cartella del programma al primo salvataggio.
-            self.tree_ctrl.Delete(item)
-            if self.active_filename and os.path.normcase(
-                os.path.abspath(filepath)
-            ) == os.path.normcase(os.path.abspath(self.active_filename)):
-                self.current_tournament = None
-                self.active_filename = None
+            # nella cartella del programma al primo salvataggio. Il cursore
+            # passa da solo a un'altra voce, che non carica il suo torneo:
+            # fino alla 10.13.9 al posto di quello eliminato se ne apriva un
+            # altro, senza avviso.
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.Delete(item)
+            if self._e_il_torneo_aperto(filepath):
+                self._nessun_torneo_aperto()
                 self.show_intro_message()
+            # L'albero si ridisegna, con il cursore sulla voce dove l'ha
+            # portato la cancellazione, senza caricare niente: fino alla
+            # 10.13.9 restavano la voce Avvio torneo del torneo eliminato,
+            # che con INVIO dava un errore, e il conteggio vecchio della sua
+            # categoria.
+            self.populate_tree()
 
             # 3. I file correlati vanno nel cestino uno per uno: quelli che non
             # ci vanno restano dove sono, e il messaggio finale li nomina.
@@ -4427,7 +4768,17 @@ class MainFrame(wx.Frame):
             if risposta == wx.ID_YES:
                 self.on_backup_cleanup(None, seleziona=[scelto])
             return
-        self.load_tournament(scelto)
+        # Se il file scelto non si apre, o non e' un torneo, resta aperto il
+        # torneo di prima.
+        self.load_tournament(scelto, tieni_il_precedente=True)
+        # Il cursore dell'albero passa sulla voce del torneo aperto, anche
+        # se stava su una voce che non e' di un torneo, come Nuovo torneo;
+        # senza caricare di nuovo e senza cambiare l'area centrale.
+        if self._e_il_torneo_aperto(scelto):
+            voce = self._voce_del_torneo_aperto()
+            if voce and voce.IsOk():
+                with self._albero_senza_caricamenti():
+                    self.tree_ctrl.SelectItem(voce)
 
     def on_enroll_players(self, event):
         if not self.current_tournament:
@@ -4507,11 +4858,10 @@ class MainFrame(wx.Frame):
         if not self.current_tournament:
             wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
             return
-        from reports import get_standings_text
-
-        self.main_text.Clear()
-        standings_text = get_standings_text(self.current_tournament, final=False)
-        self.append_log(standings_text)
+        # La stessa classifica della voce dell'albero: per un torneo concluso
+        # e' quella finale. Fino alla 10.13.13 Ctrl+L la dava sempre parziale,
+        # Dopo Turno N, e senza le posizioni finali.
+        self.show_standings_verbose()
         self.main_text.SetFocus()
 
     def on_rollback_round(self, event):
@@ -4527,12 +4877,15 @@ class MainFrame(wx.Frame):
             )
             return
 
+        # La domanda nomina il torneo: il menu Torneo vale per il torneo
+        # appena scelto nell'albero, e l'ultima parola prima di un'azione
+        # irreversibile deve dire su quale torneo si agisce.
         dlg = AccessibleMsgDialog(
             self,
             _("Annulla Turno"),
             _(
-                "Sei sicuro di voler annullare l'ultimo turno e tornare indietro? Questa azione è irreversibile."
-            ),
+                "Sei sicuro di voler annullare l'ultimo turno del torneo {name} e tornare indietro? Questa azione è irreversibile."
+            ).format(name=self.current_tournament.get("name", _("Torneo Sconosciuto"))),
             style=wx.YES_NO,
         )
         if dlg.ShowModal() == wx.ID_YES:
@@ -4617,12 +4970,14 @@ class MainFrame(wx.Frame):
                 )
                 return
 
+        # La domanda nomina il torneo, come quella di Annulla Turno: il
+        # database dei giocatori cambia per sempre.
         dlg = AccessibleMsgDialog(
             self,
             _("Finalizza Torneo"),
             _(
-                "Sei sicuro di voler concludere definitivamente il torneo? Verranno calcolati i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database giocatori."
-            ),
+                "Sei sicuro di voler concludere definitivamente il torneo {name}? Verranno calcolati i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database giocatori."
+            ).format(name=self.current_tournament.get("name", _("Torneo Sconosciuto"))),
             style=wx.YES_NO,
         )
         if dlg.ShowModal() == wx.ID_YES:
@@ -4657,8 +5012,9 @@ class MainFrame(wx.Frame):
                 dlg_avvisi.ShowModal()
                 dlg_avvisi.Destroy()
             if success:
-                self.current_tournament = None
-                self.active_filename = None
+                # Nessun torneo resta aperto: fino alla 10.13.9 la
+                # ricostruzione dell'albero ne apriva un altro senza avviso.
+                self._nessun_torneo_aperto()
                 # Dopo la finestra di conferma il focus resterebbe nel vuoto:
                 # lo si riporta nell'albero, sulla voce che serve subito dopo
                 # aver chiuso un torneo.
