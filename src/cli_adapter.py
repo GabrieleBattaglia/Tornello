@@ -4,6 +4,14 @@ from models import Player, Round, Tournament
 from utils import enter_escape, play_sound
 
 
+def _players_dict_condiviso(torneo_dict):
+    """Il dizionario dei giocatori per identificativo, con gli stessi
+    dizionari della lista players del torneo, non delle copie: quello che le
+    funzioni di ui scrivono in un giocatore trovato per identificativo arriva
+    cosi' anche nella lista, da cui l'adattatore ricostruisce il torneo."""
+    return {p["id"]: p for p in torneo_dict.get("players", [])}
+
+
 class CLIAdapter(UIAdapter):
     def show_message(self, message: str) -> None:
         print(message)
@@ -89,8 +97,9 @@ class CLIAdapter(UIAdapter):
 
     def confirm_player_list(self, tournament: Tournament, players_db: dict) -> bool:
         torneo_dict = tournament.to_dict()
-        # Ensure players_dict is populated in the dict for ui compatibility
-        torneo_dict["players_dict"] = {p.id: p.to_dict() for p in tournament.players}
+        # players_dict si riferisce agli stessi dizionari di players, come
+        # nella finestra: vedi update_match_results.
+        torneo_dict["players_dict"] = _players_dict_condiviso(torneo_dict)
 
         res = ui._conferma_lista_giocatori_torneo(torneo_dict, players_db)
         if res:
@@ -101,7 +110,15 @@ class CLIAdapter(UIAdapter):
 
     def update_match_results(self, tournament: Tournament) -> bool:
         torneo_dict = tournament.to_dict()
-        torneo_dict["players_dict"] = {p.id: p.to_dict() for p in tournament.players}
+        # players_dict deve riferirsi agli stessi dizionari di players:
+        # ui.update_match_result scrive punti e storico del risultato, e il
+        # ritiro dopo un forfait, nei giocatori che trova in players_dict, e
+        # qui sotto si rilegge players. Fino alla 10.13.20 erano dizionari
+        # nuovi, fatti con un altro to_dict: in console un risultato restava
+        # soltanto nella partita, i giocatori restavano a zero punti e senza
+        # storico, e il turno successivo si abbinava come se il turno non
+        # fosse stato giocato.
+        torneo_dict["players_dict"] = _players_dict_condiviso(torneo_dict)
 
         res = ui.update_match_result(torneo_dict)
         if res:

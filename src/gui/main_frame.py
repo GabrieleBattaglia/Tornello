@@ -3272,10 +3272,14 @@ class MainFrame(wx.Frame):
                     self.tree_ctrl.Expand(self.tree_root)
 
     def on_wizard_next(self):
-        from db_players import load_players_db
         from utils import play_sound
 
-        players_db = load_players_db()
+        # Un database che non si legge non apre la finestra di iscrizione:
+        # un giocatore aggiunto dalla ricerca FIDE o da zero non si potrebbe
+        # salvare (10.13.15).
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
 
         play_sound("conferma")
 
@@ -4539,9 +4543,9 @@ class MainFrame(wx.Frame):
         self.main_text.SetFocus()
 
     def on_fide_query(self, event):
-        from db_players import load_players_db
-
-        players_db = load_players_db()
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
         from gui.dialogs.fide_query_dialog import FideQueryDialog
 
         dlg = FideQueryDialog(self, players_db, self.settings)
@@ -4655,6 +4659,10 @@ class MainFrame(wx.Frame):
     def on_sync_db(self, event):
         from gui.dialogs.sync_database_dialog import SyncDatabaseDialog
 
+        # La finestra legge e salva il database da se': se non si legge, non
+        # si apre (10.13.15).
+        if self._database_dei_giocatori() is None:
+            return
         dlg = SyncDatabaseDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
@@ -4662,6 +4670,10 @@ class MainFrame(wx.Frame):
     def on_local_db(self, event):
         from gui.dialogs.players_db_dialog import PlayersDbDialog
 
+        # La finestra legge e salva il database da se': se non si legge, non
+        # si apre (10.13.15).
+        if self._database_dei_giocatori() is None:
+            return
         dlg = PlayersDbDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
@@ -4793,9 +4805,9 @@ class MainFrame(wx.Frame):
                 wx.ICON_ERROR,
             )
             return
-        from db_players import load_players_db
-
-        players_db = load_players_db()
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
         from gui.dialogs import PlayerEnrollmentDialog
 
         enrolled_raw = [p for p in self.current_tournament.get("players", [])]
@@ -4900,6 +4912,36 @@ class MainFrame(wx.Frame):
                 )
         dlg.Destroy()
 
+    def _database_dei_giocatori(self):
+        """Il database dei giocatori letto dal disco, oppure None, dopo il
+        suono d'errore e un messaggio, se il file c'e' ma non si legge,
+        perche' un altro programma lo tiene bloccato o perche' e' rovinato.
+        Chi lo chiede lo modificherebbe e lo salverebbe: il salvataggio non
+        riuscirebbe, ed e' meglio dirlo prima. Fino alla 10.13.14 il database
+        illeggibile arrivava vuoto, e il primo salvataggio lo sostituiva sul
+        disco con le sole schede aggiunte: nell'iscrizione e nelle finestre
+        del database dalla 10.13.15, nella finalizzazione dalla 10.13.16."""
+        from db_players import (
+            database_non_letto,
+            load_players_db,
+            messaggio_database_non_letto,
+        )
+        from utils import play_sound
+
+        players_db = load_players_db()
+        if not database_non_letto(players_db):
+            return players_db
+        play_sound("errore")
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Errore"),
+            messaggio_database_non_letto(players_db),
+            settings=self.settings,
+        )
+        dlg.ShowModal()
+        dlg.Destroy()
+        return None
+
     @staticmethod
     def _esito_della_finalizzazione(riuscita, avvisi):
         """Titolo e testo della finestra che chiude la finalizzazione, oppure
@@ -4981,9 +5023,13 @@ class MainFrame(wx.Frame):
             style=wx.YES_NO,
         )
         if dlg.ShowModal() == wx.ID_YES:
-            from db_players import load_players_db
-
-            players_db = load_players_db()
+            # Con il database che non si legge la finalizzazione non parte:
+            # creerebbe nel database tutti gli iscritti, e il file sul disco
+            # perderebbe tutti gli altri giocatori (10.13.16).
+            players_db = self._database_dei_giocatori()
+            if players_db is None:
+                dlg.Destroy()
+                return
 
             from ui import finalize_tournament
 

@@ -599,8 +599,25 @@ def compute_buchholz_cut1(player_id, torneo):
     return float(format_points(sum(valore for valore, _vur in rimasti)))
 
 
+def _giocata_sulla_scacchiera(result_entry):
+    """Vero per una partita giocata sulla scacchiera: con un avversario, e
+    non un bye o un forfait. Sono le sole che contano nella media dell'ARO,
+    come vuole l'articolo 10.1 del regolamento FIDE sugli spareggi (C.07, in
+    vigore dal 1 marzo 2026): la media dei rating degli avversari "played
+    over the board". Fino alla 10.13.17 l'ARO contava anche gli avversari
+    delle partite vinte o perse a forfait, 1-F, F-1 e 0-0F, che performance
+    e variazione Elo escludevano gia'."""
+    opponent_id = result_entry.get("opponent_id")
+    return (
+        bool(opponent_id)
+        and opponent_id != "BYE_PLAYER_ID"
+        and not is_forfeit_result(result_entry.get("result"))
+    )
+
+
 def compute_aro(player_id, torneo):
-    """Calcola l'Average Rating of Opponents (ARO) basato sull'Elo iniziale."""
+    """Calcola l'Average Rating of Opponents (ARO) basato sull'Elo iniziale,
+    sulle sole partite giocate sulla scacchiera (articolo 10.1 di C.07)."""
     opponent_elos = []
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -613,8 +630,7 @@ def compute_aro(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         if (
-            opponent_id
-            and opponent_id != "BYE_PLAYER_ID"
+            _giocata_sulla_scacchiera(result_entry)
             and opponent_id not in opponent_ids_encountered
         ):
             opponent = players_dict.get(opponent_id)
@@ -1237,8 +1253,10 @@ def compute_sonneborn_berger_generic(player_id, torneo, cut1=False):
 def compute_aro_generic(player_id, torneo, cut1=False):
     """ARO con supporto modificatore Cut-1.
 
-    Raccoglie gli Elo iniziali degli avversari. Se cut1, rimuove il più basso
-    prima di calcolare la media. Arrotondamento: 0.5 per eccesso.
+    Raccoglie gli Elo iniziali degli avversari delle partite giocate sulla
+    scacchiera, senza bye e forfait (articolo 10.1 di C.07, dalla 10.13.18).
+    Se cut1, rimuove il più basso prima di calcolare la media.
+    Arrotondamento: 0.5 per eccesso.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1251,7 +1269,7 @@ def compute_aro_generic(player_id, torneo, cut1=False):
     opponent_elos = []
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+        if not _giocata_sulla_scacchiera(result_entry):
             continue
 
         opponent = players_dict.get(opponent_id)

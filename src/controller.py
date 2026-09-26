@@ -14,7 +14,9 @@ from config import (
 )
 from db_players import (
     aggiorna_db_fide_locale,
+    database_non_letto,
     load_players_db,
+    messaggio_database_non_letto,
     sincronizza_db_personale,
 )
 from engine import handle_bbpairings_failure
@@ -123,6 +125,10 @@ class TournamentController:
     def start(self) -> None:
         self.ui.show_message(_("\nBENVENUTI! Sono Tornello V9"))
         self.ui.play_sound("avvio")
+        # Un database dei giocatori che c'e' ma non si legge arriva vuoto, e
+        # non si salva: lo si dice subito, prima delle iscrizioni (10.13.15).
+        if database_non_letto(self.players_db):
+            self.ui.show_error(messaggio_database_non_letto(self.players_db))
 
         self._check_fide_db()
         self._select_or_create_tournament()
@@ -992,6 +998,23 @@ class TournamentController:
 
     def _finalize_tournament(self) -> bool:
         if not self.tournament:
+            return False
+        # Il database letto all'avvio, se non si era potuto leggere, si
+        # rilegge: il blocco di un altro programma puo' essere passato. Se
+        # ancora non si legge, la finalizzazione non parte, e il torneo resta
+        # da concludere: creerebbe nel database tutti gli iscritti, e il file
+        # sul disco perderebbe tutti gli altri giocatori (10.13.16). Le
+        # schede aggiunte nel frattempo non ci sono: con il database non
+        # letto nessuna si e' potuta salvare, e nessuna e' rimasta.
+        if database_non_letto(self.players_db):
+            self.players_db = load_players_db()
+        if database_non_letto(self.players_db):
+            self.ui.show_error(messaggio_database_non_letto(self.players_db))
+            self.ui.show_error(
+                _(
+                    "La finalizzazione non parte: il torneo resta da concludere, e il database dei giocatori e l'archivio restano come sono."
+                )
+            )
             return False
 
         # Le copie di sicurezza pre_finalize_db e pre_finalize_torneo le fa

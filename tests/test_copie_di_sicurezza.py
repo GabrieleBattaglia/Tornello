@@ -1133,7 +1133,11 @@ class TestCicloCompleto:
         piano = prepara_ripristino(copia, ambiente.percorsi)
 
         assert piano.rifiuto is None
-        assert any(r.startswith("  CognomeG4 NomeG4: Elo rapid ") and " a 0 (" in r for r in piano.righe)
+        # Dalla 10.13.20 l'Elo rapid che torna a zero si legge nessuno,
+        # senza la differenza: fino alla 10.13.19 la riga diceva a 0 (-1399).
+        riga_g4 = next(r for r in piano.righe if r.startswith("  CognomeG4 NomeG4: Elo rapid "))
+        assert " a nessuno, partite " in riga_g4
+        assert " a 0" not in riga_g4 and "(-" not in riga_g4
         assert not any("togliendo" in r or "Gli Elo di prima vengono" in r or "None" in r for r in piano.righe)
         assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
         assert _leggi(ambiente.percorsi.database) == database_iniziale
@@ -2012,3 +2016,249 @@ class TestManuale:
             if citazione in esempi:
                 continue
             assert any(m.fullmatch(citazione) for m in modelli), citazione
+
+
+class TestEloDellaCadenzaCheSeNeVa:
+    """Dalla 10.13.20, nella conferma della riapertura, un Elo della cadenza
+    che torna a zero, come lo scrive il database dei giocatori quando manca,
+    si legge nessuno, come dice la voce 10.13.4 del ChangeLog. Fino alla
+    10.13.19 nessuno scattava soltanto per None, e la riga di Valli diceva
+    Elo rapid 1615 a 0 (-1615)."""
+
+    def _riga(self, campo, da, a):
+        from copie_di_sicurezza import righe_dello_storno
+
+        stornato = {"nome": "Valli Vanni", "campo": campo, "elo_da": da, "elo_a": a, "partite_da": 3, "partite_a": 0, "medaglia": None}
+        return righe_dello_storno({"stornati": [stornato]})[0]
+
+    def test_l_elo_rapid_che_torna_a_zero_si_legge_nessuno(self):
+        assert self._riga("elo_rapid", 1615, 0) == "Valli Vanni: Elo rapid 1615 a nessuno, partite 3 a 0"
+        assert self._riga("elo_blitz", 1652.0, 0.0) == "Valli Vanni: Elo blitz 1652 a nessuno, partite 3 a 0"
+
+    def test_un_elo_della_cadenza_che_c_e_resta_un_numero(self):
+        assert self._riga("elo_rapid", 1615, 1600) == "Valli Vanni: Elo rapid 1615 a 1600 (-15), partite 3 a 0"
+
+
+class TestGiocatoriCreatiDallaFinalizzazione:
+    """Dalla 10.13.16 la finalizzazione crea nel database chi non c'era, e
+    la voce del suo storico lo ricorda. La riapertura lo riporta allo stato
+    di prima, cioe' fuori dal database, e la conferma lo dice. La scheda
+    resta, e se ne toglie soltanto il torneo, se il giocatore ha altri
+    tornei nello storico, se e' iscritto a un torneo in corso, o se la sua
+    scheda e' cambiata dopo la finalizzazione."""
+
+    def _voce(self, **altro):
+        return {"tournament_name": NOME, "tournament_id": "COPPA_PROVA", "rank": 2, "total_players": 4, "date_started": INIZIO, **altro}
+
+    def _archiviato(self):
+        torneo = _torneo_finito()
+        for giocatore, variazione in zip(torneo["players"], (16, -16, 2, -2), strict=True):
+            giocatore["elo_change"] = variazione
+            giocatore["games_this_tournament"] = 1
+        torneo["concluded"] = True
+        return torneo
+
+    def _creata(self, archiviato, pid):
+        """La scheda come la crea la finalizzazione: quella del torneo, con
+        la variazione, la partita, la voce e la medaglia d'argento."""
+        from db_players import scheda_dal_torneo
+
+        giocatore = next(g for g in archiviato["players"] if g["id"] == pid)
+        scheda = scheda_dal_torneo(giocatore)
+        prima = scheda["current_elo"]
+        scheda["current_elo"] = prima + giocatore["elo_change"]
+        scheda["games_played"] = 1
+        scheda["medals"]["silver"] = 1
+        scheda["tournaments_played"] = [
+            self._voce(created_by_finalization=True, elo_field="current_elo", elo_before=prima, elo_after=scheda["current_elo"])
+        ]
+        return scheda
+
+    def test_lo_storno_toglie_la_scheda(self):
+        from copie_di_sicurezza import righe_dello_storno, storno_finalizzazione
+
+        archiviato = self._archiviato()
+        schede = _giocatori_db([self._voce()])
+        schede["G3"] = self._creata(archiviato, "G3")
+
+        esito = storno_finalizzazione(schede, archiviato, iscritti_in_corso=[("Autunno", {"G1", "G4"})])
+
+        assert esito["tolti"] == ["G3"]
+        assert "G3" not in esito["giocatori"]
+        assert "CognomeG3 NomeG3: non era nel database, e la finalizzazione lo aveva creato: la sua scheda ne esce." in righe_dello_storno(esito)
+
+    def test_con_altre_voci_nello_storico_la_scheda_resta(self):
+        from copie_di_sicurezza import storno_finalizzazione
+
+        prima = {"tournament_name": "Inverno", "tournament_id": "INVERNO", "rank": 5, "date_started": "2026-01-10"}
+        schede = _giocatori_db([self._voce()])
+        schede["G3"]["tournaments_played"] = [prima, self._voce(created_by_finalization=True)]
+
+        esito = storno_finalizzazione(schede, self._archiviato())
+
+        assert esito["tolti"] == []
+        assert esito["giocatori"]["G3"]["tournaments_played"] == [prima]
+        assert any(s.startswith("CognomeG3 NomeG3 è nato nel database con questa finalizzazione") for s in esito["segnalazioni"])
+
+    def test_finalizza_riapri_e_rifinalizza(self, ambiente):
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        dati = _leggi(ambiente.percorsi.database)
+        dati["players"] = [g for g in dati["players"] if g["id"] not in ("G3", "G4")]
+        _scrivi(ambiente.percorsi.database, dati)
+        database_iniziale = _leggi(ambiente.percorsi.database)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        database_finalizzato = _leggi(ambiente.percorsi.database)
+        assert {"G3", "G4"} <= {g["id"] for g in database_finalizzato["players"]}
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        for pid in ("G3", "G4"):
+            assert f"  Cognome{pid} Nome{pid}: non era nel database, e la finalizzazione lo aveva creato: la sua scheda ne esce." in piano.righe
+        assert "dal database dei giocatori si toglie questo torneo, per 4 giocatori:" in piano.righe
+        # Gli Elo di G1 e G2 vengono dalla copia di prima, come sempre: i
+        # giocatori creati non cambiano la frase.
+        assert any(r.startswith("Gli Elo di prima vengono dalla copia Tornello - Players_db_pre_finalize_db_") for r in piano.righe)
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino)
+
+        assert esito.riuscito, esito.righe
+        assert "Non ha più nemmeno i 2 giocatori che la finalizzazione aveva creato: CognomeG3 NomeG3, CognomeG4 NomeG4." in esito.righe
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+        assert _finalizza(_leggi(ambiente.file_torneo), ambiente.file_torneo) is True
+        assert _leggi(ambiente.percorsi.database) == database_finalizzato
+
+    def test_iscritto_a_un_torneo_in_corso_la_scheda_resta(self):
+        """Lo storico conta solo i tornei finalizzati: la scheda iscritta a
+        un torneo in corso, tolta, lascerebbe quel torneo con un
+        identificativo che il database non ha."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        archiviato = self._archiviato()
+        schede = _giocatori_db([self._voce()])
+        schede["G3"] = self._creata(archiviato, "G3")
+
+        esito = storno_finalizzazione(schede, archiviato, iscritti_in_corso=[("Inverno", {"G2"}), ("Autunno", {"G1", "G3"})])
+
+        assert esito["tolti"] == []
+        g3 = esito["giocatori"]["G3"]
+        assert (g3["current_elo"], g3["games_played"], g3["tournaments_played"], g3["medals"]["silver"]) == (1600, 0, [], 0)
+        assert (
+            "CognomeG3 NomeG3 è nato nel database con questa finalizzazione, ma è iscritto anche a un torneo in corso, Autunno: la sua scheda resta, e se ne toglie soltanto questo torneo."
+            in esito["segnalazioni"]
+        )
+
+    @pytest.mark.parametrize(
+        ("campo", "valore", "dopo"),
+        [
+            ("birth_date", "1990-05-05", "1990-05-05"),
+            ("club", "Imola", "Imola"),
+            ("elo_rapid", 1650, 1650),
+            ("fide_id_num_str", "12345", "12345"),
+            ("experienced", True, True),
+            # L'Elo che ha ricevuto la variazione, cambiato dopo: si toglie
+            # la variazione del torneo, 2, da quello di oggi.
+            ("current_elo", 1610, 1608),
+        ],
+    )
+    def test_con_la_scheda_cambiata_dopo_la_scheda_resta(self, campo, valore, dopo):
+        """Corretta a mano o aggiornata dalla sincronizzazione FIDE: le
+        modifiche resterebbero perse, e rifinalizzando la scheda
+        rinascerebbe dai dati del torneo."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        archiviato = self._archiviato()
+        schede = _giocatori_db([self._voce()])
+        schede["G3"] = self._creata(archiviato, "G3")
+        schede["G3"][campo] = valore
+
+        esito = storno_finalizzazione(schede, archiviato)
+
+        assert esito["tolti"] == []
+        assert esito["giocatori"]["G3"]["tournaments_played"] == []
+        assert esito["giocatori"]["G3"][campo] == dopo
+        assert (
+            "CognomeG3 NomeG3 è nato nel database con questa finalizzazione, ma la sua scheda è cambiata dopo, a mano o con la sincronizzazione FIDE: la scheda resta, con le sue modifiche, e se ne toglie soltanto questo torneo."
+            in esito["segnalazioni"]
+        )
+
+    def test_riapertura_con_un_creato_iscritto_a_un_torneo_in_corso(self, ambiente):
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        dati = _leggi(ambiente.percorsi.database)
+        dati["players"] = [g for g in dati["players"] if g["id"] not in ("G3", "G4")]
+        _scrivi(ambiente.percorsi.database, dati)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        # G3, nato con la finalizzazione, si iscrive a un altro torneo.
+        autunno = _torneo(nome="Autunno", giocatori=[_giocatore("G1", "CognomeG1"), _giocatore("G3", "CognomeG3")])
+        _scrivi(str(ambiente.tmp / "Tornello - Autunno.json"), _come_la_procedura_guidata(autunno))
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert "  CognomeG4 NomeG4: non era nel database, e la finalizzazione lo aveva creato: la sua scheda ne esce." in piano.righe
+        assert not any(r.startswith("  CognomeG3 NomeG3: non era nel database") for r in piano.righe)
+        assert (
+            "CognomeG3 NomeG3 è nato nel database con questa finalizzazione, ma è iscritto anche a un torneo in corso, Autunno: la sua scheda resta, e se ne toglie soltanto questo torneo."
+            in piano.righe
+        )
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino)
+
+        assert esito.riuscito, esito.righe
+        assert "Non ha più nemmeno il giocatore che la finalizzazione aveva creato: CognomeG4 NomeG4." in esito.righe
+        database = {g["id"]: g for g in _leggi(ambiente.percorsi.database)["players"]}
+        assert "G4" not in database
+        assert (database["G3"]["current_elo"], database["G3"]["games_played"], database["G3"]["tournaments_played"]) == (ELO_INIZIALI["G3"], 0, [])
+
+
+class TestIscrittoTrovatoPerIdentificativoFide:
+    """Dalla 10.13.16 la finalizzazione usa la scheda con lo stesso
+    identificativo FIDE di un iscritto che il database non ha per
+    identificativo, e la voce dello storico si ricorda quello del torneo,
+    id_nel_torneo: la riapertura trova cosi' il giocatore del torneo e
+    storna anche l'Elo, invece di dire che non e' fra i suoi giocatori."""
+
+    def test_lo_storno_trova_il_giocatore_del_torneo(self):
+        from copie_di_sicurezza import storno_finalizzazione
+        from test_finalizzazione import _rinomina_nel_torneo
+
+        archiviato = TestGiocatoriCreatiDallaFinalizzazione()._archiviato()
+        _rinomina_nel_torneo(archiviato, "G3", "FIDE_12345")
+        voce = TestGiocatoriCreatiDallaFinalizzazione()._voce(id_nel_torneo="FIDE_12345", elo_field="current_elo", elo_before=1600, elo_after=1602)
+        schede = _giocatori_db([voce])
+        schede["G3"]["current_elo"] = 1602
+        schede["G3"]["games_played"] = 11
+
+        esito = storno_finalizzazione(schede, archiviato)
+
+        assert not any("non è fra i suoi giocatori" in s for s in esito["segnalazioni"])
+        assert (esito["giocatori"]["G3"]["current_elo"], esito["giocatori"]["G3"]["games_played"]) == (1600, 10)
+
+    def test_finalizza_e_riapri(self, tmp_path, monkeypatch):
+        import ui
+        from copie_di_sicurezza import Percorsi, prepara_ripristino, ripristina
+        from db_players import load_players_db, save_players_db
+        from test_finalizzazione import _finalizza as finalizza_come_la_finestra
+        from test_finalizzazione import iscritto_fide_con_la_scheda_altrove, prepara_il_banco
+
+        banco = prepara_il_banco(tmp_path, monkeypatch)
+        iscritto_fide_con_la_scheda_altrove(banco)
+        # Il database come lo scrive il programma, passato da load e save.
+        assert save_players_db(load_players_db())
+        database_iniziale = _leggi(banco.db)
+        assert finalizza_come_la_finestra(banco) is True
+        copia = _copie(banco.backup, "pre_finalize_torneo")[0]
+        percorsi = Percorsi(radice=str(tmp_path), backup=banco.backup, archivio=ui.ARCHIVED_TOURNAMENTS_DIR, database=banco.db)
+
+        piano = prepara_ripristino(copia, percorsi)
+
+        assert piano.rifiuto is None
+        assert not any("non è fra i suoi giocatori" in r for r in piano.righe)
+        assert any(r.startswith("  CognomeG3 NomeG3: Elo 1597 a 1600 (+3)") for r in piano.righe)
+        assert ripristina(copia, percorsi, cestino=CestinoFinto(str(tmp_path / "cestino"))).riuscito
+        assert _leggi(banco.db) == database_iniziale

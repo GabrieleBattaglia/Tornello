@@ -85,6 +85,12 @@ def _torneo_finito():
 def banco(tmp_path, monkeypatch):
     """Database dei giocatori e file del torneo nella cartella temporanea,
     suoni muti. Restituisce i percorsi che servono alle prove."""
+    return prepara_il_banco(tmp_path, monkeypatch)
+
+
+def prepara_il_banco(tmp_path, monkeypatch):
+    """Il lavoro della fixture banco, come funzione: la usano anche le prove
+    della classifica dei tornei conclusi (test_classifica_salvata.py)."""
     import config
     import ui
 
@@ -164,14 +170,16 @@ def _finalizza(banco, avvisi=None):
     )
 
 
-def _finalizza_in_console(banco):
+def _finalizza_in_console(banco, messaggi=None):
     """Finalizza come fa la versione a riga di comando: il controller con il
-    suo modello del torneo e il database che tiene aperto."""
+    suo modello del torneo e il database che tiene aperto. messaggi, se
+    c'e', riceve i messaggi e gli errori del controller."""
     import controller
     from db_players import load_players_db
     from models import Tournament
 
-    messaggi = []
+    if messaggi is None:
+        messaggi = []
     interfaccia = types.SimpleNamespace(
         show_message=messaggi.append, show_error=messaggi.append
     )
@@ -927,3 +935,338 @@ class TestEloDellaCadenzaSenzaPartiteValide:
 
         assert _giocatori_del_db(banco.db) == dalla_finestra
         assert dalla_finestra["G4"]["elo_rapid"] == 0
+
+
+def _togli_dal_database(banco, *identificativi):
+    dati = _leggi(banco.db)
+    dati["players"] = [g for g in dati["players"] if g["id"] not in identificativi]
+    _scrivi(banco.db, dati)
+
+
+class TestIscrittiCheIlDatabaseNonHa:
+    """Dalla 10.13.16 la finalizzazione crea nel database dei giocatori chi
+    non c'e', con i dati che il torneo ha gia', gli applica tutto come agli
+    altri e lo scrive negli avvisi (decisione di Gabriele). Fino alla 10.13.15
+    lo saltava in silenzio: niente Elo, storico e medaglia, come e' successo
+    a due iscritti di Autunneo2 venuti dalla ricerca FIDE."""
+
+    def test_nascono_e_ricevono_tutto_come_gli_altri(self, banco):
+        _togli_dal_database(banco, "G3", "G4")
+        avvisi = []
+
+        assert _finalizza(banco, avvisi) is True
+
+        database = _giocatori_del_db(banco.db)
+        archiviati = {p["id"]: p for p in _leggi(_json_in_archivio())["players"]}
+        medaglie = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
+        for pid in ("G3", "G4"):
+            scheda = database[pid]
+            giocatore = archiviati[pid]
+            assert (scheda["first_name"], scheda["last_name"]) == ("Nome" + pid, "Cognome" + pid)
+            assert scheda["current_elo"] == pytest.approx(ELO_INIZIALI[pid] + giocatore["elo_change"])
+            assert giocatore["elo_change"] != 0
+            assert scheda["games_played"] == 1
+            voce = scheda["tournaments_played"][-1]
+            assert voce["created_by_finalization"] is True
+            assert voce["rank"] == giocatore["final_rank"]
+            assert voce["elo_field"] == "current_elo"
+            assert scheda["medals"][medaglie[giocatore["final_rank"]]] == 1
+        assert "created_by_finalization" not in database["G1"]["tournaments_played"][-1]
+        # I nomi nell'ordine della classifica finale.
+        nomi = ", ".join(f"Nome{pid} Cognome{pid}" for pid in archiviati if pid in ("G3", "G4"))
+        assert avvisi == [
+            f"2 giocatori non erano nel database dei giocatori: {nomi}. La finalizzazione li ha creati con i dati che avevano nel torneo, e ha dato loro Elo, partite giocate, storico e medaglie come agli altri."
+        ]
+
+    def test_uno_solo_e_al_singolare_anche_in_console(self, banco, capsys):
+        """La console scrive gli avvisi sullo schermo, con print."""
+        _togli_dal_database(banco, "G2")
+        capsys.readouterr()
+
+        assert _finalizza_in_console(banco) is True
+
+        uscita = capsys.readouterr().out
+        assert (
+            "Un giocatore non era nel database dei giocatori: NomeG2 CognomeG2. La finalizzazione lo ha creato con i dati che aveva nel torneo, e gli ha dato Elo, partite giocate, storico e medaglia come agli altri."
+            in uscita
+        )
+        assert "giocatori non erano nel database" not in uscita
+        database = _giocatori_del_db(banco.db)
+        assert database["G2"]["tournaments_played"][-1]["created_by_finalization"] is True
+        assert database["G2"]["games_played"] == 1
+
+    def test_l_avviso_al_singolare(self, banco):
+        _togli_dal_database(banco, "G2")
+        avvisi = []
+
+        assert _finalizza(banco, avvisi) is True
+
+        assert avvisi == [
+            "Un giocatore non era nel database dei giocatori: NomeG2 CognomeG2. La finalizzazione lo ha creato con i dati che aveva nel torneo, e gli ha dato Elo, partite giocate, storico e medaglia come agli altri."
+        ]
+
+    def test_se_il_database_non_si_salva_non_restano_in_memoria(self, banco, monkeypatch):
+        """La console tiene il database aperto: una scheda creata e rimasta
+        in memoria farebbe passare il giocatore per registrato alla
+        finalizzazione successiva."""
+        import ui
+        from db_players import load_players_db
+
+        _togli_dal_database(banco, "G3")
+        giocatori = load_players_db()
+        monkeypatch.setattr(ui, "save_players_db", lambda giocatori: False)
+
+        esito = ui.finalize_tournament(copy.deepcopy(banco.torneo), giocatori, banco.file_torneo, [])
+
+        assert esito is False
+        assert "G3" not in giocatori
+        assert giocatori["G1"]["tournaments_played"] == []
+
+
+class TestColonnaEloVarDellaClassificaInCorso:
+    """Dalla 10.13.17 la colonna Elo Var. della classifica in corso e' la
+    variazione che la finalizzazione applichera': il fattore K viene dalla
+    scheda del database, o da quella che la finalizzazione creera' per chi
+    manca. Fino alla 10.13.16 veniva dal giocatore del torneo, che non ha
+    experienced, partite giocate e data di nascita: 40 dove la
+    finalizzazione dava 20, e la colonna diceva il doppio."""
+
+    def test_la_colonna_e_quella_che_la_finalizzazione_applica(self, banco):
+        from reports import get_standings_text
+
+        dati = _leggi(banco.db)
+        for scheda in dati["players"]:
+            if scheda["id"] == "G1":
+                scheda["experienced"] = True
+                scheda["games_played"] = 80
+            elif scheda["id"] == "G4":
+                scheda["fide_k_factor"] = 10
+        dati["players"] = [g for g in dati["players"] if g["id"] != "G3"]
+        _scrivi(banco.db, dati)
+        in_corso = copy.deepcopy(banco.torneo)
+
+        testo = get_standings_text(in_corso)
+
+        colonna = {p["id"]: (p["k_factor"], p["elo_change"]) for p in in_corso["players"]}
+        assert colonna["G1"][0] == 20
+        assert colonna["G4"][0] == 10
+        assert f"{colonna['G1'][1]:+4d}" in next(r for r in testo.splitlines() if "CognomeG1, NomeG1" in r)
+        assert _finalizza(banco) is True
+        archiviati = {p["id"]: (p["k_factor"], p["elo_change"]) for p in _leggi(_json_in_archivio())["players"]}
+        assert colonna == archiviati
+
+    def test_il_k_salvato_nel_torneo_non_conta_piu(self, banco):
+        """Il K del giocatore del torneo restava salvato nel file, e la
+        classifica non lo ricalcolava piu': in Autunneo2 vale 40 per tutti."""
+        from reports import get_standings_text
+
+        dati = _leggi(banco.db)
+        for scheda in dati["players"]:
+            scheda["experienced"] = True
+        _scrivi(banco.db, dati)
+        in_corso = copy.deepcopy(banco.torneo)
+        for giocatore in in_corso["players"]:
+            giocatore["k_factor"] = 40
+
+        get_standings_text(in_corso)
+
+        assert {p["k_factor"] for p in in_corso["players"]} == {20}
+
+
+def _con_altri_soci(banco, numero=30):
+    """Il database del banco con numero schede in piu', di soci che il
+    torneo non ha: un database illeggibile li farebbe sparire."""
+    dati = _leggi(banco.db)
+    dati["players"] += [
+        {
+            "id": f"SOCIO{i:02d}",
+            "first_name": f"Nome{i}",
+            "last_name": "Socio",
+            "current_elo": 1500.0,
+            "games_played": 40,
+            "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
+            "tournaments_played": [{"tournament_name": "Vecchio", "rank": 3}],
+        }
+        for i in range(numero)
+    ]
+    _scrivi(banco.db, dati)
+
+
+class TestDatabaseCheNonSiLegge:
+    """Dalla 10.13.16 la finalizzazione crea nel database chi non trova: con
+    un database che c'e' ma non si legge, letto vuoto, avrebbe creato tutti
+    gli iscritti e scritto un database con loro soli, e gli altri soci, con
+    storici, medaglie ed Elo, sarebbero spariti. Adesso il database non letto
+    arriva come DatabaseNonLetto, la finalizzazione non parte e niente
+    cambia; la console lo rilegge prima di rinunciare."""
+
+    def _niente_e_cambiato(self, banco, database_prima, torneo_prima, esito, torneo):
+        assert esito is False
+        assert _leggi_byte(banco.db) == database_prima
+        assert _leggi_byte(banco.file_torneo) == torneo_prima
+        assert torneo.get("concluded") is False
+        assert not os.path.exists(_json_in_archivio())
+        assert _copie(banco.backup, "pre_finalize_db") == []
+
+    def test_con_la_lettura_bloccata_non_parte(self, banco, monkeypatch):
+        from db_players import load_players_db
+        from test_db import lettura_bloccata
+        from ui import finalize_tournament
+
+        _con_altri_soci(banco)
+        database_prima = _leggi_byte(banco.db)
+        torneo_prima = _leggi_byte(banco.file_torneo)
+        lettura_bloccata(monkeypatch, banco.db)
+        torneo = copy.deepcopy(banco.torneo)
+        avvisi = []
+
+        esito = finalize_tournament(torneo, load_players_db(), banco.file_torneo, avvisi)
+
+        self._niente_e_cambiato(banco, database_prima, torneo_prima, esito, torneo)
+        assert len(avvisi) == 2
+        assert avvisi[0].startswith("Il database dei giocatori, Tornello - Players_db.json, c'è ma non si è potuto leggere: ")
+        assert avvisi[0].endswith(
+            "Per non perdere i giocatori che contiene, Tornello non lo modifica. Se un altro programma lo tiene bloccato, per esempio Dropbox o l'antivirus, riprova più tardi; se il file è rovinato, ripristinalo dalla finestra Copie di sicurezza del menu File."
+        )
+        assert avvisi[1] == (
+            "La finalizzazione non parte: il torneo resta da concludere, e il database dei giocatori e l'archivio restano come sono."
+        )
+
+    def test_con_il_json_rovinato_non_parte(self, banco):
+        from db_players import load_players_db
+        from ui import finalize_tournament
+
+        _con_altri_soci(banco)
+        intero = _leggi_byte(banco.db)
+        with open(banco.db, "wb") as f:
+            f.write(intero[: len(intero) // 2])
+        database_prima = _leggi_byte(banco.db)
+        torneo_prima = _leggi_byte(banco.file_torneo)
+        torneo = copy.deepcopy(banco.torneo)
+
+        esito = finalize_tournament(torneo, load_players_db(), banco.file_torneo, [])
+
+        self._niente_e_cambiato(banco, database_prima, torneo_prima, esito, torneo)
+
+    def test_in_console_si_rilegge_e_a_blocco_passato_si_finalizza(self, banco, monkeypatch):
+        """Il controller legge il database all'avvio: se allora era
+        bloccato, la finalizzazione lo rilegge, e a blocco passato va."""
+        from test_db import lettura_bloccata
+
+        _con_altri_soci(banco)
+        lettura_bloccata(monkeypatch, banco.db)
+
+        assert _finalizza_in_console(banco) is True
+
+        database = _giocatori_del_db(banco.db)
+        assert len(database) == 34
+        assert database["G1"]["tournaments_played"][-1]["tournament_name"] == NOME
+
+    def test_in_console_se_ancora_non_si_legge_non_parte(self, banco, monkeypatch):
+        from test_db import lettura_bloccata
+
+        _con_altri_soci(banco)
+        database_prima = _leggi_byte(banco.db)
+        torneo_prima = _leggi_byte(banco.file_torneo)
+        lettura_bloccata(monkeypatch, banco.db, volte=2)
+        messaggi = []
+
+        assert _finalizza_in_console(banco, messaggi) is False
+
+        assert _leggi_byte(banco.db) == database_prima
+        assert _leggi_byte(banco.file_torneo) == torneo_prima
+        assert not os.path.exists(_json_in_archivio())
+        assert messaggi[0].startswith("Il database dei giocatori, Tornello - Players_db.json, c'è ma non si è potuto leggere: ")
+        assert messaggi[1].startswith("La finalizzazione non parte: il torneo resta da concludere")
+
+    def test_la_colonna_elo_var_dice_nd(self, banco, monkeypatch):
+        """Durante il torneo la classifica rilegge il database a ogni
+        salvataggio: letto vuoto, la colonna direbbe per tutti la variazione
+        di un giocatore nuovo, con K 40."""
+        from reports import get_standings_text
+        from test_db import lettura_bloccata
+
+        lettura_bloccata(monkeypatch, banco.db)
+        in_corso = copy.deepcopy(banco.torneo)
+
+        testo = get_standings_text(in_corso)
+
+        assert {p["elo_change"] for p in in_corso["players"]} == {None}
+        assert next(r for r in testo.splitlines() if "CognomeG1, NomeG1" in r).rstrip().endswith(" n.d.")
+        assert (
+            "La colonna Elo Var. si legge n.d. perché il database dei giocatori non si è potuto leggere: senza le schede dei giocatori il fattore K della finalizzazione non si conosce."
+            in testo
+        )
+        # Con il database letto la riga non c'e'.
+        assert "La colonna Elo Var. si legge n.d." not in get_standings_text(copy.deepcopy(banco.torneo))
+
+
+def _rinomina_nel_torneo(torneo, vecchio, nuovo):
+    """Cambia l'identificativo di un giocatore in tutto il torneo."""
+    for giocatore in torneo["players"]:
+        if giocatore["id"] == vecchio:
+            giocatore["id"] = nuovo
+        for voce in giocatore.get("results_history", []):
+            if voce.get("opponent_id") == vecchio:
+                voce["opponent_id"] = nuovo
+        giocatore["opponents"] = [nuovo if o == vecchio else o for o in giocatore.get("opponents", [])]
+    for turno in torneo["rounds"]:
+        for partita in turno["matches"]:
+            for lato in ("white_player_id", "black_player_id"):
+                if partita.get(lato) == vecchio:
+                    partita[lato] = nuovo
+
+
+def iscritto_fide_con_la_scheda_altrove(banco):
+    """G3 e' nel torneo come FIDE_12345, come i due iscritti di Autunneo2
+    venuti dalla ricerca FIDE, e nel database come G3, con lo stesso
+    identificativo FIDE, esperto e con 200 partite, cioe' con K 20: la
+    scheda che Ctrl+K o l'iscrizione FIDE a un altro torneo avrebbero
+    creato nel frattempo. La usano anche le prove della riapertura."""
+    _rinomina_nel_torneo(banco.torneo, "G3", "FIDE_12345")
+    for giocatore in banco.torneo["players"]:
+        if giocatore["id"] == "FIDE_12345":
+            giocatore["fide_id_num_str"] = "12345"
+    _scrivi(banco.file_torneo, banco.torneo)
+    dati = _leggi(banco.db)
+    for scheda in dati["players"]:
+        if scheda["id"] == "G3":
+            scheda.update(fide_id_num_str="12345", experienced=True, games_played=200)
+    _scrivi(banco.db, dati)
+
+
+class TestIscrittoTrovatoPerIdentificativoFide:
+    """Dalla 10.13.16 la finalizzazione cerca la scheda di un iscritto anche
+    per identificativo FIDE: un iscritto FIDE_<id> che il database ha sotto
+    un altro identificativo riceve Elo, partite, storico e medaglia su
+    quella scheda, senza doppioni, e gli Avvisi lo dicono; la colonna Elo
+    Var. usa il K di quella scheda."""
+
+    def test_niente_doppione_e_tutto_va_alla_scheda_vera(self, banco):
+        from db_players import load_players_db
+        from reports import get_standings_text
+
+        iscritto_fide_con_la_scheda_altrove(banco)
+        in_corso = copy.deepcopy(banco.torneo)
+        get_standings_text(in_corso, players_db=load_players_db())
+        colonna = {p["id"]: (p["k_factor"], p["elo_change"]) for p in in_corso["players"]}
+        assert colonna["FIDE_12345"] == (20, -3)
+        avvisi = []
+
+        assert _finalizza(banco, avvisi) is True
+
+        database = _giocatori_del_db(banco.db)
+        assert [pid for pid, s in database.items() if str(s.get("fide_id_num_str")) == "12345"] == ["G3"]
+        assert "FIDE_12345" not in database
+        g3 = database["G3"]
+        voce = g3["tournaments_played"][-1]
+        assert voce["id_nel_torneo"] == "FIDE_12345"
+        assert "created_by_finalization" not in voce
+        assert g3["current_elo"] == pytest.approx(ELO_INIZIALI["G3"] - 3)
+        assert g3["games_played"] == 201
+        archiviati = {p["id"]: (p["k_factor"], p["elo_change"]) for p in _leggi(_json_in_archivio())["players"]}
+        assert archiviati == colonna
+        assert "id_nel_torneo" not in database["G1"]["tournaments_played"][-1]
+        assert avvisi == [
+            "NomeG3 CognomeG3 è nel torneo con l'identificativo FIDE_12345, che il database dei giocatori non ha, e nel database con l'identificativo G3, con lo stesso identificativo FIDE: Elo, partite giocate, storico e medaglia sono andati alla scheda G3, senza crearne un doppione."
+        ]

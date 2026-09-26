@@ -1011,3 +1011,56 @@ class TestSalaEArbitroBrevi:
         programmazione = {"channel": "WhatsApp", "arbiter": "Giuseppe Baratta"}
 
         assert sala_e_arbitro_brevi(programmazione, 7, 8) == ("WhatsAp", "Giuseppe")
+
+
+class TestAroSoloPartiteGiocate:
+    """Dalla 10.13.18 l'ARO conta soltanto gli avversari delle partite
+    giocate sulla scacchiera, come vuole l'articolo 10.1 del regolamento
+    FIDE sugli spareggi (C.07, dal 1 marzo 2026): niente bye e niente
+    forfait. Fino alla 10.13.17 contava anche gli avversari delle partite
+    vinte o perse a forfait, che performance e variazione Elo escludevano."""
+
+    def _torneo(self):
+        def voce(turno, avversario, risultato, punti):
+            return {"round": turno, "opponent_id": avversario, "result": risultato, "score": punti}
+
+        giocatori = [
+            {"id": "P", "initial_elo": 1500, "results_history": [voce(1, "A", "1-0", 1.0), voce(2, "B", "1-F", 1.0), voce(3, "C", "0-0F", 0.0), voce(4, "BYE_PLAYER_ID", "BYE", 1.0), voce(5, "D", "0-1", 0.0)]},
+            {"id": "A", "initial_elo": 1600, "results_history": []},
+            {"id": "B", "initial_elo": 1400, "results_history": []},
+            {"id": "C", "initial_elo": 1300, "results_history": []},
+            {"id": "D", "initial_elo": 1700, "results_history": []},
+        ]
+        return {"players": giocatori, "players_dict": {g["id"]: g for g in giocatori}, "rounds": [], "total_rounds": 5}
+
+    def test_i_forfait_non_entrano_nella_media(self):
+        from stats import compute_aro_generic, compute_tiebreak_value
+
+        torneo = self._torneo()
+
+        assert compute_aro("P", torneo) == 1650
+        assert compute_aro_generic("P", torneo) == 1650
+        assert compute_tiebreak_value("P", torneo, "ARO", {}) == 1650
+        assert compute_tiebreak_value("P", torneo, "ARO", {"cut1": True}) == 1700
+
+    def test_a_soli_forfait_l_aro_non_c_e(self):
+        from stats import compute_aro_generic
+
+        torneo = self._torneo()
+        torneo["players"][0]["results_history"] = torneo["players"][0]["results_history"][1:4]
+
+        assert compute_aro("P", torneo) is None
+        assert compute_aro_generic("P", torneo) == 0
+
+    def test_ascid_primavera_1_come_la_classifica_dell_arbitro(self, sample_tournament_dict):
+        """Il torneo archiviato vero, letto e non scritto: Di Bari ha vinto a
+        forfait il turno 4 contro Bosetti. Sulle quattro partite giocate
+        l'ARO e' 1522,25, come nella classifica dell'arbitro nel file
+        dell'archivio; con il forfait Tornello diceva 1498."""
+        from stats import compute_tiebreak_value
+
+        torneo = sample_tournament_dict
+        torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
+
+        assert compute_tiebreak_value("DIBVI001", torneo, "ARO", {}) == 1522
+        assert compute_aro("DIBVI001", torneo) == 1522

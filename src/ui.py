@@ -12,15 +12,20 @@ from config import (
     ARCHIVED_TOURNAMENTS_DIR,
     DATE_FORMAT_ISO,
     DEFAULT_ELO,
-    DEFAULT_K_FACTOR,
     PLAYER_DB_FILE,
     user_data_path,
 )
 from db_players import (
     _cerca_giocatore_nel_db_fide,
+    aggiungi_dal_fide,
     allinea_giocatori_con_database,
     crea_nuovo_giocatore_nel_db,
+    database_non_letto,
+    fattore_k_della_finalizzazione,
+    messaggio_database_non_letto,
     save_players_db,
+    scheda_dal_torneo,
+    scheda_nel_database,
 )
 
 # Le due funzioni che riconoscono il torneo nello storico dei giocatori
@@ -38,7 +43,6 @@ from stats import (
     compute_buchholz_cut1,
     elo_a_cui_sommare_la_variazione,
     get_initial_elo_for_tournament,
-    get_k_factor,
     partite_valide_per_elo,
 )
 from tournament import (
@@ -648,24 +652,21 @@ def input_players(
                         last_name=selected_fide_record["last_name"],
                     )
                 )
-                player_id_to_add = crea_nuovo_giocatore_nel_db(
-                    players_db,
-                    first_name=selected_fide_record.get("first_name"),
-                    last_name=selected_fide_record.get("last_name"),
-                    elo=selected_fide_record.get("elo_standard"),
-                    fide_title=selected_fide_record.get("title", ""),
-                    sex=selected_fide_record.get("sex", "M"),
-                    federation=selected_fide_record.get("federation", ""),
-                    fide_id_num_str=str(selected_fide_record.get("id_fide")),
-                    birth_date=f"{selected_fide_record.get('birth_year')}-01-01"
-                    if selected_fide_record.get("birth_year")
-                    else None,
-                    experienced=True,  # Un giocatore con rating FIDE è per definizione "experienced"
-                    silent=True,
+                # La scheda e' quella della finestra di iscrizione, con tutti
+                # i dati FIDE, dalla 10.13.15: fino ad allora mancavano gli
+                # Elo rapid e blitz e i fattori K, e senza Elo standard
+                # current_elo restava a zero. Se il database locale ha gia'
+                # una scheda con lo stesso identificativo FIDE, si usa quella
+                # invece di crearne un doppione. experienced resta quello
+                # della console: un giocatore con rating FIDE e' per
+                # definizione esperto.
+                scheda_fide, creata = aggiungi_dal_fide(
+                    players_db, selected_fide_record, experienced=True
                 )
-                if player_id_to_add:
-                    player_data_from_db = players_db[player_id_to_add]
-                    was_newly_created = True
+                if scheda_fide is not None:
+                    player_id_to_add = scheda_fide["id"]
+                    player_data_from_db = scheda_fide
+                    was_newly_created = creata
                 else:
                     print(
                         _(
@@ -1635,6 +1636,19 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             )
         )
         return False
+    # Un database dei giocatori che c'e' ma non si e' potuto leggere arriva
+    # vuoto: tutti gli iscritti risulterebbero mancanti, la fase 5 li
+    # creerebbe e il salvataggio lascerebbe sul disco un database con i soli
+    # iscritti del torneo. La finalizzazione non parte, e niente cambia: il
+    # torneo resta da concludere (10.13.16).
+    if database_non_letto(players_db):
+        avvisa(messaggio_database_non_letto(players_db))
+        avvisa(
+            _(
+                "La finalizzazione non parte: il torneo resta da concludere, e il database dei giocatori e l'archivio restano come sono."
+            )
+        )
+        return False
     print(_("Finalizzazione Torneo: {name}").format(name=tournament_name_original))
     sanitized_tournament_name = sanitize_filename(tournament_name_original)
     # Il torneo concluso si salva nel file da cui e' stato aperto. Fino alla
@@ -1681,12 +1695,15 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             p["k_factor"] = None
             p["games_this_tournament"] = 0
             continue
-        player_db_data = players_db.get(player_id)
-        if not player_db_data:
-            # print(f"WARN finalize: Dati DB non trovati per {player_id}, K-Factor userà default.") # Meno verboso
-            p["k_factor"] = DEFAULT_K_FACTOR
-        else:
-            p["k_factor"] = get_k_factor(player_db_data, tournament_start_date)
+        # Il K viene dalla scheda del database, oppure, per chi il database
+        # non ha, dalla scheda che la fase 5 creera' per lui con i dati del
+        # torneo (10.13.16). Fino alla 10.13.15 per lui valeva il K di
+        # ripiego, 20, e la fase 5 lo saltava. La classifica in corso passa
+        # dalla stessa funzione, cosi' la sua colonna Elo Var. e' quella che
+        # la finalizzazione applica (10.13.17).
+        p["k_factor"] = fattore_k_della_finalizzazione(
+            p, players_db, tournament_start_date
+        )
         games_count = 0
         for result_entry in p.get("results_history", []):
             if (
@@ -1773,6 +1790,20 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             if current_sort_key_tuple_for_rank != last_sort_key_tuple_for_rank:
                 current_visual_rank = i + 1
             p_item["final_rank"] = current_visual_rank
+        # I valori delle colonne di spareggio, come li mostra la classifica,
+        # restano salvati nel giocatore: la classifica di un torneo concluso
+        # li rilegge da qui invece di ricalcolarli con le regole di oggi
+        # (decisione di Gabriele, 10.13.19). Fino alla 10.13.18 restavano
+        # soltanto Buchholz, Buchholz Cut-1 e ARO.
+        from reports import valori_degli_spareggi
+
+        for p_item in players_sorted:
+            if p_item.get("withdrawn", False):
+                p_item.pop("final_tiebreaks", None)
+            else:
+                p_item["final_tiebreaks"] = valori_degli_spareggi(
+                    p_item, torneo, tiebreak_order_final
+                )
         torneo["players"] = players_sorted
         # Segna il torneo come concluso e salva lo stato su file prima di archiviarlo
         torneo["concluded"] = True
@@ -1825,13 +1856,59 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # arbitro, 10.13.4).
     categoria = torneo.get("tournament_category", "standard")
     campo_elo = campo_elo_della_cadenza(categoria)
+    # I giocatori che il database non aveva, creati da questa finalizzazione,
+    # e i loro nomi per gli avvisi.
+    creati = []
+    nomi_creati = []
+    # Gli iscritti trovati nel database con lo stesso identificativo FIDE ma
+    # con un altro identificativo, per gli avvisi.
+    trovati_per_fide = []
     for p_final_data in torneo.get("players", []):
         player_id = p_final_data.get("id")
         if not player_id:
             continue
+        nome_completo = " ".join(
+            parte
+            for parte in (
+                p_final_data.get("first_name", ""),
+                p_final_data.get("last_name", ""),
+            )
+            if parte
+        )
 
-        if player_id in players_db:
-            db_player_record = players_db[player_id]
+        # La scheda del giocatore: quella con il suo identificativo, oppure
+        # quella con il suo identificativo FIDE, che la finalizzazione usa
+        # invece di crearne un doppione. Succede agli iscritti FIDE_<id> che
+        # la finestra metteva nel torneo senza scheda fino alla 10.13.14, se
+        # nel frattempo sono entrati nel database con Ctrl+K o con
+        # l'iscrizione FIDE a un altro torneo. La voce dello storico si
+        # ricorda allora l'identificativo del torneo, id_nel_torneo, per la
+        # riapertura (10.13.16).
+        scheda_trovata = scheda_nel_database(p_final_data, players_db)
+        # Chi il database non ha nasce qui, con i dati che il torneo ha gia'
+        # di lui, e riceve Elo, partite, storico e medaglia come gli altri
+        # (decisione di Gabriele, 10.13.16). Fino alla 10.13.15 veniva
+        # saltato in silenzio, com'e' successo a due iscritti di Autunneo2
+        # venuti dalla ricerca FIDE. La sua voce dello storico lo ricorda,
+        # con created_by_finalization, e la riapertura del torneo dalle
+        # copie di sicurezza lo toglie di nuovo dal database.
+        creato = scheda_trovata is None
+        if creato:
+            db_id = player_id
+            players_db[db_id] = scheda_dal_torneo(p_final_data)
+            creati.append(db_id)
+            nomi_creati.append(nome_completo or player_id)
+        elif player_id in players_db:
+            db_id = player_id
+        else:
+            db_id = next(
+                chiave
+                for chiave, scheda in players_db.items()
+                if scheda is scheda_trovata
+            )
+
+        if db_id in players_db:
+            db_player_record = players_db[db_id]
             scheda_di_prima = copy.deepcopy(db_player_record)
             if "tournaments_played" not in db_player_record:
                 db_player_record["tournaments_played"] = []
@@ -1846,17 +1923,14 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                 )
                 for t in db_player_record["tournaments_played"]
             ):
-                nome_completo = " ".join(
-                    parte
-                    for parte in (
-                        p_final_data.get("first_name", ""),
-                        p_final_data.get("last_name", ""),
-                    )
-                    if parte
-                )
                 gia_registrati.append(nome_completo or player_id)
                 continue
-            schede_di_prima[player_id] = scheda_di_prima
+            # Chi e' appena nato non ha una scheda di prima: se il database
+            # non si salva, esce dalla memoria (vedi sotto).
+            if not creato:
+                schede_di_prima[db_id] = scheda_di_prima
+            if db_id != player_id:
+                trovati_per_fide.append((nome_completo or player_id, player_id, db_id))
             elo_change_from_tournament = p_final_data.get("elo_change")
             games_played_in_tournament = p_final_data.get("games_this_tournament", 0)
 
@@ -1912,6 +1986,10 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                 ),
                 **elo_nello_storico,
             }
+            if creato:
+                tournament_history_entry["created_by_finalization"] = True
+            if db_id != player_id:
+                tournament_history_entry["id_nel_torneo"] = player_id
             db_player_record["tournaments_played"].append(tournament_history_entry)
 
             player_final_rank = p_final_data.get("final_rank")
@@ -1953,6 +2031,8 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
         # si puo' riprovare.
         if not save_players_db(players_db):
             players_db.update(schede_di_prima)
+            for player_id in creati:
+                players_db.pop(player_id, None)
             torneo["concluded"] = False
             avvisa(
                 _(
@@ -1971,6 +2051,28 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                 count=db_updated_count
             )
         )
+        # Chi e' nato nel database lo dicono gli avvisi, dopo il salvataggio
+        # riuscito (10.13.16).
+        if len(creati) == 1:
+            avvisa(
+                _(
+                    "Un giocatore non era nel database dei giocatori: {names}. La finalizzazione lo ha creato con i dati che aveva nel torneo, e gli ha dato Elo, partite giocate, storico e medaglia come agli altri."
+                ).format(names=nomi_creati[0])
+            )
+        elif creati:
+            avvisa(
+                _(
+                    "{count} giocatori non erano nel database dei giocatori: {names}. La finalizzazione li ha creati con i dati che avevano nel torneo, e ha dato loro Elo, partite giocate, storico e medaglie come agli altri."
+                ).format(count=len(creati), names=", ".join(nomi_creati))
+            )
+        # Chi e' andato su una scheda trovata per identificativo FIDE lo
+        # dicono gli avvisi, uno per giocatore (10.13.16).
+        for nome, id_nel_torneo, id_nel_database in trovati_per_fide:
+            avvisa(
+                _(
+                    "{name} è nel torneo con l'identificativo {tournament_id}, che il database dei giocatori non ha, e nel database con l'identificativo {db_id}, con lo stesso identificativo FIDE: Elo, partite giocate, storico e medaglia sono andati alla scheda {db_id}, senza crearne un doppione."
+                ).format(name=nome, tournament_id=id_nel_torneo, db_id=id_nel_database)
+            )
     else:
         print(_("Nessun aggiornamento necessario per il Database Giocatori."))
     # --- Fase 6: Archiviazione File Torneo ---

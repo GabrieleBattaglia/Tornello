@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 
 from db_players import (
     identita_del_torneo,
+    scheda_dal_torneo,
     togli_torneo_dallo_storico,
     voce_di_questo_torneo,
 )
@@ -871,7 +872,36 @@ def _storna_l_elo(scheda, voce, variazione, scheda_di_prima):
     return "sottratto"
 
 
-def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
+# I campi della scheda di un giocatore creato dalla finalizzazione che la
+# finalizzazione stessa cambia, o che nascono diversi a ogni creazione: non
+# dicono se la scheda e' stata modificata dopo.
+CAMPI_DELLA_FINALIZZAZIONE = ("registration_date", "games_played", "tournaments_played", "medals")
+
+
+def _scheda_cambiata_dopo(scheda, giocatore, voce):
+    """Vero se la scheda di un giocatore creato dalla finalizzazione
+    (10.13.16) non e' piu' quella che la finalizzazione ha creato con i dati
+    del torneo, a parte l'Elo che ha ricevuto la variazione, le partite, lo
+    storico, le medaglie e la data di registrazione: e' stata corretta a
+    mano, per esempio nella data di nascita, nel circolo o nell'identificativo
+    FIDE, oppure aggiornata dalla sincronizzazione FIDE. Senza il giocatore
+    del torneo non lo si puo' dire, e vale come cambiata."""
+    if giocatore is None:
+        return True
+    creata = scheda_dal_torneo(giocatore)
+    esclusi = set(CAMPI_DELLA_FINALIZZAZIONE)
+    # L'Elo che ha ricevuto la variazione deve valere ancora quello scritto
+    # dalla finalizzazione; senza elo_field la finalizzazione non l'ha
+    # toccato, e si confronta come gli altri campi.
+    campo = voce.get("elo_field")
+    if campo in CAMPI_DELL_ELO:
+        esclusi.add(campo)
+        if not _stesso_elo(scheda.get(campo), voce.get("elo_after")):
+            return True
+    return any(scheda.get(chiave) != creata.get(chiave) for chiave in (set(creata) | set(scheda)) - esclusi)
+
+
+def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None, iscritti_in_corso=()):
     """Toglie dal database gli effetti della finalizzazione di un torneo:
     Elo, partite giocate, voce dello storico e medaglia. Non scrive niente:
     lavora su una copia di giocatori, il dizionario delle schede per
@@ -891,6 +921,20 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     10.13.7, in un rapid o in un blitz non ha ricevuto l'Elo della cadenza:
     non ha elo_field, e la sua variazione e' zero. _storna_l_elo fa il
     lavoro.
+    Un giocatore che il database non aveva, e che la finalizzazione ha
+    creato con i dati del torneo (10.13.16, created_by_finalization nella
+    voce), torna com'era prima, cioe' assente: la sua scheda sparisce da
+    quelle restituite e il suo identificativo va in tolti. Solo se questo
+    torneo e' l'unico del suo storico, se non e' iscritto a un torneo in
+    corso, e se la sua scheda e' ancora quella creata dalla finalizzazione:
+    altrimenti la scheda resta, se ne toglie soltanto il torneo, come per
+    gli altri, e una segnalazione dice perche'. iscritti_in_corso sono i
+    tornei in corso della cartella del programma, come li restituisce
+    iscritti_dei_tornei_attivi: un iscritto che perdesse la scheda
+    rinascerebbe alla loro finalizzazione, con i dati di quel torneo.
+    Una voce scritta su una scheda trovata per identificativo FIDE, dalla
+    10.13.16, si ricorda in id_nel_torneo l'identificativo che il giocatore
+    ha nel torneo: con quello lo si cerca fra i giocatori del torneo.
     Un giocatore che dopo questo torneo ne ha nello storico un altro e' un
     conflitto: l'Elo del torneo successivo e' calcolato su quello da togliere,
     e prima va riaperto quello (decisione di Gabriele)."""
@@ -904,7 +948,9 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
     # giocatori, dopo le segnalazioni di ciascuno.
     cadenza_a_parte = campo_elo_della_cadenza(torneo_archiviato.get("tournament_category", "standard")) != "current_elo"
     sull_elo_principale = 0
-    esito = {"giocatori": schede, "stornati": [], "conflitti": [], "segnalazioni": []}
+    # tolti: i giocatori che la finalizzazione aveva creato nel database,
+    # dalla 10.13.16, e che la riapertura ne toglie.
+    esito = {"giocatori": schede, "stornati": [], "conflitti": [], "segnalazioni": [], "tolti": []}
     for pid, scheda in schede.items():
         storico = scheda.get("tournaments_played") or []
         indici = [
@@ -925,7 +971,53 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
                 )
             )
         voce = storico[indice]
-        giocatore = nel_torneo.get(pid)
+        # Il giocatore del torneo. Una voce scritta su una scheda trovata per
+        # identificativo FIDE ha l'identificativo del torneo in id_nel_torneo
+        # (10.13.16): senza, il giocatore non si troverebbe, e l'Elo non si
+        # stornerebbe.
+        giocatore = nel_torneo.get(voce.get("id_nel_torneo") or pid)
+        # Un giocatore che il database non aveva, e che la finalizzazione ha
+        # creato con i dati del torneo (10.13.16), torna com'era prima, cioe'
+        # fuori dal database, con tutta la scheda. Solo se questo torneo e'
+        # l'unico del suo storico, se non e' iscritto a un torneo in corso e
+        # se la sua scheda e' quella che la finalizzazione ha creato:
+        # altrimenti la scheda resta, e lo si dice.
+        if voce.get("created_by_finalization"):
+            in_corso = sorted(nome_del_torneo for nome_del_torneo, iscritti in iscritti_in_corso or () if pid in iscritti)
+            if len(storico) > 1:
+                esito["segnalazioni"].append(
+                    _(
+                        "{nome} è nato nel database con questa finalizzazione, ma ha nello storico anche altre voci: la sua scheda resta, e se ne toglie soltanto questo torneo."
+                    ).format(nome=nome_giocatore)
+                )
+            elif in_corso:
+                esito["segnalazioni"].append(
+                    _(
+                        "{nome} è nato nel database con questa finalizzazione, ma è iscritto anche a un torneo in corso, {tornei}: la sua scheda resta, e se ne toglie soltanto questo torneo."
+                    ).format(nome=nome_giocatore, tornei=", ".join(in_corso))
+                )
+            elif _scheda_cambiata_dopo(scheda, giocatore, voce):
+                esito["segnalazioni"].append(
+                    _(
+                        "{nome} è nato nel database con questa finalizzazione, ma la sua scheda è cambiata dopo, a mano o con la sincronizzazione FIDE: la scheda resta, con le sue modifiche, e se ne toglie soltanto questo torneo."
+                    ).format(nome=nome_giocatore)
+                )
+            else:
+                esito["tolti"].append(pid)
+                esito["stornati"].append(
+                    {
+                        "id": pid,
+                        "nome": nome_giocatore,
+                        "campo": campo_della_variazione(voce),
+                        "scheda_creata": True,
+                        "sottratto": False,
+                        "da_copia": False,
+                        "dallo_storico": False,
+                        "medaglia": None,
+                        "voce": voce,
+                    }
+                )
+                continue
         campo = campo_della_variazione(voce)
         stornato = {
             "id": pid,
@@ -988,6 +1080,8 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None):
         stornato["partite_a"] = scheda.get("games_played", 0)
         stornato["voce"] = voce
         esito["stornati"].append(stornato)
+    for pid in esito["tolti"]:
+        del schede[pid]
     esito["stornati"].sort(key=lambda s: s["nome"])
     if sull_elo_principale == 1:
         esito["segnalazioni"].append(
@@ -1009,21 +1103,34 @@ def righe_dello_storno(storno):
     che cosa, e la medaglia che se ne va."""
     righe = []
     for s in storno["stornati"]:
+        # Un giocatore creato dalla finalizzazione esce dal database con
+        # tutta la scheda (10.13.16): Elo e partite non contano piu'.
+        if s.get("scheda_creata"):
+            righe.append(
+                _("{nome}: non era nel database, e la finalizzazione lo aveva creato: la sua scheda ne esce.").format(
+                    nome=s["nome"]
+                )
+            )
+            continue
         # Il campo toccato dallo storno: dalla 10.13.4, nei rapid e nei
         # blitz, e' l'Elo della cadenza.
-        if s.get("campo") == "elo_rapid":
+        campo = s.get("campo")
+        if campo == "elo_rapid":
             modello = _("{nome}: Elo rapid {da} a {a}")
-        elif s.get("campo") == "elo_blitz":
+        elif campo == "elo_blitz":
             modello = _("{nome}: Elo blitz {da} a {a}")
         else:
             modello = _("{nome}: Elo {da} a {a}")
-        # Un Elo che manca, come quello della cadenza che lo storno toglie
-        # perche' prima della finalizzazione non c'era, si dice a parole:
-        # _numero_leggibile scriverebbe None.
-        da, a = (_("nessuno") if v is None else _numero_leggibile(v) for v in (s["elo_da"], s["elo_a"]))
+        # Un Elo che manca si dice a parole, nessuno, come quello della
+        # cadenza che lo storno toglie perche' prima della finalizzazione non
+        # c'era: _numero_leggibile scriverebbe None. Per l'Elo della cadenza
+        # manca anche quando vale zero, come lo scrive il database dei
+        # giocatori: fino alla 10.13.19 si leggeva 1615 a 0 (-1615).
+        mancanti = [v is None or (campo in ("elo_rapid", "elo_blitz") and _stesso_elo(v, 0)) for v in (s["elo_da"], s["elo_a"])]
+        da, a = (_("nessuno") if manca else _numero_leggibile(v) for v, manca in zip((s["elo_da"], s["elo_a"]), mancanti, strict=True))
         riga = modello.format(nome=s["nome"], da=da, a=a)
         try:
-            differenza = float(s["elo_a"]) - float(s["elo_da"])
+            differenza = 0 if any(mancanti) else float(s["elo_a"]) - float(s["elo_da"])
         except (TypeError, ValueError):
             differenza = 0
         if differenza:
@@ -1083,6 +1190,9 @@ class Piano:
     cartella_archivio: str | None = None
     json_esterno: str | None = None
     database_nuovo: object = None
+    # I nomi dei giocatori che la riapertura toglie dal database, perche' la
+    # finalizzazione li aveva creati (10.13.16).
+    tolti: list = field(default_factory=list)
 
 
 @dataclass
@@ -1268,10 +1378,12 @@ def _leggi_mappa_del_database(percorso):
     return {g.get("id"): g for g in giocatori_del_database(dati) if g.get("id")}, dati
 
 
-def _con_giocatori(dati, schede):
+def _con_giocatori(dati, schede, tolti=()):
     """Il database letto con le schede nuove al posto delle vecchie, nello
-    stesso ordine e con gli stessi campi di contorno, come schema_version."""
-    elenco = [schede.get(g.get("id"), g) for g in giocatori_del_database(dati)]
+    stesso ordine e con gli stessi campi di contorno, come schema_version.
+    I giocatori di tolti escono dal database: sono quelli che la
+    finalizzazione aveva creato, dalla 10.13.16."""
+    elenco = [schede.get(g.get("id"), g) for g in giocatori_del_database(dati) if g.get("id") not in tolti]
     if isinstance(dati, list):
         return elenco
     nuovo = dict(dati)
@@ -1487,7 +1599,10 @@ def _prepara_finalizzato(piano, percorsi, trovato):
         return
     di_prima = database_di_prima(piano.copia, percorsi.backup, os.path.basename(percorsi.database))
     schede_di_prima = _leggi_mappa_del_database(di_prima)[0] if di_prima else None
-    storno = storno_finalizzazione(schede, archiviato, schede_di_prima)
+    # Gli iscritti dei tornei in corso: chi la finalizzazione aveva creato, e
+    # nel frattempo si e' iscritto a uno di loro, tiene la sua scheda.
+    iscritti = iscritti_dei_tornei_attivi(percorsi.radice, os.path.basename(percorsi.database))
+    storno = storno_finalizzazione(schede, archiviato, schede_di_prima, iscritti)
     if storno["conflitti"]:
         successivi = {}
         for _pid, _nome, voci in storno["conflitti"]:
@@ -1506,7 +1621,8 @@ def _prepara_finalizzato(piano, percorsi, trovato):
             ]
         )
         return
-    piano.database_nuovo = _con_giocatori(database, storno["giocatori"])
+    piano.database_nuovo = _con_giocatori(database, storno["giocatori"], storno["tolti"])
+    piano.tolti = [s["nome"] for s in storno["stornati"] if s.get("scheda_creata")]
     # Nella cartella esterna il json concluso ha il nome di quello archiviato.
     piano.json_esterno = _json_esterno(archiviato, percorsi, os.path.basename(piano.archiviato))
     righe = [
@@ -1741,6 +1857,16 @@ def _ripristina_finalizzato(piano, percorsi, cestino):
     if piano.json_esterno:
         esito.righe.append(_("Il file concluso della cartella esterna è nel cestino."))
     esito.righe.append(_("Il database dei giocatori non ha più questo torneo."))
+    if len(piano.tolti) == 1:
+        esito.righe.append(
+            _("Non ha più nemmeno il giocatore che la finalizzazione aveva creato: {nomi}.").format(nomi=piano.tolti[0])
+        )
+    elif piano.tolti:
+        esito.righe.append(
+            _("Non ha più nemmeno i {numero} giocatori che la finalizzazione aveva creato: {nomi}.").format(
+                numero=len(piano.tolti), nomi=", ".join(piano.tolti)
+            )
+        )
     esito.righe.append(_("Copie di sicurezza di prima del ripristino:"))
     esito.righe += _righe_delle_copie(copia_del, piano, percorsi)
     return esito

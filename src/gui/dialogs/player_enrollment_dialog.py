@@ -312,11 +312,17 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         play_sound("fide_attesa")
 
+        # Gli identificativi FIDE degli iscritti, scritti come li scrive il
+        # database FIDE: la ricerca li confronta come stringhe, e una scheda
+        # vecchia puo' averli come numero o con degli spazi. La regola e'
+        # quella con cui aggiungi_dal_fide riconosce la scheda locale
+        # (10.13.15): fino ad allora un iscritto cosi' restava fra i
+        # risultati.
+        from db_players import id_fide_vero
+
         enrolled_fide_ids = {
-            p.get("fide_id_num_str")
-            for p in self.enrolled_players
-            if p.get("fide_id_num_str")
-        }
+            id_fide_vero(p.get("fide_id_num_str")) for p in self.enrolled_players
+        } - {""}
 
         self.all_fide_matches = search_players(
             query, exclude_fide_ids=enrolled_fide_ids
@@ -443,38 +449,57 @@ class PlayerEnrollmentDialog(wx.Dialog):
 
         fide_player = self.fide_results_map[sel]
 
-        # Mappa il giocatore FIDE nello schema giocatore di Tornello
-        raw_sex = fide_player.get("sex", "M")
-        sex_val = "w" if str(raw_sex).strip().lower() in ("w", "f") else "m"
-        gender_val = sex_val.upper()
+        # Il giocatore scelto nel database FIDE entra anche nel database
+        # locale, con i dati che il FIDE ne ha, e si iscrive con la scheda di
+        # li', come chi viene dalla ricerca locale; se il database locale ha
+        # gia' una scheda con il suo identificativo FIDE, si iscrive quella.
+        # Fino alla 10.13.14 entrava nel torneo con un identificativo FIDE_,
+        # senza scheda nel database: alla finalizzazione restava senza Elo,
+        # storico e medaglia, come e' successo a due iscritti di Autunneo2.
+        from db_players import aggiungi_dal_fide
 
-        new_player = {
-            "id": f"FIDE_{fide_player.get('id_fide')}",
-            "first_name": fide_player.get("first_name", ""),
-            "last_name": fide_player.get("last_name", ""),
-            "current_elo": fide_player.get("elo_standard") or 1399,
-            "elo_rapid": fide_player.get("elo_rapid", 0),
-            "elo_blitz": fide_player.get("elo_blitz", 0),
-            "fide_k_factor": fide_player.get("k_factor"),
-            "fide_rapid_k": fide_player.get("rapid_k"),
-            "fide_blitz_k": fide_player.get("blitz_k"),
-            "fide_standard_games": fide_player.get("games", 0),
-            "fide_rapid_games": fide_player.get("rapid_games", 0),
-            "fide_blitz_games": fide_player.get("blitz_games", 0),
-            "w_title": fide_player.get("w_title", ""),
-            "o_title": fide_player.get("o_title", ""),
-            "foa_title": fide_player.get("foa_title", ""),
-            "flag": fide_player.get("flag", ""),
-            "fide_id_num_str": str(fide_player.get("id_fide")),
-            "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
-            "sex": sex_val,
-            "gender": gender_val,
-            "federation": fide_player.get("federation", "ITA"),
-            "fide_title": fide_player.get("title", ""),
-        }
+        new_player, _creata = aggiungi_dal_fide(self.players_db, fide_player)
+        if new_player is None:
+            from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+            play_sound("errore")
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _(
+                    "Il database dei giocatori non si è potuto salvare: {name} non è stato iscritto. Il motivo più comune è un file tenuto bloccato da un altro programma, per esempio Dropbox o l'antivirus: riprova più tardi."
+                ).format(
+                    name=f"{fide_player.get('last_name', '')} {fide_player.get('first_name', '')}".strip()
+                ),
+                settings=self.settings,
+            )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        # La ricerca FIDE esclude gli iscritti per identificativo FIDE: una
+        # scheda locale gia' iscritta non si iscrive una seconda volta, e un
+        # messaggio lo dice, come negli altri errori di questa funzione.
+        if any(p.get("id") == new_player.get("id") for p in self.enrolled_players):
+            from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+            play_sound("errore")
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _("{name} è già iscritto al torneo.").format(
+                    name=f"{new_player.get('last_name', '')} {new_player.get('first_name', '')}".strip()
+                ),
+                settings=self.settings,
+            )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
 
         self.enrolled_players.append(new_player)
         self.update_enrolled_list()
+        # La scheda nuova e' nel database locale: la sua lista la esclude
+        # perche' iscritta, e la mostrera' se la si toglie dagli iscritti.
+        self.on_search_local_changed(None)
 
         # Esegui la ricerca immediata senza passare per il debounce
         # e ripristina la selezione desiderata
@@ -486,7 +511,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         # Trova l'indice del giocatore appena aggiunto nella lista iscritti
         new_idx = 0
         for i, p in enumerate(self.enrolled_players):
-            if p.get("fide_id_num_str") == new_player.get("fide_id_num_str"):
+            if p.get("id") == new_player.get("id"):
                 new_idx = i
                 break
 
@@ -635,9 +660,26 @@ class PlayerEnrollmentDialog(wx.Dialog):
             "opponents": [],
         }
 
-        # Salva nel DB giocatori
+        # Salva nel DB giocatori. Se non si scrive, il giocatore non nasce e
+        # non si iscrive: fino alla 10.13.14 si iscriveva lo stesso, e il
+        # database sul disco non lo aveva.
         self.players_db[new_id] = new_player
-        save_players_db(self.players_db)
+        if not save_players_db(self.players_db):
+            del self.players_db[new_id]
+            from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+            play_sound("errore")
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _(
+                    "Il database dei giocatori non si è potuto salvare: {name} non è stato creato né iscritto. Il motivo più comune è un file tenuto bloccato da un altro programma, per esempio Dropbox o l'antivirus: riprova più tardi."
+                ).format(name=f"{last_name} {first_name}"),
+                settings=self.settings,
+            )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
 
         # Iscrivi automaticamente al torneo corrente
         self.enrolled_players.append(new_player)

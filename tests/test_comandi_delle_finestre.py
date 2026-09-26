@@ -1262,6 +1262,31 @@ class TestAlberoETorneoAttivo:
         principale.show_standings_verbose()
         assert principale.main_text.GetValue() == testo
 
+    def test_la_classifica_di_un_torneo_concluso_ha_i_valori_salvati(self, principale, suoni, monkeypatch, sample_tournament_dict):
+        """Dalla 10.13.19 Ctrl+L e la voce Classifica mostrano i valori
+        salvati alla finalizzazione, e il torneo aperto non cambia: Di Bari
+        ha l'ARO e la variazione Elo di allora, 1498 e +25, ed e'
+        quattordicesimo come nella classifica che Tornello scrisse alla
+        finalizzazione."""
+        from config import ARCHIVED_TOURNAMENTS_DIR
+
+        percorso = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2025", "06 Giugno", "ASCId_Primavera_1", "Tornello - ASCId_Primavera_1.json")
+        self._scrivi(percorso, sample_tournament_dict)
+        self._sonde(principale)
+        self._apri_con_ctrl_o(principale, monkeypatch, percorso)
+
+        def fotografia():
+            campi = ("points", "display_rank", "final_rank", "buchholz", "buchholz_cut1", "aro", "performance_rating", "elo_change", "k_factor")
+            return {p["id"]: tuple(p.get(c) for c in campi) for p in principale.current_tournament["players"]}
+
+        prima = fotografia()
+        self._dal_menu(principale, principale.item_standings.GetId())
+
+        riga = next(r for r in principale.main_text.GetValue().splitlines() if "Di Bari, Vincenzo" in r)
+        assert riga.split()[0] == "14"
+        assert " 1498 " in riga and riga.rstrip().endswith("+25")
+        assert fotografia() == prima
+
     def test_il_fuoco_sull_albero_non_apre_un_torneo_da_solo(self, principale, suoni, monkeypatch):
         """All'avvio con due tornei in corso nessun torneo e' aperto: il
         cursore sta su Nuovo torneo, e il fuoco che arriva all'albero non
@@ -1576,3 +1601,263 @@ class TestAlberoETorneoAttivo:
         assert domande[1].startswith("Sei sicuro di voler annullare l'ultimo turno del torneo Alfa e tornare indietro?")
         assert len(principale.current_tournament["rounds"]) == 1
         assert not principale.current_tournament.get("concluded")
+
+    def test_con_il_database_che_non_si_legge_la_finalizzazione_non_parte(self, principale, suoni, monkeypatch):
+        """Dalla 10.13.16: dopo il Si' alla domanda, il database bloccato
+        ferma tutto con un messaggio, e database e torneo restano come
+        sono. Letto vuoto, la finalizzazione avrebbe creato tutti gli
+        iscritti, e il database sul disco avrebbe perso gli altri soci."""
+        import config
+        from test_db import _database_con_giocatori, lettura_bloccata
+
+        percorsi = self._prepara("Alfa", finiti=("Alfa",))
+        principale.populate_tree()
+        self._scegli_torneo(principale, percorsi["Alfa"])
+        database_prima = _database_con_giocatori()
+        with open(percorsi["Alfa"], "rb") as f:
+            torneo_prima = f.read()
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        lettura_bloccata(monkeypatch, config.PLAYER_DB_FILE)
+        suoni.clear()
+
+        self._dal_menu(principale, principale.item_finalize.GetId())
+
+        assert finestre[0][1].startswith("Sei sicuro di voler concludere definitivamente il torneo Alfa?")
+        assert finestre[1][1].startswith("Il database dei giocatori, Tornello - Players_db.json, c'è ma non si è potuto leggere: ")
+        assert len(finestre) == 2
+        assert suoni == ["errore"]
+        with open(config.PLAYER_DB_FILE, "rb") as f:
+            assert f.read() == database_prima
+        with open(percorsi["Alfa"], "rb") as f:
+            assert f.read() == torneo_prima
+        assert not principale.current_tournament.get("concluded")
+
+
+class TestIscrizioneDallaRicercaFide:
+    """Dalla 10.13.15 chi si iscrive dalla ricerca FIDE entra anche nel
+    database dei giocatori, che si salva subito, e si iscrive con la scheda
+    di li'. Fino alla 10.13.14 entrava nel torneo con un identificativo
+    FIDE_ e senza scheda, e alla finalizzazione restava senza Elo, storico e
+    medaglia, come due iscritti di Autunneo2."""
+
+    def _finestra(self, telaio, monkeypatch, giocatori, risultati):
+        from gui.dialogs import player_enrollment_dialog
+
+        monkeypatch.setattr(player_enrollment_dialog, "search_players", lambda query, **k: list(risultati))
+        dlg = player_enrollment_dialog.PlayerEnrollmentDialog(telaio, giocatori, [], telaio.settings)
+        dlg.search_fide.ChangeValue("rossi")
+        dlg.esegui_ricerca_fide()
+        dlg.list_fide_results.SetSelection(0)
+        return dlg
+
+    def test_il_giocatore_entra_nel_database_e_si_iscrive_con_la_sua_scheda(self, telaio, suoni, monkeypatch):
+        from db_players import load_players_db
+
+        giocatori = {}
+        dlg = self._finestra(telaio, monkeypatch, giocatori, _risultati_fide(1))
+        try:
+            dlg.on_add_fide(None)
+            iscritti = dlg.get_enrolled_players()
+            assert len(iscritti) == 1
+            iscritto = iscritti[0]
+            assert iscritto["id"] == "ROSMA001"
+            assert not iscritto["id"].startswith("FIDE_")
+            assert giocatori["ROSMA001"] is iscritto
+            sul_disco = load_players_db()["ROSMA001"]
+            assert sul_disco["fide_id_num_str"] == "900000"
+            assert (sul_disco["current_elo"], sul_disco["elo_rapid"]) == (1500, 1400)
+            assert "aggiunta_giocatore" in suoni
+            # Iscritto, esce dai risultati FIDE e dalla lista locale.
+            assert dlg.list_local_results.GetCount() == 0
+        finally:
+            _chiudi(dlg)
+
+    def test_una_scheda_locale_con_lo_stesso_id_fide_si_iscrive_senza_doppioni(self, telaio, suoni, monkeypatch):
+        esistente = {"id": "ROSMA009", "first_name": "Mario", "last_name": "Rossi000", "current_elo": 1600, "fide_id_num_str": "900000"}
+        giocatori = {"ROSMA009": esistente}
+        dlg = self._finestra(telaio, monkeypatch, giocatori, _risultati_fide(1))
+        try:
+            dlg.on_add_fide(None)
+            assert dlg.get_enrolled_players() == [esistente]
+            assert list(giocatori) == ["ROSMA009"]
+        finally:
+            _chiudi(dlg)
+
+    def test_se_il_database_non_si_salva_non_si_iscrive(self, telaio, suoni, monkeypatch):
+        import db_players
+        from gui.dialogs import accessible_msg_dialog
+
+        messaggi = []
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, testo, **altro):
+                messaggi.append(testo)
+
+            def ShowModal(self):
+                return 0
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(accessible_msg_dialog, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(db_players, "save_players_db", lambda giocatori: False)
+        giocatori = {}
+        dlg = self._finestra(telaio, monkeypatch, giocatori, _risultati_fide(1))
+        try:
+            suoni.clear()
+            dlg.on_add_fide(None)
+            assert dlg.get_enrolled_players() == []
+            assert giocatori == {}
+            assert suoni == ["errore"]
+            assert messaggi[0].startswith("Il database dei giocatori non si è potuto salvare: Rossi000 Mario non è stato iscritto.")
+        finally:
+            _chiudi(dlg)
+
+    def test_un_giocatore_gia_iscritto_lo_dice_un_messaggio(self, telaio, suoni, monkeypatch):
+        """La ricerca FIDE esclude gli iscritti, ma una scheda con
+        l'identificativo FIDE scritto come numero, come nei database vecchi,
+        sfuggiva: aggiunta dalla ricerca FIDE, suonava l'errore e basta."""
+        from gui.dialogs import accessible_msg_dialog, player_enrollment_dialog
+
+        messaggi = []
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, testo, **altro):
+                messaggi.append(testo)
+
+            def ShowModal(self):
+                return 0
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(accessible_msg_dialog, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(player_enrollment_dialog, "search_players", lambda query, **k: _risultati_fide(1))
+        esistente = {"id": "ROSMA009", "first_name": "Mario", "last_name": "Rossi000", "current_elo": 1600, "fide_id_num_str": 900000}
+        dlg = player_enrollment_dialog.PlayerEnrollmentDialog(telaio, {"ROSMA009": esistente}, [esistente], telaio.settings)
+        try:
+            dlg.search_fide.ChangeValue("rossi")
+            dlg.esegui_ricerca_fide()
+            dlg.list_fide_results.SetSelection(0)
+            suoni.clear()
+
+            dlg.on_add_fide(None)
+
+            assert dlg.get_enrolled_players() == [esistente]
+            assert suoni == ["errore"]
+            assert messaggi == ["Rossi000 Mario è già iscritto al torneo."]
+        finally:
+            _chiudi(dlg)
+
+    def test_la_ricerca_esclude_gli_iscritti_con_la_regola_della_scheda(self, telaio, suoni, monkeypatch):
+        """L'identificativo FIDE degli iscritti si confronta come lo scrive
+        il database FIDE: un numero, degli spazi o uno zero non cambiano
+        niente."""
+        from gui.dialogs import player_enrollment_dialog
+
+        esclusi = []
+
+        def ricerca(query, exclude_fide_ids=None, **k):
+            esclusi.append(exclude_fide_ids)
+            return []
+
+        monkeypatch.setattr(player_enrollment_dialog, "search_players", ricerca)
+        iscritti = [
+            {"id": "A", "fide_id_num_str": 900000},
+            {"id": "B", "fide_id_num_str": " 900001 "},
+            {"id": "C", "fide_id_num_str": "0"},
+            {"id": "D", "fide_id_num_str": ""},
+        ]
+        dlg = player_enrollment_dialog.PlayerEnrollmentDialog(telaio, {}, iscritti, telaio.settings)
+        try:
+            dlg.search_fide.ChangeValue("rossi")
+            dlg.esegui_ricerca_fide()
+
+            assert esclusi[-1] == {"900000", "900001"}
+        finally:
+            _chiudi(dlg)
+
+
+class TestDatabaseCheNonSiLeggeNelleFinestre:
+    """Dalla 10.13.15 un database dei giocatori che c'e' ma non si legge,
+    tenuto bloccato per un attimo da un altro programma o rovinato, non apre
+    le finestre che lo modificano: l'iscrizione, la consultazione del
+    database FIDE (Ctrl+K), la gestione del database locale e la
+    sincronizzazione. Suona l'errore e un messaggio dice perche' e come
+    rimediare. Fino alla 10.13.14 il database arrivava vuoto, e il primo
+    salvataggio lo sostituiva con le sole schede aggiunte. La
+    finalizzazione, dalla 10.13.16, e' nella classe dell'albero."""
+
+    @staticmethod
+    def _dialoghi_finti(monkeypatch):
+        """Le finestre di messaggio della finestra principale annotate, per
+        titolo e testo, con il Si' a ogni domanda."""
+        import wx
+
+        import gui.main_frame as mf
+
+        finestre = []
+
+        class DialogoFinto:
+            def __init__(self, genitore, titolo, messaggio, style=wx.OK, **altro):
+                finestre.append((titolo, messaggio))
+                self.style = style
+
+            def ShowModal(self):
+                return wx.ID_YES if self.style & wx.YES_NO else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
+        return finestre
+
+    def test_le_finestre_del_database_non_si_aprono(self, principale, suoni, monkeypatch):
+        import config
+        import gui.dialogs as finestre_di_dialogo
+        from gui.dialogs import fide_query_dialog, players_db_dialog, sync_database_dialog
+        from test_db import _database_con_giocatori, lettura_bloccata
+
+        aperte = []
+
+        class FinestraFinta:
+            def __init__(self, *a, **k):
+                aperte.append(type(self).__name__)
+
+            def ShowModal(self):
+                return 0
+
+            def Destroy(self):
+                pass
+
+        for modulo, nome in (
+            (fide_query_dialog, "FideQueryDialog"),
+            (players_db_dialog, "PlayersDbDialog"),
+            (sync_database_dialog, "SyncDatabaseDialog"),
+            (finestre_di_dialogo, "PlayerEnrollmentDialog"),
+        ):
+            monkeypatch.setattr(modulo, nome, type(nome, (FinestraFinta,), {}))
+        database_prima = _database_con_giocatori()
+        finestre = self._dialoghi_finti(monkeypatch)
+        principale.current_tournament = {"name": "Alfa", "players": [], "rounds": []}
+        lettura_bloccata(monkeypatch, config.PLAYER_DB_FILE, volte=5)
+        suoni.clear()
+
+        principale.on_fide_query(None)
+        principale.on_local_db(None)
+        principale.on_sync_db(None)
+        principale.on_enroll_players(None)
+        principale.on_wizard_next()
+
+        assert aperte == []
+        assert suoni == ["errore"] * 5
+        assert len(finestre) == 5
+        assert all(t.startswith("Il database dei giocatori, Tornello - Players_db.json, c'è ma non si è potuto leggere: ") for _titolo, t in finestre)
+        with open(config.PLAYER_DB_FILE, "rb") as f:
+            assert f.read() == database_prima
+
+        # A blocco passato le finestre si aprono.
+        principale.on_fide_query(None)
+        principale.on_local_db(None)
+
+        assert aperte == ["FideQueryDialog", "PlayersDbDialog"]
