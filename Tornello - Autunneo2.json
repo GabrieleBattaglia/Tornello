@@ -1743,7 +1743,14 @@
      "white_player_id": "BATGA001",
      "black_player_id": "DAVLU001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-04",
+      "time": "21:00",
+      "channel": "lichess",
+      "arbiter": "Non necessario",
+      "arbiter_not_needed": true
+     }
     },
     {
      "id": 16,
