@@ -4,7 +4,7 @@ Passo 1: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_51.py
 Domanda 1: quale lettera preferisci per l'apertura della finestra, sopra l'arpeggio?
 Domanda 2: quale lettera preferisci per i quattro pulsanti, ripetuta?
 Domanda 3: la lettera scelta per i pulsanti sta bene sopra l'annullamento?
-Esito: 
+Esito:  quando mi fai questi test, fammi sentire tutti i suoni, se non sono tani (meno di 8). Anche un sistema di voto su scala dispari, non sarebbe male.
 
 PROVA 2: Avvio con le domande, una copia vecchia e un file rovinato
 Prima: Tornello chiuso.
