@@ -1912,7 +1912,9 @@ class TestNoPredefinito:
             assert prudente.GetDefaultItem() is prudente.pulsante_no
             assert prudente.GetEscapeId() == wx.ID_NO
             assert solito.GetDefaultItem() is solito.pulsante_si
-            assert solito.GetEscapeId() == wx.ID_ANY
+            # Dalla 10.13.23 ESC vale No anche nelle domande con il Si'
+            # predefinito: prima non faceva niente.
+            assert solito.GetEscapeId() == wx.ID_NO
         finally:
             prudente.Destroy()
             solito.Destroy()

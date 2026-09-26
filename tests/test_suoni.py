@@ -7,7 +7,8 @@ la finestra di programmazione suonava il bip del giorno. Dalla 10.6.1 ci sono
 due eventi suoi, uno per l'apertura e uno per i pulsanti, con due preset che
 Tornello non usa per nient'altro: una regola del parco vuole un suono per
 ogni evento. Dalla 10.6.2 l'annullamento della programmazione suona una
-volta sola, e non piu' due. Dalla 10.10.0 anche il ripristino riuscito di
+volta sola, e non piu' due; dalla 10.13.24 conferma e annullamento della
+finestra del risultato si sentono in ogni modo di chiusura. Dalla 10.10.0 anche il ripristino riuscito di
 una copia di sicurezza ha il suo evento, con le stesse regole (issue 39), e
 dalla 10.12.0 la finestra della composizione manuale del turno ne ha tre, per
 la coppia aggiunta, la coppia con avvertimenti e la coppia tolta, piu' due
@@ -247,3 +248,192 @@ class TestSuoniDelleFinestre:
             assert dialogo.selected_action == "schedule"
         finally:
             dialogo.Destroy()
+
+
+def _esiti(suoni):
+    """I suoni senza le chiusure annotate dalla fixture."""
+    return [s for s in suoni if not s.startswith("fine")]
+
+
+class TestSuonoDellaChiusura:
+    """Dalla 10.13.24 la finestra del risultato suona l'esito in ogni modo di
+    chiusura, una volta sola. Fino alla 10.13.23 lo suonava un EndModal
+    ridefinito, che la chiusura normale di wx non chiama: INVIO sul pulsante
+    predefinito, ESC, Annulla e Conferma Risultato chiudevano in silenzio.
+    Qui ShowModal di wx.Dialog e' sostituito da una finta che fa quello che
+    farebbe l'utente, e risponde con il pulsante della chiusura, come wx."""
+
+    @pytest.mark.parametrize(("pulsante", "atteso"), [("ID_OK", ["conferma"]), ("ID_CANCEL", ["cancellato"])])
+    def test_la_chiusura_normale_di_wx(self, app_grafica, suoni, monkeypatch, pulsante, atteso):
+        # Conferma Risultato, o INVIO sul pulsante predefinito; Annulla, ESC
+        # o la chiusura della finestra: wx chiude da se', con EndModal del
+        # C++, e ShowModal ritorna con il pulsante.
+        import wx
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", lambda finestra: getattr(wx, pulsante))
+        dialogo = _finestra_dei_risultati()
+        try:
+            suoni.clear()
+            assert dialogo.ShowModal() == getattr(wx, pulsante)
+            assert _esiti(suoni) == atteso
+        finally:
+            dialogo.Destroy()
+
+    @pytest.mark.parametrize(("tasto", "atteso"), [("WXK_RETURN", ["conferma"]), ("WXK_ESCAPE", ["cancellato"])])
+    def test_i_tasti_che_passano_da_on_key_down_suonano_una_volta(self, app_grafica, suoni, monkeypatch, tasto, atteso):
+        import wx
+
+        def premi_e_chiudi(finestra):
+            voce = finestra.radio_buttons[0][1]
+            voce.SetValue(True)
+            finestra.on_key_down(SimpleNamespace(GetKeyCode=lambda: getattr(wx, tasto), GetEventObject=lambda: voce, Skip=lambda: None))
+            chiusure = [s for s in suoni if s.startswith("fine")]
+            assert len(chiusure) == 1
+            return int(chiusure[0].split()[1])
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", premi_e_chiudi)
+        dialogo = _finestra_dei_risultati()
+        try:
+            suoni.clear()
+            dialogo.ShowModal()
+            assert _esiti(suoni) == atteso
+        finally:
+            dialogo.Destroy()
+
+    def test_la_programmazione_confermata_suona_solo_la_partita_pianificata(self, app_grafica, suoni, monkeypatch):
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        monkeypatch.setattr(result_dialog.ScheduleDialog, "ShowModal", lambda finestra: wx.ID_OK)
+
+        def pianifica(finestra):
+            finestra.on_schedule(None)
+            return wx.ID_OK
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", pianifica)
+        dialogo = _finestra_dei_risultati()
+        try:
+            suoni.clear()
+            assert dialogo.ShowModal() == wx.ID_OK
+            assert _esiti(suoni) == ["pianifica_crea"]
+        finally:
+            dialogo.Destroy()
+
+    def test_la_programmazione_annullata_suona_una_volta_e_la_finestra_resta(self, app_grafica, suoni, monkeypatch):
+        # L'annullamento della programmazione lo suona on_schedule, come
+        # dalla 10.6.2; poi il risultato confermato suona la conferma.
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        monkeypatch.setattr(result_dialog.ScheduleDialog, "ShowModal", lambda finestra: wx.ID_CANCEL)
+
+        def annulla_e_conferma(finestra):
+            finestra.on_schedule(None)
+            assert _esiti(suoni) == ["cancellato"]
+            assert not [s for s in suoni if s.startswith("fine")]
+            return wx.ID_OK
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", annulla_e_conferma)
+        dialogo = _finestra_dei_risultati()
+        try:
+            suoni.clear()
+            dialogo.ShowModal()
+            assert _esiti(suoni) == ["cancellato", "conferma"]
+        finally:
+            dialogo.Destroy()
+
+    def test_il_ritiro_non_suona_la_conferma(self, app_grafica, suoni, monkeypatch):
+        import wx
+
+        monkeypatch.setattr(wx.SingleChoiceDialog, "ShowModal", lambda finestra: wx.ID_OK)
+        monkeypatch.setattr(wx.SingleChoiceDialog, "GetSelection", lambda finestra: 1)
+
+        def ritira(finestra):
+            finestra.on_withdraw(None)
+            return wx.ID_OK
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", ritira)
+        dialogo = _finestra_dei_risultati()
+        try:
+            suoni.clear()
+            dialogo.ShowModal()
+            assert _esiti(suoni) == []
+            assert dialogo.selected_action == "withdraw"
+            assert dialogo.withdrawn_player_id == 2
+        finally:
+            dialogo.Destroy()
+
+    def test_salva_pgn_suona_la_conferma_una_volta(self, app_grafica, suoni, monkeypatch):
+        # Con il turno concluso il pulsante e' Salva PGN, e la partita passa
+        # da apply_match_result con is_pgn_only: fino alla correzione della
+        # 10.13.24 quel ramo suonava la conferma una seconda volta, sopra
+        # quella della finestra.
+        import wx
+
+        import gui.main_frame as mf
+
+        partita = {"id": 1, "round": 1, "white_player_id": "A1", "black_player_id": "A2", "result": "1-0"}
+        torneo = {
+            "name": "Prova",
+            "total_rounds": 5,
+            "current_round": 1,
+            "players_dict": {
+                "A1": {"id": "A1", "first_name": "Luca", "last_name": "Bianchi"},
+                "A2": {"id": "A2", "first_name": "Marco", "last_name": "Russo"},
+            },
+            "rounds": [{"round": 1, "matches": [partita]}],
+        }
+        salvataggi, stati = [], []
+
+        class Telaio(wx.Frame):
+            # Un wx.Frame mai mostrato: la finestra del risultato vuole un
+            # genitore vero.
+            on_activate_match = mf.MainFrame.on_activate_match
+            apply_match_result = mf.MainFrame.apply_match_result
+            get_board_num = mf.MainFrame.get_board_num
+            _bivio_ha_cambiato_il_torneo = mf.MainFrame._bivio_ha_cambiato_il_torneo
+
+            def __init__(self):
+                super().__init__(None)
+                self.current_tournament = torneo
+                self.active_filename = "prova.json"
+                self.settings = {}
+
+            def _save_state(self):
+                salvataggi.append(True)
+
+            def set_status(self, testo):
+                stati.append(testo)
+
+            def populate_tree(self):
+                pass
+
+            def show_match_detail_verbose(self, *a, **k):
+                pass
+
+        def scrivi_il_pgn_e_salva(finestra):
+            assert finestra.btn_ok.GetLabel() == "Salva PGN"
+            finestra.txt_pgn.SetValue("1. e4 e5 *")
+            return wx.ID_OK
+
+        monkeypatch.setattr(wx.Dialog, "ShowModal", scrivi_il_pgn_e_salva)
+        telaio = Telaio()
+        try:
+            suoni.clear()
+            telaio.on_activate_match(partita)
+        finally:
+            telaio.Destroy()
+        assert _esiti(suoni) == ["apertura_risultati", "conferma"]
+        assert salvataggi == [True]
+        assert stati == ["Partita aggiornata con PGN."]
+        assert "1. e4 e5" in partita["pgn"]
+        assert partita["result"] == "1-0"
+
+    def test_endmodal_non_suona_piu(self, app_grafica, suoni):
+        # Il suono sta in ShowModal: un EndModal che suonasse di nuovo lo
+        # farebbe sentire due volte con INVIO e con ESC.
+        from gui.dialogs.result_dialog import ResultDialog
+
+        assert "EndModal" not in ResultDialog.__dict__

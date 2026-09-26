@@ -245,14 +245,17 @@ class MainFrame(wx.Frame):
     def _init_menubar(self):
         self.menu_bar = wx.MenuBar()
 
+        # Ogni voce ha la sua lettera: fino alla 10.13.28 Esporta, Elimina ed
+        # Esci avevano tutte e tre la E, e la lettera non ne sceglieva
+        # nessuna.
         file_menu = wx.Menu()
         file_menu.Append(wx.ID_NEW, _("&Nuovo Torneo...\tCtrl+N"))
         file_menu.Append(wx.ID_OPEN, _("&Apri Torneo...\tCtrl+O"))
         self.item_export_ics = file_menu.Append(
-            wx.ID_ANY, _("&Esporta partite pianificate...\tCtrl+Shift+E")
+            wx.ID_ANY, _("Es&porta partite pianificate...\tCtrl+Shift+E")
         )
         self.item_delete_tournament = file_menu.Append(
-            wx.ID_ANY, _("&Elimina Torneo Attivo...\tDelete")
+            wx.ID_ANY, _("E&limina Torneo Attivo...\tDelete")
         )
         # Dalla 10.9.0 la finestra di pulizia e' la finestra Copie di
         # sicurezza, che legge, confronta e ripristina le copie (issue 39).
@@ -1052,13 +1055,24 @@ class MainFrame(wx.Frame):
             return
 
         old_count = len(vecchi)
-        msg = _(
-            "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
-            "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
-            "Vuoi aprire la finestra delle copie di sicurezza adesso? Le copie più vecchie di 18 mesi saranno già selezionate.\n\n"
-            "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
-            "e i file restano come sono."
-        ).format(count=old_count)
+        # Con un file solo il messaggio va al singolare: fino alla 10.13.27
+        # diceva Sono stati individuati 1 file di backup piu' vecchi.
+        if old_count == 1:
+            msg = _(
+                "È stato individuato un file di backup più vecchio di 18 mesi.\n"
+                "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
+                "Vuoi aprire la finestra delle copie di sicurezza adesso? La copia più vecchia di 18 mesi sarà già selezionata.\n\n"
+                "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
+                "e il file resta com'è."
+            )
+        else:
+            msg = _(
+                "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
+                "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
+                "Vuoi aprire la finestra delle copie di sicurezza adesso? Le copie più vecchie di 18 mesi saranno già selezionate.\n\n"
+                "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
+                "e i file restano come sono."
+            ).format(count=old_count)
 
         dlg = AccessibleMsgDialog(
             self, _("Pulizia Backup Consigliata"), msg, style=wx.YES_NO
@@ -1336,8 +1350,13 @@ class MainFrame(wx.Frame):
                         white=w_name, black=b_name, result=res_str
                     )
                 else:
-                    report += _("  {name} - BYE ({punti} punti)\n").format(
-                        name=w_name, punti=self.current_tournament.get("bye_value", 0.5)
+                    # I punti con il singolare per il bye da un punto, come
+                    # nella composizione manuale: fino alla 10.13.27 si leggeva
+                    # BYE (1.0 punti).
+                    from turno_manuale import testo_punti
+
+                    report += _("  {name} - BYE ({punti})\n").format(
+                        name=w_name, punti=testo_punti(self.current_tournament.get("bye_value", 0.5))
                     )
         else:
             report += _("Nessun abbinamento generato per questo turno.\n")
@@ -4444,6 +4463,11 @@ class MainFrame(wx.Frame):
 
     def on_preferences(self, event):
         old_lang = self.settings.get("language", "it")
+        # Dalla 10.13.25 il fuoco torna dove era prima delle impostazioni, in
+        # qualunque modo si chiudano: con quella finestra, a differenza delle
+        # altre, Windows non riattiva la finestra principale, e il fuoco
+        # restava sulla cornice, dove NVDA legge soltanto il titolo.
+        fuoco = wx.Window.FindFocus()
         dlg = VisualSettingsDialog(self, self.settings)
         if dlg.ShowModal() == wx.ID_OK:
             new_settings = dlg.get_settings()
@@ -4474,7 +4498,14 @@ class MainFrame(wx.Frame):
                 )
                 dlg_msg.ShowModal()
                 dlg_msg.Destroy()
+        else:
+            # Il cursore del volume scrive il file a ogni scatto, per il
+            # suono di prova: annullando si rimette il volume di prima
+            # (10.13.26).
+            dlg.rimetti_il_volume()
         dlg.Destroy()
+        if fuoco and fuoco is not self and fuoco.GetTopLevelParent() is self:
+            fuoco.SetFocus()
 
     @staticmethod
     def _leggi_manuale():
@@ -4760,9 +4791,8 @@ class MainFrame(wx.Frame):
             # Dalla 10.9.0 le copie si usano dalla finestra delle copie di
             # sicurezza, e la domanda la propone con la copia gia'
             # selezionata. Si' e' il predefinito: aprire la finestra non
-            # cambia niente. ESC vale No: senza un pulsante Annulla o OK il
-            # dialogo non saprebbe che cosa fare del tasto, e resterebbe
-            # aperto, mentre il rifiuto con il solo OK ESC lo chiudeva.
+            # cambia niente. ESC vale No, come in tutte le domande dalla
+            # 10.13.23.
             dlg_rifiuto = AccessibleMsgDialog(
                 self,
                 _("Copia di sicurezza"),
@@ -4774,7 +4804,6 @@ class MainFrame(wx.Frame):
                 style=wx.YES_NO,
                 settings=self.settings,
             )
-            dlg_rifiuto.SetEscapeId(wx.ID_NO)
             risposta = dlg_rifiuto.ShowModal()
             dlg_rifiuto.Destroy()
             if risposta == wx.ID_YES:
@@ -5653,10 +5682,10 @@ class MainFrame(wx.Frame):
 
     def apply_match_result(self, match, result_str, is_pgn_only=False):
         if is_pgn_only:
+            # Il suono della conferma lo da' la finestra del risultato, che
+            # e' la sola a chiamare questo ramo con Salva PGN, quando si
+            # chiude: suonarlo anche qui lo faceva sentire due volte.
             self._save_state()
-            from utils import play_sound
-
-            play_sound("conferma")
             return
 
         result_map = {
@@ -6077,9 +6106,21 @@ class MainFrame(wx.Frame):
                 ics_content, partite_saltate = generate_ics_content(
                     self.current_tournament
                 )
-                with open(path, "w", encoding="utf-8", newline="\r\n") as f:
+                # Le righe finiscono gia' con CR LF, come vuole RFC 5545:
+                # newline="" le scrive come sono. Fino alla 10.13.26 il file
+                # si apriva con newline="\r\n", che aggiungeva un secondo CR a
+                # ogni riga.
+                with open(path, "w", encoding="utf-8", newline="") as f:
                     f.write(ics_content)
-                if partite_saltate:
+                # Con una partita sola la frase va al singolare: fino alla
+                # 10.13.27 diceva 1 partite pianificate non ci sono entrate.
+                if len(partite_saltate) == 1:
+                    self.set_status(
+                        _("Calendario esportato in '{path}', ma una partita pianificata non c'e' entrata: la sua data non e' leggibile.").format(
+                            path=os.path.basename(path)
+                        )
+                    )
+                elif partite_saltate:
                     self.set_status(
                         _("Calendario esportato in '{path}', ma {n} partite pianificate non ci sono entrate: la loro data non e' leggibile.").format(
                             path=os.path.basename(path), n=len(partite_saltate)

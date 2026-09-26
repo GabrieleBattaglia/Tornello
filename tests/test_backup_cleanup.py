@@ -292,6 +292,45 @@ class TestRilevatoreAutomatico:
         assert registro["messaggio"] is not None
         assert "1" in registro["messaggio"]
 
+    def test_con_una_copia_sola_il_messaggio_e_al_singolare(self, tmp_path, monkeypatch):
+        """Fino alla 10.13.27 diceva Sono stati individuati 1 file di backup
+        piu' vecchi di 18 mesi."""
+        import wx
+
+        from gui import main_frame as mf
+
+        self._prepara(tmp_path, monkeypatch)
+        telaio, registro, _wx = self._telaio(monkeypatch, wx.ID_NO)
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        messaggio = registro["messaggio"]
+        assert messaggio.startswith("È stato individuato un file di backup più vecchio di 18 mesi.\n")
+        assert "La copia più vecchia di 18 mesi sarà già selezionata." in messaggio
+        assert messaggio.endswith("e il file resta com'è.")
+        assert "individuati" not in messaggio and "vecchi " not in messaggio
+
+    def test_con_due_copie_il_messaggio_e_al_plurale(self, tmp_path, monkeypatch):
+        import time
+
+        import wx
+
+        from gui import main_frame as mf
+
+        antico = self._prepara(tmp_path, monkeypatch)
+        secondo = antico.with_name("Tornello - Antico_chiusura_torneo.json")
+        secondo.write_text("{}", encoding="utf-8")
+        quando = time.time() - 900 * 86400
+        os.utime(secondo, (quando, quando))
+        telaio, registro, _wx = self._telaio(monkeypatch, wx.ID_NO)
+
+        mf.MainFrame._check_backup_on_startup(telaio)
+
+        messaggio = registro["messaggio"]
+        assert messaggio.startswith("Sono stati individuati 2 file di backup più vecchi di 18 mesi.\n")
+        assert "Le copie più vecchie di 18 mesi saranno già selezionate." in messaggio
+        assert messaggio.endswith("e i file restano come sono.")
+
     def test_rispondendo_di_si_apre_la_finestra_di_pulizia(self, tmp_path, monkeypatch):
         """Dalla 10.9.0 la finestra e' quella delle copie di sicurezza, e le
         copie vecchie ci arrivano gia' selezionate: il pulsante Elimina
@@ -371,9 +410,11 @@ class TestRilevatoreAutomatico:
             mf.RINVIO_AVVISO_BACKUP: telaio.settings[mf.RINVIO_AVVISO_BACKUP]
         }
 
-    def test_le_preferenze_salvate_dopo_tengono_il_rinvio(self, tmp_path, monkeypatch):
+    def test_le_preferenze_salvate_dopo_tengono_il_rinvio(self, tmp_path, monkeypatch, app_grafica):
         """Le Preferenze conoscono solo le chiavi che mostrano: salvandole,
-        il rinvio spariva dal file, e l'avviso tornava al primo avvio."""
+        il rinvio spariva dal file, e l'avviso tornava al primo avvio. Dalla
+        10.13.25 le Preferenze chiedono a wx dove sta il fuoco, e serve
+        l'applicazione."""
         import json
 
         import wx
@@ -854,7 +895,7 @@ class TestAperturaDentroBackup:
         import utils
         from gui import main_frame as mf
 
-        registro = {"messaggio": None, "caricato": None, "suoni": [], "finestra": None, "esc": None}
+        registro = {"messaggio": None, "caricato": None, "suoni": [], "finestra": None, "stile": None}
         if risposta is None:
             risposta = wx.ID_NO
 
@@ -874,9 +915,7 @@ class TestAperturaDentroBackup:
         class DialogoFinto:
             def __init__(self, parent, titolo, messaggio, style=None, settings=None):
                 registro["messaggio"] = messaggio
-
-            def SetEscapeId(self, identificativo):
-                registro["esc"] = identificativo
+                registro["stile"] = style
 
             def ShowModal(self):
                 return risposta
@@ -910,8 +949,10 @@ class TestAperturaDentroBackup:
         assert registro["suoni"] == ["errore"]
         assert copia.read_text(encoding="utf-8") == "{}"
         assert registro["finestra"] is None
-        # ESC vale No: senza, un dialogo con Si' e No non lo usa, e resta aperto.
-        assert registro["esc"] == wx.ID_NO
+        # Una domanda con Si' e No, dove ESC vale No: dalla 10.13.23 lo fa
+        # AccessibleMsgDialog in tutte le domande, e la prova sta in
+        # test_comandi_delle_finestre.
+        assert registro["stile"] == wx.YES_NO
 
     def test_col_si_si_apre_la_finestra_delle_copie(self, tmp_path, monkeypatch):
         """Dalla 10.10.0 il rifiuto propone la finestra delle copie di

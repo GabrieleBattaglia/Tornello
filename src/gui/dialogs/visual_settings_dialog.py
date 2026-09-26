@@ -28,6 +28,10 @@ class VisualSettingsDialog(wx.Dialog):
         super().__init__(parent, title=title, style=STILE_ADATTABILE)
 
         self.settings = current_settings.copy()
+        # Il volume da rimettere nel file se la finestra si annulla: il
+        # cursore lo scrive a ogni scatto (10.13.26).
+        self.volume_di_partenza = self.settings.get("volume", 50)
+        self._volume_scritto = False
 
         # Valori di default
         self.default_rgb_text = [0, 100, 0]  # Verde brillante
@@ -377,11 +381,18 @@ class VisualSettingsDialog(wx.Dialog):
         self._update_preview()
 
     def on_volume_change(self, event):
-        val = self.slider_vol.GetValue()
+        self._scrivi_volume(self.slider_vol.GetValue())
+        # Il suono di prova deve farsi sentire al volume appena scelto.
+        play_sound("notifica")
+
+    def _scrivi_volume(self, val):
+        """Scrive il volume nel file delle impostazioni, lasciando com'e' il
+        resto, e fa rileggere ai suoni il volume nuovo."""
         import json
 
         from config import user_data_path
 
+        self._volume_scritto = True
         settings_path = user_data_path("Tornello - Settings.json")
         try:
             temp_settings = {}
@@ -400,9 +411,15 @@ class VisualSettingsDialog(wx.Dialog):
             from gui.settings import _registra
 
             _registra(f"Volume non salvato: {errore}")
-        # Il suono di prova deve farsi sentire al volume appena scelto.
         invalida_volume_audio()
-        play_sound("notifica")
+
+    def rimetti_il_volume(self):
+        """Annullando la finestra, con Annulla, ESC o la chiusura, il file
+        torna al volume di prima, se il cursore o Reset Default lo avevano
+        cambiato. Fino alla 10.13.25 il volume nuovo restava nel file, e i
+        suoni lo usavano, mentre il resto delle impostazioni tornava com'era."""
+        if self._volume_scritto:
+            self._scrivi_volume(self.volume_di_partenza)
 
     def on_reset(self, event):
         self.spin_size.SetValue(self.default_size)

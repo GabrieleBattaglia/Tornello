@@ -6,7 +6,8 @@ Exception: pass che nascondeva qualunque guasto. Qui si prova che il testo
 arriva dal valore restituito, con stampa=False, e che un guasto dell'invito
 finisce nel log senza impedire la chiusura. Niente finestre vere: Donazione e
 DonationDialog sono sostituite da finte, e i metodi di MainFrame girano su un
-telaio finto.
+telaio finto. Dalla 10.13.32 le prove dei tasti e dei pulsanti della finestra
+usano DonationDialog vera, mai mostrata.
 """
 
 import sys
@@ -233,3 +234,90 @@ class TestChiusura:
         assert passi["suoni"] == ["chiusura"]
         assert passi["log"] == []
         assert passi["skip"] == 1
+
+
+class TestFinestraDellInvito:
+    """Dalla 10.13.32 il pulsante predefinito della finestra Offri un caffe'
+    e' Chiudi, e non piu' Dona con PayPal. INVIO nel testo preme Chiudi, come
+    nelle finestre di messaggio, ed ESC chiude: fino alla 10.13.31, dal testo,
+    nessuno dei due chiudeva la finestra. Il browser si apre soltanto con Dona
+    con PayPal. La finestra vera, mai mostrata, con il suono e il browser
+    sostituiti; EndModal e' annotato, perche' non e' modale."""
+
+    @pytest.fixture
+    def invito(self, app_grafica, monkeypatch):
+        import webbrowser
+
+        import utils
+        from gui.dialogs.donation_dialog import DonationDialog
+
+        aperti = []
+        monkeypatch.setattr(utils, "play_sound", lambda *a, **k: None)
+        monkeypatch.setattr(webbrowser, "open", aperti.append)
+        dlg = DonationDialog(None, "Offri un caffè", "Prima riga\nSeconda riga", {})
+        dlg.chiusure = []
+        dlg.aperti = aperti
+        dlg.EndModal = dlg.chiusure.append
+        yield dlg
+        dlg.DestroyChildren()
+        dlg.Destroy()
+
+    def _tasto(self, dlg, codice, fuoco, monkeypatch):
+        import wx
+
+        monkeypatch.setattr(wx.Window, "FindFocus", lambda: fuoco)
+        evento = wx.KeyEvent(wx.wxEVT_CHAR_HOOK)
+        evento.SetKeyCode(codice)
+        evento.SetEventObject(fuoco)
+        dlg.ProcessEvent(evento)
+
+    def test_il_predefinito_e_chiudi(self, invito):
+        import wx
+
+        from gui.dialogs import donation_dialog
+
+        assert invito.GetDefaultItem().GetId() == wx.ID_NO
+        assert invito.GetDefaultItem().GetLabel() == donation_dialog._("Chiudi")
+        assert invito.GetEscapeId() == wx.ID_NO
+
+    def test_invio_nel_testo_ed_esc_chiudono_senza_browser(self, invito, monkeypatch):
+        import wx
+
+        for codice in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER, wx.WXK_ESCAPE):
+            invito.chiusure.clear()
+            self._tasto(invito, codice, invito.msg_text, monkeypatch)
+            assert invito.chiusure == [wx.ID_NO], codice
+        assert invito.aperti == []
+
+    def test_invio_ripetuto_non_chiude(self, invito, monkeypatch):
+        # Il tasto tenuto giu' manda INVIO ripetuti: non premono Chiudi, e
+        # la finestra resta aperta. Il primo INVIO, non ripetuto, la chiude.
+        import wx
+
+        class TastoRipetuto(wx.KeyEvent):
+            """wx non sa impostare la ripetizione su un evento costruito:
+            la dice questa sottoclasse, che il gestore riceve com'e'."""
+
+            def IsAutoRepeat(self):
+                return True
+
+        monkeypatch.setattr(wx.Window, "FindFocus", lambda: invito.msg_text)
+        for codice in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
+            evento = TastoRipetuto(wx.wxEVT_CHAR_HOOK)
+            evento.SetKeyCode(codice)
+            evento.SetEventObject(invito.msg_text)
+            invito.ProcessEvent(evento)
+        assert invito.chiusure == []
+        self._tasto(invito, wx.WXK_RETURN, invito.msg_text, monkeypatch)
+        assert invito.chiusure == [wx.ID_NO]
+        assert invito.aperti == []
+
+    def test_dona_con_paypal_apre_il_browser_solo_se_premuto(self, invito):
+        import wx
+
+        pulsante = invito.FindWindowById(wx.ID_YES, invito)
+        evento = wx.CommandEvent(wx.wxEVT_BUTTON, wx.ID_YES)
+        evento.SetEventObject(pulsante)
+        pulsante.GetEventHandler().ProcessEvent(evento)
+        assert invito.aperti == ["https://paypal.me/GabrieleBattaglia780"]
+        assert invito.chiusure == [wx.ID_YES]

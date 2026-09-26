@@ -17,7 +17,9 @@ class CLIAdapter(UIAdapter):
         print(message)
 
     def show_error(self, message: str) -> None:
-        print(f"\n*** {message} ***")
+        # Senza la cornice di tre asterischi per parte, dalla 10.13.30:
+        # NVDA li leggeva uno per uno, prima e dopo ogni errore.
+        print(f"\n{message}")
 
     def confirm(self, prompt: str, default: bool = True) -> bool:
         if default:

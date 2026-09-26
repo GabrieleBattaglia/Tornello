@@ -421,9 +421,10 @@ def get_criterion_explanation(criterion_key, active_modifiers=None):
     if not info:
         return _("Criterio non riconosciuto.")
 
+    # Sotto il nome non c'e' piu' la riga di segni uguale, dalla 10.13.30:
+    # un separatore grafico, che NVDA leggeva segno per segno.
     lines = []
     lines.append(info["name"])
-    lines.append("=" * len(info["name"]))
     lines.append("")
     lines.append(_("Descrizione:"))
     lines.append(info["description"])

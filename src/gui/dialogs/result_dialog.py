@@ -688,12 +688,27 @@ class ResultDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
         dlg.Destroy()
 
-    def EndModal(self, retCode):
+    def ShowModal(self):
+        """Il suono dell'esito si sente quando la finestra si chiude, in
+        qualunque modo, una volta sola: la conferma con Conferma Risultato o
+        con INVIO, l'annullamento con Annulla, ESC o la chiusura della
+        finestra. Fino alla 10.13.23 lo suonava un EndModal ridefinito qui,
+        che pero' chiamava soltanto il codice Python di questa finestra: la
+        chiusura normale di wx, cioe' il pulsante predefinito per INVIO, il
+        gestore di ESC e i pulsanti Annulla e Conferma, passa dall'EndModal
+        del C++, e la finestra si chiudeva in silenzio. ShowModal invece
+        ritorna in ogni caso, con il pulsante della chiusura.
+        Dopo una programmazione confermata o la scelta del giocatore da
+        ritirare non si sente la conferma: la partita pianificata ha il suo
+        suono, che suona on_schedule, e il ritiro prosegue con le sue domande.
+        L'annullamento della programmazione lo suona on_schedule, e la
+        finestra resta aperta."""
+        esito = super().ShowModal()
         from utils import play_sound
 
-        if retCode == wx.ID_OK:
+        if esito == wx.ID_OK:
             if not self.selected_action:
                 play_sound("conferma")
         else:
             play_sound("cancellato")
-        return super().EndModal(retCode)
+        return esito

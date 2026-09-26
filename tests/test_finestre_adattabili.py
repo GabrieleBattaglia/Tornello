@@ -427,6 +427,50 @@ def test_la_barra_dello_scaricamento_si_chiama_come_il_messaggio(ambiente, monke
         _chiudi(dlg)
 
 
+@solo_windows
+def test_la_spiegazione_degli_spareggi_resta_un_testo_in_sola_lettura(ambiente):
+    """Fino alla 10.13.30 il campo Spiegazione regola aveva CustomAccessible,
+    e NVDA lo trovava con il ruolo client, senza sola lettura: e' un
+    RICHEDIT50W come l'anteprima delle impostazioni, e vuole
+    NomeAccessibileTesto. La spiegazione non comincia piu' con una riga di
+    segni uguale."""
+    from gui.dialogs import tiebreak_config_dialog
+
+    dlg = _crea("spareggi", ambiente)
+    try:
+        spiegazione = dlg.text_expl
+        nome, ruolo, stato = _msaa(spiegazione)[1][0]
+        assert (nome, ruolo) == (tiebreak_config_dialog._("Spiegazione regola"), RUOLO_TESTO)
+        assert stato & STATO_SOLA_LETTURA and stato & STATO_FOCALIZZABILE
+        from tiebreak_criteria import CRITERIA
+
+        for chiave, criterio in CRITERIA.items():
+            dlg.update_explanation(chiave)
+            righe = spiegazione.GetValue().split("\n")
+            assert righe[:2] == [criterio["name"], ""], chiave
+            assert not any(riga.strip() and set(riga.strip()) <= set("=-_") for riga in righe), chiave
+    finally:
+        _chiudi(dlg)
+
+
+@solo_windows
+def test_la_lista_del_database_dei_giocatori_ha_un_nome_e_le_voci_il_loro(ambiente):
+    """Davanti alla lista c'e' il campo del filtro, e fino alla 10.13.30
+    NVDA la trovava senza nome."""
+    from gui.dialogs import players_db_dialog
+
+    dlg = _crea("database giocatori", ambiente)
+    try:
+        lista = dlg.list_players
+        quanti, voci = _msaa(lista, 2)
+        assert quanti == lista.GetCount() == 30
+        assert voci[0][:2] == (players_db_dialog._("Elenco giocatori"), RUOLO_LISTA)
+        assert voci[1][:2] == (lista.GetString(0), RUOLO_VOCE)
+        assert voci[2][:2] == (lista.GetString(1), RUOLO_VOCE)
+    finally:
+        _chiudi(dlg)
+
+
 def test_i_risultati_restano_un_gruppo_solo(ambiente):
     dlg = _crea("risultato", ambiente)
     try:

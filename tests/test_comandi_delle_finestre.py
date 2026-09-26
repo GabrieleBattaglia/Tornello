@@ -1861,3 +1861,367 @@ class TestDatabaseCheNonSiLeggeNelleFinestre:
         principale.on_local_db(None)
 
         assert aperte == ["FideQueryDialog", "PlayersDbDialog"]
+
+
+def _tasto_al_dialogo(dlg, codice, fuoco, monkeypatch):
+    """Il tasto mandato al dialogo come lo manda Windows, con il gancio della
+    tastiera, e il fuoco dove si vuole: ESC passa poi dal gestore di wx, che
+    preme il pulsante di SetEscapeId."""
+    import wx
+
+    monkeypatch.setattr(wx.Window, "FindFocus", lambda: fuoco)
+    evento = wx.KeyEvent(wx.wxEVT_CHAR_HOOK)
+    evento.SetKeyCode(codice)
+    evento.SetEventObject(fuoco)
+    dlg.ProcessEvent(evento)
+    return evento
+
+
+class TestMessaggiEDomande:
+    """Dalla 10.13.23 INVIO nel testo delle finestre di messaggio e di
+    domanda preme il pulsante predefinito, ed ESC risponde No in tutte le
+    domande, anche dove il predefinito e' il Si', come Finalizza Torneo o
+    Turni consigliati, e chiude le finestre con il solo OK. Il testo e' un
+    campo multilinea, che si teneva INVIO: la finestra restava aperta.
+    EndModal e' annotato, perche' il dialogo non e' modale."""
+
+    CASI = (
+        # stile, no_predefinito, pulsante di INVIO, pulsante di ESC
+        ("YES_NO", False, "ID_YES", "ID_NO"),
+        ("YES_NO", True, "ID_NO", "ID_NO"),
+        ("OK", False, "ID_OK", "ID_OK"),
+    )
+
+    @staticmethod
+    def _crea(telaio, stile, no_predefinito=False):
+        import wx
+
+        from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+        opzioni = {"no_predefinito": True} if no_predefinito else {}
+        dlg = AccessibleMsgDialog(telaio, "Titolo", "Prima riga\nSeconda riga", style=getattr(wx, stile), settings=telaio.settings, **opzioni)
+        chiusure = []
+        dlg.EndModal = chiusure.append
+        return dlg, chiusure
+
+    @pytest.mark.parametrize(("stile", "no_predefinito", "invio", "esc"), CASI)
+    def test_invio_nel_testo_ed_esc(self, telaio, monkeypatch, stile, no_predefinito, invio, esc):
+        import wx
+
+        dlg, chiusure = self._crea(telaio, stile, no_predefinito)
+        try:
+            assert dlg.GetDefaultItem().GetId() == getattr(wx, invio)
+            for codice, atteso in ((wx.WXK_RETURN, invio), (wx.WXK_NUMPAD_ENTER, invio), (wx.WXK_ESCAPE, esc)):
+                chiusure.clear()
+                _tasto_al_dialogo(dlg, codice, dlg.msg_text, monkeypatch)
+                assert chiusure == [getattr(wx, atteso)], codice
+        finally:
+            _chiudi(dlg)
+
+    @pytest.mark.parametrize(("stile", "no_predefinito", "invio", "esc"), CASI)
+    def test_invio_ripetuto_nel_testo_non_risponde(self, telaio, monkeypatch, stile, no_predefinito, invio, esc):
+        # Chi apre la domanda con INVIO, per esempio dall'albero, e tiene il
+        # tasto un attimo di troppo manda al testo degli INVIO ripetuti: non
+        # devono rispondere Si' a una domanda non letta.
+        import wx
+
+        class TastoRipetuto(wx.KeyEvent):
+            """wx non sa impostare la ripetizione su un evento costruito:
+            la dice questa sottoclasse, che il gestore riceve com'e'."""
+
+            def IsAutoRepeat(self):
+                return True
+
+        dlg, chiusure = self._crea(telaio, stile, no_predefinito)
+        try:
+            monkeypatch.setattr(wx.Window, "FindFocus", lambda: dlg.msg_text)
+            for codice in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
+                evento = TastoRipetuto(wx.wxEVT_CHAR_HOOK)
+                evento.SetKeyCode(codice)
+                evento.SetEventObject(dlg.msg_text)
+                dlg.ProcessEvent(evento)
+            assert chiusure == []
+            # Il primo INVIO, che non e' ripetuto, risponde come sempre.
+            _tasto_al_dialogo(dlg, wx.WXK_RETURN, dlg.msg_text, monkeypatch)
+            assert chiusure == [getattr(wx, invio)]
+        finally:
+            _chiudi(dlg)
+
+    def test_le_frecce_leggono_il_testo_e_i_pulsanti_tengono_invio(self, telaio, monkeypatch):
+        import wx
+
+        dlg, chiusure = self._crea(telaio, "YES_NO")
+        try:
+            assert dlg.msg_text.IsMultiLine() and not dlg.msg_text.IsEditable()
+            monkeypatch.setattr(wx.Window, "FindFocus", lambda: dlg.msg_text)
+            for codice in (wx.WXK_DOWN, wx.WXK_UP, wx.WXK_HOME, wx.WXK_END):
+                evento = wx.KeyEvent(wx.wxEVT_CHAR_HOOK)
+                evento.SetKeyCode(codice)
+                dlg._on_tasto(evento)
+                assert evento.GetSkipped(), codice
+            # Sul pulsante No INVIO resta al pulsante, che risponde No.
+            monkeypatch.setattr(wx.Window, "FindFocus", lambda: dlg.pulsante_no)
+            evento = wx.KeyEvent(wx.wxEVT_CHAR_HOOK)
+            evento.SetKeyCode(wx.WXK_RETURN)
+            dlg._on_tasto(evento)
+            assert evento.GetSkipped()
+            assert chiusure == []
+        finally:
+            _chiudi(dlg)
+
+
+class TestImpostazioni:
+    """Dalla 10.13.25 chiudendo le Impostazioni, con OK, Annulla o ESC, il
+    fuoco torna sul controllo che lo aveva: restava sulla cornice. Dalla
+    10.13.26 annullando dopo aver mosso il volume il file torna al volume di
+    prima."""
+
+    @staticmethod
+    def _preferenze_finte(monkeypatch, esito, registro):
+        import gui.main_frame as mf
+
+        class PreferenzeFinte:
+            def __init__(self, genitore, impostazioni):
+                self.impostazioni = dict(impostazioni)
+
+            def ShowModal(self):
+                registro.append("mostrata")
+                return esito
+
+            def get_settings(self):
+                return self.impostazioni
+
+            def rimetti_il_volume(self):
+                registro.append("volume di prima")
+
+            def Destroy(self):
+                registro.append("distrutta")
+
+        monkeypatch.setattr(mf, "VisualSettingsDialog", PreferenzeFinte)
+
+    @pytest.mark.parametrize(
+        ("esito", "atteso"),
+        [
+            ("ID_OK", ["mostrata", "distrutta", "fuoco"]),
+            ("ID_CANCEL", ["mostrata", "volume di prima", "distrutta", "fuoco"]),
+        ],
+    )
+    def test_il_fuoco_torna_dove_era(self, principale, monkeypatch, esito, atteso):
+        import wx
+
+        registro = []
+        self._preferenze_finte(monkeypatch, getattr(wx, esito), registro)
+        monkeypatch.setattr(wx.Window, "FindFocus", lambda: principale.status_text)
+        principale.status_text.SetFocus = lambda: registro.append("fuoco")
+        principale.on_preferences(None)
+        assert registro == atteso
+
+    def test_senza_un_controllo_col_fuoco_non_si_sposta_niente(self, principale, telaio, monkeypatch):
+        import wx
+
+        for fuoco in (None, principale, telaio):
+            registro = []
+            self._preferenze_finte(monkeypatch, wx.ID_CANCEL, registro)
+            monkeypatch.setattr(wx.Window, "FindFocus", lambda fuoco=fuoco: fuoco)
+            if fuoco is not None:
+                fuoco.SetFocus = lambda registro=registro: registro.append("fuoco")
+            principale.on_preferences(None)
+            assert registro == ["mostrata", "volume di prima", "distrutta"]
+
+    @staticmethod
+    def _finestra_vera(telaio, monkeypatch, volume):
+        """Le impostazioni vere, con il file che dice volume e un'altra
+        chiave da non perdere, e i suoni annotati."""
+        import json
+
+        import config
+        from gui.dialogs import visual_settings_dialog
+
+        suonati = []
+        monkeypatch.setattr(visual_settings_dialog, "play_sound", lambda nome, *a, **k: suonati.append(nome))
+        percorso = config.user_data_path("Tornello - Settings.json")
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump({"volume": volume, "font_size": 18}, f)
+        dlg = visual_settings_dialog.VisualSettingsDialog(telaio, dict(telaio.settings, volume=volume))
+        return dlg, percorso, suonati
+
+    @staticmethod
+    def _nel_file(percorso):
+        import json
+
+        with open(percorso, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_annullando_il_volume_torna_quello_di_prima(self, telaio, monkeypatch):
+        import utils
+
+        dlg, percorso, suonati = self._finestra_vera(telaio, monkeypatch, 40)
+        try:
+            dlg.slider_vol.SetValue(90)
+            dlg.on_volume_change(None)
+            # Il suono di prova si sente al volume nuovo, scritto nel file.
+            assert self._nel_file(percorso) == {"volume": 90, "font_size": 18}
+            assert utils._volume_base() == 0.9
+            assert suonati == ["notifica"]
+            dlg.rimetti_il_volume()
+            assert self._nel_file(percorso) == {"volume": 40, "font_size": 18}
+            assert utils._volume_base() == 0.4
+            assert suonati == ["notifica"]
+        finally:
+            _chiudi(dlg)
+            # Il volume letto resta in memoria: le prove dopo non lo trovano.
+            utils.invalida_volume_audio()
+
+    def test_anche_dopo_reset_default(self, telaio, monkeypatch):
+        dlg, percorso, _suonati = self._finestra_vera(telaio, monkeypatch, 75)
+        try:
+            dlg.on_reset(None)
+            assert self._nel_file(percorso)["volume"] == 50
+            dlg.rimetti_il_volume()
+            assert self._nel_file(percorso) == {"volume": 75, "font_size": 18}
+        finally:
+            _chiudi(dlg)
+
+    def test_senza_toccare_il_volume_annullare_non_scrive(self, telaio, monkeypatch):
+        import os
+
+        dlg, percorso, _suonati = self._finestra_vera(telaio, monkeypatch, 40)
+        try:
+            os.remove(percorso)
+            dlg.rimetti_il_volume()
+            assert not os.path.exists(percorso)
+        finally:
+            _chiudi(dlg)
+
+
+class TestCalendarioIcs:
+    """Dalla 10.13.27 le righe del calendario finiscono con CR LF, come vuole
+    RFC 5545: dalla 9.0.0 finivano con CR CR LF, perche' il file si apriva
+    con newline uguale a CR LF su un testo che li aveva gia'. Dalla stessa
+    versione una sola partita dalla data illeggibile si dice al singolare."""
+
+    @staticmethod
+    def _file_scelto(monkeypatch, percorso):
+        """La finestra di salvataggio finta, che sceglie il percorso."""
+        import wx
+
+        class SceltaFinta:
+            def __init__(self, *argomenti, **opzioni):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetPath(self):
+                return str(percorso)
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "FileDialog", SceltaFinta)
+
+    def test_le_righe_finiscono_con_cr_lf(self, principale, suoni, monkeypatch, tmp_path):
+        percorso = tmp_path / "calendario.ics"
+        self._file_scelto(monkeypatch, percorso)
+        programmata = {"date": "2026-09-30", "time": "17:30", "channel": "Sala", "arbiter": "Gabry"}
+        principale.current_tournament = {
+            "name": "Prova",
+            "tournament_id": "T1",
+            "players": [
+                {"id": "A1", "first_name": "Luca", "last_name": "Bianchi"},
+                {"id": "B2", "first_name": "Marco", "last_name": "Russo"},
+            ],
+            "rounds": [{"round": 1, "matches": [{"id": 1, "white_player_id": "A1", "black_player_id": "B2", "is_scheduled": True, "schedule_info": programmata}]}],
+        }
+        principale.on_export_ics(None)
+
+        dati = percorso.read_bytes()
+        assert b"\r\r" not in dati
+        righe = dati.split(b"\r\n")
+        assert righe[0] == b"BEGIN:VCALENDAR"
+        assert righe[-2:] == [b"END:VCALENDAR", b""]
+        assert not any(b"\r" in riga or b"\n" in riga for riga in righe)
+        assert b"SUMMARY:Turno 1 - Scacchiera 1: Bianchi Luca vs Russo Marco" in righe
+        assert "conferma" in suoni
+
+    @pytest.mark.parametrize(
+        ("sbagliate", "atteso"),
+        [
+            (1, "Calendario esportato in 'calendario.ics', ma una partita pianificata non c'e' entrata: la sua data non e' leggibile."),
+            (2, "Calendario esportato in 'calendario.ics', ma 2 partite pianificate non ci sono entrate: la loro data non e' leggibile."),
+        ],
+    )
+    def test_le_partite_dalla_data_illeggibile(self, principale, suoni, monkeypatch, tmp_path, sbagliate, atteso):
+        # Fino alla correzione della 10.13.27 con una partita sola la barra
+        # diceva 1 partite pianificate non ci sono entrate.
+        percorso = tmp_path / "calendario.ics"
+        self._file_scelto(monkeypatch, percorso)
+        stati = []
+        monkeypatch.setattr(principale, "set_status", stati.append)
+        partite = [
+            {"id": 1, "white_player_id": "A1", "black_player_id": "B2", "is_scheduled": True, "schedule_info": {"date": "2026-09-30", "time": "17:30"}}
+        ]
+        for numero in range(sbagliate):
+            partite.append(
+                {"id": 2 + numero, "white_player_id": "B2", "black_player_id": "A1", "is_scheduled": True, "schedule_info": {"date": "30 settembre", "time": "17:30"}}
+            )
+        principale.current_tournament = {
+            "name": "Prova",
+            "tournament_id": "T1",
+            "players": [
+                {"id": "A1", "first_name": "Luca", "last_name": "Bianchi"},
+                {"id": "B2", "first_name": "Marco", "last_name": "Russo"},
+            ],
+            "rounds": [{"round": 1, "matches": partite}],
+        }
+        principale.on_export_ics(None)
+        assert stati == [atteso]
+        assert percorso.read_bytes().count(b"BEGIN:VEVENT") == 1
+
+
+class TestPuntiDelBye:
+    """Dalla 10.13.28 il report del turno dice il bye da un punto al
+    singolare: si leggeva BYE (1.0 punti)."""
+
+    @pytest.mark.parametrize(("valore", "atteso"), [(1.0, "Bianchi Luca - BYE (1 punto)"), (0.5, "Bianchi Luca - BYE (0.5 punti)")])
+    def test_i_punti_del_bye(self, principale, valore, atteso):
+        principale.current_tournament = {
+            "name": "Prova",
+            "current_round": 1,
+            "total_rounds": 5,
+            "bye_value": valore,
+            "players_dict": {"A1": {"id": "A1", "first_name": "Luca", "last_name": "Bianchi"}},
+            "rounds": [{"round": 1, "matches": [{"id": 1, "white_player_id": "A1", "black_player_id": None, "result": "BYE"}]}],
+        }
+        principale.show_current_round_report()
+        righe = [riga.strip() for riga in principale.main_text.GetValue().splitlines()]
+        assert atteso in righe
+
+
+def _lettera(etichetta):
+    """La lettera di scelta rapida di una voce, quella dopo la &."""
+    posizione = etichetta.find("&")
+    return etichetta[posizione + 1].lower() if posizione >= 0 else None
+
+
+class TestLettereDeiMenu:
+    """Dalla 10.13.29 anche nel menu File ogni voce ha la sua lettera:
+    Esporta partite pianificate, Elimina Torneo Attivo ed Esci avevano tutte
+    e tre la E, e premendola non si sceglieva nessuna delle tre. La 10.13.5
+    lo aveva fatto per il menu Visualizza."""
+
+    def test_le_voci_del_menu_file(self, principale):
+        etichette = [v.GetItemLabel() for v in principale.item_export_ics.GetMenu().GetMenuItems() if not v.IsSeparator()]
+        assert [_lettera(e) for e in etichette] == ["n", "a", "p", "l", "c", "e"]
+        assert principale.item_export_ics.GetItemLabel() == "Es&porta partite pianificate...\tCtrl+Shift+E"
+        assert principale.item_delete_tournament.GetItemLabel() == "E&limina Torneo Attivo...\tDelete"
+
+    def test_ogni_menu_ha_lettere_tutte_diverse(self, principale):
+        barra = principale.GetMenuBar()
+        titoli = [barra.GetMenuLabel(i) for i in range(barra.GetMenuCount())]
+        assert len({_lettera(t) for t in titoli}) == len(titoli)
+        for posizione, titolo in enumerate(titoli):
+            voci = [v.GetItemLabel() for v in barra.GetMenu(posizione).GetMenuItems() if not v.IsSeparator()]
+            lettere = [_lettera(v) for v in voci]
+            assert None not in lettere, (titolo, voci)
+            assert len(set(lettere)) == len(lettere), (titolo, voci)

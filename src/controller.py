@@ -352,8 +352,10 @@ class TournamentController:
                         pass
 
                 if suspended_tournaments:
+                    # Senza asterischi attorno, dalla 10.13.30: NVDA li
+                    # leggeva uno per uno.
                     self.ui.show_message(
-                        _("\n*** TROVATI TORNEI CON CREAZIONE SOSPESA ***")
+                        _("\nTrovati tornei con la creazione sospesa:")
                     )
                     for st in suspended_tournaments:
                         self.ui.show_message(

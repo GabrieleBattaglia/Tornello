@@ -3,7 +3,7 @@ import builtins
 import wx
 from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
-from gui.accessibility import CustomAccessible
+from gui.accessibility import CustomAccessible, NomeAccessibileTesto
 from gui.settings import apply_visual_settings
 from tiebreak_criteria import (
     CRITERIA,
@@ -90,8 +90,11 @@ class TiebreakConfigDialog(wx.Dialog):
             size=self.FromDIP(wx.Size(-1, 100)),
         )
         self.text_expl.SetName(_("Spiegazione regola"))
+        # Un TextCtrl ricco vuole NomeAccessibileTesto: con CustomAccessible,
+        # fino alla 10.13.30, NVDA lo trovava con il ruolo client, senza sola
+        # lettura e senza il testo come valore.
         self.text_expl.SetAccessible(
-            CustomAccessible(self.text_expl, _("Spiegazione regola"))
+            NomeAccessibileTesto(self.text_expl, _("Spiegazione regola"))
         )
 
         # 3. Bottone Aggiungi

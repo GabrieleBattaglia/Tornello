@@ -246,6 +246,33 @@ class TestSeparatori:
         for numero, riga in enumerate(leggi(nome), 1):
             assert not re.search(r"[=\-_]{3}", riga), f"{nome}, riga {numero}: {riga}"
 
+    def test_nessun_separatore_nelle_stringhe_del_programma(self):
+        """Dalla 10.13.30 anche le stringhe dei sorgenti: la spiegazione
+        degli spareggi cominciava con una riga di segni uguale, costruita
+        moltiplicando il segno per la lunghezza del nome del criterio, e NVDA
+        la leggeva segno per segno. Si cercano le stringhe con una fila di
+        tre segni e le stringhe di soli segni moltiplicate per un numero.
+        Anche gli asterischi: la versione a riga di comando incorniciava gli
+        errori con tre per parte."""
+        segni = set("=-_~#*─═━")
+        trovati = []
+        for radice, _cartelle, files in os.walk(CARTELLA_SRC):
+            for nome in files:
+                if not nome.endswith(".py"):
+                    continue
+                percorso = os.path.join(radice, nome)
+                relativo = os.path.relpath(percorso, CARTELLA_SRC)
+                with open(percorso, encoding="utf-8") as f:
+                    albero = ast.parse(f.read())
+                for nodo in ast.walk(albero):
+                    if isinstance(nodo, ast.BinOp) and isinstance(nodo.op, ast.Mult):
+                        for lato in (nodo.left, nodo.right):
+                            if isinstance(lato, ast.Constant) and isinstance(lato.value, str) and lato.value and set(lato.value) <= segni:
+                                trovati.append(f"{relativo}, riga {nodo.lineno}: {lato.value!r} moltiplicato")
+                    elif isinstance(nodo, ast.Constant) and isinstance(nodo.value, str) and re.search(r"([=\-_~#*─═━])\1\1", nodo.value):
+                        trovati.append(f"{relativo}, riga {nodo.lineno}: {nodo.value[:60]!r}")
+        assert trovati == []
+
 
 class TestCitazioniDelManuale:
     def test_le_etichette_della_programmazione_sono_quelle_del_codice(self):
