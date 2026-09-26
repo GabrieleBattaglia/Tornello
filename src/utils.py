@@ -636,10 +636,12 @@ EVENTI = {
     # Dalla 10.6.1 anche la finestra dei risultati lascia la campanella, troppo
     # aggressiva: un suono all'apertura e uno diverso sui quattro pulsanti
     # Pianifica, Ritira, Annulla e Conferma. Due preset che in Tornello non
-    # suonano per nient'altro, scelti in prova: quelli definitivi li decide
-    # l'ascolto di Gabriele (issue 51).
-    "apertura_risultati": "meditimer_tempo_trascorso",
-    "controllo_risultati": "gabryscola_gioca_carta",
+    # suonano per nient'altro, scelti da Gabriele il 26 settembre 2026 con un
+    # ascolto alla cieca fra sei candidati (issue 51): all'apertura, sopra
+    # l'arpeggio del risultato, il pizzicato breve; sui pulsanti, ripetuto
+    # quattro volte di fila, il tic che sale appena.
+    "apertura_risultati": "gabryscola_gioca_carta",
+    "controllo_risultati": "meditimer_banco_fase",
     # Dalla 10.10.0 un ripristino riuscito dalla finestra Copie di
     # sicurezza: tre tic veloci che salgono, un preset che Tornello non usa
     # per nient'altro. Provvisorio fino all'ascolto di Gabriele (issue 39).
