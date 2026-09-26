@@ -356,3 +356,70 @@ class TestCitazioniDelManuale:
         assert scritta_dal_programma("1 - 0 (Vince Bianchi Luca)")
         assert not scritta_dal_programma("1 - 0 Forfeit (1 - 0F)")
         assert not scritta_dal_programma("Tavolo 3: Bianchi - Neri")
+
+
+class TestDopoLaFinalizzazione:
+    """Dalla 10.13.36 la sezione 9.3 e l'esempio pratico del capitolo 9
+    dicono che cosa mostra davvero la finestra dopo la finalizzazione:
+    l'area centrale torna alla schermata iniziale, e la classifica finale
+    compare dalla voce Classifica del torneo, fra i Tornei Conclusi. Fino
+    alla 10.13.35 dicevano che l'area centrale mostrava la classifica
+    finale, mentre on_finalize_tournament chiama show_intro_message; il
+    comportamento della finestra lo controlla test_comandi_delle_finestre."""
+
+    def _esempio(self, righe):
+        testo = "\n".join(capitolo(righe, 9))
+        return testo[testo.index("ESEMPIO PRATICO: Chiusura del torneo") :]
+
+    def test_la_9_3_e_l_esempio_dicono_la_schermata_iniziale(self):
+        righe = leggi("MANUALE.txt")
+        sezione_9_3 = "\n".join(sezione(righe, (9, 3)))
+        esempio = self._esempio(righe)
+
+        for testo in (sezione_9_3, esempio):
+            assert "torna alla schermata iniziale" in testo
+            assert "voce Classifica" in testo
+            assert "Tornei Conclusi" in testo
+        assert "viene stampata in formato testuale leggibile nell'Area Centrale" not in sezione_9_3
+        assert "appare la classifica finale" not in esempio
+
+    def test_l_esempio_cita_la_voce_dell_albero_come_la_scrive_il_programma(self):
+        esempio = self._esempio(leggi("MANUALE.txt"))
+
+        assert citazioni([esempio]) == ["Finalizza il torneo", "Torneo Sociale di Primavera"]
+        assert "Finalizza il torneo" in stringhe_del_sorgente(os.path.join("gui", "main_frame.py"))
+
+    def test_l_apertura_del_capitolo_distingue_l_albero_dal_menu(self):
+        """L'apertura del capitolo 9 chiama la voce che compare nell'albero
+        con il suo nome, Finalizza il torneo, come l'esempio pratico, e la
+        voce del menu Torneo con il suo, Finalizza Torneo. Fino alla 10.13.35
+        diceva che compariva la voce Finalizza Torneo, il nome della voce
+        del menu, che non compare: c'e' sempre."""
+        testo = "\n".join(capitolo(leggi("MANUALE.txt"), 9))
+        apertura = testo[: testo.index("9.1 LE FORMULE DI SPAREGGIO APPLICATE")]
+        stringhe = stringhe_del_sorgente(os.path.join("gui", "main_frame.py"))
+
+        assert "compare nell'albero" in apertura
+        assert citazioni([apertura]) == ["Finalizza il torneo", "Finalizza Torneo"]
+        assert 'compare la voce "Finalizza Torneo"' not in apertura
+        assert "Finalizza il torneo" in stringhe
+        assert "&Finalizza Torneo\tCtrl+F" in stringhe
+
+
+class TestSpareggiDellaSezione91:
+    """La sezione 9.1 cita gli articoli del C.07 con il loro ambito: il TPR
+    sulle partite giocate per l'articolo 10.2, il 15.2 soltanto per i tornei
+    a turni prestabiliti, gli estremi del PTP dell'articolo 10.3 (10.13.34),
+    e la clausola del regolamento del torneo che l'articolo 4.2 chiede per
+    i pari che non si sorteggiano (10.13.35)."""
+
+    def test_tpr_ptp_e_pari_merito(self):
+        testo = "\n".join(sezione(leggi("MANUALE.txt"), (9, 1)))
+
+        assert "articoli 10.2 e 15.2" not in testo
+        assert "l'articolo 15.2 prescrive per i tornei a turni prestabiliti" in testo
+        assert "800 punti meno del rating dell'avversario più debole" in testo
+        assert "736 punti più di quello dell'avversario più forte" in testo
+        assert "ha PTP 2336" in testo
+        assert "l'articolo 2.1" not in testo
+        assert "il bando o il regolamento del torneo deve quindi dire" in testo

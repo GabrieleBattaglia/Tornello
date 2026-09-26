@@ -18,9 +18,18 @@ import copy
 import json
 import os
 import re
+from types import SimpleNamespace
 
 import pytest
-from test_finalizzazione import _finalizza, _json_in_archivio, _leggi, prepara_il_banco
+from test_finalizzazione import (
+    _cartella_archivio,
+    _finalizza,
+    _finalizza_in_console,
+    _json_in_archivio,
+    _leggi,
+    _scrivi,
+    prepara_il_banco,
+)
 
 RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -320,3 +329,84 @@ class TestFinalizzazioneSalvaGliSpareggi:
 
         assert "CLASSIFICA FINALE" in testo
         assert archiviato == prima
+
+
+class TestPosizioniAPariMerito:
+    """Dalla 10.13.35 due giocatori pari nei punti e in tutti i criteri di
+    spareggio hanno la stessa posizione finale, come nella classifica in
+    corso: Tornello non sorteggia (C.07, articolo 4.2; decisione di
+    Gabriele). Fino alla 10.13.34 la finalizzazione non faceva mai
+    condividere una posizione: la chiave dell'ultimo confronto non si
+    aggiornava, e non conteneva i punti."""
+
+    def test_la_regola(self):
+        from reports import posizioni_con_i_pari_merito
+
+        elementi = [("a", 3.0), ("b", 2.0), ("c", 2.0), ("r", None), ("d", 1.0), ("e", 1.0), ("f", 0.0)]
+
+        posizioni = posizioni_con_i_pari_merito(elementi, lambda e: e[1], lambda e: e[1] is None)
+
+        assert posizioni == [1, 2, 2, None, 5, 5, 7]
+
+    def test_una_lista_vuota_e_chi_e_da_solo(self):
+        from reports import posizioni_con_i_pari_merito
+
+        assert posizioni_con_i_pari_merito([], lambda e: e, lambda e: False) == []
+        assert posizioni_con_i_pari_merito([None], lambda e: e, lambda e: False) == [1]
+
+    @pytest.mark.parametrize("strada", ["finestra", "console"])
+    def test_due_pari_su_tutto_condividono_la_posizione(self, banco, strada):
+        """G3 e G4 pattano fra loro: mezzo punto ciascuno e lo stesso
+        Buchholz, con e senza Cut-1, gli unici criteri del torneo. Hanno
+        tutti e due la seconda posizione, nella classifica in corso, nel
+        file del torneo archiviato, nella sua classifica e nel file della
+        classifica, nello storico dei giocatori e nella medaglia; G2, ultimo,
+        e' quarto."""
+        from db_players import load_players_db
+        from reports import get_standings_text
+
+        banco.torneo["tiebreaks"] = [{"key": "BH", "modifiers": {"cut1": True}}, {"key": "BH", "modifiers": {}}]
+        _scrivi(banco.file_torneo, banco.torneo)
+        attese = {"CognomeG1, NomeG1": "1", "CognomeG3, NomeG3": "2", "CognomeG4, NomeG4": "2", "CognomeG2, NomeG2": "4"}
+        assert _posizioni(get_standings_text(copy.deepcopy(banco.torneo))) == attese
+
+        assert (_finalizza(banco) if strada == "finestra" else _finalizza_in_console(banco)) is True
+
+        archiviato = _leggi(_json_in_archivio())
+        assert {g["id"]: g["final_rank"] for g in archiviato["players"]} == {"G1": 1, "G3": 2, "G4": 2, "G2": 4}
+        assert _posizioni(get_standings_text(archiviato)) == attese
+        nome_del_file = next(n for n in os.listdir(_cartella_archivio()) if n.endswith("Classifica.txt"))
+        with open(os.path.join(_cartella_archivio(), nome_del_file), encoding="utf-8-sig") as f:
+            assert _posizioni(f.read()) == attese
+        database = load_players_db()
+        assert {pid: database[pid]["tournaments_played"][-1]["rank"] for pid in ("G1", "G2", "G3", "G4")} == {"G1": 1, "G2": 4, "G3": 2, "G4": 2}
+        medaglie = {pid: {m for m, n in database[pid]["medals"].items() if n} for pid in ("G1", "G2", "G3", "G4")}
+        assert medaglie == {"G1": {"gold"}, "G2": {"wood"}, "G3": {"silver"}, "G4": {"silver"}}
+
+    def test_con_punti_diversi_la_posizione_non_si_condivide(self, banco):
+        """Con il solo criterio delle vittorie col nero, che nel torneo del
+        banco valgono zero per tutti, i quattro giocatori differiscono
+        soltanto nei punti. Il primo calcolo del controller della console
+        escludeva i punti dalla chiave, e fino alla 10.13.34 dava a tutti e
+        quattro la prima posizione; adesso da' quella della finalizzazione,
+        con G3 e G4 pari a mezzo punto."""
+        import controller
+        from db_players import load_players_db
+        from models import Tournament
+
+        banco.torneo["tiebreaks"] = [{"key": "BWG", "modifiers": {}}]
+        _scrivi(banco.file_torneo, banco.torneo)
+        messaggi = []
+        finto = SimpleNamespace(
+            tournament=Tournament.from_dict(copy.deepcopy(banco.torneo)),
+            players_db=load_players_db(),
+            active_filename=banco.file_torneo,
+            ui=SimpleNamespace(show_message=messaggi.append, show_error=messaggi.append),
+        )
+
+        assert controller.TournamentController._finalize_tournament(finto) is True
+
+        dal_controller = {p.id: p.final_rank for p in finto.tournament.players}
+        archiviate = {g["id"]: g["final_rank"] for g in _leggi(_json_in_archivio())["players"]}
+        assert dal_controller == {"G1": 1, "G3": 2, "G4": 2, "G2": 4}
+        assert dal_controller == archiviate

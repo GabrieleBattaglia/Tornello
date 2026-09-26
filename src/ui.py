@@ -657,11 +657,12 @@ def input_players(
                 # Elo rapid e blitz e i fattori K, e senza Elo standard
                 # current_elo restava a zero. Se il database locale ha gia'
                 # una scheda con lo stesso identificativo FIDE, si usa quella
-                # invece di crearne un doppione. experienced resta quello
-                # della console: un giocatore con rating FIDE e' per
-                # definizione esperto.
+                # invece di crearne un doppione. Dalla 10.13.33 la scheda non
+                # e' piu' segnata esperta: chi non ha un fattore K FIDE
+                # valido, per esempio perche' non ha rating, ha K 40 come
+                # nella finestra, e non 20 (B.02, articolo 8.3.3).
                 scheda_fide, creata = aggiungi_dal_fide(
-                    players_db, selected_fide_record, experienced=True
+                    players_db, selected_fide_record
                 )
                 if scheda_fide is not None:
                     player_id_to_add = scheda_fide["id"]
@@ -1777,19 +1778,20 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     torneo_salvato = None
     try:
         players_sorted = sorted(torneo.get("players", []), key=sort_key_final)
-        current_visual_rank = 0
-        last_sort_key_tuple_for_rank = None
-        for i, p_item in enumerate(players_sorted):
-            if p_item.get("withdrawn", False):
-                p_item["final_rank"] = "RIT"
-                continue
+        # Due giocatori pari nei punti e in tutti i criteri di spareggio
+        # hanno la stessa posizione finale, come nella classifica in corso:
+        # Tornello non sorteggia (C.07, articolo 4.2; decisione di
+        # Gabriele, 10.13.35). Fino alla 10.13.34 la chiave dell'ultimo
+        # confronto non si aggiornava mai, e per di piu' escludeva i punti:
+        # nessuna posizione era mai condivisa. La medaglia segue la
+        # posizione, e due primi a pari merito hanno tutti e due l'oro.
+        from reports import posizioni_con_i_pari_merito
 
-            # Genera la tupla di spareggio per il confronto, escludendo l'indicatore attivo/ritirato
-            current_sort_key_tuple_for_rank = sort_key_final(p_item)[1:]
-
-            if current_sort_key_tuple_for_rank != last_sort_key_tuple_for_rank:
-                current_visual_rank = i + 1
-            p_item["final_rank"] = current_visual_rank
+        posizioni_finali = posizioni_con_i_pari_merito(
+            players_sorted, sort_key_final, lambda g: g.get("withdrawn", False)
+        )
+        for p_item, posizione in zip(players_sorted, posizioni_finali, strict=True):
+            p_item["final_rank"] = "RIT" if posizione is None else posizione
         # I valori delle colonne di spareggio, come li mostra la classifica,
         # restano salvati nel giocatore: la classifica di un torneo concluso
         # li rilegge da qui invece di ricalcolarli con le regole di oggi

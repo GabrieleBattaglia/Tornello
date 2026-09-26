@@ -1064,3 +1064,150 @@ class TestAroSoloPartiteGiocate:
 
         assert compute_tiebreak_value("DIBVI001", torneo, "ARO", {}) == 1522
         assert compute_aro("DIBVI001", torneo) == 1522
+
+
+class TestSpareggiSulRatingSenzaForfait:
+    """Dalla 10.13.34 TPR e PTP contano soltanto le partite giocate sulla
+    scacchiera: il TPR come vuole l'articolo 10.2 del regolamento FIDE sugli
+    spareggi (C.07, dal 1 marzo 2026), il PTP dell'articolo 10.3 per
+    coerenza con il TPR, come l'articolo 15.2 prescrive per i tornei a
+    turni prestabiliti (decisione di Gabriele). Di conseguenza cambiano APRO
+    e APPO (articoli 10.4 e 10.5), le medie dei TPR e dei PTP degli
+    avversari affrontati sulla scacchiera. Fino alla 10.13.33 le partite
+    vinte o perse a forfait entravano nella media e nel punteggio: P, che
+    patta con A da 1600 e vince a forfait con B da 1400, aveva TPR 1693 e
+    PTP 1706."""
+
+    def _torneo(self):
+        def voce(turno, avversario, risultato, punti):
+            return {"round": turno, "opponent_id": avversario, "result": risultato, "score": punti}
+
+        giocatori = [
+            {"id": "P", "initial_elo": 1500, "results_history": [voce(1, "A", "1/2-1/2", 0.5), voce(2, "B", "1-F", 1.0), voce(3, "BYE_PLAYER_ID", "BYE", 1.0)]},
+            {"id": "A", "initial_elo": 1600, "results_history": [voce(1, "P", "1/2-1/2", 0.5)]},
+            {"id": "B", "initial_elo": 1400, "results_history": [voce(2, "P", "F-1", 0.0)]},
+        ]
+        return {"players": giocatori, "players_dict": {g["id"]: g for g in giocatori}, "rounds": [], "total_rounds": 3}
+
+    def test_tpr_e_ptp_sulle_sole_partite_giocate(self):
+        from stats import compute_tiebreak_value
+
+        torneo = self._torneo()
+
+        assert compute_tiebreak_value("P", torneo, "TPR", {}) == 1600
+        assert compute_tiebreak_value("P", torneo, "PTP", {}) == 1600
+
+    def test_apro_e_appo_usano_tpr_e_ptp_senza_forfait(self):
+        from stats import compute_tiebreak_value
+
+        torneo = self._torneo()
+
+        assert compute_tiebreak_value("A", torneo, "APRO", {}) == 1600
+        assert compute_tiebreak_value("A", torneo, "APPO", {}) == 1600
+
+    def test_il_tpr_coincide_con_la_colonna_perf(self):
+        from stats import compute_tpr
+
+        torneo = self._torneo()
+
+        assert compute_tpr("P", torneo) == calculate_performance_rating(torneo["players"][0], torneo["players_dict"])
+
+    def test_a_soli_forfait_vale_l_elo_di_partenza(self):
+        from stats import compute_ptp, compute_tpr
+
+        torneo = self._torneo()
+        torneo["players"][0]["results_history"] = torneo["players"][0]["results_history"][1:]
+
+        assert compute_tpr("P", torneo) == 1500
+        assert compute_ptp("P", torneo) == 1500
+
+    def test_ascid_primavera_1_tpr_e_perf_coincidono(self, sample_tournament_dict):
+        """Il torneo archiviato vero, letto e non scritto, con il forfait di
+        Di Bari al turno 4: per ogni giocatore il TPR e' la performance
+        della colonna Perf, che i forfait li escludeva gia'."""
+        from stats import compute_tpr
+
+        torneo = sample_tournament_dict
+        torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
+
+        diversi = {
+            p["id"]: (compute_tpr(p["id"], torneo), calculate_performance_rating(p, torneo["players_dict"]))
+            for p in torneo["players"]
+            if compute_tpr(p["id"], torneo) != calculate_performance_rating(p, torneo["players_dict"])
+        }
+        assert diversi == {}
+
+
+class TestPtpAgliEstremi:
+    """Dalla 10.13.34 il PTP segue l'articolo 10.3 del C.07 anche agli
+    estremi: con zero punti nelle partite giocate vale 800 meno del rating
+    dell'avversario piu' debole, e con tutte le partite giocate vinte il
+    rating dell'avversario piu' forte piu' 736, il primo per cui la tabella
+    8.1.2 del B.02 da' probabilita' 1,00. Fino alla 10.13.33 la ricerca si
+    fermava ai suoi limiti, 0 e 4000; con i forfait fuori dal conto questi
+    casi arrivano anche a chi ha preso punti a forfait, o li ha persi, e il
+    valore sbagliato passava all'APPO degli avversari."""
+
+    @staticmethod
+    def _torneo(partite_di_p, elo):
+        """P con le partite date, (turno, avversario, risultato, punti);
+        ogni avversario ha la voce speculare e l'Elo di elo."""
+        speculare = {"1-0": "0-1", "0-1": "1-0", "1/2-1/2": "1/2-1/2", "1-F": "F-1", "F-1": "1-F"}
+        giocatori = {"P": {"id": "P", "initial_elo": 1500, "results_history": []}}
+        for avversario, valore in elo.items():
+            giocatori[avversario] = {"id": avversario, "initial_elo": valore, "results_history": []}
+        for turno, avversario, risultato, punti in partite_di_p:
+            giocatori["P"]["results_history"].append({"round": turno, "opponent_id": avversario, "result": risultato, "score": punti})
+            giocatori[avversario]["results_history"].append(
+                {"round": turno, "opponent_id": "P", "result": speculare[risultato], "score": 1.0 - punti}
+            )
+        return {"players": list(giocatori.values()), "players_dict": giocatori, "rounds": [], "total_rounds": len(partite_di_p)}
+
+    def test_zero_sulla_scacchiera_e_una_vittoria_a_forfait(self):
+        """P perde con A da 2000 e con B da 1900 e vince a forfait con C da
+        1400: il PTP e' 1900 - 800, e non 0; l'APPO di A, che ha giocato
+        soltanto con P, e' lo stesso valore. Con il forfait nel conto, fino
+        alla 10.13.33, P aveva 1600."""
+        from stats import compute_tiebreak_value
+
+        torneo = self._torneo([(1, "A", "0-1", 0.0), (2, "B", "0-1", 0.0), (3, "C", "1-F", 1.0)], {"A": 2000, "B": 1900, "C": 1400})
+
+        assert compute_tiebreak_value("P", torneo, "PTP", {}) == 1100
+        assert compute_tiebreak_value("A", torneo, "APPO", {}) == 1100
+
+    def test_tutte_vinte_sulla_scacchiera_e_una_sconfitta_a_forfait(self):
+        """P vince con A da 1600 e perde a forfait con B da 1400: il PTP e'
+        1600 + 736, e non 4000; l'APPO di A e' lo stesso valore."""
+        from stats import compute_tiebreak_value
+
+        torneo = self._torneo([(1, "A", "1-0", 1.0), (2, "B", "F-1", 0.0)], {"A": 1600, "B": 1400})
+
+        assert compute_tiebreak_value("P", torneo, "PTP", {}) == 2336
+        assert compute_tiebreak_value("A", torneo, "APPO", {}) == 2336
+
+    def test_zero_e_pieno_senza_forfait(self):
+        """Gli stessi estremi per chi ha davvero zero punti o tutti i punti,
+        che fino alla 10.13.33 avevano 0 e 4000."""
+        from stats import compute_ptp
+
+        elo = {"A": 1700, "B": 1500}
+        tutte_perse = self._torneo([(1, "A", "0-1", 0.0), (2, "B", "0-1", 0.0)], elo)
+        tutte_vinte = self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1-0", 1.0)], elo)
+
+        assert compute_ptp("P", tutte_perse) == 700
+        assert compute_ptp("P", tutte_vinte) == 2436
+
+    def test_fra_gli_estremi_la_ricerca_resta_quella_di_prima(self):
+        """Un punto e mezzo su due contro 1400 e 1600 non e' un estremo: il
+        PTP e' quello della formula logistica, 1706, fra lo zero e il pieno
+        degli stessi avversari, 600 e 2336. La tabella 8.1.2 darebbe 1703:
+        fra gli estremi Tornello usa la formula logistica, e la prova lo
+        fissa."""
+        from stats import compute_ptp
+
+        elo = {"A": 1400, "B": 1600}
+        torneo = self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1/2-1/2", 0.5)], elo)
+
+        assert compute_ptp("P", torneo) == 1706
+        assert compute_ptp("P", self._torneo([(1, "A", "0-1", 0.0), (2, "B", "0-1", 0.0)], elo)) == 600
+        assert compute_ptp("P", self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1-0", 1.0)], elo)) == 2336

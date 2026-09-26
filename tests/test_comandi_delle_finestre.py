@@ -1093,6 +1093,9 @@ class TestAlberoETorneoAttivo:
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Torneo concluso e archiviato."
         assert self._dati_della_selezione(principale) == {"action": "start_new_tournament"}
+        # L'area centrale torna alla schermata iniziale, come dicono dalla
+        # 10.13.36 la sezione 9.3 del manuale e l'esempio del capitolo 9.
+        assert principale.main_text.GetValue().startswith("Ciao! Benvenuto, sono Tornello")
 
         self._scrivi(percorsi["Alfa"], _torneo_in_corso("Alfa", finito=True))
         principale._save_state = lambda: registro.caricati.append("salvataggio")

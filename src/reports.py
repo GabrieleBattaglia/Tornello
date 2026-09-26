@@ -832,6 +832,50 @@ def get_column_data(criterion, player, torneo):
     return None
 
 
+def _e_ritirato(giocatore):
+    """Vero per un giocatore del torneo, scritto come dizionario, che si e'
+    ritirato."""
+    return bool(giocatore.get("withdrawn", False))
+
+
+def posizioni_con_i_pari_merito(ordinati, chiave_di, e_ritirato):
+    """Le posizioni di una classifica gia' ordinata, una per elemento e
+    nello stesso ordine. La posizione e' il numero d'ordine, contando
+    dall'uno, ma chi ha la stessa chiave di chi lo precede, cioe' gli
+    stessi punti e gli stessi valori in tutti i criteri di spareggio, ne
+    condivide la posizione, e chi viene dopo riprende dal suo numero
+    d'ordine: 1, 1, 3. Un ritirato ha None, e il suo posto nella lista
+    conta nel numero d'ordine, come e' sempre stato. chiave_di da' la
+    chiave di un elemento, e_ritirato dice se e' un ritirato.
+    L'articolo 4.2 del regolamento FIDE sugli spareggi (C.07, in vigore dal
+    1 marzo 2026) vuole che un pari rimasto dopo l'ultimo criterio si
+    risolva per sorteggio, a meno che il regolamento del torneo dica che
+    quei pari non si risolvono. Tornello non sorteggia: i pari dopo tutti
+    i criteri condividono la posizione (decisione di Gabriele come arbitro,
+    10.13.35), e per restare nel 4.2 il regolamento del torneo deve dirlo,
+    come ricorda la sezione 9.1 del manuale.
+    Una regola sola per la classifica in corso, per quella di un torneo
+    concluso ricavata dai valori salvati e per la finalizzazione, della
+    finestra e della console. Fino alla 10.13.34 la finalizzazione non
+    faceva mai condividere una posizione: la chiave dell'ultimo confronto
+    non si aggiornava mai, e per di piu' non conteneva i punti."""
+    posizioni = []
+    posizione = 0
+    ultima_chiave = None
+    prima = True
+    for indice, elemento in enumerate(ordinati):
+        if e_ritirato(elemento):
+            posizioni.append(None)
+            continue
+        chiave = chiave_di(elemento)
+        if prima or chiave != ultima_chiave:
+            posizione = indice + 1
+        posizioni.append(posizione)
+        ultima_chiave = chiave
+        prima = False
+    return posizioni
+
+
 def get_standings_text(torneo, final=False, players_db=None):
     """
     Genera la classifica (parziale o finale) del torneo come stringa.
@@ -970,20 +1014,17 @@ def get_standings_text(torneo, final=False, players_db=None):
     def posizioni_dall_ordine(ordinati, chiavi=None):
         """Le posizioni di una lista ordinata con sort_key_standings: a
         parita' di tutti i criteri la stessa posizione, RIT ai ritirati.
-        chiavi, se c'e', ha le chiavi gia' calcolate, per identificativo."""
-        risultato = {}
-        posizione_corrente = 0
-        ultima_chiave = None
-        for i, p_item in enumerate(ordinati):
-            if p_item.get("withdrawn", False):
-                risultato[p_item.get("id")] = "RIT"
-                continue
-            chiave = chiavi[p_item.get("id")] if chiavi is not None else sort_key_standings(p_item)
-            if chiave != ultima_chiave:
-                posizione_corrente = i + 1
-            risultato[p_item.get("id")] = posizione_corrente
-            ultima_chiave = chiave
-        return risultato
+        chiavi, se c'e', ha le chiavi gia' calcolate, per identificativo.
+        La regola e' quella della finalizzazione, posizioni_con_i_pari_merito."""
+
+        def chiave_di(p_item):
+            return chiavi[p_item.get("id")] if chiavi is not None else sort_key_standings(p_item)
+
+        calcolate = posizioni_con_i_pari_merito(ordinati, chiave_di, _e_ritirato)
+        return {
+            p_item.get("id"): "RIT" if posizione is None else posizione
+            for p_item, posizione in zip(ordinati, calcolate, strict=True)
+        }
 
     # --- DETERMINAZIONE STATO E TITOLO REPORT ---
     current_round_in_state = torneo.get("current_round", 0)
@@ -1126,17 +1167,11 @@ def get_standings_text(torneo, final=False, players_db=None):
                     return (chiave[0], 0, *chiave[1:])
 
                 players_sorted = sorted(players, key=ordine_dei_valori)
-                posizione_corrente = 0
-                ultima_chiave = None
-                for i, p_item in enumerate(players_sorted):
-                    if p_item.get("withdrawn", False):
-                        posizioni[p_item.get("id")] = "RIT"
-                        continue
-                    chiave = chiavi_salvate[p_item.get("id")]
-                    if chiave != ultima_chiave:
-                        posizione_corrente = i + 1
-                    posizioni[p_item.get("id")] = posizione_corrente
-                    ultima_chiave = chiave
+                ricavate = posizioni_con_i_pari_merito(
+                    players_sorted, lambda g: chiavi_salvate[g.get("id")], _e_ritirato
+                )
+                for p_item, posizione in zip(players_sorted, ricavate, strict=True):
+                    posizioni[p_item.get("id")] = "RIT" if posizione is None else posizione
             elif senza_posizione:
                 # Senza la posizione salvata di qualcuno, e senza i valori
                 # per ricavarla, le posizioni si calcolano tutte con le

@@ -1073,6 +1073,45 @@ class TestColonnaEloVarDellaClassificaInCorso:
         assert {p["k_factor"] for p in in_corso["players"]} == {20}
 
 
+class TestFattoreKDellaConsole:
+    """Dalla 10.13.33 il fattore K passa da un punto solo,
+    fattore_k_della_finalizzazione, anche nel primo calcolo del controller
+    della console, che fino alla 10.13.32 dava 20 a chi il database non
+    aveva, mentre la finalizzazione gli crea la scheda e, senza un K FIDE
+    valido, gli da' 40. Un giocatore importato dal FIDE senza K valido, come
+    G1 qui, ha 40."""
+
+    def test_il_k_del_controller_e_quello_applicato(self, banco):
+        import controller
+        from db_players import load_players_db
+        from models import Tournament
+
+        dati = _leggi(banco.db)
+        for scheda in dati["players"]:
+            if scheda["id"] == "G1":
+                scheda.update(fide_id_num_str="805165", fide_k_factor=0, games_played=0)
+            elif scheda["id"] == "G2":
+                scheda.update(experienced=True, games_played=80)
+            elif scheda["id"] == "G4":
+                scheda["fide_k_factor"] = 10
+        dati["players"] = [g for g in dati["players"] if g["id"] != "G3"]
+        _scrivi(banco.db, dati)
+        messaggi = []
+        finto = types.SimpleNamespace(
+            tournament=Tournament.from_dict(copy.deepcopy(banco.torneo)),
+            players_db=load_players_db(),
+            active_filename=banco.file_torneo,
+            ui=types.SimpleNamespace(show_message=messaggi.append, show_error=messaggi.append),
+        )
+
+        assert controller.TournamentController._finalize_tournament(finto) is True
+
+        dal_controller = {p.id: p.k_factor for p in finto.tournament.players}
+        applicati = {p["id"]: p["k_factor"] for p in _leggi(_json_in_archivio())["players"]}
+        assert dal_controller == {"G1": 40, "G2": 20, "G3": 40, "G4": 10}
+        assert dal_controller == applicati
+
+
 def _con_altri_soci(banco, numero=30):
     """Il database del banco con numero schede in piu', di soci che il
     torneo non ha: un database illeggibile li farebbe sparire."""

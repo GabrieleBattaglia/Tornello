@@ -1300,7 +1300,15 @@ def scheda_da_record_fide(record, players_db):
     Nata con la 10.13.15: fino ad allora la finestra di iscrizione, la
     consultazione del database FIDE e la console costruivano ciascuna la sua
     scheda, e la console ne scriveva soltanto una parte, senza gli Elo rapid
-    e blitz e senza i fattori K."""
+    e blitz e senza i fattori K.
+    La scheda non ha experienced, e partite giocate a zero: il fattore K lo
+    decide soltanto get_k_factor, il K FIDE se e' valido, altrimenti 40,
+    come per un giocatore nuovo con meno di trenta partite (articolo 8.3.3
+    del regolamento FIDE sul rating, B.02). Fino alla 10.13.32 la console
+    la segnava esperta, e un adulto senza un K FIDE valido, per esempio
+    senza rating e con k_factor 0, aveva 20 invece di 40; sotto i diciotto
+    anni, con Elo sotto 2300, get_k_factor dava 40 anche all'esperto. Le
+    schede importate cosi' restano segnate esperte."""
     sesso, genere = _sesso(record.get("sex"))
     anno = record.get("birth_year")
     return {
@@ -1335,23 +1343,24 @@ def scheda_da_record_fide(record, players_db):
     }
 
 
-def aggiungi_dal_fide(players_db, record, **altri_campi):
+def aggiungi_dal_fide(players_db, record):
     """Il giocatore del database FIDE nel database locale: se una scheda ha
     gia' il suo identificativo FIDE e' quella, altrimenti ne nasce una con
-    scheda_da_record_fide, piu' altri_campi, e il database si salva subito.
+    scheda_da_record_fide, e il database si salva subito.
     Restituisce (scheda, creata); (None, False) se il database non si e'
     potuto salvare, e allora la scheda nuova non resta nemmeno in memoria.
     Dalla 10.13.15 la usa l'iscrizione dalla ricerca FIDE, che fino ad
     allora iscriveva il giocatore al torneo con un identificativo FIDE_ e
     non lo metteva nel database, e con lei la console e la consultazione
-    del database FIDE (Ctrl+K)."""
+    del database FIDE (Ctrl+K). Fino alla 10.13.32 accettava altri campi da
+    aggiungere alla scheda, e la console ci metteva experienced: dalla
+    10.13.33 la scheda e' la stessa per tutti, e con lei il fattore K."""
     esistente = scheda_con_lo_stesso_id_fide(players_db, record.get("id_fide"))
     if esistente is not None:
         return esistente, False
     scheda = scheda_da_record_fide(record, players_db)
     if not scheda["id"]:
         return None, False
-    scheda.update(altri_campi)
     players_db[scheda["id"]] = scheda
     if not save_players_db(players_db):
         del players_db[scheda["id"]]
@@ -1373,8 +1382,9 @@ def scheda_dal_torneo(giocatore):
     Non la mette nel database. Nata con la 10.13.16: la finalizzazione la crea
     per chi manca, invece di saltarlo in silenzio, e la classifica in corso la
     usa per il fattore K, lo stesso che la finalizzazione usera'.
-    Come le schede importate dalla finestra, non ha experienced: il fattore K
-    segue le regole, a partire da quello FIDE."""
+    Come le schede importate dal database FIDE, non ha experienced: il
+    fattore K segue le regole di get_k_factor, a partire da quello FIDE, e
+    senza un K FIDE valido vale 40."""
     def numero(chiave):
         valore = giocatore.get(chiave)
         return valore if isinstance(valore, (int, float)) and not isinstance(valore, bool) else 0
@@ -1450,7 +1460,11 @@ def scheda_per_la_finalizzazione(giocatore, players_db):
 
 def fattore_k_della_finalizzazione(giocatore, players_db, data_di_inizio):
     """Il fattore K che la finalizzazione usa per la variazione Elo di un
-    iscritto: get_k_factor sulla scheda di scheda_per_la_finalizzazione."""
+    iscritto: get_k_factor sulla scheda di scheda_per_la_finalizzazione.
+    E' l'unico punto da cui passa il K di un iscritto: la finalizzazione
+    della finestra e della console, la colonna Elo Var. della classifica
+    in corso e, dalla 10.13.33, anche il primo calcolo del controller della
+    console, che fino ad allora dava 20 a chi il database non aveva."""
     return get_k_factor(scheda_per_la_finalizzazione(giocatore, players_db), data_di_inizio)
 
 

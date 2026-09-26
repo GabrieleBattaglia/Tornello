@@ -6,8 +6,9 @@ storico dei giocatori, e il turno successivo si abbina come dopo un turno
 giocato: cli_adapter costruiva players_dict con dizionari nuovi, distinti da
 quelli di players, e ui.update_match_result scriveva li'. Dalla 10.13.15
 l'iscrizione dal database FIDE della console crea la scheda della finestra,
-con tutti i dati FIDE, segnata pero' come esperta, come faceva gia', e non
-raddoppia una scheda che il database ha gia'. Tutto lavora nella cartella temporanea della prova; il motore
+con tutti i dati FIDE, e non raddoppia una scheda che il database ha gia';
+dalla 10.13.33 non la segna piu' esperta, e chi non ha un fattore K FIDE
+valido ha K 40, come nella finestra. Tutto lavora nella cartella temporanea della prova; il motore
 degli abbinamenti e' quello vero."""
 
 import types
@@ -201,8 +202,26 @@ class TestIscrizioneFideInConsole:
         scheda = load_players_db()["NICSA001"]
         assert (scheda["elo_rapid"], scheda["fide_rapid_k"], scheda["current_elo"]) == (1806, 40, 1399)
         assert scheda["fide_id_num_str"] == "805165"
-        # La console tiene il suo experienced.
-        assert scheda["experienced"] is True
+        # Dalla 10.13.33 la scheda e' quella della finestra, senza
+        # experienced: fino alla 10.13.32 la console la segnava esperta.
+        assert "experienced" not in scheda
+
+    def test_senza_k_fide_valido_il_k_e_40_come_nella_finestra(self, monkeypatch):
+        """RECORD_FIDE non ha rating standard e ha k_factor 0: il K che la
+        colonna Elo Var. e la finalizzazione useranno per l'iscritto della
+        console e' 40, come per quello della finestra, che passa da
+        scheda_da_record_fide. Fino alla 10.13.32 era 20 (10.13.33)."""
+        from db_players import fattore_k_della_finalizzazione, load_players_db, scheda_da_record_fide
+
+        iscritti = self._iscrivi(monkeypatch, {}, "nicolini")
+
+        database = load_players_db()
+        dalla_finestra = scheda_da_record_fide(RECORD_FIDE, {})
+        dalla_finestra.pop("registration_date")
+        dalla_console = database["NICSA001"]
+        assert {chiave: dalla_console.get(chiave) for chiave in dalla_finestra} == dalla_finestra
+        assert "experienced" not in dalla_console
+        assert fattore_k_della_finalizzazione(iscritti[0], database, "2026-09-26") == 40
 
     def test_una_scheda_con_lo_stesso_id_fide_non_si_raddoppia(self, monkeypatch):
         esistente = {"id": "NICSA004", "first_name": "Savino", "last_name": "Nicolini", "current_elo": 1500, "fide_id_num_str": "805165"}

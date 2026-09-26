@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 from config import (
     DATE_FORMAT_ISO,
-    DEFAULT_K_FACTOR,
     FIDE_DB_JSON_LEGACY,
     FIDE_DB_LOCAL_FILE,
     PLAYER_DB_FILE,
@@ -15,6 +14,7 @@ from config import (
 from db_players import (
     aggiorna_db_fide_locale,
     database_non_letto,
+    fattore_k_della_finalizzazione,
     load_players_db,
     messaggio_database_non_letto,
     sincronizza_db_personale,
@@ -23,6 +23,7 @@ from engine import handle_bbpairings_failure
 from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
 from reports import (
     append_completed_round_to_history_file,
+    posizioni_con_i_pari_merito,
     save_current_tournament_round_file,
     save_standings_text,
 )
@@ -34,7 +35,6 @@ from stats import (
     compute_buchholz,
     compute_buchholz_cut1,
     compute_tiebreak_value,
-    get_k_factor,
     parse_time_control,
 )
 from tiebreak_criteria import (
@@ -1037,11 +1037,13 @@ class TournamentController:
                 p.k_factor = None
                 p.games_this_tournament = 0
                 continue
-            player_db_data = self.players_db.get(p.id)
-            if not player_db_data:
-                p.k_factor = DEFAULT_K_FACTOR
-            else:
-                p.k_factor = get_k_factor(player_db_data, self.tournament.start_date)
+            # Il K passa dallo stesso punto della finalizzazione e della
+            # colonna Elo Var. (10.13.33): fino alla 10.13.32 qui chi il
+            # database non aveva prendeva 20, mentre la finalizzazione gli
+            # crea la scheda e, senza un K FIDE valido, gli da' 40.
+            p.k_factor = fattore_k_della_finalizzazione(
+                p.to_dict(), self.players_db, self.tournament.start_date
+            )
 
             games_count = 0
             for r in p.results_history:
@@ -1113,17 +1115,16 @@ class TournamentController:
             return tuple(sort_tuple)
 
         players_sorted = sorted(self.tournament.players, key=sort_key_final)
-        current_visual_rank = 0
-        last_sort_key = None
-        for i, p_item in enumerate(players_sorted):
-            if p_item.withdrawn:
-                p_item.final_rank = None  # o 'RIT'
-                continue
-            curr_sort_key = sort_key_final(p_item)[1:]
-            if curr_sort_key != last_sort_key:
-                current_visual_rank = i + 1
-            p_item.final_rank = current_visual_rank
-            last_sort_key = curr_sort_key
+        # Le posizioni con la regola di ui.finalize_tournament e della
+        # classifica: stessa posizione soltanto a parita' di punti e di
+        # tutti i criteri (10.13.35). Fino alla 10.13.34 qui la chiave
+        # escludeva i punti, e due giocatori con punti diversi e spareggi
+        # uguali avevano la stessa posizione. I ritirati restano senza.
+        posizioni_finali = posizioni_con_i_pari_merito(
+            players_sorted, sort_key_final, lambda g: g.withdrawn
+        )
+        for p_item, posizione in zip(players_sorted, posizioni_finali, strict=True):
+            p_item.final_rank = posizione
 
         self.tournament.players = players_sorted
         self.tournament.update_players_dict()

@@ -1299,6 +1299,19 @@ def compute_tpr(player_id, torneo):
 
     Stessa logica di calculate_performance_rating ma esposta come funzione
     di spareggio con la firma standard (player_id, torneo).
+    Conta soltanto le partite giocate sulla scacchiera, come vuole
+    l'articolo 10.2 del regolamento FIDE sugli spareggi (C.07, in vigore
+    dal 1 marzo 2026): l'ARO degli avversari "played over the board" e il
+    punteggio "achieved in games played over the board", diviso per quelle
+    partite, e l'articolo 10.1 definisce l'ARO sugli stessi avversari.
+    L'articolo 15.2, che per i criteri basati sul rating fa di ogni forfait
+    un turno non giocato, vale per i tornei a turni prestabiliti; per lo
+    svizzero l'articolo 15.3 rimanda al 16, che regola i criteri basati sui
+    punteggi, e il fondamento resta il 10.2. Fino alla 10.13.33 le
+    partite vinte o perse a forfait, 1-F, F-1 e 0-0F, entravano nella media
+    e nel punteggio, mentre la colonna Perf e l'ARO (10.13.18) le
+    escludevano gia'. Di conseguenza cambia anche l'APRO (articolo 10.4),
+    la media dei TPR degli avversari.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1320,7 +1333,9 @@ def compute_tpr(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+        # Niente bye e niente forfait: soltanto le partite giocate sulla
+        # scacchiera (C.07, articolo 10.2).
+        if not _giocata_sulla_scacchiera(result_entry) or score is None:
             continue
 
         opponent = players_dict.get(opponent_id)
@@ -1350,13 +1365,35 @@ def compute_tpr(player_id, torneo):
 
 
 def compute_ptp(player_id, torneo):
-    """PTP: Perfect Tournament Performance.
+    """PTP: Perfect Tournament Performance, articolo 10.3 del C.07.
 
     Trova il più basso intero R tale che il punteggio atteso (calcolato con
-    la formula di probabilità FIDE SENZA cap ±400) >= punteggio reale.
+    la formula logistica di probabilità, SENZA cap ±400) >= punteggio reale.
     Ricerca binaria nell'intervallo 0-4000.
 
     E = sum(1 / (1 + 10^((Ri - R) / 400))) per ogni Elo avversario Ri.
+
+    La formula logistica approssima di pochi punti la tabella 8.1.2 del
+    regolamento FIDE sul rating (B.02), che l'articolo 10.3 richiama: per
+    una patta contro un avversario da 1600 la formula da' 1600, la tabella
+    1597. Agli estremi vale l'articolo, dalla 10.13.34: con zero punti il
+    PTP e' 800 meno del rating dell'avversario piu' debole, e con tutte le
+    partite vinte e' il rating dell'avversario piu' forte piu' 736, il piu'
+    basso per cui la tabella 8.1.2 da' probabilita' 1,00 contro ciascuno
+    (differenza oltre 735). Fino alla 10.13.33 la ricerca si fermava ai
+    suoi limiti, 0 e 4000.
+
+    Avversari e punteggio sono quelli delle sole partite giocate sulla
+    scacchiera, come per il TPR (10.13.34). L'articolo 10.3 parla del
+    punteggio del torneo e degli avversari affrontati, senza dire dei
+    forfait: toglierli e' una scelta di coerenza con il TPR, decisa da
+    Gabriele come arbitro, la stessa che l'articolo 15.2 prescrive per i
+    tornei a turni prestabiliti, dove nei criteri basati sul rating un
+    forfait resta un turno non giocato. Fino alla 10.13.33 entravano anche
+    le partite vinte o perse a forfait. Con i forfait fuori dal conto gli
+    estremi sono piu' frequenti: basta vincere tutte le partite giocate e
+    perderne una a forfait. Di conseguenza cambia anche l'APPO (articolo
+    10.5), la media dei PTP degli avversari.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1372,7 +1409,9 @@ def compute_ptp(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+        # Niente bye e niente forfait, come per il TPR (C.07, articolo 10.3,
+        # letto in coerenza con il 10.2).
+        if not _giocata_sulla_scacchiera(result_entry) or score is None:
             continue
 
         opponent = players_dict.get(opponent_id)
@@ -1391,6 +1430,17 @@ def compute_ptp(player_id, torneo):
             return round(float(player.get("initial_elo", DEFAULT_ELO)))
         except (ValueError, TypeError):
             return DEFAULT_ELO
+
+    # Gli estremi, che la ricerca non trova (10.13.34). Con zero punti il
+    # punteggio atteso lo raggiunge qualunque rating, e l'articolo 10.3 fissa
+    # il PTP a 800 meno dell'avversario piu' debole. Con tutte le partite
+    # vinte la formula logistica non lo raggiunge mai, e vale la tabella
+    # 8.1.2 del B.02: probabilita' 1,00 soltanto oltre 735 punti di
+    # differenza, quindi 736 piu' dell'avversario piu' forte.
+    if total_score <= 0:
+        return round(min(opponent_elos)) - 800
+    if total_score >= len(opponent_elos):
+        return round(max(opponent_elos)) + 736
 
     def expected_score_for_rating(r):
         """Punteggio atteso senza cap ±400."""
@@ -1412,6 +1462,9 @@ def compute_apro(player_id, torneo):
     """APRO: media del TPR di tutti gli avversari giocati OTB.
 
     Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    Articolo 10.4 del C.07: gli avversari sono quelli affrontati sulla
+    scacchiera, e il TPR di ciascuno, dalla 10.13.34, conta a sua volta
+    soltanto le sue partite giocate sulla scacchiera (compute_tpr).
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1441,6 +1494,9 @@ def compute_appo(player_id, torneo):
     """APPO: media del PTP di tutti gli avversari giocati OTB.
 
     Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    Articolo 10.5 del C.07: gli avversari sono quelli affrontati sulla
+    scacchiera, e il PTP di ciascuno, dalla 10.13.34, conta a sua volta
+    soltanto le sue partite giocate sulla scacchiera (compute_ptp).
     """
     player = get_player_by_id(torneo, player_id)
     if not player:

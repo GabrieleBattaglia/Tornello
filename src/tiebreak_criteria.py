@@ -268,7 +268,9 @@ CRITERIA = {
         "formula": _(
             "Somma tra la Media del Rating degli Avversari (ARO) e la differenza "
             "di rating (RD) derivata dalla tabella di conversione FIDE applicata "
-            "al punteggio frazionario (Articolo 10.2)."
+            "al punteggio frazionario, cioè ai punti delle partite giocate sulla "
+            "scacchiera divisi per il loro numero: le partite vinte o perse a "
+            "forfait non contano (Articolo 10.2)."
         ),
     },
     "PTP": {
@@ -281,9 +283,15 @@ CRITERIA = {
             "differenza."
         ),
         "formula": _(
-            "Valore intero corrispondente al rating più basso calcolato tramite "
-            "le probabilità di punteggio definite dalle normative FIDE, senza "
-            "applicare il limite di ±400 punti (Articolo 10.3)."
+            "Valore intero corrispondente al rating più basso per cui il "
+            "punteggio atteso raggiunge quello ottenuto, senza applicare il "
+            "limite di ±400 punti. Il punteggio atteso si calcola con la formula "
+            "Elo delle probabilità di punteggio, che differisce di pochi punti "
+            "dalla tabella FIDE. Con zero punti vale 800 punti meno del rating "
+            "dell'avversario più debole, con tutte le partite vinte 736 punti più "
+            "di quello dell'avversario più forte. Come per il TPR contano le sole "
+            "partite giocate sulla scacchiera: le partite vinte o perse a forfait "
+            "restano fuori (Articolo 10.3)."
         ),
     },
     "APRO": {

@@ -1,4 +1,5 @@
 import json
+import os
 
 from db_players import load_players_db
 
@@ -198,6 +199,58 @@ class TestGiocatoreDalDatabaseFide:
 
         assert nuovo is None
         assert giocatori == {}
+
+
+class TestFattoreKDelGiocatoreDalFide:
+    """Dalla 10.13.33 un giocatore importato dal database FIDE senza un
+    fattore K FIDE valido, come RECORD_FIDE, senza rating standard e con
+    k_factor 0, ha K 40, come un giocatore nuovo con meno di trenta partite
+    (B.02, articolo 8.3.3), da qualunque strada venga. Fino alla 10.13.32 la
+    console aggiungeva experienced alla scheda, e il suo K era 20."""
+
+    def test_senza_k_fide_valido_il_k_e_40(self):
+        from db_players import scheda_da_record_fide
+        from stats import get_k_factor
+
+        scheda = scheda_da_record_fide(RECORD_FIDE, {})
+
+        assert get_k_factor(scheda, "2026-09-26") == 40
+
+    def test_con_un_k_fide_valido_vale_quello(self):
+        from db_players import scheda_da_record_fide
+        from stats import get_k_factor
+
+        scheda = scheda_da_record_fide(dict(RECORD_FIDE, k_factor=20, elo_standard=1850, games=120), {})
+
+        assert get_k_factor(scheda, "2026-09-26") == 20
+
+    def test_la_scheda_non_si_puo_cambiare_strada_facendo(self):
+        """aggiungi_dal_fide non accetta piu' campi da aggiungere alla
+        scheda, e le tre strade, la finestra di iscrizione, la consultazione
+        del database FIDE e la console, la chiamano con il database e il
+        record soltanto: la scheda, e con lei il K, e' una sola."""
+        import ast
+        import inspect
+
+        from db_players import aggiungi_dal_fide
+
+        cartella_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
+
+        assert list(inspect.signature(aggiungi_dal_fide).parameters) == ["players_db", "record"]
+        chiamate = {}
+        for relativo in (
+            "ui.py",
+            os.path.join("gui", "dialogs", "player_enrollment_dialog.py"),
+            os.path.join("gui", "dialogs", "fide_query_dialog.py"),
+        ):
+            with open(os.path.join(cartella_src, relativo), encoding="utf-8") as f:
+                albero = ast.parse(f.read())
+            chiamate[relativo] = [
+                (len(nodo.args), len(nodo.keywords))
+                for nodo in ast.walk(albero)
+                if isinstance(nodo, ast.Call) and getattr(nodo.func, "id", None) == "aggiungi_dal_fide"
+            ]
+        assert chiamate == {relativo: [(2, 0)] for relativo in chiamate}
 
 
 class TestSchedaDalTorneo:
