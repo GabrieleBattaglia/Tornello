@@ -4463,11 +4463,12 @@ class MainFrame(wx.Frame):
 
     def on_preferences(self, event):
         old_lang = self.settings.get("language", "it")
-        # Dalla 10.13.25 il fuoco torna dove era prima delle impostazioni, in
-        # qualunque modo si chiudano: con quella finestra, a differenza delle
-        # altre, Windows non riattiva la finestra principale, e il fuoco
-        # restava sulla cornice, dove NVDA legge soltanto il titolo.
-        fuoco = wx.Window.FindFocus()
+        # Il fuoco torna dove era prima delle impostazioni, in qualunque modo
+        # si chiudano: dalla 10.13.38 lo rimette GBwx 1.0.1 alla distruzione
+        # della finestra, come per tutte le altre. Dalla 10.13.25 alla
+        # 10.13.37 lo rimetteva un rimedio qui, pensato per questa finestra
+        # sola, mentre il fuoco restava sulla cornice, dove NVDA legge
+        # soltanto il titolo, dopo ogni finestra costruita con GBwx.
         dlg = VisualSettingsDialog(self, self.settings)
         if dlg.ShowModal() == wx.ID_OK:
             new_settings = dlg.get_settings()
@@ -4504,8 +4505,6 @@ class MainFrame(wx.Frame):
             # (10.13.26).
             dlg.rimetti_il_volume()
         dlg.Destroy()
-        if fuoco and fuoco is not self and fuoco.GetTopLevelParent() is self:
-            fuoco.SetFocus()
 
     @staticmethod
     def _leggi_manuale():

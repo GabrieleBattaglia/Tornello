@@ -1976,8 +1976,11 @@ class TestMessaggiEDomande:
 class TestImpostazioni:
     """Dalla 10.13.25 chiudendo le Impostazioni, con OK, Annulla o ESC, il
     fuoco torna sul controllo che lo aveva: restava sulla cornice. Dalla
-    10.13.26 annullando dopo aver mosso il volume il file torna al volume di
-    prima."""
+    10.13.38 lo rimette GBwx alla distruzione della finestra, come per tutte
+    le altre, e on_preferences non lo sposta piu' da se': la prova vera, con
+    le finestre mostrate sul desktop nascosto, sta in
+    test_fuoco_alla_chiusura.py. Dalla 10.13.26 annullando dopo aver mosso
+    il volume il file torna al volume di prima."""
 
     @staticmethod
     def _preferenze_finte(monkeypatch, esito, registro):
@@ -2005,31 +2008,21 @@ class TestImpostazioni:
     @pytest.mark.parametrize(
         ("esito", "atteso"),
         [
-            ("ID_OK", ["mostrata", "distrutta", "fuoco"]),
-            ("ID_CANCEL", ["mostrata", "volume di prima", "distrutta", "fuoco"]),
+            ("ID_OK", ["mostrata", "distrutta"]),
+            ("ID_CANCEL", ["mostrata", "volume di prima", "distrutta"]),
         ],
     )
-    def test_il_fuoco_torna_dove_era(self, principale, monkeypatch, esito, atteso):
+    def test_si_chiude_senza_spostare_il_fuoco_da_se(self, principale, monkeypatch, esito, atteso):
+        """Nessun SetFocus dopo Destroy: il fuoco lo rimette GBwx."""
         import wx
 
         registro = []
         self._preferenze_finte(monkeypatch, getattr(wx, esito), registro)
+        for nome in ("main_text", "tree_ctrl", "status_text"):
+            getattr(principale, nome).SetFocus = lambda nome=nome: registro.append(f"fuoco {nome}")
         monkeypatch.setattr(wx.Window, "FindFocus", lambda: principale.status_text)
-        principale.status_text.SetFocus = lambda: registro.append("fuoco")
         principale.on_preferences(None)
         assert registro == atteso
-
-    def test_senza_un_controllo_col_fuoco_non_si_sposta_niente(self, principale, telaio, monkeypatch):
-        import wx
-
-        for fuoco in (None, principale, telaio):
-            registro = []
-            self._preferenze_finte(monkeypatch, wx.ID_CANCEL, registro)
-            monkeypatch.setattr(wx.Window, "FindFocus", lambda fuoco=fuoco: fuoco)
-            if fuoco is not None:
-                fuoco.SetFocus = lambda registro=registro: registro.append("fuoco")
-            principale.on_preferences(None)
-            assert registro == ["mostrata", "volume di prima", "distrutta"]
 
     @staticmethod
     def _finestra_vera(telaio, monkeypatch, volume):

@@ -16,6 +16,134 @@ sys.path.insert(
 RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CARTELLA_SRC = os.path.join(RADICE, "src")
 
+
+# Il desktop nascosto, dalla 10.13.37. La guardia delle finestre vere, piu'
+# sotto, impedisce alle finestre di mostrarsi, ma non basta: Windows da' il
+# primo piano anche a una finestra mai mostrata quando riceve il fuoco, per
+# esempio con il SetFocus dell'albero in _ripristina_la_selezione o dentro
+# una TextEntryDialog, perche' il processo di pytest e' partito dal terminale
+# che aveva il primo piano. Il 26 settembre 2026 finestre invisibili delle
+# prove hanno preso il primo piano sullo schermo di Gabriele, e NVDA gli
+# leggeva i loro titoli. Percio', prima che wx crei qualunque finestra, il
+# thread principale passa su un desktop di Windows tutto suo, che nessuno
+# vede: le finestre nascono li', dove il fuoco, l'attivazione e il primo
+# piano non toccano il desktop di chi lancia le prove, e gli agganci dello
+# screen reader, che valgono per il desktop su cui sono stati messi, non le
+# vedono. Se il passaggio non riesce, la suite non parte: meglio nessuna
+# prova che finestre sul desktop vero. Fuori da Windows non serve.
+# Il passaggio vale per il thread principale, l'unico su cui wx crea
+# finestre: un thread nato dopo parte dal desktop del processo, quello di
+# chi lancia le prove. Nelle esecuzioni del 26 settembre 2026, sorvegliate
+# con un aggancio degli eventi di Windows sul desktop Default, l'unico a
+# crearci qualcosa e' stato un thread della Shell, in una delle prove che
+# mandano file nel cestino: una finestra di soli messaggi di COM
+# (OLEChannelWnd), che non si mostra, non si attiva e non riceve il fuoco.
+NOME_DEL_DESKTOP = f"tornello_prove_{os.getpid()}"
+GENERIC_ALL = 0x10000000
+# Il desktop di partenza, per nome, e la maniglia del desktop nascosto, che
+# resta aperta finche' il processo vive: chiusa, il desktop sparirebbe sotto
+# le finestre delle prove.
+DESKTOP_DELLE_PROVE = {}
+
+
+def user32_del_desktop():
+    """user32 con le firme delle funzioni dei desktop. Una copia tutta sua,
+    cosi' le firme non cambiano quelle che il resto del processo usa."""
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    user32.CreateDesktopW.restype = wintypes.HANDLE
+    user32.CreateDesktopW.argtypes = [wintypes.LPCWSTR, wintypes.LPCWSTR, ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p]
+    user32.SetThreadDesktop.restype = wintypes.BOOL
+    user32.SetThreadDesktop.argtypes = [wintypes.HANDLE]
+    user32.CloseDesktop.restype = wintypes.BOOL
+    user32.CloseDesktop.argtypes = [wintypes.HANDLE]
+    user32.GetThreadDesktop.restype = wintypes.HANDLE
+    user32.GetThreadDesktop.argtypes = [wintypes.DWORD]
+    user32.GetUserObjectInformationW.restype = wintypes.BOOL
+    user32.GetUserObjectInformationW.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD, ctypes.POINTER(wintypes.DWORD)]
+    return user32
+
+
+def _desktop_non_disponibile(azione, funzione, codice):
+    import ctypes
+
+    return (
+        f"Le prove non partono: non si e' potuto {azione} ({funzione}, errore di Windows "
+        f"{codice}: {ctypes.FormatError(codice).strip()}). Le finestre delle prove nascono "
+        "su un desktop di Windows nascosto, creato apposta: senza, una finestra mai "
+        "mostrata che riceve il fuoco prenderebbe il primo piano sullo schermo di chi "
+        "lancia le prove, e lo screen reader ne leggerebbe il titolo. Il passaggio "
+        "fallisce se questo thread ha gia' delle finestre, per esempio lanciando pytest "
+        "dall'interno di un programma con le finestre."
+    )
+
+
+def passa_al_desktop_nascosto(user32=None, nome=None):
+    """Crea il desktop nascosto e ci sposta il thread principale, che e'
+    quello su cui wx crea le finestre. Torna la maniglia del desktop. Se non
+    ci riesce solleva pytest.UsageError, che ferma la suite prima della prima
+    prova con un messaggio chiaro. Windows rifiuta il passaggio a un thread
+    che ha gia' finestre o agganci: va fatto prima di wx.App."""
+    import ctypes
+
+    user32 = user32 or user32_del_desktop()
+    desktop = user32.CreateDesktopW(nome or NOME_DEL_DESKTOP, None, None, 0, GENERIC_ALL, None)
+    if not desktop:
+        raise pytest.UsageError(_desktop_non_disponibile("creare il desktop nascosto", "CreateDesktopW", ctypes.get_last_error()))
+    if not user32.SetThreadDesktop(desktop):
+        codice = ctypes.get_last_error()
+        user32.CloseDesktop(desktop)
+        raise pytest.UsageError(_desktop_non_disponibile("spostare le prove sul desktop nascosto", "SetThreadDesktop", codice))
+    return desktop
+
+
+def nome_del_desktop(maniglia, user32=None):
+    """Il nome di un desktop, come lo dice Windows, o None."""
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = user32 or user32_del_desktop()
+    testo = ctypes.create_unicode_buffer(256)
+    necessari = wintypes.DWORD()
+    if not user32.GetUserObjectInformationW(maniglia, 2, testo, ctypes.sizeof(testo), ctypes.byref(necessari)):
+        return None
+    return testo.value
+
+
+def sul_desktop_nascosto():
+    """Vero se il thread principale sta adesso sul desktop nascosto delle
+    prove. Lo chiede la guardia delle finestre a una prova che vuole
+    mostrarne di vere."""
+    import ctypes
+
+    if sys.platform != "win32" or "nascosto" not in DESKTOP_DELLE_PROVE:
+        return False
+    user32 = user32_del_desktop()
+    attuale = user32.GetThreadDesktop(ctypes.windll.kernel32.GetCurrentThreadId())
+    return nome_del_desktop(attuale, user32) == NOME_DEL_DESKTOP
+
+
+def pytest_configure(config):
+    """Il passaggio al desktop nascosto, una volta per processo, prima che
+    le prove importino i moduli e prima che la fixture app_grafica crei
+    wx.App. Qui si dichiara anche il segno finestre_vere."""
+    config.addinivalue_line(
+        "markers",
+        "finestre_vere: la prova mostra finestre vere e le apre con ShowModal; la guardia delle finestre lo permette solo sul desktop nascosto (dalla 10.13.38)",
+    )
+    if sys.platform != "win32" or DESKTOP_DELLE_PROVE:
+        return
+    import ctypes
+
+    user32 = user32_del_desktop()
+    partenza = user32.GetThreadDesktop(ctypes.windll.kernel32.GetCurrentThreadId())
+    nome_di_partenza = nome_del_desktop(partenza, user32)
+    DESKTOP_DELLE_PROVE["nascosto"] = passa_al_desktop_nascosto(user32)
+    DESKTOP_DELLE_PROVE["partenza"] = nome_di_partenza
+
+
 # Le costanti di percorso che i moduli calcolano all'importazione, e che
 # percio' non seguono la deviazione di cartella_applicazione. Ognuna viene
 # riportata sotto la cartella temporanea della prova, in qualunque modulo di
@@ -207,6 +335,10 @@ def sentinella_dei_file_veri():
 # Una prova che vuole una risposta sostituisce il dialogo o il metodo con
 # monkeypatch, come ha sempre fatto: la sua sostituzione viene dopo quella
 # della guardia e la copre.
+# Dalla 10.13.38 una prova segnata finestre_vere puo' mostrare davvero le
+# sue finestre e aprire i dialoghi con ShowModal, per esempio per vedere
+# dove va il fuoco quando si chiudono: la guardia la lascia fare, ma solo
+# sul desktop nascosto, dove nessuno le vede. Tutto il resto resta fermo.
 FUNZIONI_MODALI_DI_WX = (
     "MessageBox",
     "GetTextFromUser",
@@ -354,7 +486,8 @@ def pytest_runtest_makereport(item, call):
 @pytest.fixture(autouse=True)
 def nessuna_finestra_vera(request, monkeypatch):
     """La guardia delle finestre vere, su ogni prova. Senza wxPython non c'e'
-    niente da sorvegliare."""
+    niente da sorvegliare. Con il segno finestre_vere, e soltanto sul
+    desktop nascosto, Show e ShowModal restano quelli di wx."""
     try:
         import wx
         import wx.adv
@@ -363,6 +496,9 @@ def nessuna_finestra_vera(request, monkeypatch):
         yield None
         return
 
+    finestre_vere = request.node.get_closest_marker("finestre_vere") is not None
+    if finestre_vere and not sul_desktop_nascosto():
+        pytest.fail("La prova vuole mostrare finestre vere, e la guardia lo permette solo sul desktop nascosto delle prove.", pytrace=False)
     guardia = GuardiaDelleFinestre()
     moduli = {"wx": wx, "wx.adv": wx.adv, "wx.html": wx.html}
     for nome in FUNZIONI_MODALI_DI_WX:
@@ -376,10 +512,10 @@ def nessuna_finestra_vera(request, monkeypatch):
         for nome in nomi:
             if hasattr(modulo, nome):
                 monkeypatch.setattr(modulo, nome, guardia.funzione(f"{nome_modulo}.{nome}"))
-    for nome in METODI_MODALI:
+    for nome in METODI_MODALI if not finestre_vere else ():
         for classe in list(_classi_con_metodo_nativo(wx.Dialog, nome)):
             monkeypatch.setattr(classe, nome, guardia.metodo_modale(classe, nome))
-    for nome in METODI_CHE_MOSTRANO:
+    for nome in METODI_CHE_MOSTRANO if not finestre_vere else ():
         for classe in list(_classi_con_metodo_nativo(wx.Window, nome)):
             monkeypatch.setattr(classe, nome, guardia.metodo_che_mostra(wx, classe, nome))
     for nome_modulo, nome_classe, nomi in METODI_CHE_APRONO:

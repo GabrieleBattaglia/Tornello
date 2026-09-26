@@ -13,17 +13,25 @@ con monkeypatch.
 Prima di chiamare davvero un metodo sorvegliato, ogni prova controlla che al
 suo posto ci sia la guardia: se un giorno la guardia si rompesse, la prova
 fallirebbe senza aprire niente.
+Dalla 10.13.37 le finestre delle prove nascono su un desktop di Windows
+nascosto, dove il fuoco non puo' dare il primo piano a una finestra sullo
+schermo di chi lancia le prove: le prove di TestDesktopNascosto verificano
+che il thread principale e le finestre stiano li', e che la suite non parta
+se il passaggio non riesce. Dalla 10.13.38 una prova segnata finestre_vere
+puo' mostrare le sue finestre, ma solo li': lo verifica TestFinestreVere.
 """
 
 import contextlib
+import ctypes
 import importlib
 import inspect
 import os
 import pkgutil
+import sys
 from types import SimpleNamespace
 
 import pytest
-from conftest import CARTELLA_SRC
+from conftest import CARTELLA_SRC, DESKTOP_DELLE_PROVE, NOME_DEL_DESKTOP, nome_del_desktop, passa_al_desktop_nascosto, sul_desktop_nascosto, user32_del_desktop
 
 # I dialoghi di wx che hanno un ShowModal tutto loro.
 DIALOGHI_DI_WX = (
@@ -443,3 +451,143 @@ class TestLeProveSostituisconoLiberamente:
         finally:
             _chiudi(dialogo)
         assert nessuna_finestra_vera.chiamate == []
+
+
+DESKTOP_READOBJECTS = 0x0001
+DESKTOP_ENUMERATE = 0x0040
+
+
+def _finestre_del_desktop(desktop):
+    """Le finestre di primo livello di un desktop, come le elenca Windows.
+    Un elenco non riuscito fa fallire la prova: vuoto, direbbe che una
+    finestra non c'e' anche quando c'e'. Su un desktop senza finestre
+    EnumDesktopWindows risponde zero anche lei, ma senza codice d'errore."""
+    from ctypes import wintypes
+
+    user32 = user32_del_desktop()
+    richiamo = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+    user32.EnumDesktopWindows.restype = wintypes.BOOL
+    user32.EnumDesktopWindows.argtypes = [wintypes.HANDLE, richiamo, wintypes.LPARAM]
+    trovate = []
+
+    def annota(finestra, _parametro):
+        trovate.append(finestra)
+        return True
+
+    ctypes.set_last_error(0)
+    riuscita = user32.EnumDesktopWindows(desktop, richiamo(annota), 0)
+    errore = ctypes.get_last_error()
+    assert riuscita or (not trovate and errore == 0), f"EnumDesktopWindows non riuscita, errore {errore}"
+    return trovate
+
+
+class User32Finto:
+    """Al posto di user32, per le prove del passaggio non riuscito: dice
+    di si' o di no e annota le chiamate, senza toccare i desktop veri."""
+
+    def __init__(self, desktop, passaggio):
+        self.desktop = desktop
+        self.passaggio = passaggio
+        self.creati, self.passaggi, self.chiusi = [], [], []
+
+    def CreateDesktopW(self, nome, *_argomenti):
+        self.creati.append(nome)
+        return self.desktop
+
+    def SetThreadDesktop(self, desktop):
+        self.passaggi.append(desktop)
+        return self.passaggio
+
+    def CloseDesktop(self, desktop):
+        self.chiusi.append(desktop)
+        return True
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+class TestDesktopNascosto:
+    """Dalla 10.13.37. La guardia qui sopra ferma le finestre che si
+    mostrerebbero, ma Windows da' il primo piano anche a una finestra mai
+    mostrata quando riceve il fuoco: il 26 settembre 2026 le finestre
+    invisibili delle prove l'hanno preso sullo schermo di Gabriele, e NVDA ne
+    leggeva i titoli. Per questo il conftest sposta il thread principale su
+    un desktop nascosto prima che wx crei qualunque finestra. Queste prove
+    non danno il fuoco a niente: se il desktop nascosto mancasse, non
+    sarebbero loro a prendere il primo piano."""
+
+    def test_il_thread_principale_sta_sul_desktop_nascosto(self):
+        user32 = user32_del_desktop()
+        attuale = user32.GetThreadDesktop(ctypes.windll.kernel32.GetCurrentThreadId())
+        assert nome_del_desktop(attuale, user32) == NOME_DEL_DESKTOP
+        assert DESKTOP_DELLE_PROVE["partenza"]
+        assert DESKTOP_DELLE_PROVE["partenza"] != NOME_DEL_DESKTOP
+
+    def test_le_finestre_nascono_sul_desktop_nascosto(self, app_grafica):
+        """Un telaio creato da una prova sta fra le finestre del desktop
+        nascosto, e non fra quelle del desktop da cui pytest e' partito,
+        dove stanno il terminale e lo screen reader."""
+        from ctypes import wintypes
+
+        import wx
+
+        user32 = user32_del_desktop()
+        user32.OpenDesktopW.restype = wintypes.HANDLE
+        user32.OpenDesktopW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        telaio = wx.Frame(None, title="Prova del desktop nascosto")
+        try:
+            finestra = telaio.GetHandle()
+            assert finestra in _finestre_del_desktop(DESKTOP_DELLE_PROVE["nascosto"])
+            partenza = user32.OpenDesktopW(DESKTOP_DELLE_PROVE["partenza"], 0, False, DESKTOP_READOBJECTS | DESKTOP_ENUMERATE)
+            assert partenza, f"OpenDesktopW non riuscita, errore {ctypes.get_last_error()}"
+            try:
+                assert finestra not in _finestre_del_desktop(partenza)
+            finally:
+                user32.CloseDesktop(partenza)
+        finally:
+            _chiudi(telaio)
+
+    def test_senza_desktop_nascosto_la_suite_non_parte(self):
+        """Se Windows non crea il desktop, o non ci sposta il thread, il
+        conftest solleva UsageError, che ferma pytest prima della prima prova
+        con il messaggio: nessuna finestra finisce sul desktop vero."""
+        finto = User32Finto(desktop=0, passaggio=True)
+        with pytest.raises(pytest.UsageError, match="non si e' potuto creare il desktop nascosto") as errore:
+            passa_al_desktop_nascosto(finto, "prova_non_riuscita")
+        assert finto.creati == ["prova_non_riuscita"]
+        assert finto.passaggi == []
+        assert "primo piano" in str(errore.value)
+        finto = User32Finto(desktop=1234, passaggio=False)
+        with pytest.raises(pytest.UsageError, match="non si e' potuto spostare le prove sul desktop nascosto"):
+            passa_al_desktop_nascosto(finto, "prova_non_riuscita")
+        assert finto.passaggi == [1234]
+        assert finto.chiusi == [1234]
+        finto = User32Finto(desktop=1234, passaggio=True)
+        assert passa_al_desktop_nascosto(finto, "prova_riuscita") == 1234
+        assert finto.chiusi == []
+
+
+class TestFinestreVere:
+    """Dalla 10.13.38 una prova segnata finestre_vere mostra davvero le sue
+    finestre, per vedere dove va il fuoco: la guardia lascia liberi Show e
+    ShowModal, e soltanto sul desktop nascosto. Tutto il resto resta
+    sorvegliato."""
+
+    def test_la_guardia_sa_se_si_e_sul_desktop_nascosto(self, monkeypatch):
+        assert sul_desktop_nascosto()
+        monkeypatch.delitem(DESKTOP_DELLE_PROVE, "nascosto")
+        assert not sul_desktop_nascosto()
+
+    @pytest.mark.finestre_vere
+    def test_con_il_segno_show_e_showmodal_restano_di_wx(self, app_grafica, nessuna_finestra_vera):
+        import wx
+
+        assert not _sorvegliato(wx.Dialog.ShowModal)
+        assert not _sorvegliato(wx.Window.Show)
+        assert _sorvegliato(wx.MessageBox)
+        assert _sorvegliato(wx.Window.PopupMenu)
+        assert inspect.isclass(wx.ProgressDialog) and _sorvegliato(wx.ProgressDialog)
+
+    def test_senza_il_segno_show_e_showmodal_sono_sorvegliati(self, app_grafica, nessuna_finestra_vera):
+        import wx
+
+        assert _sorvegliato(wx.Dialog.ShowModal)
+        assert _sorvegliato(wx.Window.Show)
