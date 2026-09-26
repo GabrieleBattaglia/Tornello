@@ -36,6 +36,7 @@ Domanda 1: entrando nelle voci del risultato NVDA annuncia il riquadro Seleziona
 Passo 2: scorri i risultati con le frecce su e giù.
 Domanda 2: ogni freccia sceglie il risultato su cui arrivi, con il suo arpeggio, e NVDA lo dice selezionato, con gli altri non selezionati?
 Passo 3: premi Esc.
+Domanda 3: NVDA annuncia di nuovo la partita Alberti contro Longo, nell'albero?
 Esito: 
 
 PROVA 4: Suoni della finestra del risultato
