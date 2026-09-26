@@ -1442,8 +1442,14 @@ class MainFrame(wx.Frame):
             child, cookie = self.tree_ctrl.GetNextChild(parent_node, cookie)
         return None
 
-    def populate_tree(self):
-        """Costruisce e popola l'albero TreeCtrl destro con la struttura unificata di tutti i tornei."""
+    def populate_tree(self, prendi_il_fuoco=True):
+        """Costruisce e popola l'albero TreeCtrl destro con la struttura unificata di tutti i tornei.
+        Rimessa la voce di prima, l'albero prende il fuoco: dopo un'azione
+        fatta dall'albero il cursore resta li'. Con prendi_il_fuoco falso
+        l'albero non tocca il fuoco: serve dopo una finestra che si puo'
+        aprire anche dalla barra di stato o dall'area centrale, come le copie
+        di sicurezza, perche' il fuoco torni dove GBwx lo rimette quando la
+        finestra se ne va davvero, cioe' dopo, fra gli eventi successivi."""
         if self.creation_mode:
             return
 
@@ -1469,12 +1475,25 @@ class MainFrame(wx.Frame):
             pass
 
         with self._albero_senza_caricamenti():
+            if not prendi_il_fuoco:
+                # DeleteAllItems portava il fuoco sull'albero anche senza il
+                # SetFocus di _ripristina_la_selezione: cancellata la voce
+                # col cursore, il controllo di Windows sposta il cursore
+                # sulla voce dopo, e wxMSW, a ogni cambio di selezione che
+                # non viene dalle sue funzioni come SelectItem o Unselect,
+                # da' il fuoco all'albero (wxTreeCtrl::MSWOnNotify,
+                # TVN_SELCHANGING, in src/msw/treectrl.cpp). Misurato sul
+                # desktop nascosto con wxPython 4.3.1. Unselect toglie il
+                # cursore senza quel SetFocus, e con l'albero senza voce
+                # scelta la cancellazione non sposta niente. La voce da
+                # rimettere e' gia' in saved_data.
+                self.tree_ctrl.Unselect()
             file_illeggibili = self._ricostruisci_albero(expanded_actions)
 
         if saved_data:
             target_item = self._find_matching_item(self.tree_root, saved_data)
             if target_item and target_item.IsOk():
-                self._ripristina_la_selezione(target_item)
+                self._ripristina_la_selezione(target_item, prendi_il_fuoco)
         if not self.tree_ctrl.GetSelection().IsOk():
             self._cursore_senza_caricare()
 
@@ -1502,7 +1521,7 @@ class MainFrame(wx.Frame):
             with self._albero_senza_caricamenti():
                 self.tree_ctrl.SelectItem(voce)
 
-    def _ripristina_la_selezione(self, voce):
+    def _ripristina_la_selezione(self, voce, prendi_il_fuoco=True):
         """Rimette il cursore sulla voce che aveva prima della ricostruzione.
         Una voce di un altro torneo non si sceglie come farebbero le frecce,
         perche' caricherebbe quel torneo al posto di quello aperto: fino alla
@@ -1510,7 +1529,8 @@ class MainFrame(wx.Frame):
         aperto quello, mentre la barra diceva caricato il torneo scelto. Con
         un torneo aperto il cursore va sulla sua voce; senza, per esempio
         dopo l'eliminazione del torneo aperto, resta dov'era, senza caricare
-        niente."""
+        niente. Poi l'albero prende il fuoco, se prendi_il_fuoco e' vero:
+        vedi populate_tree."""
         dati = self.tree_ctrl.GetItemData(voce)
         percorso = dati.get("filepath") if isinstance(dati, dict) else None
         if percorso and not self._e_il_torneo_aperto(percorso):
@@ -1520,7 +1540,8 @@ class MainFrame(wx.Frame):
         else:
             self.tree_ctrl.SelectItem(voce)
         self.tree_ctrl.EnsureVisible(voce)
-        self.tree_ctrl.SetFocus()
+        if prendi_il_fuoco:
+            self.tree_ctrl.SetFocus()
 
     def _voce_del_torneo_aperto(self):
         """La voce del torneo aperto nell'albero, None se non c'e' un torneo
@@ -4586,7 +4607,12 @@ class MainFrame(wx.Frame):
         """La finestra Copie di sicurezza, dal menu File, dalla domanda
         dell'avvio e da Apri Torneo su una copia. seleziona e' l'elenco delle
         copie da trovare gia' selezionate. Alla chiusura l'albero si rilegge:
-        un ripristino o una cancellazione possono averlo cambiato."""
+        un ripristino o una cancellazione possono averlo cambiato, ma senza
+        toccare il fuoco: GBwx lo rimette, quando la finestra se ne va
+        davvero, sul controllo che lo aveva alla sua apertura, l'albero, la
+        barra di stato o l'area centrale. Fino alla 10.13.38 la rilettura lo
+        portava sempre sull'albero, prima ancora che la finestra se ne
+        andasse."""
         from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
 
         dlg = BackupCleanupDialog(
@@ -4598,7 +4624,7 @@ class MainFrame(wx.Frame):
         )
         dlg.ShowModal()
         dlg.Destroy()
-        self.populate_tree()
+        self.populate_tree(prendi_il_fuoco=False)
         self.update_status_display()
 
     def _dopo_il_ripristino(self, esito):

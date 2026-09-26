@@ -394,6 +394,69 @@ def test_le_impostazioni_con_la_lingua_cambiata(principale, monkeypatch):
     assert tornato, f"impostazioni con la lingua cambiata: il fuoco e' su {dove}"
 
 
+@pytest.mark.parametrize("chiusura", ("esc", "chiudi"))
+@pytest.mark.parametrize("controllo", ("tree_ctrl", "status_text", "main_text"))
+def test_le_copie_di_sicurezza_dal_menu(principale, controllo, chiusura, monkeypatch):
+    """Le Copie di sicurezza, aperte come dal menu File, cioe' da
+    on_backup_cleanup, che alla chiusura rilegge l'albero. Fino alla
+    10.13.38, aperte dalla barra di stato o dall'area centrale, il fuoco
+    finiva sull'albero: ce lo portavano il SetFocus di
+    _ripristina_la_selezione e, prima ancora, DeleteAllItems. Adesso il
+    fuoco torna sul controllo di partenza, senza passare dall'albero, che lo
+    screen reader annuncerebbe; aperte dall'albero, il cursore torna sulla
+    sua voce. Nell'albero ci sono due tornei, e il cursore sta su Alfa, il
+    torneo aperto, con altre voci dopo di lui: cancellata la voce col
+    cursore, il controllo di Windows lo sposta su quella dopo, e wx, per
+    quel cambio di selezione, da' il fuoco all'albero. Con il cursore
+    sull'ultima voce, per esempio Nuovo torneo senza tornei, il cursore non
+    si sposta, e quella strada del difetto non si vedrebbe."""
+    import json
+
+    import wx
+    from test_comandi_delle_finestre import _torneo_in_corso
+
+    from config import user_data_path
+    from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+
+    percorsi = {}
+    for nome in ("Alfa", "Beta"):
+        percorsi[nome] = user_data_path(f"Tornello - {nome}.json")
+        with open(percorsi[nome], "w", encoding="utf-8") as f:
+            json.dump(_torneo_in_corso(nome), f)
+    codici = []
+    originale = BackupCleanupDialog.ShowModal
+    monkeypatch.setattr(BackupCleanupDialog, "ShowModal", lambda self: codici.append(originale(self)) or codici[-1])
+    albero = principale.tree_ctrl
+    principale.load_tournament(percorsi["Alfa"])
+    voce = principale._voce_del_torneo_aperto()
+    with principale._albero_senza_caricamenti():
+        albero.SelectItem(voce)
+    assert albero.GetNextSibling(voce).IsOk(), "dopo la voce col cursore non c'e' niente, e la prova non vedrebbe il difetto"
+    testo_della_voce = albero.GetItemText(voce)
+    partenza = _parti_da(principale, controllo)
+    arrivi_sull_albero = []
+
+    def annota(evento):
+        arrivi_sull_albero.append(_descrivi(wx.Window.FindFocus()))
+        evento.Skip()
+
+    albero.Bind(wx.EVT_SET_FOCUS, annota)
+    _chiudi_quando_aperta(BackupCleanupDialog, chiusura, lambda finestra: finestra.btn_close)
+    rete = _rete_di_sicurezza()
+    try:
+        principale.on_backup_cleanup(None)
+    finally:
+        rete.Stop()
+    tornato, dove = _torna_su(partenza)
+    albero.Unbind(wx.EVT_SET_FOCUS, handler=annota)
+    assert codici == [wx.ID_CANCEL]
+    assert tornato, f"copie di sicurezza, chiuse con {chiusura}: il fuoco e' su {dove}"
+    if partenza is not albero:
+        assert arrivi_sull_albero == [], f"il fuoco e' passato dall'albero {len(arrivi_sull_albero)} volte"
+    voce = albero.GetSelection()
+    assert voce.IsOk() and albero.GetItemText(voce) == testo_della_voce
+
+
 def _scrivi_nel_fuoco(caratteri):
     """Scrive nella finestra che ha il fuoco per Windows, come dalla
     tastiera, con WM_CHAR, dopo averne selezionato tutto il testo. Per uno
