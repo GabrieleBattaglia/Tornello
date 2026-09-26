@@ -1,133 +1,50 @@
-PROVA 1: Ascolto alla cieca, finestra del risultato
-Prima: Tornello non ancora avviato in questo collaudo.
-Passo 1: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_51.py
-Domanda 1: quale lettera preferisci per l'apertura della finestra, sopra l'arpeggio?
-Domanda 2: quale lettera preferisci per i quattro pulsanti, ripetuta?
-Domanda 3: la lettera scelta per i pulsanti sta bene sopra l'annullamento?
-Esito:  quando mi fai questi test, fammi sentire tutti i suoni, se non sono tani (meno di 8). Anche un sistema di voto su scala dispari, non sarebbe male.
-
-PROVA 2: Avvio con le domande, una copia vecchia e un file rovinato
-Prima: Tornello chiuso.
-Prima: un prompt dei comandi nella cartella di lavoro, con cd /d E:\git\mine\Tornello-lavori: da lì si avvia Tornello, con python tornello.py, o con python tornello.py --cli per la console.
-Prima: nella cartella di lavoro crea con il Blocco note il file Tornello - Rovinato.json, con dentro soltanto { rotto
-Prima: in E:\git\mine\Tornello-lavori\backup crea la cartella 2023, dentro la cartella 05 Maggio, e lì un file qualsiasi chiamato Tornello - Prova_pre_prova_20230510_090000.json
-Prima: nella stessa cartella 05 Maggio crea un altro file qualsiasi chiamato Tornello - Ieri_pre_prova_AAAAMMGG_000000.json, con la data di ieri al posto di AAAAMMGG.
-Prima: da PowerShell porta indietro la data del database FIDE: (Get-Item 'E:\git\mine\Tornello-lavori\fide_ratings.db').LastWriteTime = '2026-08-01'
-Passo 1: avvia Tornello con python tornello.py.
-Domanda 1: la prima domanda è quella sul database FIDE?
-Passo 2: rispondi No.
-Domanda 2: l'avviso sulle copie più vecchie di 18 mesi arriva solo adesso, e non sopra la domanda FIDE?
-Domanda 3: il testo dell'avviso, con la frase sui 18 mesi e sui file che restano come sono, ti va bene?
-Passo 3: rispondi Sì.
-Domanda 4: si apre la finestra Copie di sicurezza, con la copia del 2023 già selezionata?
-Passo 4: scegli l'origine Ieri_pre_prova.
-Domanda 5: nell'elenco l'età della copia si legge 0 mesi, 1 giorno?
-Passo 5: vai con Tab ai dettagli della copia.
-Domanda 6: la riga dell'età dice 0 mesi, 1 giorno?
-Passo 6: chiudi la finestra con Chiudi, senza eliminare niente.
-Passo 7: premi F7.
-Domanda 7: la prima riga dice un file di torneo non leggibile, al singolare?
-Passo 8: premi F5.
-Domanda 8: l'area centrale nomina Tornello - Rovinato.json con il motivo?
-Domanda 9: l'area centrale non mostra la spiegazione degli acronimi?
-Passo 9: cancella il file Tornello - Rovinato.json dalla cartella di lavoro.
-Passo 10: da PowerShell rimetti la data del database FIDE: (Get-Item 'E:\git\mine\Tornello-lavori\fide_ratings.db').LastWriteTime = '2026-09-03 15:28'
-Esito: 
-
-PROVA 3: Autunneo2 nella cartella di lavoro
-Passo 1: premi F6 e scegli Autunneo2 con le frecce.
-Passo 2: premi Ctrl+G, poi Ctrl+U.
-Domanda 1: iscritti, turno 1 e abbinamenti sono quelli del torneo vero?
-Passo 3: premi Ctrl+L.
-Domanda 2: classifica e spareggi dopo il turno 1 hanno i valori giusti?
-Esito: 
-
-PROVA 4: Piè di pagina a blocchi e aggiornamento
+PROVA 1: Piè di pagina con NVDA e barra braille
 Prima: da fare entro il 4 ottobre.
-Prima: nell'albero scegli Prova programmazione.
-Passo 1: premi F7 e leggi le tre righe con le frecce.
+Prima: Tornello chiuso, e un prompt dei comandi nella cartella di lavoro, aperto con cd /d E:\git\mine\Tornello-lavori: da lì si avvia Tornello, con python tornello.py.
+Prima: nel prompt rigenera i tornei di prova con python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py e aspetta che finisca.
+Prima: in tutto il collaudo, se all'avvio arriva la domanda sul database FIDE, rispondi No.
+Passo 1: avvia Tornello, premi F6 e scegli Prova programmazione con le frecce.
+Passo 2: premi F7 e leggi le tre righe con le frecce.
 Domanda 1: sulla barra braille ogni riga di percentuali ha quattro indicatori nel primo blocco e quattro dal carattere 41, con i valori sempre nelle stesse celle?
-Domanda 2: GT e TT hanno un decimale che segue l'ora del giorno?
-Domanda 3: BK, sulla terza riga, supera il 100 per cento?
-Passo 2: scendi alla terza riga e porta il cursore su un valore del secondo blocco.
-Passo 3: con Alt+Tab passa a un'altra applicazione, resta via almeno 30 minuti e torna con Alt+Tab.
-Domanda 4: NVDA e la barra braille sono ancora sulla terza riga, nello stesso punto, senza annunci?
-Passo 4: premi F7.
-Domanda 5: i valori sono aggiornati, per esempio TT salito di uno o due decimi?
-Domanda 6: NVDA legge i valori nuovi?
-Domanda 7: il cursore è tornato all'inizio?
-Passo 5: porta di nuovo il cursore sulla terza riga e premi subito F7.
-Domanda 8: senza valori cambiati, il cursore resta dov'era?
-Passo 6: sul piè di pagina premi Ctrl+O e annulla la scelta del file.
-Domanda 9: tornando sul piè di pagina, il cursore è dove l'avevi lasciato?
-Passo 7: premi F6 e poi F7.
-Domanda 10: NVDA legge subito i valori, senza un'attesa percepibile?
+Passo 3: premi F6 e poi di nuovo F7.
+Domanda 2: NVDA legge subito i valori, senza un'attesa percepibile?
+Passo 4: scendi alla terza riga e porta il cursore su un valore del secondo blocco.
+Passo 5: con Alt+Tab passa a un'altra applicazione, resta via almeno 30 minuti e torna con Alt+Tab.
+Domanda 3: NVDA e la barra braille sono ancora sulla terza riga, nello stesso punto, senza annunci né messaggi d'errore?
+Passo 6: premi F7.
+Domanda 4: NVDA legge i valori aggiornati, per esempio TT salito di uno o due decimi?
 Esito: 
 
-PROVA 5: Spiegazione degli acronimi nell'area centrale
-Prima: Prova programmazione aperta.
-Passo 1: premi F6, poi F7, poi F5.
-Domanda 1: l'area centrale comincia con 2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA e finisce con la frase su GT, TT, BK e FD in secondi, senza la 2.4?
-Passo 2: premi F6, muoviti fra le voci di Prova programmazione con le frecce, poi arriva al piè di pagina con Tab.
-Domanda 2: nell'area centrale c'è di nuovo la 2.3.1, al posto di ciò che aveva scritto l'albero?
-Passo 3: premi F5, scendi di qualche riga, poi premi F7 e di nuovo F5.
-Domanda 3: il cursore è rimasto sulla riga dove l'avevi lasciato?
-Passo 4: dal piè di pagina premi Ctrl+L.
-Domanda 4: l'area centrale mostra la classifica, e non la 2.3.1?
-Passo 5: torna sul piè di pagina, apri Ctrl+P e chiudilo con Annulla senza cambiare niente.
-Domanda 5: il fuoco torna sul piè di pagina?
-Domanda 6: l'area centrale mostra ancora la classifica?
-Passo 6: col fuoco sul piè di pagina passa a un'altra applicazione con Alt+Tab e torna.
-Domanda 7: il fuoco è sul piè di pagina, senza errori né annunci strani?
-Domanda 8: l'area centrale è rimasta com'era?
-Passo 7: premi F6 e F7, poi di nuovo F6, e resta qualche minuto sull'albero senza muoverti.
-Domanda 9: la 2.3.1 è ancora nell'area centrale, non cancellata dall'aggiornamento automatico?
-Passo 8: premi Ctrl+N per la procedura guidata, poi F7.
-Domanda 10: l'area centrale non mostra la 2.3.1?
-Passo 9: premi F6 e Invio su Indietro, poi premi F1.
-Domanda 11: il manuale intero si vede come prima?
+PROVA 2: Finestra delle impostazioni con NVDA
+Prima: Tornello aperto dopo la prova 1, con il fuoco sul piè di pagina.
+Passo 1: premi Ctrl+P e percorri le quattro pagine con Ctrl+Tab, ognuna con Tab.
+Domanda 1: NVDA annuncia i riquadri, per esempio Audio, Database FIDE e quelli dei caratteri e dei colori?
+Passo 2: chiudi la finestra con Esc.
+Domanda 2: NVDA annuncia di nuovo il piè di pagina?
+Passo 3: premi F6, poi Ctrl+P, e chiudi la finestra con OK.
+Domanda 3: NVDA annuncia di nuovo la voce dell'albero da cui eri partito?
+Passo 4: premi Ctrl+P e, nella pagina Audio e Lingua, sposta il Volume Master di una decina di scatti con le frecce.
+Domanda 4: a ogni scatto senti il suono di prova, al volume scelto?
+Passo 5: chiudi la finestra con Annulla e premi F7.
+Domanda 5: il suono di F7 ha di nuovo il volume di prima del passo 4?
 Esito: 
 
-PROVA 6: Menu Visualizza
-Prima: Prova programmazione aperta, fuoco sull'albero.
-Passo 1: premi Alt+V e poi S.
-Domanda 1: Barra di Stato si attiva subito, con il fuoco sul piè di pagina e il suono di F7?
-Domanda 2: l'area centrale mostra la spiegazione degli acronimi?
-Passo 2: premi Alt+V e poi B.
-Domanda 3: Albero di Destra si attiva subito, con il fuoco sull'albero e il suono di F6?
-Passo 3: premi Alt+V e poi A.
-Domanda 4: Area Centrale porta il fuoco dove lo porta F5, con lo stesso suono?
-Esito: 
-
-PROVA 7: Invito alla donazione
-Prima: la prova vale per la prima chiusura di Tornello in cui compare l'invito, in qualunque punto del collaudo.
-Domanda 1: compare la finestra Offri un caffè con il fuoco sul messaggio?
-Domanda 2: NVDA legge il messaggio nella lingua scelta nelle impostazioni?
-Domanda 3: Tab raggiunge i pulsanti Dona con PayPal e Chiudi?
-Domanda 4: Chiudi fa terminare il programma?
-Domanda 5: nella console da cui hai avviato Tornello non compare il testo dell'invito?
-Domanda 6: nella cartella di lavoro non c'è un error.log con la riga Invito alla donazione non mostrato?
-Esito: 
-
-PROVA 8: Finestra del risultato, voci e tabulazione
-Prima: Prova programmazione aperta.
-Passo 1: apri turni, Turno corrente, da giocare, e premi Invio sulla partita Alberti contro Longo.
+PROVA 3: Finestra del risultato con NVDA e con le frecce
+Prima: Prova programmazione aperta, dopo la prova 2.
+Passo 1: premi F6 e, sotto Prova programmazione, apri turni, Turno corrente, da giocare, poi premi Invio sulla partita Alberti contro Longo.
 Domanda 1: entrando nelle voci del risultato NVDA annuncia il riquadro Seleziona Risultato?
-Domanda 2: le frecce scelgono un risultato alla volta, con il suo arpeggio, e ne resta attivo uno solo?
-Domanda 3: il Tab va dal risultato scelto al campo del PGN, poi a Pianifica Partita, Ritira Giocatore, Annulla e Conferma Risultato?
-Passo 2: scegli 1 - 0 con le frecce, vai con Tab su Pianifica Partita e premi Invio.
-Domanda 4: Invio apre la programmazione, e non registra il risultato?
-Passo 3: premi Esc nella programmazione e poi Esc nella finestra del risultato.
-Domanda 5: la partita è ancora fra quelle da giocare, senza risultato?
+Passo 2: scorri i risultati con le frecce su e giù.
+Domanda 2: ogni freccia sceglie il risultato su cui arrivi, con il suo arpeggio, e NVDA lo dice selezionato, con gli altri non selezionati?
+Passo 3: premi Esc.
 Esito: 
 
-PROVA 9: Suoni della finestra del risultato
-Prima: Prova programmazione aperta; in questa prova usa solo Tab, Spazio ed Esc.
-Passo 1: premi Invio sulla partita De Santis contro Galli.
+PROVA 4: Suoni della finestra del risultato
+Prima: Prova programmazione aperta, dopo la prova 3; in questa prova usa soltanto i tasti che dicono i passi.
+Passo 1: nell'albero premi Invio sulla partita De Santis contro Galli, fra quelle da giocare.
 Domanda 1: all'apertura senti un suono breve seguito dall'arpeggio del risultato, senza la campanella?
-Passo 2: con Tab passa su Pianifica Partita, Ritira Giocatore, Annulla e Conferma Risultato.
+Passo 2: con Tab passa dal campo del PGN a Pianifica Partita, Ritira Giocatore, Annulla e Conferma Risultato.
 Domanda 2: su ciascun pulsante senti il tocco breve dei pulsanti?
-Passo 3: torna su Pianifica Partita e premi Spazio.
+Passo 3: torna con Tab su Pianifica Partita e premi Spazio.
 Domanda 3: senti soltanto il bip del giorno, senza campanella sopra?
 Passo 4: premi Esc nella programmazione.
 Domanda 4: senti un solo annullamento, quasi insieme al tocco del pulsante Pianifica Partita su cui torna il fuoco?
@@ -137,654 +54,115 @@ Passo 6: premi Spazio su Ritira Giocatore e, nella scelta del giocatore, premi E
 Domanda 6: senti soltanto il tocco del pulsante, senza il suono dell'annullamento?
 Domanda 7: il tocco del pulsante al ritorno del fuoco: a) resta com'è; b) tace quando il fuoco torna da un'altra finestra o da un'altra applicazione; c) tace solo al ritorno dalla programmazione e dalla scelta del ritiro?
 Passo 7: premi Esc per chiudere la finestra senza registrare niente.
-Domanda 8: il suono d'apertura e quello dei pulsanti si distinguono bene fra loro e dagli altri suoni della finestra?
+Domanda 8: senti l'annullamento, una volta sola?
+Passo 8: riapri la partita, vai con Tab su Annulla e premi Invio.
+Domanda 9: anche così senti l'annullamento, una volta sola?
+Passo 9: riapri la partita e, sul risultato 1 - 0, premi Invio.
+Domanda 10: alla chiusura senti il suono della conferma?
+Domanda 11: i suoni della chiusura, uno dopo l'altro, ti vanno bene?
+Domanda 12: il suono d'apertura e quello dei pulsanti si distinguono bene fra loro e dagli altri suoni della finestra?
 Esito: 
 
-PROVA 10: Finestra di programmazione
-Prima: Prova programmazione aperta.
+PROVA 5: Finestra di programmazione con NVDA
+Prima: Prova programmazione aperta, dopo la prova 4.
 Passo 1: apri la partita Alberti contro Longo, vai con Tab su Pianifica Partita e premi Spazio.
-Domanda 1: il fuoco va sul giorno, con il suo bip?
-Domanda 2: NVDA annuncia i riquadri Seleziona Giorno, Seleziona Ora e Dettagli Sede e Arbitro?
-Domanda 3: il Tab porta a Ora, Minuto, Sala / URL, Arbitro non necessario, Arbitro designato, Annulla e Conferma?
-Domanda 4: i bip e la sinusoide dei campi sono quelli di prima?
-Passo 2: attiva Arbitro non necessario con lo Spazio e premi Tab.
-Domanda 5: il campo Arbitro designato è spento e il Tab lo salta?
-Passo 3: spegni di nuovo la casella e premi Esc.
-Passo 4: premi Esc nella finestra del risultato.
+Domanda 1: NVDA annuncia i riquadri Seleziona Giorno, Seleziona Ora e Dettagli Sede e Arbitro?
+Passo 2: lascia giorno e ora come sono; in Sala / URL scrivi whatsapp https://call.whatsapp.com/voice/abc123, in Arbitro designato Giuseppe Baratta, e premi Invio.
+Passo 3: premi F1 e leggi, nella sezione 6.2.1, il paragrafo che comincia con Dalla finestra una programmazione.
+Domanda 2: la frase che manda alla versione a riga di comando per togliere una programmazione: a) resta; b) si toglie finché la finestra non sa farlo, issue 58?
 Esito: 
 
-PROVA 11: Sala e arbitro nell'albero, calendario ics
-Prima: Prova programmazione aperta.
-Passo 1: apri la partita Alberti contro Longo e premi Pianifica Partita; lascia giorno, ora e minuti come sono.
-Passo 2: in Sala / URL scrivi whatsapp https://call.whatsapp.com/voice/abc123, in Arbitro designato Giuseppe Baratta, e premi Invio.
-Domanda 1: la barra di stato dice Partita pianificata per il, con giorno e ora?
-Domanda 2: nell'albero la partita sta fra le programmate?
-Domanda 3: l'etichetta della partita finisce con 15:00, sala whatsapp, arbitro Giuseppe Bar)?
-Passo 3: scendi con le frecce su un'altra voce, torna sulla partita e premi F5.
-Domanda 4: l'area centrale mostra Sala/URL con tutto l'indirizzo e l'arbitro Giuseppe Baratta per intero?
-Passo 4: programma la partita De Santis contro Galli con la sala vuota, attiva Arbitro non necessario e premi Invio sulla casella.
-Domanda 5: Invio sulla casella conferma la programmazione?
-Domanda 6: l'etichetta dice sala N/D, arbitro No?
-Passo 5: programma la partita Bruni contro Marini con sala https://lichess.org/AbCdEfGh, casella spenta e arbitro Non necessario. con il punto.
-Domanda 7: l'etichetta dice sala Lichess, arbitro No?
-Passo 6: riapri la programmazione di Bruni contro Marini.
-Domanda 8: la casella Arbitro non necessario è già attiva?
-Passo 7: premi Esc due volte.
-Domanda 9: le due partite non programmate dicono ancora Non pianificata?
-Domanda 10: le due partite non programmate stanno dopo le programmate?
-Domanda 11: la lettura di NVDA e della barra braille sulle etichette più lunghe è accettabile?
-Passo 8: premi Ctrl+Maiusc+E e salva il calendario in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova programmazione.
-Passo 9: apri il file ics con il Blocco note.
-Domanda 12: il calendario contiene le tre partite programmate, con giorno, ora, sala e arbitro?
+PROVA 6: Lettere di scelta dei menu Visualizza e File
+Prima: Prova programmazione aperta, con la partita pianificata nella prova 5.
+Passo 1: premi F6, poi Alt+V e S.
+Domanda 1: Barra di Stato si attiva subito, con il fuoco sul piè di pagina e il suono di F7?
+Passo 2: premi Alt+V e poi B.
+Domanda 2: Albero di Destra si attiva subito, con il fuoco sull'albero e il suono di F6?
+Passo 3: premi Alt+V e poi A.
+Domanda 3: Area Centrale porta il fuoco dove lo porta F5, con lo stesso suono?
+Passo 4: premi Alt+F e poi P.
+Domanda 4: si apre subito la finestra Salva file iCalendar di Esporta partite pianificate?
+Passo 5: premi Esc; poi premi Alt+F e L, e nella conferma che arriva non premere Invio.
+Domanda 5: si apre subito la conferma che chiede se mandare nel cestino di Windows il torneo attivo Prova programmazione?
+Passo 6: premi Esc.
+Domanda 6: Esc risponde No, e NVDA torna dove eri?
+Passo 7: premi Alt+F e poi E.
+Domanda 7: Tornello si chiude, subito o dopo l'invito della prova 12?
 Esito: 
 
-PROVA 12: Invio con un PGN non valido
-Prima: Prova programmazione aperta.
-Passo 1: apri la partita Bruni contro Marini, scegli 1 - 0 e scrivi nel campo del PGN la parola prova.
-Passo 2: torna con Maiusc+Tab sulla voce 1 - 0 e premi Invio.
-Domanda 1: senti il suono dell'errore?
-Domanda 2: la finestra resta aperta, senza registrare niente?
-Passo 3: vai con Tab sul pulsante Annulla e premi Invio.
-Domanda 3: la finestra si annulla come sempre, con il suono dell'annullamento?
-Passo 4: riapri la partita, scegli 1 - 0, lascia vuoto il campo del PGN e premi Invio sulla voce.
-Domanda 4: il risultato si registra, con il suono della conferma?
-Esito: 
-
-PROVA 13: Forfait, doppio forfait e ritiro
-Prima: Prova programmazione aperta.
-Passo 1: premi F7 e ascolta RT sulla seconda riga.
-Passo 2: apri la partita Esposito contro Iori, scegli 0 - 0F e conferma.
-Domanda 1: non arriva nessuna domanda sul ritiro?
-Passo 3: premi F7.
-Domanda 2: RT è già cambiato?
-Passo 4: negli iscritti premi Canc su Esposito Ettore.
-Domanda 3: il programma propone il ritiro?
-Passo 5: rispondi No.
-Passo 6: apri la partita Conti contro Ferri, scegli 1 - F e conferma.
-Domanda 4: arriva la domanda se Ferri si ritira definitivamente dal torneo?
-Passo 7: rispondi No.
-Esito: 
-
-PROVA 14: Partita di un turno completato
-Prima: nell'albero scegli Prova ritiri.
-Passo 1: apri turni, Completati, Turno 1, giocate, e premi Invio su una partita.
-Domanda 1: all'apertura senti il suono d'apertura da solo?
-Domanda 2: le voci del risultato, Pianifica Partita e Ritira Giocatore sono spenti?
-Domanda 3: al posto della conferma c'è Salva PGN?
-Passo 2: vai con Tab su Salva PGN.
-Domanda 4: senti il tocco dei pulsanti?
+PROVA 7: Iscrizione dei giocatori con NVDA
+Prima: Tornello chiuso con la prova 6: avvialo con python tornello.py e, nell'albero, scegli con le frecce Prova spareggi, sotto In Preparazione, com'è dopo la rigenerazione della prova 1.
+Passo 1: premi Ctrl+I.
+Domanda 1: NVDA dice il riquadro Ricerca nel Database Personale Locale e poi il campo Filtra per nome o cognome nel database locale?
+Passo 2: vai con Tab fino al pulsante Nuovo Giocatore Da Zero, senza premerlo, e poi premi Tab ancora una volta.
+Domanda 2: arrivando alla lista degli iscritti, NVDA dice il suo nome due volte, per il riquadro e per la lista?
+Domanda 3: se lo dice due volte, ti disturba?
 Passo 3: premi Esc.
 Esito: 
 
-PROVA 15: Manuale, ChangeLog e crediti
-Passo 1: premi F1 e scorri il manuale nell'area centrale.
-Domanda 1: non ci sono righe di uguali o di trattini?
-Domanda 2: i titoli dei capitoli sono righe a sé fra due righe vuote?
-Passo 2: leggi la sezione 6.1.
-Domanda 3: corrisponde all'albero che hai visto in Prova programmazione?
-Passo 3: leggi la sezione 6.2.
-Domanda 4: voci e pulsanti sono quelli della finestra del risultato?
-Passo 4: leggi tutta la 6.2.1.
-Domanda 5: subito dopo viene la 6.2.2, sul ritiro dall'albero?
-Domanda 6: l'avvertenza di chiudere prima la finestra, nel paragrafo che comincia con Dalla finestra una programmazione, si capisce alla prima lettura con NVDA e sulla barra braille?
-Domanda 7: la frase che manda alla versione a riga di comando per togliere una programmazione: a) resta; b) si toglie finché la finestra non sa farlo, issue 58?
-Passo 5: premi F2.
-Domanda 8: il ChangeLog comincia con CHANGELOG DI TORNELLO, senza trattini?
-Passo 6: premi F3.
-Domanda 9: i crediti cominciano con CREDITI DI TORNELLO, senza la riga di uguali?
+PROVA 8: Spareggi e database dei giocatori con NVDA
+Prima: Prova spareggi aperta, dopo la prova 7.
+Passo 1: premi Invio su regole di spareggio, poi vai con Tab al campo Spiegazione regola.
+Domanda 1: NVDA presenta il campo come testo in sola lettura, e le frecce leggono la spiegazione?
+Passo 2: chiudi con Annulla e premi Ctrl+D.
+Passo 3: dal campo Filtra Giocatori premi Tab.
+Domanda 2: NVDA dice Elenco giocatori, e che è un elenco?
+Passo 4: chiudi la finestra con Chiudi.
 Esito: 
 
-PROVA 16: Carattere dei dialoghi a 24 punti
-Prima: serve anche una persona vedente, per le domande che lo dicono.
-Passo 1: premi Ctrl+P e, nella pagina Caratteri, porta a 24 i caratteri delle finestre di dialogo; premi OK.
-Passo 2: premi F7 e scorri il piè di pagina con le frecce su e giù.
-Domanda 1: ogni riga di percentuali arriva intera, con il secondo blocco dal carattere 41 sulla barra braille?
-Domanda 2: per chi vede, le tre righe si vedono intere, sopra la barra di scorrimento orizzontale che fa scorrere il testo di lato?
-Passo 3: premi Win+freccia giù per ripristinare la finestra principale, poi Win+freccia sinistra per portarla a metà schermo.
-Domanda 3: per chi vede, la finestra sta tutta dentro lo schermo?
-Passo 4: premi F7 e scorri di nuovo le righe.
-Domanda 4: le righe restano intere anche con la finestra stretta?
-Passo 5: premi Win+freccia su.
-Domanda 5: per chi vede, la finestra torna ingrandita?
-Passo 6: in Prova programmazione apri la partita Alberti contro Longo.
-Domanda 6: per chi vede, la finestra del risultato si allarga o mostra le barre di scorrimento?
-Domanda 7: Conferma Risultato si raggiunge?
-Passo 7: premi Esc; poi dal menu Strumenti scegli Verifica Aggiornamenti FIDE e rispondi Sì.
-Domanda 8: per chi vede, nella finestra dello scaricamento il messaggio, la barra e il pulsante Annulla hanno il carattere e i colori dei dialoghi?
-Passo 8: premi Annulla.
-Passo 9: con Ctrl+P riporta a 12 i caratteri delle finestre di dialogo e premi OK.
-Esito: 
-
-PROVA 17: Per chi vede, testo di Windows al 150 per cento
-Prima: serve una persona vedente.
-Passo 1: nelle impostazioni di Windows porta la dimensione del testo al 150 per cento.
-Passo 2: in Prova programmazione apri la partita Alberti contro Longo, poi Pianifica Partita.
-Domanda 1: campi e pulsanti del risultato e della programmazione si vedono, o si raggiungono scorrendo?
-Passo 3: premi Esc due volte; poi apri File, Copie di sicurezza, e scegli l'origine Tutte.
-Domanda 2: la finestra sta nello schermo e scorre fino ai pulsanti?
-Domanda 3: le quattro colonne mostrano i testi interi, con la lista che scorre di lato?
-Passo 4: chiudi la finestra; in Prova turno manuale premi Invio su calcola il turno successivo e rispondi Sì.
-Domanda 4: la finestra Composizione manuale del turno è tutta visibile, o raggiungibile scorrendo?
-Passo 5: premi Esc e riporta la dimensione del testo di Windows al 100 per cento.
-Esito: 
-
-PROVA 18: Iscrizione dei giocatori
-Prima: nell'albero scegli Prova spareggi, sotto In Preparazione; non usare Nuovo Giocatore Da Zero.
-Passo 1: premi Ctrl+I.
-Domanda 1: NVDA dice il riquadro Ricerca nel Database Personale Locale e poi il campo Filtra per nome o cognome nel database locale?
-Passo 2: vai con Tab alla lista dei risultati locali, poi torna al campo con Maiusc+Tab.
-Domanda 2: NVDA e la barra braille dicono Filtra per nome o cognome nel database locale, e non solo modifica?
-Passo 3: scrivi rossi nel campo di ricerca FIDE, vai con Tab alla lista dei risultati FIDE e torna al campo con Maiusc+Tab.
-Domanda 3: il campo si presenta come Filtra per nome o cognome nel database FIDE (minimo 3 caratteri), anche sulla barra braille?
-Passo 4: torna sulla lista dei risultati FIDE e con Fine vai all'ultima voce.
-Domanda 4: la voce dice Mostra altri risultati, con i numeri fra parentesi e senza trattini?
-Passo 5: premi Invio sulla voce.
-Domanda 5: si caricano gli altri risultati, senza iscrivere nessuno?
-Passo 6: iscrivi due giocatori, poi dal pulsante Annulla torna con Maiusc+Tab alla lista degli iscritti e scorrila.
-Domanda 6: la lista si chiama Giocatori Iscritti al Torneo, con il numero fra parentesi?
-Domanda 7: ogni voce della lista dice numero, cognome, nome, federazione ed Elo?
-Domanda 8: arrivando alla lista con Tab da Nuovo Giocatore Da Zero, NVDA dice il nome due volte, per il riquadro e per la lista?
-Domanda 9: se lo dice due volte, ti disturba?
-Passo 7: seleziona un giocatore nei risultati locali, porta il fuoco sul campo di ricerca locale e premi Alt+I; ripeti con il fuoco sulla lista FIDE e sulla lista degli iscritti.
-Domanda 10: Alt+I iscrive un giocatore ogni volta, come prima?
-Domanda 11: il Tab percorre la finestra come prima?
-Passo 8: premi Esc.
-Domanda 12: l'iscrizione si chiude senza salvare, e Prova spareggi ha ancora i suoi 5 iscritti?
-Esito: 
-
-PROVA 19: Finestre dei database
-Passo 1: premi Ctrl+K, cerca rossi e con Fine vai all'ultima voce della lista.
-Domanda 1: NVDA legge Mostra altri risultati, con i numeri fra parentesi e senza trattini?
-Passo 2: premi Invio.
-Domanda 2: si caricano i risultati seguenti, con la selezione sul primo dei nuovi?
-Passo 3: chiudi la finestra; apri e chiudi una alla volta Ctrl+D e Ctrl+Y, e per Ctrl+Y usa il pulsante Chiudi.
-Domanda 3: le tre finestre si aprono, si leggono e si chiudono come prima?
-Esito: 
-
-PROVA 20: Spareggi e avvio di Prova spareggi
-Prima: Prova spareggi aperta.
-Passo 1: premi Invio su regole di spareggio.
-Domanda 1: la finestra degli spareggi si legge come prima?
-Passo 2: togli le regole applicate e metti, in quest'ordine, Incontro Diretto, Buchholz con il modificatore Cut-1 e Media Rating Avversari; conferma.
-Passo 3: premi Invio su calcola il turno 1.
-Domanda 2: il turno 1 si abbina senza errori?
-Esito: 
-
-PROVA 21: Finestra delle impostazioni
-Passo 1: premi Ctrl+P e percorri le quattro pagine con Ctrl+Tab, ognuna con Tab.
-Domanda 1: NVDA annuncia i riquadri, per esempio Audio, Database FIDE e quelli dei caratteri e dei colori?
-Domanda 2: l'ordine del Tab è quello di prima?
-Passo 2: con Maiusc+Tab dalle schede torna all'anteprima.
-Domanda 3: NVDA dice Anteprima Visuale, campo in sola lettura?
-Domanda 4: le frecce leggono le due righe dell'anteprima?
-Passo 3: nella pagina Audio e Lingua vai con Tab alla lingua, poi Maiusc+Tab e di nuovo Tab.
-Domanda 5: la casella si presenta come Lingua (Language), con la lingua scelta?
-Domanda 6: le frecce leggono le lingue come prima?
-Passo 4: chiudi con Annulla.
-Esito: 
-
-PROVA 22: Impostazioni salvate e avviso sulle copie vecchie
-Prima: annota la dimensione del carattere della finestra principale, il Rosso del colore del testo della finestra principale e il volume.
-Passo 1: premi Ctrl+P e, nella pagina Audio e Lingua, sposta il Volume Master con le frecce.
-Domanda 1: a ogni spostamento senti il suono di prova, al volume scelto?
-Passo 2: cambia anche la dimensione del carattere della finestra principale e il Rosso del testo della finestra principale, poi premi OK.
-Domanda 2: con F7, la barra di stato dice Impostazioni salvate ed applicate?
-Domanda 3: il carattere e il colore nuovi valgono subito?
-Passo 3: chiudi Tornello e riavvialo.
-Domanda 4: torna l'avviso sulle copie più vecchie di 18 mesi?
-Passo 4: rispondi No.
-Domanda 5: carattere, colore e volume sono quelli nuovi?
-Passo 5: con Ctrl+P rimetti i valori annotati e premi OK; poi chiudi Tornello e riavvialo.
-Domanda 6: l'avviso sulle copie vecchie resta zitto?
-Domanda 7: la lingua del programma è quella di prima?
-Esito: 
-
-PROVA 23: Avvio nelle altre lingue
-Passo 1: con Ctrl+P, nella pagina Audio e Lingua, scegli l'inglese, premi OK, chiudi Tornello e riavvialo.
-Domanda 1: menu, albero e messaggi sono in inglese?
-Domanda 2: aprendo un torneo e le finestre principali non ci sono errori?
-Passo 2: ripeti con lo spagnolo, il francese e il portoghese.
-Domanda 3: ogni lingua parte e si usa senza errori?
-Passo 3: rimetti l'italiano e riavvia.
-Esito: 
-
-PROVA 24: Copie di chiusura non ripetute
-Passo 1: apri File, Copie di sicurezza, scegli l'origine Database dei giocatori e annota il numero fra parentesi; poi Chiudi.
-Passo 2: chiudi Tornello senza fare altro, riavvialo e riapri la finestra con la stessa origine.
-Domanda 1: il numero fra parentesi è lo stesso?
-Esito: 
-
-PROVA 25: Apri Torneo su una copia di sicurezza
-Prima: nell'albero scegli Prova copie.
-Passo 1: premi Ctrl+O e scegli un file dentro E:\git\mine\Tornello-lavori\backup\2026\09 Settembre.
-Domanda 1: senti il suono dell'errore?
-Domanda 2: il messaggio si legge bene con NVDA e con la barra braille?
+PROVA 9: Copie di sicurezza con NVDA e barra braille
+Prima: nell'albero scegli con le frecce Prova copie, com'è dopo la rigenerazione della prova 1.
+Passo 1: premi Ctrl+O e scegli una copia di Prova copie dentro E:\git\mine\Tornello-lavori\backup\2026, nella cartella del mese.
+Domanda 1: NVDA legge il messaggio che arriva con il suono dell'errore, e le frecce lo percorrono riga per riga, anche sulla barra braille?
 Passo 2: premi Esc.
-Domanda 3: il messaggio si chiude senza aprire la finestra delle copie?
-Domanda 4: il torneo aperto è ancora Prova copie?
-Passo 3: ripeti Ctrl+O sullo stesso file e rispondi Sì.
-Domanda 5: si apre la finestra Copie di sicurezza, con quella copia già selezionata?
-Passo 4: chiudi la finestra.
+Passo 3: apri File, Copie di sicurezza.
+Passo 4: percorri con Tab l'origine, l'elenco, i dettagli, il riepilogo e i cinque pulsanti.
+Domanda 2: NVDA legge il nome di ogni controllo e le quattro colonne di ogni voce dell'elenco?
+Domanda 3: i dettagli della copia si leggono bene sulla barra braille?
+Passo 5: chiudi la finestra con Chiudi.
 Esito: 
 
-PROVA 26: Copie di sicurezza, lettura e confronto
-Prima: Prova copie aperta.
-Passo 1: apri File, Copie di sicurezza.
-Domanda 1: la finestra si apre sulle copie di Prova copie, e non su Tutte?
-Domanda 2: la colonna del contenuto dice turno, risultati e giocatori, e non soltanto i giocatori?
-Passo 2: percorri con Tab l'origine, l'elenco, i dettagli, il riepilogo e i cinque pulsanti.
-Domanda 3: NVDA legge il nome di ogni controllo e le quattro colonne di ogni voce?
-Domanda 4: i dettagli della copia si leggono bene sulla barra braille?
-Passo 3: seleziona la copia al turno 1 abbinato e premi Confronta con lo stato attuale.
-Domanda 5: il testo dice i turni e i risultati che si perderebbero, con turno e cognomi?
-Passo 4: chiudi il testo del confronto e lascia aperta la finestra.
+PROVA 10: Composizione manuale sulla barra braille
+Prima: nell'albero scegli con le frecce Prova turno manuale, com'è dopo la rigenerazione della prova 1.
+Passo 1: apri turni e premi Invio su calcola il turno successivo; alla domanda Nessun abbinamento valido rispondi Sì.
+Passo 2: leggi il campo Situazione con le frecce e sulla barra braille.
+Domanda 1: le righe Turno 4 di 5, a mano; Attivi 4, da abbinare 0; Partite 2, bye 0 di 0; Avvertimenti 1 si leggono bene sulla barra braille?
+Passo 3: premi Esc.
 Esito: 
 
-PROVA 27: Ripristino di un torneo in corso
-Prima: finestra delle copie aperta su Prova copie, con la copia al turno 1 abbinato selezionata.
-Passo 1: premi Ripristina.
-Domanda 1: la conferma dice il nome del file della copia?
-Domanda 2: la conferma contiene il confronto?
-Passo 2: premi Invio sul testo della conferma.
-Domanda 3: Invio risponde No?
-Passo 3: premi di nuovo Ripristina e poi Esc.
-Domanda 4: anche Esc risponde No?
-Passo 4: premi ancora Ripristina e rispondi Sì.
-Domanda 5: senti il suono del ripristino?
-Domanda 6: l'esito dice di quale file è la copia fatta prima del ripristino?
-Passo 5: chiudi la finestra delle copie.
-Domanda 7: Prova copie è tornato al turno 1, senza doverlo riaprire?
-Passo 6: registra Pellegrini contro Sala 1 - 0 e Testa contro Rinaldi 0 - 1.
-Passo 7: premi Invio su calcola il turno successivo, poi registra Rinaldi contro Pellegrini 0 - 1 e Sala contro Testa patta.
-Esito: 
-
-PROVA 28: Finalizzazione senza avvisi
-Prima: Prova copie con tutti i risultati dei due turni.
-Passo 1: premi Ctrl+D e annota Elo, partite giocate e medaglie di Pellegrini, Rinaldi, Sala e Testa, prima della finalizzazione; poi chiudi la finestra.
-Passo 2: premi Ctrl+F e conferma, se te lo chiede.
-Domanda 1: arriva soltanto il messaggio di successo, senza la finestra degli avvisi?
-Domanda 2: Prova copie non è più fra i tornei in corso?
-Passo 3: premi Ctrl+D e annota di nuovo Elo, partite giocate e medaglie dei quattro giocatori, dopo la finalizzazione; poi chiudi la finestra.
-Passo 4: apri File, Copie di sicurezza, scegli l'origine Database dei giocatori, seleziona la copia prima della finalizzazione e premi Confronta con lo stato attuale.
-Domanda 3: il testo dice gli Elo che cambierebbero, dal salto più grande, con la differenza?
-Domanda 4: il testo dice anche le partite e le medaglie diverse?
-Passo 5: chiudi il testo e lascia aperta la finestra.
-Esito: 
-
-PROVA 29: Riapertura di un torneo finalizzato
-Prima: finestra delle copie aperta.
-Passo 1: scegli l'origine Prova copie, seleziona la copia prima della finalizzazione e premi Confronta con lo stato attuale.
-Domanda 1: il testo comincia con File: e dice Gli Elo di prima vengono dalla copia, seguito dal nome della copia del database?
-Passo 2: chiudi il testo e premi Ripristina.
-Domanda 2: la conferma dice, giocatore per giocatore, Elo, partite e medaglia che tornano indietro?
-Passo 3: rispondi Sì e leggi l'esito.
-Domanda 3: accanto a ogni copia fatta prima del ripristino c'è scritto di quale file è: database dei giocatori, torneo archiviato e file della cartella esterna?
-Passo 4: chiudi la finestra delle copie.
-Domanda 4: Prova copie è di nuovo fra i tornei in corso?
-Domanda 5: nel cestino di Windows c'è la cartella d'archivio di Prova copie?
-Domanda 6: nel cestino di Windows c'è il file concluso della cartella esterna di Prova copie?
-Passo 5: premi Ctrl+D.
-Domanda 7: i quattro giocatori non hanno più Prova copie nello storico?
-Domanda 8: Elo, partite e medaglie sono quelli annotati prima della finalizzazione nella prova 28?
-Passo 6: finalizza di nuovo Prova copie con Ctrl+F, senza cambiare niente.
-Domanda 9: con Ctrl+D, Elo, partite e medaglie sono uguali a quelli annotati dopo la finalizzazione nella prova 28?
-Esito: 
-
-PROVA 30: Finalizzazione ripetuta di un torneo archiviato
-Passo 1: da Esplora risorse, in backup\2026\09 Settembre, copia senza spostarla la copia più recente con pre_finalize_torneo nel nome, e incollala nella cartella di lavoro.
-Passo 2: rinomina la copia incollata Tornello - Prova_copie.json
-Passo 3: in Tornello premi Ctrl+O e apri quel file.
-Passo 4: premi Ctrl+F e conferma, se te lo chiede.
-Domanda 1: al posto del messaggio di successo si apre la finestra Avvisi della finalizzazione, con il fuoco sul testo, leggibile con le frecce?
-Domanda 2: la prima riga dice il torneo concluso e archiviato, seguita da quanti giocatori sono rimasti come erano e da chi sono?
-Passo 5: chiudi gli avvisi e premi Ctrl+D.
-Domanda 3: Elo e partite dei quattro giocatori sono quelli annotati dopo la finalizzazione nella prova 28, senza raddoppi?
-Esito: 
-
-PROVA 31: Conservazione ed eliminazione delle copie
-Passo 1: apri File, Copie di sicurezza, scegli l'origine Tutte, annota il numero fra parentesi e premi Applica conservazione.
-Domanda 1: l'anteprima elenca, una per riga, le categorie di copie che restano tutte, e poi la riga dei file con un nome che Tornello non riconosce?
-Domanda 2: dice che andrebbero nel cestino 2 copie, tutte di Prova bivio?
-Passo 2: premi Invio sul testo della domanda.
-Domanda 3: l'origine Tutte ha ancora il numero di copie che hai annotato?
-Passo 3: premi di nuovo Applica conservazione e rispondi Sì.
-Domanda 4: l'origine Prova bivio ha 10 copie fra parentesi?
-Domanda 5: sono tutte copie alla chiusura del programma?
-Passo 4: scegli l'origine Prova bivio, premi Ctrl+A nell'elenco e poi Elimina selezionati.
-Domanda 6: la domanda chiede di spostare nel cestino i 10 file di backup selezionati?
-Passo 5: vai con Tab sul pulsante No e premi Spazio.
-Passo 6: scegli l'origine Tutte, seleziona la copia del 2023, la prima dell'elenco, premi Elimina selezionati e rispondi Sì.
-Domanda 7: la copia sparisce dall'elenco?
-Domanda 8: la copia è nel cestino di Windows?
-Passo 7: scegli l'origine Prova copie, seleziona la copia prima della finalizzazione più recente, premi Ripristina e rispondi Sì.
-Passo 8: chiudi la finestra e, se c'è ancora, togli da Esplora risorse la cartella backup\2023.
-Esito: 
-
-PROVA 32: Nessun abbinamento valido e composizione manuale
-Prima: nell'albero scegli Prova turno manuale.
-Passo 1: apri turni e premi Invio su calcola il turno successivo.
-Domanda 1: senti il suono dell'errore?
-Domanda 2: si apre la domanda Nessun abbinamento valido?
-Domanda 3: il testo si capisce?
-Domanda 4: il rimando al regolamento FIDE va bene?
-Passo 2: rispondi Sì.
-Domanda 5: si apre Composizione manuale del turno 4, con il fuoco sul campo Situazione?
-Passo 3: leggi il campo con le frecce e sulla barra braille.
-Domanda 6: le righe Turno 4 di 5, a mano; Attivi 4, da abbinare 0; Partite 2, bye 0 di 0; Avvertimenti 1 si leggono bene?
-Passo 4: vai con Tab fino a Coppie composte e scorri la lista.
-Domanda 7: le coppie sono Scacchiera 1, Alberti (B) contro De Santis (N), già incontrati al turno 1, e Scacchiera 2, Bruni (B) contro Conti (N)?
-Passo 5: premi Canc sulla prima coppia, poi ancora Canc sulla coppia rimasta.
-Domanda 8: a ogni Canc senti il suono della coppia tolta?
-Domanda 9: dopo il secondo Canc il fuoco è sulla lista Giocatori da abbinare?
-Passo 6: percorri la finestra con Tab fino a tornare su Giocatori da abbinare.
-Domanda 10: il Tab salta Conferma turno, che è spento?
-Passo 7: scorri la lista Giocatori da abbinare.
-Domanda 11: le voci dicono Alberti 2.5 punti, colori B N N, preferenza B assoluta; Bruni 2 punti, N B N, B forte; Conti 2 punti, B N B, N forte; De Santis 0.5 punti, N B B, N assoluta?
-Passo 8: su Alberti premi Invio.
-Domanda 12: il fuoco va su Avversario?
-Domanda 13: la voce di De Santis dice a chi va il bianco e già incontrati al turno 1?
-Passo 9: scegli De Santis, vai con Tab su Bianco a, poi torna su Avversario con Maiusc+Tab.
-Domanda 14: in Bianco a il giocatore proposto è segnato come suggerito?
-Passo 10: su De Santis premi Invio.
-Domanda 15: senti il suono della coppia con avvertimento?
-Domanda 16: il fuoco torna su Giocatori da abbinare?
-Passo 11: su Bruni premi Invio, poi su Conti premi Invio.
-Domanda 17: senti il suono della coppia aggiunta, diverso dal precedente?
-Domanda 18: il fuoco va su Conferma turno?
-Passo 12: in Coppie composte scegli la scacchiera 2 e premi Inverti colori.
-Domanda 19: senti il suono dei colori invertiti?
-Domanda 20: la voce resta senza avvertimenti?
-Passo 13: scegli la scacchiera 1 e premi Inverti colori.
-Domanda 21: senti un suono diverso?
-Domanda 22: la voce aggiunge De Santis al terzo bianco di fila e Alberti al terzo nero di fila?
-Passo 14: premi Proposta automatica.
-Domanda 23: arriva una domanda con No come pulsante predefinito?
-Passo 15: rispondi Sì.
-Domanda 24: le coppie tornano quelle lette al passo 4, con il suono della proposta?
-Passo 16: premi Conferma turno.
-Domanda 25: il riepilogo chiede di registrare il turno 4 composto a mano, con 2 partite?
-Domanda 26: il riepilogo dice Avvertimenti: 1, su una scacchiera?
-Passo 17: rispondi No.
-Domanda 27: la finestra resta aperta con le coppie com'erano?
-Passo 18: premi di nuovo Conferma turno e rispondi Sì.
-Domanda 28: nell'albero il turno si chiama Turno corrente (4/5), abbinamenti manuali?
-Domanda 29: l'area centrale ha la riga Abbinamenti composti a mano dall'arbitro?
-Passo 19: apri File, Copie di sicurezza.
-Domanda 30: fra le copie di Prova turno manuale c'è quella prima di un turno composto a mano?
-Passo 20: chiudi la finestra delle copie.
-Esito: 
-
-PROVA 33: Turno dopo quello composto a mano e Time Machine
-Prima: Prova turno manuale con il turno 4 appena registrato.
-Passo 1: registra patta nelle due partite del turno 4.
-Domanda 1: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova turno manuale il file dei Dettagli del turno 4 ha la riga Abbinamenti composti a mano dall'arbitro?
-Passo 2: premi Invio su calcola il turno successivo.
-Domanda 2: torna la domanda Nessun abbinamento valido?
-Passo 3: rispondi Sì e, nella finestra di composizione, premi Esc.
-Domanda 3: senti il suono dell'annullamento?
-Domanda 4: il turno 5 non è stato registrato?
-Passo 4: premi Ctrl+Z e conferma, se te lo chiede.
-Domanda 5: il turno 4 composto a mano sparisce come ogni altro turno?
-Passo 5: apri con il Blocco note il file Tornello - Prova_turno_manuale.json della cartella di lavoro e cerca _errore_abbinamento
-Domanda 6: la parola non c'è?
-Esito: 
-
-PROVA 34: Ritiro con pochi giocatori, tre strade
-Prima: nell'albero scegli Prova ritiri.
+PROVA 11: Invio ed Esc nelle finestre di domanda
+Prima: nell'albero scegli con le frecce Prova ritiri, com'è dopo la rigenerazione della prova 1.
 Passo 1: nel turno corrente registra 1 - 0 nella partita Iori contro Galli.
 Passo 2: negli iscritti premi Canc su Iori Ivo.
-Domanda 1: si apre una sola finestra, con la domanda sul ritiro e l'avviso Ritiro con pochi giocatori?
+Domanda 1: NVDA legge la domanda sul ritiro, con l'avviso Ritiro con pochi giocatori, e le frecce la percorrono?
 Passo 3: premi Invio.
-Domanda 2: Invio risponde No, e Iori resta attivo?
-Passo 4: apri la partita Marini contro Longo, premi Ritira Giocatore e scegli Longo.
-Domanda 3: arriva lo stesso avviso, con No come pulsante predefinito?
-Passo 5: rispondi No.
-Passo 6: nella stessa partita, riaperta se serve, scegli 1 - F e conferma.
-Passo 7: alla domanda sul ritiro dopo il forfait rispondi Sì, e all'avviso rispondi Sì.
-Domanda 4: nell'albero Longo Lucia risulta ritirata?
-Domanda 5: l'avviso è chiaro?
-Domanda 6: è giusto che il pulsante predefinito sia No in tutte e tre le strade?
-Esito: 
-
-PROVA 35: Ritorno all'iscrizione dal bivio
-Prima: nell'albero scegli Prova bivio.
-Passo 1: registra i due risultati del turno 1: Alberti contro Conti 1 - 0, De Santis contro Bruni patta.
-Passo 2: negli iscritti premi Canc su Alberti Anna e rispondi Sì.
-Passo 3: premi Canc su Conti Carla.
-Domanda 1: l'avviso dice che fra 2 giocatori c'è un solo avversario possibile a testa, e che servirebbero almeno 3 giocatori attivi?
-Passo 4: rispondi Sì.
-Passo 5: premi Invio su calcola il turno successivo e rispondi Sì alla composizione manuale.
-Passo 6: premi Inverti colori sulla coppia, poi Proposta automatica e rispondi Sì; infine premi Conferma turno.
-Domanda 2: il riepilogo chiede di registrare il turno 2 composto a mano, con una partita?
-Domanda 3: il riepilogo dà gli stessi avvertimenti del campo Situazione, su una scacchiera?
-Passo 7: rispondi Sì.
-Passo 8: apri la partita del turno 2, registra 1 - F e rispondi Sì al ritiro.
-Domanda 4: la domanda che arriva dice che resterebbe un solo giocatore attivo?
-Passo 9: rispondi Sì al ritorno alla fase di iscrizione.
-Domanda 5: NVDA e la barra di stato dicono Torneo riportato alla fase di iscrizione, senza Risultato registrato?
-Domanda 6: l'area centrale mostra l'elenco dei giocatori, e non la partita?
-Esito: 
-
-PROVA 36: Eliminazione dal bivio, nel cestino
-Prima: nell'albero scegli Prova.
-Passo 1: registra i due risultati del turno 1: Galli contro Longo 1 - 0, Marini contro Iori patta.
-Passo 2: negli iscritti premi Canc su Galli Giulia e poi su Longo Lucia, rispondendo Sì a ogni domanda.
-Passo 3: premi Invio su calcola il turno successivo, rispondi Sì alla composizione manuale, premi Conferma turno e rispondi Sì.
-Passo 4: apri la partita del turno 2 e registra 1 - F; rispondi Sì al ritiro e No al ritorno all'iscrizione.
-Domanda 1: la domanda che arriva chiede se mandare nel cestino di Windows il torneo e tutti i suoi file, senza la parola definitivamente?
-Passo 5: rispondi Sì.
-Domanda 2: la conferma chiede se mandare nel cestino di Windows il torneo attivo 'Prova', e dice che dal cestino si possono recuperare?
-Domanda 3: con le frecce si legge la riga Nella cartella con la cartella di lavoro, e sotto Tornello - Prova.json?
-Domanda 4: poi la riga Nella cartella con prova_cartella_esterna\Prova, e sotto i report di Prova, un nome per riga?
-Domanda 5: nell'elenco non c'è nessun file degli altri tornei di prova, come Tornello - Prova_bivio.json?
-Passo 6: rispondi Sì.
-Domanda 6: il torneo sparisce dall'albero senza nessun errore?
-Passo 7: premi F7.
-Domanda 7: la barra di stato dice Torneo 'Prova' mandato nel cestino di Windows, con tanti file correlati quanti i report dell'elenco?
-Passo 8: con Esplora risorse apri la cartella di lavoro.
-Domanda 8: il file Tornello - Prova.json non c'è più?
-Domanda 9: ci sono ancora gli otto file dei tornei di prova, da Tornello - Prova_bivio.json a Tornello - Prova_turno_manuale.json?
-Passo 9: apri la cartella prova_cartella_esterna\Prova.
-Domanda 10: la cartella è vuota?
-Domanda 11: la cartella prova_cartella_esterna\Prova bivio ha ancora i report di Prova bivio?
-Passo 10: apri il cestino di Windows e ordina i file per data di eliminazione.
-Domanda 12: fra gli ultimi eliminati ci sono Tornello - Prova.json, dalla cartella di lavoro, e i report di Prova, da prova_cartella_esterna\Prova?
-Domanda 13: fra gli ultimi eliminati non c'è nessun file degli altri tornei di prova?
-Esito: 
-
-PROVA 37: Turno 2 di Autunneo2 calcolato dal motore
-Prima: nell'albero scegli Autunneo2.
-Passo 1: registra il risultato della partita Valleriani contro Paglia, quello vero se lo conosci.
-Domanda 1: premendo F7, RT e PG sono già aggiornati?
-Passo 2: premi Invio su calcola il turno successivo.
-Domanda 2: il turno 2 si abbina senza errori?
-Domanda 3: l'area centrale mostra gli abbinamenti?
-Domanda 4: gli abbinamenti ti sembrano giusti rispetto alla classifica?
-Passo 3: registra un risultato qualunque del turno 2.
-Domanda 5: il risultato si registra?
-Domanda 6: classifica e piè di pagina si aggiornano?
-Esito: 
-
-PROVA 38: Eliminazione nel cestino di un torneo in preparazione
-Prima: Tornello aperto, dopo la prova 37.
-Passo 1: premi F6 e, sotto In Preparazione, porta il cursore su Autunneo.
-Passo 2: premi Canc.
-Domanda 1: la conferma chiede se mandare nel cestino di Windows il torneo in preparazione 'Autunneo'?
-Domanda 2: dice che ci vanno 3 file, e che dal cestino si possono recuperare?
-Domanda 3: con le frecce si legge la riga Nella cartella con la cartella di lavoro, e sotto Tornello - Autunneo.json?
-Domanda 4: poi la riga Nella cartella con prova_cartella_esterna\Autunneo2, e sotto Tornello - Autunneo - Classifica.txt e Tornello - Autunneo - Turno corrente.txt?
-Domanda 5: nell'elenco non c'è nessun file di Autunneo2?
-Passo 3: rispondi Sì.
-Domanda 6: senti il suono della cancellazione, e Autunneo sparisce dall'albero?
-Passo 4: premi F7.
-Domanda 7: la barra di stato dice Torneo 'Autunneo' mandato nel cestino di Windows, con 2 file correlati?
-Passo 5: con Esplora risorse apri la cartella di lavoro.
-Domanda 8: Tornello - Autunneo.json non c'è più, e Tornello - Autunneo2.json c'è ancora?
-Passo 6: apri la cartella prova_cartella_esterna\Autunneo2.
-Domanda 9: ci sono ancora i report di Autunneo2 della prova 37, e nessun file di Autunneo?
-Passo 7: apri il cestino di Windows e ordina i file per data di eliminazione.
-Domanda 10: fra gli ultimi eliminati ci sono i tre file di Autunneo, ciascuno con la sua cartella d'origine?
-Passo 8: seleziona i tre file di Autunneo eliminati adesso e ripristinali con la voce Ripristina del menu contestuale.
-Domanda 11: Tornello - Autunneo.json è di nuovo nella cartella di lavoro, e i suoi due report in prova_cartella_esterna\Autunneo2?
-Passo 9: in Tornello apri File, Copie di sicurezza, e chiudi la finestra.
-Domanda 12: Autunneo è di nuovo nell'albero, sotto In Preparazione?
+Domanda 2: Invio risponde No, e NVDA torna sugli iscritti?
+Passo 4: premi di nuovo Canc su Iori Ivo, e poi Esc.
+Domanda 3: anche Esc risponde No, e Iori resta fra gli attivi?
+Domanda 4: l'avviso Ritiro con pochi giocatori ha No come pulsante predefinito in tutte e tre le strade del ritiro, cioè Canc negli iscritti, Ritira Giocatore nella finestra del risultato e il ritiro dopo un forfait, mentre la domanda Ritiro dopo Forfait, che lo precede, ha Sì: ti va bene così?
+Passo 5: premi F6, scegli Prova copie con le frecce e porta il cursore sulla voce Finalizza il torneo, sotto i suoi turni.
+Passo 6: tieni premuto Invio per un paio di secondi.
+Domanda 5: si apre la domanda Finalizza Torneo, e resta aperta anche con il tasto tenuto giù?
+Passo 7: leggi la domanda con le frecce e premi Esc.
+Domanda 6: Esc risponde No, e NVDA torna su Finalizza il torneo?
+Passo 8: premi Invio su Finalizza il torneo e, nella domanda, premi Invio una volta.
+Domanda 7: Invio risponde Sì, e arriva il messaggio della finalizzazione riuscita?
+Passo 9: nel messaggio premi Esc.
+Domanda 8: Esc chiude il messaggio, e NVDA torna sull'albero?
 Passo 10: chiudi Tornello.
 Esito: 
 
-PROVA 39: Facoltativa, eliminazione da una cartella di rete senza cestino
-Prima: facoltativa: serve una cartella di rete in cui puoi scrivere, per esempio su un altro computer.
-Prima: Tornello chiuso, con Autunneo ripristinato nella prova 38.
-Passo 1: nella cartella di rete crea la cartella Tornello_rete, e copiaci dalla cartella di lavoro tornello.py, percorsi.py, selected_language.json, Tornello - Settings.json, Tornello - Autunneo.json e le cartelle src e locales.
-Passo 2: nel prompt dei comandi scrivi python, uno spazio e il percorso di tornello.py nella cartella Tornello_rete, e premi Invio; alle domande dell'avvio rispondi No.
-Passo 3: premi F6, porta il cursore su Autunneo, premi Canc e rispondi Sì.
-Domanda 1: senti il suono dell'errore e si apre la finestra Eliminazione non riuscita?
-Domanda 2: il messaggio dice che il file del torneo non è andato nel cestino, e che Autunneo resta com'è, con tutti i suoi file?
-Domanda 3: fra le cause il messaggio nomina il disco senza cestino, per esempio una cartella di rete?
-Passo 4: chiudi il messaggio.
-Domanda 4: Autunneo è ancora nell'albero?
-Passo 5: chiudi Tornello e, con Esplora risorse, apri la cartella Tornello_rete.
-Domanda 5: Tornello - Autunneo.json c'è ancora?
-Passo 6: apri la cartella prova_cartella_esterna\Autunneo2 della cartella di lavoro.
-Domanda 6: i due report di Autunneo ci sono ancora?
-Passo 7: cancella dalla cartella di rete la cartella Tornello_rete.
+PROVA 12: Invito alla donazione con NVDA
+Prima: la prova vale per la prima chiusura di Tornello in cui compare l'invito, in qualunque punto del collaudo.
+Domanda 1: NVDA legge il messaggio della finestra Offri un caffè nella lingua scelta nelle impostazioni?
+Passo 1: leggi il messaggio con le frecce e premi Invio.
+Domanda 2: Invio chiude la finestra senza aprire il browser, e Tornello termina?
+Passo 2: se l'invito compare in un'altra chiusura, premi Esc.
+Domanda 3: anche Esc chiude la finestra, e Tornello termina?
 Esito: 
 
-PROVA 40: Console, spareggi scelti nella finestra
-Passo 1: avvia python tornello.py --cli e scegli Prova spareggi.
-Passo 2: inserisci il risultato di una partita e, a Vuoi continuare, rispondi No.
-Domanda 1: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova spareggi il file della classifica ha, nella riga Criteri di Spareggio, i tre criteri scelti nella prova 20?
-Esito: 
-
-PROVA 41: Console, coppie esaurite
-Passo 1: avvia python tornello.py --cli e scegli Prova turno manuale.
-Passo 2: alla domanda se generare gli abbinamenti del turno 4 rispondi Sì.
-Domanda 1: il messaggio spiega che le coppie sono esaurite e rimanda alla finestra per comporre il turno a mano, senza parlare di errori nel file input_bbp.trf?
-Passo 3: premi u per uscire.
-Esito: 
-
-PROVA 42: Console, finalizzazione
-Prima: Prova copie in corso, ripristinata nella prova 31.
-Passo 1: avvia python tornello.py --cli e scegli Prova copie.
-Domanda 1: la console dice il turno 2 completato?
-Domanda 2: la console finalizza il torneo senza errori?
-Esito: 
-
-PROVA 43: Dopo la console, nella finestra
-Passo 1: avvia python tornello.py, scegli Prova spareggi e premi Invio su regole di spareggio.
-Domanda 1: i criteri sono ancora i tre scelti nella prova 20, e non quelli predefiniti?
-Passo 2: chiudi con Annulla e premi Ctrl+D.
-Domanda 2: Elo e partite di Pellegrini, Rinaldi, Sala e Testa sono uguali a quelli annotati dopo la finalizzazione nella prova 28?
-Passo 3: chiudi la finestra; apri File, Copie di sicurezza, e scegli l'origine Database dei giocatori.
-Domanda 3: fra le copie prima della finalizzazione, con l'ora della finalizzazione della console ce n'è una sola?
-Passo 4: chiudi la finestra.
-Esito: 
-
-PROVA 44: Ripristino del database dei giocatori
-Passo 1: apri File, Copie di sicurezza, e scegli l'origine Database dei giocatori.
-Passo 2: seleziona la copia prima della finalizzazione più recente, quella della console, e premi Ripristina.
-Domanda 1: la conferma dice il nome del file della copia?
-Domanda 2: la conferma dice gli Elo che cambierebbero?
-Domanda 3: la conferma dice che Prova copie uscirebbe dagli storici?
-Passo 3: rispondi Sì.
-Domanda 4: senti il suono del ripristino?
-Domanda 5: l'esito dice in quale copia è finito il database di prima?
-Passo 4: chiudi la finestra delle copie e premi Ctrl+D.
-Domanda 6: Elo, partite e medaglie di Pellegrini, Rinaldi, Sala e Testa sono quelli annotati prima della finalizzazione nella prova 28?
-Passo 5: chiudi; apri File, Copie di sicurezza, origine Database dei giocatori, seleziona la copia prima di un ripristino più recente, premi Ripristina e rispondi Sì.
-Passo 6: chiudi la finestra delle copie e premi Ctrl+D.
-Domanda 7: Elo, partite e medaglie dei quattro giocatori sono di nuovo quelli annotati dopo la finalizzazione nella prova 28?
-Passo 7: chiudi la finestra.
-Esito: 
-
-PROVA 45: Seconda edizione di Prova copie
-Prima: con Esplora risorse crea la cartella E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova copie 2
-Passo 1: premi Ctrl+N e compila la procedura guidata: nome Prova copie, data di inizio 2026-09-26, data di fine 2026-09-30, 1 turno, cartella di salvataggio E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova copie 2.
-Passo 2: in Iscrizione Giocatori iscrivi dal database locale Pellegrini, Rinaldi, Sala e Testa, e conferma.
-Passo 3: premi Invio su calcola il turno 1.
-Passo 4: apri File, Copie di sicurezza, seleziona nelle copie di Prova copie la prima al turno 1 abbinato dell'elenco e premi Ripristina.
-Domanda 1: il ripristino si rifiuta, perché nel file c'è un altro torneo con lo stesso nome?
-Passo 5: chiudi il messaggio e la finestra delle copie, poi chiudi Tornello.
-Passo 6: con Esplora risorse sposta Tornello - Prova_copie.json dalla cartella di lavoro alla cartella prova_cartella_esterna\Prova copie 2.
-Passo 7: avvia Tornello, premi Ctrl+O e apri quel file.
-Passo 8: registra i due risultati del turno 1, come vuoi, poi premi Ctrl+F e conferma, se te lo chiede.
-Domanda 2: al posto del messaggio di successo si apre la finestra Avvisi della finalizzazione?
-Domanda 3: gli avvisi dicono che il torneo va nella cartella d'archivio Prova_copie_2026-09-26?
-Passo 9: chiudi gli avvisi e premi Ctrl+D.
-Domanda 4: nello Storico Tornei di Pellegrini, Rinaldi, Sala e Testa ci sono due voci di Prova copie?
-Passo 10: chiudi la finestra e apri la cartella di lavoro con Esplora risorse.
-Domanda 5: il file Tornello - Prova_copie.json non c'è?
-Passo 11: in Tornello apri File, Copie di sicurezza, scegli l'origine Prova copie, seleziona la prima copia prima della finalizzazione dell'elenco e premi Ripristina.
-Domanda 6: il ripristino si rifiuta e dice quale torneo riaprire prima?
-Passo 12: chiudi il messaggio e la finestra delle copie.
-Esito: 
-
-PROVA 46: Classifiche dei tornei archiviati
-Passo 1: premi Ctrl+O e, nella cartella di lavoro, apri Closed Tournaments\2025\06 Giugno\ASCId_Primavera_1\Tornello - ASCId_Primavera_1.json; poi premi Ctrl+L.
-Domanda 1: la classifica finale, con spareggi, variazione Elo e performance, è giusta?
-Passo 2: ripeti con Closed Tournaments\2025\07 Luglio\ASCId_52_Campionato_Italiano\Tornello - ASCId_52_Campionato_Italiano.json
-Domanda 2: anche questa classifica finale è giusta?
-Passo 3: chiudi Tornello.
-Esito: 
-
-PROVA 47: Report di un torneo senza cartella di salvataggio
-Prima: Tornello chiuso.
-Passo 1: nel prompt dei comandi entra in E:\git\tmp con cd /d E:\git\tmp e avvia python E:\git\mine\Tornello-lavori\tornello.py
-Passo 2: nell'albero scegli Prova senza cartella e registra 1 - 0 nella partita Bruni contro Neri.
-Passo 3: chiudi Tornello e torna nella cartella di lavoro con cd /d E:\git\mine\Tornello-lavori
-Domanda 1: in E:\git\tmp non c'è nessun file che comincia con Tornello - Prova_senza_cartella?
-Domanda 2: nella cartella di lavoro c'è il file Tornello - Prova_senza_cartella - Classifica.txt?
-Domanda 3: in quella classifica Bruni ha 1 punto?
-Domanda 4: nella cartella di lavoro non c'è un file error.log?
-Esito: 
-
-PROVA 48: Finalizzazione e riapertura di un torneo rapid
-Prima: Tornello chiuso, con il prompt dei comandi nella cartella di lavoro.
-Passo 1: avvia python tornello.py e nell'albero scegli Prova rapid.
-Passo 2: premi Ctrl+L e annota la colonna Elo Var. di Quaranta, Ugolini, Valli e Zanetti.
-Passo 3: premi Ctrl+D e annota, nel ramo ELO e Titoli di ciascuno dei quattro, ELO Standard, ELO Rapid ed ELO Blitz; poi chiudi la finestra.
-Passo 4: premi Ctrl+F e conferma, se te lo chiede.
-Domanda 1: arriva soltanto il messaggio di successo, senza la finestra degli avvisi?
-Passo 5: premi Ctrl+D e rileggi il ramo ELO e Titoli dei quattro giocatori.
-Domanda 2: ELO Standard ed ELO Blitz dei quattro sono fermi?
-Domanda 3: ELO Rapid di Quaranta, che ha giocato al turno 1 contro Valli, è cambiato della Elo Var. annotata?
-Domanda 4: Valli, che aveva ELO Rapid a 0 e ha giocato contro Quaranta, ha ora il suo ELO Standard più la Elo Var.?
-Domanda 5: Zanetti, che aveva ELO Rapid a 0 e ha perso a forfait tutte e due le partite, ha ancora ELO Rapid a 0?
-Domanda 6: nello Storico Tornei di Zanetti c'è Prova rapid?
-Domanda 7: Ugolini, che ha l'ELO Rapid e ha soltanto partite a forfait, ha l'ELO Rapid identico a quello annotato?
-Passo 6: chiudi la finestra; apri File, Copie di sicurezza, scegli l'origine Prova rapid, seleziona la copia prima della finalizzazione e premi Confronta con lo stato attuale.
-Domanda 8: le righe di Quaranta, Ugolini e Valli dicono Elo rapid?
-Domanda 9: la riga di Zanetti dice Elo 1680 a 1680, senza la parola rapid?
-Domanda 10: nel testo non c'è nessun'altra frase su Zanetti?
-Passo 7: chiudi il testo, premi Ripristina e rispondi Sì.
-Domanda 11: l'esito del ripristino non nomina Zanetti?
-Passo 8: chiudi la finestra delle copie.
-Domanda 12: Prova rapid è di nuovo fra i tornei in corso?
-Passo 9: premi Ctrl+D.
-Domanda 13: ELO Standard, ELO Rapid ed ELO Blitz dei quattro giocatori sono quelli annotati al passo 3, 0 compreso?
-Domanda 14: lo Storico Tornei di Zanetti e di Ugolini non ha più Prova rapid?
-Passo 10: chiudi la finestra.
-Esito: 
-
-PROVA 49: Finalizzazione e riapertura di un torneo blitz
-Prima: Tornello aperto, dopo la prova 48.
-Passo 1: premi Ctrl+N e compila la procedura guidata: nome Prova blitz, tempo di riflessione 3+2, data di inizio 2026-10-01, data di fine 2026-10-04, 1 turno, cartella di salvataggio E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova blitz.
-Passo 2: in Iscrizione Giocatori iscrivi dal database locale Quaranta, Ugolini, Valli e Zanetti, e conferma.
-Passo 3: premi Invio su calcola il turno 1 e registra 1 - 0 in tutte e due le partite.
-Passo 4: premi Ctrl+L e annota la colonna Elo Var. dei quattro giocatori.
-Passo 5: premi Ctrl+F e conferma, se te lo chiede.
-Domanda 1: arriva soltanto il messaggio di successo, senza la finestra degli avvisi?
-Passo 6: premi Ctrl+D e rileggi il ramo ELO e Titoli dei quattro giocatori.
-Domanda 2: rispetto ai valori annotati nella prova 48, è cambiato soltanto ELO Blitz, mentre ELO Standard ed ELO Rapid sono fermi?
-Domanda 3: per chi lo aveva, ELO Blitz è cambiato della Elo Var. annotata?
-Domanda 4: chi aveva ELO Blitz a 0 ha ora il suo ELO Standard più la Elo Var.?
-Passo 7: chiudi la finestra; apri File, Copie di sicurezza, scegli l'origine Prova blitz, seleziona la copia prima della finalizzazione e premi Confronta con lo stato attuale.
-Domanda 5: la riga di ogni giocatore dice Elo blitz?
-Passo 8: chiudi il testo, premi Ripristina e rispondi Sì; poi chiudi la finestra delle copie e premi Ctrl+D.
-Domanda 6: ELO Standard, ELO Rapid ed ELO Blitz dei quattro giocatori sono di nuovo quelli annotati nella prova 48, 0 compreso?
-Passo 9: chiudi la finestra e chiudi Tornello.
-Esito: 
-
-PROVA 50: Aggiornamento dal pacchetto compilato
+PROVA 13: Aggiornamento dal pacchetto compilato
+Prima: Tornello della cartella di lavoro chiuso.
 Prima: il pacchetto di prova pronto in E:\git\tmp\prova_tornello: tornello.exe e la cartella _internal, alla versione 9.9.9.
 Prima: connessione a Internet attiva.
 Passo 1: avvia tornello.exe da E:\git\tmp\prova_tornello.
@@ -797,23 +175,18 @@ Passo 2: premi Esc.
 Domanda 6: la finestra si chiude senza scaricare niente?
 Domanda 7: subito dopo arriva la domanda sul database FIDE?
 Passo 3: rispondi No alla domanda FIDE e chiudi Tornello.
-Passo 4: dal prompt dei comandi, nella cartella E:\git\tmp\prova_tornello, avvia tornello.exe --cli
-Domanda 8: le note della versione nuova si leggono prima della domanda Vuoi aggiornare adesso?
-Domanda 9: se le note non stanno in una schermata, ogni pagina finisce con Novità e il numero della pagina sul totale?
-Passo 5: alla domanda Vuoi aggiornare adesso? premi Esc.
-Domanda 10: la console dice Aggiornamento rimandato e prosegue?
-Passo 6: esci dalla console.
-Passo 7: avvia di nuovo tornello.exe da E:\git\tmp\prova_tornello e, nel campo delle note, premi Invio.
-Domanda 11: Invio avvia lo scaricamento, nella finestra Aggiornamento di Tornello?
-Domanda 12: NVDA annuncia ogni 20 per cento la percentuale e i megabyte, con la virgola?
-Domanda 13: Esc e Alt+F4 non chiudono la finestra dello scaricamento?
-Domanda 14: alla fine NVDA dice Scaricato, preparo l'aggiornamento?
-Domanda 15: Tornello si chiude senza l'invito a offrire un caffè?
-Domanda 16: Tornello si riavvia da solo nella versione nuova?
-Domanda 17: in E:\git\tmp\prova_tornello non c'è il file auto_updater_error.log?
+Passo 4: avvia di nuovo tornello.exe da E:\git\tmp\prova_tornello e, nel campo delle note, premi Invio.
+Domanda 8: Invio avvia lo scaricamento, nella finestra Aggiornamento di Tornello?
+Domanda 9: NVDA annuncia ogni 20 per cento la percentuale e i megabyte, con la virgola?
+Domanda 10: Esc e Alt+F4 non chiudono la finestra dello scaricamento?
+Domanda 11: alla fine NVDA dice Scaricato, preparo l'aggiornamento?
+Domanda 12: Tornello si chiude senza l'invito a offrire un caffè?
+Domanda 13: Tornello si riavvia da solo nella versione nuova?
+Domanda 14: in E:\git\tmp\prova_tornello non c'è il file auto_updater_error.log?
 Esito: 
 
-PROVA 51: Ascolto dei suoni nuovi, copie di sicurezza e composizione manuale
+PROVA 14: Ascolto dei suoni nuovi, copie di sicurezza e composizione manuale
+Prima: Tornello chiuso.
 Passo 1: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_suoni_nuovi.py
 Domanda 1: ogni suono va bene per il suo evento?
 Esito: 
