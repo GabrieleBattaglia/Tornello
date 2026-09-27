@@ -176,15 +176,33 @@ class ManualPairingDialog(wx.Dialog):
         if quante:
             lista.SetSelection(min(max(indice, 0), quante - 1))
 
+    @staticmethod
+    def _riempi(lista, voci, vuota):
+        """Le voci della lista, oppure, se non ce ne sono, la sola voce vuota,
+        che dice perche' la lista e' vuota. Dalla 10.13.41: in una lista
+        vuota Windows lascia il cursore su una voce che non esiste, e NVDA la
+        leggeva come sconosciuto. La voce vuota non corrisponde a niente: le
+        liste interne, _liberi, _avversari e coppie, restano vuote, e INVIO o
+        CANC su di lei suonano l'errore, come prima sulla lista vuota."""
+        lista.Set(voci or [vuota])
+
     def _aggiorna(self, indice_libero=0, indice_coppia=0):
         """Riempie liste, scelta e situazione dalle coppie composte, e
         accende i pulsanti che servono. Le coppie restano nell'ordine delle
         scacchiere, che e' anche quello della lista."""
         self._liberi = giocatori_da_abbinare(self.torneo, self.coppie)
-        self.lista_liberi.Set([voce_giocatore(self.torneo, player_id) for player_id in self._liberi])
+        self._riempi(
+            self.lista_liberi,
+            [voce_giocatore(self.torneo, player_id) for player_id in self._liberi],
+            _("Nessun giocatore da abbinare"),
+        )
         self._seleziona(self.lista_liberi, indice_libero)
         self.coppie = ordina_coppie(self.torneo, self.coppie)
-        self.lista_coppie.Set([voce_coppia(self.torneo, numero, bianco, nero) for numero, (bianco, nero) in enumerate(self.coppie, 1)])
+        self._riempi(
+            self.lista_coppie,
+            [voce_coppia(self.torneo, numero, bianco, nero) for numero, (bianco, nero) in enumerate(self.coppie, 1)],
+            _("Nessuna coppia composta"),
+        )
         self._seleziona(self.lista_coppie, indice_coppia)
         self._aggiorna_avversari()
         self.situazione.SetValue("\n".join(righe_della_situazione(self.torneo, self.coppie, self.turno)))
@@ -204,7 +222,12 @@ class ManualPairingDialog(wx.Dialog):
         else:
             self._avversari = avversari_possibili(self.torneo, self.coppie, self._liberi[indice])
         voci = [voce_avversario(self.torneo, self._liberi[indice], avversario) for avversario in self._avversari]
-        self.lista_avversari.Set(voci)
+        vuota = (
+            _("Nessun avversario possibile per questo giocatore")
+            if self._liberi
+            else _("Nessun avversario, non ci sono giocatori da abbinare")
+        )
+        self._riempi(self.lista_avversari, voci, vuota)
         self._seleziona(self.lista_avversari, 0)
         self._aggiorna_bianco()
 

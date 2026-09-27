@@ -1059,6 +1059,65 @@ def _tasto(codice):
     return SimpleNamespace(GetKeyCode=lambda: codice, Skip=lambda: None)
 
 
+def _voci(lista):
+    return [lista.GetString(i) for i in range(lista.GetCount())]
+
+
+class TestLeListeVuote:
+    """Dalla 10.13.41 una lista vuota della composizione manuale ha una voce
+    sola, che dice perche' e' vuota: in una lista senza voci Windows lascia
+    il cursore su una voce che non esiste, e NVDA la leggeva come
+    sconosciuto. La voce non corrisponde a niente: INVIO e CANC suonano
+    l'errore, come sulla lista vuota, e non cambiano le coppie."""
+
+    def test_invio_sull_avversario_vuoto_non_aggiunge_niente(self, finestra):
+        wx = finestra.wx
+        dlg = finestra.crea(_torneo_saturo())
+
+        dlg.on_tasto_avversari(_tasto(wx.WXK_RETURN))
+
+        assert finestra.suoni == ["errore"]
+        assert dlg.coppie == [("B", "A"), ("C", "D")]
+
+    def test_invio_sul_giocatore_vuoto_non_porta_agli_avversari(self, finestra, monkeypatch):
+        wx = finestra.wx
+        dlg = finestra.crea(_torneo_saturo())
+        fuochi = []
+        monkeypatch.setattr(dlg.lista_avversari, "SetFocus", lambda: fuochi.append("avversari"))
+        passati = []
+        evento = SimpleNamespace(GetKeyCode=lambda: wx.WXK_RETURN, Skip=lambda: passati.append(True))
+
+        dlg.on_tasto_liberi(evento)
+
+        assert fuochi == [] and passati == [True]
+
+    def test_senza_coppie_la_lista_lo_dice_e_canc_non_toglie_niente(self, finestra):
+        wx = finestra.wx
+        dlg = finestra.crea(_torneo_saturo())
+        for _coppia in range(2):
+            dlg.lista_coppie.SetSelection(0)
+            dlg.on_togli(None)
+
+        assert dlg.coppie == []
+        assert _voci(dlg.lista_coppie) == ["Nessuna coppia composta"]
+        assert not dlg.btn_togli.IsEnabled() and not dlg.btn_inverti.IsEnabled()
+        finestra.suoni.clear()
+        dlg.lista_coppie.SetSelection(0)
+        dlg.on_tasto_coppie(_tasto(wx.WXK_DELETE))
+        dlg.on_inverti(None)
+
+        assert finestra.suoni == ["errore", "errore"]
+        assert dlg.coppie == []
+        assert _voci(dlg.lista_liberi)[0].startswith("Alfa Test")
+
+    def test_la_lista_piena_non_ha_la_voce_vuota(self, finestra):
+        dlg = finestra.crea(_torneo([_giocatore(f"G{i:02d}", f"C{i:02d}", 2000 - i) for i in range(17)]), turno=1)
+
+        assert dlg.lista_liberi.GetCount() == 17
+        assert "Nessun" not in " ".join(_voci(dlg.lista_liberi) + _voci(dlg.lista_avversari))
+        assert _voci(dlg.lista_coppie) == ["Nessuna coppia composta"]
+
+
 class TestFinestraDellaComposizione:
     def test_si_apre_con_la_proposta(self, finestra):
         dlg = finestra.crea(_torneo_saturo())
@@ -1066,7 +1125,10 @@ class TestFinestraDellaComposizione:
         assert dlg.coppie == [("B", "A"), ("C", "D")]
         assert dlg.lista_coppie.GetCount() == 2
         assert dlg.lista_coppie.GetString(0).startswith("Scacchiera 1: Beta Test (B) contro Alfa Test (N), gia' incontrati al turno 1")
-        assert dlg.lista_liberi.GetCount() == 0
+        assert _voci(dlg.lista_liberi) == ["Nessun giocatore da abbinare"]
+        assert _voci(dlg.lista_avversari) == ["Nessun avversario, non ci sono giocatori da abbinare"]
+        assert dlg._liberi == [] and dlg._avversari == []
+        assert not dlg.btn_aggiungi.IsEnabled()
         assert dlg.btn_conferma.IsEnabled()
         assert dlg.situazione.GetValue().splitlines()[0] == "Turno 4 di 4, a mano"
         assert finestra.suoni == []
