@@ -1,6 +1,7 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from fide_db import search_players
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
@@ -22,8 +23,7 @@ class FideQueryDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(900, 550),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -37,12 +37,20 @@ class FideQueryDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # quella che la finestra aveva al 100 per cento resta come minimo
+        # (issue 49). Lista e dettagli si riempiono dopo: la loro misura
+        # minima resta quella di adesso, come col Fit di prima, altrimenti la
+        # voce piu' lunga allargherebbe il contenuto e il pannello mostrerebbe
+        # le barre invece di lasciar scorrere la lista.
+        for controllo in (self.list_results, self.detail_text):
+            controllo.SetMinSize(controllo.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (823, 205))
 
         self.on_search_changed(None)
-        self.Centre()
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox_main = wx.BoxSizer(wx.VERTICAL)
 
         # Filtro di Ricerca
@@ -67,7 +75,7 @@ class FideQueryDialog(wx.Dialog):
             wx.StaticText(panel, label=_("Giocatori Trovati:")), 0, wx.BOTTOM, 5
         )
         self.list_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
-        self.list_results.SetMinSize((300, -1))
+        self.list_results.SetMinSize(self.FromDIP(wx.Size(300, -1)))
         self.list_results.Bind(wx.EVT_LISTBOX, self.on_item_selected)
         self.list_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_import_player)
         self.list_results.Bind(wx.EVT_CHAR_HOOK, self.on_list_key)
@@ -83,7 +91,7 @@ class FideQueryDialog(wx.Dialog):
         self.detail_text = wx.TextCtrl(
             panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2
         )
-        self.detail_text.SetMinSize((450, -1))
+        self.detail_text.SetMinSize(self.FromDIP(wx.Size(450, -1)))
         vbox_right.Add(self.detail_text, 1, wx.EXPAND)
 
         hbox_views.Add(vbox_right, 4, wx.EXPAND)
@@ -102,7 +110,6 @@ class FideQueryDialog(wx.Dialog):
         vbox_main.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 10)
 
         panel.SetSizer(vbox_main)
-        vbox_main.Fit(self)
 
     def apply_theme(self):
         apply_visual_settings(self.search_input, self.settings)
@@ -133,10 +140,17 @@ class FideQueryDialog(wx.Dialog):
             self.list_results.SetSelection(0)
             self.on_item_selected(None)
 
+    def _e_la_riga_mostra_altri(self, indice):
+        """Vero per la riga che carica i risultati seguenti, l'ultima, che
+        non ha un giocatore dietro. Dalla 10.8.6 la si riconosce dalla
+        posizione: il testo non comincia piu' con i due trattini, che NVDA
+        leggeva, e nelle altre lingue potrebbe cominciare in qualunque modo."""
+        return indice >= len(self.results_map)
+
     def load_more_results(self):
         # Rimuovi l'eventuale precedente item "Mostra altri..."
         last_idx = self.list_results.GetCount() - 1
-        if last_idx >= 0 and self.list_results.GetString(last_idx).startswith("--"):
+        if last_idx >= 0 and self._e_la_riga_mostra_altri(last_idx):
             self.list_results.Delete(last_idx)
 
         start = self.fide_displayed_count
@@ -167,8 +181,14 @@ class FideQueryDialog(wx.Dialog):
         if self.fide_displayed_count < len(self.all_fide_matches):
             total = len(self.all_fide_matches)
             rem = total - self.fide_displayed_count
-            lbl = _("-- Mostra altri risultati ({rem} rimanenti su {total}) --").format(
-                rem=rem, total=total
+            # Con un solo risultato che resta il singolare: fino alla
+            # 10.13.5 la riga diceva 1 rimanenti.
+            lbl = (
+                _("Mostra altri risultati (1 rimanente su {total})").format(total=total)
+                if rem == 1
+                else _("Mostra altri risultati ({rem} rimanenti su {total})").format(
+                    rem=rem, total=total
+                )
             )
             self.list_results.Append(lbl)
 
@@ -179,7 +199,7 @@ class FideQueryDialog(wx.Dialog):
             return
 
         # Ignora se è la riga speciale "Mostra altri..."
-        if self.list_results.GetString(sel).startswith("--"):
+        if self._e_la_riga_mostra_altri(sel):
             self.detail_text.Clear()
             return
 
@@ -244,7 +264,7 @@ class FideQueryDialog(wx.Dialog):
             return
 
         # Gestisci il click su "Mostra altri..."
-        if self.list_results.GetString(sel).startswith("--"):
+        if self._e_la_riga_mostra_altri(sel):
             self.load_more_results()
             new_sel = sel
             if new_sel < self.list_results.GetCount():
@@ -253,16 +273,11 @@ class FideQueryDialog(wx.Dialog):
             return
 
         fide_player = self.results_map[sel]
-        fide_id_str = str(fide_player.get("id_fide"))
 
         # Verifica se è già nel DB personale locale
-        gia_presente = False
-        for local_id, lp in self.players_db.items():
-            if lp.get("fide_id_num_str") == fide_id_str:
-                gia_presente = True
-                break
+        from db_players import aggiungi_dal_fide, scheda_con_lo_stesso_id_fide
 
-        if gia_presente:
+        if scheda_con_lo_stesso_id_fide(self.players_db, fide_player.get("id_fide")):
             play_sound("errore")
             dlg = AccessibleMsgDialog(
                 self,
@@ -273,55 +288,24 @@ class FideQueryDialog(wx.Dialog):
             dlg.Destroy()
             return
 
-        # Genera ID locale per il giocatore
-        from db_players import generate_player_id, save_players_db
-
-        first_name = fide_player.get("first_name", "")
-        last_name = fide_player.get("last_name", "")
-        new_id = generate_player_id(first_name, last_name, self.players_db)
-
-        from datetime import datetime
-
-        from config import DATE_FORMAT_ISO
-
-        fide_sex = fide_player.get("sex", "M")
-        sex_val = "w" if str(fide_sex).strip().upper() in ("W", "F") else "m"
-        gender_val = "W" if sex_val == "w" else "M"
-
-        new_player = {
-            "id": new_id,
-            "first_name": first_name,
-            "last_name": last_name,
-            "current_elo": fide_player.get("elo_standard") or 1399,
-            "elo_rapid": fide_player.get("elo_rapid", 0),
-            "elo_blitz": fide_player.get("elo_blitz", 0),
-            "fide_k_factor": fide_player.get("k_factor"),
-            "fide_rapid_k": fide_player.get("rapid_k"),
-            "fide_blitz_k": fide_player.get("blitz_k"),
-            "fide_standard_games": fide_player.get("games", 0),
-            "fide_rapid_games": fide_player.get("rapid_games", 0),
-            "fide_blitz_games": fide_player.get("blitz_games", 0),
-            "w_title": fide_player.get("w_title", ""),
-            "o_title": fide_player.get("o_title", ""),
-            "foa_title": fide_player.get("foa_title", ""),
-            "flag": fide_player.get("flag", ""),
-            "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
-            "birth_date": f"{fide_player.get('birth_year', 1980)}-01-01",
-            "sex": sex_val,
-            "gender": gender_val,
-            "federation": fide_player.get("federation", "ITA"),
-            "fide_title": fide_player.get("title", ""),
-            "club": "",
-            "games_played": 0,
-            "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
-            "tournaments_played": [],
-            "fide_id_num_str": fide_id_str,
-            "results_history": [],
-            "opponents": [],
-        }
-
-        self.players_db[new_id] = new_player
-        save_players_db(self.players_db)
+        # La scheda la costruisce db_players, la stessa della finestra di
+        # iscrizione e della console dalla 10.13.15. Se il database non si
+        # salva, il giocatore non resta nemmeno in memoria, e lo si dice:
+        # fino alla 10.13.14 la finestra lo dava per importato lo stesso.
+        new_player, _creata = aggiungi_dal_fide(self.players_db, fide_player)
+        if new_player is None:
+            play_sound("errore")
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Errore"),
+                _(
+                    "Il database dei giocatori non si è potuto salvare: il giocatore non è stato importato. Il motivo più comune è un file tenuto bloccato da un altro programma, per esempio Dropbox o l'antivirus: riprova più tardi."
+                ),
+            )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        new_id = new_player["id"]
 
         msg = _(
             "Giocatore '{name}' importato con successo nel database locale con ID '{id}'."

@@ -2,6 +2,7 @@ import builtins
 import webbrowser
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from gui.settings import apply_visual_settings
 
@@ -18,15 +19,14 @@ class DonationDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(600, 450),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
         from utils import play_sound
 
         play_sound("donazione")
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Area Messaggio (Navigabile con screen reader)
@@ -42,10 +42,18 @@ class DonationDialog(wx.Dialog):
         btn_donate = wx.Button(panel, wx.ID_YES, _("Dona con PayPal"))
         btn_close = wx.Button(panel, wx.ID_NO, _("Chiudi"))
 
-        btn_donate.SetDefault()
+        # Il pulsante predefinito e' Chiudi, dalla 10.13.32, non piu' Dona
+        # con PayPal: INVIO nel testo, dove sta il fuoco all'apertura, preme
+        # il predefinito, come nelle finestre di messaggio, ed ESC chiude.
+        # Fino alla 10.13.31, dal testo, nessuno dei due chiudeva la
+        # finestra. Il browser si apre soltanto con Dona con PayPal.
+        btn_close.SetDefault()
+        self.pulsante_predefinito = btn_close
+        self.SetEscapeId(wx.ID_NO)
 
         btn_donate.Bind(wx.EVT_BUTTON, self.on_donate)
         btn_close.Bind(wx.EVT_BUTTON, lambda evt: self.EndModal(wx.ID_NO))
+        self.Bind(wx.EVT_CHAR_HOOK, self._on_tasto)
 
         btn_sizer.Add(btn_donate, 0, wx.RIGHT, 10)
         btn_sizer.Add(btn_close, 0)
@@ -66,8 +74,22 @@ class DonationDialog(wx.Dialog):
             )
             self.msg_text.SetFont(font)
 
-        self.Centre()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # 600 per 450 resta come minimo (issue 49).
+        adatta_finestra(self, self.pannello, (600, 450))
         wx.CallAfter(self.msg_text.SetFocus)
+
+    def _on_tasto(self, event):
+        """INVIO nel testo, un campo multilinea che si tiene il tasto, preme
+        Chiudi; sui pulsanti INVIO resta loro, e ogni altro tasto prosegue.
+        Un INVIO ripetuto, con il tasto tenuto giu', non preme niente, come
+        nelle finestre di messaggio, e con lo stesso limite: le ripetizioni
+        che NVDA rimanda dal testo arrivano come INVIO nuovi."""
+        invio = event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER)
+        if invio and not event.HasAnyModifiers() and not event.IsAutoRepeat() and wx.Window.FindFocus() is self.msg_text:
+            self.EndModal(self.pulsante_predefinito.GetId())
+            return
+        event.Skip()
 
     def on_donate(self, event):
         # Link personalizzato PayPal.Me dello sviluppatore.

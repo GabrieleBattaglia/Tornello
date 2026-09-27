@@ -15,10 +15,15 @@ from config import (
 )
 
 
-def handle_bbpairings_failure(torneo, round_number, error_message):
+def handle_bbpairings_failure(torneo, round_number, error_message, esaurito=False):
     """
     Gestisce i fallimenti di bbpPairings. Stampa un messaggio e chiede all'utente cosa fare.
     Restituisce una stringa che indica l'azione scelta dall'utente ('time_machine' o 'terminate').
+    esaurito dice che il motore ha risposto che non esiste un abbinamento
+    valido: dalla 10.13.3 il messaggio lo spiega e rimanda alla finestra, dove
+    il turno si compone a mano (issue 38). Fino alla 10.13.2 parlava sempre di
+    errori di formato del file TRF, anche quando i giocatori avevano soltanto
+    esaurito le coppie.
     """
     is_gui = False
     try:
@@ -42,17 +47,29 @@ def handle_bbpairings_failure(torneo, round_number, error_message):
         )
     )
     print(error_message)
-    print(_("Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."))
-    print(
-        _(
-            "Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella 'bbppairings' per possibili errori di formato."
+    if esaurito:
+        print(
+            _(
+                "Causa: con i giocatori rimasti nessun abbinamento rispetta i criteri assoluti del sistema svizzero, per esempio perche' ogni coppia ripeterebbe un incontro gia' giocato."
+            )
         )
-    )
-    print(
-        _(
-            "Oppure, un risultato potrebbe essere stato inserito in modo errato nel turno precedente."
+        print(
+            _(
+                "Il regolamento lascia allora la decisione all'arbitro, che compone il turno a mano. La composizione manuale c'e' solo nella finestra di Tornello: chiudi la versione a riga di comando, avvia Tornello senza l'opzione --cli e calcola il turno {round_num}, e la finestra ti proporra' di comporlo a mano."
+            ).format(round_num=round_number)
         )
-    )
+    else:
+        print(_("Causa: bbpPairings.exe non è riuscito a generare gli abbinamenti."))
+        print(
+            _(
+                "Azione richiesta: Verificare il file 'input_bbp.trf' nella sottocartella 'bbppairings' per possibili errori di formato."
+            )
+        )
+        print(
+            _(
+                "Oppure, un risultato potrebbe essere stato inserito in modo errato nel turno precedente."
+            )
+        )
 
     while True:
         prompt = _(

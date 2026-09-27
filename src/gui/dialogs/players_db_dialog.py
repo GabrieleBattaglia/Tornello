@@ -1,8 +1,15 @@
 import builtins
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
-from db_players import generate_player_id, load_players_db, save_players_db
+from db_players import (
+    generate_player_id,
+    load_players_db,
+    save_players_db,
+    togli_torneo_dallo_storico,
+)
+from gui.accessibility import NomeAccessibile
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from gui.settings import apply_visual_settings
 from utils import play_sound
@@ -21,8 +28,7 @@ class PlayersDbDialog(wx.Dialog):
         super().__init__(
             parent,
             title=title,
-            size=(900, 600),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
+            style=STILE_ADATTABILE,
         )
 
         self.settings = settings
@@ -31,12 +37,20 @@ class PlayersDbDialog(wx.Dialog):
 
         self._init_ui()
         self.apply_theme()
+        # Dalla 10.6.3 la misura la da' il contenuto, dentro lo schermo, e
+        # quella che la finestra aveva al 100 per cento resta come minimo
+        # (issue 49). Lista e albero si riempiono dopo: la loro misura minima
+        # resta quella di adesso, come col Fit di prima, altrimenti il nome
+        # piu' lungo allargherebbe il contenuto e il pannello mostrerebbe le
+        # barre invece di lasciar scorrere la lista.
+        for controllo in (self.list_players, self.tree_ctrl):
+            controllo.SetMinSize(controllo.GetEffectiveMinSize())
+        adatta_finestra(self, self.pannello, (565, 200))
 
         self.on_search_changed(None)
-        self.Centre()
 
     def _init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         main_hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         # --- COLONNA SINISTRA: RICERCA E LISTA ---
@@ -48,6 +62,10 @@ class PlayersDbDialog(wx.Dialog):
         left_vbox.Add(self.search_input, 0, wx.EXPAND | wx.ALL, 5)
 
         self.list_players = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        # Davanti alla lista c'e' il campo del filtro e non un'etichetta:
+        # fino alla 10.13.30 lo screen reader la trovava senza nome. Le voci
+        # tengono il loro testo.
+        self.list_players.SetAccessible(NomeAccessibile(self.list_players, _("Elenco giocatori")))
         self.list_players.Bind(wx.EVT_LISTBOX, self.on_player_selected)
         left_vbox.Add(self.list_players, 1, wx.EXPAND | wx.ALL, 5)
 
@@ -80,7 +98,6 @@ class PlayersDbDialog(wx.Dialog):
         main_hbox.Add(right_vbox, 2, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(main_hbox)
-        main_hbox.Fit(self)
 
     def apply_theme(self):
         apply_visual_settings(self.search_input, self.settings)
@@ -576,23 +593,10 @@ class PlayersDbDialog(wx.Dialog):
                     settings=self.settings,
                 )
                 if dlg.ShowModal() == wx.ID_YES:
-                    history = p.get("tournaments_played", [])
-                    if 0 <= idx < len(history):
-                        removed_entry = history.pop(idx)
-                        rank = removed_entry.get("rank")
-                        try:
-                            rank_int = int(rank)
-                        except (ValueError, TypeError):
-                            rank_int = None
-                        if rank_int in [1, 2, 3, 4]:
-                            medals = p.setdefault(
-                                "medals",
-                                {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
-                            )
-                            medal_map = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
-                            medal_key = medal_map.get(rank_int)
-                            if medal_key and medals.get(medal_key, 0) > 0:
-                                medals[medal_key] -= 1
+                    # La voce se ne va con la sua medaglia: lo stesso lavoro
+                    # dello storno di un torneo riaperto da una copia di
+                    # sicurezza, scritto una volta sola in db_players.
+                    togli_torneo_dallo_storico(p, idx)
                     save_players_db(self.players_db)
                     self.populate_player_tree()
                 dlg.Destroy()

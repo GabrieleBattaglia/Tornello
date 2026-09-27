@@ -6,8 +6,6 @@ from datetime import datetime, timedelta
 
 from config import (
     DATE_FORMAT_ISO,
-    DEFAULT_ELO,
-    DEFAULT_K_FACTOR,
     FIDE_DB_JSON_LEGACY,
     FIDE_DB_LOCAL_FILE,
     PLAYER_DB_FILE,
@@ -15,13 +13,17 @@ from config import (
 )
 from db_players import (
     aggiorna_db_fide_locale,
+    database_non_letto,
+    fattore_k_della_finalizzazione,
     load_players_db,
+    messaggio_database_non_letto,
     sincronizza_db_personale,
 )
 from engine import handle_bbpairings_failure
 from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
 from reports import (
     append_completed_round_to_history_file,
+    posizioni_con_i_pari_merito,
     save_current_tournament_round_file,
     save_standings_text,
 )
@@ -33,7 +35,6 @@ from stats import (
     compute_buchholz,
     compute_buchholz_cut1,
     compute_tiebreak_value,
-    get_k_factor,
     parse_time_control,
 )
 from tiebreak_criteria import (
@@ -41,13 +42,14 @@ from tiebreak_criteria import (
     migrate_old_tiebreaks,
 )
 from tournament import (
+    abbinamento_esaurito,
     generate_pairings_for_round,
     load_tournament,
+    motivo_ultimo_fallimento,
     save_tournament,
     time_machine_torneo,
 )
 from utils import (
-    create_backup,
     format_date_locale,
     parse_flexible_date,
     sanitize_filename,
@@ -123,6 +125,10 @@ class TournamentController:
     def start(self) -> None:
         self.ui.show_message(_("\nBENVENUTI! Sono Tornello V9"))
         self.ui.play_sound("avvio")
+        # Un database dei giocatori che c'e' ma non si legge arriva vuoto, e
+        # non si salva: lo si dice subito, prima delle iscrizioni (10.13.15).
+        if database_non_letto(self.players_db):
+            self.ui.show_error(messaggio_database_non_letto(self.players_db))
 
         self._check_fide_db()
         self._select_or_create_tournament()
@@ -346,8 +352,10 @@ class TournamentController:
                         pass
 
                 if suspended_tournaments:
+                    # Senza asterischi attorno, dalla 10.13.30: NVDA li
+                    # leggeva uno per uno.
                     self.ui.show_message(
-                        _("\n*** TROVATI TORNEI CON CREAZIONE SOSPESA ***")
+                        _("\nTrovati tornei con la creazione sospesa:")
                     )
                     for st in suspended_tournaments:
                         self.ui.show_message(
@@ -884,10 +892,15 @@ class TournamentController:
                         next_matches_raw = generate_pairings_for_round(torneo_dict)
 
                         if next_matches_raw is None:
+                            # Dalla 10.13.3 il motivo vero, e se le coppie
+                            # sono esaurite il rimando alla finestra, dove il
+                            # turno si compone a mano (issue 38).
                             user_action = handle_bbpairings_failure(
                                 torneo_dict,
                                 next_round,
-                                "Errore durante la generazione.",
+                                motivo_ultimo_fallimento(torneo_dict)
+                                or _("Errore durante la generazione."),
+                                esaurito=abbinamento_esaurito(torneo_dict),
                             )
                             if user_action == "time_machine":
                                 self.tournament.current_round = curr_round
@@ -988,25 +1001,28 @@ class TournamentController:
     def _finalize_tournament(self) -> bool:
         if not self.tournament:
             return False
-
-        # Creazione backup
-        self.ui.show_message(
-            _("Creazione backup di sicurezza prima dell'archiviazione...")
-        )
-        backup_db_ok = create_backup(PLAYER_DB_FILE, "pre_finalize_db")
-        backup_torneo_ok = True
-        if self.active_filename and os.path.exists(self.active_filename):
-            backup_torneo_ok = create_backup(
-                self.active_filename, "pre_finalize_torneo"
-            )
-
-        if not backup_db_ok or not backup_torneo_ok:
-            self.ui.show_message(
+        # Il database letto all'avvio, se non si era potuto leggere, si
+        # rilegge: il blocco di un altro programma puo' essere passato. Se
+        # ancora non si legge, la finalizzazione non parte, e il torneo resta
+        # da concludere: creerebbe nel database tutti gli iscritti, e il file
+        # sul disco perderebbe tutti gli altri giocatori (10.13.16). Le
+        # schede aggiunte nel frattempo non ci sono: con il database non
+        # letto nessuna si e' potuta salvare, e nessuna e' rimasta.
+        if database_non_letto(self.players_db):
+            self.players_db = load_players_db()
+        if database_non_letto(self.players_db):
+            self.ui.show_error(messaggio_database_non_letto(self.players_db))
+            self.ui.show_error(
                 _(
-                    "ATTENZIONE: Fallita la creazione di uno o più file di backup. Procedo ugualmente..."
+                    "La finalizzazione non parte: il torneo resta da concludere, e il database dei giocatori e l'archivio restano come sono."
                 )
             )
+            return False
 
+        # Le copie di sicurezza pre_finalize_db e pre_finalize_torneo le fa
+        # ui.finalize_tournament, chiamata in fondo, prima di toccare il
+        # database. Fino alla 10.8.9 le faceva anche questa funzione, e la
+        # seconda pre_finalize_db nasceva quando gli Elo erano gia' scritti.
         self.tournament.update_players_dict()
         if not self.tournament.players:
             self.ui.show_error(
@@ -1021,11 +1037,13 @@ class TournamentController:
                 p.k_factor = None
                 p.games_this_tournament = 0
                 continue
-            player_db_data = self.players_db.get(p.id)
-            if not player_db_data:
-                p.k_factor = DEFAULT_K_FACTOR
-            else:
-                p.k_factor = get_k_factor(player_db_data, self.tournament.start_date)
+            # Il K passa dallo stesso punto della finalizzazione e della
+            # colonna Elo Var. (10.13.33): fino alla 10.13.32 qui chi il
+            # database non aveva prendeva 20, mentre la finalizzazione gli
+            # crea la scheda e, senza un K FIDE valido, gli da' 40.
+            p.k_factor = fattore_k_della_finalizzazione(
+                p.to_dict(), self.players_db, self.tournament.start_date
+            )
 
             games_count = 0
             for r in p.results_history:
@@ -1097,48 +1115,31 @@ class TournamentController:
             return tuple(sort_tuple)
 
         players_sorted = sorted(self.tournament.players, key=sort_key_final)
-        current_visual_rank = 0
-        last_sort_key = None
-        for i, p_item in enumerate(players_sorted):
-            if p_item.withdrawn:
-                p_item.final_rank = None  # o 'RIT'
-                continue
-            curr_sort_key = sort_key_final(p_item)[1:]
-            if curr_sort_key != last_sort_key:
-                current_visual_rank = i + 1
-            p_item.final_rank = current_visual_rank
-            last_sort_key = curr_sort_key
+        # Le posizioni con la regola di ui.finalize_tournament e della
+        # classifica: stessa posizione soltanto a parita' di punti e di
+        # tutti i criteri (10.13.35). Fino alla 10.13.34 qui la chiave
+        # escludeva i punti, e due giocatori con punti diversi e spareggi
+        # uguali avevano la stessa posizione. I ritirati restano senza.
+        posizioni_finali = posizioni_con_i_pari_merito(
+            players_sorted, sort_key_final, lambda g: g.withdrawn
+        )
+        for p_item, posizione in zip(players_sorted, posizioni_finali, strict=True):
+            p_item.final_rank = posizione
 
         self.tournament.players = players_sorted
         self.tournament.update_players_dict()
 
-        # Update players database
-        # ... logic to save to players_db
-        from db_players import save_players_db
-
-        # finalizza database
-        for p in self.tournament.players:
-            if p.withdrawn or p.final_rank is None:
-                continue
-            if p.id in self.players_db:
-                local_p = self.players_db[p.id]
-                category_lower = self.tournament.tournament_category.lower()
-                change = p.elo_change if p.elo_change is not None else 0.0
-
-                if category_lower == "blitz":
-                    old_elo = local_p.get("elo_blitz", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["elo_blitz"] = max(100.0, old_elo + change)
-                elif category_lower == "rapid":
-                    old_elo = local_p.get("elo_rapid", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["elo_rapid"] = max(100.0, old_elo + change)
-                else:
-                    old_elo = local_p.get("current_elo", DEFAULT_ELO) or DEFAULT_ELO
-                    local_p["current_elo"] = max(100.0, old_elo + change)
-
-                local_p["games_played"] = (
-                    local_p.get("games_played", 0) + p.games_this_tournament
-                )
-        save_players_db(self.players_db)
+        # Elo, partite, storico e medaglie li scrive nel database soltanto
+        # ui.finalize_tournament, come nella finestra. Fino alla 10.8.9 qui
+        # c'era un primo aggiornamento di Elo e partite, salvato su disco, e
+        # poi ui.finalize_tournament li sommava una seconda volta: in console
+        # ogni giocatore riceveva le partite due volte, e due volte la
+        # variazione Elo, nei tornei standard tutte e due sull'Elo principale,
+        # nei rapid e nei blitz una su quello della cadenza e una sul
+        # principale. Dalla 10.13.4 ui.finalize_tournament mette la
+        # variazione sull'Elo della cadenza, per la console e per la finestra
+        # insieme: la 10.8.10 l'aveva lasciata su current_elo in via
+        # provvisoria.
 
         # Archiviazione
         # Richiama la finalizzazione/archiviazione dei report

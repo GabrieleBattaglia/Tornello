@@ -27,7 +27,6 @@ Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5 UltraCode)
 
 import json
 import os
-import re
 import shutil
 import sys
 from datetime import datetime
@@ -38,13 +37,13 @@ sys.path.insert(0, os.path.join(RADICE_PROGETTO, "src"))
 import config  # noqa: F401  installa la funzione di traduzione
 from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
 from utils import (
+    data_della_copia,
     nome_cartella_mese,
     rimuovi_cartelle_vuote,
     sanitize_filename,
 )
 
 CARTELLA_BACKUP = user_data_path("backup")
-TIMESTAMP_NEL_NOME = re.compile(r"(\d{8})_(\d{6})")
 # I suffissi delle cartelle di archivio sono stati scritti in lingue diverse
 # nel corso del tempo, quindi si riconoscono i mesi in italiano e in inglese.
 MESI_PER_NOME = {
@@ -193,19 +192,6 @@ def riordina_archivio(esegui):
     return spostate, saltate, vuote
 
 
-def data_del_backup(percorso):
-    trovato = TIMESTAMP_NEL_NOME.search(os.path.basename(percorso))
-    if trovato:
-        try:
-            return (
-                datetime.strptime(trovato.group(1), "%Y%m%d"),
-                "timestamp nel nome",
-            )
-        except ValueError:
-            pass
-    return datetime.fromtimestamp(os.path.getmtime(percorso)), "data di modifica"
-
-
 def riordina_backup(esegui):
     print("\nCopie di sicurezza:", CARTELLA_BACKUP)
     if not os.path.isdir(CARTELLA_BACKUP):
@@ -217,7 +203,9 @@ def riordina_backup(esegui):
         origine = os.path.join(CARTELLA_BACKUP, nome)
         if not os.path.isfile(origine):
             continue
-        data, fonte = data_del_backup(origine)
+        # La data nel nome, con il ripiego sulla data di modifica: dalla
+        # 10.8.11 la funzione sta in utils, perche' serve anche al programma.
+        data = data_della_copia(origine)
         cartella = os.path.join(
             CARTELLA_BACKUP, f"{data.year:04d}", nome_cartella_mese(data.month)
         )
@@ -228,12 +216,11 @@ def riordina_backup(esegui):
             continue
         chiave = os.path.relpath(cartella, CARTELLA_BACKUP)
         per_mese[chiave] = per_mese.get(chiave, 0) + 1
-        per_mese.setdefault("_fonte_" + chiave, fonte)
         spostati += 1
         if esegui:
             os.makedirs(cartella, exist_ok=True)
             shutil.move(origine, arrivo)
-    for chiave in sorted(k for k in per_mese if not k.startswith("_fonte_")):
+    for chiave in sorted(per_mese):
         print(f"   {per_mese[chiave]:4d} file -> {chiave}")
     return spostati, saltati
 

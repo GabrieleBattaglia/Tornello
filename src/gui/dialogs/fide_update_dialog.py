@@ -2,6 +2,7 @@ import builtins
 import threading
 
 import wx
+from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from db_players import aggiorna_db_fide_locale
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
@@ -50,9 +51,10 @@ class FideUpdateDialog(wx.Dialog):
 
     def __init__(self, parent, settings):
         title = _("Aggiornamento Database FIDE")
-        super().__init__(
-            parent, title=title, size=(500, 250), style=wx.DEFAULT_DIALOG_STYLE
-        )
+        # Dalla 10.6.3 la finestra si ridimensiona e prende la misura dal
+        # contenuto, dentro lo schermo; quella che aveva al 100 per cento
+        # resta come minimo (issue 49).
+        super().__init__(parent, title=title, style=STILE_ADATTABILE)
 
         self.settings = settings
         self.last_announced_percent = (
@@ -61,7 +63,7 @@ class FideUpdateDialog(wx.Dialog):
 
         self.init_ui()
         self.apply_theme()
-        self.Centre()
+        adatta_finestra(self, self.pannello, (320, 198))
 
         # La finestra puo' sparire mentre il thread lavora: chiusa dalla X o
         # da Alt+F4, oppure distrutta perche' il programma si chiude per
@@ -83,7 +85,7 @@ class FideUpdateDialog(wx.Dialog):
         wx.CallAfter(lambda: self and self.gauge.SetFocus())
 
     def init_ui(self):
-        panel = wx.Panel(self)
+        panel = self.pannello = pannello_scorrevole(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Label di stato posizionata immediatamente prima del Gauge per accessibilità
@@ -109,12 +111,22 @@ class FideUpdateDialog(wx.Dialog):
         vbox.Add(self.btn_close, 0, wx.ALIGN_RIGHT | wx.ALL, 15)
 
         panel.SetSizer(vbox)
-        vbox.Fit(self)
 
     def apply_theme(self):
+        # Fino alla 10.6.4 il tema passava ai soli figli della finestra, cioe'
+        # al pannello: etichetta, barra e pulsante restavano con il carattere
+        # di sistema invece di quello scelto per i dialoghi.
         apply_visual_settings(self, self.settings)
-        for child in self.GetChildren():
+        apply_visual_settings(self.pannello, self.settings)
+        for child in self.pannello.GetChildren():
             apply_visual_settings(child, self.settings)
+
+    def _scrivi_stato(self, testo):
+        """Scrive lo stato sopra la barra. Dalla 10.6.3 il pannello scorre
+        (issue 49): un testo piu' largo della finestra ne allarga il
+        contenuto, e FitInside aggiorna lo scorrimento."""
+        self.status_label.SetLabel(testo)
+        self.pannello.FitInside()
 
     def on_close(self, event=None):
         """Chiusura dalla X, da Alt+F4, da Esc o dal pulsante: ferma il lavoro.
@@ -168,7 +180,7 @@ class FideUpdateDialog(wx.Dialog):
                 "Scaricamento in corso: {percent}% ({current_mb:.1f} MB / {total_mb:.1f} MB)..."
             ).format(percent=percent, current_mb=current_mb, total_mb=total_mb)
             if self.status_label.GetLabel() != msg:
-                self.status_label.SetLabel(msg)
+                self._scrivi_stato(msg)
 
         elif phase == "processing":
             title_text = _("Analisi del DB FIDE e creazione DB SQLite...")
@@ -179,7 +191,7 @@ class FideUpdateDialog(wx.Dialog):
                 percent=percent
             )
             if self.status_label.GetLabel() != msg:
-                self.status_label.SetLabel(msg)
+                self._scrivi_stato(msg)
 
         # Se la percentuale è cambiata di almeno il 5%, aggiorna l'annuncio accessibile
         if abs(percent - self.last_announced_percent) >= 5:
@@ -229,9 +241,7 @@ class FideUpdateDialog(wx.Dialog):
                     "Prima {old_c} giocatori, ora {new_c} = {sign}{diff} ({sign}{perc:.2f}%)"
                 ).format(old_c=old_c, new_c=new_c, sign=sign, diff=diff, perc=perc)
 
-            self.status_label.SetLabel(
-                _("Database FIDE locale aggiornato con successo!")
-            )
+            self._scrivi_stato(_("Database FIDE locale aggiornato con successo!"))
 
             # Utilizza il dialogo personalizzato e accessibile per mostrare le statistiche
             dlg = AccessibleMsgDialog(
@@ -249,9 +259,7 @@ class FideUpdateDialog(wx.Dialog):
             if self._viva() and self.IsModal():
                 self.EndModal(wx.ID_OK)
         else:
-            self.status_label.SetLabel(
-                _("Errore durante l'aggiornamento del Database FIDE.")
-            )
+            self._scrivi_stato(_("Errore durante l'aggiornamento del Database FIDE."))
             # Il motivo vero viene da chi ha svolto il lavoro: prima veniva
             # sempre indicata la connessione, anche quando la causa era un'altra.
             motivo = (stats or {}).get("error")

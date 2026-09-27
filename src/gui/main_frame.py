@@ -2,11 +2,13 @@ import builtins
 import glob
 import json
 import os
+from contextlib import contextmanager
 
 import wx
+from GBwx import dentro_area_utile
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
-from gui.settings import apply_visual_settings, save_settings
+from gui.settings import apply_visual_settings, salva_impostazione, save_settings
 from version import __authors__, __date__, __version__
 
 _ = getattr(builtins, "_", lambda s: s)
@@ -14,12 +16,62 @@ _ = getattr(builtins, "_", lambda s: s)
 
 from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
 
+# Ogni quanto il pie' di pagina ricalcola le sue percentuali quando non ha il
+# focus. Il valore che si muove piu' in fretta, TT, con un decimale cambia
+# ogni 23 minuti circa in un turno di 16 giorni: un minuto basta e avanza.
+INTERVALLO_PIE_DI_PAGINA_MS = 60 * 1000
+
+# La sezione del manuale che spiega gli acronimi del pie' di pagina, mostrata
+# nell'area principale quando il focus arriva sulla barra (issue 54).
+SEZIONE_DEGLI_ACRONIMI = "2.3.1"
+
+# Ogni quanto riprovano la proposta di aggiornamento, i suoi esiti e le
+# domande dell'avvio quando li trovano con un dialogo aperto (issue 37).
+RIPROVA_A_FINESTRA_LIBERA_MS = 1000
+
+# La chiave delle impostazioni con la data, nel formato AAAA-MM-GG, fino alla
+# quale l'avviso di avvio sulle copie di sicurezza vecchie resta rinviato.
+RINVIO_AVVISO_BACKUP = "backup_check_postponed_until"
+
 
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
     programma. Prima veniva proposta la directory di lavoro corrente, che
     coincide con quella del programma solo se lo si avvia da li'."""
     return os.path.abspath(user_data_path(""))
+
+
+def _chiave_del_percorso(percorso):
+    """Il percorso nella forma in cui si confronta con un altro: assoluto e,
+    su Windows, senza differenze di maiuscole e di barre. None e la stringa
+    vuota restano come sono."""
+    if not percorso:
+        return percorso
+    return os.path.normcase(os.path.abspath(percorso))
+
+
+def _nome_della_cartella(percorso):
+    """Il nome della cartella che contiene il file, da dire a voce. La radice
+    di un disco, che un nome non ce l'ha, si dice per intero."""
+    cartella = os.path.dirname(os.path.abspath(percorso))
+    return os.path.basename(cartella) or cartella
+
+
+class FileNonTorneo(ValueError):
+    """Un file JSON che non e' un torneo di Tornello, per esempio il database
+    dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
+
+
+def _ha_la_forma_di_un_torneo(dati):
+    """Vero se i dati letti da un file hanno la forma di un torneo di
+    Tornello: un dizionario con il nome, gli iscritti e i turni. Il database
+    dei giocatori, per esempio, ha gli iscritti ma non il nome."""
+    return (
+        isinstance(dati, dict)
+        and isinstance(dati.get("name"), str)
+        and isinstance(dati.get("players"), list)
+        and isinstance(dati.get("rounds", []), list)
+    )
 
 
 class CustomAccessible(wx.Accessible):
@@ -45,7 +97,14 @@ class MainFrame(wx.Frame):
     def __init__(self, parent, title, settings):
         # Titolo iniziale dell'app
         title_str = f"Tornello - {_('Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]').format(__version__, __date__)}"
-        super().__init__(parent, title=title_str, size=(1024, 768))
+        super().__init__(parent, title=title_str)
+        # Dalla 10.6.3 la finestra ripristinata, quella che torna con
+        # Win+freccia giu', sta dentro lo schermo (issue 49): i 768 pixel di
+        # prima, con la scala dello schermo al 150 per cento, erano piu' dei
+        # 688 disponibili, e il pie' di pagina finiva sotto il bordo. Le
+        # misure sono in pixel al 100 per cento, anche il minimo.
+        dentro_area_utile(self, (1024, 768))
+        self.SetMinSize(self.FromDIP(wx.Size(480, 360)))
 
         self.settings = settings
         self.current_tournament = None
@@ -55,11 +114,47 @@ class MainFrame(wx.Frame):
             False  # True se stiamo compilando l'albero per il Nuovo Torneo
         )
         self.last_status_msg = _("Pronto.")
+        # L'ultimo testo scritto nel pie' di pagina, per non riscriverlo se
+        # non cambia (vedi update_status_display).
+        self._testo_pie_di_pagina = None
+        # Vero quando il focus logico e' sul pie' di pagina: ce l'ha, oppure
+        # ce l'aveva quando Tornello e' passato in secondo piano o si e'
+        # aperta una finestra di sistema (vedi _on_focus_pie_di_pagina).
+        self._pie_di_pagina_col_focus = False
+        # Vero dopo un guasto del ricalcolo automatico gia' scritto in
+        # error.log, perche' non si ripeta a ogni minuto.
+        self._guasto_pie_di_pagina = False
+        # L'aggiornamento del programma (issue 37): la finestra che accompagna
+        # lo scaricamento, il blocco delle altre finestre finche' dura, e il
+        # segnale che la chiusura serve ad applicarlo, per la quale on_close
+        # salta l'invito alla donazione.
+        self._dialogo_avanzamento = None
+        self._disabilitatore = None
+        self._chiusura_per_aggiornamento = False
+        # Vero mentre l'albero si svuota e si ricostruisce: gli eventi di
+        # selezione che il controllo di Windows manda in quel momento non
+        # caricano tornei (vedi _albero_senza_caricamenti).
+        self._albero_in_ricostruzione = False
+        # I file di torneo non leggibili gia' segnalati, perche' la riga
+        # nell'area centrale e l'avviso nella barra non si ripetano a ogni
+        # ricostruzione dell'albero.
+        self._illeggibili_segnalati = set()
 
         self._init_ui()
         self._setup_shortcuts()
-        wx.CallAfter(self._check_fide_db_on_startup)
-        wx.CallAfter(self._check_backup_on_startup)
+        # Dalla 10.5.0 il pie' di pagina si aggiorna da solo ogni minuto,
+        # finche' non ha il focus (issue 53): il timer gira sul thread
+        # principale, solo quando il ciclo degli eventi e' libero, e legge
+        # soltanto.
+        self._timer_pie_di_pagina = wx.Timer(self)
+        self.Bind(
+            wx.EVT_TIMER, self._on_timer_pie_di_pagina, self._timer_pie_di_pagina
+        )
+        self._timer_pie_di_pagina.Start(INTERVALLO_PIE_DI_PAGINA_MS)
+        # Dalla 10.8.2 le domande sul database FIDE e sui backup non partono
+        # da qui ma da _controlli_di_avvio, quando l'aggiornamento del
+        # programma ha finito di parlare: prima si aprivano tutte insieme, e
+        # la proposta di aggiornamento compariva sopra la finestra FIDE.
         wx.CallAfter(self._scan_and_load_initial_tournament)
         wx.CallAfter(self._check_updates_async)
         self.Maximize(True)
@@ -110,19 +205,27 @@ class MainFrame(wx.Frame):
         self.right_pane.SetSizer(right_sizer)
 
         # Configurazione splitter
-        self.splitter.SplitVertically(self.left_pane, self.right_pane, 700)
-        self.splitter.SetMinimumPaneSize(150)
+        self.splitter.SplitVertically(
+            self.left_pane, self.right_pane, self.FromDIP(700)
+        )
+        self.splitter.SetMinimumPaneSize(self.FromDIP(150))
 
         main_layout.Add(self.splitter, 1, wx.EXPAND | wx.ALL, 5)
 
         # Barra di Stato personalizzata in basso (con etichetta adiacente precedente)
         self.lbl_status = wx.StaticText(self.top_panel, label=_("Barra di stato"))
+        # L'altezza la decide apply_theme, dal carattere. Dalla 10.8.7 il
+        # testo non va mai a capo: ogni riga di indicatori, da 80 caratteri,
+        # resta una riga, e i due blocchi da 40 restano intatti anche con un
+        # carattere grande o la finestra stretta. Chi vede scorre di lato con
+        # la barra orizzontale; lo screen reader legge la riga intera.
         self.status_text = wx.TextCtrl(
             self.top_panel,
-            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
-            size=(-1, 60),
+            style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2 | wx.TE_DONTWRAP,
         )
         self.status_text.SetName(_("Barra di stato"))
+        self.status_text.Bind(wx.EVT_SET_FOCUS, self._on_focus_pie_di_pagina)
+        self.status_text.Bind(wx.EVT_KILL_FOCUS, self._on_uscita_pie_di_pagina)
         main_layout.Add(self.lbl_status, 0, wx.LEFT | wx.RIGHT, 5)
         main_layout.Add(
             self.status_text, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
@@ -142,16 +245,21 @@ class MainFrame(wx.Frame):
     def _init_menubar(self):
         self.menu_bar = wx.MenuBar()
 
+        # Ogni voce ha la sua lettera: fino alla 10.13.28 Esporta, Elimina ed
+        # Esci avevano tutte e tre la E, e la lettera non ne sceglieva
+        # nessuna.
         file_menu = wx.Menu()
         file_menu.Append(wx.ID_NEW, _("&Nuovo Torneo...\tCtrl+N"))
         file_menu.Append(wx.ID_OPEN, _("&Apri Torneo...\tCtrl+O"))
         self.item_export_ics = file_menu.Append(
-            wx.ID_ANY, _("&Esporta partite pianificate...\tCtrl+Shift+E")
+            wx.ID_ANY, _("Es&porta partite pianificate...\tCtrl+Shift+E")
         )
         self.item_delete_tournament = file_menu.Append(
-            wx.ID_ANY, _("&Elimina Torneo Attivo...\tDelete")
+            wx.ID_ANY, _("E&limina Torneo Attivo...\tDelete")
         )
-        self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Pulisci backup..."))
+        # Dalla 10.9.0 la finestra di pulizia e' la finestra Copie di
+        # sicurezza, che legge, confronta e ripristina le copie (issue 39).
+        self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Copie di sicurezza..."))
         file_menu.AppendSeparator()
         file_menu.Append(wx.ID_EXIT, _("&Esci\tCtrl+Q"))
         self.menu_bar.Append(file_menu, _("&File"))
@@ -188,11 +296,12 @@ class MainFrame(wx.Frame):
         )
         self.menu_bar.Append(db_menu, _("&Database"))
 
-        # Visualizza
+        # Visualizza. Ogni voce ha la sua lettera: fino alla 10.13.4 Albero
+        # di Destra e Barra di Stato avevano tutte e due la B.
         view_menu = wx.Menu()
         self.item_view_central = view_menu.Append(wx.ID_ANY, _("&Area Centrale\tF5"))
         self.item_view_tree = view_menu.Append(wx.ID_ANY, _("Al&bero di Destra\tF6"))
-        self.item_view_status = view_menu.Append(wx.ID_ANY, _("&Barra di Stato\tF7"))
+        self.item_view_status = view_menu.Append(wx.ID_ANY, _("Barra di &Stato\tF7"))
         self.menu_bar.Append(view_menu, _("&Visualizza"))
 
         # Strumenti
@@ -242,6 +351,9 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_view_standings, self.item_standings)
         self.Bind(wx.EVT_MENU, self.on_rollback_round, self.item_rollback)
         self.Bind(wx.EVT_MENU, self.on_finalize_tournament, self.item_finalize)
+        self.Bind(wx.EVT_MENU, self.on_view_central, self.item_view_central)
+        self.Bind(wx.EVT_MENU, self.on_view_tree, self.item_view_tree)
+        self.Bind(wx.EVT_MENU, self.on_view_status, self.item_view_status)
 
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
@@ -261,16 +373,44 @@ class MainFrame(wx.Frame):
             play_sound("melodia_del_campanello_1")
             self.on_credits(None)
         elif key_code == wx.WXK_F5:
-            play_sound("spostamento_f5")
-            self.main_text.SetFocus()
+            self.on_view_central(None)
         elif key_code == wx.WXK_F6:
-            play_sound("spostamento_f6")
-            self.tree_ctrl.SetFocus()
+            self.on_view_tree(None)
         elif key_code == wx.WXK_F7:
-            play_sound("spostamento_f7")
-            self.status_text.SetFocus()
+            self.on_view_status(None)
         else:
             event.Skip()
+
+    # F5, F6 e F7 e le tre voci del menu Visualizza passano dagli stessi
+    # gestori, con lo stesso suono e lo stesso effetto. Fino alla 10.8.4 le
+    # voci del menu non avevano gestore, e scelte dal menu non facevano
+    # niente. Il menu non sposta il focus: quando la voce arriva, il focus e'
+    # ancora dove l'utente l'aveva lasciato, e l'arrivo sul pie' di pagina
+    # segue la strada di F7, ricalcolo e sezione degli acronimi compresi.
+
+    def on_view_central(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f5")
+        self.main_text.SetFocus()
+
+    def on_view_tree(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f6")
+        self.tree_ctrl.SetFocus()
+
+    def on_view_status(self, event):
+        from utils import play_sound
+
+        play_sound("spostamento_f7")
+        # Se il focus e' gia' sul pie' di pagina SetFocus non genera
+        # EVT_SET_FOCUS, e il ricalcolo va fatto qui, prima. Negli altri
+        # casi lo fa _on_focus_pie_di_pagina, e rifarlo qui costerebbe un
+        # secondo giro nella cartella dei backup prima che NVDA legga.
+        if self.status_text.HasFocus():
+            self.update_status_display()
+        self.status_text.SetFocus()
 
     def apply_theme(self):
         """Applica la combinazione di colori ed il font impostati in settings a tutti i controlli."""
@@ -290,12 +430,31 @@ class MainFrame(wx.Frame):
         if hasattr(self, "lbl_status") and self.lbl_status:
             apply_visual_settings(self.lbl_status, self.settings)
 
+        # Il pie' di pagina e' alto tre righe del suo carattere, piu' il bordo
+        # e mezza riga di margine. Fino alla 10.6.2 era alto 60 pixel fissi, e
+        # con i caratteri dei dialoghi sopra i 12 punti la terza riga spariva;
+        # dalla 10.6.3 segue il carattere, anche quando cambia dalle
+        # preferenze, che passano di qui (issue 49).
+        # Dalla 10.8.7 sotto le righe c'e' la barra di scorrimento
+        # orizzontale, che sta fuori dall'area del testo: si conta anche
+        # quando, nel momento della misura, non e' ancora comparsa. Il
+        # RichEdit la mostra sempre, spenta quando non serve, e allora la
+        # differenza fra le due misure la comprende gia'.
+        riga = self.status_text.GetCharHeight()
+        fuori = self.status_text.GetSize().height - self.status_text.GetClientSize().height
+        barra = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y, self.status_text)
+        fuori = max(fuori, self.status_text.GetWindowBorderSize().height + barra)
+        self.status_text.SetMinSize(wx.Size(-1, riga * 3 + riga // 2 + fuori))
+        self.top_panel.Layout()
+
     def set_status(self, text):
         """Aggiorna il contenuto della barra di stato personalizzata in basso."""
         self.update_status_display(text)
 
     def update_status_display(self, action_msg=None):
-        """Calcola e visualizza le metriche avanzate di progresso e statistiche di gioco."""
+        """Calcola e visualizza le metriche avanzate di progresso e statistiche di gioco.
+        Oltre che dopo ogni azione, dalla 10.5.0 la chiamano il timer di un
+        minuto, l'arrivo del focus sul pie' di pagina e F7 (issue 53)."""
         if action_msg is not None:
             self.last_status_msg = action_msg
         else:
@@ -308,55 +467,170 @@ class MainFrame(wx.Frame):
             # Dalla 10.1.0 il pie' di pagina e' fatto di sole percentuali, per
             # acronimo, spiegate nel manuale: i numeri assoluti stanno nella
             # plancia, qui serve la fotografia dello stato del torneo.
+            # Dalla 10.5.0 le due righe sono a larghezza fissa, due blocchi
+            # da 40 caratteri ciascuna, per la barra braille.
             from datetime import datetime
 
-            from stats import indicatori_pie_di_pagina
+            from stats import indicatori_pie_di_pagina, righe_pie_di_pagina
 
             valori = indicatori_pie_di_pagina(
                 self.current_tournament,
                 datetime.now(),
-                self._giorni_backup_piu_vecchio(),
-                self._giorni_database_fide(),
+                self._data_backup_piu_vecchio(),
+                self._data_database_fide(),
             )
-            lines.append(
-                _("GT {gt} TT {tt} TC {tc} PG {pg} RT {rt} PR {pr} AR {ar} PN {pn}").format(
-                    **valori
-                )
-            )
-            lines.append(
-                _("VB {vb} PA {pa} VN {vn} FB {fb} FN {fn} PB {pb} BK {bk} FD {fd}").format(
-                    **valori
-                )
-            )
+            lines.extend(righe_pie_di_pagina(valori))
 
-        self.status_text.SetValue("\n".join(lines))
+        # Dalla 10.5.0 il testo si riscrive solo se cambia (issue 53). Anche
+        # quando cambia, in wxMSW la scrittura riporta il cursore all'inizio
+        # e lo stile si applica selezionando tutto il testo: su un campo con
+        # il focus la barra braille salterebbe alla prima riga e NVDA potrebbe
+        # annunciare la selezione. Il confronto e' con l'ultimo testo scritto
+        # e non con GetValue, che nel RichEdit puo' restituire i ritorni a
+        # capo in un'altra forma; ChangeValue non genera EVT_TEXT.
+        testo = "\n".join(lines)
+        if testo == self._testo_pie_di_pagina:
+            return
+        self._testo_pie_di_pagina = testo
+        self.status_text.ChangeValue(testo)
         apply_visual_settings(self.status_text, self.settings, force_dialog=True)
 
-    @staticmethod
-    def _giorni_backup_piu_vecchio():
-        """Eta' in giorni del backup piu' vecchio; None se non ce ne sono."""
-        from datetime import datetime
+    def _on_timer_pie_di_pagina(self, event):
+        """Ricalcola il pie' di pagina ogni minuto, ma non mentre ha il focus
+        logico: sotto il cursore di chi legge non deve cambiare niente. I
+        valori si rinfrescano comunque all'arrivo del focus e con F7.
+        HasFocus da solo non basta: in wxMSW, con Tornello in secondo piano,
+        nessuna finestra ha il focus, e il timer riscriverebbe la barra
+        lasciata con il cursore sulla terza riga. Al ritorno la scrittura
+        avrebbe riportato il cursore all'inizio, e la barra braille
+        ripartirebbe dal messaggio di stato."""
+        if self.status_text.HasFocus():
+            return
+        finestra = self.FindFocus()
+        if finestra is not None and finestra is not self:
+            # Il focus e' su un'altra finestra di Tornello, quindi non sulla
+            # barra, anche se ci e' arrivato passando da una finestra di
+            # sistema, senza lasciare traccia in _on_uscita_pie_di_pagina.
+            self._pie_di_pagina_col_focus = False
+        elif self._pie_di_pagina_col_focus:
+            # Tornello e' in secondo piano, o sopra c'e' una finestra di
+            # sistema, e il focus tornera' sulla barra: resta com'e'.
+            return
+        self._ricalcola_pie_di_pagina()
 
+    def _ricalcola_pie_di_pagina(self):
+        """Il ricalcolo che nessuno ha chiesto con un'azione, cioe' quello del
+        timer e dell'arrivo del focus. Un guasto qui non apre la finestra
+        dell'errore imprevisto: dal timer tornerebbe ogni minuto, e dal focus
+        senza fine, perche' chiudendola il focus torna sulla barra e il
+        ricalcolo si guasta di nuovo. Il guasto va in error.log, con il
+        traceback, una volta sola finche' un ricalcolo non riesce; il timer
+        continua a girare, cosi' l'aggiornamento riprende da se' appena i dati
+        tornano leggibili. Le azioni e F7 premuto sulla barra seguono la
+        strada di sempre."""
+        try:
+            self.update_status_display()
+        except Exception as errore:  # noqa: BLE001
+            if not self._guasto_pie_di_pagina:
+                self._guasto_pie_di_pagina = True
+                from gui.settings import _registra
+
+                _registra(f"Aggiornamento automatico del pie' di pagina non riuscito: {errore}")
+        else:
+            self._guasto_pie_di_pagina = False
+
+    def _on_focus_pie_di_pagina(self, event):
+        """Ricalcola il pie' di pagina quando il focus ci arriva, da F7, da
+        Tab o dal mouse, prima che lo screen reader lo legga. Il ricalcolo e'
+        sincrono: NVDA interroga il controllo solo dopo che il gestore ha
+        restituito il thread, e trova gia' i valori nuovi. event.Skip() serve
+        perche' il controllo nativo prenda il cursore.
+        Non ricalcola quando il focus torna sulla barra che ce l'aveva gia',
+        cioe' al ritorno da un'altra applicazione o dopo una finestra di
+        sistema: allora il focus non arriva da un'altra finestra di Tornello,
+        ma dal nulla o, di passaggio, dalla cornice, e la barra si ritrova
+        com'era, con il cursore dove era rimasto. F7 la rinfresca, e
+        un'azione fatta nel frattempo l'ha gia' riscritta.
+        Dalla 10.6.0, se il focus arriva dall'albero o dall'area principale,
+        cioe' con F7, Tab, Maiusc+Tab o un clic, l'area principale mostra la
+        sezione del manuale sugli acronimi (issue 54). Non quando torna da un
+        dialogo chiuso o da un'altra applicazione: cancellerebbe il report
+        appena scritto dall'azione lanciata dalla barra."""
+        event.Skip()
+        provenienza = event.GetWindow()
+        ritorno = self._pie_di_pagina_col_focus and (
+            provenienza is None or provenienza is self
+        )
+        self._pie_di_pagina_col_focus = True
+        if not ritorno:
+            self._ricalcola_pie_di_pagina()
+        if provenienza is self.main_text or provenienza is self.tree_ctrl:
+            self._mostra_acronimi()
+
+    def _mostra_acronimi(self):
+        """Scrive nell'area principale la sezione del manuale che spiega gli
+        acronimi del pie' di pagina, da leggere con F5. La sezione resta
+        finche' un'altra azione non riscrive l'area: l'albero, F1, un report o
+        un messaggio; il timer del pie' di pagina non la tocca mai.
+        Non fa niente senza un torneo aperto, perche' senza percentuali non
+        c'e' niente da spiegare, ne' durante la procedura guidata, dove l'area
+        spiega il campo dell'albero. Se l'area mostra gia' la sezione non la
+        riscrive, cosi' il cursore resta dove l'aveva lasciato chi la stava
+        leggendo. Non sposta il focus: NVDA non legge i cambi di un controllo
+        che non ce l'ha, e la sostituzione e' silenziosa."""
+        if not self.current_tournament or self.creation_mode:
+            return
+        from utils import sezione_del_manuale
+
+        sezione = sezione_del_manuale(self._leggi_manuale(), SEZIONE_DEGLI_ACRONIMI)
+        if not sezione:
+            return
+        # Il RichEdit puo' restituire i ritorni a capo in un'altra forma, e
+        # append_log aggiunge quello finale.
+        attuale = self.main_text.GetValue().replace("\r\n", "\n").replace("\r", "\n")
+        if attuale.rstrip() == sezione.rstrip():
+            return
+        self.main_text.Clear()
+        self.append_log(sezione)
+
+    def _on_uscita_pie_di_pagina(self, event):
+        """Il focus lascia il pie' di pagina. Se va su un'altra finestra di
+        Tornello, dialoghi compresi, il focus logico se ne va con lui. Se va in
+        un'altra applicazione o in una finestra di sistema, come quella per
+        aprire i file, wx non la conosce e GetWindow vale None; se va sulla
+        cornice, ci passa soltanto. In quei casi il focus logico resta sulla
+        barra, dove tornera'."""
+        event.Skip()
+        destinazione = event.GetWindow()
+        if destinazione is not None and destinazione is not self:
+            self._pie_di_pagina_col_focus = False
+
+    @staticmethod
+    def _data_backup_piu_vecchio():
+        """Data del backup piu' vecchio; None se non ce ne sono.
+        Fino alla 10.4.1 restituiva l'eta' in giorni interi: dalla 10.4.2 il
+        conto lo fa indicatori_pie_di_pagina, in secondi. Dalla 10.8.11 e' la
+        data in cui la copia e' nata, letta dal nome del file, e non piu'
+        quella di modifica, che la copia eredita dall'originale."""
         from config import user_data_path
         from utils import elenca_file_di_backup
 
         tutti, _vecchi = elenca_file_di_backup(user_data_path("backup"))
         if not tutti:
             return None
-        return (datetime.now() - min(f["mtime"] for f in tutti)).days
+        return min(f["data"] for f in tutti)
 
     @staticmethod
-    def _giorni_database_fide():
-        """Eta' in giorni del database FIDE locale; None se non c'e'."""
+    def _data_database_fide():
+        """Data di modifica del database FIDE locale; None se non c'e'."""
         from datetime import datetime
 
         from config import FIDE_DB_LOCAL_FILE
 
         try:
-            aggiornato = datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))
+            return datetime.fromtimestamp(os.path.getmtime(FIDE_DB_LOCAL_FILE))
         except OSError:
             return None
-        return (datetime.now() - aggiornato).days
 
     def append_log(self, text):
         """Aggiunge testo all'area centrale posizionando il cursore all'inizio del blocco inserito."""
@@ -501,7 +775,11 @@ class MainFrame(wx.Frame):
 
                     update_dlg = FideUpdateDialog(self, self.settings)
                     update_dlg.ShowModal()
-                    update_dlg.Destroy()
+                    # Se nel frattempo la finestra e' stata distrutta, per
+                    # esempio perche' il programma si chiude, non c'e' piu'
+                    # niente da distruggere.
+                    if update_dlg:
+                        update_dlg.Destroy()
                 else:
                     dlg.Destroy()
         else:
@@ -521,9 +799,49 @@ class MainFrame(wx.Frame):
 
                 update_dlg = FideUpdateDialog(self, self.settings)
                 update_dlg.ShowModal()
-                update_dlg.Destroy()
+                if update_dlg:
+                    update_dlg.Destroy()
             else:
                 dlg.Destroy()
+
+    def _controlli_di_avvio(self):
+        """Le domande dell'avvio sul database FIDE e sui backup, una dopo
+        l'altra. Le chiama la fine del controllo aggiornamenti, dalla 10.8.2:
+        prima partivano insieme a lui, ciascuna con il suo CallAfter, e il
+        ciclo modale della prima faceva aprire le altre sopra di lei. Da
+        sorgente il controllo aggiornamenti finisce subito, e la domanda FIDE
+        arriva come prima.
+        Un guasto della domanda FIDE non fa saltare quella sui backup, come
+        quando partivano separate: la domanda sui backup arriva lo stesso, e
+        il guasto va poi alla finestra dell'errore imprevisto."""
+        try:
+            self._check_fide_db_on_startup()
+        finally:
+            self._check_backup_on_startup()
+
+    def _finestra_libera(self):
+        """Vero se nessun dialogo modale e' aperto. Un dialogo modale di wx,
+        o una finestra di sistema come quella di scelta di un file, disabilita
+        la finestra principale; i dialoghi di wx si riconoscono anche da
+        IsModal."""
+        if not self.IsEnabled():
+            return False
+        return not any(
+            isinstance(finestra, wx.Dialog) and finestra.IsModal()
+            for finestra in wx.GetTopLevelWindows()
+        )
+
+    def _quando_libera(self, funzione, *argomenti):
+        """Chiama funzione subito se la finestra e' libera, altrimenti
+        riprova ogni secondo finche' non lo diventa: cosi' un messaggio o una
+        domanda non si aprono mai sopra un dialogo che l'utente sta usando.
+        Se nel frattempo la finestra principale si chiude, lascia perdere."""
+        if not self or self.IsBeingDeleted():
+            return
+        if self._finestra_libera():
+            funzione(*argomenti)
+        else:
+            wx.CallLater(RIPROVA_A_FINESTRA_LIBERA_MS, self._quando_libera, funzione, *argomenti)
 
     def _check_updates_async(self):
         """Avvia il controllo aggiornamenti in un thread asincrono per non bloccare l'avvio della GUI."""
@@ -533,64 +851,161 @@ class MainFrame(wx.Frame):
         t.start()
 
     def _run_update_check(self):
+        """Nel thread: il giro intero dell'aggiornamento, condotto da
+        gestisci_aggiornamento di GBUtils (issue 37). Tace finche' non c'e'
+        una versione nuova, e da sorgente non fa niente. La proposta con le
+        note la fa _proponi_aggiornamento, lo scaricamento lo segue
+        _avanzamento_aggiornamento, e gli esiti, pochi e tutti utili, si
+        raccolgono per mostrarli alla fine, sul thread della finestra.
+        Fino alla 10.6.5 il controllo chiamava update_checker, ignorava le
+        note e ingoiava qualunque errore con un except: pass."""
+        avvisi = []
         try:
-            from GBUtils import update_checker
+            from GBUtils import gestisci_aggiornamento
 
-            from version import __version__ as current_ver
+            from aggiornamenti import API_RELEASE, NOME_APP
 
-            repo_api = "https://api.github.com/repos/GabrieleBattaglia/Tornello/releases/latest"
-            avail, latest_ver, dl_url, changelog = update_checker(current_ver, repo_api)
-            if avail and dl_url:
-                wx.CallAfter(self._prompt_update_gui, latest_ver, dl_url, changelog)
-        except Exception:
-            pass
-
-    def _prompt_update_gui(self, latest_ver, dl_url, changelog):
-        from version import __version__ as current_ver
-
-        msg = _(
-            "È disponibile un nuovo aggiornamento!\n\n"
-            "Versione corrente: {curr}\n"
-            "Nuova versione: {latest}\n\n"
-            "Vuoi scaricare e installare l'aggiornamento ora? (L'applicazione si riavvierà)"
-        ).format(curr=current_ver, latest=latest_ver)
-        dlg = AccessibleMsgDialog(
-            self, _("Aggiornamento Disponibile"), msg, style=wx.YES_NO
-        )
-        if dlg.ShowModal() == wx.ID_YES:
-            dlg.Destroy()
-            self.set_status(_("Scaricamento e installazione aggiornamento in corso..."))
-            import threading
-
-            t = threading.Thread(
-                target=self._run_perform_update, args=(dl_url,), daemon=True
+            pronto = gestisci_aggiornamento(
+                NOME_APP,
+                __version__,
+                API_RELEASE,
+                proponi=self._proponi_aggiornamento,
+                avvisa=avvisi.append,
+                avanzamento=self._avanzamento_aggiornamento,
+                traduci=_,
             )
-            t.start()
-        else:
-            dlg.Destroy()
+        except Exception as errore:  # noqa: BLE001 - il thread non ha nessuno a cui passare un guasto
+            # Senza aggiornamento il programma prosegue, e le domande
+            # dell'avvio devono arrivare lo stesso: il guasto va in error.log.
+            from gui.settings import _registra
 
-    def _run_perform_update(self, dl_url):
+            _registra(f"Controllo aggiornamenti non riuscito: {errore}")
+            pronto = False
+        wx.CallAfter(self._fine_aggiornamento, pronto, avvisi)
+
+    def _proponi_aggiornamento(self, versione_attuale, versione_nuova, note):
+        """La risposta dell'utente, che gestisci_aggiornamento aspetta.
+
+        Arriva dal thread del controllo, ma la finestra vive su quello
+        principale: la domanda si porta li' con CallAfter e il thread resta
+        fermo finche' non si sa la risposta, perche' e' lei a dire se
+        scaricare. La finestra si apre soltanto quando nessun dialogo modale
+        e' aperto, altrimenti si riprova dopo un secondo senza rispondere.
+        Col si' si apre la finestra dello scaricamento prima di rispondere,
+        cosi' il resto del programma e' gia' bloccato quando lo scaricamento
+        comincia. E' il ponte di Dadillo e di Cartella.
+        """
+        import threading
+
+        risposta = []
+        risposto = threading.Event()
+
+        def nella_finestra():
+            if not self or self.IsBeingDeleted():
+                # La finestra principale non c'e' piu': si risponde di no.
+                risposto.set()
+                return
+            if not self._finestra_libera():
+                wx.CallLater(RIPROVA_A_FINESTRA_LIBERA_MS, nella_finestra)
+                return
+            try:
+                if self._chiedi_aggiornamento(versione_attuale, versione_nuova, note):
+                    self._apri_avanzamento()
+                    risposta.append(True)
+            finally:
+                risposto.set()
+
+        wx.CallAfter(nella_finestra)
+        risposto.wait()
+        return bool(risposta)
+
+    def _chiedi_aggiornamento(self, versione_attuale, versione_nuova, note):
+        """La finestra con le due versioni e le note: vero per Aggiorna
+        adesso, falso per Non adesso, ESC o la chiusura della finestra."""
+        from gui.dialogs.update_dialog import UpdateDialog
+
+        dlg = UpdateDialog(self, versione_attuale, versione_nuova, note, self.settings)
+        scelta = dlg.ShowModal()
+        dlg.Destroy()
+        return scelta == wx.ID_YES
+
+    def _apri_avanzamento(self):
+        """Apre la finestra dello scaricamento e blocca tutte le altre. Il
+        blocco e' un wx.WindowDisabler e non un ShowModal: il ciclo modale
+        annidato non tornerebbe finche' la finestra resta aperta, e il thread
+        del controllo aspetterebbe la risposta per tutto quel tempo, senza
+        mai scaricare. Durante lo scaricamento non si puo' cominciare niente,
+        per esempio l'inserimento di un risultato, che la chiusura per
+        l'aggiornamento interromperebbe a meta'."""
+        from gui.dialogs.update_dialog import UpdateProgressDialog
+
+        dialogo = UpdateProgressDialog(self, self.settings)
+        dialogo.Show()
+        self._dialogo_avanzamento = dialogo
+        self._disabilitatore = wx.WindowDisabler(dialogo)
+
+    def _avanzamento_aggiornamento(self, preso, totale):
+        """Nel thread dello scaricamento: i byte presi e il totale, a ogni
+        punto percentuale, passano alla finestra sul thread principale."""
+        wx.CallAfter(self._mostra_avanzamento, preso, totale)
+
+    def _mostra_avanzamento(self, preso, totale):
+        if self and self._dialogo_avanzamento:
+            self._dialogo_avanzamento.aggiorna(preso, totale)
+
+    def _chiudi_avanzamento(self):
+        """Toglie il blocco e poi chiude la finestra dello scaricamento. In
+        quest'ordine: chiusa per prima, con il resto ancora disabilitato,
+        Windows darebbe il fuoco a un'altra applicazione."""
+        self._disabilitatore = None
+        if self._dialogo_avanzamento:
+            self._dialogo_avanzamento.Destroy()
+        self._dialogo_avanzamento = None
+
+    def _fine_aggiornamento(self, pronto, avvisi):
+        """Sul thread della finestra, quando gestisci_aggiornamento ha finito.
+
+        Se l'aggiornamento e' pronto lo script che lo applica e' gia' partito
+        e aspetta la chiusura del programma soltanto una trentina di secondi:
+        l'esito va nella barra di stato e non in una finestra modale, che
+        aspetterebbe chi la chiude, e il programma si chiude da solo, con le
+        copie di chiusura di sempre ma senza l'invito alla donazione.
+        Altrimenti si mostrano gli esiti raccolti, se ce ne sono, per esempio
+        lo scaricamento non riuscito, e poi arrivano le domande dell'avvio.
+        """
+        if not self:
+            return
+        self._chiudi_avanzamento()
+        if pronto:
+            # La chiusura non dipende dal messaggio: scriverlo ricalcola il
+            # pie' di pagina, che legge la cartella dei backup e la data del
+            # database FIDE, e un guasto li' lascerebbe il programma aperto,
+            # con la finestra dell'errore imprevisto e lo script che dopo
+            # trenta secondi rinuncia all'aggiornamento. Il guasto va in
+            # error.log, come quelli del ricalcolo automatico.
+            self._chiusura_per_aggiornamento = True
+            if avvisi:
+                try:
+                    self.set_status(avvisi[-1])
+                except Exception as errore:  # noqa: BLE001 - la chiusura che applica l'aggiornamento viene prima del messaggio
+                    from gui.settings import _registra
+
+                    _registra(f"Esito dell'aggiornamento non scritto nella barra di stato: {errore}")
+            self.Close()
+            return
+        self._quando_libera(self._dopo_aggiornamento, list(avvisi))
+
+    def _dopo_aggiornamento(self, avvisi):
+        """Gli esiti dell'aggiornamento non applicato, se ce ne sono, e poi le
+        domande dell'avvio, che arrivano anche se il messaggio degli esiti si
+        guasta: il guasto va poi alla finestra dell'errore imprevisto."""
         try:
-            from GBUtils import perform_update
-
-            if perform_update(dl_url, "tornello"):
-                wx.CallAfter(self.Close)
-            else:
-                wx.CallAfter(
-                    wx.MessageBox,
-                    _(
-                        "Impossibile avviare l'aggiornamento automatico (funzione disponibile solo nella versione compilata)."
-                    ),
-                    _("Errore Aggiornamento"),
-                    wx.ICON_ERROR,
-                )
-        except Exception as e:
-            wx.CallAfter(
-                wx.MessageBox,
-                _("Errore durante l'aggiornamento: {}").format(e),
-                _("Errore Aggiornamento"),
-                wx.ICON_ERROR,
-            )
+            if avvisi:
+                dlg = AccessibleMsgDialog(self, _("Aggiornamento di Tornello"), "\n".join(avvisi))
+                dlg.ShowModal()
+                dlg.Destroy()
+        finally:
+            self._controlli_di_avvio()
 
     def _check_backup_on_startup(self):
         """Scansiona la cartella dei backup alla ricerca di file più vecchi di 18 mesi."""
@@ -598,7 +1013,9 @@ class MainFrame(wx.Frame):
         if not os.path.exists(backup_dir):
             return
 
-        from datetime import datetime
+        from datetime import datetime, timedelta
+
+        from config import DATE_FORMAT_ISO
 
         try:
             from dateutil.relativedelta import relativedelta
@@ -608,30 +1025,54 @@ class MainFrame(wx.Frame):
             has_dateutil = False
 
         today = datetime.now()
-        if has_dateutil:
-            limit_date = today - relativedelta(months=18)
-        else:
-            limit_date = today - datetime.timedelta(days=548)  # ~18 mesi
+        # Fino alla 10.8.10 il ripiego senza dateutil era datetime.timedelta,
+        # che sulla classe datetime non esiste, e il controllo si fermava.
+        diciotto_mesi = relativedelta(months=18) if has_dateutil else timedelta(days=548)
+        limit_date = today - diciotto_mesi
 
         # Stessa lettura della finestra di pulizia, e come li' si tolgono
         # prima le cartelle dell'anno e del mese rimaste vuote.
         from utils import elenca_file_di_backup, rimuovi_cartelle_vuote
 
         rimuovi_cartelle_vuote(backup_dir)
-        _tutti, vecchi = elenca_file_di_backup(backup_dir, limit_date)
-        old_files = [(f["path"], f["mtime"]) for f in vecchi]
 
-        if not old_files:
+        # Il No di un avvio precedente rinvia l'avviso di 18 mesi. Fino alla
+        # 10.8.10 il rinvio si otteneva portando a oggi la data di modifica
+        # dei file vecchi: le copie cambiavano data, e la loro eta' non si
+        # poteva piu' ricostruire. Adesso la data sta nelle impostazioni e i
+        # file restano come sono; una data illeggibile non rinvia niente.
+        impostazioni = self.settings
+        rinvio = impostazioni.get(RINVIO_AVVISO_BACKUP) if impostazioni else None
+        if rinvio:
+            try:
+                if today.date() < datetime.strptime(rinvio, DATE_FORMAT_ISO).date():
+                    return
+            except (TypeError, ValueError):
+                pass
+
+        _tutti, vecchi = elenca_file_di_backup(backup_dir, limit_date)
+        if not vecchi:
             return
 
-        old_count = len(old_files)
-        msg = _(
-            "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
-            "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
-            "Vuoi aprire la finestra di pulizia dei backup adesso?\n\n"
-            "Nota: Scegliendo 'No', la data di modifica di questi file verrà aggiornata a oggi "
-            "e non ti verrà riproposto questo controllo per altri 18 mesi."
-        ).format(count=old_count)
+        old_count = len(vecchi)
+        # Con un file solo il messaggio va al singolare: fino alla 10.13.27
+        # diceva Sono stati individuati 1 file di backup piu' vecchi.
+        if old_count == 1:
+            msg = _(
+                "È stato individuato un file di backup più vecchio di 18 mesi.\n"
+                "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
+                "Vuoi aprire la finestra delle copie di sicurezza adesso? La copia più vecchia di 18 mesi sarà già selezionata.\n\n"
+                "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
+                "e il file resta com'è."
+            )
+        else:
+            msg = _(
+                "Sono stati individuati {count} file di backup più vecchi di 18 mesi.\n"
+                "Si consiglia di effettuare una pulizia per liberare spazio su disco.\n\n"
+                "Vuoi aprire la finestra delle copie di sicurezza adesso? Le copie più vecchie di 18 mesi saranno già selezionate.\n\n"
+                "Nota: Scegliendo 'No', questo controllo non ti verrà riproposto per altri 18 mesi, "
+                "e i file restano come sono."
+            ).format(count=old_count)
 
         dlg = AccessibleMsgDialog(
             self, _("Pulizia Backup Consigliata"), msg, style=wx.YES_NO
@@ -640,27 +1081,28 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
         if res == wx.ID_YES:
-            # Mostra la finestra di pulizia
-            self.on_backup_cleanup(None)
-        else:
-            # Aggiorna mtime a oggi per non riproporlo
-            for filepath, _discard in old_files:
-                try:
-                    os.utime(filepath, None)  # imposta mtime e atime a oggi/ora
-                except Exception:
-                    pass
+            # La finestra delle copie, con le copie vecchie gia' selezionate:
+            # dalla 10.9.0 non c'e' piu' il pulsante Elimina consigliati, e
+            # basta premere Elimina selezionati.
+            self.on_backup_cleanup(None, seleziona=[f["path"] for f in vecchi])
+        elif impostazioni is not None:
+            impostazioni[RINVIO_AVVISO_BACKUP] = (today + diciotto_mesi).strftime(
+                DATE_FORMAT_ISO
+            )
+            # Sul disco va la sola chiave del rinvio. save_settings riscrive
+            # anche selected_language.json con la lingua delle impostazioni:
+            # a chi non ha mai salvato le Preferenze avrebbe rimesso
+            # l'italiano dei valori di fabbrica al posto della lingua del
+            # sistema. salva_impostazione scrive gia' in error.log il motivo
+            # di un salvataggio mancato: in quel caso l'avviso torna al
+            # prossimo avvio, che e' il male minore.
+            salva_impostazione(
+                RINVIO_AVVISO_BACKUP, impostazioni[RINVIO_AVVISO_BACKUP]
+            )
 
     def _scan_and_load_initial_tournament(self):
         """Scansiona i file torneo in corso ed effettua il caricamento automatico se ce n'è solo uno."""
-        from config import PLAYER_DB_FILE
-
-        tournament_files = [
-            f
-            for f in glob.glob(user_data_path("Tornello - *.json"))
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        tournament_files = self._file_dei_tornei()[0]
 
         # Se c'è esattamente un solo torneo attivo, lo carichiamo all'avvio
         if len(tournament_files) == 1:
@@ -669,42 +1111,203 @@ class MainFrame(wx.Frame):
         else:
             self.populate_tree()
 
-    def load_tournament(self, filepath, rebuild_tree=True):
-        """Carica un torneo dal file JSON."""
+    def load_tournament(self, filepath, rebuild_tree=True, tieni_il_precedente=False):
+        """Carica un torneo dal file JSON. Se il file non si legge, o non e'
+        un torneo, lo dicono un messaggio e la barra di stato. Con
+        tieni_il_precedente, che passa Apri Torneo, il torneo aperto prima
+        resta aperto, se e' un altro file (vedi _torneo_non_aperto)."""
         try:
-            with open(filepath, encoding="utf-8") as f:
-                data = json.load(f)
+            data = self._leggi_il_torneo(filepath)
+        except (OSError, ValueError) as errore:
+            # ValueError comprende il JSON rovinato, il testo che non e'
+            # UTF-8 e FileNonTorneo.
+            self._torneo_non_aperto(filepath, errore, rebuild_tree, tieni_il_precedente)
+            return
+        try:
             self.current_tournament = data
-            self.active_filename = filepath
+            # Il percorso si tiene nella forma in cui lo scrive l'albero:
+            # Apri Torneo puo' restituire lo stesso file con altre maiuscole,
+            # e i confronti esatti fra percorsi, come i bersagli del cursore
+            # dopo un risultato, non lo riconoscerebbero.
+            self.active_filename, elencato = self._percorso_come_nell_albero(filepath)
 
             # Ricostruisce players_dict per l'interfaccia grafica
             self.current_tournament["players_dict"] = {
                 p["id"]: p for p in self.current_tournament.get("players", [])
             }
 
-            # Aggiorna titolo finestra
             t_name = data.get("name", _("Torneo Sconosciuto"))
-            title_str = f"Tornello - {_('Versione {version} - Data Rilascio {date} - [{name}]').format(version=__version__, date=__date__, name=t_name)}"
-            self.SetTitle(title_str)
+            self._aggiorna_titolo()
+            # Il menu Torneo segue il torneo appena caricato, qualunque strada
+            # lo abbia caricato. Fino alla 10.13.12 lo accendeva solo la
+            # ricostruzione dell'albero: scegliendo un torneo con le frecce
+            # le voci restavano spente, e Ctrl+L e Ctrl+F tacevano.
+            self.update_menu_states()
 
             # Carica il report del turno corrente nell'area centrale
             self.show_current_round_report()
 
             if rebuild_tree:
                 self.populate_tree()
-            self.set_status(
-                _("Torneo '{name}' caricato con successo.").format(name=t_name)
+            if elencato:
+                esito = _("Torneo '{name}' caricato con successo.").format(name=t_name)
+            else:
+                # Un file preso fuori dalla cartella del programma e
+                # dall'archivio puo' avere lo stesso nome di un torneo
+                # dell'albero: la cartella li distingue.
+                esito = _(
+                    "Torneo '{name}' caricato con successo, dalla cartella {cartella}."
+                ).format(name=t_name, cartella=_nome_della_cartella(filepath))
+            self.set_status(esito)
+        except Exception as errore:
+            self._torneo_non_aperto(filepath, errore, rebuild_tree, False)
+
+    def _leggi_il_torneo(self, filepath):
+        """I dati del torneo scritto nel file. Un file del programma, come il
+        database dei giocatori, le impostazioni o la lingua scelta, e un JSON
+        senza la forma di un torneo sollevano FileNonTorneo: fino alla
+        10.13.11 Apri Torneo li apriva come tornei, e con il database dei
+        giocatori CANC su una persona la toglieva dal database, con il suo
+        Elo e il suo storico."""
+        from config import PLAYER_DB_FILE
+        from gui.settings import SETTINGS_FILE
+
+        nome = os.path.basename(filepath)
+        del_programma = {
+            _chiave_del_percorso(f)
+            for f in (
+                PLAYER_DB_FILE,
+                SETTINGS_FILE,
+                user_data_path("selected_language.json"),
             )
-        except Exception as e:
+        }
+        if _chiave_del_percorso(filepath) in del_programma:
+            raise FileNonTorneo(
+                _(
+                    "Il file {name} è un file del programma, non un torneo, e Tornello non lo apre come torneo."
+                ).format(name=nome)
+            )
+        with open(filepath, encoding="utf-8") as f:
+            data = json.load(f)
+        if not _ha_la_forma_di_un_torneo(data):
+            raise FileNonTorneo(
+                _("Il file {name} non è un torneo di Tornello, e non si apre.").format(
+                    name=nome
+                )
+            )
+        return data
+
+    def _torneo_non_aperto(self, filepath, errore, rebuild_tree, tieni_il_precedente):
+        """Dice perche' il file non si e' aperto, e lascia il torneo aperto
+        in uno stato vero. Con tieni_il_precedente resta aperto il torneo di
+        prima, se c'e' ed e' un altro file, e la barra di stato lo dice: fino
+        alla 10.13.9 lo riapriva per caso il ridisegno dell'albero, e la
+        barra diceva caricato con successo. Altrimenti nessun torneo resta
+        aperto: un torneo che non si rilegge non resta in memoria in una
+        versione vecchia, che il primo salvataggio riscriverebbe sul file."""
+        from utils import play_sound
+
+        if isinstance(errore, FileNonTorneo):
+            play_sound("errore")
+            self._dialogo_informativo(_("Non è un torneo"), str(errore))
+        else:
             wx.MessageBox(
-                _("Errore nel caricamento del torneo: {}").format(e),
+                _("Errore nel caricamento del torneo: {}").format(errore),
                 _("Errore"),
                 wx.ICON_ERROR,
             )
-            self.current_tournament = None
-            self.active_filename = None
-            if rebuild_tree:
-                self.populate_tree()
+        if (
+            tieni_il_precedente
+            and self.current_tournament
+            and not self._e_il_torneo_aperto(filepath)
+        ):
+            self.set_status(
+                _("Il torneo non si è aperto: resta aperto '{name}'.").format(
+                    name=self.current_tournament.get("name", _("Torneo Sconosciuto"))
+                )
+            )
+            return
+        self._nessun_torneo_aperto()
+        if rebuild_tree:
+            self.populate_tree()
+        self.set_status(_("Il torneo non si è aperto: nessun torneo aperto."))
+
+    def _file_dei_tornei(self):
+        """I file che l'albero legge da se': i tornei della cartella del
+        programma, senza il database dei giocatori e le impostazioni, e
+        quelli dell'archivio dei tornei conclusi. Due elenchi, in quest'ordine."""
+        from config import PLAYER_DB_FILE
+
+        in_cartella = [
+            f
+            for f in glob.glob(user_data_path("Tornello - *.json"))
+            if "- concluso_" not in os.path.basename(f).lower()
+            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
+            and os.path.basename(f) != "Tornello - Settings.json"
+        ]
+        in_archivio = glob.glob(
+            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
+            recursive=True,
+        )
+        return in_cartella, in_archivio
+
+    def _percorso_come_nell_albero(self, filepath):
+        """Il percorso del file nella forma in cui lo scrive l'albero, e se
+        l'albero lo trova da se'. Un file fuori dalla cartella del programma
+        e dall'archivio resta com'e', reso assoluto."""
+        chiave = _chiave_del_percorso(filepath)
+        in_cartella, in_archivio = self._file_dei_tornei()
+        for f in in_cartella + in_archivio:
+            if _chiave_del_percorso(f) == chiave:
+                return f, True
+        return os.path.abspath(filepath), False
+
+    def _aggiorna_titolo(self):
+        """Il titolo della finestra dice il torneo aperto, oppure che non ce
+        n'e' nessuno."""
+        if self.current_tournament:
+            t_name = self.current_tournament.get("name", _("Torneo Sconosciuto"))
+            titolo = _("Versione {version} - Data Rilascio {date} - [{name}]").format(
+                version=__version__, date=__date__, name=t_name
+            )
+        else:
+            titolo = _(
+                "Versione {} - Data Rilascio {} - [Nessun Torneo Caricato]"
+            ).format(__version__, __date__)
+        self.SetTitle(f"Tornello - {titolo}")
+
+    def _nessun_torneo_aperto(self):
+        """Toglie dalla memoria il torneo aperto, e il titolo e il menu
+        Torneo lo dicono subito. Fino alla 10.13.9, dopo una finalizzazione,
+        il titolo restava sul torneo appena chiuso."""
+        self.current_tournament = None
+        self.active_filename = None
+        self._aggiorna_titolo()
+        self.update_menu_states()
+
+    def _e_il_torneo_aperto(self, filepath):
+        """Vero se filepath e' il file del torneo aperto, anche scritto con
+        altre maiuscole o in un'altra forma."""
+        if not (filepath and self.current_tournament and self.active_filename):
+            return False
+        return _chiave_del_percorso(filepath) == _chiave_del_percorso(
+            self.active_filename
+        )
+
+    @contextmanager
+    def _albero_senza_caricamenti(self):
+        """Il blocco in cui l'albero si svuota o perde una voce. Cancellando
+        la voce selezionata il controllo di Windows sposta la selezione su
+        un'altra voce, e manda un evento di selezione per ognuna: fino alla
+        10.13.9 on_tree_selection_changed caricava il torneo di ciascuna,
+        cosi' a ogni ricostruzione dell'albero passavano in memoria tutti i
+        tornei, e alla fine ne restava aperto uno che nessuno aveva scelto."""
+        prima = self._albero_in_ricostruzione
+        self._albero_in_ricostruzione = True
+        try:
+            yield
+        finally:
+            self._albero_in_ricostruzione = prima
 
     def show_current_round_report(self):
         """Visualizza l'abbinamento del turno corrente o lo stato del torneo concluso."""
@@ -727,6 +1330,8 @@ class MainFrame(wx.Frame):
         )
         if active_round_data:
             report += _("Abbinamenti Turno {}:\n").format(curr_round)
+            if active_round_data.get("manual_pairing"):
+                report += _("Abbinamenti composti a mano dall'arbitro.\n")
             matches = active_round_data.get("matches", [])
             for m in matches:
                 w_id = m.get("white_player_id")
@@ -745,8 +1350,13 @@ class MainFrame(wx.Frame):
                         white=w_name, black=b_name, result=res_str
                     )
                 else:
-                    report += _("  {name} - BYE ({punti} punti)\n").format(
-                        name=w_name, punti=self.current_tournament.get("bye_value", 0.5)
+                    # I punti con il singolare per il bye da un punto, come
+                    # nella composizione manuale: fino alla 10.13.27 si leggeva
+                    # BYE (1.0 punti).
+                    from turno_manuale import testo_punti
+
+                    report += _("  {name} - BYE ({punti})\n").format(
+                        name=w_name, punti=testo_punti(self.current_tournament.get("bye_value", 0.5))
                     )
         else:
             report += _("Nessun abbinamento generato per questo turno.\n")
@@ -798,10 +1408,18 @@ class MainFrame(wx.Frame):
                 and isinstance(saved_data, dict)
             ):
                 match = True
-                for k in ["action", "filepath", "field_active", "round", "board_num"]:
+                for k in ["action", "field_active", "round", "board_num"]:
                     if saved_data.get(k) != child_data.get(k):
                         match = False
                         break
+                # Il file si riconosce anche scritto con altre maiuscole: i
+                # bersagli del cursore scritti con il percorso del torneo
+                # aperto altrimenti non si trovavano, e l'albero restava
+                # senza voce scelta.
+                if match and _chiave_del_percorso(
+                    saved_data.get("filepath")
+                ) != _chiave_del_percorso(child_data.get("filepath")):
+                    match = False
                 if match:
                     if "player" in saved_data and "player" in child_data:
                         if saved_data["player"].get("id") != child_data["player"].get(
@@ -824,8 +1442,14 @@ class MainFrame(wx.Frame):
             child, cookie = self.tree_ctrl.GetNextChild(parent_node, cookie)
         return None
 
-    def populate_tree(self):
-        """Costruisce e popola l'albero TreeCtrl destro con la struttura unificata di tutti i tornei."""
+    def populate_tree(self, prendi_il_fuoco=True):
+        """Costruisce e popola l'albero TreeCtrl destro con la struttura unificata di tutti i tornei.
+        Rimessa la voce di prima, l'albero prende il fuoco: dopo un'azione
+        fatta dall'albero il cursore resta li'. Con prendi_il_fuoco falso
+        l'albero non tocca il fuoco: serve dopo una finestra che si puo'
+        aprire anche dalla barra di stato o dall'area centrale, come le copie
+        di sicurezza, perche' il fuoco torni dove GBwx lo rimette quando la
+        finestra se ne va davvero, cioe' dopo, fra gli eventi successivi."""
         if self.creation_mode:
             return
 
@@ -850,32 +1474,177 @@ class MainFrame(wx.Frame):
         except Exception:
             pass
 
+        with self._albero_senza_caricamenti():
+            if not prendi_il_fuoco:
+                # DeleteAllItems portava il fuoco sull'albero anche senza il
+                # SetFocus di _ripristina_la_selezione: cancellata la voce
+                # col cursore, il controllo di Windows sposta il cursore
+                # sulla voce dopo, e wxMSW, a ogni cambio di selezione che
+                # non viene dalle sue funzioni come SelectItem o Unselect,
+                # da' il fuoco all'albero (wxTreeCtrl::MSWOnNotify,
+                # TVN_SELCHANGING, in src/msw/treectrl.cpp). Misurato sul
+                # desktop nascosto con wxPython 4.3.1. Unselect toglie il
+                # cursore senza quel SetFocus, e con l'albero senza voce
+                # scelta la cancellazione non sposta niente. La voce da
+                # rimettere e' gia' in saved_data.
+                self.tree_ctrl.Unselect()
+            file_illeggibili = self._ricostruisci_albero(expanded_actions)
+
+        if saved_data:
+            target_item = self._find_matching_item(self.tree_root, saved_data)
+            if target_item and target_item.IsOk():
+                self._ripristina_la_selezione(target_item, prendi_il_fuoco)
+        if not self.tree_ctrl.GetSelection().IsOk():
+            self._cursore_senza_caricare()
+
+        self.update_menu_states()
+        self.update_status_display()
+        self._segnala_i_file_non_leggibili(file_illeggibili)
+
+    def _cursore_senza_caricare(self):
+        """Mette il cursore sulla voce del torneo aperto o, senza torneo
+        aperto, sulla voce Nuovo torneo, senza caricare niente. Un albero
+        senza voce scelta, per esempio all'avvio o quando la voce di prima
+        non c'e' piu', la sceglie da se' quando riceve il fuoco, con F6, TAB
+        o un clic: il controllo di Windows prende la prima voce e manda
+        l'evento di selezione, e fino alla 10.13.9 si apriva il primo torneo
+        dell'elenco, anche al posto di quello aperto. Nuovo torneo non apre
+        niente, e un torneo si apre spostandosi con le frecce sulla sua
+        voce, come sempre: il cursore fermo sulla voce di un torneo chiuso
+        lo farebbe credere aperto."""
+        voce = self._voce_del_torneo_aperto()
+        if voce is None:
+            voce = self._find_matching_item(
+                self.tree_root, {"action": "start_new_tournament"}
+            )
+        if voce and voce.IsOk():
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+
+    def _ripristina_la_selezione(self, voce, prendi_il_fuoco=True):
+        """Rimette il cursore sulla voce che aveva prima della ricostruzione.
+        Una voce di un altro torneo non si sceglie come farebbero le frecce,
+        perche' caricherebbe quel torneo al posto di quello aperto: fino alla
+        10.13.9 Apri Torneo, con il cursore su un altro torneo, lasciava
+        aperto quello, mentre la barra diceva caricato il torneo scelto. Con
+        un torneo aperto il cursore va sulla sua voce; senza, per esempio
+        dopo l'eliminazione del torneo aperto, resta dov'era, senza caricare
+        niente. Poi l'albero prende il fuoco, se prendi_il_fuoco e' vero:
+        vedi populate_tree."""
+        dati = self.tree_ctrl.GetItemData(voce)
+        percorso = dati.get("filepath") if isinstance(dati, dict) else None
+        if percorso and not self._e_il_torneo_aperto(percorso):
+            voce = self._voce_del_torneo_aperto() or voce
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+        else:
+            self.tree_ctrl.SelectItem(voce)
+        self.tree_ctrl.EnsureVisible(voce)
+        if prendi_il_fuoco:
+            self.tree_ctrl.SetFocus()
+
+    def _voce_del_torneo_aperto(self):
+        """La voce del torneo aperto nell'albero, None se non c'e' un torneo
+        aperto. Le voci dei tornei stanno al primo livello e nelle due
+        categorie In Preparazione e Tornei Conclusi."""
+        if not self.current_tournament:
+            return None
+        da_guardare = [self.tree_root]
+        while da_guardare:
+            genitore = da_guardare.pop(0)
+            voce, cookie = self.tree_ctrl.GetFirstChild(genitore)
+            while voce.IsOk():
+                dati = self.tree_ctrl.GetItemData(voce)
+                azione = dati.get("action") if isinstance(dati, dict) else None
+                if azione == "select_tournament" and self._e_il_torneo_aperto(
+                    dati.get("filepath")
+                ):
+                    return voce
+                if azione in ("category_prep", "category_closed"):
+                    da_guardare.append(voce)
+                voce, cookie = self.tree_ctrl.GetNextChild(genitore, cookie)
+        return None
+
+    def _segnala_i_file_non_leggibili(self, file_illeggibili):
+        """Dice nella barra di stato, e con una riga per file nell'area
+        centrale, i file di torneo che non si leggono, quando si scoprono.
+        Fino alla 10.13.10 lo ripeteva a ogni ricostruzione dell'albero: la
+        riga si accodava di nuovo all'area centrale, e l'avviso prendeva il
+        posto dell'esito dell'azione appena fatta. Un file rimesso a posto
+        esce dall'elenco, e se si rovina di nuovo si segnala di nuovo.
+        La segnalazione arriva ad azione finita, con wx.CallAfter: molte azioni,
+        dopo aver ridisegnato l'albero, riscrivono l'area centrale e la barra
+        di stato, e l'avrebbero cancellata prima che qualcuno la leggesse."""
+        chiavi = {_chiave_del_percorso(f): (f, e) for f, e in file_illeggibili}
+        nuovi = [
+            valore
+            for chiave, valore in chiavi.items()
+            if chiave not in self._illeggibili_segnalati
+        ]
+        self._illeggibili_segnalati = set(chiavi)
+        if nuovi:
+            wx.CallAfter(self._mostra_i_file_non_leggibili, nuovi)
+
+    def _mostra_i_file_non_leggibili(self, nuovi):
+        """L'avviso in coda all'esito dell'azione nella barra di stato, e una
+        riga per file in fondo all'area centrale."""
+        if not self:
+            return
+        # Con un file solo la frase va al singolare: fino alla 10.13.5
+        # diceva 1 file di torneo non leggibili.
+        avviso = (
+            _("Attenzione: un file di torneo non leggibile, dettagli sotto.")
+            if len(nuovi) == 1
+            else _(
+                "Attenzione: {n} file di torneo non leggibili, dettagli sotto."
+            ).format(n=len(nuovi))
+        )
+        # Il messaggio di riposo non e' un esito da conservare.
+        esito = getattr(self, "last_status_msg", "")
+        if esito and esito not in (_("Pronto."), _("Pronto. Nessun torneo caricato.")):
+            avviso = f"{esito} {avviso}"
+        self.set_status(avviso)
+        for percorso, errore in nuovi:
+            self.append_log(
+                _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
+                    nome=os.path.basename(percorso), motivo=errore
+                )
+            )
+
+    def _ricostruisci_albero(self, expanded_actions):
+        """Svuota l'albero e lo riempie con i tornei in corso, in preparazione
+        e conclusi. Il torneo aperto ha sempre la sua voce, anche se il suo
+        file sta fuori dalla cartella del programma e dall'archivio.
+        Restituisce i file di torneo che non si leggono, come coppie di
+        percorso ed errore. populate_tree la chiama dentro
+        _albero_senza_caricamenti."""
         self.tree_ctrl.DeleteAllItems()
         self.tree_root = self.tree_ctrl.AddRoot("Root")
 
         # Scansiona file
-        from config import PLAYER_DB_FILE
-
-        active_files = [
-            f
-            for f in glob.glob(user_data_path("Tornello - *.json"))
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        active_files, closed_files = self._file_dei_tornei()
 
         in_prep_files = []
         started_files = []
         # Un file di torneo che non si apre, perche' un altro programma lo
         # tiene bloccato o perche' un salvataggio e' finito male, sparirebbe
         # dall'albero senza una parola: chi lo cerca penserebbe di averlo
-        # perso, mentre sul disco c'e' ancora. I nomi si raccolgono qui e si
-        # dicono alla fine, una volta sola.
+        # perso, mentre sul disco c'e' ancora. I file si raccolgono qui, e
+        # _segnala_i_file_non_leggibili li dice una volta sola.
         file_illeggibili = []
+
+        def leggi(f):
+            with open(f, encoding="utf-8") as f_in:
+                data = json.load(f_in)
+            # Un JSON che non e' un torneo non ha una voce: scelta, non si
+            # aprirebbe, perche' load_tournament lo rifiuta.
+            if not _ha_la_forma_di_un_torneo(data):
+                raise FileNonTorneo(_("non ha la forma di un torneo di Tornello"))
+            return data
+
         for f in active_files:
             try:
-                with open(f, encoding="utf-8") as f_in:
-                    data = json.load(f_in)
+                data = leggi(f)
                 if data.get("concluded"):
                     continue
                 if len(data.get("rounds", [])) == 0:
@@ -883,28 +1652,58 @@ class MainFrame(wx.Frame):
                 else:
                     started_files.append((f, data))
             except Exception as errore:
-                file_illeggibili.append((os.path.basename(f), errore))
+                file_illeggibili.append((f, errore))
 
-        closed_files = glob.glob(
-            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
-            recursive=True,
-        )
         concluded_files = []
         for f in closed_files:
             try:
-                with open(f, encoding="utf-8") as f_in:
-                    data = json.load(f_in)
-                concluded_files.append((f, data))
+                concluded_files.append((f, leggi(f)))
             except Exception as errore:
-                file_illeggibili.append((os.path.basename(f), errore))
+                file_illeggibili.append((f, errore))
+
+        # Il torneo aperto ha sempre la sua voce, con i suoi rami, anche
+        # quando Apri Torneo lo ha preso da una cartella che l'albero non
+        # legge: fino alla 10.13.11 non compariva, e le sue partite non si
+        # potevano aprire. I dati sono quelli in memoria, e il ramo e' quello
+        # del suo stato. La sua voce dice fra parentesi la cartella da cui
+        # e' stato aperto: un torneo con lo stesso nome, come la copia su una
+        # chiavetta o l'edizione archiviata, altrimenti avrebbe nell'albero
+        # una voce identica, e con NVDA non si distinguerebbero.
+        dalla_memoria = None
+        if self.current_tournament and self.active_filename:
+            elencati = {
+                _chiave_del_percorso(f)
+                for f, _data in started_files + in_prep_files + concluded_files
+            }
+            if _chiave_del_percorso(self.active_filename) not in elencati:
+                dalla_memoria = _chiave_del_percorso(self.active_filename)
+                aperto = (self.active_filename, self.current_tournament)
+                if self.current_tournament.get("concluded"):
+                    concluded_files.append(aperto)
+                elif self.current_tournament.get("rounds"):
+                    started_files.append(aperto)
+                else:
+                    in_prep_files.append(aperto)
+
+        def tra_parentesi(f, *parti):
+            """Il seguito dell'etichetta di un torneo: le parti fra parentesi,
+            con la cartella in coda per la voce aggiunta dalla memoria."""
+            parti = [p for p in parti if p]
+            if dalla_memoria and _chiave_del_percorso(f) == dalla_memoria:
+                parti.append(
+                    _("dalla cartella {cartella}").format(
+                        cartella=_nome_della_cartella(f)
+                    )
+                )
+            return f" ({', '.join(parti)})" if parti else ""
 
         # 1. TORNEI IN CORSO (Attivi)
         for f, data in started_files:
-            t_node = self.add_tournament_node(self.tree_root, f, data)
+            t_node = self.add_tournament_node(
+                self.tree_root, f, data, label_suffix=tra_parentesi(f)
+            )
             if not expanded_actions:
-                if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                    self.active_filename
-                ):
+                if self._e_il_torneo_aperto(f):
                     # Si apre il torneo, cosi' i suoi rami si vedono, ma i rami
                     # partono chiusi: e' l'utente a decidere cosa espandere, e
                     # per il resto della sessione l'albero ricorda come li ha
@@ -919,11 +1718,11 @@ class MainFrame(wx.Frame):
             )
             self.tree_ctrl.SetItemData(prep_parent, {"action": "category_prep"})
             for f, data in in_prep_files:
-                t_node = self.add_tournament_node(prep_parent, f, data)
+                t_node = self.add_tournament_node(
+                    prep_parent, f, data, label_suffix=tra_parentesi(f)
+                )
                 if not expanded_actions:
-                    if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                        self.active_filename
-                    ):
+                    if self._e_il_torneo_aperto(f):
                         self.tree_ctrl.Expand(t_node)
                         self.tree_ctrl.Expand(prep_parent)
 
@@ -935,7 +1734,7 @@ class MainFrame(wx.Frame):
             self.tree_ctrl.SetItemData(closed_parent, {"action": "category_closed"})
             for f, data in concluded_files:
                 end_date_str = data.get("end_date")
-                month_year = ""
+                month_year = None
                 if end_date_str:
                     try:
                         from datetime import datetime
@@ -956,17 +1755,15 @@ class MainFrame(wx.Frame):
                             _("dicembre"),
                         ]
                         month_name = mesi[dt.month - 1].capitalize()
-                        month_year = f" ({month_name} {dt.year})"
+                        month_year = f"{month_name} {dt.year}"
                     except Exception:
                         pass
-                label_suffix = month_year
+                label_suffix = tra_parentesi(f, month_year)
                 t_node = self.add_tournament_node(
                     closed_parent, f, data, label_suffix=label_suffix
                 )
                 if not expanded_actions:
-                    if self.active_filename and os.path.abspath(f) == os.path.abspath(
-                        self.active_filename
-                    ):
+                    if self._e_il_torneo_aperto(f):
                         self.tree_ctrl.Expand(t_node)
                         self.tree_ctrl.Expand(closed_parent)
 
@@ -998,28 +1795,7 @@ class MainFrame(wx.Frame):
 
         if expanded_actions:
             self._restore_tree_expansion_state(self.tree_root, expanded_actions)
-
-        if saved_data:
-            target_item = self._find_matching_item(self.tree_root, saved_data)
-            if target_item and target_item.IsOk():
-                self.tree_ctrl.SelectItem(target_item)
-                self.tree_ctrl.EnsureVisible(target_item)
-                self.tree_ctrl.SetFocus()
-
-        self.update_menu_states()
-        self.update_status_display()
-        if file_illeggibili:
-            self.set_status(
-                _("Attenzione: {n} file di torneo non leggibili, dettagli sotto.").format(
-                    n=len(file_illeggibili)
-                )
-            )
-            for nome, errore in file_illeggibili:
-                self.append_log(
-                    _("Torneo non leggibile: {nome}. Motivo: {motivo}").format(
-                        nome=nome, motivo=errore
-                    )
-                )
+        return file_illeggibili
 
     def add_round_subnodes(
         self, parent_node, r, data, filepath, players_dict, is_concluded
@@ -1040,6 +1816,10 @@ class MainFrame(wx.Frame):
                     break
             if not all_done:
                 r_label = _("Turno corrente ({}/{})").format(r_num, tot_rounds)
+        # Dalla 10.12.0 un turno composto a mano dall'arbitro si riconosce
+        # dal nome (issue 38).
+        if r.get("manual_pairing"):
+            r_label = _("{turno}, abbinamenti manuali").format(turno=r_label)
 
         r_node = self.tree_ctrl.AppendItem(parent_node, r_label)
         self.tree_ctrl.SetItemData(
@@ -1151,12 +1931,25 @@ class MainFrame(wx.Frame):
 
                 if m.get("is_scheduled") and m.get("schedule_info"):
                     sched = m["schedule_info"]
+                    from stats import sala_e_arbitro_brevi
                     from utils import format_date_locale
 
-                    f_date = format_date_locale(sched.get("date"))
+                    # Dalla 10.4.0 anche sala e arbitro, accorciati perche'
+                    # l'etichetta resti leggibile: i valori interi li mostra
+                    # il dettaglio della partita nell'area centrale, appena
+                    # la voce prende il fuoco (issue 52).
+                    sala, arbitro = sala_e_arbitro_brevi(sched)
                     match_label = _(
-                        "Scacchiera {}: {} vs {} (Pianificata: {} {})"
-                    ).format(board_num, w_name, b_name, f_date, sched.get("time"))
+                        "Scacchiera {board}: {white} vs {black} (Pianificata: {date} {time}, sala {room}, arbitro {arbiter})"
+                    ).format(
+                        board=board_num,
+                        white=w_name,
+                        black=b_name,
+                        date=format_date_locale(sched.get("date")),
+                        time=sched.get("time"),
+                        room=sala,
+                        arbiter=arbitro,
+                    )
                 else:
                     match_label = _("Scacchiera {}: {} vs {} (Non pianificata)").format(
                         board_num, w_name, b_name
@@ -1510,6 +2303,10 @@ class MainFrame(wx.Frame):
     def on_tree_selection_changed(self, event):
         if not self or not getattr(self, "tree_ctrl", None) or not self.tree_ctrl:
             return
+        # Le selezioni che il controllo fa da se' mentre l'albero si svuota
+        # non sono scelte di chi usa il programma.
+        if getattr(self, "_albero_in_ricostruzione", False):
+            return
         try:
             item = event.GetItem()
             if not item or not item.IsOk():
@@ -1616,9 +2413,12 @@ class MainFrame(wx.Frame):
             return
 
         filepath = data.get("filepath")
-        if filepath:
-            if not self.current_tournament or self.active_filename != filepath:
-                self.load_tournament(filepath, rebuild_tree=False)
+        if filepath and not self._e_il_torneo_aperto(filepath):
+            self.load_tournament(filepath, rebuild_tree=False)
+            # Un file che non si e' aperto l'ha gia' detto il messaggio, e
+            # quello che segue non vale per un altro torneo.
+            if not self._e_il_torneo_aperto(filepath):
+                return
 
         action = data.get("action")
         if action == "select_tournament":
@@ -2214,10 +3014,14 @@ class MainFrame(wx.Frame):
         action = data.get("action")
         filepath = data.get("filepath")
 
-        if filepath and (
-            not self.current_tournament or self.active_filename != filepath
-        ):
+        if filepath and not self._e_il_torneo_aperto(filepath):
             self.load_tournament(filepath, rebuild_tree=False)
+            # Se il torneo della voce non si e' aperto, per esempio perche'
+            # il suo file non c'e' piu', l'azione non parte: fino alla
+            # 10.13.9 Avvio torneo proseguiva dopo il messaggio d'errore,
+            # senza un torneo da avviare.
+            if not self._e_il_torneo_aperto(filepath):
+                return
 
         if action == "add_player_action":
             self.on_enroll_players(None)
@@ -2508,10 +3312,14 @@ class MainFrame(wx.Frame):
                     self.tree_ctrl.Expand(self.tree_root)
 
     def on_wizard_next(self):
-        from db_players import load_players_db
         from utils import play_sound
 
-        players_db = load_players_db()
+        # Un database che non si legge non apre la finestra di iscrizione:
+        # un giocatore aggiunto dalla ricerca FIDE o da zero non si potrebbe
+        # salvare (10.13.15).
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
 
         play_sound("conferma")
 
@@ -2736,7 +3544,6 @@ class MainFrame(wx.Frame):
             return
 
         import json
-        import os
 
         from utils import play_sound
 
@@ -2775,9 +3582,7 @@ class MainFrame(wx.Frame):
                     with open(filepath, "w", encoding="utf-8") as f_out:
                         json.dump(t_data, f_out, indent=4)
 
-                    if self.active_filename and os.path.abspath(
-                        self.active_filename
-                    ) == os.path.abspath(filepath):
+                    if self._e_il_torneo_aperto(filepath):
                         self.current_tournament = t_data
 
                     self._tree_restore_target = {
@@ -2787,9 +3592,7 @@ class MainFrame(wx.Frame):
                     self.populate_tree()
                     play_sound("rimozione_giocatore")
 
-                    if self.active_filename and os.path.abspath(
-                        self.active_filename
-                    ) == os.path.abspath(filepath):
+                    if self._e_il_torneo_aperto(filepath):
                         self.show_players_list_verbose()
 
                     self.set_status(
@@ -2830,16 +3633,10 @@ class MainFrame(wx.Frame):
         lascerebbe abbinamenti e risultati riferiti a un giocatore che non
         esiste piu'. Al suo posto si offre il ritiro, che e' l'operazione che
         l'arbitro sta cercando davvero."""
-        import os
-
-        from tournament import controlla_ritiro_possibile
         from utils import play_sound
 
         p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
-        e_il_torneo_attivo = bool(self.active_filename) and os.path.abspath(
-            self.active_filename
-        ) == os.path.abspath(filepath)
-        if not e_il_torneo_attivo or not self.current_tournament:
+        if not self._e_il_torneo_aperto(filepath):
             play_sound("errore")
             self._dialogo_informativo(
                 _("Torneo non aperto"),
@@ -2874,18 +3671,6 @@ class MainFrame(wx.Frame):
             )
             return
 
-        # Il ritiro non deve mai lasciare il torneo senza abbastanza giocatori
-        # per arrivare in fondo, altrimenti l'abbinatore si fermerebbe a meta'
-        # torneo senza che si possa piu' rimediare.
-        si_puo, resterebbero, necessari, turni_rimanenti = controlla_ritiro_possibile(
-            self.current_tournament, giocatore.get("id")
-        )
-        if not si_puo:
-            self._bivio_torneo_non_proseguibile(
-                filepath, p_name, resterebbero, necessari, turni_rimanenti
-            )
-            return
-
         if stato == "giocata":
             messaggio = _(
                 "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? La partita che ha gia' giocato nel turno {round} resta valida e il ritiro vale dal turno successivo."
@@ -2895,16 +3680,7 @@ class MainFrame(wx.Frame):
                 "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verra' piu' abbinato nei turni successivi."
             ).format(name=p_name)
 
-        dlg = AccessibleMsgDialog(
-            self,
-            _("Ritiro dal torneo"),
-            messaggio,
-            style=wx.YES_NO,
-            settings=self.settings,
-        )
-        conferma = dlg.ShowModal()
-        dlg.Destroy()
-        if conferma != wx.ID_YES:
+        if not self._conferma_ritiro(giocatore.get("id"), filepath, domanda=messaggio):
             return
 
         self.withdraw_player(giocatore.get("id"))
@@ -2912,26 +3688,115 @@ class MainFrame(wx.Frame):
         self.populate_tree()
         self.show_players_list_verbose()
 
+    def _conferma_ritiro(self, player_id, filepath, domanda=None):
+        """Il controllo sul ritiro, uguale nelle tre strade da cui si ritira un
+        giocatore: il tasto CANC nell'albero, il pulsante Ritira Giocatore
+        della finestra del risultato e la domanda dopo un forfait. Fino alla
+        10.13.0 lo facevano solo il tasto CANC, e le altre due lo saltavano.
+        Risponde vero se il ritiro va registrato.
+        Quando i giocatori attivi non bastano per i turni che restano, dalla
+        10.13.1 il ritiro non e' piu' impedito: un avviso, con No come
+        pulsante predefinito, dice che il motore potrebbe non riuscire ad
+        abbinare un turno, e che in quel caso il turno si compone a mano
+        (issue 38). Il bivio fra ritorno all'iscrizione ed eliminazione resta
+        solo quando i giocatori attivi scenderebbero sotto due, e risponde
+        falso: la finestra del risultato controlla poi con
+        _bivio_ha_cambiato_il_torneo se il torneo e' cambiato sotto di lei.
+        domanda e' la domanda di conferma della strada, se ne ha una: senza
+        avviso si pone da sola, con l'avviso ne diventa l'inizio."""
+        from tournament import valuta_ritiro
+
+        giocatore = self.current_tournament.get("players_dict", {}).get(player_id, {})
+        nome = f"{giocatore.get('last_name', '')} {giocatore.get('first_name', '')}".strip()
+        esito, resterebbero, necessari, turni_rimanenti = valuta_ritiro(
+            self.current_tournament, player_id
+        )
+        if esito == "bivio":
+            self._bivio_torneo_non_proseguibile(
+                filepath, nome, resterebbero, necessari, turni_rimanenti
+            )
+            return False
+        if esito == "avviso":
+            from utils import play_sound
+
+            play_sound("errore")
+            # Con l'avviso restano almeno due giocatori e due turni: fra due
+            # giocatori l'avversario possibile e' uno solo, e la frase va al
+            # singolare. Il numero che servirebbe e' di giocatori, non di
+            # avversari, e la frase lo dice.
+            if resterebbero - 1 == 1:
+                avviso = _(
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori c'e' un solo avversario possibile a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                )
+            else:
+                avviso = _(
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori ci sono solo {avversari} avversari possibili a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                )
+            avviso = avviso.format(
+                name=nome,
+                resterebbero=resterebbero,
+                avversari=max(resterebbero - 1, 0),
+                turni=turni_rimanenti,
+                necessari=necessari,
+            )
+            testo = "\n\n".join(
+                [
+                    *([domanda] if domanda else []),
+                    avviso,
+                    _("Vuoi ritirarlo comunque? Il pulsante predefinito e' No."),
+                ]
+            )
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Ritiro con pochi giocatori"),
+                testo,
+                style=wx.YES_NO,
+                settings=self.settings,
+                no_predefinito=True,
+            )
+            conferma = dlg.ShowModal()
+            dlg.Destroy()
+            return conferma == wx.ID_YES
+        if domanda:
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Ritiro dal torneo"),
+                domanda,
+                style=wx.YES_NO,
+                settings=self.settings,
+            )
+            conferma = dlg.ShowModal()
+            dlg.Destroy()
+            return conferma == wx.ID_YES
+        return True
+
     def _bivio_torneo_non_proseguibile(
         self, filepath, nome_giocatore, resterebbero, necessari, turni_rimanenti
     ):
-        """Il ritiro renderebbe impossibile completare il torneo. Il ritiro non
+        """Il ritiro lascerebbe il torneo con meno di due giocatori attivi, e
+        nessun turno si potrebbe piu' abbinare, nemmeno a mano. Il ritiro non
         viene registrato e restano due strade: riportare il torneo alla fase di
         iscrizione, che conserva tutto e permette di rifarlo, oppure eliminarlo.
-        In nessun caso l'abbinatore viene messo nella condizione di fallire."""
+        Fino alla 10.13.0 il bivio arrivava gia' quando i giocatori non
+        bastavano per i turni rimanenti: dalla 10.13.1 quello e' un avviso di
+        _conferma_ritiro."""
         from tournament import riporta_torneo_alla_preparazione
         from utils import create_backup, play_sound
 
         play_sound("errore")
-        messaggio = _(
-            "Ritirando {name} resterebbero {resterebbero} giocatori attivi, mentre per portare a termine i {turni} turni che mancano ne servono almeno {necessari}.\n\n"
+        # Con un giocatore solo che resterebbe, la prima frase va al
+        # singolare: fino alla 10.13.5 diceva resterebbero 1 giocatori.
+        if resterebbero == 1:
+            premessa = _(
+                "Ritirando {name} resterebbe un solo giocatore attivo: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+            ).format(name=nome_giocatore)
+        else:
+            premessa = _(
+                "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+            ).format(name=nome_giocatore, resterebbero=resterebbero)
+        messaggio = premessa + "\n\n" + _(
             "Il ritiro non viene registrato, perche' il torneo si fermerebbe a meta' senza possibilita' di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori gia' ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
             "Vuoi riportare il torneo alla fase di iscrizione? Prima dell'operazione viene creata una copia di sicurezza."
-        ).format(
-            name=nome_giocatore,
-            resterebbero=resterebbero,
-            turni=turni_rimanenti,
-            necessari=necessari,
         )
         dlg = AccessibleMsgDialog(
             self,
@@ -2968,14 +3833,29 @@ class MainFrame(wx.Frame):
             )
         )
 
+    def _bivio_ha_cambiato_il_torneo(self, torneo, turno):
+        """Vero se il bivio di _conferma_ritiro, raggiunto dalla finestra del
+        risultato, ha riportato il torneo alla fase di iscrizione, e il turno
+        della partita non c'e' piu', oppure lo ha eliminato, e il torneo
+        aperto non e' piu' quello. Dalla 10.13.1 il bivio si raggiunge anche
+        dal pulsante Ritira Giocatore e dalla domanda dopo un forfait: in quel
+        caso on_activate_match esce subito, e barra di stato, albero e area
+        centrale restano come li ha lasciati il bivio. Se l'arbitro ha
+        rifiutato entrambe le strade il torneo e' quello di prima, e la
+        finestra del risultato prosegue come sempre."""
+        if self.current_tournament is not torneo:
+            return True
+        return turno is not None and not any(r is turno for r in torneo.get("rounds", []))
+
     def _proponi_eliminazione_torneo(self, filepath):
         """Seconda strada del bivio: eliminare il torneo. Si riusa la stessa
-        funzione dell'albero, che chiede conferma e cancella anche i file."""
+        funzione dell'albero, che chiede conferma elencando i file e li manda
+        nel cestino."""
         dlg = AccessibleMsgDialog(
             self,
             _("Eliminare il torneo"),
             _(
-                "Vuoi allora eliminare definitivamente il torneo e tutti i suoi file? Se rispondi di no non viene fatto nulla, e il torneo resta come si trova ora."
+                "Vuoi allora mandare nel cestino di Windows il torneo e tutti i suoi file? Se rispondi di no non viene fatto nulla, e il torneo resta come si trova ora."
             ),
             style=wx.YES_NO,
             settings=self.settings,
@@ -3070,11 +3950,129 @@ class MainFrame(wx.Frame):
                 wx.ICON_ERROR,
             )
 
-    def delete_tournament_completely(self, item, filepath):
-        """Rimuove fisicamente dal disco un torneo (attivo, concluso o in preparazione) e tutti i file correlati."""
-        import json
-        import os
+    def _nel_cestino(self, percorso):
+        """Il cestino di Windows, con la finestra principale come proprietaria
+        della domanda che Windows fa prima di cancellare per sempre un file
+        che il cestino non puo' prendere, come nella finestra Copie di
+        sicurezza: cosi' la domanda prende il fuoco, invece di restare
+        nascosta. Su un disco senza cestino il file resta dov'e', e la
+        risposta e' falso."""
+        from utils import delete_file_to_trash
 
+        return delete_file_to_trash(percorso, finestra=self.GetHandle())
+
+    def _file_correlati_del_torneo(self, filepath, data, t_name):
+        """I file che vanno nel cestino insieme al file del torneo, e le
+        cartelle che non si sono potute leggere: li elenca la conferma, e li
+        manda nel cestino delete_tournament_completely.
+        Sono i file che portano il nome intero del torneo, riconosciuti con
+        file_del_torneo come dalla 10.3.4, nella cartella del file del torneo
+        e nella sua cartella di salvataggio. Dalla 10.13.8 un json ci va solo
+        se e' la copia dello stesso torneo nell'altra cartella, cioe' quella
+        del torneo concluso nella cartella di lavoro esterna: stesso nome di
+        file, stesso nome del torneo e stessa edizione. Ogni altro json e' un
+        altro torneo, o un file del programma: l'edizione in corso accanto a
+        quella conclusa, la copia che Esplora risorse chiama "- Copia", il
+        torneo vero accanto a un file aperto con un altro nome, il database
+        dei giocatori e le impostazioni per un torneo di nome Players db o
+        Settings. Fino alla 10.13.7 sparivano insieme al torneo.
+        La cartella di salvataggio si prende com'e', senza
+        resolve_and_verify_save_path, che la crea se manca e ripiega sulla
+        cartella del programma se manca la sua unita'. Per un torneo in
+        archivio conta solo se e' una cartella esterna, come per la
+        finalizzazione: altrimenti i suoi report sono gia' in archivio, e
+        quelli con lo stesso nome accanto al programma sono di un'altra
+        edizione. Una cartella scritta con maiuscole diverse si legge una
+        volta sola."""
+        from copie_di_sicurezza import stessa_edizione
+        from tournament import sanitize_filename
+        from ui import cartella_di_lavoro_esterna
+        from utils import file_del_torneo
+
+        def chiave(percorso):
+            return os.path.normcase(os.path.abspath(percorso))
+
+        cartella_del_file = os.path.dirname(os.path.abspath(filepath))
+        cartelle = [cartella_del_file]
+        custom_path = data.get("custom_save_path") or data.get("save_path")
+        in_archivio = chiave(filepath).startswith(
+            chiave(ARCHIVED_TOURNAMENTS_DIR) + os.sep
+        )
+        if (
+            custom_path
+            and os.path.isdir(custom_path)
+            and (not in_archivio or cartella_di_lavoro_esterna(custom_path))
+        ):
+            cartelle.append(os.path.abspath(custom_path))
+
+        sanitized_name = sanitize_filename(t_name)
+        nome_del_json = f"Tornello - {sanitized_name}.json"
+        correlati, illeggibili, lette = [], [], set()
+        for cartella in cartelle:
+            if chiave(cartella) in lette:
+                continue
+            lette.add(chiave(cartella))
+            try:
+                nomi = sorted(os.listdir(cartella))
+            except OSError:
+                illeggibili.append(cartella)
+                continue
+            for f_name in nomi:
+                f_path = os.path.join(cartella, f_name)
+                if not file_del_torneo(f_name, sanitized_name) or not os.path.isfile(
+                    f_path
+                ):
+                    continue
+                if f_name.lower().endswith(".json"):
+                    if chiave(cartella) == chiave(cartella_del_file):
+                        continue
+                    if f_name != nome_del_json:
+                        continue
+                    try:
+                        with open(f_path, encoding="utf-8") as f_in:
+                            altro = json.load(f_in)
+                    except (OSError, ValueError):
+                        continue
+                    if not (
+                        isinstance(altro, dict)
+                        and altro.get("name") == t_name
+                        and stessa_edizione(data, altro)
+                    ):
+                        continue
+                correlati.append(f_path)
+        return correlati, illeggibili
+
+    @staticmethod
+    def _righe_per_cartella(percorsi):
+        """I percorsi raggruppati per cartella: una riga con la cartella e
+        una per ogni file, perche' sulla barra braille il nome di un file si
+        legge meglio senza la cartella davanti."""
+        gruppi = {}
+        for percorso in percorsi:
+            cartella = os.path.dirname(percorso)
+            gruppi.setdefault(os.path.normcase(cartella), (cartella, []))[1].append(
+                os.path.basename(percorso)
+            )
+        righe = []
+        for cartella, nomi in gruppi.values():
+            righe.append(_("Nella cartella {cartella}:").format(cartella=cartella))
+            righe.extend(nomi)
+        return righe
+
+    def delete_tournament_completely(self, item, filepath):
+        """Manda nel cestino di Windows un torneo (attivo, concluso o in
+        preparazione) e i suoi file correlati, quelli di
+        _file_correlati_del_torneo, che la conferma elenca cartella per
+        cartella. Fino alla 10.13.7 li cancellava per sempre con os.remove, e
+        si recuperavano solo da GitHub; dalla 10.13.8 passano da _nel_cestino,
+        e un file che il cestino non prende resta dov'e', senza ripiegare su
+        os.remove (decisione di Gabriele, avvertenza della issue 55). Il file
+        del torneo va per primo: se non va nel cestino non si tocca
+        nient'altro, e il torneo resta intero; se ci va, il torneo esce subito
+        dall'albero e dalla memoria, e un file correlato rimasto fuori, o una
+        cartella che non si legge, li nomina il messaggio finale, con il suono
+        dell'errore. Un errore a meta' dice anche che il file del torneo e'
+        gia' nel cestino."""
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -3110,80 +4108,145 @@ class MainFrame(wx.Frame):
         if not t_name:
             t_name = t_label
 
-        msg = _(
-            "Sei sicuro di voler eliminare definitivamente il torneo {t_type} '{t_name}'?\nQuesta azione rimuoverà il file JSON centrale e TUTTI i report generati per questo torneo, sia nella cartella principale che nella cartella di salvataggio custom."
-        ).format(t_type=t_type, t_name=t_name)
-        dlg = AccessibleMsgDialog(
-            self, _("Conferma Eliminazione Torneo"), msg, style=wx.YES_NO
+        correlati, illeggibili = self._file_correlati_del_torneo(
+            filepath, data, t_name
         )
-        if dlg.ShowModal() == wx.ID_YES:
-            try:
-                # 1. Rimuove il file JSON centrale
-                if os.path.exists(filepath):
-                    os.remove(filepath)
+        if len(illeggibili) == 1:
+            frase_illeggibili = _(
+                "Una cartella non si è potuta leggere, e i file del torneo che contiene restano dove sono:"
+            )
+        else:
+            frase_illeggibili = _(
+                "{count} cartelle non si sono potute leggere, e i file del torneo che contengono restano dove sono:"
+            ).format(count=len(illeggibili))
 
-                # 2. Ottiene i percorsi di salvataggio per ripulire i file correlati
-                paths_to_clean = [os.path.dirname(filepath)]
-                custom_path = data.get("custom_save_path") or data.get("save_path")
-                if custom_path:
-                    from utils import resolve_and_verify_save_path
+        # La conferma elenca i file che vanno nel cestino, un nome per riga
+        # sotto la sua cartella, da leggere con le frecce.
+        righe = [
+            _("Vuoi mandare nel cestino di Windows il torneo {t_type} '{t_name}'?").format(
+                t_type=t_type, t_name=t_name
+            )
+        ]
+        if correlati:
+            righe.append(
+                _(
+                    "Ci vanno {count} file, quello del torneo e quelli che portano il suo nome intero, e dal cestino si possono recuperare:"
+                ).format(count=len(correlati) + 1)
+            )
+        else:
+            righe.append(
+                _("Ci va il file del torneo, e dal cestino si può recuperare:")
+            )
+        righe.extend(
+            self._righe_per_cartella([os.path.abspath(filepath), *correlati])
+        )
+        if illeggibili:
+            righe.append(frase_illeggibili)
+            righe.extend(illeggibili)
+        dlg = AccessibleMsgDialog(
+            self, _("Conferma Eliminazione Torneo"), "\n".join(righe), style=wx.YES_NO
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+        torneo_nel_cestino = False
+        try:
+            # 1. Il file JSON del torneo, per primo. Se il cestino non lo
+            # prende, per esempio su un disco senza cestino, il torneo resta
+            # com'e', report compresi, e non si cancella niente per sempre.
+            if os.path.exists(filepath) and not self._nel_cestino(filepath):
+                play_sound("errore", self.current_tournament)
+                err_msg = _(
+                    "Il file del torneo {path} non è andato nel cestino, e il torneo '{t_name}' resta com'è, con tutti i suoi file. Succede su un disco senza cestino, per esempio una cartella di rete, con un file tenuto bloccato da un altro programma, oppure se hai risposto No alla domanda di Windows di cancellarlo per sempre."
+                ).format(t_name=t_name, path=filepath)
+                self.set_status(err_msg)
+                print(err_msg)
+                self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
+                return
+            torneo_nel_cestino = True
 
-                    resolved_path, _discard = resolve_and_verify_save_path(custom_path)
-                    if resolved_path and os.path.exists(resolved_path):
-                        paths_to_clean.append(resolved_path)
-
-                paths_to_clean = list(
-                    set([os.path.abspath(p) for p in paths_to_clean if p])
-                )
-
-                # 3. Nome sanificato per trovare i file correlati. Il nome
-                # deve corrispondere per intero: con il solo prefisso,
-                # eliminando il torneo Autunneo sparivano anche i file di
-                # Autunneo2.
-                from tournament import sanitize_filename
-                from utils import file_del_torneo
-
-                sanitized_name = sanitize_filename(t_name)
-
-                deleted_count = 0
-                for folder in paths_to_clean:
-                    if os.path.exists(folder):
-                        for f_name in os.listdir(folder):
-                            if file_del_torneo(f_name, sanitized_name):
-                                f_path = os.path.join(folder, f_name)
-                                if os.path.isfile(f_path):
-                                    try:
-                                        os.remove(f_path)
-                                        deleted_count += 1
-                                    except Exception:
-                                        pass
-
-                # 4. Rimuove il nodo dall'albero
+            # 2. Il torneo non c'e' piu': esce subito dall'albero e, se era
+            # quello aperto, dalla memoria, prima dei file correlati. Cosi' un
+            # errore che arrivasse dopo non lo lascerebbe aperto, a rinascere
+            # nella cartella del programma al primo salvataggio. Il cursore
+            # passa da solo a un'altra voce, che non carica il suo torneo:
+            # fino alla 10.13.9 al posto di quello eliminato se ne apriva un
+            # altro, senza avviso.
+            with self._albero_senza_caricamenti():
                 self.tree_ctrl.Delete(item)
+            if self._e_il_torneo_aperto(filepath):
+                self._nessun_torneo_aperto()
+                self.show_intro_message()
+            # L'albero si ridisegna, con il cursore sulla voce dove l'ha
+            # portato la cancellazione, senza caricare niente: fino alla
+            # 10.13.9 restavano la voce Avvio torneo del torneo eliminato,
+            # che con INVIO dava un errore, e il conteggio vecchio della sua
+            # categoria.
+            self.populate_tree()
 
-                # Se è stato cancellato il torneo attivo corrente, ripristina lo stato a vuoto
-                if self.active_filename and os.path.abspath(
-                    filepath
-                ) == os.path.abspath(self.active_filename):
-                    self.current_tournament = None
-                    self.active_filename = None
-                    self.show_intro_message()
+            # 3. I file correlati vanno nel cestino uno per uno: quelli che non
+            # ci vanno restano dove sono, e il messaggio finale li nomina.
+            deleted_count = 0
+            non_andati = []
+            for f_path in correlati:
+                if not os.path.isfile(f_path):
+                    continue
+                if self._nel_cestino(f_path):
+                    deleted_count += 1
+                else:
+                    non_andati.append(f_path)
 
-                play_sound("cancellato", self.current_tournament)
+            if deleted_count == 0:
                 info_msg = _(
-                    "Torneo '{t_name}' e i suoi {deleted_count} file correlati sono stati eliminati."
+                    "Torneo '{t_name}' mandato nel cestino di Windows."
+                ).format(t_name=t_name)
+            elif deleted_count == 1:
+                info_msg = _(
+                    "Torneo '{t_name}' mandato nel cestino di Windows, con un file correlato."
+                ).format(t_name=t_name)
+            else:
+                info_msg = _(
+                    "Torneo '{t_name}' mandato nel cestino di Windows, con {deleted_count} file correlati."
                 ).format(t_name=t_name, deleted_count=deleted_count)
+            righe_finali = [info_msg]
+            stato = [info_msg]
+            if non_andati:
+                if len(non_andati) == 1:
+                    frase = _(
+                        "Un file correlato non è andato nel cestino, e resta dov'è:"
+                    )
+                else:
+                    frase = _(
+                        "{count} file correlati non sono andati nel cestino, e restano dove sono:"
+                    ).format(count=len(non_andati))
+                righe_finali += [frase, *non_andati]
+                stato.append(f"{frase} {', '.join(non_andati)}")
+            if illeggibili:
+                righe_finali += [frase_illeggibili, *illeggibili]
+                stato.append(f"{frase_illeggibili} {', '.join(illeggibili)}")
+            if len(righe_finali) == 1:
+                play_sound("cancellato", self.current_tournament)
                 self.set_status(info_msg)
                 print(info_msg)
-            except Exception as e:
-                err_msg = _("Errore durante l'eliminazione del torneo: {}").format(e)
-                print(err_msg)
-                wx.MessageBox(
-                    err_msg,
-                    _("Errore"),
-                    wx.ICON_ERROR,
-                )
-        dlg.Destroy()
+                return
+            # Qualcosa e' rimasto fuori: il suono dell'errore, e non quello del
+            # successo pieno, poi una finestra con un percorso per riga.
+            play_sound("errore", self.current_tournament)
+            self.set_status(" ".join(stato))
+            testo = "\n".join(righe_finali)
+            print(testo)
+            self._dialogo_informativo(_("File rimasti fuori dal cestino"), testo)
+        except Exception as e:
+            play_sound("errore", self.current_tournament)
+            err_msg = _("Errore durante l'eliminazione del torneo: {}").format(e)
+            if torneo_nel_cestino:
+                err_msg += " " + _(
+                    "Il file del torneo {path} è già nel cestino di Windows, e da lì si può recuperare."
+                ).format(path=filepath)
+            self.set_status(err_msg)
+            print(err_msg)
+            self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
 
     def on_delete_active_tournament_menu(self, event):
         item = self.tree_ctrl.GetSelection()
@@ -3421,11 +4484,20 @@ class MainFrame(wx.Frame):
 
     def on_preferences(self, event):
         old_lang = self.settings.get("language", "it")
+        # Il fuoco torna dove era prima delle impostazioni, in qualunque modo
+        # si chiudano: dalla 10.13.38 lo rimette GBwx 1.0.1 alla distruzione
+        # della finestra, come per tutte le altre. Dalla 10.13.25 alla
+        # 10.13.37 lo rimetteva un rimedio qui, pensato per questa finestra
+        # sola, mentre il fuoco restava sulla cornice, dove NVDA legge
+        # soltanto il titolo, dopo ogni finestra costruita con GBwx.
         dlg = VisualSettingsDialog(self, self.settings)
         if dlg.ShowModal() == wx.ID_OK:
             new_settings = dlg.get_settings()
             new_lang = new_settings.get("language", "it")
-            self.settings = new_settings
+            # Le Preferenze conoscono solo le chiavi che mostrano: le altre,
+            # come il rinvio dell'avviso sulle copie di sicurezza vecchie,
+            # restano quelle di prima invece di sparire dal file.
+            self.settings = {**self.settings, **new_settings}
             salvate = save_settings(self.settings)
             self.apply_theme()
             if salvate:
@@ -3448,22 +4520,30 @@ class MainFrame(wx.Frame):
                 )
                 dlg_msg.ShowModal()
                 dlg_msg.Destroy()
+        else:
+            # Il cursore del volume scrive il file a ogni scatto, per il
+            # suono di prova: annullando si rimette il volume di prima
+            # (10.13.26).
+            dlg.rimetti_il_volume()
         dlg.Destroy()
+
+    @staticmethod
+    def _leggi_manuale():
+        """Il testo di MANUALE.txt, o una stringa vuota se manca o non si
+        legge. Lo usano F1, che lo mostra intero, e l'arrivo del focus sul pie'
+        di pagina, che ne mostra la sezione degli acronimi."""
+        from config import resource_path
+
+        try:
+            with open(resource_path("MANUALE.txt"), encoding="utf-8") as f:
+                return f.read()
+        except (OSError, ValueError):
+            return ""
 
     def on_help(self, event):
         # Visualizza la guida accessibile caricandola da file
         self.main_text.Clear()
-        guide_text = ""
-        from config import resource_path
-
-        guide_path = resource_path("MANUALE.txt")
-        if os.path.exists(guide_path):
-            try:
-                with open(guide_path, encoding="utf-8") as f:
-                    guide_text = f.read()
-            except Exception:
-                pass
-
+        guide_text = self._leggi_manuale()
         if not guide_text:
             guide_text = _(
                 "Manuale guida di Tornello\n"
@@ -3514,21 +4594,64 @@ class MainFrame(wx.Frame):
         self.main_text.SetFocus()
 
     def on_fide_query(self, event):
-        from db_players import load_players_db
-
-        players_db = load_players_db()
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
         from gui.dialogs.fide_query_dialog import FideQueryDialog
 
         dlg = FideQueryDialog(self, players_db, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def on_backup_cleanup(self, event):
+    def on_backup_cleanup(self, event, seleziona=None):
+        """La finestra Copie di sicurezza, dal menu File, dalla domanda
+        dell'avvio e da Apri Torneo su una copia. seleziona e' l'elenco delle
+        copie da trovare gia' selezionate. Alla chiusura l'albero si rilegge:
+        un ripristino o una cancellazione possono averlo cambiato, ma senza
+        toccare il fuoco: GBwx lo rimette, quando la finestra se ne va
+        davvero, sul controllo che lo aveva alla sua apertura, l'albero, la
+        barra di stato o l'area centrale. Fino alla 10.13.38 la rilettura lo
+        portava sempre sull'albero, prima ancora che la finestra se ne
+        andasse."""
         from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
 
-        dlg = BackupCleanupDialog(self, self.settings)
+        dlg = BackupCleanupDialog(
+            self,
+            self.settings,
+            torneo_aperto=self.active_filename,
+            seleziona=seleziona,
+            dopo_il_ripristino=self._dopo_il_ripristino,
+        )
         dlg.ShowModal()
         dlg.Destroy()
+        self.populate_tree(prendi_il_fuoco=False)
+        self.update_status_display()
+
+    def _dopo_il_ripristino(self, esito):
+        """Riallinea la finestra a un ripristino riuscito, subito, mentre la
+        finestra delle copie e' ancora aperta. Se il torneo ripristinato e'
+        quello aperto, o il file aperto se n'e' andato nel cestino con
+        l'archivio, o non c'e' un torneo aperto, il torneo ripristinato si
+        carica: tenuto in memoria quello di prima, il primo salvataggio lo
+        riscriverebbe sul disco al posto della copia. Poi _save_state
+        rigenera classifica, turno e raccolta delle partite. Con un altro
+        torneo aperto basta rileggere l'albero, e durante la creazione di un
+        torneo nuovo nemmeno quello: la procedura guidata resta com'e'."""
+        if getattr(self, "creation_mode", False):
+            return
+        if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
+            self.populate_tree()
+            return
+        aperto = self.active_filename
+        stesso = bool(aperto) and os.path.normcase(os.path.abspath(aperto)) == os.path.normcase(
+            os.path.abspath(esito.destinazione)
+        )
+        if stesso or not self.current_tournament or not (aperto and os.path.exists(aperto)):
+            self.load_tournament(esito.destinazione)
+            if self.current_tournament:
+                self._save_state()
+            return
+        self.populate_tree()
 
     def on_fide_update(self, event):
         import os
@@ -3592,6 +4715,10 @@ class MainFrame(wx.Frame):
     def on_sync_db(self, event):
         from gui.dialogs.sync_database_dialog import SyncDatabaseDialog
 
+        # La finestra legge e salva il database da se': se non si legge, non
+        # si apre (10.13.15).
+        if self._database_dei_giocatori() is None:
+            return
         dlg = SyncDatabaseDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
@@ -3599,11 +4726,20 @@ class MainFrame(wx.Frame):
     def on_local_db(self, event):
         from gui.dialogs.players_db_dialog import PlayersDbDialog
 
+        # La finestra legge e salva il database da se': se non si legge, non
+        # si apre (10.13.15).
+        if self._database_dei_giocatori() is None:
+            return
         dlg = PlayersDbDialog(self, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
 
     def on_close(self, event):
+        # Il timer del pie' di pagina si ferma per primo: l'invito alla
+        # donazione, con la sua finestra modale, fa girare il ciclo degli
+        # eventi, e un timer ancora acceso dopo la chiusura scatterebbe su
+        # controlli ormai distrutti.
+        self._timer_pie_di_pagina.Stop()
         from utils import copie_di_chiusura, play_sound
 
         copie_di_chiusura(self.active_filename)
@@ -3616,33 +4752,44 @@ class MainFrame(wx.Frame):
         # dell'audio.
         play_sound("chiusura", self.current_tournament, sync=1.5)
 
-        try:
-            import io
-            import sys
-
-            from GBUtils import Donazione
-
-            old_stdout = sys.stdout
-            sys.stdout = io.StringIO()
+        # Dalla 10.8.1 la chiusura che applica un aggiornamento salta
+        # l'invito: lo script che sostituisce il programma aspetta la sua
+        # uscita una trentina di secondi soltanto, e chi leggeva l'invito con
+        # calma si ritrovava con l'aggiornamento non applicato.
+        if not self._chiusura_per_aggiornamento:
             try:
-                current_lang = self.settings.get("language") if self.settings else None
-                Donazione(lang=current_lang)
-                donation_msg = sys.stdout.getvalue().strip()
-            finally:
-                sys.stdout = old_stdout
+                self._invito_donazione()
+            except Exception as errore:  # noqa: BLE001
+                # Largo di proposito: un'eccezione che uscisse da on_close
+                # salterebbe event.Skip() e la finestra non si chiuderebbe piu',
+                # per colpa di un invito che non serve a niente del lavoro fatto.
+                # Ma non tace piu' come l'except: pass di prima: il guasto finisce
+                # in error.log, con il suo traceback.
+                from gui.settings import _registra
 
-            if donation_msg:
-                from gui.dialogs.donation_dialog import DonationDialog
-
-                dlg = DonationDialog(
-                    self, _("Offri un caffè"), donation_msg, self.settings
-                )
-                dlg.ShowModal()
-                dlg.Destroy()
-        except Exception:
-            pass
+                _registra(f"Invito alla donazione non mostrato: {errore}")
 
         event.Skip()
+
+    def _invito_donazione(self):
+        """L'invito a offrire un caffe', nella lingua delle impostazioni.
+
+        Donazione, dalla V2.1.0 di GBUtils, restituisce il messaggio, o None se
+        il sorteggio non passa, e con stampa=False non stampa niente. Fino alla
+        10.3.4 la stampa si catturava deviando sys.stdout su uno StringIO, un
+        aggiramento nato quando Donazione sapeva soltanto stampare.
+        """
+        from GBUtils import Donazione
+
+        lingua = self.settings.get("language") if self.settings else None
+        testo = Donazione(lang=lingua, stampa=False)
+        if testo is None:
+            return
+        from gui.dialogs.donation_dialog import DonationDialog
+
+        dlg = DonationDialog(self, _("Offri un caffè"), testo, self.settings)
+        dlg.ShowModal()
+        dlg.Destroy()
 
     def on_new_tournament(self, event):
         self.start_new_tournament_wizard()
@@ -3654,9 +4801,50 @@ class MainFrame(wx.Frame):
             wildcard="JSON files (*.json)|*.json",
             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
         )
-        if dlg.ShowModal() == wx.ID_OK:
-            self.load_tournament(dlg.GetPath())
+        scelto = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
         dlg.Destroy()
+        if not scelto:
+            return
+        # Una copia di sicurezza aperta come torneo diventava il file attivo:
+        # ogni salvataggio la modificava sul posto, e rigenerava classifica,
+        # turni e raccolta delle partite del torneo vero con lo stato vecchio
+        # della copia. Fino alla 10.8.11 Tornello la apriva senza dire niente.
+        from utils import dentro_la_cartella, play_sound
+
+        if dentro_la_cartella(scelto, user_data_path("backup")):
+            play_sound("errore")
+            # Dalla 10.9.0 le copie si usano dalla finestra delle copie di
+            # sicurezza, e la domanda la propone con la copia gia'
+            # selezionata. Si' e' il predefinito: aprire la finestra non
+            # cambia niente. ESC vale No, come in tutte le domande dalla
+            # 10.13.23.
+            dlg_rifiuto = AccessibleMsgDialog(
+                self,
+                _("Copia di sicurezza"),
+                _(
+                    "Il file {name} è una copia di sicurezza: sta nella cartella backup, e Tornello non lo apre come torneo.\n"
+                    "Aperto così, verrebbe modificato a ogni salvataggio, e classifica, turni e raccolta delle partite del torneo verrebbero riscritti con lo stato vecchio della copia.\n"
+                    "Vuoi aprire la finestra delle copie di sicurezza, con questa copia già selezionata? Da lì puoi leggerla, confrontarla con lo stato attuale e ripristinarla."
+                ).format(name=os.path.basename(scelto)),
+                style=wx.YES_NO,
+                settings=self.settings,
+            )
+            risposta = dlg_rifiuto.ShowModal()
+            dlg_rifiuto.Destroy()
+            if risposta == wx.ID_YES:
+                self.on_backup_cleanup(None, seleziona=[scelto])
+            return
+        # Se il file scelto non si apre, o non e' un torneo, resta aperto il
+        # torneo di prima.
+        self.load_tournament(scelto, tieni_il_precedente=True)
+        # Il cursore dell'albero passa sulla voce del torneo aperto, anche
+        # se stava su una voce che non e' di un torneo, come Nuovo torneo;
+        # senza caricare di nuovo e senza cambiare l'area centrale.
+        if self._e_il_torneo_aperto(scelto):
+            voce = self._voce_del_torneo_aperto()
+            if voce and voce.IsOk():
+                with self._albero_senza_caricamenti():
+                    self.tree_ctrl.SelectItem(voce)
 
     def on_enroll_players(self, event):
         if not self.current_tournament:
@@ -3671,9 +4859,9 @@ class MainFrame(wx.Frame):
                 wx.ICON_ERROR,
             )
             return
-        from db_players import load_players_db
-
-        players_db = load_players_db()
+        players_db = self._database_dei_giocatori()
+        if players_db is None:
+            return
         from gui.dialogs import PlayerEnrollmentDialog
 
         enrolled_raw = [p for p in self.current_tournament.get("players", [])]
@@ -3736,11 +4924,10 @@ class MainFrame(wx.Frame):
         if not self.current_tournament:
             wx.MessageBox(_("Nessun torneo attivo."), _("Errore"), wx.ICON_ERROR)
             return
-        from reports import get_standings_text
-
-        self.main_text.Clear()
-        standings_text = get_standings_text(self.current_tournament, final=False)
-        self.append_log(standings_text)
+        # La stessa classifica della voce dell'albero: per un torneo concluso
+        # e' quella finale. Fino alla 10.13.13 Ctrl+L la dava sempre parziale,
+        # Dopo Turno N, e senza le posizioni finali.
+        self.show_standings_verbose()
         self.main_text.SetFocus()
 
     def on_rollback_round(self, event):
@@ -3756,12 +4943,15 @@ class MainFrame(wx.Frame):
             )
             return
 
+        # La domanda nomina il torneo: il menu Torneo vale per il torneo
+        # appena scelto nell'albero, e l'ultima parola prima di un'azione
+        # irreversibile deve dire su quale torneo si agisce.
         dlg = AccessibleMsgDialog(
             self,
             _("Annulla Turno"),
             _(
-                "Sei sicuro di voler annullare l'ultimo turno e tornare indietro? Questa azione è irreversibile."
-            ),
+                "Sei sicuro di voler annullare l'ultimo turno del torneo {name} e tornare indietro? Questa azione è irreversibile."
+            ).format(name=self.current_tournament.get("name", _("Torneo Sconosciuto"))),
             style=wx.YES_NO,
         )
         if dlg.ShowModal() == wx.ID_YES:
@@ -3775,6 +4965,57 @@ class MainFrame(wx.Frame):
                     _("Time Machine attivata: tornati al turno precedente.")
                 )
         dlg.Destroy()
+
+    def _database_dei_giocatori(self):
+        """Il database dei giocatori letto dal disco, oppure None, dopo il
+        suono d'errore e un messaggio, se il file c'e' ma non si legge,
+        perche' un altro programma lo tiene bloccato o perche' e' rovinato.
+        Chi lo chiede lo modificherebbe e lo salverebbe: il salvataggio non
+        riuscirebbe, ed e' meglio dirlo prima. Fino alla 10.13.14 il database
+        illeggibile arrivava vuoto, e il primo salvataggio lo sostituiva sul
+        disco con le sole schede aggiunte: nell'iscrizione e nelle finestre
+        del database dalla 10.13.15, nella finalizzazione dalla 10.13.16."""
+        from db_players import (
+            database_non_letto,
+            load_players_db,
+            messaggio_database_non_letto,
+        )
+        from utils import play_sound
+
+        players_db = load_players_db()
+        if not database_non_letto(players_db):
+            return players_db
+        play_sound("errore")
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Errore"),
+            messaggio_database_non_letto(players_db),
+            settings=self.settings,
+        )
+        dlg.ShowModal()
+        dlg.Destroy()
+        return None
+
+    @staticmethod
+    def _esito_della_finalizzazione(riuscita, avvisi):
+        """Titolo e testo della finestra che chiude la finalizzazione, oppure
+        None quando basta il messaggio di successo, cioe' quando la
+        finalizzazione e' riuscita e non ha niente da segnalare.
+        Con degli avvisi il messaggio di successo non compare: diceva i
+        giocatori aggiornati anche quando nessuno lo era, e arrivava a NVDA
+        prima degli avvisi che lo smentivano. La prima riga dice com'e' andata,
+        le altre sono gli avvisi."""
+        if riuscita and not avvisi:
+            return None
+        if riuscita:
+            apertura = _(
+                "Il torneo è concluso e archiviato, ma non tutto è andato come al solito: leggi gli avvisi qui sotto."
+            )
+        else:
+            apertura = _(
+                "La finalizzazione non è andata fino in fondo: gli avvisi qui sotto dicono che cosa è stato fatto e che cosa no."
+            )
+        return _("Avvisi della finalizzazione"), "\n".join([apertura, *avvisi])
 
     def on_finalize_tournament(self, event):
         if not self.current_tournament:
@@ -3825,34 +5066,61 @@ class MainFrame(wx.Frame):
                 )
                 return
 
+        # La domanda nomina il torneo, come quella di Annulla Turno: il
+        # database dei giocatori cambia per sempre.
         dlg = AccessibleMsgDialog(
             self,
             _("Finalizza Torneo"),
             _(
-                "Sei sicuro di voler concludere definitivamente il torneo? Verranno calcolati i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database giocatori."
-            ),
+                "Sei sicuro di voler concludere definitivamente il torneo {name}? Verranno calcolati i piazzamenti finali, gli spareggi e aggiornati gli ELO nel database giocatori."
+            ).format(name=self.current_tournament.get("name", _("Torneo Sconosciuto"))),
             style=wx.YES_NO,
         )
         if dlg.ShowModal() == wx.ID_YES:
-            from db_players import load_players_db
-
-            players_db = load_players_db()
+            # Con il database che non si legge la finalizzazione non parte:
+            # creerebbe nel database tutti gli iscritti, e il file sul disco
+            # perderebbe tutti gli altri giocatori (10.13.16).
+            players_db = self._database_dei_giocatori()
+            if players_db is None:
+                dlg.Destroy()
+                return
 
             from ui import finalize_tournament
 
+            # Gli avvisi che la finalizzazione stampa in console, qui
+            # altrimenti invisibili: giocatori che avevano gia' il torneo
+            # nello storico, copie di sicurezza non riuscite, file del torneo
+            # rimasto al suo posto perche' la copia in archivio non torna.
+            avvisi = []
             success = finalize_tournament(
-                self.current_tournament, players_db, self.active_filename
+                self.current_tournament, players_db, self.active_filename, avvisi
             )
-            if success:
-                wx.MessageBox(
+            esito = self._esito_della_finalizzazione(success, avvisi)
+            if esito is None:
+                # Dalla 10.13.43 il messaggio sta nella finestra accessibile
+                # delle domande, con il testo da leggere con le frecce, e non
+                # piu' nel MessageBox di Windows.
+                dlg_riuscita = AccessibleMsgDialog(
+                    self,
+                    _("Successo"),
                     _(
                         "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."
                     ),
-                    _("Successo"),
-                    wx.ICON_INFORMATION,
+                    settings=self.settings,
                 )
-                self.current_tournament = None
-                self.active_filename = None
+                dlg_riuscita.ShowModal()
+                dlg_riuscita.Destroy()
+            else:
+                titolo, testo = esito
+                dlg_avvisi = AccessibleMsgDialog(
+                    self, titolo, testo, settings=self.settings
+                )
+                dlg_avvisi.ShowModal()
+                dlg_avvisi.Destroy()
+            if success:
+                # Nessun torneo resta aperto: fino alla 10.13.9 la
+                # ricostruzione dell'albero ne apriva un altro senza avviso.
+                self._nessun_torneo_aperto()
                 # Dopo la finestra di conferma il focus resterebbe nel vuoto:
                 # lo si riporta nell'albero, sulla voce che serve subito dopo
                 # aver chiuso un torneo.
@@ -4194,6 +5462,7 @@ class MainFrame(wx.Frame):
         pgn_text = actual_match.get("pgn", "")
 
         # Determinazione se il turno è concluso o il torneo è closed/concluded
+        torneo = self.current_tournament
         is_tournament_concluded = self.current_tournament.get("concluded", False)
         is_round_concluded = False
         round_obj = next(
@@ -4256,7 +5525,13 @@ class MainFrame(wx.Frame):
                 else:
                     self.set_status(_("Nessuna modifica alla pianificazione."))
             elif dlg.selected_action == "withdraw":
-                self.withdraw_player(dlg.withdrawn_player_id)
+                # Dalla 10.13.1 anche questa strada passa dal controllo sul
+                # ritiro, con l'avviso quando i giocatori non bastano.
+                if self._conferma_ritiro(dlg.withdrawn_player_id, self.active_filename):
+                    self.withdraw_player(dlg.withdrawn_player_id)
+                elif self._bivio_ha_cambiato_il_torneo(torneo, round_obj):
+                    dlg.Destroy()
+                    return
             else:
                 res = dlg.get_selected_result()
                 if res:
@@ -4356,6 +5631,12 @@ class MainFrame(wx.Frame):
                         self.apply_match_result(
                             actual_match, res, is_pgn_only=disable_result_change
                         )
+                        # Dopo un forfait la domanda sul ritiro puo' arrivare
+                        # al bivio, che riporta il torneo all'iscrizione o lo
+                        # elimina: allora il risultato non va annunciato.
+                        if self._bivio_ha_cambiato_il_torneo(torneo, round_obj):
+                            dlg.Destroy()
+                            return
                         if disable_result_change:
                             self.set_status(_("Partita aggiornata con PGN."))
                         else:
@@ -4432,10 +5713,10 @@ class MainFrame(wx.Frame):
 
     def apply_match_result(self, match, result_str, is_pgn_only=False):
         if is_pgn_only:
+            # Il suono della conferma lo da' la finestra del risultato, che
+            # e' la sola a chiamare questo ramo con Salva PGN, quando si
+            # chiude: suonarlo anche qui lo faceva sentire due volte.
             self._save_state()
-            from utils import play_sound
-
-            play_sound("conferma")
             return
 
         result_map = {
@@ -4529,9 +5810,15 @@ class MainFrame(wx.Frame):
                 dlg = AccessibleMsgDialog(
                     self, _("Ritiro dopo Forfait"), msg, style=wx.YES_NO
                 )
-                if dlg.ShowModal() == wx.ID_YES:
-                    self.withdraw_player(forfeiting_id)
+                risposta = dlg.ShowModal()
                 dlg.Destroy()
+                # Dalla 10.13.1 anche il ritiro dopo un forfait passa dal
+                # controllo sul ritiro, con l'avviso quando i giocatori non
+                # bastano.
+                if risposta == wx.ID_YES and self._conferma_ritiro(
+                    forfeiting_id, self.active_filename
+                ):
+                    self.withdraw_player(forfeiting_id)
 
     def withdraw_player(self, player_id):
         players_dict = self.current_tournament.get("players_dict", {})
@@ -4591,26 +5878,44 @@ class MainFrame(wx.Frame):
         self.set_status(_("Visualizzazione scheda di {name}.").format(name=p_name))
 
     def start_tournament_matchmaking(self):
-        from tournament import generate_pairings_for_round
-        from utils import play_sound
+        from tournament import abbinamento_esaurito, generate_pairings_for_round
 
         if not self._torneo_puo_partire(self.current_tournament):
             return
 
         matches = generate_pairings_for_round(self.current_tournament)
         if matches is None:
-            self._avvisa_abbinamento_fallito(self.current_tournament)
+            if abbinamento_esaurito(self.current_tournament):
+                self._proponi_abbinamento_manuale(1)
+            else:
+                self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
-        from models import Match, Round
-        from tournament import registra_bye_del_turno
+        self._registra_nuovo_turno(
+            matches, 1, _("Torneo iniziato. Generati abbinamenti per il Turno 1.")
+        )
+
+    def _registra_nuovo_turno(self, matches, numero, stato, manuale=False):
+        """Registra il turno appena abbinato, salva e mostra il turno nuovo.
+        Fino alla 10.11.0 le stesse righe stavano due volte, all'avvio del
+        torneo e in generate_next_round; dalla 10.12.0 servono anche al turno
+        composto a mano (issue 38), e il lavoro sui dati lo fa registra_turno,
+        senza wx: il turno del motore resta registrato come prima. stato e' la
+        frase della barra di stato."""
+        from tournament import registra_turno
+        from utils import play_sound
 
         # Il giocatore senza avversario prende i punti previsti dal torneo:
-        # prima li assegnava solo il percorso testuale.
-        registra_bye_del_turno(self.current_tournament, matches, 1)
-
-        round_obj = Round(round=1, matches=[Match.from_dict(m) for m in matches])
-        self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
+        # prima li assegnava solo il percorso testuale. Al giocatore ritirato
+        # non va scritta alcuna voce di storico per i turni che non gioca.
+        # Prima gliene veniva messa una di BYE con zero punti: nel file TRF
+        # diventava il codice U, cioe' bye assegnato, che per bbpPairings vale
+        # il punteggio del bye e non zero. Il totale dichiarato non tornava
+        # piu' con i risultati e il motore rifiutava il file con "The score
+        # for player N does not match the game results", bloccando la
+        # generazione del turno successivo. Ci pensa gia' engine.py, che per i
+        # ritirati riempie con il codice Z i turni non giocati.
+        registra_turno(self.current_tournament, matches, numero, manuale=manuale)
         self._save_state()
 
         play_sound("nuovo_turno", self.current_tournament)
@@ -4619,12 +5924,96 @@ class MainFrame(wx.Frame):
         self._tree_restore_target = {
             "action": "show_round_report",
             "filepath": self.active_filename,
-            "round": 1,
+            "round": numero,
         }
 
         self.populate_tree()
         self.show_current_round_report()
-        self.set_status(_("Torneo iniziato. Generati abbinamenti per il Turno 1."))
+        self.set_status(stato)
+
+    def _proponi_abbinamento_manuale(self, numero):
+        """bbpPairings ha risposto che nessun abbinamento del turno rispetta i
+        criteri assoluti: con i giocatori rimasti le coppie ammesse sono
+        esaurite. Il regolamento lascia la decisione all'arbitro capo
+        (C.04.3, articolo 1.9.3), e dalla 10.12.0 Tornello propone di comporre
+        il turno a mano (issue 38). Per gli altri errori resta l'avviso di
+        _avvisa_abbinamento_fallito."""
+        from utils import play_sound
+
+        play_sound("errore", self.current_tournament)
+        messaggio = _(
+            "bbpPairings non ha trovato nessun abbinamento del turno {turno} che rispetti i criteri assoluti del sistema svizzero: con i giocatori rimasti, ogni combinazione ripeterebbe un incontro gia' giocato, darebbe un secondo bye a chi l'ha gia' avuto o farebbe incontrare due giocatori che devono avere lo stesso colore.\n\n"
+            "In questo caso il regolamento FIDE (C.04.3, articolo 1.9.3) lascia la decisione all'arbitro capo. Puoi comporre a mano gli abbinamenti del turno {turno}: con non piu' di 16 giocatori attivi Tornello propone le coppie da cui partire, e segnala sempre gli incontri ripetuti, i bye e i colori fuori regola, che restano avvertimenti e non divieti. Prima di registrare il turno viene creata una copia di sicurezza, e nell'albero il turno si chiamera' Turno {turno}, abbinamenti manuali.\n\n"
+            "Vuoi comporre a mano il turno {turno}? Se rispondi No il torneo resta com'e'."
+        ).format(turno=numero)
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Nessun abbinamento valido"),
+            messaggio,
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        if risposta != wx.ID_YES:
+            self.set_status(
+                _("Turno {turno} non abbinato: il torneo resta com'era.").format(
+                    turno=numero
+                )
+            )
+            return
+
+        from gui.dialogs.manual_pairing_dialog import ManualPairingDialog
+
+        dlg = ManualPairingDialog(self, self.current_tournament, numero, self.settings)
+        esito = dlg.ShowModal()
+        coppie = dlg.coppie_confermate
+        dlg.Destroy()
+        if esito != wx.ID_OK or not coppie:
+            self.set_status(
+                _(
+                    "Composizione manuale annullata: il turno {turno} non e' stato registrato."
+                ).format(turno=numero)
+            )
+            return
+        self._registra_turno_manuale(coppie, numero)
+
+    def _registra_turno_manuale(self, coppie, numero):
+        """Registra le coppie confermate nella finestra di composizione. Prima
+        fa la copia di sicurezza pre_turno_manuale; se non riesce, chiede se
+        registrare lo stesso, con il No predefinito."""
+        from turno_manuale import crea_partite_turno_manuale, valida_turno_manuale
+        from utils import create_backup, play_sound
+
+        errori, _avvertimenti = valida_turno_manuale(self.current_tournament, coppie)
+        if errori:
+            play_sound("errore", self.current_tournament)
+            self._dialogo_informativo(_("Turno non registrato"), "\n".join(errori))
+            return
+        if not create_backup(self.active_filename, "pre_turno_manuale"):
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Copia di sicurezza non riuscita"),
+                _(
+                    "Non e' stato possibile creare la copia di sicurezza del torneo prima del turno composto a mano. Registrare lo stesso il turno {turno}? Il pulsante predefinito e' No."
+                ).format(turno=numero),
+                style=wx.YES_NO,
+                settings=self.settings,
+                no_predefinito=True,
+            )
+            risposta = dlg.ShowModal()
+            dlg.Destroy()
+            if risposta != wx.ID_YES:
+                return
+        partite = crea_partite_turno_manuale(self.current_tournament, coppie, numero)
+        self._registra_nuovo_turno(
+            partite,
+            numero,
+            _("Registrati gli abbinamenti composti a mano del Turno {num}.").format(
+                num=numero
+            ),
+            manuale=True,
+        )
 
     def _avvisa_abbinamento_fallito(self, torneo):
         """
@@ -4685,53 +6074,26 @@ class MainFrame(wx.Frame):
                     return
 
         next_round_num = curr_round + 1
-        filepath = self.active_filename
 
-        from tournament import generate_pairings_for_round
-        from utils import play_sound
+        from tournament import abbinamento_esaurito, generate_pairings_for_round
 
         self.current_tournament["current_round"] = next_round_num
 
         next_matches = generate_pairings_for_round(self.current_tournament)
         if next_matches is None:
             self.current_tournament["current_round"] = curr_round
-            self._avvisa_abbinamento_fallito(self.current_tournament)
+            # Dalla 10.12.0 l'esaurimento delle coppie ha la sua strada, la
+            # composizione manuale; gli altri errori restano un avviso.
+            if abbinamento_esaurito(self.current_tournament):
+                self._proponi_abbinamento_manuale(next_round_num)
+            else:
+                self._avvisa_abbinamento_fallito(self.current_tournament)
             return
 
-        # Al giocatore ritirato non va scritta alcuna voce di storico per i
-        # turni che non gioca. Prima gliene veniva messa una di BYE con zero
-        # punti: nel file TRF diventava il codice U, cioe' bye assegnato, che
-        # per bbpPairings vale il punteggio del bye e non zero. Il totale
-        # dichiarato non tornava piu' con i risultati e il motore rifiutava il
-        # file con "The score for player N does not match the game results",
-        # bloccando la generazione del turno successivo. Ci pensa gia'
-        # engine.py, che per i ritirati riempie con il codice Z i turni non
-        # giocati.
-        from tournament import registra_bye_del_turno
-
-        registra_bye_del_turno(self.current_tournament, next_matches, next_round_num)
-
-        from models import Match, Round
-
-        round_obj = Round(
-            round=next_round_num, matches=[Match.from_dict(m) for m in next_matches]
-        )
-        self.current_tournament.setdefault("rounds", []).append(round_obj.to_dict())
-        self._save_state()
-
-        play_sound("nuovo_turno", self.current_tournament)
-
-        # Imposta il target per ripristinare il focus del cursore sul nuovo turno
-        self._tree_restore_target = {
-            "action": "show_round_report",
-            "filepath": filepath,
-            "round": next_round_num,
-        }
-
-        self.populate_tree()
-        self.show_current_round_report()
-        self.set_status(
-            _("Generati abbinamenti per il Turno {num}.").format(num=next_round_num)
+        self._registra_nuovo_turno(
+            next_matches,
+            next_round_num,
+            _("Generati abbinamenti per il Turno {num}.").format(num=next_round_num),
         )
 
     def on_export_ics(self, event):
@@ -4775,9 +6137,21 @@ class MainFrame(wx.Frame):
                 ics_content, partite_saltate = generate_ics_content(
                     self.current_tournament
                 )
-                with open(path, "w", encoding="utf-8", newline="\r\n") as f:
+                # Le righe finiscono gia' con CR LF, come vuole RFC 5545:
+                # newline="" le scrive come sono. Fino alla 10.13.26 il file
+                # si apriva con newline="\r\n", che aggiungeva un secondo CR a
+                # ogni riga.
+                with open(path, "w", encoding="utf-8", newline="") as f:
                     f.write(ics_content)
-                if partite_saltate:
+                # Con una partita sola la frase va al singolare: fino alla
+                # 10.13.27 diceva 1 partite pianificate non ci sono entrate.
+                if len(partite_saltate) == 1:
+                    self.set_status(
+                        _("Calendario esportato in '{path}', ma una partita pianificata non c'e' entrata: la sua data non e' leggibile.").format(
+                            path=os.path.basename(path)
+                        )
+                    )
+                elif partite_saltate:
                     self.set_status(
                         _("Calendario esportato in '{path}', ma {n} partite pianificate non ci sono entrate: la loro data non e' leggibile.").format(
                             path=os.path.basename(path), n=len(partite_saltate)

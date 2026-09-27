@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import tempfile
 
 from babel.dates import format_date
@@ -91,36 +92,121 @@ def cartella_per_data(radice, data=None, crea=True):
     return percorso
 
 
-def create_backup(filepath, context="backup"):
+def create_backup(filepath, context="backup", cartella_backup=None):
     """
     Crea una copia di backup del file specificato nella cartella 'backup'
     accanto all'applicazione, dentro le sottocartelle dell'anno e del mese in
     cui la copia viene fatta.
     Aggiunge un timestamp e il contesto al nome del file per non sovrascrivere backup precedenti.
+    Risponde vero se la copia e' nata; il lavoro lo fa copia_di_sicurezza,
+    che dice anche dove.
+    """
+    return copia_di_sicurezza(filepath, context, cartella_backup) is not None
+
+
+def copia_di_sicurezza(filepath, context="backup", cartella_backup=None):
+    """La copia di create_backup, che restituisce il percorso della copia
+    appena nata, oppure None se la copia non si e' potuta fare. Serve a chi
+    deve rileggerla prima di togliere l'originale, come la finalizzazione
+    ripetuta che mette da parte i suoi file (10.8.9).
+    Due copie dello stesso file e dello stesso contesto nello stesso secondo
+    avrebbero lo stesso nome: fino alla 10.8.10 la seconda cancellava la
+    prima senza dire niente, per esempio le due copie pre_finalize_db che la
+    console faceva di fila. Adesso la seconda prende il suffisso _2, la terza
+    _3 e cosi' via, e nessuna copia viene mai sovrascritta.
+    cartella_backup e' la radice delle copie; senza, quella accanto al
+    programma. Dalla 10.10.0 la passa il ripristino (copie_di_sicurezza.py),
+    che riceve tutti i suoi percorsi da chi lo chiama.
     """
     if not os.path.exists(filepath):
-        return False
+        return None
 
     # La cartella va accanto all'applicazione, non nella directory da cui e'
     # stata avviata: con un percorso relativo le copie di sicurezza fatte prima
     # di finalizzazione, Time Machine e rollback finivano dove capitava, e
     # l'utente che doveva recuperare un torneo non le trovava.
-    from config import user_data_path
+    if cartella_backup is None:
+        from config import user_data_path
+
+        cartella_backup = user_data_path("backup")
 
     adesso = datetime.datetime.now()
-    backup_dir = cartella_per_data(user_data_path("backup"), adesso)
+    backup_dir = cartella_per_data(cartella_backup, adesso)
     if not backup_dir:
-        return False
+        return None
 
     filename = os.path.basename(filepath)
     name, ext = os.path.splitext(filename)
     timestamp = adesso.strftime("%Y%m%d_%H%M%S")
     backup_filename = f"{name}_{context}_{timestamp}{ext}"
     backup_path = os.path.join(backup_dir, backup_filename)
+    numero = 2
+    while os.path.exists(backup_path):
+        backup_path = os.path.join(
+            backup_dir, f"{name}_{context}_{timestamp}_{numero}{ext}"
+        )
+        numero += 1
 
     try:
         shutil.copy2(filepath, backup_path)
-        return True
+    except OSError:
+        return None
+    return backup_path
+
+
+# La data scritta da create_backup in fondo al nome, prima dell'estensione,
+# con il suffisso _2, _3 delle copie nate nello stesso secondo.
+DATA_NEL_NOME_DELLA_COPIA = re.compile(r"_(\d{8})_(\d{6})(?:_\d+)?$")
+
+
+def data_della_copia(percorso):
+    """Il momento in cui e' nata una copia di sicurezza, letto dalla data che
+    create_backup scrive nel nome del file, per esempio
+    Tornello - Autunneo2_chiusura_torneo_20260923_160512.json.
+    La data di modifica del file non dice quando e' nata la copia: shutil.copy2
+    conserva quella dell'originale, e le copie di chiusura del database fatte
+    il 23 settembre risultavano del 13, l'ultimo giorno in cui il database era
+    cambiato. Fino alla 10.8.10 l'eta' delle copie si misurava cosi', e con
+    lei il consiglio dei 18 mesi e l'indicatore BK del pie' di pagina.
+    Solo per i file senza la data nel nome, o con una data impossibile, si
+    ripiega sulla data di modifica. Nata come data_del_backup in
+    riordina_archivio_e_backup.py, che ora la importa da qui.
+    """
+    base = os.path.splitext(os.path.basename(percorso))[0]
+    trovata = DATA_NEL_NOME_DELLA_COPIA.search(base)
+    if trovata:
+        try:
+            return datetime.datetime.strptime(
+                trovata.group(1) + trovata.group(2), "%Y%m%d%H%M%S"
+            )
+        except ValueError:
+            pass
+    return datetime.datetime.fromtimestamp(os.path.getmtime(percorso))
+
+
+def dentro_la_cartella(percorso, cartella):
+    """Vero se il percorso sta dentro la cartella, a qualunque profondita'.
+    Il confronto si fa sui percorsi assoluti e risolti, senza badare alle
+    maiuscole come fa Windows."""
+    if not percorso or not cartella:
+        return False
+    try:
+        file_risolto = os.path.normcase(os.path.realpath(percorso))
+        cartella_risolta = os.path.normcase(os.path.realpath(cartella))
+        return (
+            os.path.commonpath([file_risolto, cartella_risolta]) == cartella_risolta
+            and file_risolto != cartella_risolta
+        )
+    except (OSError, ValueError):
+        # Unita' diverse o percorso illeggibile: non sta dentro.
+        return False
+
+
+def stessi_byte(primo, secondo):
+    """Vero se i due file si leggono e hanno esattamente lo stesso contenuto."""
+    try:
+        with open(primo, "rb") as f_primo, open(secondo, "rb") as f_secondo:
+            return f_primo.read() == f_secondo.read()
     except OSError:
         return False
 
@@ -129,20 +215,145 @@ def copie_di_chiusura(percorso_torneo):
     """Le copie di sicurezza fatte alla chiusura del programma: il torneo
     aperto, se c'e', e l'archivio dei giocatori. Con quelle di ogni turno
     proteggono il lavoro di tutti i giorni (issue 45).
+    Dalla 10.11.0 una copia identica, byte per byte, all'ultima copia dello
+    stesso file non nasce: le tre copie di chiusura del database fatte il 23
+    settembre 2026 erano uguali fra loro e al database, e ogni chiusura senza
+    lavoro ne aggiungeva un'altra (issue 39).
     """
-    from config import PLAYER_DB_FILE
+    from config import PLAYER_DB_FILE, user_data_path
 
+    cartella = user_data_path("backup")
     if percorso_torneo:
-        create_backup(percorso_torneo, "chiusura_torneo")
-    create_backup(PLAYER_DB_FILE, "chiusura_db")
+        _copia_se_cambiato(percorso_torneo, "chiusura_torneo", cartella)
+    _copia_se_cambiato(PLAYER_DB_FILE, "chiusura_db", cartella)
+
+
+def _copia_se_cambiato(percorso, contesto, cartella_backup):
+    """La copia di chiusura di un file, se il file e' diverso dalla sua
+    ultima copia, di qualunque momento."""
+    from copie_di_sicurezza import ultima_copia_di
+
+    ultima = ultima_copia_di(percorso, cartella_backup)
+    if ultima and stessi_byte(percorso, ultima):
+        return
+    create_backup(percorso, contesto, cartella_backup)
+
+
+def cestino_disponibile(percorso):
+    """Vero se il disco del percorso ha il cestino di Windows. Lo chiede alla
+    Shell con SHQueryRecycleBinW sulla radice del disco: su una cartella di
+    rete risponde con un errore. Fuori da Windows risponde vero, e decide
+    send2trash."""
+    if sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class SHQUERYRBINFO(ctypes.Structure):
+            _fields_ = [
+                ("cbSize", wintypes.DWORD),
+                ("i64Size", ctypes.c_longlong),
+                ("i64NumItems", ctypes.c_longlong),
+            ]
+
+        radice = os.path.splitdrive(os.path.abspath(percorso))[0] + "\\"
+        informazioni = SHQUERYRBINFO()
+        informazioni.cbSize = ctypes.sizeof(SHQUERYRBINFO)
+        esito = ctypes.windll.shell32.SHQueryRecycleBinW(
+            radice, ctypes.byref(informazioni)
+        )
+    except (OSError, AttributeError, ValueError, TypeError):
+        return False
+    return esito == 0
+
+
+def delete_file_to_trash(path, finestra=None):
+    """Manda nel Cestino di Windows un file o una cartella, e risponde vero
+    solo se dal suo posto e' sparito davvero.
+    Fino alla 10.9.0 l'ultimo ripiego era os.remove, che cancella per sempre:
+    dalla 10.10.0 le cancellazioni vanno sempre nel cestino (decisione di
+    Gabriele). Su un disco senza cestino, per esempio una cartella di rete,
+    il file resta dov'e' e la risposta e' falso, senza chiedere niente: la
+    Shell, a cui non arriva nemmeno, chiederebbe se cancellarlo per sempre.
+    Se il cestino c'e' ma non puo' prendere il file, per esempio perche' e'
+    piu' grande del cestino o perche' il cestino di quel disco e' impostato
+    per cancellare subito, la Shell riceve FOF_WANTNUKEWARNING e chiede prima
+    di cancellare per sempre, invece di farlo in silenzio. finestra e'
+    l'handle della finestra da cui parte la cancellazione: la domanda le
+    appartiene, e prende il fuoco invece di restare nascosta dietro una
+    finestra modale. Su Windows, dopo la Shell, non si ritenta con
+    send2trash, che la stessa domanda non la farebbe.
+    Nata in backup_cleanup_dialog.py, che la importa da qui, come
+    copie_di_sicurezza.py (issue 39).
+    """
+    path_abs = os.path.abspath(path)
+    if not os.path.exists(path_abs):
+        return False
+    if sys.platform == "win32":
+        if not cestino_disponibile(path_abs):
+            return False
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            class SHFILEOPSTRUCTW(ctypes.Structure):
+                _fields_ = [
+                    ("hwnd", wintypes.HWND),
+                    ("wFunc", wintypes.UINT),
+                    ("pFrom", wintypes.LPCWSTR),
+                    ("pTo", wintypes.LPCWSTR),
+                    ("fFlags", ctypes.c_ushort),
+                    ("fAnyOperationsAborted", wintypes.BOOL),
+                    ("hNameMappings", wintypes.LPVOID),
+                    ("lpszProgressTitle", wintypes.LPCWSTR),
+                ]
+
+            FO_DELETE = 3
+            FOF_ALLOWUNDO = 0x0040
+            FOF_NOCONFIRMATION = 0x0010
+            FOF_NOERRORUI = 0x0400
+            FOF_SILENT = 0x0004
+            FOF_WANTNUKEWARNING = 0x4000
+
+            fileop = SHFILEOPSTRUCTW()
+            fileop.hwnd = finestra
+            fileop.wFunc = FO_DELETE
+            # La Shell vuole l'elenco dei percorsi chiuso da due caratteri nulli.
+            fileop.pFrom = path_abs + "\0\0"
+            fileop.pTo = None
+            fileop.fFlags = (
+                FOF_ALLOWUNDO
+                | FOF_NOCONFIRMATION
+                | FOF_NOERRORUI
+                | FOF_SILENT
+                | FOF_WANTNUKEWARNING
+            )
+            fileop.fAnyOperationsAborted = False
+            fileop.hNameMappings = None
+            fileop.lpszProgressTitle = None
+
+            esito = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(fileop))
+        except (OSError, AttributeError, ValueError, TypeError):
+            return False
+        return esito == 0 and not os.path.exists(path_abs)
+
+    try:
+        from send2trash import send2trash
+
+        send2trash(path_abs)
+    except (ImportError, OSError):
+        return False
+    return not os.path.exists(path_abs)
 
 
 def elenca_file_di_backup(cartella_backup, limite_data=None):
     """Elenca i file di backup, scendendo nelle sottocartelle dell'anno e del
     mese. Restituisce due liste: tutti i file, dal piu' vecchio al piu'
     recente, e quelli piu' vecchi della data limite, se indicata.
-    Ogni file e' un dizionario con nome, percorso, dimensione e data di
-    ultima modifica."""
+    Ogni file e' un dizionario con nome, percorso, dimensione e data della
+    copia, letta dal nome con data_della_copia. Fino alla 10.8.10 la chiave
+    era mtime e conteneva la data di modifica, cioe' quella dell'originale."""
     tutti = []
     vecchi = []
     if not cartella_backup or not os.path.isdir(cartella_backup):
@@ -155,21 +366,21 @@ def elenca_file_di_backup(cartella_backup, limite_data=None):
                 if not os.path.isfile(percorso):
                     continue
                 dati = os.stat(percorso)
-                modifica = datetime.datetime.fromtimestamp(dati.st_mtime)
+                nascita = data_della_copia(percorso)
                 informazioni = {
                     "name": nome,
                     "path": percorso,
                     "size": dati.st_size,
-                    "mtime": modifica,
+                    "data": nascita,
                 }
                 tutti.append(informazioni)
-                if limite_data is not None and modifica < limite_data:
+                if limite_data is not None and nascita < limite_data:
                     vecchi.append(informazioni)
     except OSError:
         return tutti, vecchi
 
-    tutti.sort(key=lambda f: f["mtime"])
-    vecchi.sort(key=lambda f: f["mtime"])
+    tutti.sort(key=lambda f: f["data"])
+    vecchi.sort(key=lambda f: f["data"])
     return tutti, vecchi
 
 
@@ -280,6 +491,55 @@ def file_del_torneo(nome_file, nome_sanitizzato):
     )
 
 
+# Un titolo del manuale comincia con il numero della sezione: "3. " per un
+# capitolo, "2.3.1 " per una sezione interna.
+_TITOLO_DEL_MANUALE = re.compile(r"^(\d+(?:\.\d+)*)(\.?) (\S.*)$")
+
+
+def _numero_del_titolo(righe, i):
+    """Il numero della riga i, come "2.3.1" o "3", se e' un titolo del
+    manuale; altrimenti None. Il testo di un titolo e' tutto maiuscolo fuori
+    dalle parentesi, come "2.3 LA BARRA DI STATO INFERIORE (Tasto F7)". Un
+    capitolo ha il punto dopo il numero e la riga vuota prima, che lo
+    distingue dalle voci degli elenchi numerati come "4. ARO (Average Rating
+    of Opponents)"; una sezione interna no, perche' gli elenchi non usano mai
+    il numero col punto in mezzo. E' la stessa regola che tests/test_manuale.py
+    controlla su tutto il manuale."""
+    m = _TITOLO_DEL_MANUALE.match(righe[i])
+    if not m:
+        return None
+    numero, punto, testo = m.groups()
+    capitolo = "." not in numero
+    if capitolo != (punto == "."):
+        return None
+    if capitolo and i > 0 and righe[i - 1].strip():
+        return None
+    fuori = re.sub(r"\([^)]*\)", "", testo)
+    if fuori != fuori.upper() or not any(c.isalpha() for c in fuori):
+        return None
+    return numero
+
+
+def sezione_del_manuale(testo, numero):
+    """La sezione del manuale con il numero dato, per esempio "2.3.1": dal
+    suo titolo compreso fino al titolo seguente escluso, di qualunque livello,
+    senza le righe vuote in coda. La sezione di un capitolo si ferma quindi
+    alla sua prima sezione interna. None se nel testo non c'e'.
+    Dalla 10.5.3 il manuale non ha piu' righe di separatori: la fine la segna
+    soltanto il titolo seguente. Issue 54."""
+    righe = testo.splitlines()
+    titoli = [i for i in range(len(righe)) if _numero_del_titolo(righe, i)]
+    for posizione, inizio in enumerate(titoli):
+        if _numero_del_titolo(righe, inizio) != numero:
+            continue
+        fine = titoli[posizione + 1] if posizione + 1 < len(titoli) else len(righe)
+        sezione = righe[inizio:fine]
+        while sezione and not sezione[-1].strip():
+            sezione.pop()
+        return "\n".join(sezione)
+    return None
+
+
 def parse_flexible_date(date_input_str):
     """
     Tenta di parsare una data da vari formati, incluso ISO (YYYY-MM-DD)
@@ -373,6 +633,43 @@ EVENTI = {
     # Dalla 10.3.1 i controlli della finestra di programmazione hanno una
     # sinusoide di 45 ms al posto della campanella, troppo invadente (issue 48).
     "controllo_programmazione": "meditimer_giro",
+    # Dalla 10.6.1 anche la finestra dei risultati lascia la campanella, troppo
+    # aggressiva: un suono all'apertura e uno diverso sui quattro pulsanti
+    # Pianifica, Ritira, Annulla e Conferma. Due preset che in Tornello non
+    # suonano per nient'altro, scelti da Gabriele il 26 settembre 2026 con un
+    # ascolto alla cieca fra sei candidati (issue 51): all'apertura, sopra
+    # l'arpeggio del risultato, il pizzicato breve; sui pulsanti, ripetuto
+    # quattro volte di fila, il tic che sale appena.
+    "apertura_risultati": "gabryscola_gioca_carta",
+    "controllo_risultati": "meditimer_banco_fase",
+    # Dalla 10.10.0 un ripristino riuscito dalla finestra Copie di
+    # sicurezza: tre tic veloci che salgono, un preset che Tornello non usa
+    # per nient'altro. Provvisorio fino all'ascolto di Gabriele (issue 39).
+    "ripristino": "meditimer_banco_salvato",
+    # Dalla 10.12.0 la finestra della composizione manuale del turno: due
+    # tic che salgono per una coppia aggiunta, una scivolata verso il basso
+    # per una coppia tolta. Preset che Tornello non usa per nient'altro
+    # (issue 38).
+    "coppia_aggiunta": "doppio_tic_conferma",
+    "coppia_tolta": "espelli",
+    # Dalla 10.13.42 gli avvertimenti hanno un suono loro, una nota sola che
+    # si spegne, che segue quello dell'azione: la coppia aggiunta, i colori
+    # invertiti o la proposta, quando le coppie hanno avvertimenti. Scelta
+    # di Gabriele del 27 settembre 2026, dopo l'ascolto: fino alla 10.13.41
+    # la coppia aggiunta con avvertimenti aveva questa sola nota, al posto
+    # dei due tic.
+    "avvertimento": "avviso_di_sistema",
+    # Nella stessa finestra, Inverti colori e Proposta automatica hanno i
+    # loro suoni, due ciascuno, senza e con avvertimenti, perche' nessun
+    # preset si divide fra due eventi: per i colori invertiti due note uguali
+    # allo specchio fra sinistra e destra, oppure due note uguali che si
+    # spengono in un tonfo; per la proposta due accordi in portamento, oppure
+    # un arpeggio minore lento. Con gli avvertimenti, dalla 10.13.42, li
+    # segue il suono dell'avvertimento (issue 38).
+    "coppia_invertita": "pokermachine_coppia_gemella",
+    "coppia_invertita_avvertimento": "pokermachine_coppia_muta",
+    "proposta_coppie": "perfect_match",
+    "proposta_coppie_avvertimento": "arpeggio_pensoso",
 }
 
 
@@ -393,6 +690,43 @@ def play_sound(event_name, torneo=None, sync=False):
     return Acusticator.play(
         EVENTI.get(event_name, event_name), sync=sync, volume=volume
     )
+
+
+def durata_del_suono(event_name):
+    """I secondi che dura il suono di un evento, o di un preset chiamato per
+    nome come in play_sound: la somma delle durate delle sue note. Zero se
+    il preset non esiste."""
+    from GBUtils import Acusticator
+
+    score, _kind, _adsr = Acusticator.preset(EVENTI.get(event_name, event_name))
+    if not score:
+        return 0.0
+    return sum(float(durata) for durata in score[1::4])
+
+
+def suona_in_fila(eventi, torneo=None, pausa=0.06):
+    """Suona gli eventi uno dopo l'altro, senza fermare il programma: il
+    primo parte subito, ogni altro alla fine del precedente, dopo una pausa
+    breve che li tiene distinti. Dalla 10.13.42, per l'avvertimento che
+    segue il suono di un'azione nella composizione manuale del turno. I
+    suoni dopo il primo partono da un timer in un thread a parte, che non
+    tiene aperto il programma se nel frattempo si chiude. Restituisce i
+    timer, perche' chi chiama possa annullare con cancel() i suoni che non
+    sono ancora partiti."""
+    import threading
+
+    in_attesa = []
+    ritardo = 0.0
+    for numero, evento in enumerate(eventi):
+        if numero == 0:
+            play_sound(evento, torneo)
+        else:
+            timer = threading.Timer(ritardo, play_sound, args=(evento, torneo))
+            timer.daemon = True
+            timer.start()
+            in_attesa.append(timer)
+        ritardo += durata_del_suono(evento) + pausa
+    return in_attesa
 
 
 def bip_di_scelta(indice, quante, torneo=None):

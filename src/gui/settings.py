@@ -112,6 +112,41 @@ def save_settings(settings):
     return riuscito
 
 
+def salva_impostazione(chiave, valore):
+    """Scrive nel file delle impostazioni una chiave sola, e lascia com'e'
+    tutto il resto, selected_language.json compreso.
+    Serve alle scritture che il programma fa da se', come il rinvio
+    dell'avviso sulle copie di sicurezza vecchie (10.8.11). save_settings non
+    va bene per loro: riallinea la lingua di avvio a settings["language"], e
+    per chi non ha mai salvato le Preferenze quella lingua e' l'italiano dei
+    valori di fabbrica, mentre polipo aveva avviato il programma nella lingua
+    del sistema, scritta da config al primo avvio.
+    Un file che c'e' ma non si legge non si tocca: riscrivendolo si
+    perderebbero le impostazioni che contiene, e load_settings lo ha gia'
+    annotato in error.log. Risponde vero se la chiave e' arrivata sul disco.
+    """
+    impostazioni = {}
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, encoding="utf-8") as f:
+                impostazioni = json.load(f)
+        except (OSError, ValueError) as errore:
+            _registra(f"Impostazione {chiave} non salvata, file illeggibile: {errore}")
+            return False
+        if not isinstance(impostazioni, dict):
+            _registra(f"Impostazione {chiave} non salvata, file senza un dizionario")
+            return False
+    impostazioni[chiave] = valore
+    from utils import scrivi_json_atomico
+
+    try:
+        scrivi_json_atomico(SETTINGS_FILE, impostazioni, indent=4)
+    except (OSError, TypeError, ValueError) as errore:
+        _registra(f"Impostazione {chiave} non salvata: {errore}")
+        return False
+    return True
+
+
 def pct_to_byte(pct):
     """Converte un valore percentuale (0-100) in byte (0-255)."""
     val = int((pct / 100) * 255)

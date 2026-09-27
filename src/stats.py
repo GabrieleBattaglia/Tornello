@@ -1,6 +1,7 @@
 import math
+import re
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -186,6 +187,56 @@ def calculate_expected_score(player_elo, opponent_elo):
         return 0.5  # Ritorna 0.5 in caso di Elo non validi
 
 
+def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
+    """Le partite del giocatore che concorrono alla variazione Elo, come
+    coppie (Elo di partenza dell'avversario, punteggio). Restano fuori i bye,
+    le voci senza avversario o senza punteggio, le partite non giocate, cioe'
+    vinte o perse a forfait, e quelle con un avversario che non si trova o
+    che ha un Elo o un punteggio non validi; per queste ultime avvisa, se
+    c'e', riceve il motivo. calculate_elo_change calcola la variazione su
+    queste partite, e dalla 10.13.7 la finalizzazione le guarda per decidere
+    se l'Elo della cadenza di un rapid o di un blitz puo' nascere: una
+    funzione sola, perche' le due scelte non si separino."""
+    partite = []
+    for result_entry in player.get("results_history") or []:
+        opponent_id = result_entry.get("opponent_id")
+        score = result_entry.get("score")
+
+        # Salta BYE e partite senza avversario o punteggio valido
+        if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
+            continue
+
+        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
+        # forfait vale in classifica ma non concorre alla variazione Elo.
+        if is_forfeit_result(result_entry.get("result")):
+            continue
+
+        opponent = tournament_players_dict.get(opponent_id)
+        if not opponent or "initial_elo" not in opponent:
+            if avvisa:
+                avvisa(
+                    _(
+                        "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo Elo."
+                    ).format(opponent_id=opponent_id)
+                )
+            continue
+
+        try:
+            opponent_elo = float(opponent["initial_elo"])
+            score = float(score)
+        except (ValueError, TypeError):
+            if avvisa:
+                avvisa(
+                    _(
+                        "Warning: Elo avversario ({}) o score ({}) non validi per partita contro {}."
+                    ).format(opponent.get("initial_elo"), score, opponent_id)
+                )
+            continue
+
+        partite.append((opponent_elo, score))
+    return partite
+
+
 def calculate_elo_change(player, tournament_players_dict):
     """Calcola la variazione Elo per un giocatore basata sulle partite del torneo."""
     if not player or "initial_elo" not in player or "results_history" not in player:
@@ -221,39 +272,11 @@ def calculate_elo_change(player, tournament_players_dict):
         )
         initial_elo = DEFAULT_ELO
 
-    for result_entry in player.get("results_history", []):
-        opponent_id = result_entry.get("opponent_id")
-        score = result_entry.get("score")
-
-        # Salta BYE e partite senza avversario o punteggio valido
-        if opponent_id is None or opponent_id == "BYE_PLAYER_ID" or score is None:
-            continue
-
-        # Salta le partite non giocate (1-F, F-1, 0-0F): il punto assegnato per
-        # forfait vale in classifica ma non concorre alla variazione Elo.
-        if is_forfeit_result(result_entry.get("result")):
-            continue
-
-        opponent = tournament_players_dict.get(opponent_id)
-        if not opponent or "initial_elo" not in opponent:
-            print(
-                _(
-                    "Warning: Avversario {opponent_id} non trovato o Elo mancante per calcolo Elo."
-                ).format(opponent_id=opponent_id)
-            )
-            continue
-
-        try:
-            opponent_elo = float(opponent["initial_elo"])
-            score = float(score)
-        except (ValueError, TypeError):
-            print(
-                _(
-                    "Warning: Elo avversario ({}) o score ({}) non validi per partita contro {}."
-                ).format(opponent.get("initial_elo"), score, opponent_id)
-            )
-            continue
-
+    # Le partite valide per l'Elo le sceglie partite_valide_per_elo, la
+    # stessa funzione che la finalizzazione usa per l'Elo della cadenza.
+    for opponent_elo, score in partite_valide_per_elo(
+        player, tournament_players_dict, avvisa=print
+    ):
         expected_score = calculate_expected_score(initial_elo, opponent_elo)
         total_expected_score += expected_score
         actual_score += score
@@ -576,8 +599,25 @@ def compute_buchholz_cut1(player_id, torneo):
     return float(format_points(sum(valore for valore, _vur in rimasti)))
 
 
+def _giocata_sulla_scacchiera(result_entry):
+    """Vero per una partita giocata sulla scacchiera: con un avversario, e
+    non un bye o un forfait. Sono le sole che contano nella media dell'ARO,
+    come vuole l'articolo 10.1 del regolamento FIDE sugli spareggi (C.07, in
+    vigore dal 1 marzo 2026): la media dei rating degli avversari "played
+    over the board". Fino alla 10.13.17 l'ARO contava anche gli avversari
+    delle partite vinte o perse a forfait, 1-F, F-1 e 0-0F, che performance
+    e variazione Elo escludevano gia'."""
+    opponent_id = result_entry.get("opponent_id")
+    return (
+        bool(opponent_id)
+        and opponent_id != "BYE_PLAYER_ID"
+        and not is_forfeit_result(result_entry.get("result"))
+    )
+
+
 def compute_aro(player_id, torneo):
-    """Calcola l'Average Rating of Opponents (ARO) basato sull'Elo iniziale."""
+    """Calcola l'Average Rating of Opponents (ARO) basato sull'Elo iniziale,
+    sulle sole partite giocate sulla scacchiera (articolo 10.1 di C.07)."""
     opponent_elos = []
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -590,8 +630,7 @@ def compute_aro(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         if (
-            opponent_id
-            and opponent_id != "BYE_PLAYER_ID"
+            _giocata_sulla_scacchiera(result_entry)
             and opponent_id not in opponent_ids_encountered
         ):
             opponent = players_dict.get(opponent_id)
@@ -653,6 +692,43 @@ def get_initial_elo_for_tournament(player_db_data: dict, category: str) -> float
         elo = DEFAULT_ELO
 
     return float(elo)
+
+
+def campo_elo_della_cadenza(category) -> str:
+    """Il campo della scheda del database che riceve la variazione Elo di un
+    torneo alla finalizzazione: elo_blitz nei blitz, elo_rapid nei rapid,
+    current_elo negli standard. E' il primo campo che
+    get_initial_elo_for_tournament guarda per l'Elo di partenza, e una
+    categoria mancante vale standard, come li'. Fino alla 10.13.3 la
+    variazione andava sempre su current_elo, anche nei rapid e nei blitz;
+    dalla 10.13.4 va sull'Elo della cadenza, per decisione di Gabriele come
+    arbitro, nella finestra e nella console. La finalizzazione scrive il
+    campo nella voce dello storico, elo_field, e lo storno della riapertura
+    la toglie da li'."""
+    categoria = str(category or "standard").lower()
+    if categoria == "blitz":
+        return "elo_blitz"
+    if categoria == "rapid":
+        return "elo_rapid"
+    return "current_elo"
+
+
+def elo_a_cui_sommare_la_variazione(player_db_data: dict, category) -> int:
+    """L'Elo della scheda a cui la finalizzazione somma la variazione del
+    torneo, per scriverla nel campo di campo_elo_della_cadenza.
+    Negli standard e' current_elo, come e' sempre stato: DEFAULT_ELO se manca
+    o non e' un numero. Nei rapid e nei blitz e' l'Elo della cadenza, e se il
+    giocatore non lo ha, perche' manca o vale zero, si fa come per l'Elo di
+    partenza del torneo, con get_initial_elo_for_tournament: l'Elo FIDE della
+    cadenza, poi current_elo, poi l'Elo club, poi DEFAULT_ELO. Cosi' l'Elo
+    della cadenza nasce dall'Elo con cui il giocatore ha cominciato il
+    torneo, piu' la variazione, e current_elo resta com'e'."""
+    try:
+        if campo_elo_della_cadenza(category) == "current_elo":
+            return int(player_db_data.get("current_elo", DEFAULT_ELO))
+        return int(get_initial_elo_for_tournament(player_db_data, str(category)))
+    except (ValueError, TypeError):
+        return int(DEFAULT_ELO)
 
 
 def parse_time_control(time_control_str: str) -> dict | None:
@@ -1177,8 +1253,10 @@ def compute_sonneborn_berger_generic(player_id, torneo, cut1=False):
 def compute_aro_generic(player_id, torneo, cut1=False):
     """ARO con supporto modificatore Cut-1.
 
-    Raccoglie gli Elo iniziali degli avversari. Se cut1, rimuove il più basso
-    prima di calcolare la media. Arrotondamento: 0.5 per eccesso.
+    Raccoglie gli Elo iniziali degli avversari delle partite giocate sulla
+    scacchiera, senza bye e forfait (articolo 10.1 di C.07, dalla 10.13.18).
+    Se cut1, rimuove il più basso prima di calcolare la media.
+    Arrotondamento: 0.5 per eccesso.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1191,7 +1269,7 @@ def compute_aro_generic(player_id, torneo, cut1=False):
     opponent_elos = []
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID":
+        if not _giocata_sulla_scacchiera(result_entry):
             continue
 
         opponent = players_dict.get(opponent_id)
@@ -1221,6 +1299,19 @@ def compute_tpr(player_id, torneo):
 
     Stessa logica di calculate_performance_rating ma esposta come funzione
     di spareggio con la firma standard (player_id, torneo).
+    Conta soltanto le partite giocate sulla scacchiera, come vuole
+    l'articolo 10.2 del regolamento FIDE sugli spareggi (C.07, in vigore
+    dal 1 marzo 2026): l'ARO degli avversari "played over the board" e il
+    punteggio "achieved in games played over the board", diviso per quelle
+    partite, e l'articolo 10.1 definisce l'ARO sugli stessi avversari.
+    L'articolo 15.2, che per i criteri basati sul rating fa di ogni forfait
+    un turno non giocato, vale per i tornei a turni prestabiliti; per lo
+    svizzero l'articolo 15.3 rimanda al 16, che regola i criteri basati sui
+    punteggi, e il fondamento resta il 10.2. Fino alla 10.13.33 le
+    partite vinte o perse a forfait, 1-F, F-1 e 0-0F, entravano nella media
+    e nel punteggio, mentre la colonna Perf e l'ARO (10.13.18) le
+    escludevano gia'. Di conseguenza cambia anche l'APRO (articolo 10.4),
+    la media dei TPR degli avversari.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1242,7 +1333,9 @@ def compute_tpr(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+        # Niente bye e niente forfait: soltanto le partite giocate sulla
+        # scacchiera (C.07, articolo 10.2).
+        if not _giocata_sulla_scacchiera(result_entry) or score is None:
             continue
 
         opponent = players_dict.get(opponent_id)
@@ -1272,13 +1365,35 @@ def compute_tpr(player_id, torneo):
 
 
 def compute_ptp(player_id, torneo):
-    """PTP: Perfect Tournament Performance.
+    """PTP: Perfect Tournament Performance, articolo 10.3 del C.07.
 
     Trova il più basso intero R tale che il punteggio atteso (calcolato con
-    la formula di probabilità FIDE SENZA cap ±400) >= punteggio reale.
+    la formula logistica di probabilità, SENZA cap ±400) >= punteggio reale.
     Ricerca binaria nell'intervallo 0-4000.
 
     E = sum(1 / (1 + 10^((Ri - R) / 400))) per ogni Elo avversario Ri.
+
+    La formula logistica approssima di pochi punti la tabella 8.1.2 del
+    regolamento FIDE sul rating (B.02), che l'articolo 10.3 richiama: per
+    una patta contro un avversario da 1600 la formula da' 1600, la tabella
+    1597. Agli estremi vale l'articolo, dalla 10.13.34: con zero punti il
+    PTP e' 800 meno del rating dell'avversario piu' debole, e con tutte le
+    partite vinte e' il rating dell'avversario piu' forte piu' 736, il piu'
+    basso per cui la tabella 8.1.2 da' probabilita' 1,00 contro ciascuno
+    (differenza oltre 735). Fino alla 10.13.33 la ricerca si fermava ai
+    suoi limiti, 0 e 4000.
+
+    Avversari e punteggio sono quelli delle sole partite giocate sulla
+    scacchiera, come per il TPR (10.13.34). L'articolo 10.3 parla del
+    punteggio del torneo e degli avversari affrontati, senza dire dei
+    forfait: toglierli e' una scelta di coerenza con il TPR, decisa da
+    Gabriele come arbitro, la stessa che l'articolo 15.2 prescrive per i
+    tornei a turni prestabiliti, dove nei criteri basati sul rating un
+    forfait resta un turno non giocato. Fino alla 10.13.33 entravano anche
+    le partite vinte o perse a forfait. Con i forfait fuori dal conto gli
+    estremi sono piu' frequenti: basta vincere tutte le partite giocate e
+    perderne una a forfait. Di conseguenza cambia anche l'APPO (articolo
+    10.5), la media dei PTP degli avversari.
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1294,7 +1409,9 @@ def compute_ptp(player_id, torneo):
     for result_entry in player.get("results_history", []):
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
-        if not opponent_id or opponent_id == "BYE_PLAYER_ID" or score is None:
+        # Niente bye e niente forfait, come per il TPR (C.07, articolo 10.3,
+        # letto in coerenza con il 10.2).
+        if not _giocata_sulla_scacchiera(result_entry) or score is None:
             continue
 
         opponent = players_dict.get(opponent_id)
@@ -1313,6 +1430,17 @@ def compute_ptp(player_id, torneo):
             return round(float(player.get("initial_elo", DEFAULT_ELO)))
         except (ValueError, TypeError):
             return DEFAULT_ELO
+
+    # Gli estremi, che la ricerca non trova (10.13.34). Con zero punti il
+    # punteggio atteso lo raggiunge qualunque rating, e l'articolo 10.3 fissa
+    # il PTP a 800 meno dell'avversario piu' debole. Con tutte le partite
+    # vinte la formula logistica non lo raggiunge mai, e vale la tabella
+    # 8.1.2 del B.02: probabilita' 1,00 soltanto oltre 735 punti di
+    # differenza, quindi 736 piu' dell'avversario piu' forte.
+    if total_score <= 0:
+        return round(min(opponent_elos)) - 800
+    if total_score >= len(opponent_elos):
+        return round(max(opponent_elos)) + 736
 
     def expected_score_for_rating(r):
         """Punteggio atteso senza cap ±400."""
@@ -1334,6 +1462,9 @@ def compute_apro(player_id, torneo):
     """APRO: media del TPR di tutti gli avversari giocati OTB.
 
     Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    Articolo 10.4 del C.07: gli avversari sono quelli affrontati sulla
+    scacchiera, e il TPR di ciascuno, dalla 10.13.34, conta a sua volta
+    soltanto le sue partite giocate sulla scacchiera (compute_tpr).
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1363,6 +1494,9 @@ def compute_appo(player_id, torneo):
     """APPO: media del PTP di tutti gli avversari giocati OTB.
 
     Arrotondamento: 0.5 per eccesso (math.floor(value + 0.5)).
+    Articolo 10.5 del C.07: gli avversari sono quelli affrontati sulla
+    scacchiera, e il PTP di ciascuno, dalla 10.13.34, conta a sua volta
+    soltanto le sue partite giocate sulla scacchiera (compute_ptp).
     """
     player = get_player_by_id(torneo, player_id)
     if not player:
@@ -1464,31 +1598,42 @@ def compute_tiebreak_value(player_id, torneo, criterion_key, modifiers=None):
     return 0.0
 
 
-def _giorni_trascorsi(inizio, fine, adesso, concluso):
-    """Giorni trascorsi fra due date del calendario e giorni in tutto, estremi
-    compresi; None se le date mancano o non si leggono. Prima dell'inizio vale
-    zero, dopo la fine o a cose concluse l'ultimo giorno.
+SECONDI_AL_GIORNO = 24 * 60 * 60
+
+
+def _secondi_trascorsi(inizio, fine, adesso, concluso):
+    """Secondi trascorsi fra due date del calendario e secondi in tutto;
+    None se le date mancano o non si leggono. Il tempo comincia alla
+    mezzanotte della data d'inizio e finisce alla mezzanotte dopo la data di
+    fine, cosi' l'ultimo giorno e' compreso e i turni del calendario si
+    toccano senza buchi. Prima dell'inizio vale zero, dopo la fine o a cose
+    concluse il totale.
+    Fino alla 10.4.1 il conto era a giorni interi: la percentuale restava
+    ferma per tutto il giorno e a mezzanotte saltava, di 6,25 punti in un
+    turno di 16 giorni (issue 53). Le date sono dell'ora locale: il cambio
+    dell'ora sposta il conto di un'ora, lo 0,04 per cento su 98 giorni.
     """
     try:
         dt_inizio = datetime.strptime(inizio, DATE_FORMAT_ISO)
-        dt_fine = datetime.strptime(fine, DATE_FORMAT_ISO)
+        dt_fine = datetime.strptime(fine, DATE_FORMAT_ISO) + timedelta(days=1)
     except (TypeError, ValueError):
         return None
-    totale = max((dt_fine - dt_inizio).days + 1, 1)
+    totale = max((dt_fine - dt_inizio).total_seconds(), 1)
     if concluso:
         return totale, totale
-    return min(max((adesso - dt_inizio).days + 1, 0), totale), totale
+    return min(max((adesso - dt_inizio).total_seconds(), 0), totale), totale
 
 
 def giorno_del_torneo(torneo, adesso):
-    """Il giorno del torneo e i giorni in tutto, dalle date di inizio e di
-    fine; None se le date mancano o non si leggono.
-    Il giorno e' quello di oggi. Fino alla 10.0.2 era la data d'inizio del
-    turno in corso, e il pie' di pagina restava fermo per tutto il turno:
-    Autunneo2, cominciato il 15 settembre, il 23 diceva ancora giorno 1 di 98
-    (issue 44). Prima dell'inizio vale zero, a torneo concluso l'ultimo.
+    """Il tempo trascorso del torneo e il tempo in tutto, in secondi, dalle
+    date di inizio e di fine; None se le date mancano o non si leggono.
+    Il conto arriva fino a questo momento. Fino alla 10.0.2 partiva dalla data
+    d'inizio del turno in corso, e il pie' di pagina restava fermo per tutto
+    il turno: Autunneo2, cominciato il 15 settembre, il 23 diceva ancora
+    giorno 1 di 98 (issue 44). Dalla 10.4.2 si conta in secondi (issue 53).
+    Prima dell'inizio vale zero, a torneo concluso il totale.
     """
-    return _giorni_trascorsi(
+    return _secondi_trascorsi(
         torneo.get("start_date"),
         torneo.get("end_date"),
         adesso,
@@ -1497,8 +1642,8 @@ def giorno_del_torneo(torneo, adesso):
 
 
 def tempo_del_turno(torneo, adesso):
-    """Giorni trascorsi del turno in corso e giorni del turno, dalle date del
-    calendario dei turni; None se il turno non ha date.
+    """Secondi trascorsi del turno in corso e secondi del turno, dalle date
+    del calendario dei turni; None se il turno non ha date.
     """
     turno = next(
         (
@@ -1510,7 +1655,7 @@ def tempo_del_turno(torneo, adesso):
     )
     if not turno:
         return None
-    return _giorni_trascorsi(
+    return _secondi_trascorsi(
         turno.get("start_date"),
         turno.get("end_date"),
         adesso,
@@ -1542,17 +1687,129 @@ SOGLIA_FIDE_GIORNI = 30
 ESITI_SULLA_SCACCHIERA = ("1-0", "0-1", "1/2-1/2")
 
 
+def _testo_nudo(testo):
+    """Il testo in minuscolo, con gli spazi interni ridotti a uno e senza
+    spazi ne' punteggiatura ai bordi: "  Non necessario. " diventa
+    "non necessario"."""
+    testo = " ".join(str(testo or "").split()).lower()
+    return re.sub(r"^[\W_]+|[\W_]+$", "", testo)
+
+
 def arbitro_non_necessario(programmazione):
     """Se chi ha programmato la partita ha detto che l'arbitro non serve.
     Dalla 10.2.0 lo dice la casella della finestra di programmazione; le
     programmazioni precedenti lo scrivevano a mano nel campo, come Non
     necessario o no, e valgono lo stesso. Il confronto e' sul campo intero:
     cercare "no" dentro il testo escluderebbe Bruno, Stefano o Luciano.
+    Dalla 10.4.1 spazi e punteggiatura ai bordi non contano: in un torneo
+    archiviato c'era "Non necessario." col punto, e la partita risultava
+    avere un arbitro.
     """
     if programmazione.get("arbiter_not_needed"):
         return True
-    testo = (programmazione.get("arbiter") or "").strip().lower()
-    return testo in ("no", "non necessario")
+    return _testo_nudo(programmazione.get("arbiter")) in ("no", "non necessario")
+
+
+# I servizi che capita di trovare nel campo Sala / URL, riconosciuti dal
+# dominio: vale il dominio stesso o uno qualunque dei suoi sottodomini, come
+# call.whatsapp.com o chat.whatsapp.com. Ogni nome sta negli 8 caratteri
+# della sala: Chess.com, tagliato, diventerebbe Chess.co, che e' un altro
+# dominio.
+SERVIZI_NOTI = (
+    ("whatsapp.com", "WhatsApp"),
+    ("whatsapp.net", "WhatsApp"),
+    ("wa.me", "WhatsApp"),
+    ("lichess.org", "Lichess"),
+    ("chess.com", "Chesscom"),
+    ("meet.google.com", "Meet"),
+    ("teams.microsoft.com", "Teams"),
+    ("teams.live.com", "Teams"),
+    ("zoom.us", "Zoom"),
+    ("zoom.com", "Zoom"),
+    ("discord.com", "Discord"),
+    ("discord.gg", "Discord"),
+    ("discordapp.com", "Discord"),
+    ("jit.si", "Jitsi"),
+    ("jitsi.org", "Jitsi"),
+    ("skype.com", "Skype"),
+)
+# Un indirizzo comincia con http://, https:// o www., oppure e' un dominio
+# scritto da solo, come lichess.org/abc. Nel secondo caso l'estensione deve
+# essere fra queste: con una qualunque, anche Sala.Blu passerebbe per un
+# indirizzo.
+_ESTENSIONI = (
+    "com", "org", "net", "it", "eu", "io", "me", "gg", "us", "si", "co",
+    "uk", "ch", "de", "fr", "es", "pt", "app", "info", "tv", "ly", "live",
+)
+_INDIRIZZO = re.compile(
+    r"(?:https?://|www\.)\S+"
+    r"|(?<![\w@.-])[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:" + "|".join(_ESTENSIONI) + r")(?![\w-])(?:[/?#:]\S*)?",
+    re.IGNORECASE,
+)
+# Le estensioni doppie, come co.uk: il nome sta un'etichetta piu' a sinistra.
+_SECONDI_LIVELLI = ("co", "com", "org", "net", "gov", "edu", "ac")
+
+
+def _nome_del_servizio(indirizzo):
+    """La parte significativa di un indirizzo: il nome del servizio, se e'
+    fra quelli noti, altrimenti il nome del dominio con l'iniziale
+    maiuscola, per esempio Scacchierando per www.scacchierando.it/sala."""
+    dominio = re.sub(r"^[a-z]+://", "", indirizzo, flags=re.IGNORECASE)
+    dominio = re.split(r"[/?#]", dominio, maxsplit=1)[0].rsplit("@", 1)[-1]
+    dominio = re.match(r"[a-z0-9.-]*", dominio.lower()).group()
+    etichette = [e for e in dominio.split(".") if e]
+    if etichette[:1] == ["www"]:
+        etichette = etichette[1:]
+    dominio = ".".join(etichette)
+    for noto, nome in SERVIZI_NOTI:
+        if dominio == noto or dominio.endswith("." + noto):
+            return nome
+    if len(etichette) >= 3 and etichette[-2] in _SECONDI_LIVELLI and len(etichette[-1]) == 2:
+        nome = etichette[-3]
+    elif len(etichette) >= 2:
+        nome = etichette[-2]
+    elif etichette:
+        nome = etichette[0]
+    else:
+        return indirizzo
+    return nome[:1].upper() + nome[1:]
+
+
+def _chiave_di_parola(parola):
+    """La parola in minuscolo e senza punteggiatura, per confrontarla."""
+    return re.sub(r"[\W_]", "", parola).casefold()
+
+
+def sala_breve(canale, cifre=8):
+    """Il campo Sala / URL accorciato per l'etichetta della plancia.
+    Ogni indirizzo diventa il nome del suo servizio, poi le parole
+    consecutive uguali a meno di maiuscole e punteggiatura si fondono,
+    tenendo la prima: "whatsapp https://call.whatsapp.com/voice/..." diventa
+    "whatsapp". Infine il taglio, a 8 caratteri se non si chiede altro,
+    senza spazi in coda. Il campo vuoto resta vuoto."""
+    testo = _INDIRIZZO.sub(lambda m: _nome_del_servizio(m.group()), str(canale or ""))
+    parole = []
+    for parola in testo.split():
+        chiave = _chiave_di_parola(parola)
+        if parole and chiave and chiave == _chiave_di_parola(parole[-1]):
+            continue
+        parole.append(parola)
+    return " ".join(parole)[:cifre].rstrip()
+
+
+def sala_e_arbitro_brevi(programmazione, cifre_sala=8, cifre_arbitro=12):
+    """Sala e arbitro di una partita programmata, accorciati per l'etichetta
+    delle partite da giocare nella plancia (issue 52): la sala come dice
+    sala_breve, l'arbitro ai primi 12 caratteri, oppure No se la partita non
+    ne ha bisogno. Un campo vuoto o assente vale N/D. I valori interi restano
+    nel dettaglio della partita, nell'area centrale."""
+    sala = sala_breve(programmazione.get("channel"), cifre_sala)
+    if arbitro_non_necessario(programmazione):
+        arbitro = _("No")
+    else:
+        arbitro = " ".join(str(programmazione.get("arbiter") or "").split())
+        arbitro = arbitro[:cifre_arbitro].rstrip()
+    return sala or _("N/D"), arbitro or _("N/D")
 
 
 def _percentuale(parte, totale):
@@ -1560,12 +1817,30 @@ def _percentuale(parte, totale):
     return f"{parte / totale * 100:.1f}%" if totale else "--"
 
 
-def indicatori_pie_di_pagina(torneo, adesso, giorni_backup=None, giorni_fide=None):
+def _eta_in_percentuale(data, adesso, soglia_giorni):
+    """L'eta' di un file, dalla data dell'ultima modifica, in percentuale
+    sulla soglia in giorni; -- se il file non c'e'. Il conto e' in secondi,
+    come quello di GT e TT. Un file con la data nel futuro, per esempio dopo
+    che l'orologio e' stato rimesso indietro, ha eta' zero: fino alla 10.4.1
+    dava una percentuale negativa."""
+    if data is None:
+        return "--"
+    eta = max((adesso - data).total_seconds(), 0)
+    return _percentuale(eta, soglia_giorni * SECONDI_AL_GIORNO)
+
+
+def indicatori_pie_di_pagina(
+    torneo, adesso, backup_piu_vecchio=None, aggiornamento_fide=None
+):
     """Le percentuali del pie' di pagina, per acronimo, dalla 10.1.0.
     Ogni valore e' gia' scritto come xx.y%, oppure -- quando manca il dato o
     il totale e' zero. Gli acronimi sono spiegati nel manuale. Esiti, PGN e
     punteggio del bianco non contano i bye; PGN e punteggio del bianco non
     contano nemmeno i forfeit, che sulla scacchiera non si sono giocati.
+    backup_piu_vecchio e aggiornamento_fide sono le date di modifica della
+    copia di sicurezza piu' vecchia e del database FIDE, None se mancano.
+    Dalla 10.4.2 tutto il conto del tempo sta qui, sullo stesso adesso: fino
+    alla 10.4.1 BK e FD arrivavano gia' come eta' in giorni interi.
     """
     turni = torneo.get("rounds", [])
     partite = [m for r in turni for m in r.get("matches", [])]
@@ -1619,10 +1894,80 @@ def indicatori_pie_di_pagina(torneo, adesso, giorni_backup=None, giorni_fide=Non
         "pb": _percentuale(
             esiti["1-0"] + esiti["1/2-1/2"] / 2, len(sulla_scacchiera)
         ),
-        "bk": "--"
-        if giorni_backup is None
-        else _percentuale(giorni_backup, SOGLIA_BACKUP_GIORNI),
-        "fd": "--"
-        if giorni_fide is None
-        else _percentuale(giorni_fide, SOGLIA_FIDE_GIORNI),
+        "bk": _eta_in_percentuale(backup_piu_vecchio, adesso, SOGLIA_BACKUP_GIORNI),
+        "fd": _eta_in_percentuale(aggiornamento_fide, adesso, SOGLIA_FIDE_GIORNI),
     }
+
+
+# Le due righe di indicatori del pie' di pagina, nell'ordine di lettura.
+# Dalla 10.5.0 si aggiornano da sole e sono dati in tempo reale, quindi a
+# larghezza fissa per la barra braille: ogni indicatore occupa 10 caratteri,
+# cioe' acronimo in 2, spazio, valore allineato a destra in 6 caratteri e
+# spazio. Quattro indicatori fanno un blocco da 40, il secondo blocco parte
+# dal carattere 41, e un valore resta nelle stesse celle quando passa da 9.9%
+# a 10.0% o arriva a 100.0%.
+RIGHE_DEL_PIE_DI_PAGINA = (
+    ("gt", "tt", "tc", "pg", "rt", "pr", "ar", "pn"),
+    ("vb", "pa", "vn", "fb", "fn", "pb", "bk", "fd"),
+)
+LETTERE_DELLA_SIGLA = 2
+CIFRE_DEL_VALORE = 6
+
+
+def sigle_del_pie_di_pagina():
+    """Gli acronimi del pie' di pagina nella lingua in uso, per chiave di
+    indicatori_pie_di_pagina. Passano da _() come ogni testo mostrato, e si
+    leggono a ogni chiamata; il manuale, solo in italiano, li spiega nella
+    sezione 2.3.1. Fino alla 10.4.2 stavano dentro le due righe, tradotte
+    intere: con la larghezza fissa della 10.5.0 si traducono uno per uno."""
+    # Per chi traduce: ogni acronimo deve restare di due lettere. Le righe
+    # sono impaginate a blocchi da 40 caratteri per la barra braille, e
+    # righe_pie_di_pagina taglia o completa con uno spazio quello che non ci
+    # sta.
+    return {
+        "gt": _("GT"),
+        "tt": _("TT"),
+        "tc": _("TC"),
+        "pg": _("PG"),
+        "rt": _("RT"),
+        "pr": _("PR"),
+        "ar": _("AR"),
+        "pn": _("PN"),
+        "vb": _("VB"),
+        "pa": _("PA"),
+        "vn": _("VN"),
+        "fb": _("FB"),
+        "fn": _("FN"),
+        "pb": _("PB"),
+        "bk": _("BK"),
+        "fd": _("FD"),
+    }
+
+
+def _sigla_in_due(sigla):
+    """L'acronimo in 2 caratteri esatti, cosi' l'indicatore resta di 10 con
+    qualunque traduzione: una piu' lunga si taglia, una piu' corta si completa
+    con uno spazio."""
+    return sigla[:LETTERE_DELLA_SIGLA].ljust(LETTERE_DELLA_SIGLA)
+
+
+def _valore_in_sei(valore):
+    """Il valore di un indicatore in 6 caratteri al massimo. Li superano solo
+    BK e FD, da 1000.0% in su, cioe' dopo 15 anni senza pulizia dei backup o
+    dopo 300 giorni senza aggiornare il database FIDE: diventano >999%."""
+    return valore if len(valore) <= CIFRE_DEL_VALORE else ">999%"
+
+
+def righe_pie_di_pagina(valori):
+    """Le due righe di indicatori del pie' di pagina, dai valori di
+    indicatori_pie_di_pagina: 80 caratteri ciascuna, cioe' due blocchi da 40
+    di quattro indicatori, per esempio "GT  10.7% TT  65.6% TC   0.0% ..."."""
+    sigle = sigle_del_pie_di_pagina()
+    return [
+        "".join(
+            f"{_sigla_in_due(sigle[chiave])} "
+            f"{_valore_in_sei(valori[chiave]):>{CIFRE_DEL_VALORE}} "
+            for chiave in riga
+        )
+        for riga in RIGHE_DEL_PIE_DI_PAGINA
+    ]

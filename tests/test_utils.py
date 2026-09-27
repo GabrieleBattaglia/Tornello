@@ -291,3 +291,100 @@ class TestFileDelTorneo:
         assert not file_del_torneo("Tornello - Players_db.json", "Players")
         assert not file_del_torneo("Tornello - Players_DB.txt", "Players")
         assert not file_del_torneo("Tornello - Settings.json", "S")
+
+
+# Un manuale in miniatura, con i titoli scritti come nel manuale vero e le
+# righe che ai titoli somigliano senza esserlo: le voci degli elenchi
+# numerati, anche tutte maiuscole fuori dalle parentesi, e un numero col
+# punto in mezzo seguito da testo minuscolo.
+MANUALE_DI_PROVA = "\n".join(
+    [
+        "1. PRIMO CAPITOLO",
+        "Introduzione.",
+        "",
+        "1.1 LA PRIMA SEZIONE (Tasto F5)",
+        "Testo della prima sezione.",
+        "",
+        "1.1.1 UNA SOTTOSEZIONE",
+        "I criteri:",
+        "1. Scontro Diretto",
+        "4. ARO (Average Rating of Opponents)",
+        "0.5 punti al bye, come dice il regolamento.",
+        "- GT, giorno del torneo.",
+        "",
+        "",
+        "1.2 LA SECONDA SEZIONE",
+        "Testo della seconda.",
+        "",
+        "2. SECONDO CAPITOLO",
+        "Fine.",
+        "",
+    ]
+)
+
+
+class TestSezioneDelManuale:
+    """La sezione del manuale che il pie' di pagina mostra nell'area
+    principale: dal suo titolo al titolo seguente, di qualunque livello.
+    Issue 54."""
+
+    def test_arriva_fino_al_titolo_seguente(self):
+        from utils import sezione_del_manuale
+
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "1.1.1") == "\n".join(
+            [
+                "1.1.1 UNA SOTTOSEZIONE",
+                "I criteri:",
+                "1. Scontro Diretto",
+                "4. ARO (Average Rating of Opponents)",
+                "0.5 punti al bye, come dice il regolamento.",
+                "- GT, giorno del torneo.",
+            ]
+        )
+
+    def test_si_ferma_alla_sottosezione_e_al_capitolo(self):
+        from utils import sezione_del_manuale
+
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "1.1") == (
+            "1.1 LA PRIMA SEZIONE (Tasto F5)\nTesto della prima sezione."
+        )
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "1.2") == (
+            "1.2 LA SECONDA SEZIONE\nTesto della seconda."
+        )
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "1") == "1. PRIMO CAPITOLO\nIntroduzione."
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "2") == "2. SECONDO CAPITOLO\nFine."
+
+    def test_i_ritorni_a_capo_di_windows(self):
+        from utils import sezione_del_manuale
+
+        testo = MANUALE_DI_PROVA.replace("\n", "\r\n")
+        assert sezione_del_manuale(testo, "1.2") == "1.2 LA SECONDA SEZIONE\nTesto della seconda."
+
+    def test_sezione_che_non_c_e(self):
+        from utils import sezione_del_manuale
+
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "1.3") is None
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "0.5") is None
+        assert sezione_del_manuale(MANUALE_DI_PROVA, "4") is None
+        assert sezione_del_manuale("", "2.3.1") is None
+
+    def test_gli_acronimi_nel_manuale_vero(self):
+        """La 2.3.1 di MANUALE.txt, letto in sola lettura: comincia dal suo
+        titolo, spiega ogni sigla del pie' di pagina e finisce prima della
+        2.4."""
+        import re
+
+        from stats import RIGHE_DEL_PIE_DI_PAGINA
+        from utils import sezione_del_manuale
+
+        radice = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        with open(os.path.join(radice, "MANUALE.txt"), encoding="utf-8") as f:
+            sezione = sezione_del_manuale(f.read(), "2.3.1")
+
+        assert sezione.startswith("2.3.1 GLI ACRONIMI DEL PIÈ DI PAGINA\n")
+        sigle = [chiave.upper() for riga in RIGHE_DEL_PIE_DI_PAGINA for chiave in riga]
+        assert len(sigle) == 16
+        for sigla in sigle:
+            assert re.search(rf"\b{sigla}\b", sezione), sigla
+        assert "2.4 " not in sezione
+        assert "2.3 LA BARRA" not in sezione

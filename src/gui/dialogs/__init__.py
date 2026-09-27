@@ -2,9 +2,12 @@ from .accessible_msg_dialog import AccessibleMsgDialog as AccessibleMsgDialog
 from .backup_cleanup_dialog import BackupCleanupDialog as BackupCleanupDialog
 from .donation_dialog import DonationDialog as DonationDialog
 from .fide_query_dialog import FideQueryDialog as FideQueryDialog
+from .manual_pairing_dialog import ManualPairingDialog as ManualPairingDialog
 from .player_enrollment_dialog import PlayerEnrollmentDialog as PlayerEnrollmentDialog
 from .players_db_dialog import PlayersDbDialog as PlayersDbDialog
 from .result_dialog import ResultDialog as ResultDialog
 from .sync_database_dialog import SyncDatabaseDialog as SyncDatabaseDialog
 from .tiebreak_config_dialog import TiebreakConfigDialog as TiebreakConfigDialog
+from .update_dialog import UpdateDialog as UpdateDialog
+from .update_dialog import UpdateProgressDialog as UpdateProgressDialog
 from .visual_settings_dialog import VisualSettingsDialog as VisualSettingsDialog

@@ -10,6 +10,7 @@ import requests
 
 from config import (
     DATE_FORMAT_ISO,
+    DEFAULT_ELO,
     FIDE_DB_LOCAL_FILE,
     FIDE_XML_DOWNLOAD_URL,
     PLAYER_DB_FILE,
@@ -99,6 +100,10 @@ def sincronizza_db_personale():
     player_count = get_player_count()
     print(_("Database FIDE locale disponibile con {} giocatori.").format(player_count))
     players_db = load_players_db()
+    # Un database che non si legge non e' vuoto: lo si dice (10.13.15).
+    if database_non_letto(players_db):
+        print(messaggio_database_non_letto(players_db))
+        return
     if not players_db:
         print(
             _(
@@ -744,8 +749,49 @@ def _fallimento_aggiornamento(stats_output, db_temporaneo, messaggio):
     return False
 
 
+class DatabaseNonLetto(dict):
+    """Il database dei giocatori quando il file c'e' ma non si e' potuto
+    leggere: tenuto bloccato per un attimo da un altro programma, come
+    Dropbox o l'antivirus, oppure rovinato. E' vuoto come un database che non
+    c'e', cosi' chi lo riceve continua a funzionare, ma save_players_db
+    rifiuta di scriverlo: il file sul disco verrebbe sostituito dalle sole
+    schede aggiunte dopo, e tutti gli altri giocatori, con Elo, storici e
+    medaglie, sparirebbero. errore e' il motivo della lettura non riuscita.
+    Nato con la 10.13.15 e la 10.13.16: fino ad allora load_players_db
+    restituiva un dizionario vuoto qualunque. La finalizzazione, che dalla
+    10.13.16 crea nel database chi non trova, avrebbe scritto un database
+    con i soli iscritti del torneo, e l'iscrizione dalla ricerca FIDE, dalla
+    10.13.15, uno con il solo giocatore iscritto; lo stesso facevano gia'
+    Nuovo Giocatore Da Zero e la consultazione del database FIDE (Ctrl+K)."""
+
+    def __init__(self, errore=""):
+        super().__init__()
+        self.errore = str(errore)
+
+
+def database_non_letto(players_db):
+    """Vero se players_db e' il database dei giocatori che load_players_db
+    non ha potuto leggere (DatabaseNonLetto): non si scrive, e chi lo
+    riceve per modificarlo si ferma e lo dice."""
+    return isinstance(players_db, DatabaseNonLetto)
+
+
+def messaggio_database_non_letto(players_db):
+    """La frase che dice all'utente che il database dei giocatori non si e'
+    potuto leggere, con il motivo, e come rimediare."""
+    return _(
+        "Il database dei giocatori, {filename}, c'è ma non si è potuto leggere: {error}. Per non perdere i giocatori che contiene, Tornello non lo modifica. Se un altro programma lo tiene bloccato, per esempio Dropbox o l'antivirus, riprova più tardi; se il file è rovinato, ripristinalo dalla finestra Copie di sicurezza del menu File."
+    ).format(
+        filename=os.path.basename(PLAYER_DB_FILE),
+        error=getattr(players_db, "errore", ""),
+    )
+
+
 def load_players_db():
-    """Carica il database dei giocatori dal file JSON, eseguendo la migrazione se necessario."""
+    """Carica il database dei giocatori dal file JSON, eseguendo la migrazione se necessario.
+    Un file che non c'e' vale un database vuoto. Un file che c'e' e non si
+    legge, perche' bloccato o rovinato, vale un DatabaseNonLetto, vuoto
+    anche lui, che pero' non si puo' salvare (10.13.15 e 10.13.16)."""
     if os.path.exists(PLAYER_DB_FILE):
         try:
             with open(PLAYER_DB_FILE, encoding="utf-8") as f:
@@ -800,47 +846,120 @@ def load_players_db():
                 print(_("Migrazione completata con successo."))
 
             return players_map
-        except (OSError, json.JSONDecodeError) as e:
+        # ValueError comprende il JSON rovinato e un file che non e' in
+        # UTF-8. Fino alla 10.13.14 qui tornava un dizionario vuoto, e il
+        # primo salvataggio avrebbe sostituito il file con un database nuovo:
+        # adesso il file resta com'e', e chi voleva modificarlo lo dice.
+        except (OSError, ValueError) as e:
             print(
                 _(
                     "Errore durante il caricamento del DB giocatori ({filename}): {error}"
                 ).format(filename=PLAYER_DB_FILE, error=e)
             )
-            print(_("Verrà creato un nuovo DB vuoto se si aggiungono giocatori."))
-            return {}
+            return DatabaseNonLetto(e)
     return {}
 
 
 def save_players_db(players_db):
-    """Salva il database dei giocatori nel file JSON e genera il file TXT."""
-    if not players_db:
-        pass  # Procedi a salvare anche se vuoto
+    """Salva il database dei giocatori nel file JSON e genera il file TXT.
+    Risponde vero se il file JSON e' stato scritto; il TXT e' un riassunto
+    che si rigenera, e un suo errore non conta. Fino alla 10.8.8 l'errore
+    restava soltanto stampato, e la finalizzazione andava avanti come se gli
+    Elo fossero arrivati nel database: archiviava il torneo e diceva i
+    giocatori aggiornati quando non lo erano.
+    Un database che load_players_db non ha potuto leggere non si scrive, e
+    la risposta e' falso: il file sul disco ha giocatori che quello in
+    memoria non conosce (10.13.15 e 10.13.16)."""
+    if database_non_letto(players_db):
+        print(messaggio_database_non_letto(players_db))
+        return False
     try:
         data_to_save = {"schema_version": 2, "players": list(players_db.values())}
         # Scrittura atomica: il database contiene anagrafica, Elo, medaglie e
         # storico di tutti i giocatori, e non si potrebbe ricostruire. Rilievo C1.
         scrivi_json_atomico(PLAYER_DB_FILE, data_to_save)
-        save_players_db_txt(players_db)
     except OSError as e:
         print(
             _(
                 "Errore durante il salvataggio del DB giocatori ({filename}): {error}"
             ).format(filename=PLAYER_DB_FILE, error=e)
         )
+        return False
     except Exception as e:
         print(
             _("Errore imprevisto durante il salvataggio del DB: {error}").format(
                 error=e
             )
         )
+        return False
+    save_players_db_txt(players_db)
+    return True
 
 
-def save_players_db_txt(players_db):
+def identita_del_torneo(dati):
+    """Identificativo e data di inizio di un torneo, come li usa lo storico
+    dei giocatori: un identificativo vuoto lascia il posto al nome.
+    Nata in ui.py con la 10.8.8; sta qui dalla 10.10.0, perche' la usa anche
+    lo storno del ripristino (copie_di_sicurezza.py)."""
+    return (dati.get("tournament_id") or dati.get("name"), dati.get("start_date"))
+
+
+def voce_di_questo_torneo(voce, identificativo, nome, inizio):
+    """Vero se la voce dello storico di un giocatore e' quella del torneo con
+    questo identificativo, nome e data di inizio.
+    La data di inizio deve coincidere: due edizioni con lo stesso nome hanno
+    lo stesso identificativo, perche' la finestra lo ricava dal nome. Una
+    voce senza identificativo si riconosce dal nome: la console, fino alla
+    10.8.7, scriveva nello storico l'identificativo vuoto dei tornei che non
+    lo avevano, e senza questo confronto una seconda finalizzazione sommava
+    di nuovo Elo, partite, voce e medaglia."""
+    if voce.get("date_started") != inizio:
+        return False
+    identificativo_della_voce = voce.get("tournament_id")
+    if identificativo_della_voce:
+        return identificativo_della_voce == identificativo
+    return voce.get("tournament_name") == nome
+
+
+# La medaglia di ogni piazzamento, come la assegna la finalizzazione.
+MEDAGLIE_DEI_PIAZZAMENTI = {1: "gold", 2: "silver", 3: "bronze", 4: "wood"}
+
+
+def togli_torneo_dallo_storico(scheda, indice):
+    """Toglie dallo storico di un giocatore la voce in posizione indice, e
+    con lei la medaglia che quel piazzamento gli aveva dato, mai sotto zero.
+    Restituisce la voce tolta, oppure None se l'indice non c'e'.
+    Nata nella finestra del database dei giocatori, che la usa per il tasto
+    Canc sulle voci dello storico; dalla 10.10.0 la usa anche lo storno di un
+    torneo riaperto da una copia di sicurezza (issue 39)."""
+    storico = scheda.get("tournaments_played") or []
+    if not 0 <= indice < len(storico):
+        return None
+    voce = storico.pop(indice)
+    try:
+        piazzamento = int(voce.get("rank"))
+    except (ValueError, TypeError):
+        piazzamento = None
+    medaglia = MEDAGLIE_DEI_PIAZZAMENTI.get(piazzamento)
+    if medaglia:
+        medaglie = scheda.setdefault(
+            "medals", {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}
+        )
+        if medaglie.get(medaglia, 0) > 0:
+            medaglie[medaglia] -= 1
+    return voce
+
+
+def save_players_db_txt(players_db, percorso=None):
     """Genera un file TXT leggibile con lo stato del database giocatori,
-    includendo partite giocate totali e K-Factor attuale."""
+    includendo partite giocate totali e K-Factor attuale.
+    percorso e' il file da scrivere; senza, quello accanto al programma. Lo
+    passa il ripristino del database, che riceve i suoi percorsi da chi lo
+    chiama (10.10.0)."""
+    destinazione = percorso or PLAYER_DB_TXT_FILE
     try:
         with open(
-            PLAYER_DB_TXT_FILE, "w", encoding="utf-8-sig"
+            destinazione, "w", encoding="utf-8-sig"
         ) as f:  # Usiamo utf-8-sig
             now = datetime.now()
             current_date_iso = now.strftime(
@@ -983,7 +1102,7 @@ def save_players_db_txt(players_db):
         print(
             _(
                 "Errore durante il salvataggio del file TXT del DB giocatori ({filename}): {error}"
-            ).format(filename=PLAYER_DB_TXT_FILE, error=e)
+            ).format(filename=destinazione, error=e)
         )
     except Exception as e:
         print(
@@ -1120,7 +1239,17 @@ def crea_nuovo_giocatore_nel_db(
         "flag": flag,
     }
     players_db[new_player_id] = new_player_data_for_db
-    save_players_db(players_db)  # Salva immediatamente il DB principale aggiornato
+    # Salva subito il database principale. Se non si scrive, il giocatore
+    # non nasce: fino alla 10.13.14 restava soltanto in memoria, la console
+    # lo iscriveva lo stesso, e il database sul disco non lo aveva.
+    if not save_players_db(players_db):
+        del players_db[new_player_id]
+        print(
+            _(
+                "Il database dei giocatori non si è potuto salvare: {first_name} {last_name} non è stato creato."
+            ).format(first_name=norm_first, last_name=norm_last)
+        )
+        return None
     if not silent:
         print(
             _(
@@ -1130,6 +1259,213 @@ def crea_nuovo_giocatore_nel_db(
             )
         )
     return new_player_id
+
+
+def id_fide_vero(valore):
+    """L'identificativo FIDE come stringa, oppure una stringa vuota se manca:
+    le schede senza FIDE hanno una stringa vuota, oppure 0, che e' il valore
+    di ripiego del giocatore del torneo (models.Player)."""
+    testo = str(valore or "").strip()
+    return "" if testo in ("", "0", "None") else testo
+
+
+def scheda_con_lo_stesso_id_fide(players_db, id_fide):
+    """La scheda del database locale che ha questo identificativo FIDE,
+    oppure None. Un identificativo vuoto o zero non ne trova nessuna."""
+    cercato = id_fide_vero(id_fide)
+    if not cercato:
+        return None
+    for scheda in players_db.values():
+        if id_fide_vero(scheda.get("fide_id_num_str")) == cercato:
+            return scheda
+    return None
+
+
+def _sesso(valore):
+    """Il sesso come lo scrive il database locale, m o w, e il genere, M o W:
+    il FIDE scrive M e F."""
+    sesso = "w" if str(valore or "").strip().lower() in ("w", "f") else "m"
+    return sesso, sesso.upper()
+
+
+def scheda_da_record_fide(record, players_db):
+    """La scheda del database locale per un giocatore scelto nel database
+    FIDE, con tutti i dati che il FIDE ne ha: Elo, fattore K e partite delle
+    tre cadenze, titoli, bandiera, federazione, sesso e anno di nascita, che
+    diventa il primo gennaio di quell'anno. L'identificativo locale nasce da
+    cognome e nome, come per gli altri giocatori. Senza Elo standard la
+    scheda parte da 1399, come un giocatore creato a mano: con zero la
+    finalizzazione di un torneo standard gli sommerebbe la variazione a
+    zero. Non la mette nel database e non salva: lo fa aggiungi_dal_fide.
+    Nata con la 10.13.15: fino ad allora la finestra di iscrizione, la
+    consultazione del database FIDE e la console costruivano ciascuna la sua
+    scheda, e la console ne scriveva soltanto una parte, senza gli Elo rapid
+    e blitz e senza i fattori K.
+    La scheda non ha experienced, e partite giocate a zero: il fattore K lo
+    decide soltanto get_k_factor, il K FIDE se e' valido, altrimenti 40,
+    come per un giocatore nuovo con meno di trenta partite (articolo 8.3.3
+    del regolamento FIDE sul rating, B.02). Fino alla 10.13.32 la console
+    la segnava esperta, e un adulto senza un K FIDE valido, per esempio
+    senza rating e con k_factor 0, aveva 20 invece di 40; sotto i diciotto
+    anni, con Elo sotto 2300, get_k_factor dava 40 anche all'esperto. Le
+    schede importate cosi' restano segnate esperte."""
+    sesso, genere = _sesso(record.get("sex"))
+    anno = record.get("birth_year")
+    return {
+        "id": generate_player_id(record.get("first_name") or "", record.get("last_name") or "", players_db),
+        "first_name": record.get("first_name") or "",
+        "last_name": record.get("last_name") or "",
+        "current_elo": record.get("elo_standard") or int(DEFAULT_ELO),
+        "elo_club": 0,
+        "elo_rapid": record.get("elo_rapid") or 0,
+        "elo_blitz": record.get("elo_blitz") or 0,
+        "fide_k_factor": record.get("k_factor"),
+        "fide_rapid_k": record.get("rapid_k"),
+        "fide_blitz_k": record.get("blitz_k"),
+        "fide_standard_games": record.get("games") or 0,
+        "fide_rapid_games": record.get("rapid_games") or 0,
+        "fide_blitz_games": record.get("blitz_games") or 0,
+        "w_title": record.get("w_title") or "",
+        "o_title": record.get("o_title") or "",
+        "foa_title": record.get("foa_title") or "",
+        "flag": record.get("flag") or "",
+        "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
+        "birth_date": f"{anno}-01-01" if anno else None,
+        "sex": sesso,
+        "gender": genere,
+        "federation": record.get("federation") or "ITA",
+        "fide_title": record.get("title") or "",
+        "club": "",
+        "games_played": 0,
+        "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
+        "tournaments_played": [],
+        "fide_id_num_str": id_fide_vero(record.get("id_fide")),
+    }
+
+
+def aggiungi_dal_fide(players_db, record):
+    """Il giocatore del database FIDE nel database locale: se una scheda ha
+    gia' il suo identificativo FIDE e' quella, altrimenti ne nasce una con
+    scheda_da_record_fide, e il database si salva subito.
+    Restituisce (scheda, creata); (None, False) se il database non si e'
+    potuto salvare, e allora la scheda nuova non resta nemmeno in memoria.
+    Dalla 10.13.15 la usa l'iscrizione dalla ricerca FIDE, che fino ad
+    allora iscriveva il giocatore al torneo con un identificativo FIDE_ e
+    non lo metteva nel database, e con lei la console e la consultazione
+    del database FIDE (Ctrl+K). Fino alla 10.13.32 accettava altri campi da
+    aggiungere alla scheda, e la console ci metteva experienced: dalla
+    10.13.33 la scheda e' la stessa per tutti, e con lei il fattore K."""
+    esistente = scheda_con_lo_stesso_id_fide(players_db, record.get("id_fide"))
+    if esistente is not None:
+        return esistente, False
+    scheda = scheda_da_record_fide(record, players_db)
+    if not scheda["id"]:
+        return None, False
+    players_db[scheda["id"]] = scheda
+    if not save_players_db(players_db):
+        del players_db[scheda["id"]]
+        return None, False
+    return scheda, True
+
+
+# Il valore di ripiego della data di nascita del giocatore del torneo
+# (models.Player): vuol dire che la data non la si conosce.
+NASCITA_SCONOSCIUTA = "1900-01-01"
+
+
+def scheda_dal_torneo(giocatore):
+    """La scheda del database per un iscritto che il database dei giocatori
+    non ha, con i dati che il torneo ha gia' di lui: nome e cognome, Elo
+    delle tre cadenze e Elo Club, dati FIDE, titoli, data di nascita, sesso
+    e federazione. Storico, partite giocate e medaglie partono da zero, come
+    per chi si iscrive per la prima volta, e la data di registrazione e' oggi.
+    Non la mette nel database. Nata con la 10.13.16: la finalizzazione la crea
+    per chi manca, invece di saltarlo in silenzio, e la classifica in corso la
+    usa per il fattore K, lo stesso che la finalizzazione usera'.
+    Come le schede importate dal database FIDE, non ha experienced: il
+    fattore K segue le regole di get_k_factor, a partire da quello FIDE, e
+    senza un K FIDE valido vale 40."""
+    def numero(chiave):
+        valore = giocatore.get(chiave)
+        return valore if isinstance(valore, (int, float)) and not isinstance(valore, bool) else 0
+
+    def testo(chiave, ripiego=""):
+        valore = giocatore.get(chiave)
+        return valore if isinstance(valore, str) and valore else ripiego
+
+    sesso, genere = _sesso(giocatore.get("sex") or giocatore.get("gender"))
+    nascita = giocatore.get("birth_date")
+    if not nascita or nascita == NASCITA_SCONOSCIUTA:
+        nascita = None
+    return {
+        "id": giocatore.get("id"),
+        "first_name": testo("first_name"),
+        "last_name": testo("last_name"),
+        "current_elo": numero("current_elo") or numero("initial_elo") or int(DEFAULT_ELO),
+        "elo_club": numero("elo_club"),
+        "elo_rapid": numero("elo_rapid"),
+        "elo_blitz": numero("elo_blitz"),
+        "fide_k_factor": giocatore.get("fide_k_factor"),
+        "fide_rapid_k": giocatore.get("fide_rapid_k"),
+        "fide_blitz_k": giocatore.get("fide_blitz_k"),
+        "fide_standard_games": numero("fide_standard_games"),
+        "fide_rapid_games": numero("fide_rapid_games"),
+        "fide_blitz_games": numero("fide_blitz_games"),
+        "w_title": testo("w_title"),
+        "o_title": testo("o_title"),
+        "foa_title": testo("foa_title"),
+        "flag": testo("flag"),
+        "registration_date": datetime.now().strftime(DATE_FORMAT_ISO),
+        "birth_date": nascita,
+        "sex": sesso,
+        "gender": genere,
+        "federation": testo("federation", "ITA"),
+        "fide_title": testo("fide_title"),
+        "club": "",
+        "games_played": 0,
+        "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0},
+        "tournaments_played": [],
+        "fide_id_num_str": id_fide_vero(giocatore.get("fide_id_num_str")),
+    }
+
+
+def scheda_nel_database(giocatore, players_db):
+    """La scheda del database dei giocatori di un iscritto: quella con il suo
+    identificativo, oppure, se non c'e', quella con il suo identificativo
+    FIDE; None se il database non ha nessuna delle due.
+    La seconda strada serve agli iscritti con un identificativo FIDE_<id>,
+    come i due di Autunneo2, che la finestra iscriveva dalla ricerca FIDE
+    fino alla 10.13.14 senza scheda nel database: se nel frattempo la stessa
+    persona e' entrata nel database con un altro identificativo, con Ctrl+K
+    o con l'iscrizione FIDE a un altro torneo, la finalizzazione usa quella
+    scheda invece di crearne un doppione (10.13.16)."""
+    scheda = players_db.get(giocatore.get("id"))
+    if scheda is not None:
+        return scheda
+    return scheda_con_lo_stesso_id_fide(players_db, giocatore.get("fide_id_num_str"))
+
+
+def scheda_per_la_finalizzazione(giocatore, players_db):
+    """La scheda su cui la finalizzazione calcola il fattore K di un iscritto:
+    quella del database dei giocatori, trovata da scheda_nel_database,
+    oppure, se il database non lo ha, quella che la finalizzazione creera'
+    per lui (scheda_dal_torneo).
+    Dalla 10.13.17 la usa anche la classifica in corso, per la colonna Elo
+    Var.: fino alla 10.13.16 quella calcolava il K sul giocatore del torneo,
+    che non ha experienced, partite giocate e data di nascita del database,
+    e otteneva 40 dove la finalizzazione otteneva 20."""
+    scheda = scheda_nel_database(giocatore, players_db)
+    return scheda if scheda is not None else scheda_dal_torneo(giocatore)
+
+
+def fattore_k_della_finalizzazione(giocatore, players_db, data_di_inizio):
+    """Il fattore K che la finalizzazione usa per la variazione Elo di un
+    iscritto: get_k_factor sulla scheda di scheda_per_la_finalizzazione.
+    E' l'unico punto da cui passa il K di un iscritto: la finalizzazione
+    della finestra e della console, la colonna Elo Var. della classifica
+    in corso e, dalla 10.13.33, anche il primo calcolo del controller della
+    console, che fino ad allora dava 20 a chi il database non aveva."""
+    return get_k_factor(scheda_per_la_finalizzazione(giocatore, players_db), data_di_inizio)
 
 
 def allinea_giocatori_con_database(players_list, players_db, category="standard"):
