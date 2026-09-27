@@ -1,6 +1,18 @@
-PROVA 4: Invio ed Esc nella domanda Finalizza Torneo
-Prima: nell'albero scegli con le frecce Prova copie e porta il cursore sulla voce Finalizza il torneo, sotto i suoi turni.
-Passo 1: tieni premuto Invio per un paio di secondi.
-Domanda 1: si apre la domanda Finalizza Torneo, e resta aperta anche con il tasto tenuto giù?
-No. succede un macello: invio attiva un sacco di roba e finisce su crea un nuovo torneo nell'albero principale
-Esito: il resto ok
+PROVA 1: Invio tenuto giù
+Prima: Tornello chiuso, e un prompt dei comandi nella cartella di lavoro, aperto con cd /d E:\git\mine\Tornello-lavori.
+Prima: nel prompt rigenera Prova copie con python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py copie e aspetta che finisca.
+Passo 1: avvia Tornello con python tornello.py e, sotto Prova programmazione, apri turni, Turno corrente, da giocare, e porta il cursore sulla partita Alberti contro Longo.
+Passo 2: tieni premuto Invio per un paio di secondi, poi lascialo.
+Domanda 1: si apre una sola finestra del risultato, e resta aperta, senza che il risultato venga registrato?
+Passo 3: premi Esc.
+Passo 4: scegli con le frecce Prova copie e porta il cursore sulla voce Finalizza il torneo, sotto i suoi turni.
+Passo 5: tieni premuto Invio per un paio di secondi, poi lascialo.
+Domanda 2: si apre una sola domanda Finalizza Torneo, e resta aperta?
+Passo 6: premi Esc.
+Domanda 3: Esc risponde No, e NVDA torna su Finalizza il torneo?
+Passo 7: premi Invio una volta e, nella domanda, ancora Invio una volta.
+Domanda 4: il messaggio Torneo finalizzato con successo arriva in una finestra dove il testo si legge con le frecce, come quello delle domande?
+Passo 8: nel messaggio premi Invio.
+Domanda 5: il messaggio si chiude, e NVDA torna sull'albero, sulla voce Nuovo torneo?
+Passo 9: chiudi Tornello.
+Esito:
