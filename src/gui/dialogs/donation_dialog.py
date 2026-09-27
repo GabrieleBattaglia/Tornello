@@ -83,7 +83,8 @@ class DonationDialog(wx.Dialog):
         """INVIO nel testo, un campo multilinea che si tiene il tasto, preme
         Chiudi; sui pulsanti INVIO resta loro, e ogni altro tasto prosegue.
         Un INVIO ripetuto, con il tasto tenuto giu', non preme niente, come
-        nelle finestre di messaggio."""
+        nelle finestre di messaggio, e con lo stesso limite: le ripetizioni
+        che NVDA rimanda dal testo arrivano come INVIO nuovi."""
         invio = event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER)
         if invio and not event.HasAnyModifiers() and not event.IsAutoRepeat() and wx.Window.FindFocus() is self.msg_text:
             self.EndModal(self.pulsante_predefinito.GetId())

@@ -206,8 +206,10 @@ class TestInvioNellaFinestraDelRisultato:
 
 class TestInvioTenutoGiu:
     """Dalla 10.13.43 un INVIO tenuto giu' vale una volta sola: il filtro
-    dell'applicazione scarta il gancio dei tasti degli INVIO ripetuti, prima
-    di ogni finestra, e Windows non consegna il tasto a nessuno. Il filtro si
+    dell'applicazione scarta il gancio dei tasti degli INVIO che Windows segna
+    come ripetuti, prima di ogni finestra, e Windows non consegna il tasto a
+    nessuno. Quelli che NVDA rimanda dai campi di testo arrivano come nuovi,
+    e passano: e' il limite accettato. Il filtro si
     chiama qui direttamente: l'applicazione delle prove non e' Tornello."""
 
     @staticmethod

@@ -118,7 +118,10 @@ class AccessibleMsgDialog(wx.Dialog):
         ESC lo traduce wx nel pulsante di SetEscapeId.
         Un INVIO ripetuto, cioe' il tasto tenuto giu', non preme niente: chi
         apre la domanda con INVIO, per esempio dall'albero, e lo tiene un
-        attimo di troppo, non deve rispondere Si' senza averla letta."""
+        attimo di troppo, non deve rispondere Si' senza averla letta. Vale
+        per le ripetizioni che Windows segna come tali: quelle che NVDA
+        rimanda dal testo arrivano come INVIO nuovi, e rispondono (vedi
+        FilterEvent in gui/app.py)."""
         invio = event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER)
         if invio and not event.HasAnyModifiers() and not event.IsAutoRepeat() and wx.Window.FindFocus() is self.msg_text:
             self.EndModal(self.pulsante_predefinito.GetId())
