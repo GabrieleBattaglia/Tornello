@@ -1039,6 +1039,7 @@ def finestra(app_grafica, monkeypatch):
 
     suoni = []
     monkeypatch.setattr(manual_pairing_dialog, "play_sound", lambda evento, *a, **k: suoni.append(evento))
+    monkeypatch.setattr(manual_pairing_dialog, "suona_in_fila", lambda eventi, *a, **k: suoni.extend(eventi))
     domande = []
     aperte = []
 
@@ -1152,14 +1153,14 @@ class TestFinestraDellaComposizione:
         assert dlg.scelta_bianco.GetStringSelection() == "Beta Test (suggerito)"
 
         dlg.on_tasto_avversari(_tasto(wx.WXK_RETURN))
-        assert finestra.suoni[-1] == "coppia_avvertimento"
+        assert finestra.suoni[-2:] == ["coppia_aggiunta", "avvertimento"]
         assert dlg.coppie == [("B", "A"), ("C", "D")]
         assert dlg.btn_conferma.IsEnabled()
 
         dlg.lista_coppie.SetSelection(1)
         dlg.on_inverti(None)
         assert dlg.coppie[1] == ("D", "C")
-        assert finestra.suoni[-1] == "coppia_invertita_avvertimento"
+        assert finestra.suoni[-2:] == ["coppia_invertita_avvertimento", "avvertimento"]
 
     def test_inversione_e_proposta_hanno_i_loro_suoni(self, finestra):
         """Inverti colori e Proposta automatica non suonano come l'aggiunta
@@ -1178,7 +1179,7 @@ class TestFinestraDellaComposizione:
         saturo.lista_coppie.SetSelection(0)
         saturo.on_togli(None)
         saturo.on_proposta(None)
-        assert finestra.suoni[-1] == "proposta_coppie_avvertimento"
+        assert finestra.suoni[-2:] == ["proposta_coppie_avvertimento", "avvertimento"]
         assert saturo.coppie == [("B", "A"), ("C", "D")]
 
     def test_il_bianco_scelto_a_mano(self, finestra):

@@ -13,7 +13,8 @@ una copia di sicurezza ha il suo evento, con le stesse regole (issue 39), e
 dalla 10.12.0 la finestra della composizione manuale del turno ne ha tre, per
 la coppia aggiunta, la coppia con avvertimenti e la coppia tolta, piu' due
 per Inverti colori, senza e con avvertimenti, e dalla 10.13.0 altri due per
-Proposta automatica (issue 38).
+Proposta automatica (issue 38). Dalla 10.13.42 la coppia con avvertimenti
+lascia il posto all'avvertimento, che segue il suono dell'azione.
 Niente suona davvero: la collezione dei preset si legge come json, i
 sorgenti come testo, e dove servono le finestre vere play_sound e' sostituita
 da una finta che annota gli eventi.
@@ -39,7 +40,7 @@ EVENTI_NUOVI = (
     "controllo_risultati",
     "ripristino",
     "coppia_aggiunta",
-    "coppia_avvertimento",
+    "avvertimento",
     "coppia_tolta",
     "coppia_invertita",
     "coppia_invertita_avvertimento",
@@ -156,6 +157,55 @@ class TestEventiNuovi:
         nomi = {n for n, _file in chiamate_letterali()}
         assert {"apertura", "cancellato", "apertura_risultati", "controllo_risultati"} <= nomi
         assert not any(n.startswith("risultato_") for n in nomi)
+
+
+class TestSuoniInFila:
+    """Dalla 10.13.42 l'avvertimento segue il suono dell'azione: suona_in_fila
+    fa partire il primo suono subito e gli altri da un timer, ciascuno alla
+    fine del precedente. Il timer qui e' finto, e niente suona."""
+
+    @pytest.mark.parametrize("evento", ["avvertimento", "coppia_aggiunta", "proposta_coppie_avvertimento"])
+    def test_la_durata_e_quella_delle_note_della_collezione(self, evento):
+        from utils import EVENTI, durata_del_suono
+
+        preset = collezione().get(EVENTI[evento])
+        assert durata_del_suono(evento) == pytest.approx(sum(nota[1] for nota in preset["score"]))
+
+    def test_un_preset_che_non_esiste_dura_zero(self):
+        from utils import durata_del_suono
+
+        assert durata_del_suono("preset_che_non_esiste_davvero") == 0.0
+
+    def test_il_primo_subito_gli_altri_uno_dopo_l_altro(self, monkeypatch):
+        import threading
+
+        import utils
+
+        suonati, timer = [], []
+
+        class TimerFinto:
+            def __init__(self, ritardo, funzione, args=()):
+                self.voce = [ritardo, funzione, args, None]
+                self.daemon = False
+                timer.append(self)
+
+            def start(self):
+                self.voce[3] = self.daemon
+
+        monkeypatch.setattr(utils, "play_sound", lambda evento, *a, **k: suonati.append(evento))
+        monkeypatch.setattr(utils, "durata_del_suono", {"azione": 0.3, "avvertimento": 0.2, "terzo": 0.1}.get)
+        monkeypatch.setattr(threading, "Timer", TimerFinto)
+
+        utils.suona_in_fila(["azione", "avvertimento", "terzo"], {"base_volume": 0.4}, pausa=0.05)
+
+        assert suonati == ["azione"]
+        assert [(round(t.voce[0], 6), t.voce[2]) for t in timer] == [
+            (0.35, ("avvertimento", {"base_volume": 0.4})),
+            (0.6, ("terzo", {"base_volume": 0.4})),
+        ]
+        assert all(t.voce[1] is utils.play_sound for t in timer)
+        # Partiti, e da thread che non tengono aperto il programma.
+        assert [t.voce[3] for t in timer] == [True, True]
 
 
 class TestFinestraDeiRisultati:

@@ -647,19 +647,25 @@ EVENTI = {
     # per nient'altro. Provvisorio fino all'ascolto di Gabriele (issue 39).
     "ripristino": "meditimer_banco_salvato",
     # Dalla 10.12.0 la finestra della composizione manuale del turno: due
-    # tic che salgono per una coppia aggiunta senza avvertimenti, una nota
-    # sola che si spegne per una coppia con avvertimenti, una scivolata
-    # verso il basso per una coppia tolta. Tre preset che Tornello non usa
-    # per nient'altro, provvisori fino all'ascolto di Gabriele (issue 38).
+    # tic che salgono per una coppia aggiunta, una scivolata verso il basso
+    # per una coppia tolta. Preset che Tornello non usa per nient'altro
+    # (issue 38).
     "coppia_aggiunta": "doppio_tic_conferma",
-    "coppia_avvertimento": "avviso_di_sistema",
     "coppia_tolta": "espelli",
+    # Dalla 10.13.42 gli avvertimenti hanno un suono loro, una nota sola che
+    # si spegne, che segue quello dell'azione: la coppia aggiunta, i colori
+    # invertiti o la proposta, quando le coppie hanno avvertimenti. Scelta
+    # di Gabriele del 27 settembre 2026, dopo l'ascolto: fino alla 10.13.41
+    # la coppia aggiunta con avvertimenti aveva questa sola nota, al posto
+    # dei due tic.
+    "avvertimento": "avviso_di_sistema",
     # Nella stessa finestra, Inverti colori e Proposta automatica hanno i
     # loro suoni, due ciascuno, senza e con avvertimenti, perche' nessun
     # preset si divide fra due eventi: per i colori invertiti due note uguali
     # allo specchio fra sinistra e destra, oppure due note uguali che si
     # spengono in un tonfo; per la proposta due accordi in portamento, oppure
-    # un arpeggio minore lento. Anche questi provvisori (issue 38).
+    # un arpeggio minore lento. Con gli avvertimenti, dalla 10.13.42, li
+    # segue il suono dell'avvertimento (issue 38).
     "coppia_invertita": "pokermachine_coppia_gemella",
     "coppia_invertita_avvertimento": "pokermachine_coppia_muta",
     "proposta_coppie": "perfect_match",
@@ -684,6 +690,38 @@ def play_sound(event_name, torneo=None, sync=False):
     return Acusticator.play(
         EVENTI.get(event_name, event_name), sync=sync, volume=volume
     )
+
+
+def durata_del_suono(event_name):
+    """I secondi che dura il suono di un evento, o di un preset chiamato per
+    nome come in play_sound: la somma delle durate delle sue note. Zero se
+    il preset non esiste."""
+    from GBUtils import Acusticator
+
+    score, _kind, _adsr = Acusticator.preset(EVENTI.get(event_name, event_name))
+    if not score:
+        return 0.0
+    return sum(float(durata) for durata in score[1::4])
+
+
+def suona_in_fila(eventi, torneo=None, pausa=0.06):
+    """Suona gli eventi uno dopo l'altro, senza fermare il programma: il
+    primo parte subito, ogni altro alla fine del precedente, dopo una pausa
+    breve che li tiene distinti. Dalla 10.13.42, per l'avvertimento che
+    segue il suono di un'azione nella composizione manuale del turno. I
+    suoni dopo il primo partono da un timer in un thread a parte, che non
+    tiene aperto il programma se nel frattempo si chiude."""
+    import threading
+
+    ritardo = 0.0
+    for numero, evento in enumerate(eventi):
+        if numero == 0:
+            play_sound(evento, torneo)
+        else:
+            timer = threading.Timer(ritardo, play_sound, args=(evento, torneo))
+            timer.daemon = True
+            timer.start()
+        ritardo += durata_del_suono(evento) + pausa
 
 
 def bip_di_scelta(indice, quante, torneo=None):

@@ -34,7 +34,7 @@ from turno_manuale import (
     voce_coppia,
     voce_giocatore,
 )
-from utils import play_sound
+from utils import play_sound, suona_in_fila
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -269,12 +269,18 @@ class ManualPairingDialog(wx.Dialog):
         self.btn_inverti.Enable(con_colori)
 
     def _suona_coppie(self, coppie, senza, con):
-        """Il suono di una o piu' coppie appena composte: l'evento con se
-        almeno una ha avvertimenti, altrimenti l'evento senza. Aggiunta,
-        inversione dei colori e proposta hanno ciascuna i suoi due eventi:
-        una regola del parco vuole un suono diverso per ogni evento."""
-        con_avvertimenti = any(avvertimenti_coppia(self.torneo, bianco, nero) for bianco, nero in coppie)
-        play_sound(con if con_avvertimenti else senza)
+        """Il suono di una o piu' coppie appena composte: l'evento senza,
+        oppure, se almeno una ha avvertimenti, l'evento con seguito da quello
+        dell'avvertimento. Inversione dei colori e proposta hanno ciascuna i
+        suoi due eventi, perche' una regola del parco vuole un suono diverso
+        per ogni evento; l'aggiunta ne ha uno, che vale per tutti e due.
+        Dalla 10.13.42 l'avvertimento segue il suono dell'azione, scelta di
+        Gabriele dopo l'ascolto: fino alla 10.13.41 l'evento con suonava da
+        solo, e per l'aggiunta era una nota sola al posto dei due tic."""
+        if any(avvertimenti_coppia(self.torneo, bianco, nero) for bianco, nero in coppie):
+            suona_in_fila([con, "avvertimento"])
+        else:
+            play_sound(senza)
 
     def _messaggio(self, titolo, testo):
         dlg = AccessibleMsgDialog(self, titolo, testo, settings=self.settings)
@@ -340,7 +346,7 @@ class ManualPairingDialog(wx.Dialog):
             coppia = (bianco, avversario if bianco == scelto else scelto)
         indice_libero = self.lista_liberi.GetSelection()
         self.coppie.append(coppia)
-        self._suona_coppie([coppia], "coppia_aggiunta", "coppia_avvertimento")
+        self._suona_coppie([coppia], "coppia_aggiunta", "coppia_aggiunta")
         self._aggiorna(indice_libero=indice_libero, indice_coppia=ordina_coppie(self.torneo, self.coppie).index(coppia))
         if self._liberi:
             self.lista_liberi.SetFocus()
