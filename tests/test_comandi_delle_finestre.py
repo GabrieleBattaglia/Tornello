@@ -204,6 +204,82 @@ class TestInvioNellaFinestraDelRisultato:
             _chiudi(dlg)
 
 
+class TestFrecceInTondo:
+    """Dalla 10.13.40 le frecce sulle voci del risultato e sui giorni della
+    programmazione girano in tondo e scelgono la voce su cui arrivano. Dalla
+    10.6.4 i pulsanti stanno nel loro riquadro, e wxMSW trattava le frecce
+    come il tabulatore: dalla prima voce la freccia su finiva sul pulsante di
+    conferma. Le frecce arrivano al riquadro come evento di navigazione, e
+    qui l'evento si manda al riquadro come lo manda wx; il fuoco e' annotato,
+    perche' la finestra non si mostra."""
+
+    @staticmethod
+    def _risultato(telaio):
+        from gui.dialogs.result_dialog import ResultDialog
+
+        dlg = ResultDialog(telaio, "Alberti Anna", "Longo Luca", "A1", "L1", 1, None, {}, telaio.settings)
+        return dlg, [rb for _v, rb in dlg.radio_buttons]
+
+    @staticmethod
+    def _programmazione(telaio):
+        from gui.dialogs.result_dialog import ScheduleDialog
+
+        dlg = ScheduleDialog(telaio, {}, telaio.settings, {})
+        return dlg, [rb for _d, rb in dlg.radio_buttons]
+
+    @staticmethod
+    def _freccia(pulsanti, da, avanti, monkeypatch, dal_tab=False):
+        """La freccia premuta con il fuoco sulla voce da; restituisce le voci
+        che hanno ricevuto il fuoco."""
+        import wx
+
+        fuochi = []
+        monkeypatch.setattr(wx.Window, "FindFocus", lambda: pulsanti[da])
+        monkeypatch.setattr(wx.RadioButton, "SetFocus", lambda self: fuochi.append(pulsanti.index(self)))
+        evento = wx.NavigationKeyEvent()
+        evento.SetDirection(avanti)
+        evento.SetFromTab(dal_tab)
+        evento.SetEventObject(pulsanti[da])
+        pulsanti[da].GetParent().ProcessEvent(evento)
+        return fuochi
+
+    @pytest.mark.parametrize("finestra", ["_risultato", "_programmazione"])
+    def test_dalla_prima_la_freccia_su_va_all_ultima(self, telaio, suoni, monkeypatch, finestra):
+        dlg, pulsanti = getattr(self, finestra)(telaio)
+        try:
+            assert self._freccia(pulsanti, 0, False, monkeypatch) == [len(pulsanti) - 1]
+            assert [p.GetValue() for p in pulsanti] == [False] * (len(pulsanti) - 1) + [True]
+        finally:
+            _chiudi(dlg)
+
+    @pytest.mark.parametrize("finestra", ["_risultato", "_programmazione"])
+    def test_dall_ultima_la_freccia_giu_va_alla_prima(self, telaio, suoni, monkeypatch, finestra):
+        dlg, pulsanti = getattr(self, finestra)(telaio)
+        try:
+            assert self._freccia(pulsanti, len(pulsanti) - 1, True, monkeypatch) == [0]
+            assert [p.GetValue() for p in pulsanti] == [True] + [False] * (len(pulsanti) - 1)
+        finally:
+            _chiudi(dlg)
+
+    def test_in_mezzo_la_freccia_sceglie_la_voce_accanto(self, telaio, suoni, monkeypatch):
+        dlg, pulsanti = self._risultato(telaio)
+        try:
+            assert self._freccia(pulsanti, 2, True, monkeypatch) == [3]
+            assert pulsanti[3].GetValue()
+            assert self._freccia(pulsanti, 3, False, monkeypatch) == [2]
+            assert pulsanti[2].GetValue() and not pulsanti[3].GetValue()
+        finally:
+            _chiudi(dlg)
+
+    def test_il_tabulatore_non_sceglie_niente(self, telaio, suoni, monkeypatch):
+        dlg, pulsanti = self._risultato(telaio)
+        try:
+            assert self._freccia(pulsanti, 0, False, monkeypatch, dal_tab=True) == []
+            assert not any(p.GetValue() for p in pulsanti)
+        finally:
+            _chiudi(dlg)
+
+
 @pytest.fixture
 def principale(app_grafica, suoni, monkeypatch):
     """La finestra principale, mai mostrata, senza i controlli dell'avvio.

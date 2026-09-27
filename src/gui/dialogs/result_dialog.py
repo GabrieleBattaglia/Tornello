@@ -19,6 +19,39 @@ MISURA_PROGRAMMAZIONE = (242, 435)
 MISURA_RISULTATO = (457, 547)
 
 
+def frecce_in_tondo(riquadro, pulsanti):
+    """Le frecce nel gruppo di pulsanti di scelta di un riquadro: portano
+    alla voce precedente o alla seguente e la scelgono, e dall'ultima tornano
+    alla prima, e viceversa.
+
+    Dalla 10.6.4 i pulsanti sono figli del loro riquadro (issue 49), e wxMSW
+    tratta allora le frecce come il tabulatore: dal primo risultato la
+    freccia su finiva su Conferma Risultato, dal primo giorno della
+    programmazione su Conferma, e dall'ultima voce la freccia giu' usciva
+    dal gruppo. Fino alla 10.6.3 giravano in tondo, e dalla 10.13.40 lo
+    rifanno. wx trasforma le frecce in un evento di navigazione, che arriva
+    per primo al riquadro: e' li' che si intercettano, e il tabulatore
+    prosegue per la sua strada. La scelta viene prima del fuoco, cosi' lo
+    screen reader dice la voce gia' selezionata."""
+
+    def alla_freccia(event):
+        if event.IsFromTab() or event.IsWindowChange():
+            event.Skip()
+            return
+        fuoco = wx.Window.FindFocus()
+        attivi = [p for p in pulsanti if p.IsEnabled()]
+        posizione = next((i for i, p in enumerate(attivi) if p is fuoco), None)
+        if posizione is None:
+            event.Skip()
+            return
+        passo = 1 if event.GetDirection() else -1
+        arrivo = attivi[(posizione + passo) % len(attivi)]
+        arrivo.SetValue(True)
+        arrivo.SetFocus()
+
+    riquadro.Bind(wx.EVT_NAVIGATION_KEY, alla_freccia)
+
+
 class ScheduleDialog(wx.Dialog):
     """
     Finestra di dialogo modale per la pianificazione dettagliata di una partita.
@@ -121,6 +154,7 @@ class ScheduleDialog(wx.Dialog):
             self.radio_buttons.append((d, rb))
             first = False
 
+        frecce_in_tondo(sb_date, [rb for _d, rb in self.radio_buttons])
         vbox.Add(sbs_date, 0, wx.EXPAND | wx.ALL, 15)
 
         # 2. Selezione Ora e Minuti
@@ -426,6 +460,7 @@ class ResultDialog(wx.Dialog):
             self.radio_buttons.append((val, rb))
             first = False
 
+        frecce_in_tondo(sb_options, [rb for _val, rb in self.radio_buttons])
         vbox.Add(sbs_options, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
 
         # --- CAMPO PGN ---
