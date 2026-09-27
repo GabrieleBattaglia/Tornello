@@ -1,65 +1,6 @@
-PROVA 1: Frecce nella finestra del risultato e nella programmazione
-Prima: Tornello chiuso, e un prompt dei comandi nella cartella di lavoro, aperto con cd /d E:\git\mine\Tornello-lavori: da lì si avvia Tornello, con python tornello.py.
-Prima: nel prompt rigenera i tornei di prova con python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py e aspetta che finisca.
-Prima: in tutto il collaudo, se all'avvio arriva la domanda sul database FIDE, rispondi No.
-Passo 1: avvia Tornello e, sotto Prova programmazione, apri turni, Turno corrente, da giocare, poi premi Invio sulla partita Alberti contro Longo.
-Passo 2: porta il fuoco sulla prima voce del risultato, 1 - 0, e premi freccia su.
-Domanda 1: arrivi sull'ultima voce, 0 - 0F, già selezionata e con il suo arpeggio?
-Passo 3: premi freccia giù.
-Domanda 2: torni sulla prima voce, 1 - 0, selezionata?
-Passo 4: vai con Tab fino a Pianifica Partita e premi Invio.
-Passo 5: sul primo giorno premi freccia su, e poi freccia giù.
-Domanda 3: la freccia su porta all'ultimo giorno, e la freccia giù torna al primo, ciascuno con il suo bip?
-Passo 6: premi Esc due volte, per chiudere la programmazione e poi il risultato.
-Esito:
-
-PROVA 2: Iscrizione dei giocatori con NVDA
-Prima: nell'albero scegli con le frecce Prova spareggi, sotto In Preparazione, senza generare turni: l'iscrizione si apre soltanto nei tornei in preparazione.
-Passo 1: premi Ctrl+I.
-Domanda 1: NVDA dice il riquadro Ricerca nel Database Personale Locale e poi il campo Filtra per nome o cognome nel database locale?
-Passo 2: vai con Tab fino al pulsante Nuovo Giocatore Da Zero, senza premerlo, e poi premi Tab ancora una volta.
-Domanda 2: arrivando alla lista degli iscritti, NVDA dice il suo nome due volte, per il riquadro e per la lista?
-Domanda 3: se lo dice due volte, ti disturba?
-Passo 3: premi Esc.
-Esito:
-
-PROVA 3: Liste vuote della composizione manuale
-Prima: nell'albero scegli con le frecce Prova turno manuale.
-Passo 1: apri turni e premi Invio su calcola il turno successivo; alla domanda Nessun abbinamento valido rispondi Sì.
-Passo 2: vai con Tab fino alla lista Giocatori da abbinare, e poi alla lista Avversario.
-Domanda 1: nella prima NVDA legge Nessun giocatore da abbinare, e nella seconda Nessun avversario, non ci sono giocatori da abbinare?
-Passo 3: vai con Tab fino alla lista Coppie composte e premi Canc finché le coppie finiscono.
-Domanda 2: finite le coppie, il fuoco passa sulla lista Giocatori da abbinare, con i giocatori da abbinare?
-Passo 4: vai con Tab fino alla lista Coppie composte.
-Domanda 3: NVDA legge Nessuna coppia composta, e Canc fa sentire il suono dell'errore?
-Passo 5: premi Esc.
-Esito:
-
 PROVA 4: Invio ed Esc nella domanda Finalizza Torneo
 Prima: nell'albero scegli con le frecce Prova copie e porta il cursore sulla voce Finalizza il torneo, sotto i suoi turni.
 Passo 1: tieni premuto Invio per un paio di secondi.
 Domanda 1: si apre la domanda Finalizza Torneo, e resta aperta anche con il tasto tenuto giù?
-Passo 2: leggi la domanda con le frecce e premi Esc.
-Domanda 2: Esc risponde No, e NVDA torna su Finalizza il torneo?
-Passo 3: premi Invio su Finalizza il torneo e, nella domanda, premi Invio una volta.
-Domanda 3: Invio risponde Sì, e arriva il messaggio della finalizzazione riuscita?
-Passo 4: nel messaggio premi Esc.
-Domanda 4: Esc chiude il messaggio, e NVDA torna sull'albero?
-Passo 5: chiudi Tornello.
-Esito:
-
-PROVA 5: Invito alla donazione con NVDA
-Prima: Tornello chiuso. In questa prova Tornello si avvia con un comando diverso, che fa comparire l'invito a ogni chiusura; di solito compare a una chiusura su cinque.
-Passo 1: nel prompt avvia python scratch\collaudo\tornello_con_invito.py e chiudi Tornello.
-Domanda 1: NVDA legge il messaggio della finestra Offri un caffè nella lingua scelta nelle impostazioni?
-Passo 2: leggi il messaggio con le frecce e premi Invio.
-Domanda 2: Invio chiude la finestra senza aprire il browser, e Tornello termina?
-Passo 3: avvia di nuovo lo stesso comando, chiudi Tornello e, nell'invito, premi Esc.
-Domanda 3: anche Esc chiude la finestra, e Tornello termina?
-Esito:
-
-PROVA 6: Ascolto dell'avvertimento
-Prima: Tornello chiuso.
-Passo 1: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_avvertimenti.py
-Domanda 1: ogni combinazione va bene per la sua azione?
-Esito:
+No. succede un macello: invio attiva un sacco di roba e finisce su crea un nuovo torneo nell'albero principale
+Esito: il resto ok
