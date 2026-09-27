@@ -228,9 +228,11 @@ class TestFrecceInTondo:
         return dlg, [rb for _d, rb in dlg.radio_buttons]
 
     @staticmethod
-    def _freccia(pulsanti, da, avanti, monkeypatch, dal_tab=False):
+    def _freccia(pulsanti, da, avanti, monkeypatch, dal_tab=False, dal_pulsante=False):
         """La freccia premuta con il fuoco sulla voce da; restituisce le voci
-        che hanno ricevuto il fuoco."""
+        che hanno ricevuto il fuoco. L'evento nasce dal riquadro, come quello
+        delle frecce, o con dal_pulsante dal pulsante, come quello che wxMSW
+        manda quando si spegne il controllo con il fuoco."""
         import wx
 
         fuochi = []
@@ -239,8 +241,9 @@ class TestFrecceInTondo:
         evento = wx.NavigationKeyEvent()
         evento.SetDirection(avanti)
         evento.SetFromTab(dal_tab)
-        evento.SetEventObject(pulsanti[da])
-        pulsanti[da].GetParent().ProcessEvent(evento)
+        riquadro = pulsanti[da].GetParent()
+        evento.SetEventObject(pulsanti[da] if dal_pulsante else riquadro)
+        riquadro.ProcessEvent(evento)
         return fuochi
 
     @pytest.mark.parametrize("finestra", ["_risultato", "_programmazione"])
@@ -275,6 +278,16 @@ class TestFrecceInTondo:
         dlg, pulsanti = self._risultato(telaio)
         try:
             assert self._freccia(pulsanti, 0, False, monkeypatch, dal_tab=True) == []
+            assert not any(p.GetValue() for p in pulsanti)
+        finally:
+            _chiudi(dlg)
+
+    def test_l_evento_nato_dal_pulsante_non_sceglie_niente(self, telaio, suoni, monkeypatch):
+        """Spegnendo il pulsante con il fuoco, wxMSW manda un evento in
+        avanti, non da TAB, che nasce dal pulsante: non e' una freccia."""
+        dlg, pulsanti = self._risultato(telaio)
+        try:
+            assert self._freccia(pulsanti, 2, True, monkeypatch, dal_pulsante=True) == []
             assert not any(p.GetValue() for p in pulsanti)
         finally:
             _chiudi(dlg)

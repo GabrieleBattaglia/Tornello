@@ -49,9 +49,11 @@ EVENTI_NUOVI = (
 )
 
 # Le chiamate con il nome scritto per intero, play_sound("...") oppure
-# Acusticator.play("..."). Le f-string, come risultato_{val}, restano fuori:
-# prima delle virgolette hanno la f.
-CHIAMATA_LETTERALE = re.compile(r"""(?:play_sound|Acusticator\.play)\(\s*["']([^"']+)["']""")
+# Acusticator.play("..."), e dalla 10.13.42 self._suona("..."), che nella
+# composizione manuale annulla l'avvertimento in attesa e poi chiama
+# play_sound. Le f-string, come risultato_{val}, restano fuori: prima delle
+# virgolette hanno la f.
+CHIAMATA_LETTERALE = re.compile(r"""(?:play_sound|Acusticator\.play|_suona)\(\s*["']([^"']+)["']""")
 
 
 def _leggi(percorso):
@@ -196,7 +198,7 @@ class TestSuoniInFila:
         monkeypatch.setattr(utils, "durata_del_suono", {"azione": 0.3, "avvertimento": 0.2, "terzo": 0.1}.get)
         monkeypatch.setattr(threading, "Timer", TimerFinto)
 
-        utils.suona_in_fila(["azione", "avvertimento", "terzo"], {"base_volume": 0.4}, pausa=0.05)
+        restituiti = utils.suona_in_fila(["azione", "avvertimento", "terzo"], {"base_volume": 0.4}, pausa=0.05)
 
         assert suonati == ["azione"]
         assert [(round(t.voce[0], 6), t.voce[2]) for t in timer] == [
@@ -206,6 +208,8 @@ class TestSuoniInFila:
         assert all(t.voce[1] is utils.play_sound for t in timer)
         # Partiti, e da thread che non tengono aperto il programma.
         assert [t.voce[3] for t in timer] == [True, True]
+        # I timer tornano a chi chiama, che puo' annullarli.
+        assert restituiti == timer
 
 
 class TestFinestraDeiRisultati:

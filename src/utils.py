@@ -710,9 +710,12 @@ def suona_in_fila(eventi, torneo=None, pausa=0.06):
     breve che li tiene distinti. Dalla 10.13.42, per l'avvertimento che
     segue il suono di un'azione nella composizione manuale del turno. I
     suoni dopo il primo partono da un timer in un thread a parte, che non
-    tiene aperto il programma se nel frattempo si chiude."""
+    tiene aperto il programma se nel frattempo si chiude. Restituisce i
+    timer, perche' chi chiama possa annullare con cancel() i suoni che non
+    sono ancora partiti."""
     import threading
 
+    in_attesa = []
     ritardo = 0.0
     for numero, evento in enumerate(eventi):
         if numero == 0:
@@ -721,7 +724,9 @@ def suona_in_fila(eventi, torneo=None, pausa=0.06):
             timer = threading.Timer(ritardo, play_sound, args=(evento, torneo))
             timer.daemon = True
             timer.start()
+            in_attesa.append(timer)
         ritardo += durata_del_suono(evento) + pausa
+    return in_attesa
 
 
 def bip_di_scelta(indice, quante, torneo=None):

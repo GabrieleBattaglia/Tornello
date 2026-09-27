@@ -1068,8 +1068,9 @@ class TestLeListeVuote:
     """Dalla 10.13.41 una lista vuota della composizione manuale ha una voce
     sola, che dice perche' e' vuota: in una lista senza voci Windows lascia
     il cursore su una voce che non esiste, e NVDA la leggeva come
-    sconosciuto. La voce non corrisponde a niente: INVIO e CANC suonano
-    l'errore, come sulla lista vuota, e non cambiano le coppie."""
+    sconosciuto. La voce non corrisponde a niente: INVIO sull'avversario e
+    CANC sulle coppie suonano l'errore, come sulla lista vuota, INVIO sui
+    giocatori non fa niente, e le coppie non cambiano."""
 
     def test_invio_sull_avversario_vuoto_non_aggiunge_niente(self, finestra):
         wx = finestra.wx
@@ -1111,12 +1112,90 @@ class TestLeListeVuote:
         assert dlg.coppie == []
         assert _voci(dlg.lista_liberi)[0].startswith("Alfa Test")
 
+    def test_un_giocatore_senza_avversari_possibili(self, finestra, monkeypatch):
+        """Con le regole di oggi non capita: un giocatore da abbinare ha
+        sempre un avversario o il riposo. Se capitasse, la lista lo dice."""
+        from gui.dialogs import manual_pairing_dialog
+
+        monkeypatch.setattr(manual_pairing_dialog, "avversari_possibili", lambda *a: [])
+        dlg = finestra.crea(_torneo([_giocatore(f"G{i:02d}", f"C{i:02d}", 2000 - i) for i in range(17)]), turno=1)
+
+        assert _voci(dlg.lista_avversari) == ["Nessun avversario possibile per questo giocatore"]
+        assert not dlg.btn_aggiungi.IsEnabled()
+
     def test_la_lista_piena_non_ha_la_voce_vuota(self, finestra):
         dlg = finestra.crea(_torneo([_giocatore(f"G{i:02d}", f"C{i:02d}", 2000 - i) for i in range(17)]), turno=1)
 
         assert dlg.lista_liberi.GetCount() == 17
         assert "Nessun" not in " ".join(_voci(dlg.lista_liberi) + _voci(dlg.lista_avversari))
         assert _voci(dlg.lista_coppie) == ["Nessuna coppia composta"]
+
+
+class TestAvvertimentoInAttesa:
+    """Dalla 10.13.42 l'avvertimento arriva dopo il suono dell'azione, da un
+    timer. Un altro suono della finestra, o la sua chiusura, lo annulla se
+    non e' ancora partito: altrimenti si sentiva dopo il suono seguente,
+    come se fosse suo, anche a finestra chiusa."""
+
+    @staticmethod
+    def _con_timer(finestra, monkeypatch):
+        from gui.dialogs import manual_pairing_dialog
+
+        timer = []
+
+        def in_fila(eventi, *a, **k):
+            finestra.suoni.extend(eventi)
+            nuovo = SimpleNamespace(annullato=False)
+            nuovo.cancel = lambda: setattr(nuovo, "annullato", True)
+            timer.append(nuovo)
+            return [nuovo]
+
+        monkeypatch.setattr(manual_pairing_dialog, "suona_in_fila", in_fila)
+        return timer
+
+    def test_canc_subito_dopo_la_proposta_annulla_l_avvertimento(self, finestra, monkeypatch):
+        timer = self._con_timer(finestra, monkeypatch)
+        dlg = finestra.crea(_torneo_saturo())
+        dlg.lista_coppie.SetSelection(0)
+        dlg.on_togli(None)
+        dlg.on_proposta(None)
+        assert finestra.suoni[-2:] == ["proposta_coppie_avvertimento", "avvertimento"]
+        assert not timer[-1].annullato
+
+        dlg.lista_coppie.SetSelection(0)
+        dlg.on_togli(None)
+
+        assert timer[-1].annullato
+        assert finestra.suoni[-1] == "coppia_tolta"
+
+    def test_un_altra_azione_con_avvertimenti_annulla_il_primo(self, finestra, monkeypatch):
+        timer = self._con_timer(finestra, monkeypatch)
+        dlg = finestra.crea(_torneo_saturo())
+        dlg.lista_coppie.SetSelection(1)
+        dlg.on_inverti(None)
+        dlg.lista_coppie.SetSelection(1)
+        dlg.on_inverti(None)
+
+        assert [t.annullato for t in timer] == [True, False]
+
+    def test_annulla_e_la_chiusura_annullano_l_avvertimento(self, finestra, monkeypatch):
+        import wx
+
+        from gui.dialogs.manual_pairing_dialog import ManualPairingDialog
+
+        timer = self._con_timer(finestra, monkeypatch)
+        dlg = finestra.crea(_torneo_saturo())
+        dlg.lista_coppie.SetSelection(1)
+        dlg.on_inverti(None)
+        dlg.on_annulla(None)
+        assert timer[-1].annullato
+
+        # La chiusura per qualunque strada passa da EndModal.
+        monkeypatch.setattr(wx.Dialog, "EndModal", lambda self, codice: None)
+        dlg.lista_coppie.SetSelection(1)
+        dlg.on_inverti(None)
+        ManualPairingDialog.EndModal(dlg, wx.ID_CANCEL)
+        assert timer[-1].annullato
 
 
 class TestFinestraDellaComposizione:

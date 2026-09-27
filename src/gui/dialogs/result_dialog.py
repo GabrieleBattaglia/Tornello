@@ -32,10 +32,13 @@ def frecce_in_tondo(riquadro, pulsanti):
     rifanno. wx trasforma le frecce in un evento di navigazione, che arriva
     per primo al riquadro: e' li' che si intercettano, e il tabulatore
     prosegue per la sua strada. La scelta viene prima del fuoco, cosi' lo
-    screen reader dice la voce gia' selezionata."""
+    screen reader dice la voce gia' selezionata. Contano soltanto gli
+    eventi nati dal riquadro, come quelli delle frecce: quello che wxMSW
+    manda quando si spegne il controllo con il fuoco nasce dal controllo, e
+    non deve scegliere la voce seguente."""
 
     def alla_freccia(event):
-        if event.IsFromTab() or event.IsWindowChange():
+        if event.GetEventObject() is not riquadro or event.IsFromTab() or event.IsWindowChange():
             event.Skip()
             return
         fuoco = wx.Window.FindFocus()

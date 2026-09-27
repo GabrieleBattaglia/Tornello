@@ -68,6 +68,8 @@ class ManualPairingDialog(wx.Dialog):
         self._liberi = []
         self._avversari = []
         self._candidati_bianco = []
+        # I timer degli avvertimenti non ancora suonati, dalla 10.13.42.
+        self._in_attesa = []
 
         self._init_ui()
         self.apply_theme()
@@ -182,8 +184,10 @@ class ManualPairingDialog(wx.Dialog):
         che dice perche' la lista e' vuota. Dalla 10.13.41: in una lista
         vuota Windows lascia il cursore su una voce che non esiste, e NVDA la
         leggeva come sconosciuto. La voce vuota non corrisponde a niente: le
-        liste interne, _liberi, _avversari e coppie, restano vuote, e INVIO o
-        CANC su di lei suonano l'errore, come prima sulla lista vuota."""
+        liste interne, _liberi, _avversari e coppie, restano vuote. INVIO
+        sulla voce di Avversario e CANC su quella di Coppie composte suonano
+        l'errore, come prima sulla lista vuota; gli altri tasti non fanno
+        niente."""
         lista.Set(voci or [vuota])
 
     def _aggiorna(self, indice_libero=0, indice_coppia=0):
@@ -277,10 +281,31 @@ class ManualPairingDialog(wx.Dialog):
         Dalla 10.13.42 l'avvertimento segue il suono dell'azione, scelta di
         Gabriele dopo l'ascolto: fino alla 10.13.41 l'evento con suonava da
         solo, e per l'aggiunta era una nota sola al posto dei due tic."""
+        self._ferma_avvertimento()
         if any(avvertimenti_coppia(self.torneo, bianco, nero) for bianco, nero in coppie):
-            suona_in_fila([con, "avvertimento"])
+            self._in_attesa = list(suona_in_fila([con, "avvertimento"]) or [])
         else:
             play_sound(senza)
+
+    def _ferma_avvertimento(self):
+        """Annulla l'avvertimento che aspetta ancora di suonare. Arriva poco
+        piu' di un secondo dopo l'azione, al massimo: senza, un tasto premuto
+        subito, per esempio CANC o ESC, faceva sentire il suo suono e poi
+        l'avvertimento dell'azione di prima, come se fosse suo, anche a
+        finestra chiusa."""
+        for timer in self._in_attesa:
+            timer.cancel()
+        self._in_attesa = []
+
+    def _suona(self, evento):
+        """Un suono della finestra, dopo aver annullato l'avvertimento che
+        aspetta ancora."""
+        self._ferma_avvertimento()
+        play_sound(evento)
+
+    def EndModal(self, retCode):
+        self._ferma_avvertimento()
+        super().EndModal(retCode)
 
     def _messaggio(self, titolo, testo):
         dlg = AccessibleMsgDialog(self, titolo, testo, settings=self.settings)
@@ -335,7 +360,7 @@ class ManualPairingDialog(wx.Dialog):
         giocatori da abbinare, o, quando sono finiti, sulla conferma."""
         scelta = self._scelta_corrente()
         if scelta is None:
-            play_sound("errore")
+            self._suona("errore")
             return
         scelto, avversario = scelta
         if avversario is None:
@@ -359,10 +384,10 @@ class ManualPairingDialog(wx.Dialog):
         """Toglie la coppia scelta: i suoi giocatori tornano da abbinare."""
         indice = self.lista_coppie.GetSelection()
         if indice == wx.NOT_FOUND or indice >= len(self.coppie):
-            play_sound("errore")
+            self._suona("errore")
             return
         del self.coppie[indice]
-        play_sound("coppia_tolta")
+        self._suona("coppia_tolta")
         self._aggiorna(indice_coppia=indice)
         if self.coppie:
             self.lista_coppie.SetFocus()
@@ -373,7 +398,7 @@ class ManualPairingDialog(wx.Dialog):
         """Scambia i colori della coppia scelta; il riposo non ne ha."""
         indice = self.lista_coppie.GetSelection()
         if indice == wx.NOT_FOUND or indice >= len(self.coppie) or self.coppie[indice][1] is None:
-            play_sound("errore")
+            self._suona("errore")
             return
         bianco, nero = self.coppie[indice]
         self.coppie[indice] = (nero, bianco)
@@ -386,7 +411,7 @@ class ManualPairingDialog(wx.Dialog):
         ce ne sono altre gia' composte."""
         proposta = proposta_abbinamento(self.torneo)
         if proposta is None:
-            play_sound("errore")
+            self._suona("errore")
             self._messaggio(
                 _("Proposta non disponibile"),
                 _("Con piu' di {numero} giocatori attivi Tornello non propone le coppie: componile a mano, giocatore per giocatore.").format(numero=MASSIMO_PER_LA_PROPOSTA),
@@ -407,7 +432,7 @@ class ManualPairingDialog(wx.Dialog):
         coppie_confermate."""
         errori, _avvertimenti = valida_turno_manuale(self.torneo, self.coppie)
         if errori:
-            play_sound("errore")
+            self._suona("errore")
             self._messaggio(_("Turno incompleto"), "\n".join(errori))
             return
         righe = righe_della_conferma(self.torneo, self.coppie, self.turno)
@@ -418,5 +443,5 @@ class ManualPairingDialog(wx.Dialog):
 
     def on_annulla(self, event):
         """Chiude senza registrare niente: il torneo resta com'era."""
-        play_sound("cancellato")
+        self._suona("cancellato")
         self.EndModal(wx.ID_CANCEL)
