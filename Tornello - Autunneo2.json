@@ -1766,7 +1766,14 @@
      "white_player_id": "RICPI001",
      "black_player_id": "BRICA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-01",
+      "time": "21:15",
+      "channel": "lichess",
+      "arbiter": "Non necessario",
+      "arbiter_not_needed": true
+     }
     },
     {
      "id": 18,
@@ -1774,7 +1781,14 @@
      "white_player_id": "DIBVI001",
      "black_player_id": "VALRI001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-09-30",
+      "time": "21:30",
+      "channel": "WA",
+      "arbiter": "Gabry",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 19,
@@ -1782,7 +1796,14 @@
      "white_player_id": "IONLO001",
      "black_player_id": "TESAL001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-04",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "Catia",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 20,
@@ -1790,7 +1811,14 @@
      "white_player_id": "PATMA001",
      "black_player_id": "MERAL001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-08",
+      "time": "18:00",
+      "channel": "WA",
+      "arbiter": "Gabry",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 21,
@@ -1830,7 +1858,14 @@
      "white_player_id": "FIDE_552017923",
      "black_player_id": "FORMA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-09-28",
+      "time": "21:30",
+      "channel": "lichess",
+      "arbiter": "Non necessario",
+      "arbiter_not_needed": true
+     }
     },
     {
      "id": 26,
@@ -1838,7 +1873,14 @@
      "white_player_id": "GORSE001",
      "black_player_id": "ROSMI001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-01",
+      "time": "15:00",
+      "channel": "WA",
+      "arbiter": "Claudio G",
+      "arbiter_not_needed": false
+     }
     }
    ]
   }
