@@ -6,144 +6,59 @@ Prima: in tutto il collaudo, se all'avvio arriva la domanda sul database FIDE, r
 Passo 1: avvia Tornello, premi F6 e scegli Prova programmazione con le frecce.
 Passo 2: premi F7 e leggi le tre righe con le frecce.
 Domanda 1: sulla barra braille ogni riga di percentuali ha quattro indicatori nel primo blocco e quattro dal carattere 41, con i valori sempre nelle stesse celle?
+Sì
 Passo 3: premi F6 e poi di nuovo F7.
 Domanda 2: NVDA legge subito i valori, senza un'attesa percepibile?
+Sì
 Passo 4: scendi alla terza riga e porta il cursore su un valore del secondo blocco.
 Passo 5: con Alt+Tab passa a un'altra applicazione, resta via almeno 30 minuti e torna con Alt+Tab.
 Domanda 3: NVDA e la barra braille sono ancora sulla terza riga, nello stesso punto, senza annunci né messaggi d'errore?
+sì, ma anche se così non fosse non sarebbe un problema.
 Passo 6: premi F7.
 Domanda 4: NVDA legge i valori aggiornati, per esempio TT salito di uno o due decimi?
-Esito: 
-
-PROVA 2: Finestra delle impostazioni con NVDA
-Prima: Tornello aperto dopo la prova 1, con il fuoco sul piè di pagina.
-Passo 1: premi Ctrl+P e percorri le quattro pagine con Ctrl+Tab, ognuna con Tab.
-Domanda 1: NVDA annuncia i riquadri, per esempio Audio, Database FIDE e quelli dei caratteri e dei colori?
-Passo 2: chiudi la finestra con Esc.
-Domanda 2: NVDA annuncia di nuovo il piè di pagina?
-Passo 3: premi F6, poi Ctrl+P, e chiudi la finestra con OK.
-Domanda 3: NVDA annuncia di nuovo la voce dell'albero da cui eri partito?
-Passo 4: premi Ctrl+P e, nella pagina Audio e Lingua, sposta il Volume Master di una decina di scatti con le frecce.
-Domanda 4: a ogni scatto senti il suono di prova, al volume scelto?
-Passo 5: chiudi la finestra con Annulla e premi F7.
-Domanda 5: il suono di F7 ha di nuovo il volume di prima del passo 4?
-Esito: 
+Esito: Ho aspettato. I valori non si aggiornano automaticamente, ero già nel dock, ho premuto f, un valore è scattato da 41.5 a 41.6, il focus di nvda è passato da riga 2 a riga 1. Non ci sono problemi, va bene così. Prova ok.
 
 PROVA 3: Finestra del risultato con NVDA e con le frecce
-Prima: Prova programmazione aperta, dopo la prova 2.
-Passo 1: premi F6 e, sotto Prova programmazione, apri turni, Turno corrente, da giocare, poi premi Invio sulla partita Alberti contro Longo.
-Domanda 1: entrando nelle voci del risultato NVDA annuncia il riquadro Seleziona Risultato?
-Passo 2: scorri i risultati con le frecce su e giù.
-Domanda 2: ogni freccia sceglie il risultato su cui arrivi, con il suo arpeggio, e NVDA lo dice selezionato, con gli altri non selezionati?
-Passo 3: premi Esc.
-Domanda 3: NVDA annuncia di nuovo la partita Alberti contro Longo, nell'albero?
-Esito: 
-
-PROVA 4: Suoni della finestra del risultato
-Prima: Prova programmazione aperta, dopo la prova 3; in questa prova usa soltanto i tasti che dicono i passi.
-Passo 1: nell'albero premi Invio sulla partita De Santis contro Galli, fra quelle da giocare.
-Domanda 1: all'apertura senti un suono breve seguito dall'arpeggio del risultato, senza la campanella?
-Passo 2: con Tab passa dal campo del PGN a Pianifica Partita, Ritira Giocatore, Annulla e Conferma Risultato.
-Domanda 2: su ciascun pulsante senti il tocco breve dei pulsanti?
-Passo 3: torna con Tab su Pianifica Partita e premi Spazio.
-Domanda 3: senti soltanto il bip del giorno, senza campanella sopra?
-Passo 4: premi Esc nella programmazione.
-Domanda 4: senti un solo annullamento, quasi insieme al tocco del pulsante Pianifica Partita su cui torna il fuoco?
-Passo 5: premi di nuovo Spazio su Pianifica Partita, vai con Tab su Annulla e premi Spazio.
-Domanda 5: anche così l'annullamento si sente una volta sola?
-Passo 6: premi Spazio su Ritira Giocatore e, nella scelta del giocatore, premi Esc.
-Domanda 6: senti soltanto il tocco del pulsante, senza il suono dell'annullamento?
-Domanda 7: il tocco del pulsante al ritorno del fuoco: a) resta com'è; b) tace quando il fuoco torna da un'altra finestra o da un'altra applicazione; c) tace solo al ritorno dalla programmazione e dalla scelta del ritiro?
-Passo 7: premi Esc per chiudere la finestra senza registrare niente.
-Domanda 8: senti l'annullamento, una volta sola?
-Passo 8: riapri la partita, vai con Tab su Annulla e premi Invio.
-Domanda 9: anche così senti l'annullamento, una volta sola?
-Passo 9: riapri la partita e, sul risultato 1 - 0, premi Invio.
-Domanda 10: alla chiusura senti il suono della conferma?
-Domanda 11: i suoni della chiusura, uno dopo l'altro, ti vanno bene?
-Domanda 12: il suono d'apertura e quello dei pulsanti si distinguono bene fra loro e dagli altri suoni della finestra?
-Esito: 
-
-PROVA 5: Finestra di programmazione con NVDA
-Prima: Prova programmazione aperta, dopo la prova 4.
-Passo 1: apri la partita Alberti contro Longo, vai con Tab su Pianifica Partita e premi Spazio.
-Domanda 1: NVDA annuncia i riquadri Seleziona Giorno, Seleziona Ora e Dettagli Sede e Arbitro?
-Passo 2: lascia giorno e ora come sono; in Sala / URL scrivi whatsapp https://call.whatsapp.com/voice/abc123, in Arbitro designato Giuseppe Baratta, e premi Invio.
-Passo 3: premi F1 e leggi, nella sezione 6.2.1, il paragrafo che comincia con Dalla finestra una programmazione.
-Domanda 2: la frase che manda alla versione a riga di comando per togliere una programmazione: a) resta; b) si toglie finché la finestra non sa farlo, issue 58?
-Esito: 
-
-PROVA 6: Lettere di scelta dei menu Visualizza e File
-Prima: Prova programmazione aperta, con la partita pianificata nella prova 5.
-Passo 1: premi F6, poi Alt+V e S.
-Domanda 1: Barra di Stato si attiva subito, con il fuoco sul piè di pagina e il suono di F7?
-Passo 2: premi Alt+V e poi B.
-Domanda 2: Albero di Destra si attiva subito, con il fuoco sull'albero e il suono di F6?
-Passo 3: premi Alt+V e poi A.
-Domanda 3: Area Centrale porta il fuoco dove lo porta F5, con lo stesso suono?
-Passo 4: premi Alt+F e poi P.
-Domanda 4: si apre subito la finestra Salva file iCalendar di Esporta partite pianificate?
-Passo 5: premi Esc; poi premi Alt+F e L, e nella conferma che arriva non premere Invio.
-Domanda 5: si apre subito la conferma che chiede se mandare nel cestino di Windows il torneo attivo Prova programmazione?
-Passo 6: premi Esc.
-Domanda 6: Esc risponde No, e NVDA torna dove eri?
-Passo 7: premi Alt+F e poi E.
-Domanda 7: Tornello si chiude, subito o dopo l'invito della prova 12?
-Esito: 
+Esito: Un difetto introdotto è che i pulsanti radio dei risultati non sono più ciclici. Se sono sul primo e premo su, vado a conferma risultato, mentre prima ciclavo all'infito. Prima era meglio.
 
 PROVA 7: Iscrizione dei giocatori con NVDA
 Prima: Tornello chiuso con la prova 6: avvialo con python tornello.py e, nell'albero, scegli con le frecce Prova spareggi, sotto In Preparazione, com'è dopo la rigenerazione della prova 1.
 Passo 1: premi Ctrl+I.
 Domanda 1: NVDA dice il riquadro Ricerca nel Database Personale Locale e poi il campo Filtra per nome o cognome nel database locale?
+No, ctrl+i non funziona ma ho generato il turno 1, penso sia normale.
 Passo 2: vai con Tab fino al pulsante Nuovo Giocatore Da Zero, senza premerlo, e poi premi Tab ancora una volta.
 Domanda 2: arrivando alla lista degli iscritti, NVDA dice il suo nome due volte, per il riquadro e per la lista?
 Domanda 3: se lo dice due volte, ti disturba?
 Passo 3: premi Esc.
-Esito: 
-
-PROVA 8: Spareggi e database dei giocatori con NVDA
-Prima: Prova spareggi aperta, dopo la prova 7.
-Passo 1: premi Invio su regole di spareggio, poi vai con Tab al campo Spiegazione regola.
-Domanda 1: NVDA presenta il campo come testo in sola lettura, e le frecce leggono la spiegazione?
-Passo 2: chiudi con Annulla e premi Ctrl+D.
-Passo 3: dal campo Filtra Giocatori premi Tab.
-Domanda 2: NVDA dice Elenco giocatori, e che è un elenco?
-Passo 4: chiudi la finestra con Chiudi.
-Esito: 
-
-PROVA 9: Copie di sicurezza con NVDA e barra braille
-Prima: nell'albero scegli con le frecce Prova copie, com'è dopo la rigenerazione della prova 1.
-Passo 1: premi Ctrl+O e scegli una copia di Prova copie dentro E:\git\mine\Tornello-lavori\backup\2026, nella cartella del mese.
-Domanda 1: NVDA legge il messaggio che arriva con il suono dell'errore, e le frecce lo percorrono riga per riga, anche sulla barra braille?
-Passo 2: premi Esc.
-Passo 3: apri File, Copie di sicurezza.
-Passo 4: percorri con Tab l'origine, l'elenco, i dettagli, il riepilogo e i cinque pulsanti.
-Domanda 2: NVDA legge il nome di ogni controllo e le quattro colonne di ogni voce dell'elenco?
-Domanda 3: i dettagli della copia si leggono bene sulla barra braille?
-Passo 5: chiudi la finestra con Chiudi.
-Esito: 
+Esito: Non posso fare le altre prove perchè aggiungi giocatore non è raggiungibile, nemmeno dai menu.
 
 PROVA 10: Composizione manuale sulla barra braille
 Prima: nell'albero scegli con le frecce Prova turno manuale, com'è dopo la rigenerazione della prova 1.
 Passo 1: apri turni e premi Invio su calcola il turno successivo; alla domanda Nessun abbinamento valido rispondi Sì.
 Passo 2: leggi il campo Situazione con le frecce e sulla barra braille.
 Domanda 1: le righe Turno 4 di 5, a mano; Attivi 4, da abbinare 0; Partite 2, bye 0 di 0; Avvertimenti 1 si leggono bene sulla barra braille?
+sì
 Passo 3: premi Esc.
-Esito: 
+Esito: Dopo l'area di testo ho 2 liste: giocatori da abbinare e avversario. Entrambi nvda dice sconosciuto e non hanno elementi leggibili. è normale?
 
 PROVA 11: Invio ed Esc nelle finestre di domanda
 Prima: nell'albero scegli con le frecce Prova ritiri, com'è dopo la rigenerazione della prova 1.
 Passo 1: nel turno corrente registra 1 - 0 nella partita Iori contro Galli.
 Passo 2: negli iscritti premi Canc su Iori Ivo.
 Domanda 1: NVDA legge la domanda sul ritiro, con l'avviso Ritiro con pochi giocatori, e le frecce la percorrono?
+Sì
 Passo 3: premi Invio.
 Domanda 2: Invio risponde No, e NVDA torna sugli iscritti?
+Sì
 Passo 4: premi di nuovo Canc su Iori Ivo, e poi Esc.
 Domanda 3: anche Esc risponde No, e Iori resta fra gli attivi?
+Sì
 Domanda 4: l'avviso Ritiro con pochi giocatori ha No come pulsante predefinito in tutte e tre le strade del ritiro, cioè Canc negli iscritti, Ritira Giocatore nella finestra del risultato e il ritiro dopo un forfait, mentre la domanda Ritiro dopo Forfait, che lo precede, ha Sì: ti va bene così?
+Sì
 Passo 5: premi F6, scegli Prova copie con le frecce e porta il cursore sulla voce Finalizza il torneo, sotto i suoi turni.
 Passo 6: tieni premuto Invio per un paio di secondi.
 Domanda 5: si apre la domanda Finalizza Torneo, e resta aperta anche con il tasto tenuto giù?
+Non ho finalizza il torneo, nel torneo prova copie
 Passo 7: leggi la domanda con le frecce e premi Esc.
 Domanda 6: Esc risponde No, e NVDA torna su Finalizza il torneo?
 Passo 8: premi Invio su Finalizza il torneo e, nella domanda, premi Invio una volta.
@@ -151,7 +66,7 @@ Domanda 7: Invio risponde Sì, e arriva il messaggio della finalizzazione riusci
 Passo 9: nel messaggio premi Esc.
 Domanda 8: Esc chiude il messaggio, e NVDA torna sull'albero?
 Passo 10: chiudi Tornello.
-Esito: 
+Esito: Non avendo la voce che dici, non posso completare questo test.
 
 PROVA 12: Invito alla donazione con NVDA
 Prima: la prova vale per la prima chiusura di Tornello in cui compare l'invito, in qualunque punto del collaudo.
@@ -160,7 +75,7 @@ Passo 1: leggi il messaggio con le frecce e premi Invio.
 Domanda 2: Invio chiude la finestra senza aprire il browser, e Tornello termina?
 Passo 2: se l'invito compare in un'altra chiusura, premi Esc.
 Domanda 3: anche Esc chiude la finestra, e Tornello termina?
-Esito: 
+Esito: L'ho apeto e chiuso almeno 15 volte. Non è mai comparsa la donazione.
 
 PROVA 13: Aggiornamento dal pacchetto compilato
 Prima: Tornello della cartella di lavoro chiuso.
@@ -168,13 +83,18 @@ Prima: il pacchetto di prova pronto in E:\git\tmp\prova_tornello: tornello.exe e
 Prima: connessione a Internet attiva.
 Passo 1: avvia tornello.exe da E:\git\tmp\prova_tornello.
 Domanda 1: prima di ogni altra domanda si apre la finestra Aggiornamento Disponibile?
+Sì
 Domanda 2: il fuoco è nel campo Novità di questa versione?
+Sì
 Domanda 3: la prima riga dice Versione attuale 9.9.9 e la versione nuova, senza la v davanti al numero?
+sì
 Domanda 4: con le frecce si leggono le note della versione nuova?
 Domanda 5: con Tab si raggiungono Aggiorna adesso e Non adesso?
+tutto affermativo
 Passo 2: premi Esc.
 Domanda 6: la finestra si chiude senza scaricare niente?
 Domanda 7: subito dopo arriva la domanda sul database FIDE?
+tutto sì
 Passo 3: rispondi No alla domanda FIDE e chiudi Tornello.
 Passo 4: avvia di nuovo tornello.exe da E:\git\tmp\prova_tornello e, nel campo delle note, premi Invio.
 Domanda 8: Invio avvia lo scaricamento, nella finestra Aggiornamento di Tornello?
@@ -184,10 +104,10 @@ Domanda 11: alla fine NVDA dice Scaricato, preparo l'aggiornamento?
 Domanda 12: Tornello si chiude senza l'invito a offrire un caffè?
 Domanda 13: Tornello si riavvia da solo nella versione nuova?
 Domanda 14: in E:\git\tmp\prova_tornello non c'è il file auto_updater_error.log?
-Esito: 
+Esito: Tutto affermativo.
 
 PROVA 14: Ascolto dei suoni nuovi, copie di sicurezza e composizione manuale
 Prima: Tornello chiuso.
 Passo 1: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_suoni_nuovi.py
 Domanda 1: ogni suono va bene per il suo evento?
-Esito: 
+Esito: fatto. Ti ho lasciato i commenti nel file salvato dallo script..
