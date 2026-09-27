@@ -5097,13 +5097,19 @@ class MainFrame(wx.Frame):
             )
             esito = self._esito_della_finalizzazione(success, avvisi)
             if esito is None:
-                wx.MessageBox(
+                # Dalla 10.13.43 il messaggio sta nella finestra accessibile
+                # delle domande, con il testo da leggere con le frecce, e non
+                # piu' nel MessageBox di Windows.
+                dlg_riuscita = AccessibleMsgDialog(
+                    self,
+                    _("Successo"),
                     _(
                         "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."
                     ),
-                    _("Successo"),
-                    wx.ICON_INFORMATION,
+                    settings=self.settings,
                 )
+                dlg_riuscita.ShowModal()
+                dlg_riuscita.Destroy()
             else:
                 titolo, testo = esito
                 dlg_avvisi = AccessibleMsgDialog(

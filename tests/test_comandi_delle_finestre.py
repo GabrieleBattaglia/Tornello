@@ -204,6 +204,50 @@ class TestInvioNellaFinestraDelRisultato:
             _chiudi(dlg)
 
 
+class TestInvioTenutoGiu:
+    """Dalla 10.13.43 un INVIO tenuto giu' vale una volta sola: il filtro
+    dell'applicazione scarta il gancio dei tasti degli INVIO ripetuti, prima
+    di ogni finestra, e Windows non consegna il tasto a nessuno. Il filtro si
+    chiama qui direttamente: l'applicazione delle prove non e' Tornello."""
+
+    @staticmethod
+    def _filtra(app_grafica, codice, ripetuto, tipo=None):
+        import wx
+
+        from gui.app import TornelloApp
+
+        class Tasto(wx.KeyEvent):
+            def IsAutoRepeat(self):
+                return ripetuto
+
+        evento = Tasto(tipo or wx.wxEVT_CHAR_HOOK)
+        evento.SetKeyCode(codice)
+        return TornelloApp.FilterEvent(app_grafica, evento)
+
+    @pytest.mark.parametrize("tasto", ["WXK_RETURN", "WXK_NUMPAD_ENTER"])
+    def test_l_invio_ripetuto_si_scarta(self, app_grafica, tasto):
+        import wx
+
+        assert self._filtra(app_grafica, getattr(wx, tasto), True) == wx.App.Event_Processed
+
+    @pytest.mark.parametrize("tasto", ["WXK_RETURN", "WXK_NUMPAD_ENTER"])
+    def test_il_primo_invio_passa(self, app_grafica, tasto):
+        import wx
+
+        assert self._filtra(app_grafica, getattr(wx, tasto), False) == wx.App.Event_Skip
+
+    @pytest.mark.parametrize("tasto", ["WXK_DOWN", "WXK_SPACE", "WXK_ESCAPE", "WXK_DELETE"])
+    def test_gli_altri_tasti_ripetuti_passano(self, app_grafica, tasto):
+        import wx
+
+        assert self._filtra(app_grafica, getattr(wx, tasto), True) == wx.App.Event_Skip
+
+    def test_passano_gli_altri_eventi(self, app_grafica):
+        import wx
+
+        assert self._filtra(app_grafica, wx.WXK_RETURN, True, wx.wxEVT_KEY_DOWN) == wx.App.Event_Skip
+
+
 class TestFrecceInTondo:
     """Dalla 10.13.40 le frecce sulle voci del risultato e sui giorni della
     programmazione girano in tondo e scelgono la voce su cui arrivano. Dalla
@@ -1161,7 +1205,7 @@ class TestAlberoETorneoAttivo:
         principale.populate_tree()
         self._scegli_torneo(principale, percorsi["Alfa"])
         assert principale.item_finalize.IsEnabled()
-        TestEliminazioneDelTorneo._dialoghi_finti(monkeypatch)
+        finestre = TestEliminazioneDelTorneo._dialoghi_finti(monkeypatch)
         messaggi = []
         monkeypatch.setattr("wx.MessageBox", lambda testo, *a, **k: messaggi.append(testo))
         archiviato = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2026", "10 Ottobre", "Alfa", "Tornello - Alfa.json")
@@ -1177,7 +1221,9 @@ class TestAlberoETorneoAttivo:
 
         self._dal_menu(principale, principale.item_finalize.GetId())
 
-        assert messaggi == ["Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati."]
+        # Dalla 10.13.43 il messaggio sta nella finestra accessibile.
+        assert messaggi == []
+        assert finestre[-1] == ("Successo", "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati.")
         assert registro.caricati == []
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Torneo concluso e archiviato."
