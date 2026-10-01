@@ -1014,6 +1014,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "GORSE001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1540,7 +1547,7 @@
    "federation": "ITA",
    "fide_id_num_str": "23491132",
    "birth_date": "1948-01-01",
-   "points": 0.0,
+   "points": 1.0,
    "results_history": [
     {
      "round": 1,
@@ -1548,6 +1555,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "ROSMI001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -1967,15 +1981,16 @@
      "round": 2,
      "white_player_id": "GORSE001",
      "black_player_id": "ROSMI001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-01",
       "time": "15:00",
       "channel": "WA",
       "arbiter": "Claudio G",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.01\"]\n[Round \"2\"]\n[White \"Gori, Serena\"]\n[Black \"Rossi, Milena\"]\n[Result \"1-0\"]\n[WhiteElo \"1189\"]\n[BlackElo \"1399\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"A02\"]\n[Opening \"Bird's opening\"]\n\n1. f4 c5 2. e3 b6 3. c3 Bb7 4. d4 Nc6 5. a3 Qc7 6. Nf3 O-O-O 7. Bd3 Nf6 8. O-O\ng6 9. Ne5 Na5 10. Nd2 Bh6 11. Ndf3 e6 12. Nxf7 Rdf8 13. Nxh8 Rxh8 14. Bd2 Nd5\n15. Re1 e5 16. fxe5 cxd4 17. cxd4 d6 18. Rc1 dxe5 19. dxe5 Nc4 20. Bxc4 Qxc4\n21. Rxc4+ Kb8 22. Qa4 Re8 23. Qxe8+ 1-0"
     }
    ]
   }
