@@ -301,7 +301,7 @@
    "federation": "ITA",
    "fide_id_num_str": "2854606",
    "birth_date": "1965-01-01",
-   "points": 1.0,
+   "points": 1.5,
    "results_history": [
     {
      "round": 1,
@@ -309,6 +309,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "FIDE_805165",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
     }
    ],
    "opponents": [
@@ -536,13 +543,20 @@
    "federation": "ITA",
    "fide_id_num_str": "1990942",
    "birth_date": "1978-01-01",
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
      "opponent_id": "PAGVI001",
      "color": "white",
      "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "RICPI001",
+     "color": "black",
+     "result": "0-1",
      "score": 1.0
     }
    ],
@@ -892,7 +906,7 @@
    "federation": "ITA",
    "fide_id_num_str": "805165",
    "birth_date": "1960-01-01",
-   "points": 1.0,
+   "points": 1.5,
    "results_history": [
     {
      "round": 1,
@@ -900,6 +914,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "VILGE001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
     }
    ],
    "opponents": [
@@ -1142,6 +1163,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BRICA001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1834,30 +1862,32 @@
      "round": 2,
      "white_player_id": "FIDE_805165",
      "black_player_id": "VILGE001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1/2-1/2",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-01",
       "time": "21:30",
       "channel": "WA",
       "arbiter": "Gabry",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.01\"]\n[Round \"2\"]\n[White \"Nicolini, Savino\"]\n[Black \"Vilone, Gennaro\"]\n[Result \"1/2-1/2\"]\n[WhiteElo \"1399\"]\n[BlackElo \"1499\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"C67\"]\n[Opening \"Ruy Lopez\"]\n[Variation \"Berlin defence, open variation\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. Re1 Nd6 6. Bxc6 dxc6 7. Nxe5 Be7\n8. Nc3 O-O 9. d3 f6 10. Nf3 Bg4 11. h3 Bh5 12. Qe2 Re8 13. g4 Bf7 14. Be3 a6\n15. Qd2 Qd7 16. Re2 h5 17. Nh2 b5 18. Rae1 a5 19. b3 Bf8 20. f3 c5 21. Ne4 c4\n22. bxc4 Nxe4 23. fxe4 bxc4 1/2-1/2"
     },
     {
      "id": 17,
      "round": 2,
      "white_player_id": "RICPI001",
      "black_player_id": "BRICA001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "0-1",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-01",
       "time": "21:15",
       "channel": "lichess",
       "arbiter": "Non necessario",
       "arbiter_not_needed": true
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.01\"]\n[Round \"2\"]\n[White \"Riccardi, Piero\"]\n[Black \"Brites Pereira Lima, Catia Susana\"]\n[Result \"0-1\"]\n[GameId \"kNA12Xqd\"]\n[UTCDate \"2026.10.01\"]\n[UTCTime \"19:15:46\"]\n[WhiteElo \"1376\"]\n[BlackElo \"1483\"]\n[WhiteRatingDiff \"-44\"]\n[BlackRatingDiff \"+4\"]\n[Variant \"Standard\"]\n[TimeControl \"2700+15\"]\n[ECO \"B50\"]\n[Opening \"Sicilian Defense\"]\n[Termination \"Time forfeit\"]\n\n1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Bc4 Nf6 5. Qxd4 Nbd7 6. O-O g6 7. Nc3 Bg7 8.\ne5 Nh5 9. Re1 Nxe5 10. Nxe5 Bxe5 11. Qd1 O-O 12. a3 Bg7 13. Nd5 Be6 14. Bg5 Re8\n15. Rb1 Bxd5 16. Bxd5 Qc7 17. c4 e6 18. Bf3 Nf6 19. Bxf6 Bxf6 20. b3 Rab8 21.\na4 Qb6 22. Re4 Rbc8 23. b4 Red8 24. a5 Qa6 25. h3 Rxc4 26. Rxc4 Qxc4 27. b5 b6\n28. Be2 Qf4 29. f3 bxa5 30. Kf1 Rc8 31. b6 axb6 32. Rxb6 Bh4 33. Rxd6 Qg3 0-1"
     },
     {
      "id": 18,
