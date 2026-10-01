@@ -640,7 +640,7 @@ EVENTI = {
     # ascolto alla cieca fra sei candidati (issue 51): all'apertura, sopra
     # l'arpeggio del risultato, il pizzicato breve; sui pulsanti, ripetuto
     # quattro volte di fila, il tic che sale appena.
-    "apertura_risultati": "gabryscola_gioca_carta",
+    "apertura_risultati": "gioca_carta",
     "controllo_risultati": "meditimer_banco_fase",
     # Dalla 10.10.0 un ripristino riuscito dalla finestra Copie di
     # sicurezza: tre tic veloci che salgono, un preset che Tornello non usa
