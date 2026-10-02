@@ -1,0 +1,11 @@
+﻿Torneo: Prova copie
+Sito: Online, Data Inizio Torneo: Martedì 8 settembre 2026
+Dettaglio del turno 2 concluso
+	Periodo del Turno: Mercoledì 16 settembre 2026 - Giovedì 24 settembre 2026
+	Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato
+	1  | 3   | Rita Rinaldi             [1650.0] (1   ) - Paolo Pellegrini         [1720.0] (2   ) | 0-1
+	2  | 4   | Sergio Sala              [1580.0] (0.5 ) - Teresa Testa             [1510.0] (0.5 ) | 1/2-1/2
+
+
+Tornello (10.13.43, 2026.09.27 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)
+	using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming.)

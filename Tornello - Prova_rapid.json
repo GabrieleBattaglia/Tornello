@@ -1,0 +1,340 @@
+{
+ "launch_count": 0,
+ "name": "Prova rapid",
+ "tournament_id": "PROVA_RAPID",
+ "start_date": "2026-09-01",
+ "end_date": "2026-09-20",
+ "total_rounds": 2,
+ "site": "Online",
+ "federation_code": "ITA",
+ "chief_arbiter": "Gabriele Battaglia",
+ "deputy_chief_arbiters": "",
+ "time_control": {
+  "minutes": 15,
+  "increment": 10,
+  "pgn_value": "900+10"
+ },
+ "initial_board1_color_setting": "white1",
+ "round_dates": [
+  {
+   "round": 1,
+   "start_date": "2026-09-01",
+   "end_date": "2026-09-10"
+  },
+  {
+   "round": 2,
+   "start_date": "2026-09-11",
+   "end_date": "2026-09-20"
+  }
+ ],
+ "players": [
+  {
+   "id": "QUAQU001",
+   "first_name": "Quinto",
+   "last_name": "Quaranta",
+   "initial_elo": 1790.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1981-05-06",
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "VALVE001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "ZANZE001",
+     "color": "black",
+     "result": "F-1",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "VALVE001"
+   ],
+   "white_games": 1,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 2.0,
+   "buchholz_cut1": 2.0,
+   "aro": 1600,
+   "performance_rating": 800,
+   "elo_change": -15,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 3,
+   "elo_club": 0,
+   "elo_rapid": 1790,
+   "elo_blitz": 1660,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1700.0
+  },
+  {
+   "id": "ZANZE001",
+   "first_name": "Zeno",
+   "last_name": "Zanetti",
+   "initial_elo": 1680.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1995-08-22",
+   "points": 0.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "UGOUG001",
+     "color": "black",
+     "result": "1-F",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "QUAQU001",
+     "color": "white",
+     "result": "F-1",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "UGOUG001"
+   ],
+   "white_games": 0,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 0.0,
+   "buchholz_cut1": 0.0,
+   "aro": null,
+   "performance_rating": 1680,
+   "elo_change": 0,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 4,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1680.0
+  },
+  {
+   "id": "VALVE001",
+   "first_name": "Vera",
+   "last_name": "Valli",
+   "initial_elo": 1600.0,
+   "fide_title": "",
+   "sex": "w",
+   "gender": "W",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1989-12-01",
+   "points": 2.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "QUAQU001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "UGOUG001",
+     "color": "white",
+     "result": "1-F",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "QUAQU001"
+   ],
+   "white_games": 0,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.0,
+   "buchholz_cut1": 1.0,
+   "aro": 1790,
+   "performance_rating": 2590,
+   "elo_change": 15,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 1,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 1530,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1600.0
+  },
+  {
+   "id": "UGOUG001",
+   "first_name": "Ugo",
+   "last_name": "Ugolini",
+   "initial_elo": 1560.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1968-02-14",
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ZANZE001",
+     "color": "white",
+     "result": "1-F",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "VALVE001",
+     "color": "black",
+     "result": "1-F",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "ZANZE001"
+   ],
+   "white_games": 1,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.0,
+   "buchholz_cut1": 0.0,
+   "aro": null,
+   "performance_rating": 1560,
+   "elo_change": 0,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 2,
+   "elo_club": 0,
+   "elo_rapid": 1560,
+   "elo_blitz": 1710,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1640.0
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "matches": [
+    {
+     "id": 1,
+     "round": 1,
+     "white_player_id": "QUAQU001",
+     "black_player_id": "VALVE001",
+     "result": "0-1",
+     "is_scheduled": false
+    },
+    {
+     "id": 2,
+     "round": 1,
+     "white_player_id": "UGOUG001",
+     "black_player_id": "ZANZE001",
+     "result": "1-F",
+     "is_scheduled": false
+    }
+   ]
+  },
+  {
+   "round": 2,
+   "matches": [
+    {
+     "id": 3,
+     "round": 2,
+     "white_player_id": "VALVE001",
+     "black_player_id": "UGOUG001",
+     "result": "1-F",
+     "is_scheduled": false
+    },
+    {
+     "id": 4,
+     "round": 2,
+     "white_player_id": "ZANZE001",
+     "black_player_id": "QUAQU001",
+     "result": "F-1",
+     "is_scheduled": false
+    }
+   ]
+  }
+ ],
+ "next_match_id": 5,
+ "bye_value": 0.5,
+ "schema_version": 1,
+ "tournament_category": "rapid",
+ "current_round": 2,
+ "concluded": false,
+ "custom_save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova rapid",
+ "save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova rapid"
+}

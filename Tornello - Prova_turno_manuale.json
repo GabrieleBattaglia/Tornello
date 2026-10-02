@@ -1,0 +1,530 @@
+{
+ "launch_count": 0,
+ "name": "Prova turno manuale",
+ "tournament_id": "PROVA_TURNO_MANUALE",
+ "start_date": "2026-09-01",
+ "end_date": "2026-10-15",
+ "total_rounds": 5,
+ "site": "Online",
+ "federation_code": "ITA",
+ "chief_arbiter": "Gabriele Battaglia",
+ "deputy_chief_arbiters": "",
+ "time_control": {
+  "minutes": 45,
+  "increment": 15,
+  "pgn_value": "2700+15"
+ },
+ "initial_board1_color_setting": "white1",
+ "round_dates": [
+  {
+   "round": 1,
+   "start_date": "2026-09-01",
+   "end_date": "2026-09-09"
+  },
+  {
+   "round": 2,
+   "start_date": "2026-09-10",
+   "end_date": "2026-09-18"
+  },
+  {
+   "round": 3,
+   "start_date": "2026-09-19",
+   "end_date": "2026-09-27"
+  },
+  {
+   "round": 4,
+   "start_date": "2026-09-28",
+   "end_date": "2026-10-06"
+  },
+  {
+   "round": 5,
+   "start_date": "2026-10-07",
+   "end_date": "2026-10-15"
+  }
+ ],
+ "players": [
+  {
+   "id": "ALBAN001",
+   "first_name": "Anna",
+   "last_name": "Alberti",
+   "initial_elo": 1850.0,
+   "fide_title": "",
+   "sex": "w",
+   "gender": "W",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1978-03-12",
+   "points": 2.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "DESDA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "BRUBR001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    },
+    {
+     "round": 3,
+     "opponent_id": "CONCA001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "BRUBR001",
+    "DESDA001"
+   ],
+   "white_games": 1,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 3.5,
+   "buchholz_cut1": 3.5,
+   "aro": 1710,
+   "performance_rating": 1983,
+   "elo_change": 9,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 1,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1850.0
+  },
+  {
+   "id": "BRUBR001",
+   "first_name": "Bruno",
+   "last_name": "Bruni",
+   "initial_elo": 1780.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1969-07-02",
+   "points": 2.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ESPET001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "ALBAN001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    },
+    {
+     "round": 3,
+     "opponent_id": "DESDA001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "ALBAN001",
+    "ESPET001"
+   ],
+   "white_games": 1,
+   "black_games": 1,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 3.5,
+   "buchholz_cut1": 2.5,
+   "aro": 1710,
+   "performance_rating": 1903,
+   "elo_change": 7,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 3,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1780.0
+  },
+  {
+   "id": "CONCA001",
+   "first_name": "Carla",
+   "last_name": "Conti",
+   "initial_elo": 1710.0,
+   "fide_title": "",
+   "sex": "w",
+   "gender": "W",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1985-11-23",
+   "points": 2.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "FERFA001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "DESDA001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "ALBAN001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "DESDA001",
+    "FERFA001"
+   ],
+   "white_games": 1,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 3.5,
+   "buchholz_cut1": 3.5,
+   "aro": 1663,
+   "performance_rating": 1788,
+   "elo_change": 6,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 2,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1710.0
+  },
+  {
+   "id": "DESDA001",
+   "first_name": "Dario",
+   "last_name": "De Santis",
+   "initial_elo": 1640.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1991-01-30",
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "ALBAN001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "CONCA001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "BRUBR001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "ALBAN001",
+    "CONCA001"
+   ],
+   "white_games": 1,
+   "black_games": 1,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 4.5,
+   "buchholz_cut1": 2.5,
+   "aro": 1780,
+   "performance_rating": 980,
+   "elo_change": -13,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": null,
+   "withdrawn": false,
+   "display_rank": 4,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1640.0
+  },
+  {
+   "id": "ESPET001",
+   "first_name": "Ettore",
+   "last_name": "Esposito",
+   "initial_elo": 1570.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1974-05-17",
+   "points": 0.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "BRUBR001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "BRUBR001"
+   ],
+   "white_games": 1,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.5,
+   "buchholz_cut1": 1.5,
+   "aro": 1780,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": "RIT",
+   "withdrawn": true,
+   "display_rank": "RIT",
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1570.0
+  },
+  {
+   "id": "FERFA001",
+   "first_name": "Fabio",
+   "last_name": "Ferri",
+   "initial_elo": 1500.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1988-09-09",
+   "points": 0.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "CONCA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "CONCA001"
+   ],
+   "white_games": 0,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 2.0,
+   "buchholz_cut1": 2.0,
+   "aro": 1710,
+   "performance_rating": null,
+   "elo_change": null,
+   "k_factor": 20,
+   "games_this_tournament": 0,
+   "downfloat_count": 0,
+   "final_rank": "RIT",
+   "withdrawn": true,
+   "display_rank": "RIT",
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1500.0
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "matches": [
+    {
+     "id": 1,
+     "round": 1,
+     "white_player_id": "ALBAN001",
+     "black_player_id": "DESDA001",
+     "result": "1-0",
+     "is_scheduled": false
+    },
+    {
+     "id": 2,
+     "round": 1,
+     "white_player_id": "ESPET001",
+     "black_player_id": "BRUBR001",
+     "result": "0-1",
+     "is_scheduled": false
+    },
+    {
+     "id": 3,
+     "round": 1,
+     "white_player_id": "CONCA001",
+     "black_player_id": "FERFA001",
+     "result": "1-0",
+     "is_scheduled": false
+    }
+   ]
+  },
+  {
+   "round": 2,
+   "matches": [
+    {
+     "id": 4,
+     "round": 2,
+     "white_player_id": "BRUBR001",
+     "black_player_id": "ALBAN001",
+     "result": "1/2-1/2",
+     "is_scheduled": false
+    },
+    {
+     "id": 5,
+     "round": 2,
+     "white_player_id": "DESDA001",
+     "black_player_id": "CONCA001",
+     "result": "0-1",
+     "is_scheduled": false
+    }
+   ]
+  },
+  {
+   "round": 3,
+   "matches": [
+    {
+     "id": 6,
+     "round": 3,
+     "white_player_id": "CONCA001",
+     "black_player_id": "ALBAN001",
+     "result": "0-1",
+     "is_scheduled": false
+    },
+    {
+     "id": 7,
+     "round": 3,
+     "white_player_id": "DESDA001",
+     "black_player_id": "BRUBR001",
+     "result": "1/2-1/2",
+     "is_scheduled": false
+    }
+   ]
+  }
+ ],
+ "next_match_id": 8,
+ "bye_value": 0.5,
+ "schema_version": 1,
+ "tournament_category": "standard",
+ "current_round": 3,
+ "concluded": false,
+ "custom_save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova turno manuale",
+ "save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova turno manuale"
+}

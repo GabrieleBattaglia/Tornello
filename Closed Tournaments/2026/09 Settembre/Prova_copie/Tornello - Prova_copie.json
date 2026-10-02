@@ -1,0 +1,364 @@
+{
+ "launch_count": 0,
+ "name": "Prova copie",
+ "tournament_id": "PROVA_COPIE",
+ "start_date": "2026-09-08",
+ "end_date": "2026-09-24",
+ "total_rounds": 2,
+ "site": "Online",
+ "federation_code": "ITA",
+ "chief_arbiter": "Gabriele Battaglia",
+ "deputy_chief_arbiters": "",
+ "time_control": {
+  "minutes": 45,
+  "increment": 15,
+  "pgn_value": "2700+15"
+ },
+ "initial_board1_color_setting": "white1",
+ "round_dates": [
+  {
+   "round": 1,
+   "start_date": "2026-09-08",
+   "end_date": "2026-09-15"
+  },
+  {
+   "round": 2,
+   "start_date": "2026-09-16",
+   "end_date": "2026-09-24"
+  }
+ ],
+ "players": [
+  {
+   "id": "PELPA001",
+   "first_name": "Paolo",
+   "last_name": "Pellegrini",
+   "initial_elo": 1720.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1976-01-25",
+   "points": 2.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "SALSE001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "RINRI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    }
+   ],
+   "opponents": [
+    "SALSE001"
+   ],
+   "white_games": 1,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.5,
+   "buchholz_cut1": 1.0,
+   "aro": 1615,
+   "performance_rating": 2415,
+   "elo_change": 14,
+   "k_factor": 20,
+   "games_this_tournament": 2,
+   "downfloat_count": 0,
+   "final_rank": 1,
+   "withdrawn": false,
+   "display_rank": 1,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1720.0,
+   "final_tiebreaks": {
+    "BH-C1": 1.0,
+    "BH": 1.5,
+    "ARO": 1615,
+    "RTNG": 1720
+   }
+  },
+  {
+   "id": "RINRI001",
+   "first_name": "Rita",
+   "last_name": "Rinaldi",
+   "initial_elo": 1650.0,
+   "fide_title": "",
+   "sex": "w",
+   "gender": "W",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1984-07-11",
+   "points": 1.0,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "TESTE001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "PELPA001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    }
+   ],
+   "opponents": [
+    "TESTE001"
+   ],
+   "white_games": 0,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 2.5,
+   "buchholz_cut1": 2.0,
+   "aro": 1615,
+   "performance_rating": 1615,
+   "elo_change": -2,
+   "k_factor": 20,
+   "games_this_tournament": 2,
+   "downfloat_count": 0,
+   "final_rank": 2,
+   "withdrawn": false,
+   "display_rank": 2,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1650.0,
+   "final_tiebreaks": {
+    "BH-C1": 2.0,
+    "BH": 2.5,
+    "ARO": 1615,
+    "RTNG": 1650
+   }
+  },
+  {
+   "id": "SALSE001",
+   "first_name": "Sergio",
+   "last_name": "Sala",
+   "initial_elo": 1580.0,
+   "fide_title": "",
+   "sex": "m",
+   "gender": "M",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1990-03-29",
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "PELPA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "TESTE001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "PELPA001"
+   ],
+   "white_games": 0,
+   "black_games": 1,
+   "last_color": "black",
+   "consecutive_white": 0,
+   "consecutive_black": 1,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 2.5,
+   "buchholz_cut1": 2.0,
+   "aro": 1615,
+   "performance_rating": 1422,
+   "elo_change": -8,
+   "k_factor": 20,
+   "games_this_tournament": 2,
+   "downfloat_count": 0,
+   "final_rank": 3,
+   "withdrawn": false,
+   "display_rank": 3,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1580.0,
+   "final_tiebreaks": {
+    "BH-C1": 2.0,
+    "BH": 2.5,
+    "ARO": 1615,
+    "RTNG": 1580
+   }
+  },
+  {
+   "id": "TESTE001",
+   "first_name": "Teresa",
+   "last_name": "Testa",
+   "initial_elo": 1510.0,
+   "fide_title": "",
+   "sex": "w",
+   "gender": "W",
+   "federation": "ITA",
+   "fide_id_num_str": "",
+   "birth_date": "1972-11-05",
+   "points": 0.5,
+   "results_history": [
+    {
+     "round": 1,
+     "opponent_id": "RINRI001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
+    },
+    {
+     "round": 2,
+     "opponent_id": "SALSE001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
+    }
+   ],
+   "opponents": [
+    "RINRI001"
+   ],
+   "white_games": 1,
+   "black_games": 0,
+   "last_color": "white",
+   "consecutive_white": 1,
+   "consecutive_black": 0,
+   "received_bye_count": 0,
+   "received_bye_in_round": [],
+   "buchholz": 1.5,
+   "buchholz_cut1": 1.0,
+   "aro": 1615,
+   "performance_rating": 1422,
+   "elo_change": -4,
+   "k_factor": 20,
+   "games_this_tournament": 2,
+   "downfloat_count": 0,
+   "final_rank": 4,
+   "withdrawn": false,
+   "display_rank": 4,
+   "elo_club": 0,
+   "elo_rapid": 0,
+   "elo_blitz": 0,
+   "fide_k_factor": null,
+   "fide_rapid_k": null,
+   "fide_blitz_k": null,
+   "fide_standard_games": 0,
+   "fide_rapid_games": 0,
+   "fide_blitz_games": 0,
+   "w_title": "",
+   "o_title": "",
+   "foa_title": "",
+   "flag": "",
+   "current_elo": 1510.0,
+   "final_tiebreaks": {
+    "BH-C1": 1.0,
+    "BH": 1.5,
+    "ARO": 1615,
+    "RTNG": 1510
+   }
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "matches": [
+    {
+     "id": 1,
+     "round": 1,
+     "white_player_id": "PELPA001",
+     "black_player_id": "SALSE001",
+     "result": "1-0",
+     "is_scheduled": false
+    },
+    {
+     "id": 2,
+     "round": 1,
+     "white_player_id": "TESTE001",
+     "black_player_id": "RINRI001",
+     "result": "0-1",
+     "is_scheduled": false
+    }
+   ]
+  },
+  {
+   "round": 2,
+   "matches": [
+    {
+     "id": 3,
+     "round": 2,
+     "white_player_id": "RINRI001",
+     "black_player_id": "PELPA001",
+     "result": "0-1",
+     "is_scheduled": false
+    },
+    {
+     "id": 4,
+     "round": 2,
+     "white_player_id": "SALSE001",
+     "black_player_id": "TESTE001",
+     "result": "1/2-1/2",
+     "is_scheduled": false
+    }
+   ]
+  }
+ ],
+ "next_match_id": 5,
+ "bye_value": 0.5,
+ "schema_version": 1,
+ "tournament_category": "standard",
+ "current_round": 2,
+ "concluded": true,
+ "custom_save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova copie",
+ "save_path": "E:\\git\\mine\\Tornello-lavori\\prova_cartella_esterna\\Prova copie"
+}

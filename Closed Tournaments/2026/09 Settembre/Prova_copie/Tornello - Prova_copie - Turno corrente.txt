@@ -1,0 +1,11 @@
+﻿Nome Torneo: Prova copie - Turno: 2
+ Periodo Turno: Mercoledì 16 settembre 2026 - Giovedì 24 settembre 2026
+
+
+  Partite già giocate o con risultato convalidato (2):
+  IDG:3 Rita Rinaldi (1650) - Paolo Pellegrini (1720)  0-1
+  IDG:4 Sergio Sala (1580) - Teresa Testa (1510)  1/2-1/2
+
+
+Tornello (10.13.43, 2026.09.27 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)
+	using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming.)

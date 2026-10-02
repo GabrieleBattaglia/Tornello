@@ -1,0 +1,19 @@
+﻿Nome Torneo: Prova copie
+Luogo: Online
+Date: Martedì 8 settembre 2026 - Giovedì 24 settembre 2026
+Federazione Organizzante: ITA
+Arbitro Capo: Gabriele Battaglia
+Controllo Tempo: 45 min + 15 sec (Standard)
+Sistema di Abbinamento: Svizzero Olandese (via bbpPairings)
+Criteri di Spareggio: Buchholz [Cut-1], Buchholz, Media Rating Avversari, Rating
+Data Report: Domenica 27 settembre 2026 17:33:47
+CLASSIFICA FINALE
+Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti BH-C1 BH ARO RTNG Perf Elo Var.
+  1 (+0)        Pellegrini, Paolo           [1720]   2.0   1.0   1.5 1615 1720 2415  +14
+  2 (+0)        Rinaldi, Rita               [1650]   1.0   2.0   2.5 1615 1650 1615   -2
+  3 (+0)        Sala, Sergio                [1580]   0.5   2.0   2.5 1615 1580 1422   -8
+  4 (+0)        Testa, Teresa               [1510]   0.5   1.0   1.5 1615 1510 1422   -4
+
+
+Tornello (10.13.43, 2026.09.27 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)
+	using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming.)
