@@ -1,7 +1,7 @@
-﻿Report Database Giocatori Tornello - Domenica 13 settembre 2026 21:01:29
+﻿Report Database Giocatori Tornello - Domenica 4 ottobre 2026 22:35:18
 ID: ARICL001, Claudio Ariaudo
 	Sesso: M, Federazione: ITA, ID FIDE: 815535, Flag: N/D
-	Elo Standard: 1856 (Partite FIDE: 0)
+	Elo Standard: 1851 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -19,7 +19,7 @@ ID: ARIGI001, NC Giuliano Ariaudo
 	14° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 ID: BADGI001, 1N Giancarlo Badano
 	Sesso: M, Federazione: ITA, ID FIDE: 810495, Flag: N/D
-	Elo Standard: 1800 (Partite FIDE: 0)
+	Elo Standard: 1852 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 12, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -110,7 +110,7 @@ ID: CAPGI001, Giuliano Caputi
 	2° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
 ID: CASMA002, Marco Casadei
 	Sesso: M, Federazione: ITA, ID FIDE: 847542, Flag: N/D
-	Elo Standard: 1993 (Partite FIDE: 0)
+	Elo Standard: 2002 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -138,7 +138,7 @@ ID: CIBSI001, NC Silvia Cibin
 	5° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 ID: CICMA001, NC Mathias Cicciarella
 	Sesso: M, Federazione: ITA, ID FIDE: 552013138, Flag: N/D
-	Elo Standard: 1632 (Partite FIDE: 0)
+	Elo Standard: 1599 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 3, K: 40)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -231,13 +231,22 @@ ID: DIBVI001, NC Vincenzo Di Bari
 	9° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
 	14° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 	10° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
+ID: DIFAU001, Augusto Di Folca
+	Sesso: M, Federazione: ITA, ID FIDE: 552017923, Flag: N/D
+	Elo Standard: 1690 (Partite FIDE: 5)
+	Elo Rapid: 1806 (Partite FIDE: 0, K: 40)
+	Elo Blitz: 0 (Partite FIDE: 0, K: 0)
+	Partite Valutate Totali: 0, K-Factor Stimato: 40, Data Iscrizione DB: Domenica 4 ottobre 2026
+	Data Nascita: Giovedì 1 gennaio 1970
+	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (0) tornei:
+	Nessuno
 ID: FORMA001, NC Martina Forte
-	Sesso: W, Federazione: ITA, ID FIDE: 0, Flag: N/D
+	Sesso: W, Federazione: ITA, ID FIDE: 552061400, Flag: N/D
 	Elo Standard: 1302 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: None)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: None)
 	Partite Valutate Totali: 20, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
-	Data Nascita: N/D
+	Data Nascita: Mercoledì 1 gennaio 1992
 	Medagliere: Oro: 0, Argento: 0, Bronzo: 0, Legno: 0 in (4) tornei:
 	29° su 31 in Primavera 2 - Sabato 21 marzo 2026 - Martedì 30 giugno 2026
 	16° su 17 in Estascacchi 1 - Mercoledì 18 giugno 2025 - Domenica 3 agosto 2025
@@ -245,7 +254,7 @@ ID: FORMA001, NC Martina Forte
 	7° su 12 in Scacchierante 1 - Sabato 22 marzo 2025 - Giovedì 15 maggio 2025
 ID: GASCL001, 1N Claudio Gasperoni
 	Sesso: M, Federazione: ITA, ID FIDE: 825450, Flag: N/D
-	Elo Standard: 1844 (Partite FIDE: 0)
+	Elo Standard: 1837 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 5, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 24, K-Factor Stimato: 20, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -372,7 +381,7 @@ ID: PATMA001, Mario Patalano
 	Nessuno
 ID: PEZER001, Erica Pezzolato
 	Sesso: F, Federazione: ITA, ID FIDE: 2888888, Flag: N/D
-	Elo Standard: 1616 (Partite FIDE: 0)
+	Elo Standard: 1603 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 5, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 6, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -381,7 +390,7 @@ ID: PEZER001, Erica Pezzolato
 	10° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 ID: POLDI001, Diego Poli
 	Sesso: M, Federazione: ITA, ID FIDE: 865613, Flag: N/D
-	Elo Standard: 1652 (Partite FIDE: 0)
+	Elo Standard: 1661 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 6, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 20)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -418,7 +427,7 @@ ID: ROSMI001, NC Milena Rossi
 	Nessuno
 ID: SCAVA001, NC Valeria Scapin
 	Sesso: W, Federazione: ITA, ID FIDE: 552013146, Flag: N/D
-	Elo Standard: 1464 (Partite FIDE: 0)
+	Elo Standard: 1437 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 3, K: 40)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 10, K-Factor Stimato: 40, Data Iscrizione DB: Giovedì 1 maggio 2025
@@ -515,7 +524,7 @@ ID: VILGE001, Gennaro Vilone
 	6° su 17 in ASCId 52 Campionato Italiano - Lunedì 21 luglio 2025 - Domenica 27 luglio 2025
 ID: VRIBE001, Bersan Vrioni
 	Sesso: M, Federazione: ITA, ID FIDE: 805351, Flag: N/D
-	Elo Standard: 1931 (Partite FIDE: 0)
+	Elo Standard: 1933 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
@@ -533,7 +542,7 @@ ID: ZAVFA001, 2N Fabrizio Zavan
 	5° su 28 in ASCId Primavera 1 - Domenica 4 maggio 2025 - Domenica 15 giugno 2025
 ID: ZENSI001, Simone Zenini
 	Sesso: M, Federazione: ITA, ID FIDE: 898210, Flag: N/D
-	Elo Standard: 1589 (Partite FIDE: 0)
+	Elo Standard: 1577 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 14, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
