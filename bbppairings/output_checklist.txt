@@ -1,34 +1,36 @@
 
-ID	Pts	--	Pref	C2	C14	C16	  Cur		R1	
+ID	Pts	---	Pref	C2	C14	C16	  Cur		R1	R2	
 
- 1	1.0	 W	 (B)	 Y	   	   	(12B)		14	
- 4	1.0	 B	 (W)	 Y	   	   	(13W)		17	
- 5	1.0	 W	 (B)	 Y	   	   	(15B)		18	
- 9	1.0	 W	 (B)	 Y	   	   	(19B)		22	
-11	1.0	 W	 (B)	 Y	   	   	(20B)		24	
-12	1.0	 B	 (W)	 Y	   	   	 (1W)		25	
-13	1.0	 W	 (B)	 Y	   	   	 (4B)		26	
-15	1.0	 W	 (B)	 Y	   	   	 (5W)		 2	
-19	1.0	 W	 (B)	 Y	   	   	 (9W)		 6	
-20	1.0	 B	 (W)	 Y	   	   	(11W)		 7	
-23	1.0	 W	 (B)	 Y	   	   	 (8B)		10	
+ 1	2.0	 WB	  w 	 Y	   	   	(13W)		14	12	
+ 9	2.0	 WB	  w 	 Y	   	   	(20W)		22	19	
+13	2.0	 WB	  w 	 Y	   	   	 (1B)		26	 4	
+20	2.0	 BW	  b 	 Y	   	   	 (9B)		 7	11	
 
- 3	0.5	 W	 (B)	 Y	   	   	 (2B)		16	
- 8	0.5	 B	 (W)	 Y	   	   	(23W)		21	
-16	0.5	 B	 (W)	 Y	   	   	(21W)		 3	
-21	0.5	 W	 (B)	 Y	   	   	(16B)		 8	
+ 5	1.5	 WB	  w 	 Y	   	   	 (8W)		18	15	
+ 8	1.5	 BW	  b 	 Y	  U	   	 (5B)		21	23	
+15	1.5	 WW	  B 	 Y	   	   	(21B)		 2	 5	
+21	1.5	 WB	  w 	 Y	   	   	(15W)		 8	16	
 
- 2	0.0	 B	 (W)	 Y	   	   	 (3W)		15	
- 6	0.0	 B	 (W)	 Y	   	   	(18W)		19	
- 7	0.0	 W	 (B)	 Y	   	   	(22B)		20	
-10	0.0	 B	 (W)	 Y	   	   	(24W)		23	
-14	0.0	 B	 (W)	 Y	   	   	(25W)		 1	
-17	0.0	 W	 (B)	 Y	   	   	(26B)		 4	
-18	0.0	 B	 (W)	 Y	   	   	 (6B)		 5	
-22	0.0	 B	 (W)	 Y	   	   	 (7W)		 9	
-24	0.0	 B	 (W)	 Y	   	   	(10B)		11	
-25	0.0	 W	 (B)	 Y	   	   	(14B)		12	
-26	0.0	 B	 (W)	 Y	   	   	(17W)		13	
+ 3	1.0	 WB	  w 	 Y	  D	   	(12W)		16	 2	
+ 4	1.0	 BW	  b 	 Y	   	   	(11B)		17	13	
+ 6	1.0	 BW	  b 	 Y	   	   	(23B)		19	18	
+ 7	1.0	 WB	  w 	 Y	   	   	(14W)		20	22	
+10	1.0	 BW	  b 	 Y	   	   	(19W)		23	24	
+11	1.0	 WB	  w 	 Y	   	   	 (4W)		24	20	
+12	1.0	 BW	  b 	 Y	   	   	 (3B)		25	 1	
+14	1.0	 BW	  b 	 Y	   	   	 (7B)		 1	25	
+19	1.0	 WW	  B 	 Y	   	   	(10B)		 6	 9	
+23	1.0	 WB	  w 	 Y	  D	   	 (6W)		10	 8	
+26	1.0	 BW	  b 	 Y	   	   	(16B)		13	17	
+
+ 2	0.5	 BW	  b 	 Y	  U	   	(17B)		15	 3	
+16	0.5	 BW	  b 	 Y	   	   	(26W)		 3	21	
+
+17	0.0	 WB	  w 	 Y	   	   	 (2W)		 4	26	
+18	0.0	 BB	  W 	 Y	   	   	(25W)		 5	 6	
+22	0.0	 BW	  b 	 Y	   	   	(24B)		 9	 7	
+24	0.0	 BB	  W 	 Y	   	   	(22W)		11	10	
+25	0.0	 WB	  w 	 Y	   	   	(18B)		12	14	
 
 
 BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v6.0.0 (Built Feb  1 2026 17:49:01)
