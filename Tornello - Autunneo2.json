@@ -96,7 +96,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 2,
+   "display_rank": 4,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -161,7 +161,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 20,
+   "display_rank": 22,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -217,8 +217,8 @@
    "consecutive_black": 1,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 1.0,
-   "buchholz_cut1": 0.5,
+   "buchholz": 2.0,
+   "buchholz_cut1": 1.5,
    "performance_rating": 1508,
    "elo_change": -1,
    "k_factor": 40,
@@ -226,7 +226,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 19,
+   "display_rank": 20,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -291,7 +291,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 12,
+   "display_rank": 18,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -356,7 +356,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 8,
+   "display_rank": 10,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -384,7 +384,7 @@
    "federation": "ITA",
    "fide_id_num_str": "2817697",
    "birth_date": "1968-01-01",
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -399,6 +399,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TESAL001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -412,16 +419,16 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 1.0,
-   "buchholz_cut1": 1.0,
-   "performance_rating": 1383,
-   "elo_change": -6,
+   "buchholz": 2.0,
+   "buchholz_cut1": 2.0,
+   "performance_rating": 1495,
+   "elo_change": 0,
    "k_factor": 20,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 17,
+   "display_rank": 3,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -436,7 +443,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1497.0,
-   "aro": 1383
+   "aro": 1370
   },
   {
    "id": "RIVPA001",
@@ -486,7 +493,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 14,
+   "display_rank": 19,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -551,7 +558,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 5,
+   "display_rank": 8,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -579,7 +586,7 @@
    "federation": "ITA",
    "fide_id_num_str": "1990942",
    "birth_date": "1978-01-01",
-   "points": 2.0,
+   "points": 3.0,
    "results_history": [
     {
      "round": 1,
@@ -594,6 +601,13 @@
      "color": "black",
      "result": "0-1",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "DIBVI001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -607,16 +621,16 @@
    "consecutive_black": 1,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 1.0,
-   "buchholz_cut1": 1.0,
-   "performance_rating": 2161,
-   "elo_change": 27,
+   "buchholz": 3.0,
+   "buchholz_cut1": 3.0,
+   "performance_rating": 2165,
+   "elo_change": 40,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 4,
+   "display_rank": 1,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -631,7 +645,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1483.0,
-   "aro": 1361
+   "aro": 1365
   },
   {
    "id": "CALVA001",
@@ -672,7 +686,7 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 1.0,
+   "buchholz": 2.0,
    "buchholz_cut1": 1.0,
    "performance_rating": 1331,
    "elo_change": -12,
@@ -681,7 +695,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 18,
+   "display_rank": 21,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -737,7 +751,7 @@
    "consecutive_black": 1,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.0,
+   "buchholz": 3.0,
    "buchholz_cut1": 2.0,
    "performance_rating": 1344,
    "elo_change": -10,
@@ -746,7 +760,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 15,
+   "display_rank": 14,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -811,7 +825,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 10,
+   "display_rank": 15,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -876,7 +890,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 3,
+   "display_rank": 5,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -941,7 +955,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 11,
+   "display_rank": 16,
    "elo_club": null,
    "elo_rapid": 1806,
    "elo_blitz": 0,
@@ -1006,7 +1020,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 6,
+   "display_rank": 9,
    "elo_club": null,
    "elo_rapid": 0,
    "elo_blitz": 0,
@@ -1034,7 +1048,7 @@
    "federation": "ITA",
    "fide_id_num_str": "",
    "birth_date": "1990-01-01",
-   "points": 0.5,
+   "points": 1.5,
    "results_history": [
     {
      "round": 1,
@@ -1049,6 +1063,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "GORSE001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -1062,16 +1083,16 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.5,
-   "buchholz_cut1": 1.5,
-   "performance_rating": 1240,
-   "elo_change": -16,
+   "buchholz": 3.5,
+   "buchholz_cut1": 2.5,
+   "performance_rating": 1351,
+   "elo_change": -7,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 21,
+   "display_rank": 6,
    "elo_club": null,
    "elo_rapid": null,
    "elo_blitz": null,
@@ -1086,7 +1107,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1399.0,
-   "aro": 1432
+   "aro": 1351
   },
   {
    "id": "ROSMI001",
@@ -1192,8 +1213,8 @@
    "consecutive_black": 2,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.5,
-   "buchholz_cut1": 1.5,
+   "buchholz": 3.5,
+   "buchholz_cut1": 2.0,
    "performance_rating": 698,
    "elo_change": -14,
    "k_factor": 20,
@@ -1201,7 +1222,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 23,
+   "display_rank": 24,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1257,8 +1278,8 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 3.0,
-   "buchholz_cut1": 2.0,
+   "buchholz": 5.0,
+   "buchholz_cut1": 3.0,
    "performance_rating": 1490,
    "elo_change": 13,
    "k_factor": 40,
@@ -1266,7 +1287,7 @@
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 9,
+   "display_rank": 13,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1309,6 +1330,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "BRICA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1322,16 +1350,16 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.0,
-   "buchholz_cut1": 1.0,
-   "performance_rating": 2266,
-   "elo_change": 51,
+   "buchholz": 5.0,
+   "buchholz_cut1": 4.0,
+   "performance_rating": 1597,
+   "elo_change": 37,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 1,
+   "display_rank": 2,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1346,7 +1374,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1372.0,
-   "aro": 1466
+   "aro": 1472
   },
   {
    "id": "MERAL001",
@@ -1387,7 +1415,7 @@
    "consecutive_black": 1,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.0,
+   "buchholz": 3.0,
    "buchholz_cut1": 1.5,
    "performance_rating": 1638,
    "elo_change": 31,
@@ -1439,6 +1467,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PAGGI001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1452,16 +1487,16 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 3.0,
-   "buchholz_cut1": 2.0,
-   "performance_rating": 689,
-   "elo_change": -24,
+   "buchholz": 5.0,
+   "buchholz_cut1": 4.0,
+   "performance_rating": 632,
+   "elo_change": -46,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 22,
+   "display_rank": 23,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1476,7 +1511,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1346.0,
-   "aro": 1489
+   "aro": 1432
   },
   {
    "id": "TESAL001",
@@ -1504,6 +1539,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TRACO001",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1517,16 +1559,16 @@
    "consecutive_black": 1,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.5,
-   "buchholz_cut1": 1.5,
-   "performance_rating": 1467,
-   "elo_change": 13,
+   "buchholz": 4.5,
+   "buchholz_cut1": 3.5,
+   "performance_rating": 1352,
+   "elo_change": 2,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 16,
+   "display_rank": 11,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1541,7 +1583,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1345.0,
-   "aro": 1467
+   "aro": 1477
   },
   {
    "id": "PAGGI001",
@@ -1554,7 +1596,7 @@
    "federation": "ITA",
    "fide_id_num_str": "552014223",
    "birth_date": "2018-01-01",
-   "points": 0.0,
+   "points": 1.0,
    "results_history": [
     {
      "round": 1,
@@ -1569,6 +1611,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PAGVI001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -1583,15 +1632,15 @@
    "received_bye_count": 0,
    "received_bye_in_round": [],
    "buchholz": 2.0,
-   "buchholz_cut1": 1.0,
-   "performance_rating": 640,
-   "elo_change": -26,
+   "buchholz_cut1": 2.0,
+   "performance_rating": 1284,
+   "elo_change": -5,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 24,
+   "display_rank": 17,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -1606,7 +1655,7 @@
    "foa_title": "",
    "flag": "",
    "current_elo": 1317.0,
-   "aro": 1440
+   "aro": 1409
   },
   {
    "id": "FORMA001",
@@ -1699,6 +1748,13 @@
      "color": "white",
      "result": "1-0",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PATMA001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1712,16 +1768,16 @@
    "consecutive_black": 0,
    "received_bye_count": 0,
    "received_bye_in_round": [],
-   "buchholz": 2.0,
-   "buchholz_cut1": 2.0,
-   "performance_rating": 1399,
-   "elo_change": 22,
+   "buchholz": 3.5,
+   "buchholz_cut1": 3.5,
+   "performance_rating": 1274,
+   "elo_change": 12,
    "k_factor": 40,
    "games_this_tournament": 0,
    "downfloat_count": 0,
    "final_rank": null,
    "withdrawn": false,
-   "display_rank": 13,
+   "display_rank": 12,
    "elo_club": 0.0,
    "elo_rapid": 0.0,
    "elo_blitz": 0.0,
@@ -2110,7 +2166,8 @@
       "channel": "WA",
       "arbiter": "Giuseppe B",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.01\"]\n[Round \"2\"]\n[White \"Calzolari, Valeria\"]\n[Black \"Paglia, Giulia\"]\n[Result \"1-0\"]\n[ECO \"D00\"]\n[Opening \"Queen's pawn, Mason variation\"]\n[WhiteElo \"1442\"]\n[BlackElo \"1317\"]\n[PlyCount \"95\"]\n[TimeControl \"2700+15\"]\n[Termination \"Checkmate\"]\n[Annotator \"Ericlock2.65 Revisione e correzione GB\"]\n\n1. d4 d5 2. Bf4 Nc6 3. e3 f6 4. c3 e5 5. dxe5 fxe5 6. Bg3 Nf6 7. Nf3 Bd6 8.\nNbd2 O-O 9. Bb5 e4 10. Bxd6 cxd6 11. Nd4 Nxd4 12. cxd4 Bg4 13. Qc1 Rc8 14. Qb1\nQa5 15. Be2 Bd7 16. Qd1 Ba4 17. b3 Bb5 18. O-O Qa6 19. Bxb5 Qxb5 20. Re1 Qd7\n21. Rf1 Ng4 22. h3 Nxf2 23. Qe2 Rc2 24. Rxf2 Rf5 25. a4 Qf7 26. Raf1 g6 27. Qd1\nRc8 28. Qe2 b6 29. b4 a5 30. b5 h5 31. Nb1 Qe6 32. Rf4 Rf7 33. Rxf7 Qe8 34.\nRf8+ Kg7 35. Rxe8 Rxe8 36. Qf2 Re7 37. Qf4 Kh7 38. Qxd6 Re8 39. Qd7+ Kh6 40.\nQxe8 h4 41. Qh8+ Kg5 42. Qd8+ Kh5 43. Qxd5+ g5 44. Qxe4 Kh6 45. Rf6+ Kg7 46.\nQf5 Kg8 47. Qxg5+ Kh7 48. Rh6# 1-0"
     },
     {
      "id": 25,
@@ -2169,15 +2226,16 @@
      "round": 3,
      "white_player_id": "BRICA001",
      "black_player_id": "DIBVI001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-20",
       "time": "21:30",
       "channel": "Lichess",
       "arbiter": "Non necessario",
       "arbiter_not_needed": true
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Brites Pereira Lima, Catia Susana\"]\n[Black \"Di Bari, Vincenzo\"]\n[Result \"1-0\"]\n[GameId \"iMXuyssp\"]\n[UTCDate \"2026.10.20\"]\n[UTCTime \"19:33:48\"]\n[WhiteElo \"1483\"]\n[BlackElo \"1372\"]\n[WhiteRatingDiff \"+1\"]\n[BlackRatingDiff \"-5\"]\n[Variant \"Standard\"]\n[TimeControl \"2700+15\"]\n[ECO \"A80\"]\n[Opening \"Dutch Defense\"]\n[Termination \"Time forfeit\"]\n\n1. d4 f5 2. Nf3 Nf6 3. c4 g6 4. Nc3 Bg7 5. h3 O-O 6. Bf4 e6 7. e3 d5 8. cxd5\nNxd5 9. Nxd5 Qxd5 10. Be2 Qa5+ 11. Qd2 Qxd2+ 12. Nxd2 c6 13. O-O Bd7 14. Nb3 b6\n15. Rac1 Na6 16. Bxa6 Rfe8 17. Bb7 Rab8 18. Bxb8 Rxb8 19. Bxc6 Bxc6 20. Rxc6\nRd8 21. Rxe6 Kf7 22. Rc6 Rd7 23. Rfc1 Ke7 24. Rc7 Rxc7 25. Rxc7+ Kd8 26. Rxg7\na5 27. Rxh7 Kc8 28. Rh6 g5 29. Rxb6 Kc7 30. Ra6 Kd7 31. Rxa5 Ke7 32. Rc5 Kf8\n33. a4 g4 34. a5 gxh3 35. a6 h2+ 36. Kxh2 f4 37. Rc6 fxe3 38. fxe3 Ke7 39. a7\nKd7 40. Ra6 Kc7 41. a8=Q Kd7 42. Rh6 Kc7 43. Qa7+ 1-0"
     },
     {
      "id": 29,
@@ -2223,22 +2281,30 @@
      "white_player_id": "VALRI001",
      "black_player_id": "BATGA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-23",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 33,
      "round": 3,
      "white_player_id": "TESAL001",
      "black_player_id": "TRACO001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "0-1",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-21",
       "time": "16:00",
       "channel": "WA",
       "arbiter": "Claudio Gas",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Testori, Alessandra\"]\n[Black \"Trapletti, Cosetta\"]\n[Result \"0-1\"]\n[WhiteElo \"1345\"]\n[BlackElo \"1497\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"C50\"]\n[Opening \"Giuoco Pianissimo\"]\n\n1. e4 e5 2. Bc4 Bc5 3. d3 Nf6 4. Nf3 Nc6 5. O-O O-O 6. Nbd2 d6 7. Ng5 Bg4 8.\nNdf3 a6 9. Re1 Nd4 10. h3 Bh5 11. Be3 h6 12. h4 hxg5 13. hxg5 Ng4 14. Bxd4 Bxd4\n15. Nxd4 exd4 16. Bd5 c6 17. Bc4 Qf6 18. c3 Qg6 19. e5 Qxg5 20. Re4 dxe5 21.\ncxd4 exd4 22. Rxd4 Qf5 23. Qe2 Rae8 24. Qd1 Qxf2+ 25. Kh1 Qxd4 26. Rb1 Nf2+ 27.\nKh2 Qh4+ 28. Kg1 Nxd1 29. Rxd1 Bxd1 30. b4 Qe1+ 31. Kh2 g5 32. g3 Qf2+ 33. Kh3\nKg7 34. a4 Kh6 35. b5 cxb5 36. axb5 axb5 37. Bxb5 Re5 38. Bd7 f5 39. Bb5 Bg4#\n0-1"
     },
     {
      "id": 34,
@@ -2275,15 +2341,16 @@
      "round": 3,
      "white_player_id": "PATMA001",
      "black_player_id": "GORSE001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-20",
       "time": "21:00",
       "channel": "WA",
       "arbiter": "Valeria C",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Patalano, Mario\"]\n[Black \"Gori, Serena\"]\n[Result \"1-0\"]\n[WhiteElo \"1399\"]\n[BlackElo \"1189\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"D30\"]\n[Opening \"QGD Slav\"]\n\n1. e3 d5 2. c4 c6 3. Nf3 e6 4. d4 Nf6 5. Nbd2 Be7 6. c5 O-O 7. Bd3 Nbd7 8. O-O\nb6 9. Qa4 b5 10. Qb3 Bb7 11. a4 Re8 12. axb5 cxb5 13. Bxb5 Qc7 14. g3 Rab8 15.\nRxa7 Ne4 16. c6 Nxd2 17. Bxd2 Nf6 18. cxb7 Rf8 19. Ba5 Qc8 20. bxc8=Q Rbxc8 21.\nRxe7 Ra8 22. Ra1 g6 23. Kg2 Kg7 24. Ng5 Ng8 25. Rc7 Kf6 26. Nxh7+ Kg7 27. Nxf8\nRxf8 28. e4 dxe4 29. Qxe6 Kh6 30. Rxf7 Rxf7 31. Qxf7 Kh5 32. Qh7+ Nh6 33. Be8\nKg5 34. Qxg6# 1-0"
     },
     {
      "id": 37,
@@ -2306,22 +2373,30 @@
      "white_player_id": "CASMA001",
      "black_player_id": "FORMA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-10-25",
+      "time": "18:00",
+      "channel": "WA",
+      "arbiter": "Catia",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 39,
      "round": 3,
      "white_player_id": "PAGGI001",
      "black_player_id": "PAGVI001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-21",
       "time": "18:00",
       "channel": "WA",
-      "arbiter": "",
+      "arbiter": "Gabry",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Paglia, Giulia\"]\n[Black \"Paglia, Virginio\"]\n[Result \"1-0\"]\n[WhiteElo \"1317\"]\n[BlackElo \"1346\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.22.0 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"A00\"]\n[Opening \"Van't Kruijs opening\"]\n\n1. e3 e6 2. Nf3 d5 3. Nc3 Nf6 4. Be2 Nc6 5. O-O Bd6 6. a3 e5 7. b4 O-O 8. b5\nNe7 9. Bd3 { rischia la forchetta } 9... Qe8 10. Ng5 Bd7 11. Qf3 d4 12. exd4\nBg4 13. Qg3 Rd8 14. Qh4 a6 15. dxe5 Bxe5 16. Nce4 Rd4 17. Nxf6+ gxf6 18. Qxh7#\n1-0"
     }
    ]
   }
