@@ -131,7 +131,7 @@
    "federation": "ITA",
    "fide_id_num_str": "2888888",
    "birth_date": "1983-01-01",
-   "points": 0.5,
+   "points": 1.5,
    "results_history": [
     {
      "round": 1,
@@ -146,6 +146,13 @@
      "color": "white",
      "result": "1/2-1/2",
      "score": 0.5
+    },
+    {
+     "round": 3,
+     "opponent_id": "ROSMI001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -196,7 +203,7 @@
    "federation": "ITA",
    "fide_id_num_str": "28505867",
    "birth_date": "1966-01-01",
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -211,6 +218,13 @@
      "color": "black",
      "result": "1/2-1/2",
      "score": 0.5
+    },
+    {
+     "round": 3,
+     "opponent_id": "VENLU001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -492,6 +506,13 @@
      "color": "black",
      "result": "0-1",
      "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "FIDE_552017923",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -845,6 +866,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "TOLFI001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -967,7 +995,7 @@
    "federation": "ITA",
    "fide_id_num_str": "552017923",
    "birth_date": "1970-01-01",
-   "points": 1.0,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -981,6 +1009,13 @@
      "opponent_id": "FORMA001",
      "color": "white",
      "result": "1-0",
+     "score": 1.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "RIVPA001",
+     "color": "black",
+     "result": "0-1",
      "score": 1.0
     }
    ],
@@ -1190,6 +1225,13 @@
      "opponent_id": "GORSE001",
      "color": "black",
      "result": "1-0",
+     "score": 0.0
+    },
+    {
+     "round": 3,
+     "opponent_id": "PEZER001",
+     "color": "white",
+     "result": "0-1",
      "score": 0.0
     }
    ],
@@ -2345,15 +2387,16 @@
      "round": 3,
      "white_player_id": "TOLFI001",
      "black_player_id": "VENLU001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-28",
       "time": "21:30",
       "channel": "WA",
       "arbiter": "Claudio Gas",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Tolaro, Filippa\"]\n[Black \"Ventura, Luigi\"]\n[Result \"1-0\"]\n[WhiteElo \"1515\"]\n[BlackElo \"1402\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"D05\"]\n[Opening \"Queen's pawn game\"]\n\n1. Nf3 Nf6 2. d4 d5 3. e3 e6 4. b3 Bd6 5. Bb2 O-O 6. Nbd2 b6 7. Be2 Bb7 8. Ne5\nNbd7 9. f4 c5 10. O-O Rc8 11. c4 a6 12. Bf3 b5 13. cxb5 axb5 14. Be2 Bc6 15. a4\nRb8 16. Bd3 Qc8 17. Nxc6 Qxc6 18. axb5 Qc7 19. Ba3 Rfe8 20. Nf3 Be7 21. Qc1\nRbc8 22. Ne5 Nb6 23. dxc5 Nbd7 24. c6 Nb6 25. Bxe7 Rxe7 26. Nd7 Ree8 27. Nxf6+\ngxf6 28. Rf3 Kf8 29. Qa3+ Re7 30. Qc5 Rd8 31. Bxh7 Qd6 32. Qxd6 Rxd6 33. Rg3\nRed7 34. Ra6 Rd8 35. Rxb6 d4 36. Rg8+ Ke7 37. Rb7+ R8d7 38. cxd7 Rxd7 39. Rxd7+\nKxd7 40. exd4 Kc7 41. Rf8 Kb6 42. Rxf7 f5 43. d5 1-0"
     },
     {
      "id": 32,
@@ -2392,15 +2435,16 @@
      "round": 3,
      "white_player_id": "RIVPA001",
      "black_player_id": "FIDE_552017923",
-     "result": null,
-     "is_scheduled": true,
+     "result": "0-1",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-27",
       "time": "21:00",
       "channel": "WA",
       "arbiter": "Catia",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Rivalta, Paolo\"]\n[Black \"Di Folca, Augusto\"]\n[Result \"0-1\"]\n[WhiteElo \"1495\"]\n[BlackElo \"1399\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"B01\"]\n[Opening \"Scandinavian (centre counter) defence\"]\n\n1. e4 d5 2. e5 c5 3. Nf3 Nc6 4. d4 cxd4 5. g3 Bg4 6. Bg2 e6 7. Nbd2 Bb4 8. O-O\nNxe5 9. a3 Bd6 10. Nb3 Qf6 11. Nbxd4 Bc5 12. Qe2 Bxd4 13. c3 Nxf3+ 14. Bxf3\nBxf3 15. Qb5+ Kf8 16. cxd4 Qf5 17. Qb3 Nf6 18. Re1 Ng4 19. Bf4 Nxh2 20. Re3 Qh3\n21. Rxf3 Ng4 22. Bd6+ Kg8 23. Qxb7 Qh2+ 24. Kf1 h6 25. Rxf7 Qh1+ 26. Ke2 Qe4+\n27. Kd2 Qxd4+ 28. Kc1 Kh7 29. Rf4 Rac8+ 30. Bc7 Qc5+ 31. Kd1 Rxc7 0-1"
     },
     {
      "id": 35,
@@ -2439,15 +2483,16 @@
      "round": 3,
      "white_player_id": "ROSMI001",
      "black_player_id": "PEZER001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "0-1",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-10-28",
       "time": "15:30",
       "channel": "WA",
       "arbiter": "Gabry",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.10.17\"]\n[Round \"3\"]\n[White \"Rossi, Milena\"]\n[Black \"Pezzolato, Erica\"]\n[Result \"0-1\"]\n[WhiteElo \"1399\"]\n[BlackElo \"1616\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.22.0 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"A45\"]\n[Opening \"Queen's pawn game\"]\n\n1. d4 Nf6 2. e3 g6 3. Bc4 Bg7 4. Nf3 O-O 5. O-O d5 6. c3 dxc4 7. b4 cxb3 8.\naxb3 Nc6 9. Qd2 Bg4 10. h3 Bxf3 11. gxf3 e5 12. Qa2 exd4 13. exd4 Qd5 14. Re1\nQxf3 15. Kf1 Qxh3+ 16. Ke2 Rfe8+ 17. Be3 Bh6 18. b4 Bxe3 19. Nd2 Bxd2+ 20. Kd1\nBxe1 21. Rb1 Qd3+ 22. Kc1 Re2 23. Qa3 Qc2# 0-1"
     },
     {
      "id": 38,
