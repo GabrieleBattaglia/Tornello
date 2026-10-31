@@ -2585,7 +2585,14 @@
      "white_player_id": "BATGA001",
      "black_player_id": "VILGE001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-05",
+      "time": "21:00",
+      "channel": "Lichess",
+      "arbiter": "Non necessario",
+      "arbiter_not_needed": true
+     }
     },
     {
      "id": 42,
@@ -2593,7 +2600,14 @@
      "white_player_id": "TRACO001",
      "black_player_id": "FIDE_805165",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-03",
+      "time": "16:00",
+      "channel": "WA",
+      "arbiter": "Claudio Gas",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 43,
@@ -2625,7 +2639,14 @@
      "white_player_id": "PEZER001",
      "black_player_id": "PATMA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-09",
+      "time": "17:30",
+      "channel": "WA",
+      "arbiter": "Claudio Gas",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 47,
@@ -2657,7 +2678,14 @@
      "white_player_id": "CASMA001",
      "black_player_id": "TESAL001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-05",
+      "time": "15:00",
+      "channel": "WA",
+      "arbiter": "",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 51,
@@ -2665,7 +2693,14 @@
      "white_player_id": "PAGGI001",
      "black_player_id": "FORMA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-15",
+      "time": "18:00",
+      "channel": "WA",
+      "arbiter": "Giuseppe B",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 52,
@@ -2673,7 +2708,14 @@
      "white_player_id": "PAGVI001",
      "black_player_id": "ROSMI001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-07",
+      "time": "15:00",
+      "channel": "WA",
+      "arbiter": "Gabry",
+      "arbiter_not_needed": false
+     }
     }
    ]
   }
