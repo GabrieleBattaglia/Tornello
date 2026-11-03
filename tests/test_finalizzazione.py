@@ -315,6 +315,44 @@ class TestFinalizzazioneRipetuta:
         assert _copie(banco.backup, "pre_archiviazione") == []
         assert any("già finalizzato e archiviato" in a for a in avvisi)
 
+    def test_con_il_json_identico_l_archivio_resta_com_era(self, banco, tmp_path, monkeypatch):
+        """Decisione di Gabriele, dalla 10.13.61 (issue 68): ripetendo la
+        finalizzazione di un torneo gia' archiviato, l'archivio resta com'e'
+        anche quando il json nuovo e' identico a quello archiviato, come
+        quando e' diverso, e i report appena scritti vanno nella cartella
+        backup con rifinalizzazione nel nome. Fino alla 10.13.60 la
+        Classifica.txt dell'archivio veniva sostituita da quella nuova, con
+        una copia pre_archiviazione: qui le due classifiche differiscono per
+        la versione del programma che le firma, come dopo un aggiornamento
+        fra le due finalizzazioni."""
+        import reports
+
+        assert _finalizza(banco) is True
+        cartella = _cartella_archivio()
+        archivio = {nome: _leggi_byte(os.path.join(cartella, nome)) for nome in os.listdir(cartella)}
+        classifica = f"Tornello - {NOME} - Classifica.txt"
+        assert sorted(archivio) == [classifica, f"Tornello - {NOME}.json"]
+        database = _leggi_byte(banco.db)
+
+        _scrivi(banco.file_torneo, banco.torneo)
+        monkeypatch.setattr(reports, "VERSIONE", "versione successiva")
+        avvisi = []
+        assert _finalizza(banco, avvisi) is True
+
+        assert {nome: _leggi_byte(os.path.join(cartella, nome)) for nome in os.listdir(cartella)} == archivio
+        assert _leggi_byte(banco.db) == database
+        assert _nella_radice(tmp_path) == []
+        assert _copie(banco.backup, "pre_archiviazione") == []
+        messi_da_parte = _copie(banco.backup, "rifinalizzazione")
+        assert len(messi_da_parte) == 2
+        json_nuovo = next(c for c in messi_da_parte if c.endswith(".json"))
+        # Il json della seconda finalizzazione e' proprio identico.
+        assert _leggi_byte(json_nuovo) == archivio[f"Tornello - {NOME}.json"]
+        classifica_nuova = next(c for c in messi_da_parte if c.endswith(".txt"))
+        with open(classifica_nuova, encoding="utf-8-sig") as f:
+            assert "versione successiva" in f.read()
+        assert any("già finalizzato e archiviato" in a for a in avvisi)
+
     def test_un_giocatore_solo_senza_lo_storico_e_al_singolare(self, banco):
         """La finalizzazione ripetuta, con un K ricalcolato, trova un solo
         giocatore senza il torneo nello storico: lo aggiorna, e l'avviso lo

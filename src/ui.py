@@ -2241,12 +2241,19 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # esempio con un K diverso, e se sostituisse l'archivio lo storno dei
     # valori applicati non avrebbe piu' da dove prenderli. I file nuovi vanno
     # nella cartella backup, cosi' non restano nella radice.
+    # Dalla 10.13.61 vale anche quando il json nuovo e' identico a quello
+    # dell'archivio (decisione di Gabriele, issue 68): fino alla 10.13.60 la
+    # strada partiva solo con il json diverso, e con quello identico i report
+    # appena scritti sostituivano quelli dell'archivio, per esempio una
+    # Classifica.txt scritta da una versione precedente, con la copia
+    # pre_archiviazione: dalla 10.13.19 la classifica pubblicata non deve
+    # cambiare a posteriori, e l'archivio cambiava senza che il torneo fosse
+    # cambiato.
     if (
         gia_registrati
         and local_json_path
         and json_gia_in_archivio
         and not gia_al_suo_posto
-        and not _stessi_byte(local_json_path, destination_json)
     ):
         avvisa(
             _(
