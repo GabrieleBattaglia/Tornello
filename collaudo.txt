@@ -1,0 +1,106 @@
+PROVA 1: Tornei di prova rigenerati
+Prima: Tornello chiuso.
+Passo 1: apri il prompt dei comandi e scrivi: cd /d E:\git\mine\Tornello-lavori
+Passo 2: scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py programmazione canc forfait time_machine rapid
+Passo 3: aspetta la fine, un paio di minuti.
+Domanda 1: l'ultima riga dice "Verifica superata per tutti i tornei."?
+Esito: 
+
+PROVA 2: CANC su una partita giocata
+Prima: dal prompt dei comandi, in E:\git\mine\Tornello-lavori, avvia Tornello con: python E:\git\mine\Tornello-lavori\tornello.py
+Prima: Tornello resta aperto fino alla prova 8; nell'albero non toccare mai Autunneo2.
+Prima: nell'albero scegli Prova canc, poi turni, Turno corrente (2/4), giocate (2/4, 50.0%).
+Passo 1: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
+Domanda 1: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima e il PGN che resta?
+Passo 2: premi TAB fino a Sì e poi INVIO.
+Domanda 2: il cursore resta sulla partita, adesso nel ramo programmate (2), e NVDA te lo dice senza muoverti?
+Domanda 3: il suono della cancellazione è quello dell'annullamento delle finestre: va bene, o ne vuoi uno suo?
+Passo 3: sulla Scacchiera 2, Galli Giulia vs Ferri Fabio [0-1], premi CANC e poi subito INVIO.
+Domanda 4: INVIO risponde No e la partita resta fra le giocate?
+Passo 4: apri Completati (1), Turno 1, giocate, e premi CANC sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0].
+Domanda 5: si sente l'errore e il messaggio Turno chiuso si legge bene, con il rimando a Ctrl+Z?
+Esito: 
+
+PROVA 3: Rami delle partite da giocare e Togli programmazione
+Prima: nell'albero scegli Prova programmazione, poi turni, Turno corrente (1/5), da giocare (5).
+Passo 1: scorri con le frecce i rami programmate (2) e da programmare (3) e le loro partite.
+Domanda 1: voci e conteggi si leggono bene in voce e sulla barra braille?
+Domanda 2: fra le programmate la Scacchiera 4 viene prima della 2, che è programmata il giorno dopo: l'ordine per giorno e ora ti è comodo?
+Passo 2: sulla Scacchiera 2, De Santis Dario vs Galli Giulia, premi INVIO, poi TAB fino a Pianifica Partita e SPAZIO.
+Passo 3: nella programmazione premi TAB fino a Togli programmazione, poi SPAZIO, poi TAB fino a Sì e INVIO.
+Domanda 3: Togli programmazione arriva dopo i dettagli e prima di Annulla, e la domanda ha No predefinito?
+Domanda 4: le due finestre si chiudono, si sente il suono della programmazione tolta, e il cursore resta sulla partita, ora fra le da programmare?
+Passo 4: sulla Scacchiera 4, Esposito Ettore vs Iori Ivo, premi CANC, poi TAB fino a Sì e INVIO.
+Domanda 5: la domanda e l'esito sono gli stessi della strada con il pulsante?
+Passo 5: su una partita da programmare premi INVIO, poi Pianifica Partita, e scorri con TAB fino a Conferma.
+Domanda 6: con TAB il pulsante Togli programmazione, spento, non si incontra: ti va bene così?
+Passo 6: premi ESC due volte.
+Esito: 
+
+PROVA 4: Forfait dopo il ritiro e INVIO senza risultato
+Prima: nell'albero scegli Prova forfait, poi turni, Turno corrente (1/4), da giocare (4), da programmare (4).
+Passo 1: sulla Scacchiera 1, Pellegrini Paolo vs Sala Sergio, premi INVIO, poi Ritira Giocatore, scegli Sala Sergio e conferma.
+Domanda 1: arriva la domanda Forfait dopo il Ritiro, con Sì predefinito, che propone 1 - F per Pellegrini Paolo?
+Passo 2: premi INVIO.
+Domanda 2: la barra di stato dice Sala Sergio ritirato, risultato registrato: 1-F, e il cursore va sulla Scacchiera 2?
+Passo 3: sulla Scacchiera 2, Neri Nadia vs Longo Lucia, premi INVIO, poi Ritira Giocatore, scegli Neri Nadia e conferma; alla domanda TAB fino a No e INVIO.
+Domanda 3: la partita resta da giocare?
+Domanda 4: la domanda diceva Neri Nadia è ritirato, al maschile: va bene, o preferisci una frase che valga per tutti?
+Passo 4: sulla Scacchiera 3, Rinaldi Rita vs Testa Teresa, premi INVIO e, senza scegliere un risultato, di nuovo INVIO.
+Domanda 5: si sente l'errore e la finestra resta aperta?
+Passo 5: premi ESC, poi torna sulla Scacchiera 2, premi INVIO, scegli F - 1 e premi INVIO.
+Domanda 6: il risultato si registra senza chiederti di nuovo se Neri Nadia si ritira?
+Esito: 
+
+PROVA 5: Time Machine, l'esempio del capitolo 8 del manuale
+Prima: nell'albero scegli Prova time machine: i turni da 1 a 3 sono completi, e sotto turni c'è calcola il turno successivo.
+Passo 1: premi Ctrl+Z e alla domanda Annulla Turno premi INVIO.
+Domanda 1: si sente la Time Machine, e il Turno 2 è di nuovo il turno corrente, fra i Completati?
+Domanda 2: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova time machine il file del Turno 3 Dettagli non c'è più, è nel cestino, e Windows non ti ha chiesto niente?
+Passo 2: apri Completati, Turno 2, giocate, e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi CANC, poi TAB fino a Sì e INVIO.
+Domanda 3: il turno diventa Turno corrente (2/5) e il cursore resta sulla partita, fra le da programmare?
+Passo 3: premi INVIO, scegli 1 - 0 e premi INVIO.
+Domanda 4: si sente la fine del turno e il cursore passa su calcola il turno successivo?
+Esito: 
+
+PROVA 6: Nomi già in uso nella procedura guidata
+Prima: Tornello aperto.
+Passo 1: premi Ctrl+N, scendi su Nome torneo e premi INVIO.
+Passo 2: scrivi prova FORFAIT e premi INVIO.
+Domanda 1: si sente l'errore, e il messaggio dice che il nome coincide con il torneo Prova forfait, in corso?
+Passo 3: chiudi il messaggio, premi INVIO su Nome torneo, scrivi Players DB e premi INVIO.
+Domanda 2: il messaggio dice che coincide con il database dei giocatori?
+Passo 4: chiudi il messaggio, sali su Indietro e premi INVIO.
+Domanda 3: il nome è rimasto Non impostato, e la procedura si chiude senza creare niente?
+Esito: 
+
+PROVA 7: Fattore K del rapid e partite della cadenza
+Prima: nell'albero scegli Prova rapid: i due turni sono completi, e sotto turni c'è Finalizza il torneo.
+Passo 1: premi Ctrl+F, rispondi Sì e chiudi il messaggio di successo.
+Passo 2: premi Ctrl+D, scrivi Valli nel campo Filtra Giocatori, scegli Valli Vera e passa all'albero della scheda.
+Passo 3: apri Anagrafica e scorri fino a Partite Locali Blitz; poi apri ELO e Titoli.
+Domanda 1: NVDA legge Partite Locali Rapid: 1, Partite Locali Blitz: 0 ed ELO Rapid 1630?
+Domanda 2: le due voci nuove delle partite si capiscono, accanto a Partite Locali Giocate?
+Passo 4: chiudi la finestra con ESC, senza modificare niente.
+Esito: 
+
+PROVA 8: Menu Aiuto e chiusura senza invito
+Prima: Tornello aperto.
+Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
+Domanda 1: dopo Crediti ci sono Offrimi un caffè con la O, un separatore, Entra al PUB con la E e Chiedi aiuto al PUB con la A?
+Passo 2: scegli Offrimi un caffè, leggi il testo e premi INVIO.
+Domanda 2: la finestra si chiude con Chiudi, il pulsante predefinito, senza aprire il browser?
+Passo 3: dal menu Aiuto scegli Entra al PUB, leggi l'area di testo con le frecce e chiudi con ESC.
+Domanda 3: spiegazione e pulsanti si leggono bene?
+Passo 4: dal menu Aiuto scegli Chiedi aiuto al PUB, leggi la mail e chiudi con ESC, senza spedire niente.
+Domanda 4: nella mail ci sono la versione 10.18.1, BBP Pairings con la sua versione e la lingua it?
+Passo 5: chiudi Tornello con ALT+F4.
+Domanda 5: Tornello si chiude senza l'invito a offrire un caffè?
+Esito: 
+
+PROVA 9: Ascolto dei tre suoni al posto della campanella
+Prima: Tornello chiuso, con il volume che usi di solito.
+Passo 1: dal prompt dei comandi scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
+Passo 2: segui lo script fino in fondo.
+Domanda 1: lo script ha scritto gli esiti in E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_57_esiti.txt?
+Esito: 
