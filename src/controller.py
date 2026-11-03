@@ -347,7 +347,9 @@ class TournamentController:
                     try:
                         with open(opt["filepath"], encoding="utf-8") as f_temp:
                             data_temp = json.load(f_temp)
-                        if data_temp.get("creation_suspended", False):
+                        # Un torneo con dei turni ha l'iscrizione finita, anche
+                        # se porta ancora il contrassegno: vedi piu' sotto.
+                        if data_temp.get("creation_suspended", False) and not data_temp.get("rounds"):
                             suspended_tournaments.append(opt)
                     except Exception:
                         pass
@@ -417,7 +419,14 @@ class TournamentController:
         # creation_suspended (issue 60): fino ad allora la scartava, e la
         # ripresa non partiva mai. Ripresa l'iscrizione, la creazione prosegue
         # dal valore del bye in poi, come per un torneo nuovo, fino al turno 1:
-        # il torneo c'e' gia', e non se ne crea un altro.
+        # il torneo c'e' gia', e non se ne crea un altro. Riprende solo un
+        # torneo senza turni: uno sospeso in console e poi avviato nella
+        # finestra puo' portare ancora il contrassegno, che si spegne, e il
+        # torneo si apre com'e'. Prima della revisione della 10.13.49 la
+        # ripresa partiva anche li', e completando la creazione azzerava i
+        # turni giocati e abbinava di nuovo il turno 1.
+        if self.tournament and self.tournament.creation_suspended and self.tournament.rounds:
+            self.tournament.creation_suspended = False
         if (
             self.tournament
             and self.tournament.schema_version == 1

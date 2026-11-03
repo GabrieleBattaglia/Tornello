@@ -291,3 +291,107 @@ class TestRipresaDellaCreazioneSospesa:
         assert [r["round"] for r in salvato["rounds"]] == [1]
         abbinati = {pid for m in salvato["rounds"][0]["matches"] for pid in (m["white_player_id"], m["black_player_id"])}
         assert abbinati == set(ELO)
+
+    def _avviato_con_il_contrassegno(self):
+        """Il json di un torneo sospeso in console e poi avviato e giocato
+        nella finestra, che lavora sul dizionario e fino alla revisione della
+        10.13.49 non toglieva il contrassegno: il turno 1 giocato, il 2
+        abbinato e creation_suspended ancora vero."""
+        from tournament import save_tournament
+
+        torneo = _torneo_al_primo_turno().to_dict()
+        torneo["rounds"][0]["matches"][0]["result"] = "1-0"
+        torneo["rounds"][0]["matches"][1]["result"] = "0-1"
+        torneo["rounds"].append(
+            {
+                "round": 2,
+                "matches": [
+                    {"id": 3, "round": 2, "white_player_id": "G2", "black_player_id": "G1", "result": None},
+                    {"id": 4, "round": 2, "white_player_id": "G3", "black_player_id": "G4", "result": None},
+                ],
+            }
+        )
+        torneo["current_round"] = 2
+        torneo["next_match_id"] = 5
+        torneo["creation_suspended"] = True
+        assert save_tournament(torneo)
+
+    def _controlla_i_turni_intatti(self, guida, adattatore, percorso):
+        from tournament import load_tournament
+
+        assert not any("Ripresa" in m for m in adattatore.messaggi)
+        assert not any("creazione sospesa" in m for m in adattatore.messaggi)
+        assert guida.tournament.creation_suspended is False
+        assert [r.round for r in guida.tournament.rounds] == [1, 2]
+        assert [m.result for m in guida.tournament.rounds[0].matches] == ["1-0", "0-1"]
+        salvato = load_tournament(percorso)
+        assert [r["round"] for r in salvato["rounds"]] == [1, 2]
+        assert [m["result"] for m in salvato["rounds"][0]["matches"]] == ["1-0", "0-1"]
+
+    def test_un_torneo_con_dei_turni_non_riprende_la_creazione(self, monkeypatch, muto, tmp_path):
+        """Il contrassegno rimasto su un torneo che ha gia' dei turni non fa
+        ripartire la creazione: fino alla revisione della 10.13.49 la console
+        riprendeva l'iscrizione e, conclusa, azzerava i turni e abbinava di
+        nuovo il turno 1, cancellando i risultati registrati."""
+        import config
+        from controller import TournamentController
+
+        self._avviato_con_il_contrassegno()
+        percorso = config.user_data_path("Tornello - Console_Prova.json")
+        monkeypatch.chdir(tmp_path)
+        # INVIO carica l'unico torneo, e nient'altro viene chiesto. Se la
+        # ripresa partisse, l'iscrizione chiederebbe un tasto che non c'e'.
+        copione = Copione(monkeypatch, tasti=[""])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        self._controlla_i_turni_intatti(guida, adattatore, percorso)
+
+    def test_fra_piu_tornei_quello_avviato_non_e_fra_i_sospesi(self, monkeypatch, muto, tmp_path):
+        """Con piu' tornei nella cartella l'elenco dei tornei sospesi non
+        nomina quello che ha gia' dei turni, e sceglierlo dall'elenco lo apre
+        com'e'."""
+        import glob
+        import os
+
+        import config
+        from controller import TournamentController
+        from models import Tournament
+        from tournament import save_tournament
+
+        self._avviato_con_il_contrassegno()
+        altro = Tournament.from_dict(
+            {"name": "Altro_Prova", "tournament_id": "ALTRO_PROVA", "start_date": "2026-10-01", "end_date": "2026-10-31", "total_rounds": 3}
+        ).to_dict()
+        assert save_tournament(altro)
+        percorso = config.user_data_path("Tornello - Console_Prova.json")
+        monkeypatch.chdir(tmp_path)
+        nomi = [os.path.basename(f) for f in glob.glob("Tornello - *.json")]
+        scelta = nomi.index("Tornello - Console_Prova.json") + 1
+        copione = Copione(monkeypatch, tasti=[str(scelta)])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        self._controlla_i_turni_intatti(guida, adattatore, percorso)
+
+    def test_la_finestra_avviando_il_torneo_toglie_il_contrassegno(self):
+        """La finestra registra il turno 1 con registra_turno, sul dizionario
+        del torneo: il contrassegno della sospensione se ne va. Fino alla
+        revisione della 10.13.49 restava nel json del torneo avviato."""
+        from tournament import registra_turno
+
+        torneo = _torneo_al_primo_turno().to_dict()
+        partite = torneo["rounds"].pop()["matches"]
+        torneo["current_round"] = 0
+        torneo["creation_suspended"] = True
+
+        registra_turno(torneo, partite, 1)
+
+        assert "creation_suspended" not in torneo
+        assert [r["round"] for r in torneo["rounds"]] == [1]

@@ -995,9 +995,14 @@ def registra_turno(torneo, matches, round_number, manuale=False):
     riceve i suoi punti, le partite passano da Match e Round per avere la
     forma di sempre, e l'esito dell'ultimo abbinamento fallito si toglie.
     Dalla 10.12.0 la usa anche il turno composto a mano, con manuale vero:
-    il turno porta allora il contrassegno manual_pairing (issue 38)."""
+    il turno porta allora il contrassegno manual_pairing (issue 38).
+    Un torneo con un turno ha l'iscrizione finita: il contrassegno
+    creation_suspended, che la console scrive sospendendo l'iscrizione, se ne
+    va. Prima della revisione della 10.13.49 la finestra lo lasciava nel
+    json del torneo avviato, e la console vi faceva ripartire la creazione."""
     from models import Match, Round
 
+    torneo.pop("creation_suspended", None)
     torneo["current_round"] = round_number
     registra_bye_del_turno(torneo, matches, round_number)
     round_obj = Round(
