@@ -3,8 +3,6 @@ import re
 from collections import Counter
 from datetime import datetime, timedelta
 
-from dateutil.relativedelta import relativedelta
-
 from config import DATE_FORMAT_ISO, DEFAULT_ELO, DEFAULT_K_FACTOR
 from utils import format_points, get_player_by_id
 
@@ -226,19 +224,24 @@ def get_k_factor(player_data_dict, tournament_start_date_str, category="standard
     games_played = partite_della_cadenza(player_data_dict, categoria)
     is_experienced = player_data_dict.get("experienced", False)
     birth_date_str = player_data_dict.get("birth_date")
-    age = None
-
+    # K 40 per tutti fino alla fine dell'anno del diciottesimo compleanno,
+    # finche' l'Elo resta sotto 2300: articolo 8.3.3 del regolamento FIDE sul
+    # rating (B.02) e 7.3.3 di quello rapid e blitz. Conta l'anno, non l'eta':
+    # nato nel 2008, un giocatore ha 40 per tutto il 2026, anche dopo il
+    # compleanno. Fino alla 10.13.54 valeva solo fino al compleanno, con
+    # l'eta' compiuta alla data di inizio del torneo (10.13.55, issue 65).
+    giovane = False
     if birth_date_str and tournament_start_date_str:
         try:
-            birth_dt = datetime.strptime(birth_date_str, DATE_FORMAT_ISO)
-            current_dt = datetime.strptime(tournament_start_date_str, DATE_FORMAT_ISO)
-            age = relativedelta(current_dt, birth_dt).years
+            nascita = datetime.strptime(birth_date_str, DATE_FORMAT_ISO)
+            inizio = datetime.strptime(tournament_start_date_str, DATE_FORMAT_ISO)
+            giovane = inizio.year <= nascita.year + 18
         except (ValueError, TypeError):
             pass
 
     if games_played < 30 and not is_experienced:
         return 40
-    if age is not None and age < 18 and elo < 2300:
+    if giovane and elo < 2300:
         return 40
     if elo < 2400:
         return 20

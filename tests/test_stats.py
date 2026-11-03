@@ -1330,3 +1330,46 @@ class TestFattoreKDellaCadenza:
         assert partite_della_cadenza(scheda, "blitz") == 0
         assert partite_della_cadenza(scheda, "standard") == 38
         assert partite_della_cadenza({"games_played": 3, "games_played_rapid": 5}, "standard") == 0
+
+
+class TestFattoreKFinoAlDiciottesimoAnno:
+    """Dalla 10.13.55 (issue 65) il K 40 dei giovani vale fino alla fine
+    dell'anno del diciottesimo compleanno, finche' l'Elo resta sotto 2300,
+    come dicono l'articolo 8.3.3 del regolamento FIDE sul rating (B.02) e
+    l'articolo 7.3.3 di quello rapid e blitz. Fino alla 10.13.54 valeva solo
+    fino al compleanno: con l'eta' compiuta alla data di inizio del torneo,
+    chi aveva appena fatto diciotto anni passava a 20."""
+
+    def _esperto(self, nascita, elo=1800, **campi):
+        return dict({"birth_date": nascita, "current_elo": elo, "games_played": 100, "experienced": True}, **campi)
+
+    def test_dopo_il_compleanno_vale_fino_a_fine_anno(self):
+        giocatore = self._esperto("2008-03-15")
+        assert get_k_factor(giocatore, "2026-03-14") == 40
+        assert get_k_factor(giocatore, "2026-03-15") == 40
+        assert get_k_factor(giocatore, "2026-12-31") == 40
+        assert get_k_factor(giocatore, "2027-01-01") == 20
+
+    def test_nato_il_primo_gennaio_come_le_schede_fide(self):
+        """Le schede importate dal FIDE hanno il primo gennaio dell'anno di
+        nascita: fino alla 10.13.54 il giovane perdeva il K 40 a capodanno
+        dell'anno del diciottesimo compleanno, un anno prima del dovuto."""
+        giocatore = self._esperto("2008-01-01")
+        assert get_k_factor(giocatore, "2026-06-30") == 40
+        assert get_k_factor(giocatore, "2027-06-30") == 20
+
+    def test_con_l_elo_da_2300_non_vale(self):
+        assert get_k_factor(self._esperto("2010-05-05", elo=2299), "2026-06-30") == 40
+        assert get_k_factor(self._esperto("2010-05-05", elo=2300), "2026-06-30") == 20
+        assert get_k_factor(self._esperto("2010-05-05", elo=2450), "2026-06-30") == 10
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz"])
+    def test_nei_rapid_e_nei_blitz_guarda_l_elo_della_cadenza(self, categoria):
+        giocatore = self._esperto("2008-09-01", elo=2350, **{f"elo_{categoria}": 2100})
+        assert get_k_factor(giocatore, "2026-10-01", categoria) == 40
+        assert get_k_factor(giocatore, "2026-10-01", "standard") == 20
+
+    def test_senza_data_di_nascita_non_vale(self):
+        for nascita in (None, "", "1900-01-01", "non una data"):
+            assert get_k_factor(self._esperto(nascita), "2026-06-30") == 20, nascita
+        assert get_k_factor(self._esperto("2010-01-01"), None) == 20
