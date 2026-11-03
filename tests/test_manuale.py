@@ -11,7 +11,11 @@ turno, e le sue citazioni si cercano nella sua finestra, in turno_manuale.py,
 nella finestra principale e nei report (issue 38). Le prove leggono i file come testo e non importano i moduli di
 Tornello: le etichette si cercano fra le stringhe dei sorgenti, lette con
 ast, cosi' un'etichetta cambiata nel codice e non nel manuale non passa
-inosservata.
+inosservata. Dalla 10.18.1 (issue 59) le voci dell'albero e dei menu citate
+in tutto il manuale si cercano fra le stringhe della finestra principale,
+main_frame.py, e nessuna citazione nomina una voce sparita: fino alla
+10.18.0 la 2.2, la 4.2, la 4.3 e il capitolo 8 citavano voci che l'albero
+non ha.
 """
 
 import ast
@@ -69,6 +73,36 @@ CITAZIONI_DI_ESEMPIO = ("Venerdì 25 settembre 2026",)
 
 # Le cartelle dell'albero sparite con la 10.4.0, che la 6.1 non descrive piu'.
 CARTELLE_SPARITE = ("Pianificate", "Non pianificate", "Concluse", "Partite", "Partite Concluse")
+
+# Le voci che il manuale citava fino alla 10.18.0 e che il programma non ha
+# (issue 59): le cartelle della vecchia 2.2, la voce per aprire un torneo,
+# che sta nel menu File come Apri Torneo..., quella degli spareggi della 4.3,
+# che si chiama regole di spareggio, l'ultima voce della procedura guidata,
+# che si chiama Iscrizione Giocatori, e il calcolo del turno nell'esempio
+# della Time Machine, che si chiama calcola il turno successivo.
+VOCI_SPARITE = (*CARTELLE_SPARITE, "Partecipanti", "Apri torneo", "Spareggi", "Avanti", "Genera Turno 3")
+
+# Le parole con cui il manuale presenta una voce dell'albero o di un menu,
+# seguite dalla voce fra virgolette, o da un elenco di voci: la voce
+# "Classifica", i rami "Dati", "iscritti" e "turni".
+VOCE_CITATA = re.compile(r'\b(?:voce|voci|ramo|rami)\s+("[^"]+"(?:(?:,\s*|\s+e\s+|\s+o\s+|\s+oppure\s+)"[^"]+")*)')
+
+# Le citazioni della 2.2 e della 6.1 che il programma non scrive cosi' come
+# sono. Le voci dei tornei le compone main_frame.py dal nome del torneo, dal
+# mese della data di fine e dalla cartella, senza testo suo; gli indirizzi e
+# i nomi li scrive l'arbitro nella programmazione, e le loro forme
+# accorciate le calcola sala_e_arbitro_brevi di stats.py, provata in
+# test_stats.py.
+ESEMPI_DELLE_VOCI = (
+    "Alfa (Ottobre 2026)",
+    "Alfa (dalla cartella chiavetta)",
+    "Alfa (Ottobre 2026, dalla cartella chiavetta)",
+    "https://lichess.org/AbCdEfGh",
+    "whatsapp https://call.whatsapp.com/voice/...",
+    "whatsapp",
+    "Giuseppe Ferraris",
+    "Giuseppe Fer",
+)
 
 
 def leggi(nome):
@@ -187,6 +221,65 @@ def scritta_dal_programma(citazione):
     return any(m.fullmatch(citazione) for relativo in SORGENTI_DELLE_CITAZIONI for m in modelli_del_sorgente(relativo))
 
 
+def voci_citate(righe):
+    """Le voci che il manuale cita fra virgolette subito dopo voce, voci,
+    ramo o rami, anche in un elenco: nel ramo "giocate", i rami "Dati",
+    "iscritti" e "turni"."""
+    return [c for riga in righe for elenco in VOCE_CITATA.findall(riga) for c in re.findall(r'"([^"]+)"', elenco)]
+
+
+def _modello_della_fstring(nodo):
+    """Una f-string come espressione regolare: il testo tradotto al posto di
+    {_('turni')}, un testo qualsiasi al posto di ogni altro valore. None se
+    non ha lettere sue, come f"{t_name}{label_suffix}", che andrebbe bene per
+    qualunque citazione."""
+    pezzi = []
+    lettere = False
+    for parte in nodo.values:
+        if isinstance(parte, ast.Constant):
+            testo = str(parte.value)
+        elif (
+            isinstance(parte.value, ast.Call)
+            and getattr(parte.value.func, "id", None) == "_"
+            and parte.value.args
+            and isinstance(parte.value.args[0], ast.Constant)
+        ):
+            testo = str(parte.value.args[0].value)
+        else:
+            pezzi.append(".+")
+            continue
+        lettere = lettere or any(c.isalpha() for c in testo)
+        pezzi.append(re.escape(testo))
+    return re.compile("".join(pezzi), re.DOTALL) if lettere else None
+
+
+@cache
+def modelli_della_finestra_principale():
+    """Le voci dell'albero e dei menu che scrive main_frame.py, come
+    espressioni regolari: le stringhe senza la & della lettera di scelta
+    rapida e senza la scorciatoia dopo la tabulazione, cosi'
+    "&Apri Torneo...\\tCtrl+O" vale "Apri Torneo...", con un testo qualsiasi
+    al posto dei segnaposto di format, e le f-string con cui l'albero scrive
+    i conteggi, come f"{_('turni')} ({len(rounds)})", che vale "turni (3)"."""
+    with open(os.path.join(CARTELLA_SRC, "gui", "main_frame.py"), encoding="utf-8") as f:
+        albero = ast.parse(f.read())
+    modelli = []
+    for nodo in ast.walk(albero):
+        if isinstance(nodo, ast.JoinedStr):
+            modello = _modello_della_fstring(nodo)
+            if modello:
+                modelli.append(modello)
+        elif isinstance(nodo, ast.Constant) and isinstance(nodo.value, str):
+            stringa = nodo.value.split("\t")[0].replace("&", "")
+            if any(c.isalpha() for c in SEGNAPOSTO.sub("", stringa)):
+                modelli.append(re.compile(".+".join(re.escape(p) for p in SEGNAPOSTO.split(stringa)), re.DOTALL))
+    return modelli
+
+
+def scritta_dalla_finestra_principale(citazione):
+    return any(m.fullmatch(citazione) for m in modelli_della_finestra_principale())
+
+
 class TestTitoliDelManuale:
     def test_i_titoli_sono_unici_e_in_ordine(self):
         """Anche con la riga vuota prima, che tiene ogni titolo staccato dal
@@ -296,11 +389,84 @@ class TestCitazioniDelManuale:
                 continue
             assert scritta_dal_programma(citazione), citazione
 
-    def test_il_capitolo_6_non_cita_le_cartelle_sparite(self):
-        trovate = citazioni(capitolo(leggi("MANUALE.txt"), 6))
-        assert trovate
-        for cartella in CARTELLE_SPARITE:
-            assert cartella not in trovate, cartella
+    def test_il_manuale_non_cita_le_voci_sparite(self):
+        """Fino alla 10.18.0 la prova guardava il solo capitolo 6, e le
+        cartelle sparite con la 10.4.0; dalla 10.18.1 tutto il manuale, con
+        le voci che la 2.2, la 4.2, la 4.3 e il capitolo 8 citavano senza
+        che il programma le avesse (issue 59)."""
+        trovate = citazioni(leggi("MANUALE.txt"))
+        assert len(trovate) >= 100
+        for voce in VOCI_SPARITE:
+            assert voce not in trovate, voce
+            assert not scritta_dalla_finestra_principale(voce), voce
+
+    def test_ogni_voce_citata_e_scritta_dalla_finestra_principale(self):
+        """In qualunque punto del manuale, una voce dell'albero o di un menu
+        citata dopo voce, voci, ramo o rami e' una stringa di main_frame.py,
+        con i segnaposto riempiti (issue 59)."""
+        trovate = voci_citate(leggi("MANUALE.txt"))
+        assert len(trovate) >= 20
+        for citazione in trovate:
+            assert scritta_dalla_finestra_principale(citazione), citazione
+
+    def test_le_voci_della_2_2_sono_scritte_dalla_finestra_principale(self):
+        """La 2.2 descrive l'albero: ogni sua citazione e' una voce, o la
+        voce di un menu, che main_frame.py scrive, tranne gli esempi delle
+        voci dei tornei. Fino alla 10.18.0 citava "Apri torneo" e le cartelle
+        "Dati", "Partecipanti" e "Partite" (issue 59)."""
+        trovate = citazioni(sezione(leggi("MANUALE.txt"), (2, 2)))
+        assert len(trovate) >= 5
+        for citazione in trovate:
+            if citazione in ESEMPI_DELLE_VOCI:
+                continue
+            assert scritta_dalla_finestra_principale(citazione), citazione
+
+    def test_le_citazioni_della_6_1_sono_scritte_dal_programma(self):
+        """La 6.1 descrive i rami dei turni e le voci delle partite, cita il
+        pulsante della finestra del risultato da cui si programma una
+        partita, e le forme accorciate di sala e arbitro, che scrive
+        stats.py."""
+        trovate = citazioni(sezione(leggi("MANUALE.txt"), (6, 1)))
+        assert len(trovate) >= 20
+        for citazione in trovate:
+            if citazione in ESEMPI_DELLE_VOCI:
+                continue
+            assert scritta_dalla_finestra_principale(citazione) or scritta_dal_programma(citazione), citazione
+
+    def test_le_citazioni_del_capitolo_8_sono_scritte_dal_programma(self):
+        """Il capitolo 8, sulla Time Machine, e il suo esempio pratico citano
+        le voci dell'albero e del menu Torneo, le domande, i messaggi e la
+        barra di stato della finestra principale, e le voci della finestra
+        del risultato. Il nome del suono, time_machine, e' quello della
+        tabella EVENTI di utils.py. Che l'esempio si segua davvero lo prova
+        TestEsempioDellaTimeMachine in test_canc_nell_albero.py (issue 59)."""
+        trovate = citazioni(capitolo(leggi("MANUALE.txt"), 8))
+        assert len(trovate) >= 20
+        assert "time_machine" in stringhe_del_sorgente("utils.py")
+        for citazione in trovate:
+            if citazione == "time_machine":
+                continue
+            assert scritta_dalla_finestra_principale(citazione) or scritta_dal_programma(citazione), citazione
+
+    def test_la_prova_delle_voci_riconosce_quelle_che_non_ci_sono(self):
+        """Controprova sulle frasi di prima della 10.18.1: le voci che non
+        ci sono non passano, quelle vere si'."""
+        assert voci_citate(['sotto il torneo, i rami "Dati", "Partecipanti" e "Partite", e la voce "Spareggi".']) == ["Dati", "Partecipanti", "Partite", "Spareggi"]
+        for voce in ("Partecipanti", "Spareggi", "Avanti", "Apri torneo", "Time Machine", "Genera Turno 3"):
+            assert not scritta_dalla_finestra_principale(voce), voce
+        for voce in (
+            "Dati",
+            "regole di spareggio",
+            "Iscrizione Giocatori",
+            "Apri Torneo...",
+            "Time Machine (Annulla Turno)",
+            "turni (3)",
+            "Tornei Conclusi (2)",
+            "giocate (9/13, 69.2%)",
+            "Turno corrente (2/5)",
+            "Avvio torneo: Coppa",
+        ):
+            assert scritta_dalla_finestra_principale(voce), voce
 
     def test_le_citazioni_degli_aggiornamenti_sono_scritte_dal_programma(self):
         """La 11.5, sugli aggiornamenti del programma (issue 37), cita le due

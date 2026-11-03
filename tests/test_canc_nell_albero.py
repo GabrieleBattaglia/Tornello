@@ -10,6 +10,9 @@ faceva, sulle altre voci suona l'errore senza parlare di tornei da eliminare.
 Dalla 10.15.0 una programmazione si toglie con CANC sulla partita da giocare
 programmata e con il pulsante Togli programmazione della finestra di
 programmazione (issue 58).
+Dalla 10.18.1 l'esempio pratico della Time Machine, nel capitolo 8 del
+manuale, che corregge un risultato con CANC dopo Ctrl+Z, si segue passo per
+passo anche qui (issue 59).
 Le prove sulle funzioni di tournament.py girano senza finestre; le altre
 sulla finestra principale vera, mai mostrata, con le domande finte che
 annotano titolo, testo e pulsante predefinito, e i suoni annotati.
@@ -825,6 +828,203 @@ class TestRamiDelleDaGiocareNellAlberoVero:
 
         assert principale.tree_ctrl.IsExpanded(_voce(principale, action="category_programmate", filepath=percorso, round=2))
         assert not principale.tree_ctrl.IsExpanded(_voce(principale, action="category_da_programmare", filepath=percorso, round=2))
+
+
+def _torneo_della_time_machine(turni=3):
+    """Il torneo dell'esempio pratico del capitolo 8 del manuale, di cinque
+    turni: il turno 3 appena abbinato, senza risultati, e al turno 2 la
+    scacchiera 1, Bianchi contro Russo, vinta dal bianco, che era invece
+    patta. Con turni=1 resta il solo turno 1, senza risultati."""
+    giocatori = [
+        {"id": codice, "last_name": cognome, "first_name": nome, "initial_elo": 1500, "current_elo": 1500, "points": 0.0, "withdrawn": False, "results_history": []}
+        for codice, cognome, nome in GIOCATORI[:4]
+    ]
+    per_id = {g["id"]: g for g in giocatori}
+    partite = [
+        (1, "BIA", "VER", "1-0", 1.0, 0.0),
+        (1, "NER", "RUS", "1/2-1/2", 0.5, 0.5),
+        (2, "BIA", "RUS", "1-0", 1.0, 0.0),
+        (2, "NER", "VER", "1-0", 1.0, 0.0),
+        (3, "BIA", "NER", None, None, None),
+        (3, "RUS", "VER", None, None, None),
+    ]
+    if turni == 1:
+        partite = [(1, bianco, nero, None, None, None) for _t, bianco, nero, *_resto in partite[:2]]
+    turni_del_torneo = {}
+    for id_partita, (turno, bianco, nero, risultato, punti_bianco, punti_nero) in enumerate(partite, 1):
+        turni_del_torneo.setdefault(turno, []).append(
+            {"id": id_partita, "round": turno, "white_player_id": bianco, "black_player_id": nero, "result": risultato}
+        )
+        if risultato is not None:
+            per_id[bianco]["results_history"].append(_voce_di_storico(turno, nero, "white", risultato, punti_bianco))
+            per_id[nero]["results_history"].append(_voce_di_storico(turno, bianco, "black", risultato, punti_nero))
+    for giocatore in giocatori:
+        giocatore["points"] = sum(v["score"] for v in giocatore["results_history"])
+    torneo = {
+        "name": "Canc",
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-30",
+        "total_rounds": 5,
+        "current_round": turni,
+        "bye_value": 0.5,
+        "next_match_id": len(partite) + 1,
+        "players": giocatori,
+        "rounds": [{"round": numero, "matches": incontri} for numero, incontri in sorted(turni_del_torneo.items())],
+    }
+    torneo["players_dict"] = per_id
+    return torneo
+
+
+class TestEsempioDellaTimeMachine:
+    """L'esempio pratico del capitolo 8 del manuale, seguito passo per passo
+    sulla finestra principale vera, mai mostrata, dalla 10.18.1 (issue 59):
+    dopo Ctrl+Z il turno 2 torna il turno corrente, sta fra i Completati con
+    tutti i risultati, e la sua finestra del risultato non li cambia; CANC
+    sulla partita sbagliata, con Si' scelto al posto del No predefinito, la
+    riporta fra quelle da giocare, nel Turno corrente; INVIO sulla partita
+    apre la finestra che adesso accetta il risultato, e la patta riporta il
+    cursore sul calcolo del turno successivo. Fino alla 10.13.62 l'esempio
+    diceva di cambiare il risultato dalla finestra, che non lo permette."""
+
+    def _finestra_del_risultato(self, monkeypatch, risultato=None):
+        """Al posto della finestra del risultato: annota come l'apre la
+        finestra principale; con risultato, lo sceglie e conferma, senza
+        annulla."""
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        aperte = []
+
+        class Risultato:
+            def __init__(self, *a, **k):
+                aperte.append(k)
+                self.selected_action = None
+                self.txt_pgn = SimpleNamespace(GetValue=lambda: "")
+
+            def ShowModal(self):
+                return wx.ID_OK if risultato else wx.ID_CANCEL
+
+            def get_selected_result(self):
+                return risultato
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ResultDialog", Risultato)
+        return aperte
+
+    def test_si_segue_passo_per_passo(self, principale, suoni, monkeypatch):
+        import wx
+
+        percorso = _apri(principale, _torneo_della_time_machine())
+        monkeypatch.setattr(principale, "_nel_cestino", lambda percorso: True)
+        domande = _domande(monkeypatch, wx.ID_YES, wx.ID_YES)
+        albero = principale.tree_ctrl
+        suoni.clear()
+
+        # Passi 1 e 2: Ctrl+Z, e la domanda che nomina il torneo, con Si'
+        # come pulsante predefinito.
+        principale.on_rollback_round(None)
+
+        domanda = domande.aperte[0]
+        assert domanda.titolo == "Annulla Turno"
+        assert domanda.testo == "Sei sicuro di voler annullare l'ultimo turno del torneo Canc e tornare indietro? Questa azione è irreversibile."
+        assert domanda.domanda and domanda.no_predefinito is False
+        # Passo 3: il suono, la barra di stato, il turno 2 corrente e fra i
+        # Completati, il calcolo del turno successivo, la finestra del
+        # risultato che non lo cambia.
+        assert "time_machine" in suoni
+        assert principale.last_status_msg == "Time Machine attivata: tornati al turno precedente."
+        assert principale.current_tournament["current_round"] == 2
+        assert [r["round"] for r in principale.current_tournament["rounds"]] == [1, 2]
+        turno_2 = _voce(principale, action="show_round_report", filepath=percorso, round=2)
+        assert albero.GetItemText(turno_2) == "Turno 2"
+        assert albero.GetItemText(albero.GetItemParent(turno_2)) == "Completati (2)"
+        _voce(principale, action="generate_next_round_action", filepath=percorso)
+        aperte = self._finestra_del_risultato(monkeypatch)
+        principale.on_activate_match(_partita(principale.current_tournament, 3))
+        assert aperte[-1]["disable_result_change"] is True
+
+        # Passi 4 e 5: CANC sulla partita, nel ramo giocate del Turno 2, e Si'
+        # al posto del No predefinito.
+        voce = _voce_della_partita(principale, percorso, 2, 1, 3)
+        assert albero.GetItemText(voce) == "Scacchiera 1: Bianchi Luca vs Russo Marco [1-0]"
+        assert albero.GetItemData(albero.GetItemParent(voce))["action"] == "category_giocate"
+        _canc(principale, voce)
+
+        domanda = domande.aperte[1]
+        assert domanda.titolo == "Cancellazione del risultato"
+        assert domanda.no_predefinito is True
+        # Passo 6: il suono, la barra di stato, il Turno corrente subito
+        # sotto turni, la partita fra quelle da programmare, con il cursore.
+        assert suoni[-1] == "cancellato"
+        assert principale.last_status_msg == "Risultato cancellato: la scacchiera 1 del turno 2 torna fra le partite da giocare."
+        scelta = albero.GetSelection()
+        assert albero.GetItemData(scelta)["match"]["id"] == 3
+        da_programmare = albero.GetItemParent(scelta)
+        assert albero.GetItemData(da_programmare)["action"] == "category_da_programmare"
+        da_giocare = albero.GetItemParent(da_programmare)
+        assert albero.GetItemData(da_giocare)["action"] == "category_da_giocare"
+        turno_corrente = albero.GetItemParent(da_giocare)
+        assert albero.GetItemText(turno_corrente) == "Turno corrente (2/5)"
+        assert albero.GetItemText(albero.GetItemParent(turno_corrente)) == "turni (2)"
+
+        # Passo 7: INVIO sulla partita, dall'albero, e la patta.
+        aperte = self._finestra_del_risultato(monkeypatch, "1/2-1/2")
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: scelta))
+
+        assert aperte[-1]["disable_result_change"] is False
+        assert _partita(principale.current_tournament, 3)["result"] == "1/2-1/2"
+        punti = {g["id"]: g["points"] for g in _dal_file(percorso)["players"]}
+        assert punti["BIA"] == 1.5 and punti["RUS"] == 1.0
+        # Passo 8: il suono della fine del turno, il turno fra i Completati,
+        # il cursore sul calcolo del turno successivo.
+        assert "conclusione_turno" in suoni
+        assert albero.GetItemText(albero.GetItemParent(_voce(principale, action="show_round_report", filepath=percorso, round=2))) == "Completati (2)"
+        assert albero.GetItemData(albero.GetSelection())["action"] == "generate_next_round_action"
+        assert albero.GetItemText(albero.GetSelection()) == "calcola il turno successivo"
+
+    def test_tolto_il_turno_1_il_torneo_torna_in_preparazione(self, principale, suoni, monkeypatch):
+        """La sezione 8.1: togliendo anche il turno 1 il torneo torna fra
+        quelli In Preparazione, e l'iscrizione si apre di nuovo."""
+        import wx
+
+        import gui.dialogs
+
+        percorso = _apri(principale, _torneo_della_time_machine(turni=1))
+        monkeypatch.setattr(principale, "_nel_cestino", lambda percorso: True)
+        _domande(monkeypatch, wx.ID_YES)
+
+        principale.on_rollback_round(None)
+
+        assert principale.current_tournament["rounds"] == []
+        torneo = _voce(principale, action="select_tournament", filepath=percorso)
+        assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetItemParent(torneo))["action"] == "category_prep"
+        # Sotto turni la voce calcola il turno 1, e in fondo all'albero la
+        # voce Avvio torneo, con la stessa azione.
+        assert principale.tree_ctrl.GetItemText(_voce(principale, action="start_tournament_matchmaking_action", filepath=percorso)) == "calcola il turno 1"
+        ultima = principale.tree_ctrl.GetLastChild(principale.tree_root)
+        assert principale.tree_ctrl.GetItemData(ultima)["action"] == "start_tournament_matchmaking_action"
+        assert principale.tree_ctrl.GetItemText(ultima) == "Avvio torneo: Canc"
+        iscrizioni = []
+
+        class Iscrizione:
+            def __init__(self, *a, **k):
+                iscrizioni.append(a)
+
+            def ShowModal(self):
+                return wx.ID_CANCEL
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(gui.dialogs, "PlayerEnrollmentDialog", Iscrizione)
+        monkeypatch.setattr(principale, "_database_dei_giocatori", lambda: {"players": []})
+
+        principale.on_enroll_players(None)
+
+        assert len(iscrizioni) == 1
 
 
 def test_il_torneo_di_prova_e_coerente():
