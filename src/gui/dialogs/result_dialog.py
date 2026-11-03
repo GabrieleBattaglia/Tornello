@@ -4,7 +4,7 @@ import datetime
 import wx
 from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
-from gui.settings import apply_visual_settings
+from gui.settings import applica_tema_a_tutti
 from utils import format_date_locale
 
 _ = getattr(builtins, "_", lambda s: s)
@@ -263,7 +263,10 @@ class ScheduleDialog(wx.Dialog):
         event.Skip()
 
     def apply_theme(self):
-        apply_visual_settings(self, self.settings)
+        # Dalla 10.13.58 il tema arriva a tutti i controlli, riquadri e
+        # pulsanti compresi (issue 68): fino alla 10.13.57 lo riceveva la sola
+        # finestra, e i giorni restavano neri sullo sfondo dei dialoghi.
+        applica_tema_a_tutti(self, self.settings)
 
     # Issue 48, la campanella era troppo invadente. Dalla 10.3.0 le scelte
     # hanno un bip la cui altezza dice la posizione della voce, un semitono
@@ -575,14 +578,10 @@ class ResultDialog(wx.Dialog):
         event.Skip()
 
     def apply_theme(self):
-        apply_visual_settings(self.lbl_info, self.settings)
-        for val, rb in self.radio_buttons:
-            apply_visual_settings(rb, self.settings)
-        apply_visual_settings(self.lbl_pgn, self.settings)
-        apply_visual_settings(self.txt_pgn, self.settings)
-        apply_visual_settings(self.lbl_validation_error, self.settings)
-        apply_visual_settings(self.btn_schedule, self.settings)
-        apply_visual_settings(self.btn_withdraw, self.settings)
+        # Dalla 10.13.58 il tema arriva a tutti i controlli (issue 68): fino
+        # alla 10.13.57 il riquadro Seleziona Risultato e i pulsanti Annulla
+        # e Conferma Risultato restavano nel carattere e nei colori di sistema.
+        applica_tema_a_tutti(self, self.settings)
 
     def get_selected_result(self):
         """Restituisce la stringa del risultato selezionato (es. '1-0', '1/2-1/2', etc.)."""

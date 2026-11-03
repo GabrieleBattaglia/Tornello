@@ -6,7 +6,7 @@ from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from config import resource_path
 from gui.accessibility import NomeAccessibile, NomeAccessibileTesto
-from gui.settings import apply_visual_settings
+from gui.settings import applica_tema_a_tutti, apply_visual_settings
 from utils import invalida_volume_audio, play_sound
 from version import __version__
 
@@ -70,6 +70,13 @@ class VisualSettingsDialog(wx.Dialog):
         ]
 
         self._init_ui()
+        # Dalla 10.13.58 la finestra ha il tema dei dialoghi, come le altre
+        # (issue 68): fino alla 10.13.57 lo riceveva soltanto l'anteprima, che
+        # resta fuori perche' mostra il carattere e i colori della finestra
+        # principale. Il tema e' quello delle impostazioni in vigore, e non
+        # segue i valori che si stanno scegliendo: li mostra l'anteprima. Si
+        # da' prima di adattare la finestra, che cresce con il carattere.
+        applica_tema_a_tutti(self, self.settings, tranne=(self.preview_text,))
         self._update_preview()
         adatta_finestra(self, self.pannello, (326, 544))
 
@@ -492,6 +499,9 @@ class VisualSettingsDialog(wx.Dialog):
             dialog_back_rgb,
         ) = self._get_current_values()
 
+        # L'anteprima sta in un dialogo, ma mostra la finestra principale:
+        # senza le chiavi dei dialoghi apply_visual_settings ripiega su
+        # quelle della principale, i valori appena scelti.
         temp_settings = {"font_size": size, "rgb_text": text_rgb, "rgb_back": back_rgb}
         apply_visual_settings(self.preview_text, temp_settings)
 

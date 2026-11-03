@@ -199,3 +199,26 @@ def apply_visual_settings(control, settings, force_dialog=False):
 
     control.Refresh()
     control.Update()
+
+
+def applica_tema_a_tutti(finestra, settings, tranne=()):
+    """Il tema a una finestra e a tutto quello che contiene, a ogni livello:
+    il pannello che scorre, i riquadri e i loro controlli, le pagine di un
+    Notebook, i pulsanti. Dalla 10.13.58 (issue 68) lo usano la finestra
+    di programmazione, quella del risultato e le impostazioni: fino alla
+    10.13.57 la programmazione dava il tema alla sola finestra, e i
+    controlli restavano nel carattere di sistema con il testo nero, dipinto
+    sullo sfondo dei dialoghi, che di serie e' nero anche lui; il risultato
+    lasciava fuori il riquadro e i pulsanti Annulla e Conferma Risultato, le
+    impostazioni davano il tema alla sola anteprima. Nominare i controlli uno
+    per uno, come fanno le altre finestre, lascia indietro quelli che nascono
+    dopo, come i trentuno giorni della programmazione.
+    I controlli in tranne restano come sono, con quello che contengono:
+    l'anteprima delle impostazioni, che mostra il tema della finestra
+    principale. Le finestre di primo livello figlie, come un dialogo aperto
+    da questa, non si toccano: hanno il loro tema."""
+    apply_visual_settings(finestra, settings)
+    for figlio in finestra.GetChildren():
+        if figlio.IsTopLevel() or any(figlio is escluso for escluso in tranne):
+            continue
+        applica_tema_a_tutti(figlio, settings, tranne)

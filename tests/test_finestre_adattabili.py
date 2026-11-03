@@ -32,6 +32,8 @@ RUOLO_LISTA = 0x21
 RUOLO_VOCE = 0x22
 RUOLO_TESTO = 0x2A
 RUOLO_BARRA = 0x30
+RUOLO_SCELTA = 0x2D
+STATO_SELEZIONATO = 0x10
 STATO_SOLA_LETTURA = 0x40
 STATO_FOCALIZZABILE = 0x100000
 
@@ -515,6 +517,140 @@ def test_i_giorni_restano_un_gruppo_solo(ambiente):
         info = dlg.get_schedule_info()
         assert info["arbiter_not_needed"] is True
         assert not dlg.txt_arbiter.IsEnabled()
+    finally:
+        _chiudi(dlg)
+
+
+def _colore(percentuali):
+    import wx
+
+    from gui.settings import pct_to_byte
+
+    return wx.Colour(*(pct_to_byte(valore) for valore in percentuali))
+
+
+def _sfondo_dipinto(controllo):
+    """Lo sfondo su cui Windows dipinge il controllo: il suo, se ne ha uno,
+    altrimenti quello del primo genitore che ne ha uno, fino alla finestra.
+    Un'etichetta o un pulsante di scelta senza colore suo si dipinge sullo
+    sfondo del dialogo, mentre GetBackgroundColour risponde con quello di
+    sistema della sua classe."""
+    finestra = controllo
+    while finestra is not None:
+        if finestra.UseBgCol():
+            return finestra.GetBackgroundColour()
+        if finestra.IsTopLevel():
+            break
+        finestra = finestra.GetParent()
+    return controllo.GetBackgroundColour()
+
+
+def _contrasto(primo, secondo):
+    """Il rapporto di contrasto fra due colori, come lo misurano le linee
+    guida WCAG 2: da 1, nessun contrasto, a 21, nero su bianco."""
+
+    def luminanza(colore):
+        canali = []
+        for valore in (colore.Red(), colore.Green(), colore.Blue()):
+            valore /= 255
+            canali.append(valore / 12.92 if valore <= 0.03928 else ((valore + 0.055) / 1.055) ** 2.4)
+        return 0.2126 * canali[0] + 0.7152 * canali[1] + 0.0722 * canali[2]
+
+    chiara, scura = sorted((luminanza(primo), luminanza(secondo)), reverse=True)
+    return (chiara + 0.05) / (scura + 0.05)
+
+
+def _senza_il_tema(finestra, corpo, testo, sfondo, tranne=()):
+    """La finestra e i suoi discendenti, tranne quelli indicati, che non
+    hanno il carattere dei dialoghi o i loro colori."""
+    fuori = []
+
+    def visita(controllo):
+        if controllo.GetFont().GetPointSize() != corpo or controllo.GetForegroundColour() != testo or _sfondo_dipinto(controllo) != sfondo:
+            fuori.append(f"{type(controllo).__name__} {controllo.GetLabel()!r}")
+        for figlio in controllo.GetChildren():
+            if not figlio.IsTopLevel() and not any(figlio is escluso for escluso in tranne):
+                visita(figlio)
+
+    visita(finestra)
+    return fuori
+
+
+# Quanti controlli hanno almeno le finestre che dalla 10.13.58 danno il tema
+# a tutti: senza, la prova passerebbe anche su una finestra vuota.
+CONTROLLI_COL_TEMA = {"programmazione": 40, "risultato": 14, "impostazioni": 40}
+
+
+@pytest.mark.parametrize("nome", tuple(CONTROLLI_COL_TEMA))
+def test_il_tema_dei_dialoghi_arriva_a_tutti_i_controlli(nome, ambiente):
+    """Issue 68. Fino alla 10.13.57 la programmazione dava il tema alla
+    sola finestra, e i suoi controlli restavano a 9 punti con il testo nero;
+    il risultato lasciava fuori il riquadro Seleziona Risultato e i pulsanti
+    Annulla e Conferma Risultato; le impostazioni lo davano alla sola
+    anteprima. Colori dei dialoghi diversi da quelli di serie, e diversi da
+    quelli della finestra principale, perche' nessuno arrivi per caso."""
+    impostazioni = ambiente.impostazioni
+    impostazioni.update(dialog_rgb_text=[100, 100, 60], dialog_rgb_back=[40, 0, 0], rgb_text=[0, 0, 100], rgb_back=[100, 100, 100], font_size=14)
+    dlg = _crea(nome, ambiente)
+    try:
+        tranne = (dlg.preview_text,) if nome == "impostazioni" else ()
+        controlli = []
+
+        def conta(controllo):
+            controlli.append(controllo)
+            for figlio in controllo.GetChildren():
+                conta(figlio)
+
+        conta(dlg)
+        assert len(controlli) >= CONTROLLI_COL_TEMA[nome]
+        assert any(isinstance(c, ambiente.wx.StaticBox) for c in controlli)
+        assert any(isinstance(c, ambiente.wx.Button) for c in controlli)
+        assert _senza_il_tema(dlg, CORPO, _colore([100, 100, 60]), _colore([40, 0, 0]), tranne) == []
+    finally:
+        _chiudi(dlg)
+
+
+def test_l_anteprima_delle_impostazioni_resta_quella_della_finestra_principale(ambiente):
+    """Il tema dei dialoghi, che le impostazioni hanno dalla 10.13.58, non
+    arriva all'anteprima: mostra il carattere e i colori della finestra
+    principale, anche quelli appena scelti (issue 68)."""
+    impostazioni = ambiente.impostazioni
+    impostazioni.update(dialog_rgb_text=[100, 100, 60], dialog_rgb_back=[40, 0, 0], rgb_text=[0, 0, 100], rgb_back=[100, 100, 100], font_size=14)
+    dlg = _crea("impostazioni", ambiente)
+    try:
+        anteprima = dlg.preview_text
+        assert anteprima.GetFont().GetPointSize() == 14
+        assert anteprima.GetForegroundColour() == _colore([0, 0, 100])
+        assert anteprima.GetBackgroundColour() == _colore([100, 100, 100])
+        assert dlg.spin_size.GetFont().GetPointSize() == CORPO
+        dlg.spin_size.SetValue(20)
+        dlg.spin_tr.SetValue(100)
+        dlg.on_change(None)
+        assert anteprima.GetFont().GetPointSize() == 20
+        assert anteprima.GetForegroundColour() == _colore([100, 0, 100])
+        assert dlg.spin_size.GetFont().GetPointSize() == CORPO
+    finally:
+        _chiudi(dlg)
+
+
+def test_i_giorni_della_programmazione_si_leggono_con_i_colori_di_serie(ambiente):
+    """Fino alla 10.13.57 le etichette dei giorni avevano il testo nero di
+    sistema, dipinto sullo sfondo dei dialoghi, che di serie e' nero: un
+    contrasto di 1 a 1. Con il tema, verde su nero, e' oltre 15 a 1; le
+    linee guida WCAG chiedono almeno 7 per il livello piu' alto. Per NVDA i
+    giorni restano pulsanti di scelta, e quello scelto resta selezionato."""
+    from gui.settings import DEFAULT_SETTINGS
+
+    ambiente.impostazioni.update({chiave: DEFAULT_SETTINGS[chiave] for chiave in ("dialog_rgb_text", "dialog_rgb_back")})
+    dlg = _crea("programmazione", ambiente)
+    try:
+        for _giorno, pulsante in dlg.radio_buttons:
+            assert _contrasto(pulsante.GetForegroundColour(), _sfondo_dipinto(pulsante)) >= 7, pulsante.GetLabel()
+        if sys.platform == "win32":
+            for posizione, (_giorno, pulsante) in enumerate(dlg.radio_buttons[:3]):
+                nome, ruolo, stato = _msaa(pulsante)[1][0]
+                assert (nome, ruolo) == (pulsante.GetLabel(), RUOLO_SCELTA)
+                assert bool(stato & STATO_SELEZIONATO) == (posizione == 0)
     finally:
         _chiudi(dlg)
 
