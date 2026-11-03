@@ -504,7 +504,7 @@
    "federation": "ITA",
    "fide_id_num_str": "28515390",
    "birth_date": "1969-01-01",
-   "points": 1.0,
+   "points": 1.5,
    "results_history": [
     {
      "round": 1,
@@ -526,6 +526,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "IONLO001",
+     "color": "black",
+     "result": "1/2-1/2",
+     "score": 0.5
     }
    ],
    "opponents": [
@@ -577,7 +584,7 @@
    "federation": "ITA",
    "fide_id_num_str": "28550404",
    "birth_date": "1978-01-01",
-   "points": 1.5,
+   "points": 2.0,
    "results_history": [
     {
      "round": 1,
@@ -599,6 +606,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "RIVPA001",
+     "color": "white",
+     "result": "1/2-1/2",
+     "score": 0.5
     }
    ],
    "opponents": [
@@ -2675,15 +2689,16 @@
      "round": 4,
      "white_player_id": "IONLO001",
      "black_player_id": "RIVPA001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1/2-1/2",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-11-03",
       "time": "21:00",
       "channel": "WA",
       "arbiter": "Giuseppe",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.11.02\"]\n[Round \"4\"]\n[White \"Ionata, Lorenzo\"]\n[Black \"Rivalta, Paolo\"]\n[Result \"1/2-1/2\"]\n[ECO \"A22\"]\n[Opening \"English opening\"]\n[Time \"21:05:33\"]\n[UTCTime \"20:05:33\"]\n[UTCDate \"2026.11.03\"]\n[WhiteElo \"1492\"]\n[BlackElo \"1495\"]\n[PlyCount \"58\"]\n[TimeControl \"2700+15\"]\n[WhiteTimeLeft \"955\"]\n[BlackTimeLeft \"899\"]\n[Termination \"By agreement\"]\n[Mode \"TC\"]\n[Annotator \"Ericlock2.65\"]\n\n1. c4 e5 2. Nc3 Nf6 3. e3 c5 4. Be2 g6 5. e4 Bg7 6. Nf3 d6 7. O-O O-O 8. d3 Nc6\n9. Bg5 Be6 10. Nd5 Bxd5 11. exd5 Nd4 12. Nxd4 exd4 13. Re1 Re8 14. Bg4 Rxe1+\n15. Qxe1 h6 16. Bxf6 Qxf6 17. Qd2 Re8 18. Re1 Re5 19. Rxe5 dxe5 20. h3 h5 21.\nBc8 b6 22. Qc2 Qd8 23. Ba6 Bh6 24. Qe2 Qg5 25. Qc2 Qf5 26. a3 Bf4 27. g3 Bh6\n28. Kg2 g5 29. Qe2 Qg6 1/2-1/2"
     },
     {
      "id": 48,
