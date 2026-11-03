@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.13.45 (in lavorazione, non ancora pubblicata)
+	+ Modifica: La frase Nessuna risposta., che gestisci_aggiornamento di GBUtils dice dalla V1.3.0 quando la sua domanda sull'aggiornamento scade senza risposta, entra fra le frasi dell'aggiornamento che Tornello passa alla traduzione, cosi' i cataloghi delle altre lingue la possono tradurre come le altre. Fino alla 10.13.44 mancava, e la verifica automatica che confronta quelle frasi con GBUtils falliva. Tornello non la dice mai: la domanda sull'aggiornamento la fa sempre con la sua conferma, nella versione a riga di comando, o con la sua finestra. Nelle altre lingue la frase resta in italiano finche' i cataloghi delle traduzioni non vengono aggiornati.
+
 10.13.44 (in lavorazione, non ancora pubblicata)
 	+ Modifica: La finestra dei risultati, quando si apre, suona lo stesso suono di prima, che nella collezione dei suoni di GBUtils, dalla V180, si chiama gioca_carta: il nome di prima, gabryscola_gioca_carta, portava la firma di Gabryscola, che non lo usa piu'. Dalla V179 di GBUtils i suoni che Tornello usa senza averli creati portano in fondo alla descrizione la firma Usato da: tornello, cosi' Gabriele li ritrova in Acu_Maker.
 

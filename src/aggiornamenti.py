@@ -28,7 +28,11 @@ NOME_APP = "tornello"
 # cataloghi: babel.cfg guarda i sorgenti di Tornello e non la libreria. Devono
 # restare identiche, carattere per carattere, a quelle scritte in GBUtils,
 # altrimenti la traduzione non viene trovata e l'utente sente l'italiano: lo
-# controlla tests/test_aggiornamento.py. E' la stessa tupla di Orologic.
+# controlla tests/test_aggiornamento.py. Nasce dalla tupla di Orologic.
+# Nessuna risposta. e' arrivata con la V1.3.0 di gestisci_aggiornamento, che
+# la dice quando la sua domanda scade senza risposta: Tornello la domanda la
+# fa sempre con la sua conferma o con la sua finestra, quindi oggi non la
+# sente mai, ma la tupla resta completa.
 FRASI_AGGIORNAMENTO_GBUTILS = (
     _("Controllo aggiornamenti."),
     _("Hai gia' l'ultima versione,"),
@@ -39,6 +43,7 @@ FRASI_AGGIORNAMENTO_GBUTILS = (
     _("Novita' di questa versione:"),
     _("Novita'"),
     _("Vuoi aggiornare adesso?"),
+    _("Nessuna risposta."),
     _("Aggiornamento rimandato."),
     _("Scarico l'aggiornamento."),
     _("Aggiornamento pronto, il programma si chiude per applicarlo."),

@@ -319,7 +319,7 @@ class TestFrasiDiGBUtils:
 
         sorgente = inspect.getsource(GBUtils.gestisci_aggiornamento)
         frasi = self._frasi_della_tupla()
-        assert len(frasi) == 13
+        assert len(frasi) == 14
         for frase in frasi:
             assert f'tr("{frase}")' in sorgente, frase
 
