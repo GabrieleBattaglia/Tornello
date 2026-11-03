@@ -1047,6 +1047,17 @@ class TestEsempioDellaTimeMachine:
         aperte = self._finestra_del_risultato(monkeypatch)
         principale.on_activate_match(_partita(principale.current_tournament, 3))
         assert aperte[-1]["disable_result_change"] is True
+        # Il file dei dettagli del turno 2, come l'aveva scritto la sua
+        # conclusione: la sezione 8.1 dice che resta, e che Tornello lo
+        # riscrive quando il turno torna completo, come la 6.2. Fino alla
+        # revisione della 10.13.60 la 8.1 diceva quando un risultato cambia.
+        from reports import append_completed_round_to_history_file, file_dei_dettagli_del_turno
+
+        append_completed_round_to_history_file(principale.current_tournament, 2)
+        dettagli = file_dei_dettagli_del_turno(principale.current_tournament, 2)
+        with open(dettagli, encoding="utf-8-sig") as f:
+            dettagli_di_prima = f.read()
+        assert "1-0" in dettagli_di_prima and "1/2-1/2" not in dettagli_di_prima
 
         # Passi 4 e 5: CANC sulla partita, nel ramo giocate del Turno 2, e Si'
         # al posto del No predefinito.
@@ -1071,6 +1082,10 @@ class TestEsempioDellaTimeMachine:
         turno_corrente = albero.GetItemParent(da_giocare)
         assert albero.GetItemText(turno_corrente) == "Turno corrente (2/5)"
         assert albero.GetItemText(albero.GetItemParent(turno_corrente)) == "turni (2)"
+        # Il risultato e' cambiato, ma il turno non e' completo: il file dei
+        # dettagli resta com'era.
+        with open(dettagli, encoding="utf-8-sig") as f:
+            assert f.read() == dettagli_di_prima
 
         # Passo 7: INVIO sulla partita, dall'albero, e la patta.
         aperte = self._finestra_del_risultato(monkeypatch, "1/2-1/2")
@@ -1083,6 +1098,8 @@ class TestEsempioDellaTimeMachine:
         # Passo 8: il suono della fine del turno, il turno fra i Completati,
         # il cursore sul calcolo del turno successivo.
         assert "conclusione_turno" in suoni
+        with open(dettagli, encoding="utf-8-sig") as f:
+            assert "1/2-1/2" in f.read()
         assert albero.GetItemText(albero.GetItemParent(_voce(principale, action="show_round_report", filepath=percorso, round=2))) == "Completati (2)"
         assert albero.GetItemData(albero.GetSelection())["action"] == "generate_next_round_action"
         assert albero.GetItemText(albero.GetSelection()) == "calcola il turno successivo"
