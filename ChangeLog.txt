@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.13.47 (in lavorazione, non ancora pubblicata)
+	+ Fix: Esportando le partite pianificate, la finestra Salva propone per il calendario un nome con il nome del torneo ripulito come in tutti gli altri file del torneo, senza spazi ne' simboli: per il torneo Coppa d'Autunno 2026 propone Tornello - Coppa_dAutunno_2026 - Calendario.ics. Salvato con quel nome nella cartella di lavoro del torneo, il calendario e' un file del torneo come i report: alla finalizzazione va in archivio con loro, e l'eliminazione del torneo lo manda nel cestino. Fino alla 10.13.46 il nome proposto conteneva il nome del torneo scritto cosi' com'era, Tornello - Coppa d'Autunno 2026 - Calendario.ics, e il calendario restava sempre dov'era. Il manuale lo dice nelle sezioni 6.4 e 9.4.
+
 10.13.46 (in lavorazione, non ancora pubblicata)
 	+ Modifica: La finestra Gestione Database Giocatori Locale lega i dati alle voci del suo albero con SetItemData e GetItemData di wxPython, al posto di SetItemPyData e GetItemPyData, che wxPython da' per superate e che una sua versione futura potrebbe togliere, lasciando la finestra senza albero. Per chi la usa non cambia niente: le voci, la modifica con INVIO e la cancellazione con CANC fanno quello che facevano. Fino alla 10.13.45 ogni apertura della finestra produceva decine di avvisi di funzione superata, che le verifiche automatiche dovevano filtrare.
 

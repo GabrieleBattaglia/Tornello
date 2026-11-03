@@ -6120,7 +6120,15 @@ class MainFrame(wx.Frame):
             )
             return
 
-        default_filename = f"Tornello - {self.current_tournament.get('name', 'Torneo')} - Calendario.ics"
+        # Il nome ripulito, come quello degli altri report: cosi' il calendario
+        # salvato con il nome proposto e' un file del torneo per
+        # utils.file_del_torneo, e l'eliminazione e la finalizzazione lo
+        # trovano. Fino alla 10.13.46 il nome del torneo entrava cosi' com'era,
+        # con gli spazi, e il calendario non si riconosceva (issue 67).
+        from utils import sanitize_filename
+
+        nome_ripulito = sanitize_filename(self.current_tournament.get("name", "Torneo_Senza_Nome"))
+        default_filename = f"Tornello - {nome_ripulito} - Calendario.ics"
         dlg = wx.FileDialog(
             self,
             _("Salva file iCalendar (.ics)"),

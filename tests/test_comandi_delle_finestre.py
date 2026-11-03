@@ -2311,6 +2311,46 @@ class TestCalendarioIcs:
         assert stati == [atteso]
         assert percorso.read_bytes().count(b"BEGIN:VEVENT") == 1
 
+    def test_il_nome_proposto_e_un_file_del_torneo(self, principale, suoni, monkeypatch, tmp_path):
+        # Fino alla 10.13.46 il nome proposto conteneva il nome del torneo
+        # cosi' com'era, Tornello - Coppa d'Autunno 2026 - Calendario.ics, e
+        # file_del_torneo non lo riconosceva: l'eliminazione del torneo lo
+        # lasciava dov'era (issue 67).
+        import wx
+
+        from utils import file_del_torneo, sanitize_filename
+
+        proposti = []
+
+        class SceltaFinta:
+            def __init__(self, *argomenti, **opzioni):
+                proposti.append(opzioni.get("defaultFile"))
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetPath(self):
+                return str(tmp_path / proposti[-1])
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "FileDialog", SceltaFinta)
+        programmata = {"date": "2026-09-30", "time": "17:30"}
+        principale.current_tournament = {
+            "name": "Coppa d'Autunno 2026",
+            "tournament_id": "T1",
+            "players": [
+                {"id": "A1", "first_name": "Luca", "last_name": "Bianchi"},
+                {"id": "B2", "first_name": "Marco", "last_name": "Russo"},
+            ],
+            "rounds": [{"round": 1, "matches": [{"id": 1, "white_player_id": "A1", "black_player_id": "B2", "is_scheduled": True, "schedule_info": programmata}]}],
+        }
+        principale.on_export_ics(None)
+        assert proposti == ["Tornello - Coppa_dAutunno_2026 - Calendario.ics"]
+        assert file_del_torneo(proposti[0], sanitize_filename("Coppa d'Autunno 2026"))
+        assert (tmp_path / proposti[0]).read_bytes().startswith(b"BEGIN:VCALENDAR\r\n")
+
 
 class TestPuntiDelBye:
     """Dalla 10.13.28 il report del turno dice il bye da un punto al
