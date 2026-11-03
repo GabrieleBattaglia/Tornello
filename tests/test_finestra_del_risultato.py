@@ -69,8 +69,17 @@ def genitore(app_grafica):
     cornice = wx.Frame(None, title="Prova")
     cornice.settings = dict(DEFAULT_SETTINGS)
     cornice.Show()
-    _user32().SetForegroundWindow(cornice.GetHandle())
-    assert _attendi(lambda: wx.GetActiveWindow() is cornice), "la cornice non si e' attivata"
+    cornice.Raise()
+    # Windows puo' rifiutare il primo piano per un attimo, per esempio
+    # mentre un'altra suite lavora sul suo desktop nascosto: si riprova per
+    # qualche secondo prima di darla per persa.
+    user32 = _user32()
+    for _tentativo in range(10):
+        user32.SetForegroundWindow(cornice.GetHandle())
+        if _attendi(lambda: wx.GetActiveWindow() is cornice, 0.5):
+            break
+    else:
+        pytest.fail("la cornice non si e' attivata")
     yield cornice
     cornice.Destroy()
     _attendi(lambda: not cornice, 1.0)
