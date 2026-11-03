@@ -74,7 +74,12 @@ class FideQueryDialog(wx.Dialog):
         vbox_left.Add(
             wx.StaticText(panel, label=_("Giocatori Trovati:")), 0, wx.BOTTOM, 5
         )
-        self.list_results = wx.ListBox(panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB)
+        # Dalla 10.13.59 la lista scorre anche in orizzontale (issue 68): una
+        # voce piu' larga della lista era tagliata, e la federazione, in fondo,
+        # non si vedeva. NVDA legge le voci come prima.
+        self.list_results = wx.ListBox(
+            panel, style=wx.LB_SINGLE | wx.LB_NEEDED_SB | wx.HSCROLL
+        )
         self.list_results.SetMinSize(self.FromDIP(wx.Size(300, -1)))
         self.list_results.Bind(wx.EVT_LISTBOX, self.on_item_selected)
         self.list_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_import_player)

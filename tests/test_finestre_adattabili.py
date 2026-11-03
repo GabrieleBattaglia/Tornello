@@ -655,6 +655,70 @@ def test_i_giorni_della_programmazione_si_leggono_con_i_colori_di_serie(ambiente
         _chiudi(dlg)
 
 
+def _risultati_fide(quanti):
+    """Giocatori come li restituisce search_players, dai nomi lunghi: a 36
+    punti ogni voce e' piu' larga della lista."""
+    return [
+        {
+            "id_fide": 12345670 + i,
+            "first_name": f"Nome{i} Secondonome Terzonome",
+            "last_name": f"Cognome{i} Cognomelunghissimo",
+            "elo_standard": 2000 + i,
+            "elo_rapid": 1900,
+            "birth_year": 1990,
+            "federation": "ITA",
+        }
+        for i in range(quanti)
+    ]
+
+
+LB_GETHORIZONTALEXTENT = 0x0193
+
+
+@solo_windows
+@pytest.mark.parametrize("quale", ("locali", "FIDE", "consulta FIDE"))
+def test_le_liste_dei_risultati_scorrono_in_orizzontale(quale, ambiente, monkeypatch):
+    """Le liste dei risultati locali e FIDE dell'iscrizione, e quella di
+    Consulta Database FIDE, hanno dalla 10.13.59 la barra di scorrimento
+    orizzontale (issue 68): fino alla 10.13.58 una voce piu' larga della
+    lista era tagliata, e la federazione, in fondo alla voce FIDE, non si
+    vedeva. Con wx.HSCROLL wx dice alla lista quanto e' larga la voce piu'
+    lunga, al primo momento di quiete dopo le voci aggiunte; senza, la
+    larghezza da scorrere resta zero. Per NVDA niente cambia: la lista ha il
+    nome dell'etichetta che la precede, e le voci il loro testo."""
+    from gui.dialogs import fide_query_dialog, player_enrollment_dialog
+
+    for modulo in (player_enrollment_dialog, fide_query_dialog):
+        monkeypatch.setattr(modulo, "search_players", lambda query, **opzioni: _risultati_fide(5))
+    if quale == "consulta FIDE":
+        dlg = _crea("consulta FIDE", ambiente)
+        dlg.search_input.ChangeValue("Cognome")
+        dlg._on_debounced_search(None)
+        lista, etichetta = dlg.list_results, fide_query_dialog._("Giocatori Trovati:")
+    else:
+        dlg = _crea("iscrizione", ambiente)
+        dlg.search_fide.ChangeValue("Cognome")
+        dlg.esegui_ricerca_fide()
+        if quale == "locali":
+            lista, etichetta = dlg.list_local_results, dlg.lbl_local_status.GetLabel()
+        else:
+            lista, etichetta = dlg.list_fide_results, dlg.lbl_fide_status.GetLabel()
+    try:
+        assert lista.GetWindowStyleFlag() & ambiente.wx.HSCROLL
+        lista.OnInternalIdle()
+        larghezza = ctypes.windll.user32.SendMessageW(lista.GetHandle(), LB_GETHORIZONTALEXTENT, 0, 0)
+        assert larghezza > lista.GetClientSize().width
+        quante, voci = _msaa(lista, 2)
+        assert quante == lista.GetCount() >= 5
+        assert voci[0][:2] == (etichetta, RUOLO_LISTA)
+        assert voci[1][:2] == (lista.GetString(0), RUOLO_VOCE)
+        assert voci[2][:2] == (lista.GetString(1), RUOLO_VOCE)
+        if quale != "locali":
+            assert lista.GetString(0).endswith("FED: ITA)")
+    finally:
+        _chiudi(dlg)
+
+
 def test_l_esito_del_pgn_si_legge_anche_se_e_lungo(ambiente):
     dlg = _crea("risultato", ambiente)
     try:

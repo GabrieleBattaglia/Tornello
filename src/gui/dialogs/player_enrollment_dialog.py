@@ -94,8 +94,13 @@ class PlayerEnrollmentDialog(wx.Dialog):
             self.lbl_local_status, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5
         )
 
+        # Dalla 10.13.59 le due liste dei risultati scorrono anche in
+        # orizzontale (issue 68): una voce piu' larga della lista era tagliata,
+        # e nelle voci FIDE la federazione, in fondo, non si vedeva. wx tiene
+        # da se' la larghezza da scorrere, a ogni voce aggiunta; NVDA legge le
+        # voci come prima.
         self.list_local_results = wx.ListBox(
-            self.sb_local, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
+            self.sb_local, style=wx.LB_SINGLE | wx.LB_NEEDED_SB | wx.HSCROLL
         )
         self.list_local_results.SetName(_("Risultati Ricerca Locale"))
         self.list_local_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_local)
@@ -129,7 +134,7 @@ class PlayerEnrollmentDialog(wx.Dialog):
         )
 
         self.list_fide_results = wx.ListBox(
-            self.sb_fide, style=wx.LB_SINGLE | wx.LB_NEEDED_SB
+            self.sb_fide, style=wx.LB_SINGLE | wx.LB_NEEDED_SB | wx.HSCROLL
         )
         self.list_fide_results.SetName(_("Risultati Ricerca FIDE"))
         self.list_fide_results.Bind(wx.EVT_LISTBOX_DCLICK, self.on_add_fide)
