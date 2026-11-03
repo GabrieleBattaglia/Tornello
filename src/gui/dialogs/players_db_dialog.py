@@ -160,7 +160,7 @@ class PlayersDbDialog(wx.Dialog):
             "Senza Nome"
         )
         root_node = self.tree_ctrl.AppendItem(self.tree_root, p_name)
-        self.tree_ctrl.SetItemPyData(root_node, {"type": "player_root"})
+        self.tree_ctrl.SetItemData(root_node, {"type": "player_root"})
 
         # 1. Anagrafica
         node_bio = self.tree_ctrl.AppendItem(root_node, _("Anagrafica"))
@@ -168,46 +168,46 @@ class PlayersDbDialog(wx.Dialog):
         item_ln = self.tree_ctrl.AppendItem(
             node_bio, _("Cognome: {}").format(p.get("last_name", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_ln, {"type": "field", "key": "last_name"})
+        self.tree_ctrl.SetItemData(item_ln, {"type": "field", "key": "last_name"})
 
         item_fn = self.tree_ctrl.AppendItem(
             node_bio, _("Nome: {}").format(p.get("first_name", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_fn, {"type": "field", "key": "first_name"})
+        self.tree_ctrl.SetItemData(item_fn, {"type": "field", "key": "first_name"})
 
         raw_sex = p.get("sex") or p.get("gender") or "M"
         sex_display = "W" if str(raw_sex).strip().lower() in ("w", "f") else "M"
         item_gd = self.tree_ctrl.AppendItem(
             node_bio, _("Sesso: {}").format(sex_display)
         )
-        self.tree_ctrl.SetItemPyData(item_gd, {"type": "field", "key": "sex"})
+        self.tree_ctrl.SetItemData(item_gd, {"type": "field", "key": "sex"})
 
         item_bd = self.tree_ctrl.AppendItem(
             node_bio, _("Anno Nascita: {}").format(p.get("birth_date", _("N/D")))
         )
-        self.tree_ctrl.SetItemPyData(item_bd, {"type": "field", "key": "birth_date"})
+        self.tree_ctrl.SetItemData(item_bd, {"type": "field", "key": "birth_date"})
 
         item_fed = self.tree_ctrl.AppendItem(
             node_bio, _("Nazione (FED): {}").format(p.get("federation", "ITA"))
         )
-        self.tree_ctrl.SetItemPyData(item_fed, {"type": "field", "key": "federation"})
+        self.tree_ctrl.SetItemData(item_fed, {"type": "field", "key": "federation"})
 
         item_club = self.tree_ctrl.AppendItem(
             node_bio, _("Club/Società: {}").format(p.get("club", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_club, {"type": "field", "key": "club"})
+        self.tree_ctrl.SetItemData(item_club, {"type": "field", "key": "club"})
 
         item_gp = self.tree_ctrl.AppendItem(
             node_bio, _("Partite Locali Giocate: {}").format(p.get("games_played", 0))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_gp, {"type": "field", "key": "games_played", "is_int": True}
         )
 
         item_reg = self.tree_ctrl.AppendItem(
             node_bio, _("Data Registrazione: {}").format(p.get("registration_date", ""))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_reg, {"type": "field", "key": "registration_date"}
         )
 
@@ -219,7 +219,7 @@ class PlayersDbDialog(wx.Dialog):
         item_elo_std = self.tree_ctrl.AppendItem(
             node_elo, _("ELO Standard: {}").format(elo_std)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_elo_std, {"type": "field", "key": "current_elo", "is_int": True}
         )
 
@@ -228,7 +228,7 @@ class PlayersDbDialog(wx.Dialog):
         item_elo_rap = self.tree_ctrl.AppendItem(
             node_elo, _("ELO Rapid: {}").format(elo_rap)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_elo_rap, {"type": "field", "key": "elo_rapid", "is_int": True}
         )
 
@@ -237,19 +237,19 @@ class PlayersDbDialog(wx.Dialog):
         item_elo_blz = self.tree_ctrl.AppendItem(
             node_elo, _("ELO Blitz: {}").format(elo_blz)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_elo_blz, {"type": "field", "key": "elo_blitz", "is_int": True}
         )
 
         item_title = self.tree_ctrl.AppendItem(
             node_elo, _("Titolo FIDE: {}").format(p.get("fide_title", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_title, {"type": "field", "key": "fide_title"})
+        self.tree_ctrl.SetItemData(item_title, {"type": "field", "key": "fide_title"})
 
         item_fid = self.tree_ctrl.AppendItem(
             node_elo, _("ID FIDE: {}").format(p.get("fide_id_num_str", ""))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_fid, {"type": "field", "key": "fide_id_num_str"}
         )
 
@@ -258,7 +258,7 @@ class PlayersDbDialog(wx.Dialog):
         item_k_std = self.tree_ctrl.AppendItem(
             node_elo, _("FIDE Standard K: {}").format(k_std_str)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_k_std, {"type": "field", "key": "fide_k_factor", "is_int": True}
         )
 
@@ -266,7 +266,7 @@ class PlayersDbDialog(wx.Dialog):
         item_g_std = self.tree_ctrl.AppendItem(
             node_elo, _("Partite FIDE Standard: {}").format(g_std)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_g_std, {"type": "field", "key": "fide_standard_games", "is_int": True}
         )
 
@@ -275,7 +275,7 @@ class PlayersDbDialog(wx.Dialog):
         item_k_rap = self.tree_ctrl.AppendItem(
             node_elo, _("FIDE Rapid K: {}").format(k_rap_str)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_k_rap, {"type": "field", "key": "fide_rapid_k", "is_int": True}
         )
 
@@ -283,7 +283,7 @@ class PlayersDbDialog(wx.Dialog):
         item_g_rap = self.tree_ctrl.AppendItem(
             node_elo, _("Partite FIDE Rapid: {}").format(g_rap)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_g_rap, {"type": "field", "key": "fide_rapid_games", "is_int": True}
         )
 
@@ -292,7 +292,7 @@ class PlayersDbDialog(wx.Dialog):
         item_k_blz = self.tree_ctrl.AppendItem(
             node_elo, _("FIDE Blitz K: {}").format(k_blz_str)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_k_blz, {"type": "field", "key": "fide_blitz_k", "is_int": True}
         )
 
@@ -300,31 +300,31 @@ class PlayersDbDialog(wx.Dialog):
         item_g_blz = self.tree_ctrl.AppendItem(
             node_elo, _("Partite FIDE Blitz: {}").format(g_blz)
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_g_blz, {"type": "field", "key": "fide_blitz_games", "is_int": True}
         )
 
         item_w_title = self.tree_ctrl.AppendItem(
             node_elo, _("Titolo Femminile: {}").format(p.get("w_title", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_w_title, {"type": "field", "key": "w_title"})
+        self.tree_ctrl.SetItemData(item_w_title, {"type": "field", "key": "w_title"})
 
         item_o_title = self.tree_ctrl.AppendItem(
             node_elo, _("Titolo Arbitro/Altro: {}").format(p.get("o_title", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_o_title, {"type": "field", "key": "o_title"})
+        self.tree_ctrl.SetItemData(item_o_title, {"type": "field", "key": "o_title"})
 
         item_foa_title = self.tree_ctrl.AppendItem(
             node_elo, _("Titolo FOA: {}").format(p.get("foa_title", ""))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_foa_title, {"type": "field", "key": "foa_title"}
         )
 
         item_flag = self.tree_ctrl.AppendItem(
             node_elo, _("Flag (Caratteristica): {}").format(p.get("flag", ""))
         )
-        self.tree_ctrl.SetItemPyData(item_flag, {"type": "field", "key": "flag"})
+        self.tree_ctrl.SetItemData(item_flag, {"type": "field", "key": "flag"})
 
         # 3. Storico Tornei
         node_hist = self.tree_ctrl.AppendItem(root_node, _("Storico Tornei"))
@@ -337,7 +337,7 @@ class PlayersDbDialog(wx.Dialog):
                 entry.get("date_completed", _("N/D")),
             )
             item_h = self.tree_ctrl.AppendItem(node_hist, label)
-            self.tree_ctrl.SetItemPyData(
+            self.tree_ctrl.SetItemData(
                 item_h, {"type": "history_record", "index": idx}
             )
 
@@ -348,14 +348,14 @@ class PlayersDbDialog(wx.Dialog):
         item_g = self.tree_ctrl.AppendItem(
             node_med, _("Ori (Oro): {}").format(medals.get("gold", 0))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_g, {"type": "field", "key_nested": ("medals", "gold"), "is_int": True}
         )
 
         item_s = self.tree_ctrl.AppendItem(
             node_med, _("Argenti (Argento): {}").format(medals.get("silver", 0))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_s,
             {"type": "field", "key_nested": ("medals", "silver"), "is_int": True},
         )
@@ -363,7 +363,7 @@ class PlayersDbDialog(wx.Dialog):
         item_b = self.tree_ctrl.AppendItem(
             node_med, _("Bronzi (Bronzo): {}").format(medals.get("bronze", 0))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_b,
             {"type": "field", "key_nested": ("medals", "bronze"), "is_int": True},
         )
@@ -371,7 +371,7 @@ class PlayersDbDialog(wx.Dialog):
         item_w = self.tree_ctrl.AppendItem(
             node_med, _("Legni (Medaglia di legno): {}").format(medals.get("wood", 0))
         )
-        self.tree_ctrl.SetItemPyData(
+        self.tree_ctrl.SetItemData(
             item_w, {"type": "field", "key_nested": ("medals", "wood"), "is_int": True}
         )
 
@@ -379,7 +379,7 @@ class PlayersDbDialog(wx.Dialog):
 
     def on_tree_item_activated(self, event):
         item = event.GetItem()
-        data = self.tree_ctrl.GetItemPyData(item)
+        data = self.tree_ctrl.GetItemData(item)
         if not data or data.get("type") != "field":
             return
 
@@ -573,7 +573,7 @@ class PlayersDbDialog(wx.Dialog):
             event.Skip()
             return
 
-        data = self.tree_ctrl.GetItemPyData(item)
+        data = self.tree_ctrl.GetItemData(item)
         if key_code == wx.WXK_DELETE and data:
             dtype = data.get("type")
             p = self.players_db[self.selected_player_id]

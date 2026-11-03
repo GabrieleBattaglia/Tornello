@@ -35,12 +35,6 @@ RUOLO_BARRA = 0x30
 STATO_SOLA_LETTURA = 0x40
 STATO_FOCALIZZABILE = 0x100000
 
-# La finestra del database dei giocatori riempie il suo albero con
-# SetItemPyData, che wxPython da' per superata a favore di SetItemData: e' un
-# lavoro a parte, e qui gli avvisi coprirebbero l'esito della suite con
-# decine di righe uguali.
-pytestmark = pytest.mark.filterwarnings("ignore:Call to deprecated item. Use SetItemData instead.")
-
 FINESTRE = (
     "programmazione",
     "risultato",
@@ -467,6 +461,32 @@ def test_la_lista_del_database_dei_giocatori_ha_un_nome_e_le_voci_il_loro(ambien
         assert voci[0][:2] == (players_db_dialog._("Elenco giocatori"), RUOLO_LISTA)
         assert voci[1][:2] == (lista.GetString(0), RUOLO_VOCE)
         assert voci[2][:2] == (lista.GetString(1), RUOLO_VOCE)
+    finally:
+        _chiudi(dlg)
+
+
+def test_l_albero_del_database_dei_giocatori_non_usa_funzioni_superate(ambiente):
+    """Fino alla 10.13.45 l'albero si riempiva con SetItemPyData e si leggeva
+    con GetItemPyData, che wxPython da' per superate: a ogni costruzione
+    uscivano decine di avvisi, che questa prova filtrava (issue 64). I dati
+    delle voci restano quelli: un dizionario sulle voci che si modificano o
+    si cancellano, niente sui nodi delle sezioni."""
+    import warnings
+
+    import wx
+
+    with warnings.catch_warnings(record=True) as avvisi:
+        warnings.simplefilter("always")
+        dlg = _crea("database giocatori", ambiente)
+    try:
+        assert [str(a.message) for a in avvisi if issubclass(a.category, wx.wxPyDeprecationWarning)] == []
+        albero = dlg.tree_ctrl
+        giocatore, _cookie = albero.GetFirstChild(albero.GetRootItem())
+        assert albero.GetItemData(giocatore) == {"type": "player_root"}
+        anagrafica, _cookie = albero.GetFirstChild(giocatore)
+        assert albero.GetItemData(anagrafica) is None
+        cognome, _cookie = albero.GetFirstChild(anagrafica)
+        assert albero.GetItemData(cognome) == {"type": "field", "key": "last_name"}
     finally:
         _chiudi(dlg)
 

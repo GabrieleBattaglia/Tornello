@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.13.46 (in lavorazione, non ancora pubblicata)
+	+ Modifica: La finestra Gestione Database Giocatori Locale lega i dati alle voci del suo albero con SetItemData e GetItemData di wxPython, al posto di SetItemPyData e GetItemPyData, che wxPython da' per superate e che una sua versione futura potrebbe togliere, lasciando la finestra senza albero. Per chi la usa non cambia niente: le voci, la modifica con INVIO e la cancellazione con CANC fanno quello che facevano. Fino alla 10.13.45 ogni apertura della finestra produceva decine di avvisi di funzione superata, che le verifiche automatiche dovevano filtrare.
+
 10.13.45 (in lavorazione, non ancora pubblicata)
 	+ Modifica: La frase Nessuna risposta., che gestisci_aggiornamento di GBUtils dice dalla V1.3.0 quando la sua domanda sull'aggiornamento scade senza risposta, entra fra le frasi dell'aggiornamento che Tornello passa alla traduzione, cosi' i cataloghi delle altre lingue la possono tradurre come le altre. Fino alla 10.13.44 mancava, e la verifica automatica che confronta quelle frasi con GBUtils falliva. Tornello non la dice mai: la domanda sull'aggiornamento la fa sempre con la sua conferma, nella versione a riga di comando, o con la sua finestra. Nelle altre lingue la frase resta in italiano finche' i cataloghi delle traduzioni non vengono aggiornati.
 
