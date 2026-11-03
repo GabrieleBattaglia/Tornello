@@ -5849,6 +5849,7 @@ class MainFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             from utils import format_date_locale
 
+            forfait = None
             if dlg.selected_action == "schedule":
                 old_sched = actual_match.get("schedule_info", {})
                 if (
@@ -5875,13 +5876,25 @@ class MainFrame(wx.Frame):
                 # ritiro, con l'avviso quando i giocatori non bastano.
                 if self._conferma_ritiro(dlg.withdrawn_player_id, self.active_filename):
                     self.withdraw_player(dlg.withdrawn_player_id)
+                    # Dalla 10.16.1 la partita ancora senza risultato puo'
+                    # ricevere subito la vittoria a tavolino dell'avversario
+                    # (issue 62): il risultato segue la strada di quello
+                    # scelto nella finestra, qui sotto, con il PGN che la
+                    # partita aveva.
+                    forfait = self._proponi_forfait_dopo_il_ritiro(
+                        actual_match, dlg.withdrawn_player_id
+                    )
                 elif self._bivio_ha_cambiato_il_torneo(torneo, round_obj):
                     dlg.Destroy()
                     return
-            else:
-                res = dlg.get_selected_result()
+            if dlg.selected_action is None or forfait:
+                res = forfait or dlg.get_selected_result()
                 if res:
-                    p_text = dlg.txt_pgn.GetValue().strip()
+                    p_text = (
+                        (actual_match.get("pgn") or "").strip()
+                        if forfait
+                        else dlg.txt_pgn.GetValue().strip()
+                    )
                     old_res = actual_match.get("result")
                     old_pgn = actual_match.get("pgn", "").strip()
                     if res != old_res or p_text != old_pgn:
@@ -5986,9 +5999,19 @@ class MainFrame(wx.Frame):
                         if disable_result_change:
                             self.set_status(_("Partita aggiornata con PGN."))
                         else:
-                            self.set_status(
-                                _("Risultato registrato: {res}.").format(res=res)
-                            )
+                            if forfait:
+                                # Il ritiro e il risultato, tutti e due nella
+                                # barra di stato.
+                                self.set_status(
+                                    _("{name} ritirato, risultato registrato: {res}.").format(
+                                        name=self._nome_del_giocatore(dlg.withdrawn_player_id),
+                                        res=res,
+                                    )
+                                )
+                            else:
+                                self.set_status(
+                                    _("Risultato registrato: {res}.").format(res=res)
+                                )
 
                             # Ricalcola la posizione ottimale per il focus
                             if round_obj:
@@ -6149,7 +6172,12 @@ class MainFrame(wx.Frame):
                 else (wp_id if result_str == "F-1" else None)
             )
 
-            if forfeiting_name:
+            # Dalla 10.16.1 la domanda non si fa a chi e' gia' ritirato, per
+            # esempio dopo Ritira Giocatore della finestra del risultato, che
+            # propone poi il forfait (issue 62): fino alla 10.16.0 chiedeva di
+            # nuovo il ritiro, e Si' lo registrava una seconda volta.
+            gia_ritirato = players_dict.get(forfeiting_id, {}).get("withdrawn")
+            if forfeiting_name and not gia_ritirato:
                 msg = _(
                     "Il giocatore {name} si ritira definitivamente dal torneo?"
                 ).format(name=forfeiting_name)
@@ -6165,6 +6193,43 @@ class MainFrame(wx.Frame):
                     forfeiting_id, self.active_filename
                 ):
                     self.withdraw_player(forfeiting_id)
+
+    def _proponi_forfait_dopo_il_ritiro(self, partita, ritirato_id):
+        """Dopo Ritira Giocatore della finestra del risultato, dalla 10.16.1
+        (issue 62): se la partita non ha ancora un risultato, chiede se
+        registrare la vittoria a tavolino dell'avversario, 1 - F o F - 1
+        secondo chi si e' ritirato, con Si' predefinito come la domanda
+        Ritiro dopo Forfait. Restituisce il risultato da registrare, o None:
+        con No la partita resta senza risultato, come fino alla 10.16.0, e il
+        turno non si chiude finche' non ne riceve uno. Non chiede niente se
+        anche l'avversario e' ritirato: quale risultato dare lo decide
+        l'arbitro, dalla finestra."""
+        if partita.get("result") is not None:
+            return None
+        bianco = partita.get("white_player_id")
+        nero = partita.get("black_player_id")
+        if ritirato_id not in (bianco, nero) or not nero:
+            return None
+        avversario = nero if ritirato_id == bianco else bianco
+        if self.current_tournament.get("players_dict", {}).get(avversario, {}).get("withdrawn"):
+            return None
+        risultato, etichetta = ("F-1", "F - 1") if ritirato_id == bianco else ("1-F", "1 - F")
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Forfait dopo il Ritiro"),
+            _(
+                "{name} e' ritirato dal torneo, e questa partita non ha ancora un risultato. Vuoi registrare la vittoria a tavolino di {opponent}, {result}? Se rispondi di no la partita resta senza risultato, e il turno non si chiude finche' non ne riceve uno."
+            ).format(
+                name=self._nome_del_giocatore(ritirato_id),
+                opponent=self._nome_del_giocatore(avversario),
+                result=etichetta,
+            ),
+            style=wx.YES_NO,
+            settings=self.settings,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        return risultato if risposta == wx.ID_YES else None
 
     def withdraw_player(self, player_id):
         players_dict = self.current_tournament.get("players_dict", {})

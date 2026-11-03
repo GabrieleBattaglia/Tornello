@@ -376,6 +376,8 @@ def _telaio(torneo, monkeypatch, finestre, **altri):
         _conferma_ritiro = mf.MainFrame._conferma_ritiro
         _bivio_ha_cambiato_il_torneo = mf.MainFrame._bivio_ha_cambiato_il_torneo
         withdraw_player = mf.MainFrame.withdraw_player
+        _proponi_forfait_dopo_il_ritiro = mf.MainFrame._proponi_forfait_dopo_il_ritiro
+        _nome_del_giocatore = mf.MainFrame._nome_del_giocatore
         on_activate_match = mf.MainFrame.on_activate_match
         apply_match_result = mf.MainFrame.apply_match_result
         get_board_num = mf.MainFrame.get_board_num
@@ -470,6 +472,12 @@ class TestLeTreStradeDelRitiro:
         else:
             self._dopo_il_forfait(telaio)
 
+        # Dalla 10.16.1, dopo il ritiro dalla finestra del risultato, viene
+        # la domanda sul forfait (issue 62): qui il copione non risponde Si',
+        # e la partita resta senza risultato.
+        if strada == "risultato" and risposta == "si":
+            assert finestre.aperte.pop()[0] == "Forfait dopo il Ritiro"
+            assert torneo["rounds"][1]["matches"][0]["result"] is None
         titolo, testo, no_predefinito = finestre.aperte[-1]
         assert titolo == "Ritiro con pochi giocatori"
         assert AVVISO_COMUNE in testo
@@ -698,3 +706,151 @@ class TestIlBivioDallaFinestraDelRisultato:
         if strada == "forfait":
             assert registro.stati[-1] == "Risultato registrato: 1-F."
             assert torneo["rounds"][1]["matches"][0]["result"] == "1-F"
+
+
+class TestForfaitDopoIlRitiro:
+    """Dalla 10.16.1, dopo Ritira Giocatore nella finestra del risultato, la
+    partita ancora senza risultato puo' ricevere subito la vittoria a
+    tavolino dell'avversario, 1 - F o F - 1 secondo chi si ritira, con Si'
+    predefinito come la domanda Ritiro dopo Forfait (issue 62). Si' la
+    registra come il risultato scelto nella finestra; No la lascia senza
+    risultato, come fino alla 10.16.0. La partita aperta e' la prima del
+    turno 2, con G1 col bianco e G0 col nero: l'unica del turno senza
+    risultato."""
+
+    def _telaio(self, torneo, monkeypatch, finestre):
+        import utils
+
+        registro = SimpleNamespace(stati=[], suoni=[])
+
+        def set_status(self, testo):
+            registro.stati.append(testo)
+
+        telaio = _telaio(torneo, monkeypatch, finestre, set_status=set_status)
+        monkeypatch.setattr(utils, "play_sound", lambda nome, *a, **k: registro.suoni.append(nome) or True)
+        return telaio, registro
+
+    @staticmethod
+    def _ritira_dal_risultato(telaio, monkeypatch, chi, partita=None):
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        class Risultato:
+            def __init__(self, *a, **k):
+                self.selected_action = "withdraw"
+                self.withdrawn_player_id = chi
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def get_selected_result(self):
+                raise AssertionError("dopo il ritiro il risultato scelto nella finestra non conta")
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ResultDialog", Risultato)
+        telaio.on_activate_match(partita or telaio.current_tournament["rounds"][1]["matches"][0])
+
+    @pytest.mark.parametrize(("chi", "avversario", "risultato", "etichetta"), [("G1", "G0", "F-1", "F - 1"), ("G0", "G1", "1-F", "1 - F")])
+    def test_con_si_la_vittoria_a_tavolino(self, monkeypatch, chi, avversario, risultato, etichetta):
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        finestre = _Finestre(wx.ID_YES)
+        telaio, registro = self._telaio(torneo, monkeypatch, finestre)
+
+        self._ritira_dal_risultato(telaio, monkeypatch, chi)
+
+        # Una domanda sola: con giocatori a sufficienza il ritiro non ha
+        # avvisi, e la domanda Ritiro dopo Forfait non si fa a chi e' gia'
+        # ritirato.
+        assert len(finestre.aperte) == 1
+        titolo, testo, no_predefinito = finestre.aperte[0]
+        assert titolo == "Forfait dopo il Ritiro"
+        assert no_predefinito is False
+        assert testo.startswith(f"Cognome{chi[1]} Nome e' ritirato dal torneo, e questa partita non ha ancora un risultato.")
+        assert f"la vittoria a tavolino di Cognome{avversario[1]} Nome, {etichetta}?" in testo
+        partita = torneo["rounds"][1]["matches"][0]
+        assert partita["result"] == risultato
+        giocatori = torneo["players_dict"]
+        assert giocatori[chi]["withdrawn"] is True
+        assert [v["round"] for v in giocatori[avversario]["results_history"]][-1] == 2
+        assert giocatori[avversario]["results_history"][-1]["score"] == 1.0
+        assert giocatori[chi]["results_history"][-1]["score"] == 0.0
+        # L'ultima partita del turno: il suono della fine del turno, e il
+        # cursore sulla voce che calcola il turno seguente.
+        assert registro.suoni == ["ritiro_giocatore", "conclusione_turno"]
+        assert telaio._tree_restore_target == {"action": "generate_next_round_action", "filepath": "prova_ritiro.json"}
+        assert registro.stati[-1] == f"Cognome{chi[1]} Nome ritirato, risultato registrato: {risultato}."
+
+    def test_con_no_la_partita_resta_senza_risultato(self, monkeypatch):
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        finestre = _Finestre(wx.ID_NO)
+        telaio, registro = self._telaio(torneo, monkeypatch, finestre)
+
+        self._ritira_dal_risultato(telaio, monkeypatch, "G1")
+
+        assert [t for t, _testo, _no in finestre.aperte] == ["Forfait dopo il Ritiro"]
+        assert torneo["rounds"][1]["matches"][0]["result"] is None
+        assert torneo["players_dict"]["G1"]["withdrawn"] is True
+        assert [v["round"] for v in torneo["players_dict"]["G0"]["results_history"]] == [1]
+        assert registro.suoni == ["ritiro_giocatore"]
+        assert registro.stati[-1] == "Giocatore 'Cognome1 Nome' ritirato con successo."
+
+    def test_la_partita_gia_giocata_non_chiede_niente(self, monkeypatch):
+        """Il ritiro dalla finestra di una partita che ha gia' il risultato
+        vale dal turno seguente, e il risultato resta."""
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        finestre = _Finestre(wx.ID_YES)
+        telaio, _registro = self._telaio(torneo, monkeypatch, finestre)
+        giocata = torneo["rounds"][1]["matches"][1]
+
+        self._ritira_dal_risultato(telaio, monkeypatch, giocata["white_player_id"], giocata)
+
+        assert finestre.aperte == []
+        assert giocata["result"] == "1/2-1/2"
+        assert torneo["players_dict"][giocata["white_player_id"]]["withdrawn"] is True
+
+    def test_con_l_avversario_gia_ritirato_non_chiede_niente(self, monkeypatch):
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        torneo["players_dict"]["G0"]["withdrawn"] = True
+        finestre = _Finestre(wx.ID_YES)
+        telaio, _registro = self._telaio(torneo, monkeypatch, finestre)
+
+        self._ritira_dal_risultato(telaio, monkeypatch, "G1")
+
+        assert finestre.aperte == []
+        assert torneo["rounds"][1]["matches"][0]["result"] is None
+
+    def test_il_forfait_di_un_ritirato_non_chiede_di_nuovo_il_ritiro(self, monkeypatch):
+        """Il forfait registrato dalla finestra per chi e' gia' ritirato, per
+        esempio dopo un No alla domanda qui sopra: fino alla 10.16.0 la
+        domanda Ritiro dopo Forfait chiedeva di ritirarlo ancora."""
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        torneo["players_dict"]["G0"]["withdrawn"] = True
+        finestre = _Finestre(wx.ID_YES)
+        telaio, registro = self._telaio(torneo, monkeypatch, finestre)
+        partita = torneo["rounds"][1]["matches"][0]
+        partita["result"] = "1-F"
+
+        telaio.apply_match_result(partita, "1-F")
+
+        assert finestre.aperte == []
+        assert "ritiro_giocatore" not in registro.suoni
+
+    def test_chi_non_e_ritirato_riceve_ancora_la_domanda(self, monkeypatch):
+        wx = pytest.importorskip("wx")
+        torneo = _torneo_in_corso(attivi=8, turni=3)
+        finestre = _Finestre(wx.ID_NO)
+        telaio, _registro = self._telaio(torneo, monkeypatch, finestre)
+        partita = torneo["rounds"][1]["matches"][0]
+        partita["result"] = "1-F"
+
+        telaio.apply_match_result(partita, "1-F")
+
+        assert [t for t, _testo, _no in finestre.aperte] == ["Ritiro dopo Forfait"]
