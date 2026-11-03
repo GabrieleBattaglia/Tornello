@@ -190,6 +190,73 @@ class TestInvioNellaFinestraDelRisultato:
         finally:
             _chiudi(dlg)
 
+    def test_senza_risultato_il_gancio_ferma_invio_sulle_voci(self, telaio, suoni):
+        """Dalla 10.13.51 (issue 63) il gancio ferma INVIO anche senza un
+        risultato scelto, con il PGN valido o vuoto: sulle voci e in ogni
+        punto che non sia un pulsante o il campo del PGN suona l'errore. Ai
+        pulsanti il tasto resta, e Conferma Risultato lo ferma da se'."""
+        import wx
+
+        dlg, chiusure = self._finestra(telaio, suoni)
+        try:
+            pulsante = dlg.radio_buttons[0][1]
+            assert dlg.get_selected_result() is None and dlg.btn_ok.IsEnabled()
+            assert not self._gancio(dlg, pulsante)
+            assert not self._gancio(dlg, dlg.pannello)
+            self._scrivi_pgn(dlg, PGN_VALIDO)
+            assert not self._gancio(dlg, pulsante)
+            assert suoni == ["errore"] * 3
+            suoni.clear()
+            for controllo in (dlg.txt_pgn, dlg.btn_ok, dlg.btn_schedule, dlg.btn_withdraw, dlg.FindWindowById(wx.ID_CANCEL)):
+                assert self._gancio(dlg, controllo)
+            assert suoni == []
+            # Scelta una voce, il tasto passa e conferma.
+            pulsante.SetValue(True)
+            assert self._gancio(dlg, pulsante)
+            assert suoni == [] and chiusure == []
+        finally:
+            _chiudi(dlg)
+
+    @staticmethod
+    def _premi_conferma(dlg):
+        """Conferma Risultato premuto: l'evento del pulsante, con
+        l'annotazione dello Skip, cioe' della conferma lasciata proseguire
+        verso la chiusura di wx."""
+        import wx
+
+        evento = wx.CommandEvent(wx.wxEVT_BUTTON, wx.ID_OK)
+        evento.SetEventObject(dlg.btn_ok)
+        passati = []
+        evento.Skip = lambda *a: passati.append(True)
+        dlg.on_conferma(evento)
+        return passati == [True]
+
+    def test_conferma_risultato_senza_risultato_suona_l_errore(self, telaio, suoni):
+        """Dalla 10.13.51 Conferma Risultato, premuto senza un risultato
+        scelto, fa sentire l'errore e non prosegue: fino alla 10.13.50 la
+        finestra si chiudeva con il suono della conferma, e la partita
+        restava senza risultato."""
+        dlg, _chiusure = self._finestra(telaio, suoni)
+        try:
+            assert not self._premi_conferma(dlg)
+            assert suoni == ["errore"]
+            suoni.clear()
+            dlg.radio_buttons[3][1].SetValue(True)
+            assert self._premi_conferma(dlg)
+            assert suoni == []
+        finally:
+            _chiudi(dlg)
+
+    def test_salva_pgn_con_il_risultato_di_prima_prosegue(self, telaio, suoni):
+        """A turno completo le voci sono spente, ma il risultato c'e':
+        Salva PGN prosegue."""
+        dlg, _chiusure = self._finestra(telaio, suoni, risultato="F-1", disable_result_change=True)
+        try:
+            assert self._premi_conferma(dlg)
+            assert suoni == []
+        finally:
+            _chiudi(dlg)
+
     def test_nel_campo_del_pgn_invio_resta_al_campo(self, telaio, suoni):
         """Nel campo INVIO va a capo, anche con il PGN non valido."""
         dlg, chiusure = self._finestra(telaio, suoni)

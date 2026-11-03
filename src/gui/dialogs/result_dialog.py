@@ -510,6 +510,7 @@ class ResultDialog(wx.Dialog):
         self.btn_ok = wx.Button(panel, wx.ID_OK, ok_label)
         self.btn_ok.SetDefault()
         self.btn_ok.Bind(wx.EVT_SET_FOCUS, self.on_control_focus)
+        self.btn_ok.Bind(wx.EVT_BUTTON, self.on_conferma)
 
         btn_sizer.Add(btn_cancel, 0, wx.RIGHT, 10)
         btn_sizer.Add(self.btn_ok, 0)
@@ -540,14 +541,37 @@ class ResultDialog(wx.Dialog):
         voce del risultato finiva a Windows, che con il pulsante predefinito
         spento lo scartava in silenzio, e on_key_down non lo vedeva. Sui
         pulsanti INVIO resta loro e li preme, come prima; nel campo del PGN va
-        a capo."""
-        if event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER) and not self.btn_ok.IsEnabled():
+        a capo.
+        Dalla 10.13.51 lo stesso vale senza un risultato scelto (issue 63):
+        fino alla 10.13.50 Windows passava INVIO al pulsante predefinito,
+        Conferma Risultato, e lo premeva, e la finestra si chiudeva con il
+        suono della conferma senza registrare niente, perdendo anche il PGN
+        appena incollato. La regola di on_key_down, che conferma solo con un
+        risultato scelto, non entrava mai in gioco. Su Conferma Risultato il
+        tasto resta al pulsante, e lo ferma on_conferma."""
+        if event.GetKeyCode() in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER) and (
+            not self.btn_ok.IsEnabled() or self.get_selected_result() is None
+        ):
             fuoco = self.FindFocus()
             if fuoco != self.txt_pgn and not isinstance(fuoco, wx.Button):
                 from utils import play_sound
 
                 play_sound("errore")
                 return
+        event.Skip()
+
+    def on_conferma(self, event):
+        """Conferma Risultato senza un risultato scelto, premuto in qualunque
+        modo, con INVIO, con la barra spaziatrice o con il mouse, fa suonare
+        l'errore e lascia la finestra aperta, dalla 10.13.51 (issue 63):
+        chiudendosi, la finestra direbbe confermato un risultato che non c'e'.
+        Con un risultato scelto la conferma prosegue verso la chiusura
+        normale di wx, come prima."""
+        if self.get_selected_result() is None:
+            from utils import play_sound
+
+            play_sound("errore")
+            return
         event.Skip()
 
     def apply_theme(self):
@@ -613,7 +637,9 @@ class ResultDialog(wx.Dialog):
             # Invio dentro il gruppo delle opzioni non conferma piu' da solo:
             # insieme alla selezione automatica sul focus bastavano un
             # tabulatore e un Invio per registrare un risultato non voluto.
-            # Serve una scelta esplicita, con le frecce o con la barra.
+            # Serve una scelta esplicita, con le frecce o con la barra. Senza,
+            # dalla 10.13.51 il tasto lo fermano prima on_char_hook e, sul
+            # pulsante, on_conferma.
             if any(button.GetValue() for _val, button in self.radio_buttons):
                 self.EndModal(wx.ID_OK)
             else:
