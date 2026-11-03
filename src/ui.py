@@ -1472,12 +1472,20 @@ def cartella_di_lavoro_esterna(custom_path):
     Serve all'archiviazione: i file del torneo concluso restano al loro posto
     solo quando l'arbitro ha scelto una cartella esterna, altrimenti vanno
     spostati in archivio invece di essere lasciati accanto al programma.
+    Le due cartelle si confrontano come le confronta Windows, senza badare
+    alle maiuscole: fino alla 10.13.47 la cartella del
+    programma scritta in minuscolo, come succede in qualche json, contava
+    come esterna, e alla finalizzazione i report restavano dov'erano
+    invece di andare in archivio (issue 67).
     """
     if not custom_path:
         return False
+
+    def chiave(percorso):
+        return os.path.normcase(os.path.normpath(os.path.abspath(percorso)))
+
     try:
-        cartella_applicazione = os.path.abspath(user_data_path(""))
-        return os.path.abspath(custom_path) != cartella_applicazione
+        return chiave(custom_path) != chiave(user_data_path(""))
     except (OSError, ValueError):
         # Percorso non risolvibile: meglio conservare gli originali che
         # rischiare di cancellarli.

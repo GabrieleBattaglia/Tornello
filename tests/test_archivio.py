@@ -22,6 +22,19 @@ class TestCartellaDiLavoro:
         assert ui.cartella_di_lavoro_esterna(r"C:\Tornello") is False
         assert ui.cartella_di_lavoro_esterna(r"C:\Tornello\\") is False
 
+    def test_la_cartella_dell_applicazione_scritta_diversa_non_e_esterna(self, monkeypatch):
+        # Fino alla 10.13.47 il confronto badava alle maiuscole: la cartella
+        # del programma scritta in minuscolo in un json contava come esterna,
+        # e alla finalizzazione i report restavano dov'erano (issue 67).
+        import ui
+
+        monkeypatch.setattr(ui, "user_data_path", lambda _p: r"C:\Tornello")
+
+        assert ui.cartella_di_lavoro_esterna(r"c:\tornello") is False
+        assert ui.cartella_di_lavoro_esterna("C:/TORNELLO/") is False
+        assert ui.cartella_di_lavoro_esterna(r"C:\Tornello\backup\..") is False
+        assert ui.cartella_di_lavoro_esterna(r"c:\tornello2") is True
+
     def test_una_cartella_diversa_e_esterna(self, monkeypatch):
         import ui
 

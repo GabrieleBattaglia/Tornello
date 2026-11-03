@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.13.48 (in lavorazione, non ancora pubblicata)
+	+ Fix: La cartella di lavoro di un torneo conta come cartella esterna soltanto quando e' davvero un'altra cartella rispetto a quella del programma, senza badare alle maiuscole, come fa Windows: scritta nel file del torneo con le maiuscole diverse, per esempio tutta in minuscolo, come succede in qualche file, resta la cartella del programma. Alla finalizzazione il file del torneo e i report di un torneo cosi' vanno in archivio e lasciano la cartella del programma, come quelli di ogni torneo che lavora li', e l'eliminazione di un torneo concluso non guarda piu' in quella cartella, dove i report con lo stesso nome sono di un'altra edizione. Fino alla 10.13.47 bastava una lettera scritta diversa perche' la cartella del programma contasse come esterna: alla finalizzazione il file del torneo concluso e i report restavano accanto al programma, con una copia in archivio.
+
 10.13.47 (in lavorazione, non ancora pubblicata)
 	+ Fix: Esportando le partite pianificate, la finestra Salva propone per il calendario un nome con il nome del torneo ripulito come in tutti gli altri file del torneo, senza spazi ne' simboli: per il torneo Coppa d'Autunno 2026 propone Tornello - Coppa_dAutunno_2026 - Calendario.ics. Salvato con quel nome nella cartella di lavoro del torneo, il calendario e' un file del torneo come i report: alla finalizzazione va in archivio con loro, e l'eliminazione del torneo lo manda nel cestino. Fino alla 10.13.46 il nome proposto conteneva il nome del torneo scritto cosi' com'era, Tornello - Coppa d'Autunno 2026 - Calendario.ics, e il calendario restava sempre dov'era. Il manuale lo dice nelle sezioni 6.4 e 9.4.
 

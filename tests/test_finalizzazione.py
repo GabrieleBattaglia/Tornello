@@ -556,6 +556,22 @@ class TestCartellaDiLavoroEsterna:
         assert _leggi_byte(aperto) == _leggi_byte(_json_in_archivio())
         assert [n for n in _nella_radice(tmp_path) if n.endswith(".json")] == []
 
+    def test_la_cartella_del_programma_scritta_in_minuscolo_non_e_esterna(
+        self, banco, tmp_path
+    ):
+        """La cartella di lavoro e' quella del programma, ma il json la scrive
+        in minuscolo. Fino alla 10.13.47 contava come esterna, e la classifica
+        restava accanto al programma invece di andare in archivio (issue
+        67)."""
+        banco.torneo["custom_save_path"] = str(tmp_path).lower()
+        _scrivi(banco.file_torneo, banco.torneo)
+
+        assert _finalizza(banco) is True
+
+        classifica = f"Tornello - {NOME} - Classifica.txt"
+        assert os.path.exists(os.path.join(_cartella_archivio(), classifica))
+        assert _nella_radice(tmp_path) == []
+
 
 class TestScrittureNonRiuscite:
     """save_players_db e save_tournament stampavano l'errore e basta, e la
