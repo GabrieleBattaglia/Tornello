@@ -6,7 +6,7 @@ from GBwx import STILE_ADATTABILE, adatta_finestra, pannello_scorrevole
 
 from config import resource_path
 from gui.accessibility import NomeAccessibile, NomeAccessibileTesto
-from gui.settings import applica_tema_a_tutti, apply_visual_settings
+from gui.settings import applica_tema_a_tutti, apply_visual_settings, dialoghi_leggibili
 from utils import invalida_volume_audio, play_sound
 from version import __version__
 
@@ -76,7 +76,14 @@ class VisualSettingsDialog(wx.Dialog):
         # principale. Il tema e' quello delle impostazioni in vigore, e non
         # segue i valori che si stanno scegliendo: li mostra l'anteprima. Si
         # da' prima di adattare la finestra, che cresce con il carattere.
-        applica_tema_a_tutti(self, self.settings, tranne=(self.preview_text,))
+        # Con un contrasto fra il testo e lo sfondo dei dialoghi sotto il
+        # minimo la finestra resta nel carattere e nei colori di sistema,
+        # come fino alla 10.13.57: e' quella da cui si correggono, e deve
+        # restare leggibile. Prima della revisione della 10.13.58 il tema
+        # arrivava anche li', e con il testo uguale allo sfondo la finestra
+        # per rimediare era illeggibile come le altre.
+        if dialoghi_leggibili(self.settings):
+            applica_tema_a_tutti(self, self.settings, tranne=(self.preview_text,))
         self._update_preview()
         adatta_finestra(self, self.pannello, (326, 544))
 

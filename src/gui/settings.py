@@ -153,6 +153,47 @@ def pct_to_byte(pct):
     return max(0, min(255, val))
 
 
+# Il contrasto minimo fra il testo e lo sfondo dei dialoghi perche' la
+# finestra delle impostazioni li usi: 4,5 a 1, il livello AA delle linee
+# guida WCAG 2 per il testo (criterio 1.4.3).
+CONTRASTO_MINIMO_DEI_DIALOGHI = 4.5
+
+
+def tema_dei_dialoghi(settings):
+    """Il corpo del carattere e i colori del testo e dello sfondo dei
+    dialoghi, in percentuali come nelle impostazioni: dove mancano, quelli
+    della finestra principale, e poi quelli di serie."""
+    fs = settings.get("dialog_font_size", settings.get("font_size", 12))
+    rgb_text = settings.get("dialog_rgb_text", settings.get("rgb_text", [0, 100, 0]))
+    rgb_back = settings.get("dialog_rgb_back", settings.get("rgb_back", [0, 0, 0]))
+    return fs, rgb_text, rgb_back
+
+
+def rapporto_di_contrasto(primo, secondo):
+    """Il rapporto di contrasto fra due colori dati in percentuali, come lo
+    misurano le linee guida WCAG 2: da 1, nessun contrasto, a 21, nero su
+    bianco. I colori passano prima da pct_to_byte, come quando si danno."""
+
+    def luminanza(percentuali):
+        canali = []
+        for pct in percentuali:
+            valore = pct_to_byte(pct) / 255
+            canali.append(valore / 12.92 if valore <= 0.03928 else ((valore + 0.055) / 1.055) ** 2.4)
+        return 0.2126 * canali[0] + 0.7152 * canali[1] + 0.0722 * canali[2]
+
+    chiara, scura = sorted((luminanza(primo), luminanza(secondo)), reverse=True)
+    return (chiara + 0.05) / (scura + 0.05)
+
+
+def dialoghi_leggibili(settings):
+    """Vero se il testo dei dialoghi si legge sul loro sfondo, con almeno il
+    contrasto minimo. Lo chiede la finestra delle impostazioni, da cui quei
+    colori si correggono: con dei colori illeggibili, per esempio il testo
+    uguale allo sfondo, resta in quelli di sistema."""
+    _fs, rgb_text, rgb_back = tema_dei_dialoghi(settings)
+    return rapporto_di_contrasto(rgb_text, rgb_back) >= CONTRASTO_MINIMO_DEI_DIALOGHI
+
+
 def apply_visual_settings(control, settings, force_dialog=False):
     """Applica font, colore di testo e colore di sfondo a un controllo wxPython per l'accessibilità."""
     # Rileva automaticamente se il controllo fa parte di una finestra di dialogo
@@ -166,11 +207,7 @@ def apply_visual_settings(control, settings, force_dialog=False):
             p = p.GetParent()
 
     if is_dialog:
-        fs = settings.get("dialog_font_size", settings.get("font_size", 12))
-        rgb_text = settings.get(
-            "dialog_rgb_text", settings.get("rgb_text", [0, 100, 0])
-        )
-        rgb_back = settings.get("dialog_rgb_back", settings.get("rgb_back", [0, 0, 0]))
+        fs, rgb_text, rgb_back = tema_dei_dialoghi(settings)
     else:
         fs = settings.get("font_size", 12)
         rgb_text = settings.get("rgb_text", [0, 100, 0])

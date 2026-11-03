@@ -633,6 +633,52 @@ def test_l_anteprima_delle_impostazioni_resta_quella_della_finestra_principale(a
         _chiudi(dlg)
 
 
+@pytest.mark.parametrize("testo, sfondo", (([0, 0, 0], [0, 0, 0]), ([30, 30, 30], [10, 10, 10])))
+def test_con_i_dialoghi_illeggibili_le_impostazioni_restano_nei_colori_di_sistema(testo, sfondo, ambiente):
+    """La finestra delle impostazioni e' quella da cui si correggono i
+    colori dei dialoghi: con un contrasto fra testo e sfondo sotto 4,5 a 1,
+    il livello AA delle linee guida WCAG 2, non ne prende il tema e resta
+    nel carattere e nei colori di sistema, come fino alla 10.13.57. Prima
+    della revisione della 10.13.58, con il testo uguale allo sfondo, era
+    illeggibile come le altre. L'anteprima mostra sempre il tema della
+    finestra principale."""
+    from gui.settings import rapporto_di_contrasto
+
+    assert rapporto_di_contrasto(testo, sfondo) < 4.5
+    impostazioni = ambiente.impostazioni
+    impostazioni.update(dialog_rgb_text=testo, dialog_rgb_back=sfondo, rgb_text=[0, 0, 100], rgb_back=[100, 100, 100], font_size=14)
+    dlg = _crea("impostazioni", ambiente)
+    try:
+        con_il_tema = []
+
+        def visita(controllo):
+            if controllo.GetFont().GetPointSize() == CORPO or controllo.UseBgCol() or controllo.UseForegroundColour():
+                con_il_tema.append(f"{type(controllo).__name__} {controllo.GetLabel()!r}")
+            for figlio in controllo.GetChildren():
+                if not figlio.IsTopLevel() and figlio is not dlg.preview_text:
+                    visita(figlio)
+
+        visita(dlg)
+        assert con_il_tema == []
+        assert dlg.preview_text.GetFont().GetPointSize() == 14
+        assert dlg.preview_text.GetForegroundColour() == _colore([0, 0, 100])
+    finally:
+        _chiudi(dlg)
+
+
+def test_il_rapporto_di_contrasto_dei_colori_delle_impostazioni():
+    """Il contrasto della WCAG 2 sui colori in percentuali: 21 a 1 il nero
+    sul bianco, 1 a 1 due colori uguali, oltre 15 a 1 il verde di serie
+    sul nero, che le impostazioni usano."""
+    from gui.settings import DEFAULT_SETTINGS, dialoghi_leggibili, rapporto_di_contrasto
+
+    assert rapporto_di_contrasto([0, 0, 0], [100, 100, 100]) == pytest.approx(21)
+    assert rapporto_di_contrasto([40, 0, 0], [40, 0, 0]) == pytest.approx(1)
+    assert rapporto_di_contrasto([0, 100, 0], [0, 0, 0]) > 15
+    assert dialoghi_leggibili(DEFAULT_SETTINGS)
+    assert not dialoghi_leggibili(dict(DEFAULT_SETTINGS, dialog_rgb_text=[0, 0, 0]))
+
+
 def test_i_giorni_della_programmazione_si_leggono_con_i_colori_di_serie(ambiente):
     """Fino alla 10.13.57 le etichette dei giorni avevano il testo nero di
     sistema, dipinto sullo sfondo dei dialoghi, che di serie e' nero: un
