@@ -1390,3 +1390,120 @@ class TestPartiteGiocateSenzaForfait:
         assert database["G1"]["games_played"] == 30
         assert fattore_k_della_finalizzazione({"id": "G3"}, database, "2027-01-10") == 40
         assert fattore_k_della_finalizzazione({"id": "G1"}, database, "2027-01-10") == 20
+
+
+class TestFattoreKDellaCadenzaAllaFinalizzazione:
+    """Dalla 10.13.54 (issue 65) nei rapid e nei blitz il fattore K viene
+    dai dati della cadenza, alla finalizzazione, nella console e nella
+    colonna Elo Var. della classifica in corso, e le partite del torneo si
+    contano anche a parte, nel campo della cadenza, che la voce dello
+    storico ricorda come games_field. Fino alla 10.13.53 il K veniva dai
+    dati standard, e le partite di una cadenza non si contavano."""
+
+    @staticmethod
+    def _schede(banco, **per_giocatore):
+        dati = _leggi(banco.db)
+        for scheda in dati["players"]:
+            scheda.update(per_giocatore.get(scheda["id"], {}))
+        _scrivi(banco.db, dati)
+
+    @pytest.mark.parametrize(("categoria", "campo_k"), [("rapid", "fide_rapid_k"), ("blitz", "fide_blitz_k")])
+    def test_il_k_e_quello_della_cadenza(self, banco, categoria, campo_k):
+        """G1 ha il K FIDE standard 40 e quello della cadenza 20, G2 il
+        contrario: vale quello della cadenza. G3, esperto con cento partite
+        ma senza un K FIDE, ha l'Elo della cadenza e solo dieci partite di
+        quella cadenza: e' esperto, e ha 20. G4 non ha l'Elo della cadenza,
+        ed e' nuovo in quella lista: 40, anche da esperto."""
+        _con_la_cadenza(banco, categoria)
+        self._schede(
+            banco,
+            G1={"fide_k_factor": 40, campo_k: 20},
+            G2={"fide_k_factor": 20, campo_k: 40},
+            G3={"experienced": True, "games_played": 100, f"games_played_{categoria}": 10},
+            G4={"experienced": True, "games_played": 100, "fide_k_factor": 20},
+        )
+
+        assert _finalizza(banco) is True
+
+        k = {p["id"]: p["k_factor"] for p in _leggi(_json_in_archivio())["players"]}
+        assert k == {"G1": 20, "G2": 40, "G3": 20, "G4": 40}
+
+    def test_negli_standard_resta_il_k_standard(self, banco):
+        _con_la_cadenza(banco, "standard")
+        self._schede(banco, G1={"fide_k_factor": 40, "fide_rapid_k": 20}, G2={"fide_k_factor": 10, "fide_blitz_k": 40})
+
+        assert _finalizza(banco) is True
+
+        k = {p["id"]: p["k_factor"] for p in _leggi(_json_in_archivio())["players"]}
+        assert (k["G1"], k["G2"]) == (40, 10)
+
+    @pytest.mark.parametrize(("categoria", "campo", "altro"), [("rapid", "games_played_rapid", "games_played_blitz"), ("blitz", "games_played_blitz", "games_played_rapid")])
+    def test_le_partite_si_contano_anche_nella_cadenza(self, banco, categoria, campo, altro):
+        """Le partite giocate crescono come sempre, e quelle della cadenza
+        con loro; un forfait non entra in nessuna delle due. G2 aveva gia'
+        il campo, e la voce dello storico se ne ricorda il valore."""
+        _g3_vince_a_forfait(banco.torneo)
+        _con_la_cadenza(banco, categoria)
+        self._schede(banco, G2={campo: 7})
+
+        assert _finalizza(banco) is True
+
+        dopo = _giocatori_del_db(banco.db)
+        assert {pid: dopo[pid]["games_played"] for pid in ELO_INIZIALI} == {"G1": 11, "G2": 11, "G3": 10, "G4": 10}
+        assert {pid: dopo[pid][campo] for pid in ELO_INIZIALI} == {"G1": 1, "G2": 8, "G3": 0, "G4": 0}
+        assert all(altro not in dopo[pid] for pid in ELO_INIZIALI)
+        voci = {pid: dopo[pid]["tournaments_played"][-1] for pid in ELO_INIZIALI}
+        assert {pid: voci[pid]["games_field"] for pid in ELO_INIZIALI} == dict.fromkeys(ELO_INIZIALI, campo)
+        assert voci["G2"]["games_before"] == 7
+        assert "games_before" not in voci["G1"]
+
+    def test_negli_standard_non_si_contano_a_parte(self, banco):
+        _con_la_cadenza(banco, "standard")
+
+        assert _finalizza(banco) is True
+
+        dopo = _giocatori_del_db(banco.db)
+        for pid in ELO_INIZIALI:
+            assert dopo[pid]["games_played"] == 11, pid
+            assert not {"games_played_rapid", "games_played_blitz"} & dopo[pid].keys(), pid
+            assert "games_field" not in dopo[pid]["tournaments_played"][-1], pid
+
+    def test_la_colonna_elo_var_usa_il_k_della_cadenza(self, banco):
+        """La classifica in corso di un rapid dice la variazione con il K
+        della cadenza, quello che la finalizzazione applica."""
+        from reports import get_standings_text
+
+        _con_la_cadenza(banco, "rapid")
+        self._schede(banco, G1={"fide_k_factor": 40, "fide_rapid_k": 20}, G4={"fide_k_factor": 10})
+        in_corso = copy.deepcopy(banco.torneo)
+
+        get_standings_text(in_corso)
+
+        colonna = {p["id"]: (p["k_factor"], p["elo_change"]) for p in in_corso["players"]}
+        assert colonna["G1"][0] == 20
+        assert colonna["G4"][0] == 40
+        assert _finalizza(banco) is True
+        archiviati = {p["id"]: (p["k_factor"], p["elo_change"]) for p in _leggi(_json_in_archivio())["players"]}
+        assert colonna == archiviati
+
+    def test_il_k_del_controller_della_console_e_quello_della_cadenza(self, banco):
+        """Il primo calcolo della console, prima della finalizzazione
+        comune, usa lo stesso K della cadenza."""
+        import unittest.mock
+
+        import controller
+
+        _con_la_cadenza(banco, "blitz")
+        self._schede(banco, G1={"fide_k_factor": 40, "fide_blitz_k": 10})
+        chiesti = []
+        originale = controller.fattore_k_della_finalizzazione
+
+        def annota(giocatore, database, inizio, categoria="standard"):
+            chiesti.append((giocatore["id"], categoria))
+            return originale(giocatore, database, inizio, categoria)
+
+        with unittest.mock.patch.object(controller, "fattore_k_della_finalizzazione", annota):
+            assert _finalizza_in_console(banco) is True
+
+        assert set(chiesti) == {(pid, "blitz") for pid in ELO_INIZIALI}
+        assert {p["id"]: p["k_factor"] for p in _leggi(_json_in_archivio())["players"]}["G1"] == 10

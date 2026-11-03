@@ -1053,7 +1053,10 @@ class TournamentController:
             # database non aveva prendeva 20, mentre la finalizzazione gli
             # crea la scheda e, senza un K FIDE valido, gli da' 40.
             p.k_factor = fattore_k_della_finalizzazione(
-                p.to_dict(), self.players_db, self.tournament.start_date
+                p.to_dict(),
+                self.players_db,
+                self.tournament.start_date,
+                self.tournament.tournament_category,
             )
 
             # Le partite contate come in ui.finalize_tournament: dalla

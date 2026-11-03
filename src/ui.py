@@ -38,11 +38,13 @@ from stats import (
     calculate_elo_change,
     calculate_performance_rating,
     campo_elo_della_cadenza,
+    campo_partite_della_cadenza,
     compute_aro,
     compute_buchholz,
     compute_buchholz_cut1,
     elo_a_cui_sommare_la_variazione,
     get_initial_elo_for_tournament,
+    partite_della_cadenza,
     partite_giocate_nel_torneo,
     partite_valide_per_elo,
 )
@@ -1711,8 +1713,9 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
         # ripiego, 20, e la fase 5 lo saltava. La classifica in corso passa
         # dalla stessa funzione, cosi' la sua colonna Elo Var. e' quella che
         # la finalizzazione applica (10.13.17).
+        # Dalla 10.13.54 il K e' quello della cadenza del torneo (issue 65).
         p["k_factor"] = fattore_k_della_finalizzazione(
-            p, players_db, tournament_start_date
+            p, players_db, tournament_start_date, torneo.get("tournament_category", "standard")
         )
         # Le partite che entrano nelle partite giocate del database: dalla
         # 10.13.53 non i forfait, come vuole l'articolo 5.1 del regolamento
@@ -1862,6 +1865,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # arbitro, 10.13.4).
     categoria = torneo.get("tournament_category", "standard")
     campo_elo = campo_elo_della_cadenza(categoria)
+    campo_partite = campo_partite_della_cadenza(categoria)
     # I giocatori che il database non aveva, creati da questa finalizzazione,
     # e i loro nomi per gli avvisi.
     creati = []
@@ -1980,6 +1984,23 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             db_player_record["games_played"] = (
                 db_player_record.get("games_played", 0) + games_played_in_tournament
             )
+            # Nei rapid e nei blitz le partite si sommano anche al campo
+            # delle partite della cadenza, da cui il fattore K di quella
+            # cadenza conta le trenta partite (10.13.54, issue 65). La voce
+            # dello storico si ricorda il campo, games_field, e il valore di
+            # prima, games_before, se il campo c'era: la riapertura del
+            # torneo le toglie anche da li', e un campo che non c'era
+            # sparisce di nuovo. Una voce senza games_field e' di uno
+            # standard, o di una finalizzazione fino alla 10.13.53.
+            partite_nello_storico = {}
+            if campo_partite:
+                if campo_partite in db_player_record:
+                    partite_nello_storico["games_before"] = db_player_record[campo_partite]
+                db_player_record[campo_partite] = (
+                    partite_della_cadenza(db_player_record, categoria)
+                    + games_played_in_tournament
+                )
+                partite_nello_storico["games_field"] = campo_partite
 
             tournament_history_entry = {
                 "tournament_name": tournament_name_original,
@@ -1991,6 +2012,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                     "end_date", datetime.now().strftime(DATE_FORMAT_ISO)
                 ),
                 **elo_nello_storico,
+                **partite_nello_storico,
             }
             if creato:
                 tournament_history_entry["created_by_finalization"] = True

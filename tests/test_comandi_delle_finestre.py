@@ -2661,3 +2661,40 @@ class TestNomeDelTorneoNuovo:
         assert os.path.exists(user_data_path("Tornello - Alfa_2.json"))
         assert principale.current_tournament["name"] == "Alfa 2"
         assert finestre == []
+
+
+class TestPartiteDellaCadenzaNelDatabase:
+    """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori
+    Locale mostra, sotto le Partite Locali Giocate, le partite dei tornei
+    rapid e blitz, da cui il fattore K di quella cadenza conta le trenta
+    partite, e le lascia modificare come le altre. Una scheda senza il
+    campo, come quelle di prima, ne mostra zero."""
+
+    def test_le_due_voci_dell_anagrafica(self, telaio, suoni):
+        from db_players import save_players_db
+        from gui.dialogs.players_db_dialog import PlayersDbDialog
+
+        scheda = {"id": "ROSMA001", "first_name": "Mario", "last_name": "Rossi", "current_elo": 1500, "games_played": 20, "games_played_rapid": 12}
+        assert save_players_db({"ROSMA001": scheda})
+        dlg = PlayersDbDialog(telaio, telaio.settings)
+        try:
+            dlg.selected_player_id = "ROSMA001"
+            dlg.populate_player_tree()
+            albero = dlg.tree_ctrl
+            voci = {}
+
+            def visita(voce):
+                figlio, segno = albero.GetFirstChild(voce)
+                while figlio.IsOk():
+                    voci[albero.GetItemText(figlio)] = albero.GetItemData(figlio)
+                    visita(figlio)
+                    figlio, segno = albero.GetNextChild(voce, segno)
+
+            visita(albero.GetRootItem())
+            testi = list(voci)
+            posizione = testi.index("Partite Locali Giocate: 20")
+            assert testi[posizione + 1 : posizione + 3] == ["Partite Locali Rapid: 12", "Partite Locali Blitz: 0"]
+            assert voci["Partite Locali Rapid: 12"] == {"type": "field", "key": "games_played_rapid", "is_int": True}
+            assert voci["Partite Locali Blitz: 0"] == {"type": "field", "key": "games_played_blitz", "is_int": True}
+        finally:
+            _chiudi(dlg)

@@ -1458,14 +1458,16 @@ def scheda_per_la_finalizzazione(giocatore, players_db):
     return scheda if scheda is not None else scheda_dal_torneo(giocatore)
 
 
-def fattore_k_della_finalizzazione(giocatore, players_db, data_di_inizio):
+def fattore_k_della_finalizzazione(giocatore, players_db, data_di_inizio, categoria="standard"):
     """Il fattore K che la finalizzazione usa per la variazione Elo di un
     iscritto: get_k_factor sulla scheda di scheda_per_la_finalizzazione.
     E' l'unico punto da cui passa il K di un iscritto: la finalizzazione
     della finestra e della console, la colonna Elo Var. della classifica
     in corso e, dalla 10.13.33, anche il primo calcolo del controller della
-    console, che fino ad allora dava 20 a chi il database non aveva."""
-    return get_k_factor(scheda_per_la_finalizzazione(giocatore, players_db), data_di_inizio)
+    console, che fino ad allora dava 20 a chi il database non aveva.
+    categoria e' la cadenza del torneo, tournament_category: dalla 10.13.54
+    il K di un rapid o di un blitz viene dai dati di quella cadenza."""
+    return get_k_factor(scheda_per_la_finalizzazione(giocatore, players_db), data_di_inizio, categoria)
 
 
 def allinea_giocatori_con_database(players_list, players_db, category="standard"):

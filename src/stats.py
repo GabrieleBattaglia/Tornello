@@ -128,27 +128,102 @@ DP_FIDE = {
 }
 
 
-def get_k_factor(player_data_dict, tournament_start_date_str):
+# I campi della scheda del database da cui viene il fattore K di ogni
+# cadenza, dalla 10.13.54 (issue 65): il K FIDE importato della cadenza,
+# gli Elo della cadenza, il primo che vale, con l'Elo FIDE della cadenza che
+# hanno le schede piu' vecchie, e il campo delle partite giocate della
+# cadenza. Negli standard le partite sono quelle di games_played, che conta
+# tutte le cadenze, meno quelle dei rapid e dei blitz.
+CAMPI_DEL_FATTORE_K = {
+    "standard": ("fide_k_factor", ("current_elo",), None),
+    "rapid": ("fide_rapid_k", ("elo_rapid", "fide_elo_rapid"), "games_played_rapid"),
+    "blitz": ("fide_blitz_k", ("elo_blitz", "fide_elo_blitz"), "games_played_blitz"),
+}
+
+
+def _cadenza_del_fattore_k(category):
+    categoria = str(category or "standard").lower()
+    return categoria if categoria in CAMPI_DEL_FATTORE_K else "standard"
+
+
+def campo_partite_della_cadenza(category):
+    """Il campo della scheda del database che conta le partite giocate nei
+    tornei di quella cadenza: games_played_rapid nei rapid,
+    games_played_blitz nei blitz, None negli standard, che non ne hanno uno
+    loro. Alla finalizzazione di un rapid o di un blitz le partite del
+    torneo si sommano a games_played, come in tutte le cadenze, e anche a
+    questo campo, dalla 10.13.54 (issue 65): prima nessuno contava le
+    partite di una cadenza, e le schede piu' vecchie non hanno il campo."""
+    return CAMPI_DEL_FATTORE_K[_cadenza_del_fattore_k(category)][2]
+
+
+def partite_della_cadenza(player_data_dict, category):
+    """Le partite giocate della scheda nei tornei di quella cadenza, da cui
+    il fattore K conta le trenta partite: nei rapid e nei blitz il campo di
+    campo_partite_della_cadenza, zero se manca; negli standard games_played,
+    che conta tutte le cadenze, meno le partite dei rapid e dei blitz. Un
+    valore che non e' un numero vale zero."""
+
+    def numero(chiave):
+        try:
+            return max(0, int(player_data_dict.get(chiave) or 0))
+        except (ValueError, TypeError):
+            return 0
+
+    campo = campo_partite_della_cadenza(category)
+    if campo:
+        return numero(campo)
+    return max(0, numero("games_played") - numero("games_played_rapid") - numero("games_played_blitz"))
+
+
+def get_k_factor(player_data_dict, tournament_start_date_str, category="standard"):
     """
     Determina il K-Factor FIDE. Ora dà priorità al valore ufficiale FIDE se presente nel DB,
     altrimenti lo calcola basandosi sulle regole.
+    Dalla 10.13.54 (issue 65, decisione di Gabriele come arbitro) il K e'
+    quello della cadenza del torneo, category: i campi li dice
+    CAMPI_DEL_FATTORE_K. Nei rapid e nei blitz vale il K FIDE della cadenza,
+    fide_rapid_k o fide_blitz_k, se e' valido; altrimenti le regole
+    dell'articolo 7.3.3 del regolamento FIDE sul rating rapid e blitz (dal
+    1 marzo 2024), le stesse dell'articolo 8.3.3 di quello standard (B.02),
+    sull'Elo e sulle partite della cadenza. Chi non ha l'Elo della cadenza
+    e' nuovo in quella lista, e ha 40. Fino alla 10.13.53 il K di un rapid o
+    di un blitz si calcolava dai dati standard: K FIDE standard, Elo
+    principale e partite di tutte le cadenze. Negli standard le partite sono
+    quelle dei soli tornei standard (partite_della_cadenza).
     """
+    if not player_data_dict:
+        return DEFAULT_K_FACTOR
+    categoria = _cadenza_del_fattore_k(category)
+    campo_k, campi_elo, _campo_partite = CAMPI_DEL_FATTORE_K[categoria]
     # --- NUOVA LOGICA DI PRIORITÀ ---
     # Se abbiamo un K-Factor ufficiale dalla FIDE, usiamo quello e basta.
-    fide_k = player_data_dict.get("fide_k_factor")
+    fide_k = player_data_dict.get(campo_k)
     if fide_k is not None and fide_k in [10, 20, 40]:  # I valori K validi
         return fide_k
     # --- FINE NUOVA LOGICA ---
 
     # Se non c'è un K-Factor FIDE, procedi con la logica di calcolo esistente...
-    if not player_data_dict:
-        return DEFAULT_K_FACTOR
-    try:
-        elo = float(player_data_dict.get("current_elo", DEFAULT_ELO))
-    except (ValueError, TypeError):
-        elo = DEFAULT_ELO
+    if categoria == "standard":
+        try:
+            elo = float(player_data_dict.get("current_elo", DEFAULT_ELO))
+        except (ValueError, TypeError):
+            elo = DEFAULT_ELO
+    else:
+        elo = 0.0
+        for campo_elo in campi_elo:
+            try:
+                elo = float(player_data_dict.get(campo_elo) or 0)
+            except (ValueError, TypeError):
+                elo = 0.0
+            if elo:
+                break
+        # Senza l'Elo della cadenza il giocatore e' nuovo in quella lista:
+        # K 40, articolo 7.3.3, anche se e' segnato come esperto.
+        if not elo:
+            return 40
 
-    games_played = player_data_dict.get("games_played", 0)
+    games_played = partite_della_cadenza(player_data_dict, categoria)
     is_experienced = player_data_dict.get("experienced", False)
     birth_date_str = player_data_dict.get("birth_date")
     age = None

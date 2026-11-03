@@ -1240,3 +1240,93 @@ class TestPtpAgliEstremi:
         assert compute_ptp("P", torneo) == 1706
         assert compute_ptp("P", self._torneo([(1, "A", "0-1", 0.0), (2, "B", "0-1", 0.0)], elo)) == 600
         assert compute_ptp("P", self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1-0", 1.0)], elo)) == 2336
+
+
+class TestFattoreKDellaCadenza:
+    """Dalla 10.13.54 (issue 65, decisione di Gabriele come arbitro) il
+    fattore K di un torneo rapid o blitz viene dai dati di quella cadenza:
+    il K FIDE della cadenza, se e' valido, altrimenti le regole
+    dell'articolo 7.3.3 del regolamento FIDE sul rating rapid e blitz, le
+    stesse dell'articolo 8.3.3 di quello standard, sull'Elo e sulle partite
+    della cadenza. Chi non ha l'Elo della cadenza e' nuovo in quella lista,
+    e ha 40. Negli standard le partite sono quelle dei soli standard. Fino
+    alla 10.13.53 il K si calcolava sempre dai dati standard."""
+
+    INIZIO = "2026-06-30"
+
+    def _adulto(self, **campi):
+        return dict({"birth_date": "1980-01-01", "current_elo": 1800, "games_played": 100}, **campi)
+
+    @pytest.mark.parametrize(("categoria", "campo"), [("rapid", "fide_rapid_k"), ("blitz", "fide_blitz_k")])
+    def test_vale_il_k_fide_della_cadenza(self, categoria, campo):
+        giocatore = self._adulto(fide_k_factor=40, **{campo: 20, f"elo_{categoria}": 1700})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 20
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 40
+        assert get_k_factor(giocatore, self.INIZIO) == 40
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz"])
+    def test_senza_l_elo_della_cadenza_e_nuovo(self, categoria):
+        """Esperto, con cento partite e il K FIDE standard 20, ma senza
+        l'Elo della cadenza e senza un K FIDE di quella cadenza valido: e'
+        nuovo in quella lista, e ha 40."""
+        giocatore = self._adulto(experienced=True, fide_k_factor=20, **{f"fide_{categoria}_k": 0, f"elo_{categoria}": 0})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 40
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 20
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz"])
+    def test_le_trenta_partite_sono_quelle_della_cadenza(self, categoria):
+        campo = f"games_played_{categoria}"
+        giocatore = self._adulto(**{f"elo_{categoria}": 1700, campo: 29})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 40
+        giocatore[campo] = 30
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 20
+        # Senza il campo, come nelle schede di prima della 10.13.54, le
+        # partite della cadenza sono zero.
+        del giocatore[campo]
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 40
+        # L'esperto, segnato cosi' nella sua scheda, non conta le partite.
+        giocatore["experienced"] = True
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 20
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz"])
+    def test_l_elo_e_quello_della_cadenza(self, categoria):
+        """Le soglie di 2300 e 2400 guardano l'Elo della cadenza, non
+        l'Elo principale."""
+        giocatore = self._adulto(current_elo=2450, **{f"elo_{categoria}": 2200, f"games_played_{categoria}": 40})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 20
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 10
+        giocatore.update({"current_elo": 2200, f"elo_{categoria}": 2450})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 10
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 20
+
+    @pytest.mark.parametrize("categoria", ["rapid", "blitz"])
+    def test_l_elo_fide_della_cadenza_delle_schede_vecchie(self, categoria):
+        """Le schede piu' vecchie hanno l'Elo FIDE della cadenza in
+        fide_elo_rapid o fide_elo_blitz, con elo_rapid o elo_blitz a zero:
+        quel giocatore nella lista c'e'."""
+        giocatore = self._adulto(**{f"elo_{categoria}": 0, f"fide_elo_{categoria}": 1868, f"games_played_{categoria}": 30})
+        assert get_k_factor(giocatore, self.INIZIO, categoria) == 20
+
+    def test_negli_standard_le_partite_sono_quelle_degli_standard(self):
+        """games_played conta tutte le cadenze: negli standard si tolgono le
+        partite dei rapid e dei blitz."""
+        giocatore = self._adulto(games_played=45, games_played_rapid=10, games_played_blitz=6)
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 40
+        giocatore["games_played_blitz"] = 5
+        assert get_k_factor(giocatore, self.INIZIO, "standard") == 20
+
+    def test_una_cadenza_sconosciuta_vale_standard(self):
+        giocatore = self._adulto(fide_k_factor=10, fide_rapid_k=40)
+        assert get_k_factor(giocatore, self.INIZIO, None) == 10
+        assert get_k_factor(giocatore, self.INIZIO, "Classica") == 10
+        assert get_k_factor(giocatore, self.INIZIO, "RAPID") == 40
+
+    def test_partite_della_cadenza(self):
+        from stats import campo_partite_della_cadenza, partite_della_cadenza
+
+        assert [campo_partite_della_cadenza(c) for c in ("standard", "rapid", "blitz", None)] == [None, "games_played_rapid", "games_played_blitz", None]
+        scheda = {"games_played": 50, "games_played_rapid": 12, "games_played_blitz": "non un numero"}
+        assert partite_della_cadenza(scheda, "rapid") == 12
+        assert partite_della_cadenza(scheda, "blitz") == 0
+        assert partite_della_cadenza(scheda, "standard") == 38
+        assert partite_della_cadenza({"games_played": 3, "games_played_rapid": 5}, "standard") == 0

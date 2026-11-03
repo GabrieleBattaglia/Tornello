@@ -875,7 +875,12 @@ def _storna_l_elo(scheda, voce, variazione, scheda_di_prima):
 # I campi della scheda di un giocatore creato dalla finalizzazione che la
 # finalizzazione stessa cambia, o che nascono diversi a ogni creazione: non
 # dicono se la scheda e' stata modificata dopo.
-CAMPI_DELLA_FINALIZZAZIONE = ("registration_date", "games_played", "tournaments_played", "medals")
+CAMPI_DELLA_FINALIZZAZIONE = ("registration_date", "games_played", "games_played_rapid", "games_played_blitz", "tournaments_played", "medals")
+
+# I campi delle partite giocate di una cadenza, che dalla 10.13.54 la
+# finalizzazione di un rapid o di un blitz scrive nella voce dello storico
+# come games_field (issue 65).
+CAMPI_DELLE_PARTITE_DELLA_CADENZA = ("games_played_rapid", "games_played_blitz")
 
 
 def _scheda_cambiata_dopo(scheda, giocatore, voce):
@@ -1065,8 +1070,20 @@ def storno_finalizzazione(giocatori, torneo_archiviato, giocatori_prima=None, is
                         _("{nome}: l'Elo {elo} non è un numero e resta com'è.").format(nome=nome_giocatore, elo=attuale)
                     )
             partite = giocatore.get("games_this_tournament") or 0
+            # Dalla 10.13.54 le partite di un rapid o di un blitz stanno
+            # anche nel campo delle partite della cadenza, scritto nella voce
+            # come games_field, e si tolgono anche da li'. Se il campo e' nato
+            # con questa finalizzazione, la voce non ha games_before, e il
+            # campo tornato a zero sparisce, come prima.
+            campo_della_cadenza = voce.get("games_field")
+            if campo_della_cadenza not in CAMPI_DELLE_PARTITE_DELLA_CADENZA:
+                campo_della_cadenza = None
+            campi_delle_partite = ["games_played"] + ([campo_della_cadenza] if campo_della_cadenza else [])
             try:
-                scheda["games_played"] = max(0, int(scheda.get("games_played") or 0) - int(partite))
+                tolte = {c: max(0, int(scheda.get(c) or 0) - int(partite)) for c in campi_delle_partite}
+                scheda.update(tolte)
+                if campo_della_cadenza and "games_before" not in voce and not scheda[campo_della_cadenza]:
+                    del scheda[campo_della_cadenza]
             except (TypeError, ValueError):
                 esito["segnalazioni"].append(
                     _("{nome}: le partite giocate non sono un numero e restano come sono.").format(nome=nome_giocatore)

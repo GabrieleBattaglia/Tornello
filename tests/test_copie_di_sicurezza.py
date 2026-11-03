@@ -571,6 +571,36 @@ class TestStorno:
         torneo["tournament_category"] = "rapid"
         return torneo
 
+    def test_le_partite_della_cadenza_si_tolgono(self):
+        """Dalla 10.13.54 la finalizzazione di un rapid somma le partite
+        anche a games_played_rapid, e la voce ne ricorda il campo,
+        games_field, e il valore di prima, games_before, se il campo c'era:
+        lo storno le toglie da li' come da games_played, e un campo nato con
+        la finalizzazione se ne va. Una voce senza games_field, di uno
+        standard o di una finalizzazione di prima, non tocca il campo."""
+        from copie_di_sicurezza import storno_finalizzazione
+
+        schede = _giocatori_db()
+        for pid in ELO_INIZIALI:
+            schede[pid]["games_played"] = 11
+            schede[pid]["tournaments_played"] = [dict(self._voce(), games_field="games_played_rapid")]
+        schede["G1"]["games_played_rapid"] = 8
+        schede["G1"]["tournaments_played"][0]["games_before"] = 7
+        schede["G2"]["games_played_rapid"] = 1
+        schede["G3"]["games_played_rapid"] = 1
+        schede["G3"]["tournaments_played"][0]["games_before"] = 0
+        schede["G4"]["games_played_rapid"] = 5
+        schede["G4"]["tournaments_played"] = [self._voce()]
+
+        esito = storno_finalizzazione(schede, self._rapid())
+
+        g = esito["giocatori"]
+        assert {pid: g[pid]["games_played"] for pid in ELO_INIZIALI} == dict.fromkeys(ELO_INIZIALI, 10)
+        assert g["G1"]["games_played_rapid"] == 7
+        assert "games_played_rapid" not in g["G2"]
+        assert g["G3"]["games_played_rapid"] == 0
+        assert g["G4"]["games_played_rapid"] == 5
+
     def _voce_con_l_elo(self, campo, prima, dopo):
         """La voce come la scrive la finalizzazione dalla 10.13.4: il campo
         dell'Elo che ha ricevuto la variazione, il valore di prima, se il

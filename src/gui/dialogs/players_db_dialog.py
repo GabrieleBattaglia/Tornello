@@ -204,6 +204,23 @@ class PlayersDbDialog(wx.Dialog):
             item_gp, {"type": "field", "key": "games_played", "is_int": True}
         )
 
+        # Dalla 10.13.54 le partite dei tornei rapid e blitz si contano anche
+        # a parte: il fattore K di quella cadenza conta le sue trenta partite
+        # da qui (issue 65). Le Partite Locali Giocate restano il totale.
+        item_gp_rap = self.tree_ctrl.AppendItem(
+            node_bio, _("Partite Locali Rapid: {}").format(p.get("games_played_rapid", 0))
+        )
+        self.tree_ctrl.SetItemData(
+            item_gp_rap, {"type": "field", "key": "games_played_rapid", "is_int": True}
+        )
+
+        item_gp_blz = self.tree_ctrl.AppendItem(
+            node_bio, _("Partite Locali Blitz: {}").format(p.get("games_played_blitz", 0))
+        )
+        self.tree_ctrl.SetItemData(
+            item_gp_blz, {"type": "field", "key": "games_played_blitz", "is_int": True}
+        )
+
         item_reg = self.tree_ctrl.AppendItem(
             node_bio, _("Data Registrazione: {}").format(p.get("registration_date", ""))
         )
@@ -402,6 +419,8 @@ class PlayersDbDialog(wx.Dialog):
             "federation": _("Nazione (FED)"),
             "club": _("Club/Società"),
             "games_played": _("Partite Locali Giocate"),
+            "games_played_rapid": _("Partite Locali Rapid"),
+            "games_played_blitz": _("Partite Locali Blitz"),
             "registration_date": _("Data Registrazione"),
             "current_elo": _("ELO Standard"),
             "elo_rapid": _("ELO Rapid"),
@@ -499,6 +518,8 @@ class PlayersDbDialog(wx.Dialog):
                     "federation": _("Nazione (FED): "),
                     "club": _("Club/Società: "),
                     "games_played": _("Partite Locali Giocate: "),
+                    "games_played_rapid": _("Partite Locali Rapid: "),
+                    "games_played_blitz": _("Partite Locali Blitz: "),
                     "registration_date": _("Data Registrazione: "),
                     "current_elo": _("ELO Standard: "),
                     "elo_rapid": _("ELO Rapid: "),
@@ -525,6 +546,8 @@ class PlayersDbDialog(wx.Dialog):
                     "elo_rapid",
                     "elo_blitz",
                     "games_played",
+                    "games_played_rapid",
+                    "games_played_blitz",
                     "fide_standard_games",
                     "fide_rapid_games",
                     "fide_blitz_games",

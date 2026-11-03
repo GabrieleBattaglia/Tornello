@@ -982,7 +982,10 @@ def get_standings_text(torneo, final=False, players_db=None):
                     p["elo_change"] = None
                 else:
                     p["k_factor"] = fattore_k_della_finalizzazione(
-                        p, players_db, torneo.get("start_date")
+                        p,
+                        players_db,
+                        torneo.get("start_date"),
+                        torneo.get("tournament_category", "standard"),
                     )
                     p["elo_change"] = calculate_elo_change(
                         p, torneo["players_dict"]
