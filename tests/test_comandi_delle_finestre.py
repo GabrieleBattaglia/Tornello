@@ -2465,3 +2465,199 @@ class TestLettereDeiMenu:
             lettere = [_lettera(v) for v in voci]
             assert None not in lettere, (titolo, voci)
             assert len(set(lettere)) == len(lettere), (titolo, voci)
+
+
+class TestNomeDelTorneoNuovo:
+    """Dalla 10.13.52 (issue 66) la procedura guidata di un torneo nuovo non
+    accetta un nome il cui file, Tornello - <nome ripulito>.json, coincide
+    con il database dei giocatori, con le impostazioni, con un altro file
+    Tornello - *.json della cartella del programma o con un torneo che c'e'
+    gia', in corso, in preparazione o in archivio, senza badare alle
+    maiuscole. Un messaggio dice con che cosa coincide, e la procedura resta
+    dov'e'. Fino alla 10.13.51 il torneo nuovo sovrascriveva il file che
+    trovava. I messaggi sono annotati, e la finestra del nome e quella
+    dell'iscrizione sono finte."""
+
+    @staticmethod
+    def _scrivi(percorso, dati):
+        import json
+
+        os.makedirs(os.path.dirname(percorso), exist_ok=True)
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(dati, f)
+
+    def _torneo_nella_cartella(self, nome, **altro):
+        from config import user_data_path
+
+        percorso = user_data_path(f"Tornello - {nome}.json")
+        self._scrivi(percorso, dict({"name": nome.replace("_", " "), "players": [], "rounds": []}, **altro))
+        return percorso
+
+    def _torneo_in_archivio(self, nome):
+        import gui.main_frame as mf
+
+        percorso = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", nome, f"Tornello - {nome}.json")
+        self._scrivi(percorso, dict(_torneo_in_corso(nome.replace("_", " ")), concluded=True))
+        return percorso
+
+    def test_il_database_dei_giocatori(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        assert coincidenza_del_nome("Players db") == "come il database dei giocatori"
+        assert coincidenza_del_nome("PLAYERS_DB") == "come il database dei giocatori"
+
+    def test_le_impostazioni(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        assert coincidenza_del_nome("settings") == "come il file delle impostazioni del programma"
+
+    def test_un_altro_file_del_programma(self):
+        """Un file Tornello - *.json che non e' un torneo, o che non si
+        legge, non si sovrascrive lo stesso."""
+        from config import user_data_path
+        from gui.main_frame import coincidenza_del_nome
+
+        self._scrivi(user_data_path("Tornello - Appunti.json"), {"voci": [1, 2]})
+        with open(user_data_path("Tornello - Rovinato.json"), "w", encoding="utf-8") as f:
+            f.write("{ non e' json")
+        atteso = "come un altro file del programma, che c'è già nella sua cartella"
+        assert coincidenza_del_nome("Appunti") == atteso
+        assert coincidenza_del_nome("rovinato") == atteso
+
+    def test_un_torneo_in_preparazione(self):
+        """Il nome si confronta ripulito, come lo ripulisce il file."""
+        from gui.main_frame import coincidenza_del_nome
+
+        self._torneo_nella_cartella("Coppa_dAutunno")
+        assert coincidenza_del_nome("coppa d'autunno") == "come il file del torneo Coppa dAutunno, in preparazione nella cartella del programma"
+
+    def test_un_torneo_in_corso(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        self._torneo_nella_cartella("Alfa", rounds=[{"round": 1, "matches": []}])
+        assert coincidenza_del_nome("ALFA") == "come il file del torneo Alfa, in corso nella cartella del programma"
+
+    def test_un_torneo_concluso_nella_cartella(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        self._torneo_nella_cartella("Gamma", rounds=[{"round": 1, "matches": []}], concluded=True)
+        assert coincidenza_del_nome("Gamma") == "come il file del torneo Gamma, concluso, nella cartella del programma"
+
+    def test_un_torneo_in_archivio(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        self._torneo_in_archivio("Primavera_2")
+        assert coincidenza_del_nome("primavera 2") == "come il file del torneo Primavera 2, concluso e archiviato fra i Tornei Conclusi"
+
+    def test_un_nome_libero(self):
+        from gui.main_frame import coincidenza_del_nome
+
+        self._torneo_nella_cartella("Alfa")
+        self._torneo_in_archivio("Primavera_2")
+        for nome in ("Alfa 2", "Primavera", "Players", "Settings 2026"):
+            assert coincidenza_del_nome(nome) is None, nome
+
+    @staticmethod
+    def _nome_scritto(principale, monkeypatch, nome):
+        """Il nome scritto nella finestra del nome della procedura guidata,
+        e confermato con OK."""
+        import wx
+
+        class NomeFinto:
+            def __init__(self, *a, **k):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetValue(self):
+                return nome
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "TextEntryDialog", NomeFinto)
+        principale.on_wizard_field_activated(principale.tree_name, "name")
+
+    def test_la_procedura_rifiuta_il_nome_e_resta(self, principale, suoni, monkeypatch):
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        self._torneo_nella_cartella("Alfa", rounds=[{"round": 1, "matches": []}])
+        principale.start_new_tournament_wizard()
+        self._nome_scritto(principale, monkeypatch, "Beta")
+        assert principale.creation_data["name"] == "Beta"
+        suoni.clear()
+
+        self._nome_scritto(principale, monkeypatch, "alfa")
+
+        assert principale.creation_mode
+        assert principale.creation_data["name"] == "Beta"
+        assert principale.tree_ctrl.GetItemText(principale.tree_name) == "Nome torneo *: Beta"
+        assert suoni == ["apertura", "errore"]
+        assert finestre == [
+            (
+                "Nome del torneo già in uso",
+                "Il nome alfa non si può usare: il file del torneo si chiamerebbe Tornello - alfa.json, come il file del torneo Alfa, in corso nella cartella del programma.\n"
+                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo.",
+            )
+        ]
+
+    def test_l_iscrizione_non_si_apre(self, principale, suoni, monkeypatch):
+        """Un file nato dopo che il nome e' stato scritto ferma la procedura
+        prima dell'iscrizione dei giocatori, che andrebbe persa."""
+        import gui.dialogs as finestre_di_dialogo
+
+        aperte = []
+        monkeypatch.setattr(finestre_di_dialogo, "PlayerEnrollmentDialog", lambda *a, **k: aperte.append(True))
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        principale.start_new_tournament_wizard()
+        self._nome_scritto(principale, monkeypatch, "Players DB")
+        assert principale.creation_data["name"] == ""
+        principale.creation_data["name"] = "Players DB"
+        finestre.clear()
+
+        principale.on_wizard_next()
+
+        assert aperte == []
+        assert [t for t, _m in finestre] == ["Nome del torneo già in uso"]
+        assert "come il database dei giocatori" in finestre[0][1]
+        assert principale.creation_mode
+
+    def test_il_torneo_che_c_era_non_si_sovrascrive(self, principale, suoni, monkeypatch):
+        """L'ultima guardia, in create_tournament_from_wizard: il file del
+        torneo che c'era resta com'e', e il torneo nuovo non nasce."""
+        from config import user_data_path
+
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        percorso = self._torneo_in_archivio("Primavera_2")
+        with open(percorso, "rb") as f:
+            prima = f.read()
+        principale.start_new_tournament_wizard()
+        principale.creation_data["name"] = "Primavera 2"
+        iscritti = [{"id": codice, "first_name": nome, "last_name": cognome, "current_elo": 1500} for codice, cognome, nome in GIOCATORI_DEI_TORNEI]
+
+        principale.create_tournament_from_wizard(iscritti)
+
+        with open(percorso, "rb") as f:
+            assert f.read() == prima
+        assert not os.path.exists(user_data_path("Tornello - Primavera_2.json"))
+        assert principale.creation_mode
+        assert principale.current_tournament is None
+        assert [t for t, _m in finestre] == ["Nome del torneo già in uso"]
+
+    def test_con_un_nome_libero_il_torneo_nasce(self, principale, suoni, monkeypatch):
+        """La strada di sempre: con il nome libero il torneo nasce, accanto a
+        quello che c'era."""
+        from config import user_data_path
+
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        self._torneo_nella_cartella("Alfa")
+        principale.start_new_tournament_wizard()
+        self._nome_scritto(principale, monkeypatch, "Alfa 2")
+        assert principale.creation_data["name"] == "Alfa 2"
+        iscritti = [{"id": codice, "first_name": nome, "last_name": cognome, "current_elo": 1500} for codice, cognome, nome in GIOCATORI_DEI_TORNEI]
+
+        principale.create_tournament_from_wizard(iscritti)
+
+        assert os.path.exists(user_data_path("Tornello - Alfa_2.json"))
+        assert principale.current_tournament["name"] == "Alfa 2"
+        assert finestre == []

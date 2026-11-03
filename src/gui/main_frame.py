@@ -74,6 +74,60 @@ def _ha_la_forma_di_un_torneo(dati):
     )
 
 
+def coincidenza_del_nome(nome):
+    """Con che cosa coincide il file di un torneo nuovo chiamato nome: una
+    frase, da mettere dopo il nome del file nel messaggio, oppure None se il
+    nome e' libero. Il file di un torneo si chiama Tornello - <nome
+    ripulito>.json, con il nome ripulito da sanitize_filename, e si
+    confronta senza badare alle maiuscole, come fa Windows: con il database
+    dei giocatori e le impostazioni, con ogni altro file Tornello - *.json
+    della cartella del programma, torneo o no, e con i tornei dell'archivio.
+    Nata con la 10.13.52 (issue 66): fino ad allora la procedura guidata non
+    guardava, e un torneo chiamato come uno che c'era gia' ne sovrascriveva
+    il file, con i turni e i risultati; uno chiamato Players_db o Settings
+    prendeva il nome del database dei giocatori o delle impostazioni."""
+    from config import PLAYER_DB_FILE
+    from utils import sanitize_filename
+
+    cercato = f"Tornello - {sanitize_filename(nome)}.json".lower()
+    if cercato == os.path.basename(PLAYER_DB_FILE).lower():
+        return _("come il database dei giocatori")
+    if cercato == "tornello - settings.json":
+        return _("come il file delle impostazioni del programma")
+
+    def leggi(percorso):
+        try:
+            with open(percorso, encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            return None
+
+    in_cartella = glob.glob(os.path.join(glob.escape(user_data_path("")), "Tornello - *.json"))
+    for percorso in in_cartella:
+        if os.path.basename(percorso).lower() != cercato:
+            continue
+        dati = leggi(percorso)
+        # Un file che non ha la forma di un torneo, o che non si legge, e' un
+        # file del programma, e non si sovrascrive lo stesso.
+        if not _ha_la_forma_di_un_torneo(dati):
+            return _("come un altro file del programma, che c'è già nella sua cartella")
+        if dati.get("concluded"):
+            stato = _("concluso, nella cartella del programma")
+        elif dati.get("rounds"):
+            stato = _("in corso nella cartella del programma")
+        else:
+            stato = _("in preparazione nella cartella del programma")
+        return _("come il file del torneo {torneo}, {stato}").format(torneo=dati["name"], stato=stato)
+    in_archivio = glob.glob(os.path.join(glob.escape(ARCHIVED_TOURNAMENTS_DIR), "**", "Tornello - *.json"), recursive=True)
+    for percorso in in_archivio:
+        if os.path.basename(percorso).lower() != cercato:
+            continue
+        dati = leggi(percorso)
+        torneo = dati["name"] if _ha_la_forma_di_un_torneo(dati) else os.path.basename(percorso)
+        return _("come il file del torneo {torneo}, concluso e archiviato fra i Tornei Conclusi").format(torneo=torneo)
+    return None
+
+
 class CustomAccessible(wx.Accessible):
     """Classe custom per MSAA per esporre il nome corretto del controllo ai lettori dello schermo."""
 
@@ -3055,14 +3109,20 @@ class MainFrame(wx.Frame):
                 self.creation_data["name"],
             )
             if dlg.ShowModal() == wx.ID_OK:
-                play_sound("conferma")
-                self.creation_data["name"] = dlg.GetValue().strip()
-                self.tree_ctrl.SetItemText(
-                    item,
-                    _("Nome torneo *: {}").format(
-                        self.creation_data["name"] or _("Non impostato")
-                    ),
-                )
+                nuovo_nome = dlg.GetValue().strip()
+                # Dalla 10.13.52 un nome il cui file coincide con un file
+                # del programma o con un torneo che c'e' gia' non si accetta
+                # (issue 66): il messaggio dice perche', e il nome resta
+                # quello di prima.
+                if not nuovo_nome or self._nome_del_torneo_libero(nuovo_nome):
+                    play_sound("conferma")
+                    self.creation_data["name"] = nuovo_nome
+                    self.tree_ctrl.SetItemText(
+                        item,
+                        _("Nome torneo *: {}").format(
+                            self.creation_data["name"] or _("Non impostato")
+                        ),
+                    )
             dlg.Destroy()
         elif field == "site":
             dlg = wx.TextEntryDialog(
@@ -3311,8 +3371,39 @@ class MainFrame(wx.Frame):
                 if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
                     self.tree_ctrl.Expand(self.tree_root)
 
+    def _nome_del_torneo_libero(self, nome):
+        """Vero se un torneo nuovo puo' chiamarsi nome. Se il suo file
+        coinciderebbe con un file del programma o con un torneo che c'e'
+        gia', in corso, in preparazione o in archivio (coincidenza_del_nome),
+        suona l'errore, lo dice in un messaggio e restituisce False: la
+        procedura guidata resta dov'e' (10.13.52, issue 66)."""
+        from utils import play_sound, sanitize_filename
+
+        coincidenza = coincidenza_del_nome(nome)
+        if coincidenza is None:
+            return True
+        play_sound("errore")
+        self._dialogo_informativo(
+            _("Nome del torneo già in uso"),
+            _(
+                "Il nome {nome} non si può usare: il file del torneo si chiamerebbe {file}, {coincidenza}.\n"
+                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+            ).format(
+                nome=nome,
+                file=f"Tornello - {sanitize_filename(nome)}.json",
+                coincidenza=coincidenza,
+            ),
+        )
+        return False
+
     def on_wizard_next(self):
         from utils import play_sound
+
+        # Il nome si controlla di nuovo prima dell'iscrizione: un file con
+        # lo stesso nome puo' essere nato dopo che lo si e' scritto, e
+        # l'iscrizione andrebbe persa (10.13.52).
+        if not self._nome_del_torneo_libero(self.creation_data.get("name", "")):
+            return
 
         # Un database che non si legge non apre la finestra di iscrizione:
         # un giocatore aggiunto dalla ricerca FIDE o da zero non si potrebbe
@@ -3365,6 +3456,13 @@ class MainFrame(wx.Frame):
         from models import Player, RoundDate, Tournament
         from stats import get_initial_elo_for_tournament
         from utils import sanitize_filename
+
+        # L'ultima guardia prima di scrivere il file, dalla 10.13.52 (issue
+        # 66): fino alla 10.13.51 un torneo con il nome di uno che c'era
+        # gia' ne sovrascriveva il file, e uno chiamato Players_db o
+        # Settings quello del database dei giocatori o delle impostazioni.
+        if not self._nome_del_torneo_libero(self.creation_data["name"]):
+            return
 
         category = self.creation_data.get("tournament_category", "standard")
         for p in enrolled:

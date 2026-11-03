@@ -108,7 +108,7 @@ Tasti per la Gestione dei Database:
 4.1 SPIEGAZIONE TEORICA DEI PARAMETRI
 La creazione di un torneo avviene tramite una procedura guidata (Wizard) integrata direttamente nell'Albero di Destra. Questo evita l'apertura di finestre sovrapposte e permette di configurare ogni aspetto passo-passo. I parametri da definire sono:
 
-1. Nome Torneo (Obbligatorio): Il titolo del torneo.
+1. Nome Torneo (Obbligatorio): Il titolo del torneo. Dal nome viene anche il nome del file del torneo, Tornello - seguito dal nome, con gli spazi diventati trattini bassi e senza simboli, per esempio "Tornello - Torneo_Sociale_di_Primavera.json". Un nome il cui file coinciderebbe, senza badare alle maiuscole, con il database dei giocatori, con le impostazioni, con un altro file del programma o con un torneo che c'è già, in corso, in preparazione o fra i Tornei Conclusi, non si accetta: si sente il suono dell'errore, un messaggio dice con che cosa coincide, e il nome resta quello di prima. Il controllo si ripete prima dell'iscrizione dei giocatori e prima di creare il torneo.
 2. Luogo (Site): La città in cui si svolge l'evento.
 3. Numero Turni: Quanti turni di gioco sono previsti.
 4. Tempo Riflessione (Cadenza): Il tempo a disposizione per ciascun giocatore, inserito in formato umano (es. "15+10" significa 15 minuti iniziali più 10 secondi di abbuono per mossa). In base alla cadenza inserita, Tornello classifica automaticamente il torneo in:
