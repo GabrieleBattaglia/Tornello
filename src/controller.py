@@ -412,14 +412,18 @@ class TournamentController:
                     else:
                         deve_creare_nuovo_torneo = True
 
-        # Gestione ripresa torneo sospeso
+        # Gestione ripresa torneo sospeso. Dalla 10.13.49 il modello conosce
+        # creation_suspended (issue 60): fino ad allora la scartava, e la
+        # ripresa non partiva mai. Ripresa l'iscrizione, la creazione prosegue
+        # dal valore del bye in poi, come per un torneo nuovo, fino al turno 1:
+        # il torneo c'e' gia', e non se ne crea un altro.
         if (
             self.tournament
             and self.tournament.schema_version == 1
-            and getattr(self.tournament, "creation_suspended", False)
+            and self.tournament.creation_suspended
         ):
             self._resume_suspended_creation()
-            deve_creare_nuovo_torneo = True  # Procedi alla generazione del turno 1
+            deve_creare_nuovo_torneo = False
 
         if deve_creare_nuovo_torneo or self.tournament is None:
             self._create_new_tournament(nome_nuovo_torneo_suggerito)
@@ -449,11 +453,10 @@ class TournamentController:
             )
             self._exit_program(0)
 
-        # Rimuovi il flag di sospensione
-        # Per le dataclasses possiamo usare setattr o semplicemente rimuovere/azzerare
-        # Nel dizionario salvato era creation_suspended. Nella dataclass non lo salviamo più o lo resettiamo
-        if hasattr(self.tournament, "creation_suspended"):
-            delattr(self.tournament, "creation_suspended")
+        # L'iscrizione e' finita: il contrassegno se ne va, e con lui la
+        # chiave nel json, che si riscrive alla fine della creazione.
+        self.tournament.creation_suspended = False
+        self._completa_la_creazione()
 
     def _create_new_tournament(self, suggested_name: str | None = None) -> None:
         self.ui.show_message(_("Creazione Nuovo Torneo"))
@@ -659,6 +662,12 @@ class TournamentController:
             )
             existing_players = self.tournament.players
 
+        self._completa_la_creazione()
+
+    def _completa_la_creazione(self) -> None:
+        """La creazione dopo l'iscrizione dei giocatori: valore del bye,
+        abbinamenti del turno 1, cartella e salvataggio. La usano il torneo
+        nuovo e la ripresa di una creazione sospesa."""
         valore_bye_suggerito = 0.5
         valore_alternativo = 1.0
 

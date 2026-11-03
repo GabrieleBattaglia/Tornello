@@ -322,6 +322,13 @@ class Tournament:
     # li perdeva (issue 56). Il formato vecchio resta com'e': lo convertono
     # migrate_old_tiebreaks e chi li legge.
     tiebreaks: list[Any] | None = None
+    # Vero per un torneo la cui iscrizione dei giocatori e' stata sospesa
+    # dalla console, con la S alla fine dell'inserimento: il controller lo
+    # riconosce e fa riprendere la creazione. Nel json la chiave compare
+    # solo quando e' vera, come manual_pairing dei turni. Fino alla 10.13.48
+    # il modello non la conosceva e la scartava: la ripresa non partiva
+    # mai, e il torneo si apriva come se l'iscrizione fosse finita (issue 60).
+    creation_suspended: bool = False
 
     # players_dict is a cache of player objects, not saved directly to file
     players_dict: dict[str, Player] = field(
@@ -364,6 +371,8 @@ class Tournament:
         # hanno dentro il dizionario dei modificatori.
         if self.tiebreaks is not None:
             d["tiebreaks"] = copy.deepcopy(self.tiebreaks)
+        if self.creation_suspended:
+            d["creation_suspended"] = True
         return d
 
     @classmethod
@@ -404,4 +413,5 @@ class Tournament:
             custom_save_path=d.get("custom_save_path", ""),
             save_path=d.get("save_path", ""),
             tiebreaks=copy.deepcopy(d.get("tiebreaks")),
+            creation_suspended=bool(d.get("creation_suspended", False)),
         )

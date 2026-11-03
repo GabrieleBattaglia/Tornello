@@ -323,3 +323,21 @@ def test_il_turno_composto_a_mano_si_riconosce():
     assert Round.from_dict(del_motore).manual_pairing is False
     assert Round.from_dict(del_motore).to_dict() == del_motore
     assert "manual_pairing" not in Round(round=1).to_dict()
+
+
+def test_la_creazione_sospesa_passa_dal_modello():
+    """Il contrassegno creation_suspended, che la console scrive sospendendo
+    l'iscrizione dei giocatori: fino alla 10.13.48 il modello lo scartava, e
+    il controller, che lo cerca sul modello, non riprendeva mai la creazione
+    (issue 60). Nel json compare solo quando e' vero, come manual_pairing, e
+    un torneo che non lo ha vale non sospeso: il torneo della finestra resta
+    identico."""
+    sospeso = dict(senza_le_escluse(torneo_della_finestra()), rounds=[], creation_suspended=True)
+    modello = Tournament.from_dict(copy.deepcopy(sospeso))
+    assert modello.creation_suspended is True
+    assert modello.to_dict() == sospeso
+    modello.creation_suspended = False
+    assert "creation_suspended" not in modello.to_dict()
+    finito = Tournament.from_dict(torneo_della_finestra())
+    assert finito.creation_suspended is False
+    assert "creation_suspended" not in finito.to_dict()

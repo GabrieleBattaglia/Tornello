@@ -231,3 +231,63 @@ class TestIscrizioneFideInConsole:
 
         assert [p["id"] for p in iscritti] == ["NICSA004"]
         assert list(giocatori) == ["NICSA004"]
+
+
+class TestRipresaDellaCreazioneSospesa:
+    """Un torneo con l'iscrizione sospesa dalla console, con la S alla fine
+    dell'inserimento, si riprende al lancio successivo: il controller lo
+    riconosce, fa continuare l'iscrizione e completa la creazione fino al
+    turno 1. Fino alla 10.13.48 il modello Tournament scartava la chiave
+    creation_suspended, la ripresa non partiva mai e il torneo si apriva come
+    se l'iscrizione fosse finita (issue 60); e se fosse partita, finita
+    l'iscrizione avrebbe cominciato la creazione di un torneo nuovo."""
+
+    def _sospeso(self):
+        """Il json che la console scrive sospendendo: quattro iscritti, tre
+        turni, nessun turno abbinato e il contrassegno della sospensione."""
+        from models import Player, Tournament
+        from tournament import save_tournament
+
+        torneo = Tournament.from_dict(
+            {
+                "name": "Console_Prova",
+                "tournament_id": "CONSOLE_PROVA",
+                "start_date": "2026-09-01",
+                "end_date": "2026-09-30",
+                "total_rounds": 3,
+                "players": [
+                    Player.from_dict({"id": pid, "first_name": "Nome" + pid, "last_name": "Cognome" + pid, "initial_elo": float(elo), "current_elo": float(elo)}).to_dict()
+                    for pid, elo in ELO.items()
+                ],
+            }
+        ).to_dict()
+        torneo["creation_suspended"] = True
+        assert save_tournament(torneo)
+
+    def test_la_ripresa_parte_e_arriva_al_turno_1(self, monkeypatch, muto, tmp_path):
+        import config
+        import ui
+        from controller import TournamentController
+        from tournament import load_tournament
+
+        self._sospeso()
+        percorso = config.user_data_path("Tornello - Console_Prova.json")
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(ui, "_conferma_lista_giocatori_torneo", lambda torneo, db: True)
+        # INVIO carica l'unico torneo; INVIO vuoto e C chiudono l'iscrizione
+        # ripresa. Poi il bye suggerito e la cartella proposta.
+        copione = Copione(monkeypatch, tasti=["", "", "c"], conferme=[True, True])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == [] and copione.conferme == []
+        assert any("Ripresa inserimento giocatori" in m for m in adattatore.messaggi)
+        assert guida.tournament.creation_suspended is False
+        salvato = load_tournament(percorso)
+        assert "creation_suspended" not in salvato
+        assert sorted(p["id"] for p in salvato["players"]) == sorted(ELO)
+        assert [r["round"] for r in salvato["rounds"]] == [1]
+        abbinati = {pid for m in salvato["rounds"][0]["matches"] for pid in (m["white_player_id"], m["black_player_id"])}
+        assert abbinati == set(ELO)
