@@ -1089,6 +1089,18 @@ def _apply_match_result_to_players(torneo, match_obj, result_str, w_score, b_sco
     print(_("\nRisultato registrato con successo."))
 
 
+def togli_programmazione(partita):
+    """Toglie la programmazione a una partita da giocare, dalla 10.15.0
+    (issue 58), come fa la console: is_scheduled a False e schedule_info
+    tolto. Non basta spegnere is_scheduled: il pie' di pagina riconosce le
+    partite programmate dalla data in schedule_info. Restituisce vero se la
+    partita aveva una programmazione. Il salvataggio lo fa chi la chiama."""
+    aveva = bool(partita.get("is_scheduled") or partita.get("schedule_info"))
+    partita["is_scheduled"] = False
+    partita.pop("schedule_info", None)
+    return aveva
+
+
 def e_un_riposo(partita):
     """Vero se la partita e' il riposo di un giocatore, il bye: senza
     avversario, o con l'avversario segnaposto dei turni vecchi."""

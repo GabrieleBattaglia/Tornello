@@ -7,6 +7,9 @@ con un giocatore ritirato si rifiutano con un messaggio. CANC e'
 l'acceleratore della voce Elimina Torneo Attivo del menu File, e il suo
 gestore smista per voce scelta: sul torneo e sul giocatore fa quello che
 faceva, sulle altre voci suona l'errore senza parlare di tornei da eliminare.
+Dalla 10.15.0 una programmazione si toglie con CANC sulla partita da giocare
+programmata e con il pulsante Togli programmazione della finestra di
+programmazione (issue 58).
 Le prove sulle funzioni di tournament.py girano senza finestre; le altre
 sulla finestra principale vera, mai mostrata, con le domande finte che
 annotano titolo, testo e pulsante predefinito, e i suoni annotati.
@@ -486,7 +489,11 @@ class TestSmistamentoDelCanc:
 
     def test_sulle_altre_voci_solo_il_suono_dell_errore(self, principale, suoni, monkeypatch):
         """Fino alla 10.13.62 diceva di scegliere un torneo da eliminare."""
-        percorso = _apri(principale)
+        torneo = _torneo()
+        da_giocare = _partita(torneo, 5)
+        da_giocare["is_scheduled"] = False
+        del da_giocare["schedule_info"]
+        percorso = _apri(principale, torneo)
         domande = _domande(monkeypatch)
         prima = _dal_file(percorso)
         voci = [
@@ -494,7 +501,7 @@ class TestSmistamentoDelCanc:
             _voce(principale, action="show_round_report", filepath=percorso, round=2),
             _voce(principale, action="category_giocate", filepath=percorso, round=2),
             _voce(principale, action="show_standings", filepath=percorso),
-            # La partita da giocare: nella 10.14.0 CANC non ha niente da
+            # La partita da giocare non programmata: CANC non ha niente da
             # togliere.
             _voce_della_partita(principale, percorso, 2, 2, 5),
         ]
@@ -526,6 +533,238 @@ class TestSmistamentoDelCanc:
 
     def test_la_voce_del_menu_tiene_il_suo_tasto(self, principale):
         assert principale.item_delete_tournament.GetItemLabel() == "E&limina Torneo Attivo...\tDelete"
+
+
+class TestTogliProgrammazione:
+    """Dalla 10.15.0 una programmazione si toglie dal pulsante Togli
+    programmazione della finestra di programmazione e con CANC sulla partita
+    programmata nell'albero, sempre dopo una domanda con No predefinito
+    (issue 58). Fino alla 10.14.0 la toglieva soltanto la console."""
+
+    def test_la_funzione_toglie_segno_e_dati(self):
+        from tournament import togli_programmazione
+
+        partita = _partita(_torneo(), 5)
+
+        assert togli_programmazione(partita) is True
+        assert partita["is_scheduled"] is False
+        assert "schedule_info" not in partita
+        assert togli_programmazione(partita) is False
+
+    def test_il_pie_di_pagina_non_la_conta_piu(self):
+        """Il pie' di pagina guarda la data: per questo schedule_info sparisce."""
+        from datetime import datetime
+
+        from stats import indicatori_pie_di_pagina
+        from tournament import togli_programmazione
+
+        torneo = _torneo()
+        adesso = datetime(2026, 11, 3, 12)
+        assert indicatori_pie_di_pagina(torneo, adesso, None, None)["pr"] == "100.0%"
+        togli_programmazione(_partita(torneo, 5))
+        assert indicatori_pie_di_pagina(torneo, adesso, None, None)["pr"] == "0.0%"
+
+    def test_la_domanda(self):
+        from gui.dialogs.result_dialog import domanda_togli_programmazione
+        from utils import format_date_locale
+
+        testo = domanda_togli_programmazione(2, "Russo Marco", "Ferrari Elena", {"date": "2026-11-06", "time": "18:00"})
+
+        assert testo.startswith(f"Vuoi togliere la programmazione della scacchiera 2, Russo Marco contro Ferrari Elena, per {format_date_locale('2026-11-06')} alle 18:00?")
+        assert testo.endswith("Il pulsante predefinito e' No.")
+
+    @staticmethod
+    def _programmazione(cornice, programmata):
+        from gui.dialogs.result_dialog import ScheduleDialog
+
+        dlg = ScheduleDialog(cornice, {"date": "2026-11-06", "time": "18:00"} if programmata else {}, cornice.settings, {}, programmata=programmata, scacchiera=2, bianco="Russo Marco", nero="Ferrari Elena")
+        chiusure = []
+        dlg.EndModal = chiusure.append
+        return dlg, chiusure
+
+    @pytest.fixture
+    def cornice(self, app_grafica):
+        import wx
+
+        from gui.settings import DEFAULT_SETTINGS
+
+        finestra = wx.Frame(None)
+        finestra.settings = dict(DEFAULT_SETTINGS)
+        yield finestra
+        finestra.DestroyChildren()
+        finestra.Destroy()
+
+    @pytest.mark.parametrize("programmata", [True, False])
+    def test_il_pulsante_e_acceso_solo_per_la_partita_programmata(self, cornice, suoni, programmata):
+        import wx
+
+        dlg, _chiusure = self._programmazione(cornice, programmata)
+        try:
+            assert dlg.btn_togli.GetLabel() == "Togli programmazione"
+            assert dlg.btn_togli.IsEnabled() is programmata
+            # Mai predefinito, e INVIO o ESC non lo premono.
+            assert dlg.btn_togli.GetId() not in (dlg.GetAffirmativeId(), dlg.GetEscapeId(), wx.ID_OK, wx.ID_CANCEL)
+        finally:
+            dlg.Destroy()
+
+    def test_nel_tab_viene_dopo_i_dettagli_e_prima_di_annulla(self, cornice, suoni):
+        import wx
+
+        dlg, _chiusure = self._programmazione(cornice, True)
+        try:
+            figli = list(dlg.pannello.GetChildren())
+            dettagli = next(f for f in figli if isinstance(f, wx.StaticBox) and f.GetLabel() == "Dettagli Sede e Arbitro")
+            annulla = next(f for f in figli if isinstance(f, wx.Button) and f.GetId() == wx.ID_CANCEL)
+            assert figli.index(dettagli) < figli.index(dlg.btn_togli) < figli.index(annulla)
+        finally:
+            dlg.Destroy()
+
+    @pytest.mark.parametrize(("risposta", "chiusa"), [("si", True), ("no", False)])
+    def test_il_pulsante_chiede_prima(self, cornice, suoni, monkeypatch, risposta, chiusa):
+        import wx
+
+        from gui.dialogs import accessible_msg_dialog
+
+        domande = _Domande(wx.ID_YES if risposta == "si" else wx.ID_NO)
+        monkeypatch.setattr(accessible_msg_dialog, "AccessibleMsgDialog", domande)
+        dlg, chiusure = self._programmazione(cornice, True)
+        try:
+            suoni.clear()
+            dlg.on_togli(None)
+        finally:
+            dlg.Destroy()
+
+        assert len(domande.aperte) == 1
+        assert domande.aperte[0].titolo == "Togli programmazione"
+        assert domande.aperte[0].no_predefinito is True
+        assert "scacchiera 2, Russo Marco contro Ferrari Elena" in domande.aperte[0].testo
+        assert chiusure == ([wx.ID_DELETE] if chiusa else [])
+        assert suoni == []
+
+    def test_la_finestra_del_risultato_passa_la_scelta(self, cornice, suoni, monkeypatch):
+        """La programmazione chiusa con wx.ID_DELETE chiude anche la finestra
+        del risultato, che la dice a chi l'ha aperta, senza suoni suoi."""
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        aperte = []
+
+        class Programmazione:
+            def __init__(self, *argomenti, **opzioni):
+                aperte.append(opzioni)
+
+            def ShowModal(self):
+                return wx.ID_DELETE
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ScheduleDialog", Programmazione)
+        dlg = result_dialog.ResultDialog(cornice, "Russo Marco", "Ferrari Elena", "RUS", "FER", 2, None, {"date": "2026-11-06", "time": "18:00"}, cornice.settings, programmata=True)
+        chiusure = []
+        dlg.EndModal = chiusure.append
+        try:
+            suoni.clear()
+            dlg.on_schedule(None)
+        finally:
+            dlg.Destroy()
+
+        assert aperte[0]["programmata"] is True
+        assert (aperte[0]["scacchiera"], aperte[0]["bianco"], aperte[0]["nero"]) == (2, "Russo Marco", "Ferrari Elena")
+        assert dlg.selected_action == "unschedule"
+        assert chiusure == [wx.ID_OK]
+        assert suoni == []
+
+    def test_dalla_finestra_del_risultato(self, principale, suoni, monkeypatch):
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        percorso = _apri(principale)
+        aperte = []
+
+        class Risultato:
+            def __init__(self, *argomenti, **opzioni):
+                aperte.append(opzioni)
+                self.selected_action = "unschedule"
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ResultDialog", Risultato)
+        principale.tree_ctrl.SelectItem(_voce_della_partita(principale, percorso, 2, 2, 5))
+        suoni.clear()
+
+        principale.on_activate_match(_partita(principale.current_tournament, 5))
+
+        assert aperte[0]["programmata"] is True
+        salvata = _partita(_dal_file(percorso), 5)
+        assert salvata["is_scheduled"] is False and "schedule_info" not in salvata
+        assert suoni == ["pianifica_rimuovi"]
+        assert principale.last_status_msg == "Programmazione tolta: la scacchiera 2 del turno 2 resta da giocare, senza giorno e ora."
+        scelta = principale.tree_ctrl.GetSelection()
+        assert principale.tree_ctrl.GetItemData(scelta)["match"]["id"] == 5
+        assert principale.tree_ctrl.GetItemText(scelta).endswith("(Non pianificata)")
+
+    def test_la_partita_non_programmata_apre_il_pulsante_spento(self, principale, suoni, monkeypatch):
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        torneo = _torneo()
+        da_giocare = _partita(torneo, 5)
+        da_giocare["is_scheduled"] = False
+        del da_giocare["schedule_info"]
+        _apri(principale, torneo)
+        aperte = []
+
+        class Risultato:
+            def __init__(self, *argomenti, **opzioni):
+                aperte.append(opzioni)
+                self.selected_action = None
+
+            def ShowModal(self):
+                return wx.ID_CANCEL
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ResultDialog", Risultato)
+        principale.on_activate_match(_partita(principale.current_tournament, 5))
+
+        assert aperte[0]["programmata"] is False
+
+    @pytest.mark.parametrize(("risposta", "tolta"), [("si", True), ("no", False)])
+    def test_con_canc_nell_albero(self, principale, suoni, monkeypatch, risposta, tolta):
+        import wx
+
+        percorso = _apri(principale)
+        prima = _dal_file(percorso)
+        domande = _domande(monkeypatch, wx.ID_YES if risposta == "si" else wx.ID_NO)
+        suoni.clear()
+
+        _canc(principale, _voce_della_partita(principale, percorso, 2, 2, 5))
+
+        assert len(domande.aperte) == 1
+        domanda = domande.aperte[0]
+        assert domanda.titolo == "Togli programmazione"
+        assert domanda.domanda and domanda.no_predefinito is True
+        assert "scacchiera 2, Russo Marco contro Ferrari Elena" in domanda.testo
+        partita = _partita(principale.current_tournament, 5)
+        if tolta:
+            assert partita["is_scheduled"] is False and "schedule_info" not in partita
+            assert "schedule_info" not in _partita(_dal_file(percorso), 5)
+            assert suoni == ["pianifica_rimuovi"]
+            scelta = principale.tree_ctrl.GetSelection()
+            assert principale.tree_ctrl.GetItemData(scelta)["match"]["id"] == 5
+        else:
+            assert partita["is_scheduled"] is True
+            assert _dal_file(percorso) == prima
+            assert suoni == []
 
 
 def test_il_torneo_di_prova_e_coerente():

@@ -4405,8 +4405,9 @@ class MainFrame(wx.Frame):
     def _canc_sulla_partita(self, dati):
         """CANC su una partita dell'albero, dalla 10.14.0 (issue 71): una
         partita giocata, o il riposo, passa da _cancella_risultato, che dice
-        anche perche' un risultato resta. Su una partita ancora da giocare
-        suona l'errore."""
+        anche perche' un risultato resta. Dalla 10.15.0 una partita da
+        giocare programmata perde la programmazione, dopo una domanda (issue
+        58). Su una partita da giocare non programmata suona l'errore."""
         from tournament import e_un_riposo
         from utils import play_sound
 
@@ -4417,7 +4418,62 @@ class MainFrame(wx.Frame):
         if partita.get("result") is not None or e_un_riposo(partita):
             self._cancella_risultato(partita, turno)
             return
+        if partita.get("is_scheduled") and partita.get("schedule_info"):
+            self._togli_programmazione_dall_albero(partita, turno)
+            return
         play_sound("errore", self.current_tournament)
+
+    def _togli_programmazione_dall_albero(self, partita, turno):
+        """CANC su una partita da giocare programmata, dalla 10.15.0 (issue
+        58): la stessa domanda del pulsante Togli programmazione, con No
+        predefinito, poi la programmazione tolta, con il cursore che resta
+        sulla partita."""
+        from gui.dialogs.result_dialog import domanda_togli_programmazione
+
+        numero = turno.get("round")
+        scacchiera = self.get_board_num(partita, numero)
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Togli programmazione"),
+            domanda_togli_programmazione(
+                scacchiera,
+                self._nome_del_giocatore(partita.get("white_player_id")),
+                self._nome_del_giocatore(partita.get("black_player_id")),
+                partita.get("schedule_info"),
+            ),
+            style=wx.YES_NO,
+            settings=self.settings,
+            no_predefinito=True,
+        )
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+        self._registra_programmazione_tolta(partita, numero, scacchiera)
+        self._tree_restore_target = {
+            "action": "activate_match",
+            "filepath": self.active_filename,
+            "match": partita,
+            "round": numero,
+            "board_num": scacchiera,
+        }
+        self.populate_tree()
+        self.show_match_detail_verbose(partita, numero, scacchiera)
+
+    def _registra_programmazione_tolta(self, partita, numero, scacchiera):
+        """Toglie la programmazione con togli_programmazione di
+        tournament.py, salva, lo dice nella barra di stato e suona il suono
+        della programmazione tolta, quello della console, dalla 10.15.0
+        (issue 58). L'albero lo ridisegna chi la chiama."""
+        from tournament import togli_programmazione
+        from utils import play_sound
+
+        togli_programmazione(partita)
+        self._save_state()
+        self.set_status(
+            _("Programmazione tolta: la scacchiera {board} del turno {round} resta da giocare, senza giorno e ora.").format(board=scacchiera, round=numero)
+        )
+        play_sound("pianifica_rimuovi", self.current_tournament)
 
     def _cancella_risultato(self, partita, turno):
         """Riporta fra quelle da giocare una partita giocata del turno
@@ -5741,6 +5797,9 @@ class MainFrame(wx.Frame):
             settings=self.settings,
             pgn_text=pgn_text,
             disable_result_change=disable_result_change,
+            programmata=bool(
+                actual_match.get("is_scheduled") and actual_match.get("schedule_info")
+            ),
         )
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -5763,6 +5822,10 @@ class MainFrame(wx.Frame):
                     )
                 else:
                     self.set_status(_("Nessuna modifica alla pianificazione."))
+            elif dlg.selected_action == "unschedule":
+                # Dalla 10.15.0, dal pulsante Togli programmazione della
+                # finestra di programmazione, dopo la sua domanda (issue 58).
+                self._registra_programmazione_tolta(actual_match, round_num, board_num)
             elif dlg.selected_action == "withdraw":
                 # Dalla 10.13.1 anche questa strada passa dal controllo sul
                 # ritiro, con l'avviso quando i giocatori non bastano.

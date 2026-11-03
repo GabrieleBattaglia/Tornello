@@ -49,6 +49,8 @@ ETICHETTE_DELLA_PROGRAMMAZIONE = (
     "Arbitro non necessario",
     "Non necessario",
     "Arbitro designato:",
+    # Dalla 10.15.0 (issue 58).
+    "Togli programmazione",
     "Annulla",
     "Conferma",
 )

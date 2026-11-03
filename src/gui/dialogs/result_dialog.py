@@ -55,14 +55,39 @@ def frecce_in_tondo(riquadro, pulsanti):
     riquadro.Bind(wx.EVT_NAVIGATION_KEY, alla_freccia)
 
 
+def domanda_togli_programmazione(scacchiera, bianco, nero, programmazione):
+    """La domanda che precede la programmazione tolta, la stessa dal
+    pulsante Togli programmazione e da CANC nell'albero, dalla 10.15.0
+    (issue 58): nomina la scacchiera, i giocatori, giorno e ora, e dice che
+    il pulsante predefinito e' No."""
+    programmazione = programmazione or {}
+    return (
+        _(
+            "Vuoi togliere la programmazione della scacchiera {board}, {white} contro {black}, per {date} alle {time}? La partita resta da giocare, senza giorno, ora, sala e arbitro."
+        ).format(
+            board=scacchiera,
+            white=bianco,
+            black=nero,
+            date=format_date_locale(programmazione.get("date")),
+            time=programmazione.get("time"),
+        )
+        + "\n\n"
+        + _("Il pulsante predefinito e' No.")
+    )
+
+
 class ScheduleDialog(wx.Dialog):
     """
     Finestra di dialogo modale per la pianificazione dettagliata di una partita.
     Permette di selezionare una data da una lista di radio button (da oggi a 3 giorni dopo la scadenza del turno),
     l'ora e i minuti con step da 5, l'indirizzo della sala o l'URL dell'incontro, e il nome dell'arbitro designato.
+    Dalla 10.15.0, per una partita gia' programmata, il pulsante Togli
+    programmazione la toglie, dopo una domanda con No predefinito, e chiude
+    la finestra con wx.ID_DELETE (issue 58): la toglie poi chi ha aperto la
+    finestra. scacchiera, bianco e nero servono alla domanda.
     """
 
-    def __init__(self, parent, schedule_info, settings, tournament_data):
+    def __init__(self, parent, schedule_info, settings, tournament_data, programmata=False, scacchiera=None, bianco="", nero=""):
         super().__init__(
             parent,
             title=_("Pianificazione Partita"),
@@ -71,6 +96,10 @@ class ScheduleDialog(wx.Dialog):
         self.settings = settings
         self.schedule_info = schedule_info or {}
         self.tournament_data = tournament_data or {}
+        self.programmata = programmata
+        self.scacchiera = scacchiera
+        self.bianco = bianco
+        self.nero = nero
         self._init_ui()
         self.apply_theme()
         adatta_finestra(self, self.pannello, MISURA_PROGRAMMAZIONE)
@@ -239,12 +268,20 @@ class ScheduleDialog(wx.Dialog):
 
         vbox.Add(sbs_details, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
 
-        # Pulsanti OK e Annulla
+        # Pulsanti OK e Annulla. Dalla 10.15.0 prima di Annulla c'e' Togli
+        # programmazione, acceso solo per una partita gia' programmata e mai
+        # predefinito (issue 58): nato prima di Annulla, nel tasto Tab viene
+        # subito dopo i dettagli. Come Annulla e Conferma, non suona quando
+        # ci si arriva.
         btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_togli = wx.Button(panel, label=_("Togli programmazione"))
+        self.btn_togli.Bind(wx.EVT_BUTTON, self.on_togli)
+        self.btn_togli.Enable(bool(self.programmata))
         btn_cancel = wx.Button(panel, wx.ID_CANCEL, _("Annulla"))
         btn_ok = wx.Button(panel, wx.ID_OK, _("Conferma"))
         btn_ok.SetDefault()
 
+        btn_sizer.Add(self.btn_togli, 0, wx.RIGHT, 10)
         btn_sizer.Add(btn_cancel, 0, wx.RIGHT, 10)
         btn_sizer.Add(btn_ok, 0)
         vbox.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
@@ -261,6 +298,27 @@ class ScheduleDialog(wx.Dialog):
     def on_no_arbiter(self, event):
         self.txt_arbiter.Enable(not self.chk_no_arbiter.GetValue())
         event.Skip()
+
+    def on_togli(self, event):
+        """Togli programmazione: con Si' la finestra si chiude con
+        wx.ID_DELETE, con No resta aperta com'era. Suoni non ne fa: la
+        programmazione tolta la suona chi la toglie."""
+        if not self.programmata:
+            return
+        from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
+
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Togli programmazione"),
+            domanda_togli_programmazione(self.scacchiera, self.bianco, self.nero, self.schedule_info),
+            style=wx.YES_NO,
+            settings=self.settings,
+            no_predefinito=True,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        if risposta == wx.ID_YES:
+            self.EndModal(wx.ID_DELETE)
 
     def apply_theme(self):
         # Dalla 10.13.58 il tema arriva a tutti i controlli, riquadri e
@@ -365,7 +423,11 @@ class ResultDialog(wx.Dialog):
         settings,
         pgn_text="",
         disable_result_change=False,
+        programmata=False,
     ):
+        """programmata dice se la partita ha gia' una programmazione: dalla
+        10.15.0 la finestra di programmazione accende allora il pulsante
+        Togli programmazione (issue 58)."""
         title = _("Risultato Scacchiera {num}").format(num=board_num)
         super().__init__(
             parent,
@@ -383,8 +445,10 @@ class ResultDialog(wx.Dialog):
         self.schedule_info = schedule_info or {}
         self.pgn_text = pgn_text or ""
         self.disable_result_change = disable_result_change
+        self.programmata = programmata
 
-        self.selected_action = None  # None (risultato), "schedule", "withdraw"
+        # None (risultato), "schedule", "unschedule" dalla 10.15.0, "withdraw"
+        self.selected_action = None
         self.withdrawn_player_id = None
 
         self._init_ui()
@@ -723,11 +787,27 @@ class ResultDialog(wx.Dialog):
         parent_frame = self.GetParent()
         t_data = getattr(parent_frame, "current_tournament", {})
 
-        dlg = ScheduleDialog(self, self.schedule_info, self.settings, t_data)
-        if dlg.ShowModal() == wx.ID_OK:
+        # Dalla 10.15.0 la programmazione tolta chiude anche questa finestra,
+        # senza suoni: il suo lo suona la finestra principale, che la toglie
+        # (issue 58).
+        dlg = ScheduleDialog(
+            self,
+            self.schedule_info,
+            self.settings,
+            t_data,
+            programmata=self.programmata,
+            scacchiera=self.board_num,
+            bianco=self.white_name,
+            nero=self.black_name,
+        )
+        esito = dlg.ShowModal()
+        if esito == wx.ID_OK:
             self.schedule_info = dlg.get_schedule_info()
             self.selected_action = "schedule"
             play_sound("pianifica_crea")
+            self.EndModal(wx.ID_OK)
+        elif esito == wx.ID_DELETE:
+            self.selected_action = "unschedule"
             self.EndModal(wx.ID_OK)
         else:
             play_sound("cancellato")
@@ -764,6 +844,8 @@ class ResultDialog(wx.Dialog):
         Dopo una programmazione confermata o la scelta del giocatore da
         ritirare non si sente la conferma: la partita pianificata ha il suo
         suono, che suona on_schedule, e il ritiro prosegue con le sue domande.
+        Lo stesso dalla 10.15.0 dopo la programmazione tolta, che ha il suo
+        suono nella finestra principale.
         L'annullamento della programmazione lo suona on_schedule, e la
         finestra resta aperta."""
         esito = super().ShowModal()
