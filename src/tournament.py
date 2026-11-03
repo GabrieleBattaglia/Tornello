@@ -1087,3 +1087,101 @@ def _apply_match_result_to_players(torneo, match_obj, result_str, w_score, b_sco
                     break
             break
     print(_("\nRisultato registrato con successo."))
+
+
+def e_un_riposo(partita):
+    """Vero se la partita e' il riposo di un giocatore, il bye: senza
+    avversario, o con l'avversario segnaposto dei turni vecchi."""
+    nero = partita.get("black_player_id")
+    return not nero or nero == "BYE_PLAYER_ID" or partita.get("result") == "BYE"
+
+
+def motivo_per_tenere_il_risultato(torneo, numero_turno, partita):
+    """Perche' il risultato di una partita non si riporta fra quelle da
+    giocare, oppure None se si puo'. Dalla 10.14.0 CANC su una partita
+    giocata, nell'albero della finestra, la riporta fra quelle da giocare
+    (issue 71), come [cancella] della console, che vale soltanto per il
+    turno corrente. I motivi sono:
+    torneo_concluso, per un torneo finalizzato;
+    senza_risultato, se non c'e' un risultato da togliere;
+    riposo, per il bye, che non e' un risultato ma una parte
+    dell'abbinamento: lo assegna il motore, insieme ai suoi punti, e la
+    console non lo propone fra le partite da cancellare;
+    turno_chiuso, se dopo il turno della partita ne e' gia' stato abbinato
+    un altro: i suoi risultati hanno deciso quegli abbinamenti, e il turno si
+    riapre con la Time Machine. Il turno corrente con tutti i risultati,
+    finche' il seguente non e' abbinato, resta aperto. Il regolamento FIDE
+    (C.04.2, articolo 4.3) farebbe valere una correzione tardiva per
+    l'abbinamento seguente, senza toccare quello gia' pubblicato: in Tornello
+    quella strada non c'e';
+    ritirato, se uno dei due giocatori si e' ritirato. Il ritiro e' venuto
+    con questa partita o dopo, e la Time Machine, che lo annulla solo a chi
+    ha giocato il turno che toglie, lo riconosce dallo storico: senza il
+    risultato quel turno non ci sarebbe piu', e il ritiro resterebbe anche
+    togliendo il turno."""
+    if torneo.get("concluded"):
+        return "torneo_concluso"
+    if partita.get("result") is None:
+        return "senza_risultato"
+    if e_un_riposo(partita):
+        return "riposo"
+    turni = torneo.get("rounds", [])
+    if not turni or numero_turno != max(t.get("round", 0) for t in turni):
+        return "turno_chiuso"
+    giocatori = torneo.get("players_dict", {})
+    for chi in (partita.get("white_player_id"), partita.get("black_player_id")):
+        if giocatori.get(chi, {}).get("withdrawn"):
+            return "ritirato"
+    return None
+
+
+def pgn_senza_risultato(testo):
+    """Il PGN con il risultato in sospeso, *, nell'intestazione e in fondo
+    alle mosse. Un testo che python-chess non legge resta com'e'."""
+    import io
+
+    import chess.pgn
+
+    try:
+        partita = chess.pgn.read_game(io.StringIO(testo))
+    except Exception:  # noqa: BLE001
+        return testo
+    if partita is None:
+        return testo
+    partita.headers["Result"] = "*"
+    return partita.accept(
+        chess.pgn.StringExporter(headers=True, comments=True, variations=True)
+    )
+
+
+def cancella_risultato(torneo, numero_turno, partita):
+    """Riporta fra quelle da giocare una partita giocata del turno corrente,
+    dalla 10.14.0 (issue 71). Fa quello che fa [cancella] della console:
+    toglie il risultato e i punteggi della partita, la voce del turno dallo
+    storico dei due giocatori, e ricalcola i punti di tutti. In piu':
+    - la programmazione torna com'era: il risultato registrato spegne
+      is_scheduled ma tiene schedule_info, e senza riaccenderlo l'albero
+      metterebbe la partita fra le non programmate, mentre il pie' di pagina,
+      che guarda la data, la conterebbe fra le programmate;
+    - il PGN resta, con il risultato in sospeso, cosi' la raccolta delle
+      partite non dice un risultato che non c'e' piu'. Quando la partita
+      riceve il risultato, la finestra riscrive l'intestazione come sempre.
+    Il salvataggio e i report li fa chi la chiama; i controlli sono in
+    motivo_per_tenere_il_risultato."""
+    partita["result"] = None
+    partita.pop("white_score", None)
+    partita.pop("black_score", None)
+    giocatori = torneo.get("players_dict", {})
+    for chi in (partita.get("white_player_id"), partita.get("black_player_id")):
+        giocatore = giocatori.get(chi)
+        if giocatore and "results_history" in giocatore:
+            giocatore["results_history"] = [
+                voce
+                for voce in giocatore["results_history"]
+                if voce.get("round") != numero_turno
+            ]
+    if (partita.get("schedule_info") or {}).get("date"):
+        partita["is_scheduled"] = True
+    if partita.get("pgn"):
+        partita["pgn"] = pgn_senza_risultato(partita["pgn"])
+    ricalcola_punti_tutti_giocatori(torneo)

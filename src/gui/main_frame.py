@@ -2326,7 +2326,10 @@ class MainFrame(wx.Frame):
                 if m.get("pgn"):
                     w_id = m.get("white_player_id")
                     b_id = m.get("black_player_id")
-                    res = m.get("result")
+                    # Dalla 10.14.0 una partita riportata fra quelle da
+                    # giocare tiene il suo PGN (issue 71): senza risultato
+                    # la voce lo dice, invece di None.
+                    res = m.get("result") or _("da giocare")
                     w_p = players_dict.get(w_id, {})
                     b_p = players_dict.get(b_id, {}) if b_id else None
                     w_name = f"{w_p.get('last_name', '')} {w_p.get('first_name', '')}".strip()
@@ -2863,7 +2866,8 @@ class MainFrame(wx.Frame):
                     has_pgn = True
                     w_id = m.get("white_player_id")
                     b_id = m.get("black_player_id")
-                    res = m.get("result")
+                    # Come nell'albero: senza risultato, da giocare.
+                    res = m.get("result") or _("da giocare")
                     players_dict = self.current_tournament.get("players_dict", {})
                     w_p = players_dict.get(w_id, {})
                     b_p = players_dict.get(b_id, {}) if b_id else None
@@ -3620,16 +3624,12 @@ class MainFrame(wx.Frame):
             event.Skip()
             return
 
+        # Di solito CANC non arriva qui: e' l'acceleratore della voce Elimina
+        # Torneo Attivo, e il tasto lo prende il menu. Se arriva, fa lo
+        # stesso, dallo stesso smistamento.
         if key_code == wx.WXK_DELETE and item and data:
-            action = data.get("action")
-            filepath = data.get("filepath")
-            if action == "show_player_detail":
-                player_data = data.get("player")
-                self.delete_player_from_tournament(item, player_data)
-                return
-            if action in ["select_tournament", "load_concluded"] and filepath:
-                self.delete_tournament_completely(item, filepath)
-                return
+            self._canc_sulla_voce(item, data)
+            return
 
         event.Skip()
 
@@ -4347,66 +4347,179 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
 
     def on_delete_active_tournament_menu(self, event):
+        """La voce Elimina Torneo Attivo del menu File, che ha CANC come
+        acceleratore: CANC nell'albero arriva qui, e non a on_tree_key_down.
+        Dalla 10.14.0 smista per la voce scelta nell'albero, con
+        _canc_sulla_voce (issue 71): sul torneo lo elimina come sempre, e su
+        una partita giocata la riporta fra quelle da giocare. Fino alla
+        10.13.62, su ogni voce che non era un torneo ne' un giocatore,
+        suonava l'errore e diceva di scegliere un torneo da eliminare, anche
+        a chi aveva premuto CANC su una partita."""
         item = self.tree_ctrl.GetSelection()
-        if not item or not item.IsOk():
-            from utils import play_sound
+        data = self.tree_ctrl.GetItemData(item) if item and item.IsOk() else None
+        self._canc_sulla_voce(item, data)
 
-            play_sound("errore", self.current_tournament)
-            wx.MessageBox(
-                _(
-                    "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
-                ),
-                _("Avviso"),
-                wx.ICON_WARNING,
-            )
-            return
-
-        data = self.tree_ctrl.GetItemData(item)
-        if not data:
-            from utils import play_sound
-
-            play_sound("errore", self.current_tournament)
-            wx.MessageBox(
-                _(
-                    "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
-                ),
-                _("Avviso"),
-                wx.ICON_WARNING,
-            )
-            return
-
-        action = data.get("action")
-        if action == "show_player_detail":
-            player_data = data.get("player")
-            self.delete_player_from_tournament(item, player_data)
-            return
-        if action in ["select_tournament", "load_concluded"]:
-            filepath = data.get("filepath")
-            if not filepath:
-                from utils import play_sound
-
-                play_sound("errore", self.current_tournament)
-                wx.MessageBox(
-                    _(
-                        "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
-                    ),
-                    _("Avviso"),
-                    wx.ICON_WARNING,
-                )
-                return
-            self.delete_tournament_completely(item, filepath)
-            return
+    def _canc_sulla_voce(self, item, data):
+        """CANC sulla voce scelta nell'albero, dal tasto o dalla voce Elimina
+        Torneo Attivo del menu File. Sul torneo lo elimina, sul giocatore lo
+        toglie o ne propone il ritiro, come prima; dalla 10.14.0, sulla
+        partita, decide _canc_sulla_partita. Sulle altre voci suona
+        l'errore, senza messaggio: fino alla 10.13.62 il messaggio diceva di
+        scegliere un torneo, e non c'entrava con quello che si voleva fare."""
         from utils import play_sound
 
+        dati = data if isinstance(data, dict) else {}
+        azione = dati.get("action")
+        if azione == "show_player_detail":
+            self.delete_player_from_tournament(item, dati.get("player"))
+            return
+        if azione in ("select_tournament", "load_concluded") and dati.get("filepath"):
+            self.delete_tournament_completely(item, dati["filepath"])
+            return
+        if azione == "activate_match":
+            self._canc_sulla_partita(dati)
+            return
         play_sound("errore", self.current_tournament)
-        wx.MessageBox(
+
+    def _partita_della_voce(self, dati):
+        """La partita e il turno di una voce dell'albero, presi dal torneo
+        aperto e non dai dati della voce, che possono essere di un albero
+        disegnato prima. None e None se la voce non e' del torneo aperto, o
+        la partita non c'e' piu'."""
+        if not self.current_tournament or not self._e_il_torneo_aperto(dati.get("filepath")):
+            return None, None
+        numero = dati.get("round")
+        id_partita = (dati.get("match") or {}).get("id")
+        for turno in self.current_tournament.get("rounds", []):
+            if turno.get("round") != numero:
+                continue
+            for partita in turno.get("matches", []):
+                if partita.get("id") == id_partita:
+                    return partita, turno
+        return None, None
+
+    def _nome_del_giocatore(self, player_id):
+        giocatore = self.current_tournament.get("players_dict", {}).get(player_id, {})
+        return f"{giocatore.get('last_name', '')} {giocatore.get('first_name', '')}".strip()
+
+    def _canc_sulla_partita(self, dati):
+        """CANC su una partita dell'albero, dalla 10.14.0 (issue 71): una
+        partita giocata, o il riposo, passa da _cancella_risultato, che dice
+        anche perche' un risultato resta. Su una partita ancora da giocare
+        suona l'errore."""
+        from tournament import e_un_riposo
+        from utils import play_sound
+
+        partita, turno = self._partita_della_voce(dati)
+        if partita is None:
+            play_sound("errore", self.current_tournament)
+            return
+        if partita.get("result") is not None or e_un_riposo(partita):
+            self._cancella_risultato(partita, turno)
+            return
+        play_sound("errore", self.current_tournament)
+
+    def _cancella_risultato(self, partita, turno):
+        """Riporta fra quelle da giocare una partita giocata del turno
+        corrente, dalla 10.14.0 (issue 71), come [cancella] della console,
+        dopo una domanda con No predefinito che nomina i due giocatori e il
+        risultato. Lo fa cancella_risultato di tournament.py; qui il
+        salvataggio, l'albero, l'area centrale, la barra di stato e il suono
+        della cancellazione, lo stesso della console. Un risultato che resta,
+        per i motivi di motivo_per_tenere_il_risultato, fa suonare l'errore e
+        un messaggio dice perche' e che cosa fare."""
+        from tournament import cancella_risultato, motivo_per_tenere_il_risultato
+        from utils import format_date_locale, play_sound
+
+        numero = turno.get("round")
+        scacchiera = self.get_board_num(partita, numero)
+        motivo = motivo_per_tenere_il_risultato(self.current_tournament, numero, partita)
+        if motivo:
+            play_sound("errore", self.current_tournament)
+            titolo, messaggio = self._perche_il_risultato_resta(motivo, partita, numero, scacchiera)
+            self._dialogo_informativo(titolo, messaggio)
+            return
+
+        bianco = self._nome_del_giocatore(partita.get("white_player_id"))
+        nero = self._nome_del_giocatore(partita.get("black_player_id"))
+        parti = [
             _(
-                "Seleziona prima un torneo attivo dall'albero per poterlo eliminare."
-            ),
-            _("Avviso"),
-            wx.ICON_WARNING,
+                "Vuoi cancellare il risultato {result} della scacchiera {board} del turno {round}, {white} contro {black}? La partita torna fra quelle da giocare, e i punti dei due giocatori vengono ricalcolati."
+            ).format(result=partita.get("result"), board=scacchiera, round=numero, white=bianco, black=nero)
+        ]
+        programmazione = partita.get("schedule_info") or {}
+        if programmazione.get("date"):
+            parti.append(
+                _("Torna fra le programmate, con la programmazione di prima: {date} alle {time}.").format(
+                    date=format_date_locale(programmazione.get("date")), time=programmazione.get("time")
+                )
+            )
+        if partita.get("pgn"):
+            parti.append(_("Il PGN resta con la partita, con il risultato in sospeso, e lo ritrovi quando apri di nuovo la sua finestra del risultato."))
+        parti.append(_("Il pulsante predefinito e' No."))
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Cancellazione del risultato"),
+            "\n\n".join(parti),
+            style=wx.YES_NO,
+            settings=self.settings,
+            no_predefinito=True,
         )
-        return
+        conferma = dlg.ShowModal()
+        dlg.Destroy()
+        if conferma != wx.ID_YES:
+            return
+
+        cancella_risultato(self.current_tournament, numero, partita)
+        self._save_state()
+        self._tree_restore_target = {
+            "action": "activate_match",
+            "filepath": self.active_filename,
+            "match": partita,
+            "round": numero,
+            "board_num": scacchiera,
+        }
+        self.populate_tree()
+        self.show_match_detail_verbose(partita, numero, scacchiera)
+        self.set_status(
+            _("Risultato cancellato: la scacchiera {board} del turno {round} torna fra le partite da giocare.").format(board=scacchiera, round=numero)
+        )
+        play_sound("cancellato", self.current_tournament)
+
+    def _perche_il_risultato_resta(self, motivo, partita, numero, scacchiera):
+        """Titolo e testo del messaggio che spiega perche' CANC non riporta
+        la partita fra quelle da giocare, per i motivi di
+        motivo_per_tenere_il_risultato."""
+        if motivo == "torneo_concluso":
+            return _("Torneo concluso"), _(
+                "Il torneo {name} e' concluso, e i risultati delle sue partite non si cancellano piu'. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+            ).format(name=self.current_tournament.get("name", ""))
+        if motivo == "riposo":
+            return _("Riposo"), _(
+                "Il riposo di {name} nel turno {round} non e' un risultato da cancellare: lo ha assegnato l'abbinamento, insieme ai suoi punti, e resta finche' resta il turno. La Time Machine (Ctrl+Z) toglie il turno intero, con i suoi abbinamenti."
+            ).format(name=self._nome_del_giocatore(partita.get("white_player_id")), round=numero)
+        if motivo == "turno_chiuso":
+            return _("Turno chiuso"), _(
+                "Il risultato della scacchiera {board} del turno {round} non si cancella: dopo quel turno e' gia' stato abbinato il turno {next}, e i risultati del turno {round} ne hanno deciso gli abbinamenti. Per riaprire il turno {round} c'e' la Time Machine (Ctrl+Z), che toglie l'ultimo turno abbinato, con i suoi risultati: ogni Ctrl+Z ne toglie uno."
+            ).format(board=scacchiera, round=numero, next=numero + 1)
+        if motivo == "ritirato":
+            ritirati = [
+                self._nome_del_giocatore(chi)
+                for chi in (partita.get("white_player_id"), partita.get("black_player_id"))
+                if self.current_tournament.get("players_dict", {}).get(chi, {}).get("withdrawn")
+            ]
+            if len(ritirati) == 1:
+                premessa = _(
+                    "Il risultato della scacchiera {board} non si cancella: {name} si e' ritirato dal torneo con questa partita, e senza il risultato il suo ritiro resterebbe senza il turno da cui vale."
+                ).format(board=scacchiera, name=ritirati[0])
+            else:
+                premessa = _(
+                    "Il risultato della scacchiera {board} non si cancella: {white} e {black} si sono ritirati dal torneo con questa partita, e senza il risultato il loro ritiro resterebbe senza il turno da cui vale."
+                ).format(board=scacchiera, white=ritirati[0], black=ritirati[1])
+            return _("Giocatore ritirato"), premessa + "\n\n" + _(
+                "Finche' il turno ha partite da giocare, il risultato si cambia aprendo la partita con INVIO e scegliendone un altro. Altrimenti c'e' la Time Machine (Ctrl+Z), che toglie il turno corrente con i suoi abbinamenti e annulla anche il ritiro."
+            )
+        return _("Risultato"), _("La partita non ha un risultato da cancellare.")
 
     def start_new_tournament_wizard(self):
         """Inizia il flusso guidato di inserimento dati nell'albero per il Nuovo Torneo."""
