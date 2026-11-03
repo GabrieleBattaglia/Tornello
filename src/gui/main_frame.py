@@ -4439,7 +4439,8 @@ class MainFrame(wx.Frame):
             "color_board1": "white1",
             "bye_value": 0.5,
         }
-        play_sound("notifica")
+        # Dalla 10.13.62 un suono suo, e non piu' la campanella (issue 57).
+        play_sound("nuovo_torneo")
         self.populate_new_tournament_wizard_tree()
 
     def populate_new_tournament_wizard_tree(self):

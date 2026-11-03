@@ -389,8 +389,9 @@ class VisualSettingsDialog(wx.Dialog):
 
     def on_volume_change(self, event):
         self._scrivi_volume(self.slider_vol.GetValue())
-        # Il suono di prova deve farsi sentire al volume appena scelto.
-        play_sound("notifica")
+        # Il suono di prova deve farsi sentire al volume appena scelto: dalla
+        # 10.13.62 una nota tenuta, e non piu' la campanella (issue 57).
+        play_sound("prova_volume")
 
     def _scrivi_volume(self, val):
         """Scrive il volume nel file delle impostazioni, lasciando com'e' il

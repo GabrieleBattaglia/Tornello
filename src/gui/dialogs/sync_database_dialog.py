@@ -222,7 +222,8 @@ class SyncDatabaseDialog(wx.Dialog):
             msg = _(
                 "Aggiornati {num} giocatori. Ci sono {amb} omonimi con ID ambiguo da risolvere."
             ).format(num=applied_count, amb=len(ambiguous_list))
-            play_sound("notifica")
+            # Dalla 10.13.62 un suono suo, e non piu' la campanella (issue 57).
+            play_sound("omonimi_ambigui")
             dlg_res = AccessibleMsgDialog(self, _("Risoluzione Omonimi"), msg)
             dlg_res.ShowModal()
             dlg_res.Destroy()

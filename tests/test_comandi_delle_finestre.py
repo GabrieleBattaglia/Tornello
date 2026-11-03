@@ -2331,11 +2331,11 @@ class TestImpostazioni:
             # Il suono di prova si sente al volume nuovo, scritto nel file.
             assert self._nel_file(percorso) == {"volume": 90, "font_size": 18}
             assert utils._volume_base() == 0.9
-            assert suonati == ["notifica"]
+            assert suonati == ["prova_volume"]
             dlg.rimetti_il_volume()
             assert self._nel_file(percorso) == {"volume": 40, "font_size": 18}
             assert utils._volume_base() == 0.4
-            assert suonati == ["notifica"]
+            assert suonati == ["prova_volume"]
         finally:
             _chiudi(dlg)
             # Il volume letto resta in memoria: le prove dopo non lo trovano.

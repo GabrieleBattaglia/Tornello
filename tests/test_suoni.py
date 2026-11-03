@@ -14,7 +14,11 @@ dalla 10.12.0 la finestra della composizione manuale del turno ne ha tre, per
 la coppia aggiunta, la coppia con avvertimenti e la coppia tolta, piu' due
 per Inverti colori, senza e con avvertimenti, e dalla 10.13.0 altri due per
 Proposta automatica (issue 38). Dalla 10.13.42 la coppia con avvertimenti
-lascia il posto all'avvertimento, che segue il suono dell'azione.
+lascia il posto all'avvertimento, che segue il suono dell'azione. Dalla
+10.13.62 la campanella non suona piu' in nessun punto di Tornello: l'avvio
+della procedura di un torneo nuovo, l'avviso degli omonimi ambigui della
+sincronizzazione e il suono di prova del volume hanno ciascuno il suo evento,
+e nessun preset serve due eventi in tutto il programma (issue 57).
 Niente suona davvero: la collezione dei preset si legge come json, i
 sorgenti come testo, e dove servono le finestre vere play_sound e' sostituita
 da una finta che annota gli eventi.
@@ -33,8 +37,8 @@ CARTELLA_SRC = os.path.join(RADICE, "src")
 FINESTRA_DEI_RISULTATI = os.path.join(CARTELLA_SRC, "gui", "dialogs", "result_dialog.py")
 
 # I due eventi nati con la 10.6.1, quello del ripristino, nato con la
-# 10.10.0, e i sette della composizione manuale del turno, nati con la
-# 10.12.0 e la 10.13.0.
+# 10.10.0, i sette della composizione manuale del turno, nati con la
+# 10.12.0 e la 10.13.0, e i tre che con la 10.13.62 lasciano la campanella.
 EVENTI_NUOVI = (
     "apertura_risultati",
     "controllo_risultati",
@@ -46,7 +50,18 @@ EVENTI_NUOVI = (
     "coppia_invertita_avvertimento",
     "proposta_coppie",
     "proposta_coppie_avvertimento",
+    "nuovo_torneo",
+    "omonimi_ambigui",
+    "prova_volume",
 )
+# Dove suonano i tre eventi della 10.13.62, che fino alla 10.13.61 suonavano
+# la campanella (issue 57).
+AL_POSTO_DELLA_CAMPANELLA = {
+    "nuovo_torneo": os.path.join("gui", "main_frame.py"),
+    "omonimi_ambigui": os.path.join("gui", "dialogs", "sync_database_dialog.py"),
+    "prova_volume": os.path.join("gui", "dialogs", "visual_settings_dialog.py"),
+}
+CAMPANELLA = "notifica"
 
 # Le chiamate con il nome scritto per intero, play_sound("...") oppure
 # Acusticator.play("..."), e dalla 10.13.42 self._suona("..."), che nella
@@ -159,6 +174,112 @@ class TestEventiNuovi:
         nomi = {n for n, _file in chiamate_letterali()}
         assert {"apertura", "cancellato", "apertura_risultati", "controllo_risultati"} <= nomi
         assert not any(n.startswith("risultato_") for n in nomi)
+
+    @pytest.mark.parametrize("evento", EVENTI_NUOVI)
+    def test_il_preset_non_e_un_onda_quadra(self, evento):
+        # Gabriele trova aggressiva l'onda quadra, il kind 2 di Acusticator.
+        from utils import EVENTI
+
+        assert collezione()[EVENTI[evento]].get("kind", 1) != 2
+
+
+class TestNessunPresetPerDueEventi:
+    """Dalla 10.13.62 la regola vale per tutto Tornello, e non solo per gli
+    eventi nuovi: ogni preset che il programma suona lo raggiunge con un nome
+    solo, la chiave di EVENTI o il nome del preset nelle chiamate dirette, e
+    lo stesso nome si puo' chiamare da piu' punti, come errore o conferma.
+    Fino alla 10.13.61 la campanella suonava per l'avvio della procedura di un
+    torneo nuovo, per gli omonimi ambigui della sincronizzazione e per la
+    prova del volume, e la rimozione di un giocatore dal database chiamava
+    per nome il preset dell'evento rimozione_giocatore (issue 57)."""
+
+    def test_nessun_preset_serve_due_eventi(self):
+        from utils import EVENTI
+
+        nomi = set(EVENTI) | {n for n, _file in chiamate_letterali()}
+        per_preset = {}
+        for nome in nomi:
+            per_preset.setdefault(EVENTI.get(nome, nome), set()).add(nome)
+        doppi = {preset: sorted(chi) for preset, chi in per_preset.items() if len(chi) > 1}
+        assert doppi == {}, f"preset che servono piu' eventi: {doppi}"
+
+    def test_la_campanella_non_suona_piu(self):
+        from utils import EVENTI
+
+        assert CAMPANELLA not in EVENTI
+        assert CAMPANELLA not in EVENTI.values()
+        chiamate = sorted(file for n, file in chiamate_letterali() if EVENTI.get(n, n) == CAMPANELLA)
+        assert chiamate == []
+
+    @pytest.mark.parametrize(("evento", "file"), sorted(AL_POSTO_DELLA_CAMPANELLA.items()))
+    def test_ogni_evento_suona_dove_suonava_la_campanella(self, evento, file):
+        chi = sorted(f for n, f in chiamate_letterali() if n == evento)
+        assert chi == [file]
+
+
+class TestAlPostoDellaCampanella:
+    """I tre eventi della 10.13.62 nei loro punti, con play_sound sostituita
+    da una finta che annota (issue 57). La prova del volume si prova in
+    test_comandi_delle_finestre.py, con la finestra delle impostazioni vera."""
+
+    def test_la_procedura_di_un_torneo_nuovo(self, app_grafica, suoni):
+        import gui.main_frame as mf
+
+        alberi = []
+        finta = SimpleNamespace(populate_new_tournament_wizard_tree=lambda: alberi.append(suoni[:]))
+        mf.MainFrame.start_new_tournament_wizard(finta)
+        assert suoni == ["nuovo_torneo"]
+        # Il suono arriva prima dell'albero della procedura.
+        assert alberi == [["nuovo_torneo"]]
+        assert finta.creation_mode
+
+    def test_gli_omonimi_ambigui_della_sincronizzazione_in_blocco(self, app_grafica, suoni, monkeypatch):
+        import wx
+
+        from gui.dialogs import sync_database_dialog as modulo
+
+        class Avanzamento:
+            def __init__(self, *a, **k):
+                pass
+
+            def Update(self, *a, **k):
+                return True, False
+
+            def Destroy(self):
+                pass
+
+        messaggi = []
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, testo, *a, **k):
+                messaggi.append((titolo, suoni[:]))
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(modulo, "play_sound", lambda nome, *a, **k: suoni.append(nome))
+        monkeypatch.setattr(modulo.wx, "ProgressDialog", Avanzamento)
+        monkeypatch.setattr(modulo, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(modulo, "save_players_db", lambda db: None)
+        dialogo = modulo.SyncDatabaseDialog(None, {})
+        risolti = []
+        try:
+            dialogo._resolve_ambiguous_changes = risolti.append
+            dialogo.changes = [
+                {"is_ambiguous": True, "player_id": "R1", "local_player": {"last_name": "Rossi", "first_name": "Mario"}},
+            ]
+            suoni.clear()
+            dialogo.on_bulk_sync(None)
+        finally:
+            dialogo.Destroy()
+        # Il suono degli omonimi arriva con il messaggio che li conta, prima
+        # della risoluzione uno per uno.
+        assert suoni == ["fide_attesa", "omonimi_ambigui"]
+        assert messaggi == [("Risoluzione Omonimi", ["fide_attesa", "omonimi_ambigui"])]
+        assert len(risolti) == 1
 
 
 class TestSuoniInFila:

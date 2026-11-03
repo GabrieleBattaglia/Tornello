@@ -629,7 +629,6 @@ EVENTI = {
     "risultato_1-F": "tornello_risultato_1_F",
     "risultato_F-1": "tornello_risultato_F_1",
     "risultato_0-0F": "tornello_risultato_0_0F",
-    "notifica": "notifica",
     # Dalla 10.3.1 i controlli della finestra di programmazione hanno una
     # sinusoide di 45 ms al posto della campanella, troppo invadente (issue 48).
     "controllo_programmazione": "meditimer_giro",
@@ -670,6 +669,17 @@ EVENTI = {
     "coppia_invertita_avvertimento": "pokermachine_coppia_muta",
     "proposta_coppie": "perfect_match",
     "proposta_coppie_avvertimento": "arpeggio_pensoso",
+    # Dalla 10.13.62 la campanella, il preset notifica, acuta e lunga, non
+    # suona piu' in nessun punto: i tre eventi che la usavano hanno ciascuno
+    # il suo preset, che Tornello non usa per nient'altro, provvisorio fino
+    # all'ascolto di Gabriele (issue 57). All'avvio della procedura di un
+    # torneo nuovo una scivolata grave e morbida che sale, un processo che
+    # comincia; quando la sincronizzazione in blocco lascia omonimi da
+    # risolvere, quattro note che ricadono e restano sospese, cose ancora da
+    # sistemare; per la prova del volume una nota sola, tenuta, al centro.
+    "nuovo_torneo": "partenza",
+    "omonimi_ambigui": "mess_arretrati_aperti",
+    "prova_volume": "mess_prova_volume",
 }
 
 

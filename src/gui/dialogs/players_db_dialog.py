@@ -643,7 +643,7 @@ class PlayersDbDialog(wx.Dialog):
         if dlg.ShowModal() == wx.ID_YES:
             del self.players_db[player_id]
             save_players_db(self.players_db)
-            play_sound("tornello_rimozione_giocatore")
+            play_sound("rimozione_giocatore")
             self.on_search_changed(None)
         dlg.Destroy()
 
