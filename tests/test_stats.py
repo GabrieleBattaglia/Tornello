@@ -335,6 +335,35 @@ def test_partite_valide_per_elo():
     assert calculate_elo_change(giocatore, avversari) == calculate_elo_change(solo_la_valida, avversari) == -9
 
 
+def test_partite_giocate_nel_torneo_senza_i_forfait():
+    """Dalla 10.13.53 (issue 65) le partite che la finalizzazione somma alle
+    partite giocate del database sono quelle valide per l'Elo: non i bye e
+    non le partite non giocate, 1-F, F-1 e 0-0F, che per l'articolo 5.1 del
+    regolamento FIDE sul rating, e per l'articolo 4.1 di quello rapid e
+    blitz, non contano. Fino alla 10.13.52 i forfait contavano."""
+    from stats import partite_giocate_nel_torneo
+
+    avversari = {"AVV001": {"id": "AVV001", "initial_elo": 1650.0}, "AVV002": {"id": "AVV002", "initial_elo": 1500.0}}
+
+    def voce(turno, avversario, risultato, punti):
+        return {"round": turno, "opponent_id": avversario, "color": "white", "result": risultato, "score": punti}
+
+    giocatore = {
+        "id": "TST007",
+        "initial_elo": 1600.0,
+        "results_history": [
+            voce(1, "BYE_PLAYER_ID", "BYE", 1.0),
+            voce(2, "AVV001", "1-F", 1.0),
+            voce(3, "AVV002", "F-1", 0.0),
+            voce(4, "AVV001", "0-0F", 0.0),
+            voce(5, "AVV002", "1/2-1/2", 0.5),
+            voce(6, "AVV001", "0-1", 0.0),
+        ],
+    }
+    assert partite_giocate_nel_torneo(giocatore, avversari) == 2
+    assert partite_giocate_nel_torneo({"id": "TST008"}, avversari) == 0
+
+
 class TestTabellaPerformanceFIDE:
     """La tabella che converte la percentuale di punteggio nella differenza di
     performance esisteva in due copie e la seconda si fermava a 0.89, cosi' il

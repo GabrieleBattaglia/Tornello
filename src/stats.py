@@ -237,6 +237,21 @@ def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
     return partite
 
 
+def partite_giocate_nel_torneo(player, tournament_players_dict):
+    """Quante partite del torneo la finalizzazione somma alle partite
+    giocate della scheda del database, games_this_tournament: le partite
+    valide per l'Elo di partite_valide_per_elo, cioe' quelle su cui si
+    calcola la variazione. Dalla 10.13.53 (issue 65) restano fuori, oltre ai
+    bye, anche le partite non giocate, vinte o perse a forfait, in tutte le
+    cadenze: le partite non giocate, per forfait o per qualunque altro
+    motivo, non contano, dice l'articolo 5.1 del regolamento FIDE sul
+    rating (B.02, dal 1 marzo 2024), e allo stesso modo l'articolo 4.1 di
+    quello rapid e blitz. Fino alla 10.13.52 contavano, e un giocatore
+    arrivava prima alle trenta partite dopo le quali il fattore K scende da
+    40 a 20. La finestra e la console passano tutte e due da qui."""
+    return len(partite_valide_per_elo(player, tournament_players_dict))
+
+
 def calculate_elo_change(player, tournament_players_dict):
     """Calcola la variazione Elo per un giocatore basata sulle partite del torneo."""
     if not player or "initial_elo" not in player or "results_history" not in player:

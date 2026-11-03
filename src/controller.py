@@ -36,6 +36,7 @@ from stats import (
     compute_buchholz_cut1,
     compute_tiebreak_value,
     parse_time_control,
+    partite_giocate_nel_torneo,
 )
 from tiebreak_criteria import (
     get_default_tiebreaks,
@@ -1041,6 +1042,7 @@ class TournamentController:
 
         # Fase 1: Determina K-Factor e conta partite
         self.ui.show_message(_("Accesso al DB e calcolo K-Factor e partite giocate..."))
+        giocatori_del_torneo = {q.id: q.to_dict() for q in self.tournament.players}
         for p in self.tournament.players:
             if p.withdrawn:
                 p.k_factor = None
@@ -1054,15 +1056,12 @@ class TournamentController:
                 p.to_dict(), self.players_db, self.tournament.start_date
             )
 
-            games_count = 0
-            for r in p.results_history:
-                if (
-                    r.opponent_id
-                    and r.opponent_id != "BYE_PLAYER_ID"
-                    and r.score is not None
-                ):
-                    games_count += 1
-            p.games_this_tournament = games_count
+            # Le partite contate come in ui.finalize_tournament: dalla
+            # 10.13.53 senza i forfait (articolo 5.1 del regolamento FIDE
+            # sul rating, issue 65).
+            p.games_this_tournament = partite_giocate_nel_torneo(
+                giocatori_del_torneo[p.id], giocatori_del_torneo
+            )
 
         # Fase 2: Calcola spareggi
         self.ui.show_message(

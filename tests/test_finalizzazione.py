@@ -1325,3 +1325,68 @@ class TestIscrittoTrovatoPerIdentificativoFide:
         assert avvisi == [
             "NomeG3 CognomeG3 è nel torneo con l'identificativo FIDE_12345, che il database dei giocatori non ha, e nel database con l'identificativo G3, con lo stesso identificativo FIDE: Elo, partite giocate, storico e medaglia sono andati alla scheda G3, senza crearne un doppione."
         ]
+
+
+class TestPartiteGiocateSenzaForfait:
+    """Dalla 10.13.53 (issue 65) le partite giocate del database crescono
+    soltanto delle partite valide per l'Elo, in tutte le cadenze: i forfait,
+    come i bye, non contano (articolo 5.1 del regolamento FIDE sul rating,
+    B.02, e articolo 4.1 di quello rapid e blitz). Fino alla 10.13.52
+    games_this_tournament escludeva soltanto i riposi, e G3, che vince a
+    forfait, e G4, che perde a forfait, arrivavano a 11 partite come G1 e
+    G2, che hanno giocato."""
+
+    @pytest.mark.parametrize("categoria", ["standard", "rapid", "blitz"])
+    def test_i_forfait_non_entrano_nelle_partite_giocate(self, banco, categoria):
+        _g3_vince_a_forfait(banco.torneo)
+        _con_la_cadenza(banco, categoria)
+
+        assert _finalizza(banco) is True
+
+        dopo = _giocatori_del_db(banco.db)
+        assert {pid: dopo[pid]["games_played"] for pid in ELO_INIZIALI} == {"G1": 11, "G2": 11, "G3": 10, "G4": 10}
+        archiviati = {p["id"]: p["games_this_tournament"] for p in _leggi(_json_in_archivio())["players"]}
+        assert archiviati == {"G1": 1, "G2": 1, "G3": 0, "G4": 0}
+
+    def test_la_console_fa_come_la_finestra(self, banco):
+        """La console conta le partite come la finestra: il database viene
+        uguale, e il suo primo calcolo dice le stesse partite."""
+        import unittest.mock
+
+        import controller
+
+        _g3_vince_a_forfait(banco.torneo)
+        _scrivi(banco.file_torneo, banco.torneo)
+        contate = {}
+        originale = controller.partite_giocate_nel_torneo
+
+        def annota(giocatore, giocatori):
+            contate[giocatore["id"]] = originale(giocatore, giocatori)
+            return contate[giocatore["id"]]
+
+        with unittest.mock.patch.object(controller, "partite_giocate_nel_torneo", annota):
+            assert _finalizza_in_console(banco) is True
+
+        assert contate == {"G1": 1, "G2": 1, "G3": 0, "G4": 0}
+        dopo = _giocatori_del_db(banco.db)
+        assert {pid: dopo[pid]["games_played"] for pid in ELO_INIZIALI} == {"G1": 11, "G2": 11, "G3": 10, "G4": 10}
+
+    def test_il_k_conta_le_partite_senza_i_forfait(self, banco):
+        """Con 29 partite e un forfait, G3 resta a 29 partite valide: il K
+        del torneo dopo resta 40, mentre con una partita giocata scende a
+        20. Fino alla 10.13.52 il forfait lo portava a 30, e a K 20."""
+        from db_players import fattore_k_della_finalizzazione, load_players_db
+
+        _g3_vince_a_forfait(banco.torneo)
+        dati = _leggi(banco.db)
+        for giocatore in dati["players"]:
+            giocatore["games_played"] = 29
+        _scrivi(banco.db, dati)
+
+        assert _finalizza(banco) is True
+
+        database = load_players_db()
+        assert database["G3"]["games_played"] == 29
+        assert database["G1"]["games_played"] == 30
+        assert fattore_k_della_finalizzazione({"id": "G3"}, database, "2027-01-10") == 40
+        assert fattore_k_della_finalizzazione({"id": "G1"}, database, "2027-01-10") == 20

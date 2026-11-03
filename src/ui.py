@@ -43,6 +43,7 @@ from stats import (
     compute_buchholz_cut1,
     elo_a_cui_sommare_la_variazione,
     get_initial_elo_for_tournament,
+    partite_giocate_nel_torneo,
     partite_valide_per_elo,
 )
 from tournament import (
@@ -1713,17 +1714,12 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
         p["k_factor"] = fattore_k_della_finalizzazione(
             p, players_db, tournament_start_date
         )
-        games_count = 0
-        for result_entry in p.get("results_history", []):
-            if (
-                result_entry.get("opponent_id")
-                and result_entry.get("opponent_id") != "BYE_PLAYER_ID"
-                and result_entry.get("score") is not None
-            ):
-                # Considera anche di escludere i forfeit "0-0F" se necessario
-                # if result_entry.get("result") != "0-0F":
-                games_count += 1
-        p["games_this_tournament"] = games_count
+        # Le partite che entrano nelle partite giocate del database: dalla
+        # 10.13.53 non i forfait, come vuole l'articolo 5.1 del regolamento
+        # FIDE sul rating (issue 65).
+        p["games_this_tournament"] = partite_giocate_nel_torneo(
+            p, torneo["players_dict"]
+        )
     # --- Fase 2: Calcola Spareggi, Performance, Elo Change ---
     print(_("Ricalcolo finale Buchholz, ARO, Performance Rating, Variazione Elo..."))
     players_dict_for_calculations = torneo[
