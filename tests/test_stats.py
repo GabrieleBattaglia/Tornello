@@ -1373,3 +1373,53 @@ class TestFattoreKFinoAlDiciottesimoAnno:
         for nascita in (None, "", "1900-01-01", "non una data"):
             assert get_k_factor(self._esperto(nascita), "2026-06-30") == 20, nascita
         assert get_k_factor(self._esperto("2010-01-01"), None) == 20
+
+
+class TestFattoreKDopoI2400:
+    """Dalla 10.13.56 (issue 65) il K e' 10 una volta che l'Elo pubblicato
+    della cadenza e' arrivato a 2400, anche se poi scende, come dicono
+    l'articolo 8.3.3 del regolamento FIDE sul rating (B.02) e l'articolo
+    7.3.3 di quello rapid e blitz. L'Elo pubblicato e' quello che il
+    database ha ricevuto alle finalizzazioni, scritto nelle voci dello
+    storico. Fino alla 10.13.55 chi scendeva sotto 2400 tornava a 20."""
+
+    def _maestro(self, elo, voci, **campi):
+        return dict({"birth_date": "1980-01-01", "current_elo": elo, "games_played": 200, "tournaments_played": voci}, **campi)
+
+    @staticmethod
+    def _voce(campo, prima, dopo):
+        return {"tournament_name": "Open", "elo_field": campo, "elo_before": prima, "elo_after": dopo}
+
+    def test_sceso_sotto_2400_resta_a_10(self):
+        giocatore = self._maestro(2390, [self._voce("current_elo", 2395, 2405), self._voce("current_elo", 2405, 2390)])
+        assert get_k_factor(giocatore, "2026-06-30") == 10
+
+    def test_arrivato_a_2400_esatti_prima_di_un_torneo(self):
+        giocatore = self._maestro(2380, [self._voce("current_elo", 2400, 2380)])
+        assert get_k_factor(giocatore, "2026-06-30") == 10
+
+    def test_mai_arrivato_a_2400_resta_a_20(self):
+        giocatore = self._maestro(2399, [self._voce("current_elo", 2350, 2399), {"tournament_name": "Vecchio"}])
+        assert get_k_factor(giocatore, "2026-06-30") == 20
+        assert get_k_factor(self._maestro(2399, []), "2026-06-30") == 20
+        assert get_k_factor(self._maestro(2399, [self._voce("current_elo", "non un numero", None)]), "2026-06-30") == 20
+
+    def test_conta_la_cadenza_del_torneo(self):
+        """I 2400 raggiunti nei rapid non valgono negli standard, e
+        viceversa."""
+        voci = [self._voce("elo_rapid", 2380, 2420), self._voce("elo_rapid", 2420, 2370)]
+        giocatore = self._maestro(2300, voci, elo_rapid=2370, games_played_rapid=60)
+        assert get_k_factor(giocatore, "2026-06-30", "rapid") == 10
+        assert get_k_factor(giocatore, "2026-06-30", "standard") == 20
+        assert get_k_factor(dict(giocatore, elo_blitz=2370, games_played_blitz=60), "2026-06-30", "blitz") == 20
+
+    def test_il_k_fide_valido_viene_prima(self):
+        giocatore = self._maestro(2390, [self._voce("current_elo", 2395, 2405)], fide_k_factor=20)
+        assert get_k_factor(giocatore, "2026-06-30") == 20
+
+    def test_alla_finalizzazione_conta_lo_storico_del_database(self):
+        """La scheda e' quella del database, con il suo storico."""
+        from db_players import fattore_k_della_finalizzazione
+
+        database = {"G1": self._maestro(2390, [self._voce("current_elo", 2395, 2405)], id="G1")}
+        assert fattore_k_della_finalizzazione({"id": "G1", "current_elo": 2390}, database, "2026-06-30") == 10

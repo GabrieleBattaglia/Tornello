@@ -243,9 +243,32 @@ def get_k_factor(player_data_dict, tournament_start_date_str, category="standard
         return 40
     if giovane and elo < 2300:
         return 40
-    if elo < 2400:
+    if elo < 2400 and not ha_raggiunto_2400(player_data_dict, categoria):
         return 20
     return 10
+
+
+def ha_raggiunto_2400(player_data_dict, category="standard"):
+    """Vero se l'Elo della cadenza del giocatore, nel database, e' gia'
+    arrivato a 2400 in una finalizzazione: una voce dello storico con il
+    campo di quella cadenza, elo_field, che valeva almeno 2400 prima del
+    torneo, elo_before, o dopo, elo_after. Per l'articolo 8.3.3 del
+    regolamento FIDE sul rating (B.02) e il 7.3.3 di quello rapid e blitz il
+    K e' 10 una volta che il rating pubblicato e' arrivato a 2400, anche se
+    poi scende (10.13.56, issue 65): fino alla 10.13.55 un giocatore sceso
+    sotto 2400 tornava a 20. Le voci scritte prima della 10.13.4 non hanno
+    l'Elo, e non contano."""
+    campo = campo_elo_della_cadenza(_cadenza_del_fattore_k(category))
+    for voce in player_data_dict.get("tournaments_played") or []:
+        if not isinstance(voce, dict) or voce.get("elo_field") != campo:
+            continue
+        for chiave in ("elo_before", "elo_after"):
+            try:
+                if float(voce.get(chiave) or 0) >= 2400:
+                    return True
+            except (ValueError, TypeError):
+                continue
+    return False
 
 
 def calculate_expected_score(player_elo, opponent_elo):
