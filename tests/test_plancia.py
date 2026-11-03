@@ -3,8 +3,10 @@ con F6. Issue 52.
 
 Dalla 10.4.0 l'etichetta di una partita programmata dice anche sala e
 arbitro, accorciati; i valori interi li mostra l'area centrale quando la
-voce prende il fuoco. Niente finestre vere: i metodi di MainFrame girano su
-un telaio finto, con un albero finto che annota le voci.
+voce prende il fuoco. Dalla 10.16.0 il ramo da giocare si divide in due
+rami, programmate e da programmare, che ci sono sempre, con il conteggio fra
+parentesi. Niente finestre vere: i metodi di MainFrame girano su un telaio
+finto, con un albero finto che annota le voci.
 """
 
 from types import SimpleNamespace
@@ -252,6 +254,79 @@ class TestDettaglioNellAreaCentrale:
 
         assert f"{_('Sala/URL')}: {_('N/D')}" in testo
         assert f"{_('Arbitro')}: Non necessario" in testo
+
+
+class TestRamiDelleDaGiocare:
+    """Dalla 10.16.0, dentro da giocare, programmate (N) con le partite per
+    giorno e ora e da programmare (N) con le altre per scacchiera."""
+
+    @staticmethod
+    def _ramo(telaio, azione):
+        return next(v for v in telaio.tree_ctrl.voci if v.dati and v.dati.get("action") == azione)
+
+    @staticmethod
+    def _partite_nel_ramo(telaio, ramo):
+        return [v.dati["match"]["id"] for v in telaio.tree_ctrl.voci if v.genitore is ramo]
+
+    def test_due_rami_dentro_da_giocare(self):
+        telaio = _telaio(_torneo())
+
+        da_giocare = self._ramo(telaio, "category_da_giocare")
+        programmate = self._ramo(telaio, "category_programmate")
+        da_programmare = self._ramo(telaio, "category_da_programmare")
+        assert da_giocare.etichetta == "da giocare (3)"
+        assert programmate.genitore is da_giocare and da_programmare.genitore is da_giocare
+        assert programmate.etichetta == "programmate (2)"
+        assert da_programmare.etichetta == "da programmare (1)"
+        assert programmate.dati == {"action": "category_programmate", "filepath": "prova.json", "round": 1}
+        assert da_programmare.dati == {"action": "category_da_programmare", "filepath": "prova.json", "round": 1}
+        # Prima le programmate, poi le altre, come nell'albero di prima.
+        figli = [v.etichetta for v in telaio.tree_ctrl.voci if v.genitore is da_giocare]
+        assert figli == ["programmate (2)", "da programmare (1)"]
+
+    def test_le_programmate_per_giorno_e_ora_le_altre_per_scacchiera(self):
+        torneo = _torneo()
+        torneo["rounds"][0]["matches"].append({"id": 5, "white_player_id": "BIA", "black_player_id": "RUS", "result": None})
+        # La scacchiera 5 viene prima della 3 nella lista, ma dopo per numero.
+        torneo["rounds"][0]["matches"].insert(0, torneo["rounds"][0]["matches"].pop())
+        telaio = _telaio(torneo)
+
+        assert self._partite_nel_ramo(telaio, self._ramo(telaio, "category_programmate")) == [2, 1]
+        assert self._partite_nel_ramo(telaio, self._ramo(telaio, "category_da_programmare")) == [3, 5]
+
+    @pytest.mark.parametrize("programmate", [True, False])
+    def test_i_due_rami_ci_sono_anche_vuoti(self, programmate):
+        torneo = _torneo()
+        for partita in torneo["rounds"][0]["matches"]:
+            if partita.get("result") is None:
+                partita["is_scheduled"] = programmate
+                partita.setdefault("schedule_info", {"date": "2026-09-28", "time": "10:00", "channel": "", "arbiter": ""})
+                if not programmate:
+                    partita.pop("schedule_info")
+        telaio = _telaio(torneo)
+
+        assert self._ramo(telaio, "category_programmate").etichetta == f"programmate ({3 if programmate else 0})"
+        assert self._ramo(telaio, "category_da_programmare").etichetta == f"da programmare ({0 if programmate else 3})"
+
+    def test_senza_partite_da_giocare_nessun_ramo(self):
+        """Come prima, il ramo da giocare c'e' finche' il turno ha partite
+        senza risultato, e con lui i due rami."""
+        torneo = _torneo()
+        for partita in torneo["rounds"][0]["matches"]:
+            partita["result"] = partita.get("result") or "1/2-1/2"
+        telaio = _telaio(torneo)
+
+        azioni = {v.dati.get("action") for v in telaio.tree_ctrl.voci if v.dati}
+        assert not azioni & {"category_da_giocare", "category_programmate", "category_da_programmare"}
+
+    @pytest.mark.parametrize(("azione", "titolo"), [("category_programmate", "Partite Programmate - Turno 1"), ("category_da_programmare", "Partite Da Programmare - Turno 1")])
+    def test_l_area_centrale_spiega_il_ramo(self, azione, titolo):
+        telaio = _telaio(_torneo())
+        ramo = self._ramo(telaio, azione)
+
+        telaio.on_tree_selection_changed(SimpleNamespace(GetItem=lambda: ramo))
+
+        assert telaio.area_centrale[0].startswith(titolo + "\n\n")
 
 
 def test_il_turno_composto_a_mano_si_riconosce_nell_albero():

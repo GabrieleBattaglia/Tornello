@@ -1970,6 +1970,31 @@ class MainFrame(wx.Frame):
                 da_giocare_parent,
                 {"action": "category_da_giocare", "filepath": filepath, "round": r_num},
             )
+            # Dalla 10.16.0 le partite da giocare stanno in due rami, che ci
+            # sono sempre, anche vuoti, con il conteggio fra parentesi: le
+            # programmate, per giorno e ora, e quelle da programmare, per
+            # scacchiera, nell'ordine che matches_to_play ha gia'. Fino alla
+            # 10.15.0 stavano tutte nel ramo da giocare, prima le programmate.
+            # La voce di una partita resta la stessa, e il ripristino del
+            # cursore la ritrova in qualunque ramo stia.
+            programmate = [
+                m for m in matches_to_play if m.get("is_scheduled") and m.get("schedule_info")
+            ]
+            programmate_parent = self.tree_ctrl.AppendItem(
+                da_giocare_parent, f"{_('programmate')} ({len(programmate)})"
+            )
+            self.tree_ctrl.SetItemData(
+                programmate_parent,
+                {"action": "category_programmate", "filepath": filepath, "round": r_num},
+            )
+            da_programmare_parent = self.tree_ctrl.AppendItem(
+                da_giocare_parent,
+                f"{_('da programmare')} ({len(matches_to_play) - len(programmate)})",
+            )
+            self.tree_ctrl.SetItemData(
+                da_programmare_parent,
+                {"action": "category_da_programmare", "filepath": filepath, "round": r_num},
+            )
             for m in matches_to_play:
                 w_id = m.get("white_player_id")
                 b_id = m.get("black_player_id")
@@ -1983,7 +2008,8 @@ class MainFrame(wx.Frame):
                 )
                 board_num = match_id_to_board.get(m.get("id"), 1)
 
-                if m.get("is_scheduled") and m.get("schedule_info"):
+                programmata = bool(m.get("is_scheduled") and m.get("schedule_info"))
+                if programmata:
                     sched = m["schedule_info"]
                     from stats import sala_e_arbitro_brevi
                     from utils import format_date_locale
@@ -2008,7 +2034,10 @@ class MainFrame(wx.Frame):
                     match_label = _("Scacchiera {}: {} vs {} (Non pianificata)").format(
                         board_num, w_name, b_name
                     )
-                m_node = self.tree_ctrl.AppendItem(da_giocare_parent, match_label)
+                m_node = self.tree_ctrl.AppendItem(
+                    programmate_parent if programmata else da_programmare_parent,
+                    match_label,
+                )
                 self.tree_ctrl.SetItemData(
                     m_node,
                     {
@@ -2531,6 +2560,21 @@ class MainFrame(wx.Frame):
                 _(
                     "Partite Da Giocare - Turno {num}\n\nQuesta sezione elenca le partite ancora da disputare nel turno {num}.\n\nSelezionando una partita e premendo Invio (o facendo doppio clic) potrai registrarne il risultato o pianificarne data e ora."
                 ).format(num=round_num)
+            )
+        # Dalla 10.16.0 i due rami dentro da giocare.
+        elif action == "category_programmate":
+            self.main_text.Clear()
+            self.append_log(
+                _(
+                    "Partite Programmate - Turno {num}\n\nQuesta sezione elenca le partite da giocare del turno {num} che hanno giorno e ora, in ordine di giorno e ora.\n\nCon Invio su una partita si apre la sua finestra del risultato; con Canc se ne toglie la programmazione."
+                ).format(num=data.get("round"))
+            )
+        elif action == "category_da_programmare":
+            self.main_text.Clear()
+            self.append_log(
+                _(
+                    "Partite Da Programmare - Turno {num}\n\nQuesta sezione elenca le partite da giocare del turno {num} che non hanno ancora giorno e ora, in ordine di scacchiera.\n\nCon Invio su una partita si apre la sua finestra del risultato, da cui si registra il risultato o si programma la partita."
+                ).format(num=data.get("round"))
             )
         elif action == "add_player_action":
             self.main_text.Clear()

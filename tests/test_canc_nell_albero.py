@@ -360,13 +360,15 @@ class TestCancSullaPartitaGiocata:
         assert neri["points"] == 0.5
         assert suoni[-1] == "cancellato"
         assert principale.last_status_msg == "Risultato cancellato: la scacchiera 1 del turno 2 torna fra le partite da giocare."
-        # Il cursore resta sulla partita, adesso fra quelle da giocare.
+        # Il cursore resta sulla partita, adesso fra quelle da giocare: dalla
+        # 10.16.0 fra le programmate, perche' lo era prima del risultato.
         scelta = principale.tree_ctrl.GetSelection()
         assert principale.tree_ctrl.GetItemData(scelta)["match"]["id"] == 4
-        genitore = principale.tree_ctrl.GetItemParent(scelta)
-        while principale.tree_ctrl.GetItemData(genitore)["action"] != "category_da_giocare":
-            genitore = principale.tree_ctrl.GetItemParent(genitore)
-        assert principale.tree_ctrl.GetItemText(principale.tree_ctrl.GetItemParent(genitore)).startswith("Turno corrente")
+        programmate = principale.tree_ctrl.GetItemParent(scelta)
+        assert principale.tree_ctrl.GetItemData(programmate)["action"] == "category_programmate"
+        da_giocare = principale.tree_ctrl.GetItemParent(programmate)
+        assert principale.tree_ctrl.GetItemData(da_giocare)["action"] == "category_da_giocare"
+        assert principale.tree_ctrl.GetItemText(principale.tree_ctrl.GetItemParent(da_giocare)).startswith("Turno corrente")
         # La voce del PGN dice che la partita e' da giocare, non None.
         assert "[da giocare]" in principale.tree_ctrl.GetItemText(_voce(principale, action="show_single_pgn", filepath=percorso, round=2, board_num=1, match={"id": 4}))
 
@@ -709,6 +711,10 @@ class TestTogliProgrammazione:
         scelta = principale.tree_ctrl.GetSelection()
         assert principale.tree_ctrl.GetItemData(scelta)["match"]["id"] == 5
         assert principale.tree_ctrl.GetItemText(scelta).endswith("(Non pianificata)")
+        # Dalla 10.16.0 la partita passa nel ramo da programmare.
+        ramo = principale.tree_ctrl.GetItemParent(scelta)
+        assert principale.tree_ctrl.GetItemData(ramo)["action"] == "category_da_programmare"
+        assert principale.tree_ctrl.GetItemText(ramo) == "da programmare (1)"
 
     def test_la_partita_non_programmata_apre_il_pulsante_spento(self, principale, suoni, monkeypatch):
         import wx
@@ -765,6 +771,60 @@ class TestTogliProgrammazione:
             assert partita["is_scheduled"] is True
             assert _dal_file(percorso) == prima
             assert suoni == []
+
+
+class TestRamiDelleDaGiocareNellAlberoVero:
+    """Dalla 10.16.0 le partite da giocare stanno nei rami programmate e da
+    programmare: il cursore segue la partita che cambia ramo, e i rami
+    aperti restano aperti quando l'albero si ridisegna."""
+
+    def test_la_partita_programmata_passa_fra_le_programmate_con_il_cursore(self, principale, suoni, monkeypatch):
+        import wx
+
+        from gui.dialogs import result_dialog
+
+        torneo = _torneo()
+        da_giocare = _partita(torneo, 5)
+        da_giocare["is_scheduled"] = False
+        del da_giocare["schedule_info"]
+        percorso = _apri(principale, torneo)
+        voce = _voce_della_partita(principale, percorso, 2, 2, 5)
+        assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetItemParent(voce))["action"] == "category_da_programmare"
+        programmazione = {"date": "2026-11-06", "time": "18:00", "channel": "", "arbiter": "", "arbiter_not_needed": False}
+
+        class Risultato:
+            def __init__(self, *argomenti, **opzioni):
+                self.selected_action = "schedule"
+                self.schedule_info = programmazione
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(result_dialog, "ResultDialog", Risultato)
+        principale.tree_ctrl.SelectItem(voce)
+
+        principale.on_activate_match(_partita(principale.current_tournament, 5))
+
+        scelta = principale.tree_ctrl.GetSelection()
+        assert principale.tree_ctrl.GetItemData(scelta)["match"]["id"] == 5
+        ramo = principale.tree_ctrl.GetItemParent(scelta)
+        assert principale.tree_ctrl.GetItemData(ramo)["action"] == "category_programmate"
+        assert principale.tree_ctrl.GetItemText(ramo) == "programmate (1)"
+        vuoto = _voce(principale, action="category_da_programmare", filepath=percorso, round=2)
+        assert principale.tree_ctrl.GetItemText(vuoto) == "da programmare (0)"
+
+    def test_i_rami_aperti_restano_aperti(self, principale):
+        percorso = _apri(principale)
+        for azione in ("category_da_giocare", "category_programmate"):
+            principale.tree_ctrl.Expand(_voce(principale, action=azione, filepath=percorso, round=2))
+
+        principale.populate_tree()
+
+        assert principale.tree_ctrl.IsExpanded(_voce(principale, action="category_programmate", filepath=percorso, round=2))
+        assert not principale.tree_ctrl.IsExpanded(_voce(principale, action="category_da_programmare", filepath=percorso, round=2))
 
 
 def test_il_torneo_di_prova_e_coerente():
