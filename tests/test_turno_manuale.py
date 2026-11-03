@@ -5,10 +5,11 @@ codice di uscita 1, dalla 10.12.0 l'arbitro compone il turno a mano, e dalla
 10.13.0 parte dalla proposta di Tornello. Qui si provano le funzioni senza wx
 di turno_manuale.py (validazione, avvertimenti, colori, partite e proposta),
 il contrassegno manual_pairing, il motore vero su un girone esaurito e dopo
-un turno composto a mano, i metodi della finestra principale su un telaio
-finto e la finestra della composizione, costruita e mai mostrata. I tornei
-nascono in memoria; i file di lavoro del motore e le copie di sicurezza
-finiscono nella cartella temporanea della prova, come vuole conftest.py.
+un turno composto a mano, la Time Machine della console, i metodi della
+finestra principale su un telaio finto e la finestra della composizione,
+costruita e mai mostrata. I tornei nascono in memoria; i file di lavoro del
+motore e le copie di sicurezza finiscono nella cartella temporanea della
+prova, come vuole conftest.py.
 """
 
 import copy
@@ -590,6 +591,102 @@ class TestMotoreVero:
         assert terzo is not None and len(terzo) == 4
         gia_giocate = {frozenset(c) for c in coppie + manuale}
         assert all(frozenset((m["white_player_id"], m["black_player_id"])) not in gia_giocate for m in terzo)
+
+
+class TestTimeMachineDellaConsole:
+    """La Time Machine della versione a riga di comando riporta il torneo a
+    un turno e ne rifa' gli abbinamenti. Se quel turno era composto a mano,
+    le sue coppie tornano com'erano, senza risultati e con il contrassegno:
+    fino alla 10.13.49 passavano dal motore, che non trovava un abbinamento
+    valido proprio come la prima volta, e la Time Machine si fermava (issue
+    61). Un turno del motore si rigenera con il motore, come prima."""
+
+    @staticmethod
+    def _riavvolgi(monkeypatch, torneo, turno):
+        import utils
+        from tournament import time_machine_torneo
+
+        risposte = [str(turno), "si"]
+        monkeypatch.setattr("builtins.input", lambda domanda="": risposte.pop(0))
+        monkeypatch.setattr(utils, "play_sound", lambda *a, **k: True)
+        uscita = io.StringIO()
+        with redirect_stdout(uscita):
+            esito = time_machine_torneo(torneo)
+        assert risposte == []
+        return esito, uscita.getvalue()
+
+    def test_il_turno_composto_a_mano_torna_com_era(self, monkeypatch):
+        torneo = _torneo_saturo(turni=5)
+        punti_prima = {p["id"]: p["points"] for p in torneo["players"]}
+        storici_prima = {p["id"]: copy.deepcopy(p["results_history"]) for p in torneo["players"]}
+        _gioca(torneo, 4, [("B", "A", "0-1"), ("C", "D", "1/2-1/2")], manuale=True)
+        # Il turno 5 non si abbina: il controller rimette il turno 4 e offre
+        # la Time Machine, che torna al turno 4.
+        assert _genera(dict(torneo, current_round=5)) is None
+
+        esito, detto = self._riavvolgi(monkeypatch, torneo, 4)
+
+        assert esito is True
+        assert "composto a mano" in detto
+        assert [r["round"] for r in torneo["rounds"]] == [1, 2, 3, 4]
+        assert torneo["rounds"][3] == {
+            "round": 4,
+            "matches": [
+                {"id": 8, "round": 4, "white_player_id": "B", "black_player_id": "A", "result": None},
+                {"id": 9, "round": 4, "white_player_id": "C", "black_player_id": "D", "result": None},
+            ],
+            "manual_pairing": True,
+        }
+        assert torneo["current_round"] == 4
+        assert torneo["next_match_id"] == 10
+        assert {p["id"]: p["points"] for p in torneo["players"]} == punti_prima
+        assert {p["id"]: p["results_history"] for p in torneo["players"]} == storici_prima
+
+    def test_il_bye_del_turno_composto_a_mano_torna_con_i_suoi_punti(self, monkeypatch):
+        # Al turno 1 l'arbitro fa riposare il piu' forte, cosa che il motore
+        # non farebbe mai.
+        torneo = _torneo([_giocatore("A", "Alfa", 1800), _giocatore("B", "Beta", 1700), _giocatore("C", "Gamma", 1600)], turni=2)
+        _gioca(torneo, 1, [("B", "C", "1-0")], bye="A", manuale=True)
+
+        esito, _detto = self._riavvolgi(monkeypatch, torneo, 1)
+
+        assert esito is True
+        assert torneo["rounds"] == [
+            {
+                "round": 1,
+                "matches": [
+                    {"id": 1, "round": 1, "white_player_id": "B", "black_player_id": "C", "result": None},
+                    {"id": 2, "round": 1, "white_player_id": "A", "black_player_id": None, "result": "BYE"},
+                ],
+                "manual_pairing": True,
+            }
+        ]
+        alfa, beta, gamma = (torneo["players_dict"][pid] for pid in "ABC")
+        assert alfa["points"] == 0.5
+        assert alfa["results_history"] == [{"round": 1, "opponent_id": "BYE_PLAYER_ID", "color": None, "result": "BYE", "score": 0.5}]
+        assert (beta["points"], beta["results_history"]) == (0.0, [])
+        assert (gamma["points"], gamma["results_history"]) == (0.0, [])
+
+    def test_il_turno_del_motore_passa_ancora_dal_motore(self, monkeypatch):
+        from tournament import _apply_match_result_to_players, registra_turno
+
+        torneo = _torneo([_giocatore(f"G{i}", f"Cognome{i}", 2100 - i * 50) for i in range(1, 5)], turni=3)
+        registra_turno(torneo, _genera(torneo), 1)
+        with redirect_stdout(io.StringIO()):
+            for partita in torneo["rounds"][0]["matches"]:
+                _apply_match_result_to_players(torneo, partita, "1-0", 1.0, 0.0)
+        coppie = [(m["white_player_id"], m["black_player_id"]) for m in torneo["rounds"][0]["matches"]]
+
+        esito, detto = self._riavvolgi(monkeypatch, torneo, 1)
+
+        assert esito is True
+        assert "composto a mano" not in detto
+        assert len(torneo["rounds"]) == 1
+        rigenerato = torneo["rounds"][0]
+        assert "manual_pairing" not in rigenerato
+        assert [(m["white_player_id"], m["black_player_id"]) for m in rigenerato["matches"]] == coppie
+        assert all(m["result"] is None for m in rigenerato["matches"])
+        assert all(p["points"] == 0.0 and p["results_history"] == [] for p in torneo["players"])
 
 
 class TestScacchiereComeIlMotore:

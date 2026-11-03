@@ -144,6 +144,23 @@ def time_machine_torneo(torneo):
                 )
             )
 
+    # Il turno di arrivo composto a mano dall'arbitro, dalla 10.12.0 (issue
+    # 38): le sue coppie vanno lette prima di tagliare i turni, perche' dopo
+    # il taglio tornano com'erano invece di passare dal motore. bbpPairings
+    # non aveva trovato un abbinamento valido per quel turno, e rigenerarlo
+    # lo faceva fallire di nuovo: fino alla 10.13.49 la Time Machine si
+    # fermava li' (issue 61).
+    turno_di_arrivo = next(
+        (r for r in torneo.get("rounds", []) if r.get("round") == target_round),
+        None,
+    )
+    coppie_a_mano = None
+    if turno_di_arrivo and turno_di_arrivo.get("manual_pairing"):
+        coppie_a_mano = [
+            (m.get("white_player_id"), m.get("black_player_id"))
+            for m in turno_di_arrivo.get("matches", [])
+        ]
+
     # Azzera lo stato futuro (rimuove i round >= target_round)
     torneo["rounds"] = [
         r for r in torneo.get("rounds", []) if r.get("round", 0) < target_round
@@ -173,12 +190,35 @@ def time_machine_torneo(torneo):
     print(_("Contatore ID Partita ripristinato a: {}").format(torneo["next_match_id"]))
 
     # <<< CORREZIONE 3: RIGENERAZIONE ABBINAMENTI PER IL TURNO DI DESTINAZIONE >>>
-    print(
-        _("Rigenerazione abbinamenti per il Turno {target_round}...").format(
-            target_round=target_round
+    if coppie_a_mano is not None:
+        # Le coppie dell'arbitro, nell'ordine delle scacchiere di allora e
+        # senza risultati, con la forma che crea_partite_turno_manuale da'
+        # alle partite: numeri da next_match_id, BYE per chi riposa.
+        print(
+            _(
+                "Il Turno {target_round} era stato composto a mano: le sue coppie tornano com'erano, senza risultati."
+            ).format(target_round=target_round)
         )
-    )
-    matches_new = generate_pairings_for_round(torneo)
+        matches_new = []
+        for bianco, nero in coppie_a_mano:
+            numero = torneo["next_match_id"]
+            matches_new.append(
+                {
+                    "id": numero,
+                    "round": target_round,
+                    "white_player_id": bianco,
+                    "black_player_id": nero,
+                    "result": None if nero is not None else "BYE",
+                }
+            )
+            torneo["next_match_id"] = numero + 1
+    else:
+        print(
+            _("Rigenerazione abbinamenti per il Turno {target_round}...").format(
+                target_round=target_round
+            )
+        )
+        matches_new = generate_pairings_for_round(torneo)
     if matches_new is None:
         print("ERRORE CRITICO: fallita rigenerazione turno post time machine.")
         torneo["current_round"] = current_round
@@ -209,10 +249,12 @@ def time_machine_torneo(torneo):
                     )
                 )
 
-    # Aggiungiamo il nuovo set di abbinamenti alla lista dei round
-    torneo.setdefault("rounds", []).append(
-        {"round": target_round, "matches": matches_new}
-    )
+    # Aggiungiamo il nuovo set di abbinamenti alla lista dei round. Il turno
+    # composto a mano resta tale, con il suo contrassegno.
+    nuovo_turno = {"round": target_round, "matches": matches_new}
+    if coppie_a_mano is not None:
+        nuovo_turno["manual_pairing"] = True
+    torneo.setdefault("rounds", []).append(nuovo_turno)
 
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
