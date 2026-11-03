@@ -401,6 +401,16 @@ def calculate_elo_change(player, tournament_players_dict):
     if games_played_count == 0:
         return 0
 
+    # Il tetto del fattore K: se K per il numero n delle partite supera
+    # 700, K diventa il numero intero piu' grande per cui K per n non supera
+    # 700, come dicono l'articolo 8.3.3 del regolamento FIDE sul rating
+    # (B.02) e il 7.3.3 di quello rapid e blitz. Il regolamento conta le
+    # partite di un periodo di rating; qui sono quelle valide del torneo.
+    # Il K della scheda, in k_factor, resta quello delle regole. Fino alla
+    # 10.13.56 il tetto non c'era (10.13.57, issue 65).
+    if k * games_played_count > 700:
+        k = 700 // games_played_count
+
     # Calcolo variazione Elo grezza usando il K specifico
     elo_change_raw = k * (actual_score - total_expected_score)
 

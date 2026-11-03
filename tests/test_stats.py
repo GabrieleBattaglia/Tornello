@@ -1423,3 +1423,43 @@ class TestFattoreKDopoI2400:
 
         database = {"G1": self._maestro(2390, [self._voce("current_elo", 2395, 2405)], id="G1")}
         assert fattore_k_della_finalizzazione({"id": "G1", "current_elo": 2390}, database, "2026-06-30") == 10
+
+
+class TestTettoDelFattoreK:
+    """Dalla 10.13.57 (issue 65) la variazione Elo rispetta il tetto
+    dell'articolo 8.3.3 del regolamento FIDE sul rating (B.02) e del 7.3.3
+    di quello rapid e blitz: se K per il numero n delle partite supera 700,
+    K diventa il numero intero piu' grande per cui K per n non supera 700.
+    Le partite sono quelle valide del torneo. Fino alla 10.13.56 il tetto
+    non c'era."""
+
+    @staticmethod
+    def _giocatore(k, vinte, perse=0, forfait=0):
+        """Un giocatore da 1500 con vinte e perse contro avversari da 1500,
+        e qualche forfait, che non conta fra le partite."""
+        avversari = {"AVV": {"id": "AVV", "initial_elo": 1500.0}}
+        voci = [{"round": i, "opponent_id": "AVV", "result": "1-0", "score": 1.0} for i in range(vinte)]
+        voci += [{"round": i, "opponent_id": "AVV", "result": "0-1", "score": 0.0} for i in range(perse)]
+        voci += [{"round": i, "opponent_id": "AVV", "result": "1-F", "score": 1.0} for i in range(forfait)]
+        return {"id": "TST", "initial_elo": 1500.0, "k_factor": k, "results_history": voci}, avversari
+
+    @pytest.mark.parametrize(
+        ("k", "partite", "k_applicato"),
+        [(40, 17, 40), (40, 18, 38), (40, 20, 35), (20, 35, 20), (20, 36, 19), (10, 70, 10), (10, 71, 9)],
+    )
+    def test_k_per_n_non_supera_700(self, k, partite, k_applicato):
+        """Tutte vinte contro avversari dello stesso Elo: ogni partita vale
+        mezzo punto oltre l'atteso, e la variazione e' K per n diviso 2."""
+        giocatore, avversari = self._giocatore(k, partite)
+        assert calculate_elo_change(giocatore, avversari) == round(k_applicato * partite * 0.5)
+        assert giocatore["k_factor"] == k
+
+    def test_i_forfait_non_contano_per_il_tetto(self):
+        """Diciassette partite giocate e dieci forfait: n e' diciassette, e
+        K 40 resta 40."""
+        giocatore, avversari = self._giocatore(40, 17, forfait=10)
+        assert calculate_elo_change(giocatore, avversari) == 340
+
+    def test_anche_le_sconfitte(self):
+        giocatore, avversari = self._giocatore(40, 0, perse=20)
+        assert calculate_elo_change(giocatore, avversari) == -350
