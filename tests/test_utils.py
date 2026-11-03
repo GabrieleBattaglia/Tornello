@@ -34,9 +34,24 @@ def test_resolve_and_verify_save_path_create_nonexistent():
         assert "creata" in warning.lower() or "created" in warning.lower()
 
 
+def _unita_che_non_esiste():
+    """Una lettera di unita' che al momento della prova non c'e'. Fino al
+    novembre 2026 la prova usava K:, che su una delle macchine di Gabriele
+    esiste: si parte dalla Z e si scende, perche' le lettere alte sono le
+    meno usate, e se ci sono tutte la prova non ha niente da verificare."""
+    import string
+
+    import pytest
+
+    libere = [f"{lettera}:" for lettera in reversed(string.ascii_uppercase[3:]) if not os.path.exists(f"{lettera}:\\")]
+    if not libere:
+        pytest.skip("tutte le lettere di unita' dalla D alla Z sono in uso")
+    return libere[0]
+
+
 def test_resolve_and_verify_save_path_invalid_drive():
-    # K: is not present on this system
-    invalid_path = "K:\\NonExistentDrive\\TornelloTestReports"
+    # Un'unita' che non c'e', scelta al momento della prova.
+    invalid_path = _unita_che_non_esiste() + "\\NonExistentDrive\\TornelloTestReports"
 
     path, warning = resolve_and_verify_save_path(
         invalid_path, default_fallback="temp_default"
