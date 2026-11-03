@@ -9,7 +9,7 @@ from GBwx import dentro_area_utile
 
 from gui.dialogs import AccessibleMsgDialog, VisualSettingsDialog
 from gui.settings import apply_visual_settings, salva_impostazione, save_settings
-from version import __authors__, __date__, __version__
+from version import __authors__, __bbp_info__, __date__, __version__
 
 _ = getattr(builtins, "_", lambda s: s)
 
@@ -380,6 +380,11 @@ class MainFrame(wx.Frame):
         # Dalla 10.17.0 l'invito a offrire un caffe' sta qui, e non compare
         # piu' alla chiusura (issue 69).
         self.item_caffe = help_menu.Append(wx.ID_ANY, _("&Offrimi un caffè..."))
+        # Dalla 10.18.0 le due voci del PUB, il gruppo di supporto, dopo un
+        # separatore (issue 70). Chiedi aiuto ha la A: la C e' di Changelog.
+        help_menu.AppendSeparator()
+        self.item_entra_al_pub = help_menu.Append(wx.ID_ANY, _("&Entra al PUB (gruppo di supporto)..."))
+        self.item_chiedi_aiuto_al_pub = help_menu.Append(wx.ID_ANY, _("Chiedi &aiuto al PUB..."))
         self.menu_bar.Append(help_menu, _("&Aiuto"))
 
         self.SetMenuBar(self.menu_bar)
@@ -395,6 +400,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_changelog, self.item_changelog)
         self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
         self.Bind(wx.EVT_MENU, self.on_offrimi_un_caffe, self.item_caffe)
+        self.Bind(wx.EVT_MENU, self.on_entra_al_pub, self.item_entra_al_pub)
+        self.Bind(wx.EVT_MENU, self.on_chiedi_aiuto_al_pub, self.item_chiedi_aiuto_al_pub)
         self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
@@ -5094,6 +5101,67 @@ class MainFrame(wx.Frame):
         dlg = DonationDialog(self, _("Offri un caffè"), testo, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
+
+    # Il PUB, il gruppo di supporto, dalla 10.18.0 (issue 70): indirizzi,
+    # informazioni sul computer e mail vengono da GBUtils, la finestra della
+    # mail da GBwx, le parole da gui/pub.py. La finestra si apre sempre, anche
+    # quando il programma di posta c'e', e senza posta guida un passo alla
+    # volta, copiando negli appunti un campo per volta.
+
+    def on_entra_al_pub(self, event):
+        """Entra al PUB, nel menu Aiuto: la mail che iscrive al gruppo di
+        supporto."""
+        from gui import pub
+
+        self._mail_al_pub(
+            pub.mail_d_iscrizione(),
+            _("Entra al PUB: la mail d'iscrizione è pronta, spediscila tu."),
+            _("Entra al PUB: finestra chiusa, nessuna mail preparata."),
+        )
+
+    def on_chiedi_aiuto_al_pub(self, event):
+        """Chiedi aiuto al PUB, nel menu Aiuto: la mail al gruppo, con
+        l'oggetto che dice la versione, la riga da sostituire con la domanda
+        e le informazioni su Tornello, sul motore degli abbinamenti, sulla
+        lingua dell'interfaccia e sul computer, che l'utente vede e puo'
+        cancellare prima di spedire. La lingua e' quella in cui Tornello sta
+        parlando, la stessa delle date, e decide anche il punto decimale delle
+        memorie."""
+        import sys
+
+        from GBUtils import informazioni_di_sistema
+
+        from config import lingua_rilevata
+        from gui import pub
+
+        informazioni = informazioni_di_sistema(pub.separatore_decimale(lingua_rilevata))
+        mail = pub.mail_d_aiuto(__version__, bool(getattr(sys, "frozen", False)), informazioni, lingua_rilevata, __bbp_info__)
+        self._mail_al_pub(
+            mail,
+            _("Chiedi aiuto al PUB: la mail è pronta, scrivi la domanda e spediscila tu."),
+            _("Chiedi aiuto al PUB: finestra chiusa, nessuna mail preparata."),
+        )
+
+    def _mail_al_pub(self, mail, pronta, annullata):
+        """La finestra di GBwx che prepara la mail. La barra di stato dice se
+        la mail e' pronta, cioe' aperta nel programma di posta o scritta passo
+        per passo, o se la finestra si e' chiusa prima."""
+        from GBwx import finestra_mail
+
+        from gui import pub
+
+        riuscita = finestra_mail(
+            self,
+            mail["titolo"],
+            mail["destinatario"],
+            mail["oggetto"],
+            mail["corpo"],
+            mail["spiegazione"],
+            mail["passi"],
+            pub.pulsanti(),
+            pub.senza_posta(),
+        )
+        self.set_status(pronta if riuscita else annullata)
 
     def on_new_tournament(self, event):
         self.start_new_tournament_wizard()
