@@ -1,13 +1,16 @@
-"""L'invito alla donazione che la finestra mostra alla chiusura. Issue 40.
+"""L'invito a offrire un caffe'. Issue 40, poi issue 69.
 
 Fino alla 10.3.4 la finestra deviava sys.stdout su uno StringIO, chiamava
 Donazione e rileggeva cio' che aveva stampato, il tutto dentro un except
 Exception: pass che nascondeva qualunque guasto. Qui si prova che il testo
-arriva dal valore restituito, con stampa=False, e che un guasto dell'invito
-finisce nel log senza impedire la chiusura. Niente finestre vere: Donazione e
-DonationDialog sono sostituite da finte, e i metodi di MainFrame girano su un
-telaio finto. Dalla 10.13.32 le prove dei tasti e dei pulsanti della finestra
-usano DonationDialog vera, mai mostrata.
+arriva dal valore restituito, con stampa=False. Dalla 10.17.0 (issue 69)
+l'invito non compare piu' alla chiusura della finestra: lo mostra, sempre,
+la voce Offrimi un caffe' del menu Aiuto, con probabilita=100; fino alla
+10.16.1 lo mostrava la chiusura, una volta su cinque. Niente finestre vere:
+Donazione e DonationDialog sono sostituite da finte, e i metodi di MainFrame
+girano su un telaio finto o sulla finestra principale mai mostrata. Dalla
+10.13.32 le prove dei tasti e dei pulsanti della finestra usano DonationDialog
+vera, mai mostrata.
 """
 
 import sys
@@ -60,10 +63,36 @@ def _donazione_finta(monkeypatch, esito):
     return chiamate
 
 
-class TestInvitoDonazione:
-    """Il metodo che chiede il testo a Donazione e apre la finestra."""
+@pytest.fixture
+def principale(app_grafica, monkeypatch):
+    """La finestra principale, mai mostrata, senza i controlli dell'avvio e
+    senza suoni."""
+    import gui.main_frame as mf
+    import utils
+    from gui.settings import DEFAULT_SETTINGS
 
-    def test_passa_stampa_falso_e_la_lingua_delle_impostazioni(
+    monkeypatch.setattr(utils, "play_sound", lambda *a, **k: True)
+    for nome in ("_check_fide_db_on_startup", "_check_backup_on_startup", "_scan_and_load_initial_tournament", "_check_updates_async"):
+        monkeypatch.setattr(mf.MainFrame, nome, lambda self: None)
+    monkeypatch.setattr(mf.MainFrame, "Maximize", lambda self, *a: None)
+    finestra = mf.MainFrame(None, "Tornello", dict(DEFAULT_SETTINGS))
+    finestra._timer_pie_di_pagina.Stop()
+    yield finestra
+    finestra.Destroy()
+
+
+def _voci_del_menu_aiuto(principale):
+    """Le etichette delle voci del menu Aiuto, con None per i separatori."""
+    menu = principale.item_credits.GetMenu()
+    return [None if v.IsSeparator() else v.GetItemLabel() for v in menu.GetMenuItems()]
+
+
+class TestVoceOffrimiUnCaffe:
+    """Dalla 10.17.0 la voce Offrimi un caffe' del menu Aiuto chiede il testo
+    a Donazione, con probabilita=100 perche' compaia sempre, e lo mostra nella
+    finestra Offri un caffe' (issue 69)."""
+
+    def test_passa_cento_stampa_falso_e_la_lingua_delle_impostazioni(
         self, monkeypatch, registro, capsys
     ):
         from gui import main_frame as mf
@@ -71,13 +100,14 @@ class TestInvitoDonazione:
         chiamate = _donazione_finta(monkeypatch, "Offrimi un caffe'.")
         telaio = SimpleNamespace(settings={"language": "en"})
 
-        mf.MainFrame._invito_donazione(telaio)
+        mf.MainFrame.on_offrimi_un_caffe(telaio, None)
 
         assert chiamate == [
-            {"argomenti": {"lang": "en", "stampa": False}, "stdout_intatto": True}
+            {"argomenti": {"lang": "en", "probabilita": 100, "stampa": False}, "stdout_intatto": True}
         ]
         assert len(registro["dialoghi"]) == 1
         assert registro["dialoghi"][0]["messaggio"] == "Offrimi un caffe'."
+        assert registro["dialoghi"][0]["titolo"] == mf._("Offri un caffè")
         assert registro["dialoghi"][0]["parent"] is telaio
         assert registro["dialoghi"][0]["settings"] == {"language": "en"}
         assert registro["mostrati"] == 1
@@ -87,64 +117,68 @@ class TestInvitoDonazione:
     def test_senza_impostazioni_la_lingua_e_none(self, monkeypatch, registro):
         from gui import main_frame as mf
 
-        chiamate = _donazione_finta(monkeypatch, None)
+        chiamate = _donazione_finta(monkeypatch, "Un caffe'?")
 
-        mf.MainFrame._invito_donazione(SimpleNamespace(settings=None))
+        mf.MainFrame.on_offrimi_un_caffe(SimpleNamespace(settings=None), None)
 
-        assert chiamate[0]["argomenti"] == {"lang": None, "stampa": False}
+        assert chiamate[0]["argomenti"] == {"lang": None, "probabilita": 100, "stampa": False}
+        assert registro["mostrati"] == 1
 
-    def test_con_none_non_si_apre_niente(self, monkeypatch, registro, capsys):
+    def test_la_donazione_vera_compare_sempre_e_non_stampa(self, registro, capsys):
+        """Con la Donazione vera di GBUtils e gli argomenti della voce,
+        l'invito compare a ogni scelta, senza sorteggio, e non scrive niente
+        su stdout. Fino alla 10.16.1, con il sorteggio di serie, compariva
+        una volta su cinque: venti volte di fila sarebbe un caso su quasi cento
+        mila miliardi."""
         from gui import main_frame as mf
 
-        _donazione_finta(monkeypatch, None)
-
-        mf.MainFrame._invito_donazione(SimpleNamespace(settings={"language": "it"}))
-
-        assert registro["dialoghi"] == []
-        assert registro["mostrati"] == 0
-        assert capsys.readouterr().out == ""
-
-    def test_la_donazione_vera_non_stampa_niente(self, monkeypatch, registro, capsys):
-        """Con gli argomenti che passa la finestra, la Donazione vera di
-        GBUtils non scrive su stdout e il suo testo arriva al dialogo. Il
-        sorteggio si forza a cento per non dipendere dal caso."""
-        import GBUtils
-
-        from gui import main_frame as mf
-
-        vera = GBUtils.Donazione
-        monkeypatch.setattr(
-            GBUtils, "Donazione", lambda **argomenti: vera(probabilita=100, **argomenti)
-        )
-
-        mf.MainFrame._invito_donazione(SimpleNamespace(settings={"language": "it"}))
+        telaio = SimpleNamespace(settings={"language": "it"})
+        for _volta in range(20):
+            mf.MainFrame.on_offrimi_un_caffe(telaio, None)
 
         assert capsys.readouterr().out == ""
+        assert registro["mostrati"] == 20
+        assert all(d["messaggio"].startswith("Se questo software") for d in registro["dialoghi"])
+
+    def test_la_voce_sta_nel_menu_aiuto_con_la_sua_lettera(self, principale):
+        """La voce viene dopo Crediti, con la O, che nel menu Aiuto non ha
+        nessun'altra voce."""
+        voci = _voci_del_menu_aiuto(principale)
+        assert voci[:4] == ["&Guida Accessibile\tF1", "&Changelog\tF2", "C&rediti\tF3", "&Offrimi un caffè..."]
+        assert principale.item_caffe.GetItemLabel() == "&Offrimi un caffè..."
+        lettere = [v[v.index("&") + 1].lower() for v in voci if v is not None]
+        assert lettere[:4] == ["g", "c", "r", "o"]
+        assert len(set(lettere)) == len(lettere)
+
+    def test_scelta_dal_menu_apre_l_invito(self, principale, monkeypatch, registro):
+        import wx
+
+        chiamate = _donazione_finta(monkeypatch, "Un caffe'?")
+        evento = wx.CommandEvent(wx.wxEVT_MENU, principale.item_caffe.GetId())
+        evento.SetEventObject(principale)
+
+        assert principale.GetEventHandler().ProcessEvent(evento)
+
+        assert chiamate[0]["argomenti"]["probabilita"] == 100
         assert len(registro["dialoghi"]) == 1
-        assert registro["dialoghi"][0]["messaggio"].startswith("Se questo software")
+        assert registro["dialoghi"][0]["parent"] is principale
+        assert registro["mostrati"] == 1
 
 
 class TestChiusura:
-    """on_close fa le copie, suona e invita, e la finestra si chiude comunque."""
+    """on_close ferma il timer, fa le copie e suona, e la finestra si chiude.
+    Dalla 10.17.0 non mostra piu' l'invito a offrire un caffe' (issue 69)."""
 
-    def _telaio(self, monkeypatch, log_vero=False):
-        """Con log_vero il guasto va in error.log attraverso il _registra vero,
-        altrimenti finisce nella lista passi["log"]."""
+    def _telaio(self, monkeypatch):
         import utils
-        from gui import main_frame as mf
-        from gui import settings as modulo_settings
 
-        passi = {"copie": [], "suoni": [], "log": [], "skip": 0, "timer": []}
+        passi = {"copie": [], "suoni": [], "skip": 0, "timer": []}
         monkeypatch.setattr(utils, "copie_di_chiusura", lambda nome: passi["copie"].append(nome))
         monkeypatch.setattr(
             utils, "play_sound", lambda nome, *resto, **opzioni: passi["suoni"].append(nome)
         )
-        if not log_vero:
-            monkeypatch.setattr(modulo_settings, "_registra", passi["log"].append)
 
         class TelaioFinto:
-            _invito_donazione = mf.MainFrame._invito_donazione
-
             def __init__(self):
                 self.active_filename = "Tornello - Prova.json"
                 self.current_tournament = None
@@ -154,9 +188,6 @@ class TestChiusura:
                 self._timer_pie_di_pagina = SimpleNamespace(
                     Stop=lambda: passi["timer"].append("stop")
                 )
-                # Dalla 10.8.1 la chiusura per aggiornamento salta l'invito
-                # (issue 37).
-                self._chiusura_per_aggiornamento = False
 
         class EventoFinto:
             def Skip(self):
@@ -164,76 +195,58 @@ class TestChiusura:
 
         return TelaioFinto(), EventoFinto(), passi
 
-    def test_un_guasto_di_donazione_non_impedisce_la_chiusura(
-        self, monkeypatch, registro
-    ):
-        from gui import main_frame as mf
-
-        _donazione_finta(monkeypatch, RuntimeError("sorteggio rotto"))
-        telaio, evento, passi = self._telaio(monkeypatch)
-
-        mf.MainFrame.on_close(telaio, evento)
-
-        assert passi["skip"] == 1
-        assert len(passi["log"]) == 1
-        assert "Invito alla donazione non mostrato" in passi["log"][0]
-        assert "sorteggio rotto" in passi["log"][0]
-        assert registro["dialoghi"] == []
-
-    def test_il_guasto_arriva_in_error_log_con_il_traceback(
-        self, monkeypatch, registro, tmp_path
-    ):
-        """Qui _registra e' quello vero, e error.log sta nella cartella della
-        prova grazie a dati_in_cartella_temporanea. Il traceback lo scrive
-        format_exc, che lo trova solo se _registra viene chiamata dentro
-        l'except: chiamata dopo, scriverebbe NoneType: None."""
-        from gui import main_frame as mf
-
-        _donazione_finta(monkeypatch, RuntimeError("sorteggio rotto"))
-        telaio, evento, passi = self._telaio(monkeypatch, log_vero=True)
-
-        mf.MainFrame.on_close(telaio, evento)
-
-        testo = (tmp_path / "error.log").read_text(encoding="utf-8")
-        assert "Invito alla donazione non mostrato: sorteggio rotto" in testo
-        assert "RuntimeError: sorteggio rotto" in testo
-        assert "NoneType: None" not in testo
-        assert passi["skip"] == 1
-
-    def test_chiusura_normale_copie_suono_invito(self, monkeypatch, registro):
+    def test_la_chiusura_non_mostra_l_invito(self, monkeypatch, registro):
+        """Donazione non viene nemmeno chiamata, e nessuna finestra si apre:
+        fino alla 10.16.1 l'invito compariva una chiusura su cinque."""
         from gui import main_frame as mf
 
         chiamate = _donazione_finta(monkeypatch, "Un caffe'?")
         telaio, evento, passi = self._telaio(monkeypatch)
-
-        mf.MainFrame.on_close(telaio, evento)
-
-        assert passi["timer"] == ["stop"]
-        assert passi["copie"] == ["Tornello - Prova.json"]
-        assert passi["suoni"] == ["chiusura"]
-        assert chiamate[0]["argomenti"] == {"lang": "it", "stampa": False}
-        assert registro["mostrati"] == 1
-        assert passi["log"] == []
-        assert passi["skip"] == 1
-
-    def test_la_chiusura_per_aggiornamento_salta_l_invito(self, monkeypatch, registro):
-        """Dalla 10.8.1 (issue 37): lo script che applica l'aggiornamento
-        aspetta la chiusura una trentina di secondi, e un invito lasciato
-        aperto la farebbe scadere. Copie e suono restano quelli di sempre."""
-        from gui import main_frame as mf
-
-        chiamate = _donazione_finta(monkeypatch, "Un caffe'?")
-        telaio, evento, passi = self._telaio(monkeypatch)
-        telaio._chiusura_per_aggiornamento = True
 
         mf.MainFrame.on_close(telaio, evento)
 
         assert chiamate == []
         assert registro["dialoghi"] == []
+        assert passi["timer"] == ["stop"]
         assert passi["copie"] == ["Tornello - Prova.json"]
         assert passi["suoni"] == ["chiusura"]
-        assert passi["log"] == []
         assert passi["skip"] == 1
+
+    def test_il_segnale_della_chiusura_per_aggiornamento_non_c_e_piu(self, principale):
+        """Serviva soltanto a saltare l'invito nella chiusura che applica un
+        aggiornamento (dalla 10.8.1, issue 37)."""
+        assert not hasattr(principale, "_chiusura_per_aggiornamento")
+
+
+class TestSuonoDellInvito:
+    """La finestra Offri un caffe' suona all'apertura il preset donazione
+    della collezione comune, lo stesso degli altri programmi del parco, con
+    la firma di Tornello (issue 69)."""
+
+    def test_la_finestra_suona_la_donazione(self, app_grafica, monkeypatch):
+        import utils
+        from gui.dialogs.donation_dialog import DonationDialog
+
+        suonati = []
+        monkeypatch.setattr(utils, "play_sound", lambda nome, *a, **k: suonati.append(nome))
+        dlg = DonationDialog(None, "Offri un caffè", "Testo", {})
+        try:
+            assert suonati == ["donazione"]
+        finally:
+            dlg.DestroyChildren()
+            dlg.Destroy()
+
+    def test_il_preset_ha_la_firma_di_tornello(self):
+        import json
+        import os
+
+        GBUtils = pytest.importorskip("GBUtils")
+        percorso = os.path.join(os.path.dirname(os.path.abspath(GBUtils.__file__)), "Acu_Collection.json")
+        with open(percorso, encoding="utf-8") as f:
+            preset = json.load(f).get("donazione")
+        assert preset is not None and preset.get("score")
+        firme = preset["descrizione"].split("Usato da:")[-1]
+        assert "tornello" in [nome.strip(" .") for nome in firme.split(",")]
 
 
 class TestFinestraDellInvito:

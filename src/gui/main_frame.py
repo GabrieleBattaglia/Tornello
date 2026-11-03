@@ -179,12 +179,13 @@ class MainFrame(wx.Frame):
         # error.log, perche' non si ripeta a ogni minuto.
         self._guasto_pie_di_pagina = False
         # L'aggiornamento del programma (issue 37): la finestra che accompagna
-        # lo scaricamento, il blocco delle altre finestre finche' dura, e il
-        # segnale che la chiusura serve ad applicarlo, per la quale on_close
-        # salta l'invito alla donazione.
+        # lo scaricamento e il blocco delle altre finestre finche' dura. Fino
+        # alla 10.16.1 c'era anche il segnale che la chiusura serviva ad
+        # applicarlo, perche' on_close saltasse l'invito alla donazione: dalla
+        # 10.17.0 l'invito alla chiusura non c'e' piu', e il segnale non
+        # serviva ad altro (issue 69).
         self._dialogo_avanzamento = None
         self._disabilitatore = None
-        self._chiusura_per_aggiornamento = False
         # Vero mentre l'albero si svuota e si ricostruisce: gli eventi di
         # selezione che il controllo di Windows manda in quel momento non
         # caricano tornei (vedi _albero_senza_caricamenti).
@@ -376,6 +377,9 @@ class MainFrame(wx.Frame):
         help_menu.Append(wx.ID_HELP, _("&Guida Accessibile\tF1"))
         self.item_changelog = help_menu.Append(wx.ID_ANY, _("&Changelog\tF2"))
         self.item_credits = help_menu.Append(wx.ID_ABOUT, _("C&rediti\tF3"))
+        # Dalla 10.17.0 l'invito a offrire un caffe' sta qui, e non compare
+        # piu' alla chiusura (issue 69).
+        self.item_caffe = help_menu.Append(wx.ID_ANY, _("&Offrimi un caffè..."))
         self.menu_bar.Append(help_menu, _("&Aiuto"))
 
         self.SetMenuBar(self.menu_bar)
@@ -390,6 +394,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_sync_db, self.item_sync_db)
         self.Bind(wx.EVT_MENU, self.on_changelog, self.item_changelog)
         self.Bind(wx.EVT_MENU, self.on_credits, self.item_credits)
+        self.Bind(wx.EVT_MENU, self.on_offrimi_un_caffe, self.item_caffe)
         self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
@@ -1023,7 +1028,7 @@ class MainFrame(wx.Frame):
         e aspetta la chiusura del programma soltanto una trentina di secondi:
         l'esito va nella barra di stato e non in una finestra modale, che
         aspetterebbe chi la chiude, e il programma si chiude da solo, con le
-        copie di chiusura di sempre ma senza l'invito alla donazione.
+        copie di chiusura di sempre.
         Altrimenti si mostrano gli esiti raccolti, se ce ne sono, per esempio
         lo scaricamento non riuscito, e poi arrivano le domande dell'avvio.
         """
@@ -1037,7 +1042,6 @@ class MainFrame(wx.Frame):
             # con la finestra dell'errore imprevisto e lo script che dopo
             # trenta secondi rinuncia all'aggiornamento. Il guasto va in
             # error.log, come quelli del ricalcolo automatico.
-            self._chiusura_per_aggiornamento = True
             if avvisi:
                 try:
                     self.set_status(avvisi[-1])
@@ -5047,10 +5051,8 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_close(self, event):
-        # Il timer del pie' di pagina si ferma per primo: l'invito alla
-        # donazione, con la sua finestra modale, fa girare il ciclo degli
-        # eventi, e un timer ancora acceso dopo la chiusura scatterebbe su
-        # controlli ormai distrutti.
+        # Il timer del pie' di pagina si ferma per primo: un timer ancora
+        # acceso dopo la chiusura scatterebbe su controlli ormai distrutti.
         self._timer_pie_di_pagina.Stop()
         from utils import copie_di_chiusura, play_sound
 
@@ -5064,38 +5066,28 @@ class MainFrame(wx.Frame):
         # dell'audio.
         play_sound("chiusura", self.current_tournament, sync=1.5)
 
-        # Dalla 10.8.1 la chiusura che applica un aggiornamento salta
-        # l'invito: lo script che sostituisce il programma aspetta la sua
-        # uscita una trentina di secondi soltanto, e chi leggeva l'invito con
-        # calma si ritrovava con l'aggiornamento non applicato.
-        if not self._chiusura_per_aggiornamento:
-            try:
-                self._invito_donazione()
-            except Exception as errore:  # noqa: BLE001
-                # Largo di proposito: un'eccezione che uscisse da on_close
-                # salterebbe event.Skip() e la finestra non si chiuderebbe piu',
-                # per colpa di un invito che non serve a niente del lavoro fatto.
-                # Ma non tace piu' come l'except: pass di prima: il guasto finisce
-                # in error.log, con il suo traceback.
-                from gui.settings import _registra
-
-                _registra(f"Invito alla donazione non mostrato: {errore}")
-
+        # Dalla 10.17.0 la chiusura non mostra piu' l'invito a offrire un
+        # caffe', decisione di Gabriele del 6 ottobre 2026 per tutti i
+        # programmi del parco che hanno una finestra: lo mostra, sempre, la
+        # voce Offrimi un caffe' del menu Aiuto (issue 69). Fino alla 10.16.1
+        # l'invito compariva una chiusura su cinque, tranne in quella che
+        # applica un aggiornamento.
         event.Skip()
 
-    def _invito_donazione(self):
-        """L'invito a offrire un caffe', nella lingua delle impostazioni.
+    def on_offrimi_un_caffe(self, event):
+        """La voce Offrimi un caffe' del menu Aiuto: l'invito a offrire un
+        caffe', nella lingua delle impostazioni, che compare sempre.
 
-        Donazione, dalla V2.1.0 di GBUtils, restituisce il messaggio, o None se
-        il sorteggio non passa, e con stampa=False non stampa niente. Fino alla
-        10.3.4 la stampa si catturava deviando sys.stdout su uno StringIO, un
-        aggiramento nato quando Donazione sapeva soltanto stampare.
+        Donazione di GBUtils, con probabilita=100, non sorteggia e restituisce
+        sempre il messaggio, e con stampa=False non stampa niente. Dalla
+        10.17.0 e' l'unica strada per l'invito (issue 69): fino alla 10.16.1
+        lo mostrava la chiusura della finestra, una volta su cinque.
         """
         from GBUtils import Donazione
 
         lingua = self.settings.get("language") if self.settings else None
-        testo = Donazione(lang=lingua, stampa=False)
-        if testo is None:
+        testo = Donazione(lang=lingua, probabilita=100, stampa=False)
+        if not testo:
             return
         from gui.dialogs.donation_dialog import DonationDialog
 

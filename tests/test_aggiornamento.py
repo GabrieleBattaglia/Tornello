@@ -485,11 +485,9 @@ class TestOrdineDellAvvio:
             _quando_libera=registro.passo("quando libera"),
             _dopo_aggiornamento="dopo",
             Close=registro.passo("Close"),
-            _chiusura_per_aggiornamento=False,
         )
         main_frame.MainFrame._fine_aggiornamento(telaio, False, [])
         assert registro == [("chiudi avanzamento",), ("quando libera", "dopo", [])]
-        assert telaio._chiusura_per_aggiornamento is False
 
     def test_dopo_l_aggiornamento_gli_esiti_poi_le_domande(self, main_frame, monkeypatch):
         registro = _Registro()
@@ -527,18 +525,23 @@ class TestOrdineDellAvvio:
 
 
 class TestChiusuraPerAggiornamento:
+    """Dalla 10.17.0 la chiusura non mostra piu' l'invito a offrire un caffe'
+    (issue 69), e il segnale _chiusura_per_aggiornamento, che serviva soltanto
+    a saltarlo, non c'e' piu': il telaio finto non lo ha, e la chiusura per
+    l'aggiornamento non lo cerca."""
+
     def test_pronto_scrive_nella_barra_e_chiude_senza_finestre(self, main_frame):
         registro = _Registro()
         telaio = SimpleNamespace(
             _chiudi_avanzamento=registro.passo("chiudi avanzamento"),
             _quando_libera=registro.passo("quando libera"),
             set_status=registro.passo("stato"),
-            Close=lambda: registro.append(("Close", telaio._chiusura_per_aggiornamento)),
-            _chiusura_per_aggiornamento=False,
+            Close=registro.passo("Close"),
         )
         pronto = "Aggiornamento pronto, il programma si chiude per applicarlo."
         main_frame.MainFrame._fine_aggiornamento(telaio, True, [pronto])
-        assert registro == [("chiudi avanzamento",), ("stato", pronto), ("Close", True)]
+        assert registro == [("chiudi avanzamento",), ("stato", pronto), ("Close",)]
+        assert not hasattr(telaio, "_chiusura_per_aggiornamento")
 
     def test_con_la_barra_di_stato_guasta_si_chiude_lo_stesso(self, main_frame, monkeypatch):
         """Lo script aspetta la chiusura una trentina di secondi: un guasto
@@ -555,11 +558,10 @@ class TestChiusuraPerAggiornamento:
             _chiudi_avanzamento=registro.passo("chiudi avanzamento"),
             _quando_libera=registro.passo("quando libera"),
             set_status=guasta,
-            Close=lambda: registro.append(("Close", telaio._chiusura_per_aggiornamento)),
-            _chiusura_per_aggiornamento=False,
+            Close=registro.passo("Close"),
         )
         main_frame.MainFrame._fine_aggiornamento(telaio, True, ["Aggiornamento pronto, il programma si chiude per applicarlo."])
-        assert registro == [("chiudi avanzamento",), ("Close", True)]
+        assert registro == [("chiudi avanzamento",), ("Close",)]
         assert len(log) == 1 and "illeggibile" in log[0]
 
     def test_il_blocco_si_toglie_prima_di_chiudere_la_finestra(self, main_frame):
