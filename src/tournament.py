@@ -161,6 +161,13 @@ def time_machine_torneo(torneo):
             for m in turno_di_arrivo.get("matches", [])
         ]
 
+    # I turni che se ne vanno, compreso quello di arrivo, che rinasce senza
+    # risultati: i loro file dei dettagli vanno nel cestino a riavvolgimento
+    # riuscito, dalla 10.13.60 (issue 68).
+    turni_tolti = [
+        r.get("round") for r in torneo.get("rounds", []) if r.get("round", 0) >= target_round
+    ]
+
     # Azzera lo stato futuro (rimuove i round >= target_round)
     torneo["rounds"] = [
         r for r in torneo.get("rounds", []) if r.get("round", 0) < target_round
@@ -259,6 +266,8 @@ def time_machine_torneo(torneo):
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
 
+    dettagli_dei_turni_nel_cestino(torneo, turni_tolti)
+
     print(_("\nRiavvolgimento completato con successo!"))
     prompt_template_5 = _(
         "Il torneo è ora al Turno {target_round}, pronto per l'inserimento dei risultati."
@@ -270,11 +279,41 @@ def time_machine_torneo(torneo):
     return True
 
 
-def rollback_to_previous_round(torneo):
+def dettagli_dei_turni_nel_cestino(torneo, turni, cestino=None):
+    """Manda nel cestino di Windows il file dei dettagli di ciascuno dei
+    turni che la Time Machine ha tolto, Tornello - nome - Turno N
+    Dettagli.txt, se c'e': lo scrive la conclusione del turno, e un turno che
+    non c'e' piu' non deve lasciare un file che lo descrive. Dalla 10.13.60
+    (issue 68), come i file di un torneo eliminato dalla 10.13.8: fino alla
+    10.13.59 il file restava nella cartella del torneo. cestino e' la
+    funzione che manda un percorso nel cestino e risponde vero se ci e'
+    riuscita; senza, quella del programma. Restituisce i file che restano,
+    per esempio su un disco senza cestino, e li dice."""
+    from reports import file_dei_dettagli_del_turno
+    from utils import delete_file_to_trash
+
+    cestino = cestino or delete_file_to_trash
+    rimasti = []
+    for numero in turni:
+        percorso = file_dei_dettagli_del_turno(torneo, numero)
+        if os.path.isfile(percorso) and not cestino(percorso):
+            rimasti.append(percorso)
+            print(
+                _(
+                    "Il file {file} del turno tolto non è andato nel cestino, e resta dov'è."
+                ).format(file=percorso)
+            )
+    return rimasti
+
+
+def rollback_to_previous_round(torneo, cestino=None):
     """
     Annulla l'ultimo turno (current_round) del torneo, eliminando tutti i risultati
     e gli abbinamenti del turno corrente e ripristinando lo stato del turno precedente.
     Ritorna True se il rollback ha avuto successo, False altrimenti.
+    Dalla 10.13.60 il file dei dettagli del turno tolto, se il turno era
+    concluso, va nel cestino con cestino, come dice
+    dettagli_dei_turni_nel_cestino.
     """
     current_round = torneo.get("current_round", 1)
 
@@ -327,6 +366,12 @@ def rollback_to_previous_round(torneo):
 
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
+
+    # Il turno tolto, se era concluso, aveva il suo file dei dettagli: per
+    # esempio annullando due turni di seguito, il secondo e' quello gia'
+    # concluso. Il turno che torna in corso tiene il suo, che descrive
+    # ancora i suoi risultati.
+    dettagli_dei_turni_nel_cestino(torneo, [last_round_num], cestino)
 
     from utils import play_sound
 

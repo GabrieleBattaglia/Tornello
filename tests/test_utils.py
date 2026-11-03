@@ -226,6 +226,124 @@ class TestRitiratiNelRiavvolgimento:
         assert ultimo_turno_nello_storico(None) == 0
 
 
+class TestDettagliDelTurnoToltoNelCestino:
+    """Dalla 10.13.60 (issue 68) la Time Machine manda nel cestino di Windows
+    il file Tornello - nome - Turno N Dettagli.txt del turno che toglie, se
+    il turno era concluso e il file c'e'. Fino alla 10.13.59 il file restava
+    nella cartella dei report, e descriveva un turno che non c'era piu'. Il
+    turno che torna in corso tiene il suo, e gli altri file restano. Il
+    cestino e' finto: annota i percorsi, e quelli da rifiutare restano dove
+    sono, come su un disco senza cestino."""
+
+    NOMI = ("Turno 2 Dettagli.txt", "Turno 3 Dettagli.txt", "Turno corrente.txt", "Classifica.txt")
+
+    def _torneo(self, tmp_path, monkeypatch):
+        """Tre turni conclusi, i report in una cartella scelta per il
+        torneo, e i file dei report gia' scritti."""
+        import config
+
+        monkeypatch.setattr(config, "user_data_path", lambda p: str(tmp_path / p))
+        cartella = tmp_path / "report"
+        cartella.mkdir()
+        torneo = {
+            "name": "Coppa d'Autunno",
+            "custom_save_path": str(cartella),
+            "current_round": 3,
+            "total_rounds": 5,
+            "players": [TestRitiratiNelRiavvolgimento()._giocatore("ALFA", [1, 2, 3])],
+            "rounds": [{"round": numero, "matches": [{"id": numero, "round": numero, "result": "1-0"}]} for numero in (1, 2, 3)],
+        }
+        torneo["players_dict"] = {p["id"]: p for p in torneo["players"]}
+        for nome in self.NOMI:
+            (cartella / f"Tornello - Coppa_dAutunno - {nome}").write_text("report", encoding="utf-8")
+        return torneo, cartella
+
+    @staticmethod
+    def _cestino(rifiuta=False):
+        ricevuti = []
+
+        def cestino(percorso):
+            ricevuti.append(percorso)
+            if rifiuta:
+                return False
+            os.remove(percorso)
+            return True
+
+        return cestino, ricevuti
+
+    def test_il_file_del_turno_tolto_va_nel_cestino(self, tmp_path, monkeypatch):
+        from tournament import rollback_to_previous_round
+
+        torneo, cartella = self._torneo(tmp_path, monkeypatch)
+        cestino, ricevuti = self._cestino()
+
+        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+
+        assert ricevuti == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
+        restano = sorted(p.name.removeprefix("Tornello - Coppa_dAutunno - ") for p in cartella.iterdir())
+        assert restano == sorted(set(self.NOMI) - {"Turno 3 Dettagli.txt"})
+        # Il secondo annullamento toglie il turno 2, con il suo file.
+        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+        assert ricevuti[1:] == [str(cartella / "Tornello - Coppa_dAutunno - Turno 2 Dettagli.txt")]
+
+    def test_senza_il_file_il_cestino_non_si_chiama(self, tmp_path, monkeypatch):
+        """Il turno tolto di solito e' quello appena abbinato, ancora in
+        corso, e il suo file non c'e'."""
+        from tournament import rollback_to_previous_round
+
+        torneo, cartella = self._torneo(tmp_path, monkeypatch)
+        (cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt").unlink()
+        cestino, ricevuti = self._cestino()
+
+        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+
+        assert ricevuti == []
+        assert len(list(cartella.iterdir())) == len(self.NOMI) - 1
+
+    def test_il_file_che_il_cestino_non_prende_resta(self, tmp_path, monkeypatch, capsys):
+        from tournament import rollback_to_previous_round
+
+        torneo, cartella = self._torneo(tmp_path, monkeypatch)
+        cestino, ricevuti = self._cestino(rifiuta=True)
+
+        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+
+        dettagli = cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt"
+        assert ricevuti == [str(dettagli)]
+        assert dettagli.exists()
+        assert len(torneo["rounds"]) == 2
+        assert f"Il file {dettagli} del turno tolto non è andato nel cestino, e resta dov'è." in capsys.readouterr().out
+
+    def test_senza_cestino_usa_quello_del_programma(self, tmp_path, monkeypatch):
+        import utils
+        from tournament import rollback_to_previous_round
+
+        torneo, cartella = self._torneo(tmp_path, monkeypatch)
+        ricevuti = []
+        monkeypatch.setattr(utils, "delete_file_to_trash", lambda percorso, finestra=None: ricevuti.append(percorso) or True)
+
+        assert rollback_to_previous_round(torneo) is True
+
+        assert ricevuti == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
+
+    def test_il_nome_e_quello_che_scrive_la_conclusione_del_turno(self, tmp_path, monkeypatch):
+        """Il file che la Time Machine cerca e' proprio quello che scrive
+        append_completed_round_to_history_file: il nome si fa in un posto
+        solo."""
+        from reports import append_completed_round_to_history_file, file_dei_dettagli_del_turno
+
+        torneo, cartella = self._torneo(tmp_path, monkeypatch)
+        for nome in self.NOMI:
+            (cartella / f"Tornello - Coppa_dAutunno - {nome}").unlink()
+        torneo["players"] = []
+        torneo["players_dict"] = {}
+
+        append_completed_round_to_history_file(torneo, 3)
+
+        assert [p.name for p in cartella.iterdir()] == ["Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt"]
+        assert file_dei_dettagli_del_turno(torneo, 3) == str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")
+
+
 class TestScritturaAtomica:
     """Il database dei giocatori e i tornei vengono scritti prima in un file
     temporaneo e poi sostituiti in un colpo solo. Scrivendo direttamente sul

@@ -1809,6 +1809,75 @@ class TestAlberoETorneoAttivo:
         assert len(principale.current_tournament["rounds"]) == 1
         assert not principale.current_tournament.get("concluded")
 
+    @pytest.mark.parametrize("prende", (True, False))
+    def test_la_time_machine_manda_nel_cestino_i_dettagli_del_turno_tolto(self, principale, suoni, monkeypatch, prende):
+        """Dalla 10.13.60 (issue 68): annullato il turno 2, gia' concluso,
+        il suo file dei dettagli va nel cestino, con la finestra principale
+        come proprietaria della domanda di Windows, e quello del turno 1
+        resta. Fino alla 10.13.59 restava anche quello del turno 2. Un file
+        che il cestino non prende resta dov'e': lo dice un messaggio, con il
+        suono dell'errore. Cestino e finestre di messaggio sono finti."""
+        import wx
+
+        import gui.main_frame as mf
+        import utils
+        from config import user_data_path
+
+        torneo = _torneo_in_corso("Alfa", finito=True)
+        torneo.update(total_rounds=3, current_round=2)
+        torneo["rounds"].append({"round": 2, "matches": [
+            {"id": 3, "white_player_id": "VER", "black_player_id": "NER", "result": "0-1"},
+            {"id": 4, "white_player_id": "RUS", "black_player_id": "BIA", "result": "1-0"},
+        ]})
+        percorso = user_data_path("Tornello - Alfa.json")
+        self._scrivi(percorso, torneo)
+        dettagli = [user_data_path(f"Tornello - Alfa - Turno {numero} Dettagli.txt") for numero in (1, 2)]
+        for file in dettagli:
+            with open(file, "w", encoding="utf-8") as f:
+                f.write("dettagli")
+        principale.populate_tree()
+        self._scegli_torneo(principale, percorso)
+        assert len(principale.current_tournament["rounds"]) == 2
+        ricevuti, finestre = [], []
+
+        def cestino(file, finestra=None):
+            ricevuti.append((file, finestra))
+            if not prende:
+                return False
+            os.remove(file)
+            return True
+
+        class DialogoFinto:
+            def __init__(self, genitore, titolo, messaggio, style=wx.OK, **altro):
+                finestre.append((titolo, messaggio))
+                self.style = style
+
+            def ShowModal(self):
+                return wx.ID_YES if self.style & wx.YES_NO else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
+        suoni.clear()
+
+        self._dal_menu(principale, principale.item_rollback.GetId())
+
+        assert len(principale.current_tournament["rounds"]) == 1
+        assert ricevuti == [(dettagli[1], principale.GetHandle())]
+        assert os.path.exists(dettagli[0])
+        assert os.path.exists(dettagli[1]) is not prende
+        if prende:
+            assert len(finestre) == 1
+            assert "errore" not in suoni
+        else:
+            assert finestre[1] == (
+                "File rimasto fuori dal cestino",
+                "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:\n" + dettagli[1],
+            )
+            assert suoni[-1] == "errore"
+
     def test_con_il_database_che_non_si_legge_la_finalizzazione_non_parte(self, principale, suoni, monkeypatch):
         """Dalla 10.13.16: dopo il Si' alla domanda, il database bloccato
         ferma tutto con un messaggio, e database e torneo restano come

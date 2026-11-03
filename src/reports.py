@@ -361,18 +361,26 @@ def save_current_tournament_round_file(torneo):
         traceback.print_exc()
 
 
+def file_dei_dettagli_del_turno(torneo, numero):
+    """Il percorso del file con i dettagli di un turno concluso, Tornello -
+    nome - Turno N Dettagli.txt, nella cartella dei report del torneo. Lo
+    scrive append_completed_round_to_history_file quando il turno si
+    conclude, e dalla 10.13.60 la Time Machine lo manda nel cestino quando
+    toglie il turno (issue 68): il nome si fa in un posto solo, perche' le
+    due strade trovino lo stesso file."""
+    nome = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
+        name=sanitize_filename(torneo.get("name", "Torneo_Senza_Nome")),
+        round_num=numero,
+    )
+    return _nella_cartella_dei_report(torneo, nome)
+
+
 def append_completed_round_to_history_file(torneo, completed_round_number):
     """
     Salva i dettagli di un turno concluso in un FILE SEPARATO per quel turno.
     Il file viene creato o sovrascritto.
     """
-    tournament_name = torneo.get("name", "Torneo_Senza_Nome")
-    sanitized_name = sanitize_filename(tournament_name)
-    # NUOVO NOME FILE: specifico per il turno
-    filename = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
-        name=sanitized_name, round_num=completed_round_number
-    )
-    filename = _nella_cartella_dei_report(torneo, filename)
+    filename = file_dei_dettagli_del_turno(torneo, completed_round_number)
 
     round_data = None
     for rnd in torneo.get("rounds", []):

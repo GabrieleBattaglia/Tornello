@@ -5055,13 +5055,40 @@ class MainFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_YES:
             from tournament import rollback_to_previous_round
 
-            if rollback_to_previous_round(self.current_tournament):
+            # Dalla 10.13.60 il file dei dettagli del turno tolto va nel
+            # cestino, con la finestra principale come proprietaria della
+            # domanda di Windows, come per l'eliminazione di un torneo (issue
+            # 68). Un file che il cestino non prende resta, e lo si dice.
+            rimasti = []
+
+            def nel_cestino(percorso):
+                if self._nel_cestino(percorso):
+                    return True
+                rimasti.append(percorso)
+                return False
+
+            if rollback_to_previous_round(self.current_tournament, cestino=nel_cestino):
                 self._save_state()
                 self.populate_tree()
                 self.show_current_round_report()
                 self.set_status(
                     _("Time Machine attivata: tornati al turno precedente.")
                 )
+                if rimasti:
+                    from utils import play_sound
+
+                    play_sound("errore", self.current_tournament)
+                    self._dialogo_informativo(
+                        _("File rimasto fuori dal cestino"),
+                        "\n".join(
+                            [
+                                _(
+                                    "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:"
+                                ),
+                                *rimasti,
+                            ]
+                        ),
+                    )
         dlg.Destroy()
 
     def _database_dei_giocatori(self):
