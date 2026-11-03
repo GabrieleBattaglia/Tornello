@@ -446,6 +446,13 @@
      "color": "black",
      "result": "0-1",
      "score": 1.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "FIDE_805165",
+     "color": "white",
+     "result": "0-1",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1081,7 +1088,7 @@
    "federation": "ITA",
    "fide_id_num_str": "805165",
    "birth_date": "1960-01-01",
-   "points": 2.5,
+   "points": 3.5,
    "results_history": [
     {
      "round": 1,
@@ -1100,6 +1107,13 @@
     {
      "round": 3,
      "opponent_id": "MERAL001",
+     "color": "black",
+     "result": "0-1",
+     "score": 1.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "TRACO001",
      "color": "black",
      "result": "0-1",
      "score": 1.0
@@ -2577,7 +2591,14 @@
      "white_player_id": "BRICA001",
      "black_player_id": "GASCL001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-06",
+      "time": "21:30",
+      "channel": "Lichess",
+      "arbiter": "Non necessario",
+      "arbiter_not_needed": true
+     }
     },
     {
      "id": 41,
@@ -2599,15 +2620,16 @@
      "round": 4,
      "white_player_id": "TRACO001",
      "black_player_id": "FIDE_805165",
-     "result": null,
-     "is_scheduled": true,
+     "result": "0-1",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-11-03",
       "time": "16:00",
       "channel": "WA",
       "arbiter": "Claudio Gas",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.11.02\"]\n[Round \"4\"]\n[White \"Trapletti, Cosetta\"]\n[Black \"Nicolini, Savino\"]\n[Result \"0-1\"]\n[WhiteElo \"1497\"]\n[BlackElo \"1399\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.21.5 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"E91\"]\n[Opening \"King's Indian\"]\n[Variation \"6.Be2\"]\n\n1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Be2 O-O 6. Nf3 c5 7. Be3 Nc6 8. O-O\ncxd4 9. Nxd4 Nd7 10. Nxc6 bxc6 11. Qb3 Rb8 12. Qa3 a5 13. c5 Nxc5 14. Bxc5 dxc5\n15. Qxc5 Rxb2 16. Bf3 Ba6 17. Rfd1 Qc7 18. Ne2 Rfb8 19. g3 Bxe2 20. Bxe2 Rxe2\n21. e5 Rbb2 22. Rf1 Bxe5 23. Qc4 Bxg3 24. hxg3 Qxg3+ 25. Kh1 Rxf2 26. Qxc6 Qh2#\n0-1"
     },
     {
      "id": 43,
@@ -2654,7 +2676,14 @@
      "white_player_id": "IONLO001",
      "black_player_id": "RIVPA001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-03",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "Giuseppe",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 48,
@@ -2662,7 +2691,14 @@
      "white_player_id": "GORSE001",
      "black_player_id": "VALRI001",
      "result": null,
-     "is_scheduled": false
+     "is_scheduled": true,
+     "schedule_info": {
+      "date": "2026-11-04",
+      "time": "21:00",
+      "channel": "WA",
+      "arbiter": "Gabry",
+      "arbiter_not_needed": false
+     }
     },
     {
      "id": 49,
@@ -2683,7 +2719,7 @@
       "date": "2026-11-05",
       "time": "15:00",
       "channel": "WA",
-      "arbiter": "",
+      "arbiter": "Claudio Gas",
       "arbiter_not_needed": false
      }
     },

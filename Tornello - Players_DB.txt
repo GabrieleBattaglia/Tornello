@@ -1,7 +1,7 @@
-﻿Report Database Giocatori Tornello - Domenica 4 ottobre 2026 22:35:18
+﻿Report Database Giocatori Tornello - Martedì 3 novembre 2026 12:55:24
 ID: ARICL001, Claudio Ariaudo
 	Sesso: M, Federazione: ITA, ID FIDE: 815535, Flag: N/D
-	Elo Standard: 1851 (Partite FIDE: 0)
+	Elo Standard: 1873 (Partite FIDE: 0)
 	Elo Rapid: 0.0 (Partite FIDE: 0, K: 20)
 	Elo Blitz: 0.0 (Partite FIDE: 0, K: 0)
 	Partite Valutate Totali: 7, K-Factor Stimato: 20, Data Iscrizione DB: Lunedì 21 luglio 2025
