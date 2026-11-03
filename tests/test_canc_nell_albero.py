@@ -3,10 +3,12 @@
 Dalla 10.14.0 CANC su una partita giocata del turno corrente la riporta fra
 quelle da giocare, come [cancella] della console, dopo una domanda con No
 predefinito; il riposo, i turni gia' chiusi, i tornei conclusi e le partite
-con un giocatore ritirato si rifiutano con un messaggio. CANC e'
-l'acceleratore della voce Elimina Torneo Attivo del menu File, e il suo
-gestore smista per voce scelta: sul torneo e sul giocatore fa quello che
-faceva, sulle altre voci suona l'errore senza parlare di tornei da eliminare.
+con un giocatore ritirato si rifiutano con un messaggio. CANC smista per
+voce scelta: sul torneo e sul giocatore fa quello che faceva, sulle altre
+voci suona l'errore senza parlare di tornei da eliminare. Dalla revisione
+della 10.14.0 CANC ha un acceleratore suo, della finestra principale, e la
+voce Elimina Torneo Attivo del menu File, scelta dal menu, fa quello che
+faceva fino alla 10.13.62.
 Dalla 10.15.0 una programmazione si toglie con CANC sulla partita da giocare
 programmata e con il pulsante Togli programmazione della finestra di
 programmazione (issue 58).
@@ -21,6 +23,7 @@ annotano titolo, testo e pulsante predefinito, e i suoni annotati.
 import copy
 import json
 import os
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -318,15 +321,25 @@ def _voce_della_partita(principale, percorso, turno, scacchiera, id_partita):
     return _voce(principale, action="activate_match", filepath=percorso, round=turno, board_num=scacchiera, match={"id": id_partita})
 
 
-def _canc(principale, voce):
-    """La voce scelta nell'albero, poi CANC: il tasto arriva come comando
-    della voce Elimina Torneo Attivo, di cui e' l'acceleratore."""
+def _comando(principale, voce, identificativo):
     import wx
 
     principale.tree_ctrl.SelectItem(voce)
-    evento = wx.CommandEvent(wx.wxEVT_MENU, principale.item_delete_tournament.GetId())
+    evento = wx.CommandEvent(wx.wxEVT_MENU, identificativo)
     evento.SetEventObject(principale)
     assert principale.GetEventHandler().ProcessEvent(evento)
+
+
+def _canc(principale, voce):
+    """La voce scelta nell'albero, poi CANC: il tasto arriva come comando
+    dell'acceleratore della finestra principale, id_canc."""
+    _comando(principale, voce, principale.id_canc)
+
+
+def _dal_menu(principale, voce):
+    """La voce scelta nell'albero, poi Elimina Torneo Attivo scelta dal menu
+    File."""
+    _comando(principale, voce, principale.item_delete_tournament.GetId())
 
 
 def _domande(monkeypatch, *risposte):
@@ -517,27 +530,116 @@ class TestSmistamentoDelCanc:
         assert domande.aperte == []
         assert _dal_file(percorso) == prima
 
-    def test_sul_torneo_lo_elimina_come_prima(self, principale, monkeypatch):
+    @pytest.mark.parametrize("come", (_canc, _dal_menu))
+    def test_sul_torneo_lo_elimina_come_prima(self, principale, monkeypatch, come):
         percorso = _apri(principale)
         eliminati = []
         monkeypatch.setattr(principale, "delete_tournament_completely", lambda voce, filepath: eliminati.append(filepath))
 
-        _canc(principale, _voce(principale, action="select_tournament", filepath=percorso))
+        come(principale, _voce(principale, action="select_tournament", filepath=percorso))
 
         assert eliminati == [percorso]
 
-    def test_sul_giocatore_come_prima(self, principale, monkeypatch):
+    @pytest.mark.parametrize("come", (_canc, _dal_menu))
+    def test_sul_giocatore_come_prima(self, principale, monkeypatch, come):
         percorso = _apri(principale)
         tolti = []
         monkeypatch.setattr(principale, "delete_player_from_tournament", lambda voce, giocatore: tolti.append(giocatore["id"]))
         voce = _voce(principale, action="show_player_detail", filepath=percorso)
 
-        _canc(principale, voce)
+        come(principale, voce)
 
         assert tolti == [principale.tree_ctrl.GetItemData(voce)["player"]["id"]]
 
     def test_la_voce_del_menu_tiene_il_suo_tasto(self, principale):
         assert principale.item_delete_tournament.GetItemLabel() == "E&limina Torneo Attivo...\tDelete"
+
+    def test_dal_menu_sulle_altre_voci_dice_di_scegliere_un_torneo(self, principale, suoni, monkeypatch):
+        """La voce Elimina Torneo Attivo scelta dal menu, su una voce che non
+        e' un torneo ne' un giocatore, partita giocata compresa, fa sentire
+        l'errore e dice di scegliere prima un torneo, come fino alla
+        10.13.62, e non tocca la partita. Dalla 10.14.0 alla sua revisione
+        smistava come CANC: sulla partita giocata chiedeva Cancellazione
+        del risultato, e sulle altre voci si sentiva soltanto l'errore."""
+        percorso = _apri(principale)
+        domande = _domande(monkeypatch)
+        prima = _dal_file(percorso)
+        voci = [
+            _voce(principale, action="show_data", filepath=percorso),
+            _voce(principale, action="show_standings", filepath=percorso),
+            _voce_della_partita(principale, percorso, 2, 1, 4),
+        ]
+        for voce in voci:
+            suoni.clear()
+            domande.aperte.clear()
+            _dal_menu(principale, voce)
+            assert suoni == ["errore"], principale.tree_ctrl.GetItemData(voce)
+            assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [
+                ("Avviso", "Seleziona prima un torneo attivo dall'albero per poterlo eliminare.", False)
+            ]
+        assert _partita(principale.current_tournament, 4)["result"] is not None
+        assert _dal_file(percorso) == prima
+
+
+@pytest.mark.finestre_vere
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+def test_il_tasto_canc_arriva_a_on_canc_e_non_alla_voce_del_menu(app_grafica, suoni, monkeypatch):
+    """CANC premuto davvero sull'albero, con WM_KEYDOWN e WM_KEYUP mandati
+    al controllo sulla finestra principale mostrata sul desktop nascosto,
+    mai SendInput: lo prende l'acceleratore della finestra, che Windows
+    guarda prima di quello della voce Elimina Torneo Attivo, e arriva a
+    on_canc. Prima della revisione della 10.14.0 arrivava alla voce del
+    menu, che non sapeva distinguere il tasto dalla scelta dal menu."""
+    import wx
+    from test_fuoco_alla_chiusura import _attendi, _user32
+
+    import gui.main_frame as mf
+    from gui.settings import DEFAULT_SETTINGS
+
+    for nome in ("_check_fide_db_on_startup", "_check_backup_on_startup", "_scan_and_load_initial_tournament", "_check_updates_async"):
+        monkeypatch.setattr(mf.MainFrame, nome, lambda self: None)
+    monkeypatch.setattr(mf.MainFrame, "Maximize", lambda self, *a: None)
+    # I due gestori si legano alla nascita della finestra: si annotano
+    # prima.
+    arrivati = []
+    monkeypatch.setattr(mf.MainFrame, "on_canc", lambda self, evento: arrivati.append("canc"), raising=False)
+    monkeypatch.setattr(mf.MainFrame, "on_delete_active_tournament_menu", lambda self, evento: arrivati.append("menu"))
+    finestra = mf.MainFrame(None, "Tornello", dict(DEFAULT_SETTINGS))
+    try:
+        finestra._timer_pie_di_pagina.Stop()
+        percorso = _apri(finestra)
+        voce = _voce(finestra, action="show_data", filepath=percorso)
+        finestra.Show()
+        finestra.Raise()
+        user32 = _user32()
+        for _tentativo in range(10):
+            user32.SetForegroundWindow(finestra.GetHandle())
+            if _attendi(lambda: wx.GetActiveWindow() is finestra, 0.5):
+                break
+        else:
+            pytest.fail("la finestra principale non si e' attivata")
+        finestra.tree_ctrl.SelectItem(voce)
+        finestra.tree_ctrl.SetFocus()
+        assert _attendi(lambda: wx.Window.FindFocus() is finestra.tree_ctrl)
+        ciclo = wx.GUIEventLoop()
+
+        def premi():
+            # VK_DELETE, con il codice di scansione 0x53 e il bit del tasto
+            # esteso, come lo manda la tastiera.
+            dati = 1 | 0x53 << 16 | 1 << 24
+            user32.PostMessageW(finestra.tree_ctrl.GetHandle(), 0x100, 0x2E, dati)
+            user32.PostMessageW(finestra.tree_ctrl.GetHandle(), 0x101, 0x2E, dati | 0xC0000000)
+            wx.CallLater(300, ciclo.Exit)
+
+        wx.CallLater(50, premi)
+        rete = wx.CallLater(5000, ciclo.Exit)
+        ciclo.Run()
+        rete.Stop()
+
+        assert arrivati == ["canc"]
+    finally:
+        finestra.Destroy()
+        _attendi(lambda: not finestra, 1.0)
 
 
 class TestTogliProgrammazione:

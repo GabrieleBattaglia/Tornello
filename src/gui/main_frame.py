@@ -424,6 +424,17 @@ class MainFrame(wx.Frame):
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key_hook)
+        # CANC ha un acceleratore suo, nella tabella della finestra
+        # principale, che Windows guarda prima di quella del menu: la voce
+        # Elimina Torneo Attivo continua a mostrare il tasto, e NVDA a
+        # leggerlo, ma CANC arriva a on_canc, che agisce sulla voce scelta
+        # nell'albero, e la voce scelta dal menu a
+        # on_delete_active_tournament_menu. Prima della revisione della
+        # 10.14.0 CANC era l'acceleratore della voce, e i due non si
+        # distinguevano.
+        self.id_canc = wx.NewIdRef()
+        self.Bind(wx.EVT_MENU, self.on_canc, id=self.id_canc)
+        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_DELETE, self.id_canc)]))
 
     def on_key_hook(self, event):
         key_code = event.GetKeyCode()
@@ -3679,9 +3690,9 @@ class MainFrame(wx.Frame):
             event.Skip()
             return
 
-        # Di solito CANC non arriva qui: e' l'acceleratore della voce Elimina
-        # Torneo Attivo, e il tasto lo prende il menu. Se arriva, fa lo
-        # stesso, dallo stesso smistamento.
+        # Di solito CANC non arriva qui: lo prende l'acceleratore della
+        # finestra principale, che chiama on_canc. Se arriva, fa lo stesso,
+        # dallo stesso smistamento.
         if key_code == wx.WXK_DELETE and item and data:
             self._canc_sulla_voce(item, data)
             return
@@ -4402,25 +4413,47 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
 
     def on_delete_active_tournament_menu(self, event):
-        """La voce Elimina Torneo Attivo del menu File, che ha CANC come
-        acceleratore: CANC nell'albero arriva qui, e non a on_tree_key_down.
-        Dalla 10.14.0 smista per la voce scelta nell'albero, con
-        _canc_sulla_voce (issue 71): sul torneo lo elimina come sempre, e su
-        una partita giocata la riporta fra quelle da giocare. Fino alla
-        10.13.62, su ogni voce che non era un torneo ne' un giocatore,
-        suonava l'errore e diceva di scegliere un torneo da eliminare, anche
-        a chi aveva premuto CANC su una partita."""
+        """La voce Elimina Torneo Attivo del menu File, scelta dal menu: CANC,
+        che la voce mostra come suo tasto, arriva invece a on_canc. Sul
+        torneo scelto nell'albero lo elimina, sul giocatore lo toglie o ne
+        propone il ritiro; sulle altre voci, partite comprese, suona l'errore
+        e un messaggio dice di scegliere prima un torneo, come fino alla
+        10.13.62. Dalla 10.14.0 alla sua revisione la voce smistava come
+        CANC: su una partita giocata proponeva di cancellarne il risultato, e
+        sulle altre voci faceva sentire soltanto l'errore, senza dire
+        perche'."""
+        from utils import play_sound
+
+        item = self.tree_ctrl.GetSelection()
+        data = self.tree_ctrl.GetItemData(item) if item and item.IsOk() else None
+        dati = data if isinstance(data, dict) else {}
+        azione = dati.get("action")
+        if azione == "show_player_detail":
+            self.delete_player_from_tournament(item, dati.get("player"))
+            return
+        if azione in ("select_tournament", "load_concluded") and dati.get("filepath"):
+            self.delete_tournament_completely(item, dati["filepath"])
+            return
+        play_sound("errore", self.current_tournament)
+        self._dialogo_informativo(
+            _("Avviso"),
+            _("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."),
+        )
+
+    def on_canc(self, event):
+        """CANC, dall'acceleratore della finestra principale: agisce sulla
+        voce scelta nell'albero, con _canc_sulla_voce."""
         item = self.tree_ctrl.GetSelection()
         data = self.tree_ctrl.GetItemData(item) if item and item.IsOk() else None
         self._canc_sulla_voce(item, data)
 
     def _canc_sulla_voce(self, item, data):
-        """CANC sulla voce scelta nell'albero, dal tasto o dalla voce Elimina
-        Torneo Attivo del menu File. Sul torneo lo elimina, sul giocatore lo
-        toglie o ne propone il ritiro, come prima; dalla 10.14.0, sulla
-        partita, decide _canc_sulla_partita. Sulle altre voci suona
-        l'errore, senza messaggio: fino alla 10.13.62 il messaggio diceva di
-        scegliere un torneo, e non c'entrava con quello che si voleva fare."""
+        """CANC sulla voce scelta nell'albero. Sul torneo lo elimina, sul
+        giocatore lo toglie o ne propone il ritiro, come prima; dalla
+        10.14.0, sulla partita, decide _canc_sulla_partita. Sulle altre voci
+        suona l'errore, senza messaggio: fino alla 10.13.62 il messaggio
+        diceva di scegliere un torneo, e non c'entrava con quello che si
+        voleva fare."""
         from utils import play_sound
 
         dati = data if isinstance(data, dict) else {}
