@@ -2346,9 +2346,42 @@ class TestRaccoltaRimastaAllaFinalizzazione:
             assert _leggi_byte(raccolta) == rimasta
             assert RACCOLTA not in os.listdir(_cartella_archivio())
             assert detti == [
-                f"La raccolta delle partite {RACCOLTA}, nella cartella {cartella}, ha ancora le partite di prima, che il torneo {NOME} non ha più: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta.\n"
+                f"La raccolta delle partite {RACCOLTA}, nella cartella {cartella}, ha partite che il torneo {NOME} non ha: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta.\n"
                 f"Non va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
             ]
+
+    @pytest.mark.parametrize(
+        ("di_prima", "con_la_copia"),
+        [((PGN_DELLA_PRIMA, PGN_DELLA_PROVA), True), ((PGN_DELLA_PROVA,), False)],
+        ids=["con una partita che il torneo non ha", "con le sole partite del torneo"],
+    )
+    def test_dalla_console_la_raccolta_con_partite_che_il_torneo_non_ha_va_nella_cartella_backup(self, banco, di_prima, con_la_copia):
+        """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
+        2026). La finalizzazione nella versione a riga di comando non ha
+        raccolte rimaste da ricordare, e usa la regola dell'apertura nella
+        finestra: la raccolta al posto di quella del torneo, che ha una
+        partita che il torneo non ha, va nella cartella backup prima di
+        essere sostituita, e in archivio va quella del torneo. Una raccolta
+        con le sole partite del torneo, qui la prima, come quella di un
+        torneo che ha poi una partita in PGN in piu', si sostituisce senza
+        copie. Fino ad allora la console la sostituiva sempre senza copia."""
+        import config
+
+        raccolta = config.user_data_path(RACCOLTA)
+        vecchia = _raccolta_di(*di_prima)
+        with open(raccolta, "wb") as f:
+            f.write(vecchia)
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        banco.torneo["rounds"][0]["matches"][1]["pgn"] = TestEdizioneRinominataDaDati.PGN_SECONDA
+        _scrivi(banco.file_torneo, banco.torneo)
+
+        assert _finalizza_in_console(banco) is True
+
+        copie = _copie(banco.backup, "pre_sostituzione_raccolta")
+        assert [_leggi_byte(c) for c in copie] == ([vecchia] if con_la_copia else [])
+        attesa =_raccolta_di(PGN_DELLA_PROVA, TestEdizioneRinominataDaDati.PGN_SECONDA)
+        assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == attesa
+        assert not os.path.exists(raccolta)
 
     @pytest.mark.parametrize("dove", ["finestra", "console"])
     def test_la_raccolta_che_non_si_scrive_lo_dice_un_avviso(self, banco, capsys, dove):

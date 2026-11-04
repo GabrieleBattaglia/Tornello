@@ -23,6 +23,7 @@ che da' il nome ai file (decisione di Gabriele del 4 novembre 2026)."""
 import glob
 import json
 import os
+import re
 import time
 from typing import NamedTuple
 
@@ -41,6 +42,15 @@ from utils import sanitize_filename
 # un momento, per esempio da Dropbox.
 _NOMI_SCRITTI = {}
 ETA_MINIMA_IN_MEMORIA_NS = 2 * 10**9
+
+# Il risultato di una partita in PGN, nella riga Result dell'intestazione e
+# in fondo alle mosse, che _senza_risultato mette in sospeso: CANC lo toglie
+# con pgn_senza_risultato di tournament.py, e la stessa partita, con le
+# stesse mosse, resta la stessa. In fondo alle mosse conta anche lo spazio
+# prima: python-chess va a capo quando la riga supererebbe gli ottanta
+# caratteri, e 1/2-1/2 ci arriva prima dell'asterisco.
+_RISULTATO_NELL_INTESTAZIONE = re.compile(r'^\[Result "[^"\n]*"\]$', re.MULTILINE)
+_RISULTATO_IN_FONDO = re.compile(r"(?:\s+|\A)(?:1-0|0-1|1/2-1/2|\*)\Z")
 
 
 class Coincidenza(NamedTuple):
@@ -370,6 +380,59 @@ def _contiene(percorso, contenuto):
         return False
 
 
+def _senza_risultato(partita):
+    """Il PGN partita con il risultato in sospeso, *, nella riga Result
+    dell'intestazione e in fondo alle mosse, con uno spazio prima: due PGN
+    della stessa partita che differiscono soltanto nel risultato, come prima
+    e dopo CANC, diventano uguali (revisione della 10.19.13)."""
+    partita = _RISULTATO_NELL_INTESTAZIONE.sub('[Result "*"]', partita)
+    return _RISULTATO_IN_FONDO.sub(" *", partita)
+
+
+def _partite_che_il_torneo_non_ha(torneo, percorso):
+    """Vero se la raccolta delle partite percorso ha partite che il torneo
+    non ha. La raccolta e' come la scrive byte_della_raccolta_pgn: il PGN di
+    ogni partita, senza gli spazi ai due capi, uno dopo l'altro con una riga
+    vuota in mezzo, in UTF-8 e con l'a capo del sistema. Anche il PGN di una
+    partita ha una riga vuota, fra l'intestazione e le mosse, e dove finisce
+    una partita lo dicono le partite del torneo: la raccolta si divide nei
+    pezzi fra una riga vuota e l'altra, e se le partite del torneo, ognuna
+    con i suoi pezzi, la coprono tutta, una dopo l'altra, in qualunque
+    ordine, ogni partita della raccolta e' una partita del torneo. Il
+    confronto e' sul testo, con _senza_risultato, e una partita che cambia
+    soltanto nel risultato, come dopo CANC, e' la stessa; una che il torneo
+    ha due volte nella raccolta non toglie niente. Una raccolta vuota non ha
+    partite; un file che non si legge, o che non e' in UTF-8, ne ha, perche'
+    non si puo' dire che non ne abbia. Nata con la revisione della 10.19.13
+    (issue 66, decisione di Gabriele del 4 novembre 2026)."""
+    try:
+        with open(percorso, "rb") as f:
+            testo = f.read().decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        return True
+    pezzi = testo.replace(os.linesep, "\n").strip().split("\n\n")
+    if pezzi == [""]:
+        return False
+    # Le partite del torneo, senza il risultato, per numero di pezzi.
+    partite = {}
+    for turno in torneo.get("rounds", []):
+        for partita in turno.get("matches", []):
+            if partita.get("pgn"):
+                pgn = partita["pgn"].strip()
+                partite.setdefault(pgn.count("\n\n") + 1, set()).add(_senza_risultato(pgn))
+    # I pezzi della raccolta fino a cui arrivano le partite del torneo, una
+    # dopo l'altra dall'inizio.
+    coperti = {0}
+    for inizio in range(len(pezzi)):
+        if inizio not in coperti:
+            continue
+        for quanti, testi in partite.items():
+            fine = inizio + quanti
+            if fine <= len(pezzi) and _senza_risultato("\n\n".join(pezzi[inizio:fine])) in testi:
+                coperti.add(fine)
+    return len(pezzi) not in coperti
+
+
 def _edizioni_della_raccolta(torneo, file_del_torneo, percorso):
     """Le edizioni archiviate di cui la raccolta delle partite percorso, al
     posto di quella del torneo con il file file_del_torneo, e' la raccolta:
@@ -516,24 +579,40 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
 def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
     """La chiave di percorso della raccolta delle partite del torneo, con
     il file file_del_torneo, se all'apertura del torneo e' una raccolta
-    rimasta: il torneo non ha partite in PGN, e la sua raccolta c'e' lo
-    stesso, al percorso dove la scriverebbe; altrimenti None. Non lo e' la
-    raccolta di un'altra edizione archiviata, che la guardia,
-    raccolta_altrui_in_salvo, riconosce con _edizioni_della_raccolta: segue
-    la strada della guardia. La finestra la chiede a ogni apertura di un
-    torneo, e la passa ad aggiorna_la_raccolta_pgn fra le ritrovate.
+    rimasta: al percorso dove il torneo la scriverebbe c'e' una raccolta che
+    ha partite che il torneo non ha, con _partite_che_il_torneo_non_ha;
+    altrimenti None. Non lo e' la raccolta di un'altra edizione archiviata,
+    che la guardia, raccolta_altrui_in_salvo, riconosce con
+    _edizioni_della_raccolta: segue la strada della guardia. Non lo e'
+    nemmeno, e il confronto non si fa, la raccolta identica a quella che il
+    torneo scriverebbe, come quella di un torneo aperto e salvato ogni
+    giorno nella finestra, o giocato poi in console, che aggiunge soltanto
+    partite senza PGN. La finestra la chiede a ogni apertura di un torneo,
+    e la passa ad aggiorna_la_raccolta_pgn fra le ritrovate; la
+    finalizzazione, nella finestra e in console, prima di scrivere la
+    raccolta del torneo.
     Nata con la revisione della 10.19.13 (issue 66, decisione di Gabriele
     del 4 novembre 2026): la memoria delle raccolte rimaste nasce vuota a
     ogni avvio, e dopo una chiusura di Tornello il primo PGN nuovo
     sostituiva una raccolta rimasta senza metterla nella cartella backup, e
     le partite di prima si perdevano. La memoria si ricostruisce dal disco,
-    senza campi nuovi nel file del torneo e senza file in piu'."""
+    senza campi nuovi nel file del torneo e senza file in piu'. Nella prima
+    stesura della revisione era rimasta soltanto la raccolta di un torneo
+    senza partite in PGN: un ripristino dalla finestra Copie di sicurezza, che ridava al
+    torneo le partite in PGN di una copia, o una copia nella cartella backup
+    non riuscita, con il torneo salvato con il suo PGN nuovo, lasciavano
+    dopo una chiusura una raccolta con le partite di prima che il primo
+    salvataggio sostituiva senza copia, e cosi' la finalizzazione in console
+    (decisione di Gabriele del 4 novembre 2026)."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
 
-    if byte_della_raccolta_pgn(torneo) is not None:
-        return None
     percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
     if not os.path.isfile(percorso):
+        return None
+    proprio = byte_della_raccolta_pgn(torneo)
+    if proprio is not None and _contiene(percorso, proprio):
+        return None
+    if not _partite_che_il_torneo_non_ha(torneo, percorso):
         return None
     if next(_edizioni_della_raccolta(torneo, file_del_torneo, percorso), None) is not None:
         return None
@@ -563,6 +642,10 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
     sostituita dalla raccolta nuova, va nella cartella backup, con una copia
     riletta: fino ad allora le partite di prima si perdevano al primo PGN
     nuovo, mentre il messaggio prometteva che Tornello non le cancellava.
+    La copia si fa se la raccolta ha ancora partite che il torneo non ha,
+    con _partite_che_il_torneo_non_ha, la stessa regola dell'apertura
+    (decisione di Gabriele del 4 novembre 2026): se il torneo le ha di nuovo
+    tutte, anche con un altro risultato, non c'e' niente da perdere.
     Se la copia non riesce, la raccolta resta com'e', e la risposta ha
     copia_non_riuscita vero e la frase in non_scritta. Un errore di
     scrittura si stampa, come sempre, la raccolta di prima resta com'era, e
@@ -571,14 +654,14 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
     senza nessun avviso.
     ritrovate e' l'insieme, come chiavi di percorso, delle raccolte rimaste
     ritrovate sul disco all'apertura del loro torneo, dopo una chiusura di
-    Tornello, con raccolta_rimasta_all_apertura: per una di loro il
-    salvataggio senza partite in PGN riprova il cestino, come per ogni
-    raccolta, e se il cestino non la prende diventa una delle rimaste;
-    quando il torneo ha di nuovo una partita in PGN, prima di essere
-    sostituita va nella cartella backup, come le rimaste (revisione della
-    10.19.13, decisione di Gabriele del 4 novembre 2026). Fino ad allora la
-    memoria delle rimaste nasceva vuota a ogni avvio, e il primo PGN nuovo
-    dopo una chiusura sostituiva la raccolta senza copia."""
+    Tornello, o alla finalizzazione, con raccolta_rimasta_all_apertura: per
+    una di loro il salvataggio senza partite in PGN riprova il cestino, come
+    per ogni raccolta, e se il cestino non la prende diventa una delle
+    rimaste; quando il torneo ha partite in PGN, prima di essere sostituita
+    va nella cartella backup, come le rimaste (revisione della 10.19.13,
+    decisione di Gabriele del 4 novembre 2026). Fino ad allora la memoria
+    delle rimaste nasceva vuota a ogni avvio, e il primo PGN nuovo dopo una
+    chiusura sostituiva la raccolta senza copia."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
     from utils import copia_di_sicurezza, delete_file_to_trash, stessi_byte
 
@@ -593,12 +676,17 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
         if chiave in ritrovate:
             ritrovate.discard(chiave)
             rimaste.add(chiave)
-        if chiave in rimaste and os.path.isfile(percorso) and not _contiene(percorso, contenuto):
+        if (
+            chiave in rimaste
+            and os.path.isfile(percorso)
+            and not _contiene(percorso, contenuto)
+            and _partite_che_il_torneo_non_ha(torneo, percorso)
+        ):
             copia = copia_di_sicurezza(percorso, "pre_sostituzione_raccolta")
             if not copia or not stessi_byte(percorso, copia):
                 return RaccoltaAggiornata(
                     non_scritta=_(
-                        "La raccolta delle partite {file}, nella cartella {cartella}, ha ancora le partite di prima, che il torneo {nome} non ha più: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta."
+                        "La raccolta delle partite {file}, nella cartella {cartella}, ha partite che il torneo {nome} non ha: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta."
                     ).format(file=file, cartella=cartella, nome=torneo.get("name", "")),
                     copia_non_riuscita=True,
                 )

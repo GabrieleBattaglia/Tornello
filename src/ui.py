@@ -1659,8 +1659,22 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa, rimaste=None):
     finestra non mostra. Una raccolta di un'altra edizione archiviata che
     resta dov'e' la dice soltanto l'avviso della guardia: fino alla stessa
     revisione la seguiva quello della raccolta rimasta, che la chiamava
-    raccolta del torneo."""
-    from omonimi import _contiene, aggiorna_la_raccolta_pgn, raccolta_altrui_in_salvo, raccolta_rimasta
+    raccolta del torneo.
+    Dalla stessa revisione la raccolta che ha partite che il torneo non ha,
+    e che non e' di un'altra edizione archiviata, e' una raccolta rimasta
+    anche qui, con la regola dell'apertura nella finestra,
+    raccolta_rimasta_all_apertura, e va nella cartella backup prima di
+    essere sostituita: fino ad allora la console, senza rimaste, la
+    sostituiva senza copia, per esempio dopo una copia non riuscita nella
+    finestra e una chiusura di Tornello (decisione di Gabriele del 4
+    novembre 2026)."""
+    from omonimi import (
+        _contiene,
+        aggiorna_la_raccolta_pgn,
+        raccolta_altrui_in_salvo,
+        raccolta_rimasta,
+        raccolta_rimasta_all_apertura,
+    )
 
     rimaste = set() if rimaste is None else rimaste
     nome = torneo.get("name", "")
@@ -1676,7 +1690,8 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa, rimaste=None):
         return False
     if esito.testo:
         avvisa(esito.testo)
-    aggiornata = aggiorna_la_raccolta_pgn(torneo, file_del_torneo, rimaste=rimaste)
+    ritrovata = raccolta_rimasta_all_apertura(torneo, file_del_torneo)
+    aggiornata = aggiorna_la_raccolta_pgn(torneo, file_del_torneo, rimaste=rimaste, ritrovate={ritrovata} if ritrovata else None)
     # La raccolta di un'altra edizione archiviata, che la guardia ha appena
     # riconosciuto e che resta dov'e', non e' la raccolta rimasta del torneo:
     # l'avviso di raccolta_rimasta la chiamerebbe sua, e direbbe che il
