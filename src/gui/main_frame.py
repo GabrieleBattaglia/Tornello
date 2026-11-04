@@ -3608,7 +3608,15 @@ class MainFrame(wx.Frame):
         ha parole sue: il torneo c'e' gia', e la domanda chiede se debba
         diventare una nuova edizione, non se crearne una, come nella
         procedura guidata, che tiene i suoi testi. Il titolo, il No
-        predefinito, ESC che vale No e il ricordo del Si' restano come sono."""
+        predefinito, ESC che vale No e il ricordo del Si' restano come sono.
+        Quando tutte le edizioni trovate coincidono soltanto per il nome del
+        file, un torneo archiviato con quel nome non c'e': il seguito non
+        parla di una nuova edizione, e chiede soltanto se dare lo stesso il
+        nome al torneo. Con almeno un'edizione trovata per il nome il
+        seguito resta quello della nuova edizione, perche' quel torneo c'e'
+        davvero (revisione della 10.19.15, decisione di Gabriele del 4
+        novembre 2026). Il Si' accetta soltanto il nome: il file e
+        l'identificativo del torneo restano i suoi."""
         if controllo is None:
             controllo = self.creation_data
         if controllo.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
@@ -3698,7 +3706,15 @@ class MainFrame(wx.Frame):
                     frase.format(nome=nome, numero=len(per_il_file), edizioni=descritte(per_il_file, lambda _percorso, dati: dati is not None))
                 )
             premessa = " ".join(frasi)
-        if da_dati:
+        if da_dati and not per_il_nome:
+            # Tutte le edizioni trovate coincidono soltanto per il nome del
+            # file, come Beta nel file Tornello - Alfa.json per il nome Alfa:
+            # un torneo archiviato con quel nome non c'e', e il torneo non ne
+            # diventa una nuova edizione. La domanda chiede soltanto se dargli
+            # lo stesso il nome (revisione della 10.19.15, decisione di
+            # Gabriele del 4 novembre 2026).
+            seguito = _("Vuoi dare lo stesso il nome {nome} a questo torneo? Il pulsante predefinito è No.")
+        elif da_dati:
             # Da Dati il torneo c'e' gia', e diventa la nuova edizione: non se
             # ne crea una (revisione della 10.19.15).
             seguito = _(

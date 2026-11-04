@@ -4085,6 +4085,11 @@ class TestNomeEDataDiInizioDaDati:
         "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
         "Vuoi che questo torneo diventi una nuova edizione di {nome}? Il pulsante predefinito è No."
     )
+    # Il seguito della stessa domanda quando tutte le edizioni trovate
+    # coincidono soltanto per il nome del file: un torneo archiviato con quel
+    # nome non c'e', e la frase sulla nuova edizione non c'e' piu' (revisione
+    # della 10.19.15, decisione di Gabriele del 4 novembre 2026).
+    SEGUITO_PER_IL_SOLO_FILE = "Vuoi dare lo stesso il nome {nome} a questo torneo? Il pulsante predefinito è No."
 
     @staticmethod
     def _archiviata(cartella, file, nome, inizio=None):
@@ -4112,7 +4117,9 @@ class TestNomeEDataDiInizioDaDati:
         cartella e il suo file. Fino ad allora diceva che Beta aveva lo
         stesso nome, e che i report e la raccolta delle partite si sarebbero
         chiamati come i suoi. La domanda si fa lo stesso, e con No il nome
-        resta; la procedura guidata tiene la sua."""
+        resta; la procedura guidata tiene la sua. Dalla stessa revisione il
+        seguito non parla di una nuova edizione di Alfa, che fra i tornei
+        archiviati non c'e', e chiede soltanto se dare lo stesso il nome."""
         import wx
 
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO, wx.ID_NO])
@@ -4130,12 +4137,37 @@ class TestNomeEDataDiInizioDaDati:
             (
                 "Nuova edizione di un torneo concluso",
                 "Il nome Alfa è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: "
-                f"Beta, nella cartella {beta}, con il file Tornello - Alfa.json.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+                f"Beta, nella cartella {beta}, con il file Tornello - Alfa.json.\n" + self.SEGUITO_PER_IL_SOLO_FILE.format(nome="Alfa"),
                 True,
                 True,
             )
         ]
         assert procedura == [TestNomeDelTorneoNuovo._domanda_attesa("Alfa", "Tornello - Alfa.json", [("Beta", beta)])]
+
+    def test_con_si_un_edizione_trovata_per_il_solo_file_da_soltanto_il_nome(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15. Con Si' alla domanda per Beta,
+        archiviata nel file Tornello - Alfa.json, il torneo Gamma prende
+        soltanto il nome Alfa: il suo file, il suo identificativo e la sua
+        data di inizio restano i suoi, e Beta, nell'archivio, resta com'era."""
+        import gui.main_frame as mf
+
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        beta = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Beta", "Tornello - Alfa.json")
+        with open(beta, "rb") as f:
+            prima_di_beta = f.read()
+        percorso = self._apri(principale, "Gamma", tournament_id="GAMMA")
+        prima = self._nel_file(percorso)
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        dopo = self._nel_file(percorso)
+        assert principale.active_filename == percorso
+        assert dopo["name"] == "Alfa"
+        assert (dopo["tournament_id"], dopo["start_date"]) == ("GAMMA", prima["start_date"])
+        assert principale.current_tournament["tournament_id"] == "GAMMA"
+        with open(beta, "rb") as f:
+            assert f.read() == prima_di_beta
 
     # La seconda frase del rifiuto da Dati per un'edizione trovata soltanto
     # per il nome del file, con la stessa data di inizio: dalla revisione
@@ -4270,7 +4302,8 @@ class TestNomeEDataDiInizioDaDati:
         le due frasi della premessa sono al plurale, e il file che non si
         legge si nomina con il suo file, come nella procedura guidata, che
         tiene la sua premessa. Tolte le due con il nome Alfa, resta la sola
-        frase del nome riservato, al plurale."""
+        frase del nome riservato, al plurale, con il seguito che chiede
+        soltanto se dare lo stesso il nome."""
         import wx
 
         import gui.main_frame as mf
@@ -4297,7 +4330,7 @@ class TestNomeEDataDiInizioDaDati:
             "Il torneo Alfa avrebbe il nome di 2 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
             f"Alfa, nella cartella {alfa}; Alfa, nella cartella {delta}, con il file Tornello - Delta.json. "
             "Il nome Alfa è anche riservato, " + riservato + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
-            "Il nome Alfa è riservato, " + riservato + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+            "Il nome Alfa è riservato, " + riservato + self.SEGUITO_PER_IL_SOLO_FILE.format(nome="Alfa"),
         ]
         assert procedura == [
             "Il torneo Alfa avrebbe il nome di 4 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
