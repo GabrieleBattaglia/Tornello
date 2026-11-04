@@ -167,14 +167,15 @@ class TestNomi:
     def test_la_copia_di_una_raccolta_rimasta(self):
         """Revisione della 10.19.13 (issue 66): la copia della raccolta delle
         partite rimasta, fatta prima di sostituirla, ha il suo momento, detto
-        a parole, e la regola di conservazione non la manda mai nel
-        cestino."""
+        a parole, e segue la regola di conservazione come le altre copie,
+        senza stare fra quelle che restano tutte (decisione di Gabriele del
+        4 novembre 2026)."""
         from copie_di_sicurezza import CONTESTI_CONSERVATI, analizza_nome, momento_in_parole
 
         parti = analizza_nome("Primavera_2 - raccolta partite_pre_sostituzione_raccolta_20261104_153000.pgn")
         assert (parti["base"], parti["contesto"], parti["estensione"]) == ("Primavera_2 - raccolta partite", "pre_sostituzione_raccolta", ".pgn")
         assert momento_in_parole("pre_sostituzione_raccolta") == "prima di sostituire una raccolta delle partite rimasta"
-        assert "pre_sostituzione_raccolta" in CONTESTI_CONSERVATI
+        assert "pre_sostituzione_raccolta" not in CONTESTI_CONSERVATI
 
 
 class TestLettura:
@@ -1712,6 +1713,34 @@ class TestConservazione:
         ):
             assert f"  {momento};" in righe
         assert "e restano i file con un nome che Tornello non riconosce." in righe
+
+    def test_la_copia_di_una_raccolta_rimasta_segue_la_regola(self, tmp_path):
+        """Revisione della 10.19.13 (issue 66, decisione di Gabriele del 4
+        novembre 2026). La copia della raccolta delle partite rimasta di
+        Coppa, con pre_sostituzione_raccolta nel nome, sta fra le copie di
+        Coppa, e quando dopo di lei ne nascono altre dieci la regola la manda
+        nel cestino, come la chiusura del giorno prima; la regola scritta non
+        la dice fra le copie che restano tutte. Nel giro precedente della
+        revisione restava sempre."""
+        from copie_di_sicurezza import copie_da_scartare, elenca_copie, righe_della_conservazione
+
+        torneo = _torneo("Coppa")
+        _metti(tmp_path, "Tornello - Coppa_chiusura_torneo_20260901_100000.json", torneo)
+        _metti(tmp_path, "Coppa - raccolta partite_pre_sostituzione_raccolta_20260902_100000.pgn", testo='[Event "Coppa"]\n\n1. e4 e5 1-0\n')
+        for giorno in range(3, 13):
+            _metti(tmp_path, f"Tornello - Coppa_chiusura_torneo_202609{giorno:02d}_100000.json", torneo)
+
+        copie = elenca_copie(str(_cartella_backup(tmp_path)))
+        scarto = copie_da_scartare(copie)
+        righe = righe_della_conservazione(scarto)
+
+        assert {c.origine for c in copie} == {"Coppa"}
+        assert [c.nome for c in scarto] == [
+            "Tornello - Coppa_chiusura_torneo_20260901_100000.json",
+            "Coppa - raccolta partite_pre_sostituzione_raccolta_20260902_100000.pgn",
+        ]
+        assert "  Coppa: 2" in righe
+        assert "  prima di sostituire una raccolta delle partite rimasta;" not in righe
 
     def test_niente_da_scartare(self, tmp_path):
         from copie_di_sicurezza import copie_da_scartare, righe_della_conservazione

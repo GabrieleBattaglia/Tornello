@@ -90,17 +90,17 @@ NOME_CON_LA_DATA = re.compile(
 # concluso, quelle che la finalizzazione mette da parte, di pre_archiviazione
 # e di rifinalizzazione, e quelle fatte prima di un ripristino, che
 # permettono di tornare indietro. Decisione di Gabriele del 25 settembre
-# 2026. La finestra dice la regola con righe_della_regola, da qui. Dalla
-# revisione della 10.19.13 restano anche le copie di una raccolta delle
-# partite rimasta, fatte prima di sostituirla: hanno le partite di prima, che
-# il torneo non ha piu', e non ce n'e' un'altra copia (issue 66).
+# 2026. La finestra dice la regola con righe_della_regola, da qui. Le copie di
+# una raccolta delle partite rimasta, pre_sostituzione_raccolta, seguono la
+# regola come le altre, e restano fra le ultime copie del loro torneo: nella
+# revisione della 10.19.13 erano state messe qui per un giro, e Gabriele ha
+# scelto la regola normale (issue 66, decisione del 4 novembre 2026).
 CONTESTI_CONSERVATI = (
     "pre_finalize_torneo",
     "pre_finalize_db",
     "pre_archiviazione",
     "rifinalizzazione",
     "pre_ripristino",
-    "pre_sostituzione_raccolta",
 )
 # Quante copie tiene la regola per ogni origine.
 COPIE_DA_TENERE = 10
