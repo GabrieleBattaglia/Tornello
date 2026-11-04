@@ -122,16 +122,16 @@ class TestValidazione:
         assert errori == []
         # Tutte e due le coppie si sono gia' incontrate: avvertimenti, non errori.
         assert len(avvertimenti) == 2
-        assert all("gia' incontrati al turno" in a for a in avvertimenti)
+        assert all("già incontrati al turno" in a for a in avvertimenti)
 
     @pytest.mark.parametrize(
         ("coppie", "frammento"),
         [
             ([("B", "A")], "Gamma Test non ha ancora una coppia."),
-            ([("B", "A"), ("C", "A"), ("D", None)], "Alfa Test compare in piu' di una coppia."),
-            ([("B", "A"), ("C", "D"), ("E", None)], "Epsilon Test si e' ritirato"),
-            ([("B", "A"), ("C", "Z9")], "Il giocatore Z9 non e' iscritto al torneo."),
-            ([("B", "B"), ("A", "C"), ("D", None)], "Beta non puo' giocare contro se stesso."),
+            ([("B", "A"), ("C", "A"), ("D", None)], "Alfa Test compare in più di una coppia."),
+            ([("B", "A"), ("C", "D"), ("E", None)], "Epsilon Test si è ritirato"),
+            ([("B", "A"), ("C", "Z9")], "Il giocatore Z9 non è iscritto al torneo."),
+            ([("B", "B"), ("A", "C"), ("D", None)], "Beta non può giocare contro se stesso."),
             ([("B", "A"), ("C", None), ("D", None)], "un numero pari, nessuno riposa: le coppie hanno 2 bye."),
         ],
     )
@@ -171,7 +171,7 @@ class TestAvvertimenti:
 
         testi = descrivi_avvertimenti(torneo, avvertimenti_coppia(torneo, "P", "S"))
 
-        assert "gia' incontrati ai turni 1, 3" in testi
+        assert "già incontrati ai turni 1, 3" in testi
 
     @pytest.mark.parametrize("risultato", ["1-F", "F-1", "0-0F"])
     def test_un_incontro_a_tavolino_non_e_una_ripetizione(self, risultato):
@@ -205,7 +205,7 @@ class TestAvvertimenti:
         _gioca(torneo, 1, [("P", "S", "1-0")], bye="T")
 
         testi = descrivi_avvertimenti(torneo, avvertimenti_coppia(torneo, "T", None))
-        assert testi == ["Terzo ha gia' avuto un bye o una vittoria a tavolino, al turno 1"]
+        assert testi == ["Terzo ha già avuto un bye o una vittoria a tavolino, al turno 1"]
 
     def test_il_terzo_bianco_di_fila(self):
         from turno_manuale import avvertimenti_coppia, descrivi_avvertimenti
@@ -235,7 +235,7 @@ class TestAvvertimenti:
 
         avvisi = avvertimenti_coppia(torneo, "P", "S")
         assert [a.tipo for a in avvisi] == ["squilibrio"]
-        assert descrivi_avvertimenti(torneo, avvisi) == ["Secondo con 3 neri piu' dei bianchi"]
+        assert descrivi_avvertimenti(torneo, avvisi) == ["Secondo con 3 neri più dei bianchi"]
 
 
 class TestColori:
@@ -843,10 +843,10 @@ class TestTestiDellaFinestra:
         torneo = _torneo_saturo()
 
         assert voce_giocatore(torneo, "C") == "Gamma Test, 1 punto, colori B N N, preferenza B assoluta"
-        assert voce_avversario(torneo, "A", "B") == "Beta Test, 2 punti, bianco a Beta, gia' incontrati al turno 1"
-        assert voce_coppia(torneo, 2, "C", "D") == "Scacchiera 2: Gamma Test (B) contro Delta Test (N), gia' incontrati al turno 1"
+        assert voce_avversario(torneo, "A", "B") == "Beta Test, 2 punti, bianco a Beta, già incontrati al turno 1"
+        assert voce_coppia(torneo, 2, "C", "D") == "Scacchiera 2: Gamma Test (B) contro Delta Test (N), già incontrati al turno 1"
         torneo["players_dict"]["E"]["withdrawn"] = False
-        assert voce_avversario(torneo, "E", None) == "Riposo (bye), Epsilon ha gia' avuto un bye o una vittoria a tavolino, al turno 1"
+        assert voce_avversario(torneo, "E", None) == "Riposo (bye), Epsilon ha già avuto un bye o una vittoria a tavolino, al turno 1"
 
     def test_giocatori_da_abbinare_e_avversari(self):
         """Le regole delle due liste stanno in turno_manuale, senza wx: chi
@@ -879,8 +879,8 @@ class TestTestiDellaFinestra:
 
         assert situazione[3] == "Avvertimenti 4"
         assert conferma[:2] == ["Registrare il turno 4 composto a mano, con 2 partite?", "Avvertimenti: 4, su 2 scacchiere."]
-        assert conferma[3] == "Scacchiera 2, Delta Test contro Gamma Test: gia' incontrati al turno 1, Delta al terzo bianco di fila, Gamma al terzo nero di fila."
-        assert conferma[-1].endswith("Il pulsante predefinito e' No.")
+        assert conferma[3] == "Scacchiera 2, Delta Test contro Gamma Test: già incontrati al turno 1, Delta al terzo bianco di fila, Gamma al terzo nero di fila."
+        assert conferma[-1].endswith("Il pulsante predefinito è No.")
 
     def test_il_riepilogo_al_singolare(self):
         """Con tre attivi la partita e' una sola; con un avvertimento solo
@@ -1334,7 +1334,7 @@ class TestFinestraDellaComposizione:
 
         assert dlg.coppie == [("B", "A"), ("C", "D")]
         assert dlg.lista_coppie.GetCount() == 2
-        assert dlg.lista_coppie.GetString(0).startswith("Scacchiera 1: Beta Test (B) contro Alfa Test (N), gia' incontrati al turno 1")
+        assert dlg.lista_coppie.GetString(0).startswith("Scacchiera 1: Beta Test (B) contro Alfa Test (N), già incontrati al turno 1")
         assert _voci(dlg.lista_liberi) == ["Nessun giocatore da abbinare"]
         assert _voci(dlg.lista_avversari) == ["Nessun avversario, non ci sono giocatori da abbinare"]
         assert dlg._liberi == [] and dlg._avversari == []
@@ -1358,7 +1358,7 @@ class TestFinestraDellaComposizione:
         dlg.lista_liberi.SetSelection(0)
         dlg.on_giocatore_scelto(SimpleNamespace(Skip=lambda: None))
         assert dlg.lista_avversari.GetCount() == 1
-        assert "gia' incontrati al turno 1" in dlg.lista_avversari.GetString(0)
+        assert "già incontrati al turno 1" in dlg.lista_avversari.GetString(0)
         assert dlg.scelta_bianco.GetStringSelection() == "Beta Test (suggerito)"
 
         dlg.on_tasto_avversari(_tasto(wx.WXK_RETURN))
@@ -1430,8 +1430,8 @@ class TestFinestraDellaComposizione:
         assert titolo == "Conferma del turno composto a mano"
         assert "Avvertimenti: 2, su 2 scacchiere." in testo
         assert dlg.situazione.GetValue().splitlines()[3] == "Avvertimenti 2"
-        assert "Scacchiera 1, Beta Test contro Alfa Test: gia' incontrati al turno 1." in testo
-        assert "Il pulsante predefinito e' No." in testo
+        assert "Scacchiera 1, Beta Test contro Alfa Test: già incontrati al turno 1." in testo
+        assert "Il pulsante predefinito è No." in testo
         assert dlg.coppie_confermate == [("B", "A"), ("C", "D")]
         assert finestra.suoni[-1] == "fine 5100"
 

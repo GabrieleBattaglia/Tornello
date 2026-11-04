@@ -414,11 +414,11 @@ class ManualPairingDialog(wx.Dialog):
             self._suona("errore")
             self._messaggio(
                 _("Proposta non disponibile"),
-                _("Con piu' di {numero} giocatori attivi Tornello non propone le coppie: componile a mano, giocatore per giocatore.").format(numero=MASSIMO_PER_LA_PROPOSTA),
+                _("Con più di {numero} giocatori attivi Tornello non propone le coppie: componile a mano, giocatore per giocatore.").format(numero=MASSIMO_PER_LA_PROPOSTA),
             )
             return
         if self.coppie and self.coppie != proposta:
-            testo = _("Le coppie composte fin qui lasciano il posto a quelle proposte da Tornello. Continuare? Il pulsante predefinito e' No.")
+            testo = _("Le coppie composte fin qui lasciano il posto a quelle proposte da Tornello. Continuare? Il pulsante predefinito è No.")
             if not self._domanda(_("Proposta automatica"), testo):
                 return
         self.coppie = list(proposta)

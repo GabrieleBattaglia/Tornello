@@ -4083,7 +4083,7 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(
                 _("Torneo non aperto"),
                 _(
-                    "Il torneo e' gia' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: al suo posto si puo' ritirare il giocatore. Apri prima il torneo, poi ripeti l'operazione."
+                    "Il torneo è già iniziato, quindi l'iscrizione di {name} non si può più togliere: al suo posto si può ritirare il giocatore. Apri prima il torneo, poi ripeti l'operazione."
                 ).format(name=p_name),
             )
             return
@@ -4096,8 +4096,8 @@ class MainFrame(wx.Frame):
 
         if giocatore.get("withdrawn"):
             self._dialogo_informativo(
-                _("Giocatore gia' ritirato"),
-                _("{name} risulta gia' ritirato dal torneo.").format(name=p_name),
+                _("Giocatore già ritirato"),
+                _("{name} risulta già ritirato dal torneo.").format(name=p_name),
             )
             return
 
@@ -4108,18 +4108,18 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(
                 _("Partita ancora aperta"),
                 _(
-                    "{name} ha una partita senza risultato nel turno {round}. Registra prima quel risultato, indicando il forfait se non si e' presentato: subito dopo il programma ti proporra' il ritiro."
+                    "{name} ha una partita senza risultato nel turno {round}. Registra prima quel risultato, indicando il forfait se non si è presentato: subito dopo il programma ti proporrà il ritiro."
                 ).format(name=p_name, round=turno_corrente),
             )
             return
 
         if stato == "giocata":
             messaggio = _(
-                "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? La partita che ha gia' giocato nel turno {round} resta valida e il ritiro vale dal turno successivo."
+                "Il torneo è iniziato, quindi l'iscrizione di {name} non si può più togliere: i risultati già registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? La partita che ha già giocato nel turno {round} resta valida e il ritiro vale dal turno successivo."
             ).format(name=p_name, round=turno_corrente)
         else:
             messaggio = _(
-                "Il torneo e' iniziato, quindi l'iscrizione di {name} non si puo' piu' togliere: i risultati gia' registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verra' piu' abbinato nei turni successivi."
+                "Il torneo è iniziato, quindi l'iscrizione di {name} non si può più togliere: i risultati già registrati resterebbero senza giocatore.\n\nVuoi ritirarlo dal torneo? Non verrà più abbinato nei turni successivi."
             ).format(name=p_name)
 
         if not self._conferma_ritiro(giocatore.get("id"), filepath, domanda=messaggio):
@@ -4168,11 +4168,11 @@ class MainFrame(wx.Frame):
             # avversari, e la frase lo dice.
             if resterebbero - 1 == 1:
                 avviso = _(
-                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori c'e' un solo avversario possibile a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori c'è un solo avversario possibile a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporrà di comporre il turno a mano."
                 )
             else:
                 avviso = _(
-                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori ci sono solo {avversari} avversari possibili a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporra' di comporre il turno a mano."
+                    "Ritirando {name} resterebbero {resterebbero} giocatori attivi per i {turni} turni che mancano. Fra {resterebbero} giocatori ci sono solo {avversari} avversari possibili a testa, e per giocare tutti i turni che mancano senza incontri ripetuti servirebbero almeno {necessari} giocatori attivi: il motore di abbinamento potrebbe non riuscire ad abbinare uno dei prossimi turni. In quel caso Tornello ti proporrà di comporre il turno a mano."
                 )
             avviso = avviso.format(
                 name=nome,
@@ -4185,7 +4185,7 @@ class MainFrame(wx.Frame):
                 [
                     *([domanda] if domanda else []),
                     avviso,
-                    _("Vuoi ritirarlo comunque? Il pulsante predefinito e' No."),
+                    _("Vuoi ritirarlo comunque? Il pulsante predefinito è No."),
                 ]
             )
             dlg = AccessibleMsgDialog(
@@ -4230,14 +4230,14 @@ class MainFrame(wx.Frame):
         # singolare: fino alla 10.13.5 diceva resterebbero 1 giocatori.
         if resterebbero == 1:
             premessa = _(
-                "Ritirando {name} resterebbe un solo giocatore attivo: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+                "Ritirando {name} resterebbe un solo giocatore attivo: con meno di due giocatori non si abbina più nessun turno, nemmeno a mano."
             ).format(name=nome_giocatore)
         else:
             premessa = _(
-                "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina piu' nessun turno, nemmeno a mano."
+                "Ritirando {name} resterebbero {resterebbero} giocatori attivi: con meno di due giocatori non si abbina più nessun turno, nemmeno a mano."
             ).format(name=nome_giocatore, resterebbero=resterebbero)
         messaggio = premessa + "\n\n" + _(
-            "Il ritiro non viene registrato, perche' il torneo si fermerebbe a meta' senza possibilita' di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori gia' ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
+            "Il ritiro non viene registrato, perché il torneo si fermerebbe a metà senza possibilità di rimediare. Restano due strade: riportare il torneo alla fase di iscrizione, dove i turni giocati vengono cancellati, i giocatori già ritirati tolti dall'elenco e tutto torna modificabile, oppure eliminare il torneo.\n\n"
             "Vuoi riportare il torneo alla fase di iscrizione? Prima dell'operazione viene creata una copia di sicurezza."
         )
         dlg = AccessibleMsgDialog(
@@ -4260,7 +4260,7 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(
                 _("Operazione non riuscita"),
                 _(
-                    "Non e' stato possibile riportare il torneo alla fase di iscrizione."
+                    "Non è stato possibile riportare il torneo alla fase di iscrizione."
                 ),
             )
             return
@@ -6885,9 +6885,9 @@ class MainFrame(wx.Frame):
 
         play_sound("errore", self.current_tournament)
         messaggio = _(
-            "bbpPairings non ha trovato nessun abbinamento del turno {turno} che rispetti i criteri assoluti del sistema svizzero: con i giocatori rimasti, ogni combinazione ripeterebbe un incontro gia' giocato, darebbe un secondo bye a chi l'ha gia' avuto o farebbe incontrare due giocatori che devono avere lo stesso colore.\n\n"
-            "In questo caso il regolamento FIDE (C.04.3, articolo 1.9.3) lascia la decisione all'arbitro capo. Puoi comporre a mano gli abbinamenti del turno {turno}: con non piu' di 16 giocatori attivi Tornello propone le coppie da cui partire, e segnala sempre gli incontri ripetuti, i bye e i colori fuori regola, che restano avvertimenti e non divieti. Prima di registrare il turno viene creata una copia di sicurezza, e nell'albero il turno si chiamera' Turno {turno}, abbinamenti manuali.\n\n"
-            "Vuoi comporre a mano il turno {turno}? Se rispondi No il torneo resta com'e'."
+            "bbpPairings non ha trovato nessun abbinamento del turno {turno} che rispetti i criteri assoluti del sistema svizzero: con i giocatori rimasti, ogni combinazione ripeterebbe un incontro già giocato, darebbe un secondo bye a chi l'ha già avuto o farebbe incontrare due giocatori che devono avere lo stesso colore.\n\n"
+            "In questo caso il regolamento FIDE (C.04.3, articolo 1.9.3) lascia la decisione all'arbitro capo. Puoi comporre a mano gli abbinamenti del turno {turno}: con non più di 16 giocatori attivi Tornello propone le coppie da cui partire, e segnala sempre gli incontri ripetuti, i bye e i colori fuori regola, che restano avvertimenti e non divieti. Prima di registrare il turno viene creata una copia di sicurezza, e nell'albero il turno si chiamerà Turno {turno}, abbinamenti manuali.\n\n"
+            "Vuoi comporre a mano il turno {turno}? Se rispondi No il torneo resta com'è."
         ).format(turno=numero)
         dlg = AccessibleMsgDialog(
             self,
@@ -6915,7 +6915,7 @@ class MainFrame(wx.Frame):
         if esito != wx.ID_OK or not coppie:
             self.set_status(
                 _(
-                    "Composizione manuale annullata: il turno {turno} non e' stato registrato."
+                    "Composizione manuale annullata: il turno {turno} non è stato registrato."
                 ).format(turno=numero)
             )
             return
@@ -6938,7 +6938,7 @@ class MainFrame(wx.Frame):
                 self,
                 _("Copia di sicurezza non riuscita"),
                 _(
-                    "Non e' stato possibile creare la copia di sicurezza del torneo prima del turno composto a mano. Registrare lo stesso il turno {turno}? Il pulsante predefinito e' No."
+                    "Non è stato possibile creare la copia di sicurezza del torneo prima del turno composto a mano. Registrare lo stesso il turno {turno}? Il pulsante predefinito è No."
                 ).format(turno=numero),
                 style=wx.YES_NO,
                 settings=self.settings,
@@ -6969,11 +6969,11 @@ class MainFrame(wx.Frame):
         from tournament import motivo_ultimo_fallimento
 
         motivo = motivo_ultimo_fallimento(torneo)
-        messaggio = _("Non e' stato possibile generare gli abbinamenti del turno.")
+        messaggio = _("Non è stato possibile generare gli abbinamenti del turno.")
         if motivo:
             messaggio += _("\n\nMotivo: {reason}").format(reason=motivo)
         messaggio += _(
-            "\n\nIl torneo non e' stato modificato. Se il problema dipende da un "
+            "\n\nIl torneo non è stato modificato. Se il problema dipende da un "
             "risultato inserito per errore nei turni precedenti, puoi correggerlo "
             "e riprovare, oppure tornare indietro con la Time Machine."
         )
@@ -7098,13 +7098,13 @@ class MainFrame(wx.Frame):
                 # 10.13.27 diceva 1 partite pianificate non ci sono entrate.
                 if len(partite_saltate) == 1:
                     self.set_status(
-                        _("Calendario esportato in '{path}', ma una partita pianificata non c'e' entrata: la sua data non e' leggibile.").format(
+                        _("Calendario esportato in '{path}', ma una partita pianificata non c'è entrata: la sua data non è leggibile.").format(
                             path=os.path.basename(path)
                         )
                     )
                 elif partite_saltate:
                     self.set_status(
-                        _("Calendario esportato in '{path}', ma {n} partite pianificate non ci sono entrate: la loro data non e' leggibile.").format(
+                        _("Calendario esportato in '{path}', ma {n} partite pianificate non ci sono entrate: la loro data non è leggibile.").format(
                             path=os.path.basename(path), n=len(partite_saltate)
                         )
                     )

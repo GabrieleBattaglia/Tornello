@@ -757,7 +757,7 @@ def generate_pairings_for_round(torneo):
     if not trf_string:
         print(_("ERRORE: Fallita generazione della stringa TRF per bbpPairings."))
         return _abbinamento_fallito(
-            torneo, _("Non e' stato possibile preparare i dati per bbpPairings.")
+            torneo, _("Non è stato possibile preparare i dati per bbpPairings.")
         )
     # 3. Eseguire bbpPairings.exe
     success, bbp_output_data, bbp_message = run_bbpairings_engine(trf_string)
@@ -847,7 +847,7 @@ def controlla_iscritti_e_turni(torneo):
                 "Per un torneo di {turni} turni servono almeno {minimo} giocatori, e "
                 "al momento ne risultano {iscritti}. Fra {iscritti} giocatori ci sono "
                 "solo {avversari} avversari possibili a testa, quindi dal turno "
-                "{primo_turno_impossibile} in poi l'abbinatore non troverebbe piu' "
+                "{primo_turno_impossibile} in poi l'abbinatore non troverebbe più "
                 "incontri nuovi. Iscrivi altri giocatori oppure riduci il numero dei "
                 "turni."
             ).format(

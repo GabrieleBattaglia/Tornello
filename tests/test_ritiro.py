@@ -303,7 +303,7 @@ class TestValutaRitiro:
 # Le tre strade da cui la finestra ritira un giocatore, su un telaio finto
 # con i metodi veri di MainFrame: niente finestre, niente suoni.
 
-AVVISO_COMUNE = "In quel caso Tornello ti proporra' di comporre il turno a mano."
+AVVISO_COMUNE = "In quel caso Tornello ti proporrà di comporre il turno a mano."
 
 
 class _Finestre:
@@ -481,7 +481,7 @@ class TestLeTreStradeDelRitiro:
         titolo, testo, no_predefinito = finestre.aperte[-1]
         assert titolo == "Ritiro con pochi giocatori"
         assert AVVISO_COMUNE in testo
-        assert "Il pulsante predefinito e' No." in testo
+        assert "Il pulsante predefinito è No." in testo
         assert no_predefinito is True
         assert _ritirati(torneo) == ([chi] if risposta == "si" else [])
         assert telaio.bivi == []
@@ -547,7 +547,7 @@ class TestLeTreStradeDelRitiro:
 
         titolo, testo, _no = finestre.aperte[-1]
         assert titolo == "Ritiro con pochi giocatori"
-        assert "Fra 2 giocatori c'e' un solo avversario possibile a testa" in testo
+        assert "Fra 2 giocatori c'è un solo avversario possibile a testa" in testo
         assert "servirebbero almeno 4 giocatori attivi" in testo
         assert "1 avversari" not in testo
 

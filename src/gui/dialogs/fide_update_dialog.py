@@ -265,11 +265,11 @@ class FideUpdateDialog(wx.Dialog):
             motivo = (stats or {}).get("error")
             if motivo:
                 messaggio = _(
-                    "Aggiornamento del Database FIDE non riuscito.\n\nMotivo: {reason}\n\nIl database che avevi prima e' rimasto intatto e resta utilizzabile."
+                    "Aggiornamento del Database FIDE non riuscito.\n\nMotivo: {reason}\n\nIl database che avevi prima è rimasto intatto e resta utilizzabile."
                 ).format(reason=motivo)
             else:
                 messaggio = _(
-                    "Aggiornamento del Database FIDE non riuscito. Controlla la connessione ad internet.\n\nIl database che avevi prima e' rimasto intatto e resta utilizzabile."
+                    "Aggiornamento del Database FIDE non riuscito. Controlla la connessione ad internet.\n\nIl database che avevi prima è rimasto intatto e resta utilizzabile."
                 )
             dlg = AccessibleMsgDialog(
                 self,

@@ -307,17 +307,17 @@ def descrivi_avvertimento(torneo, avvertimento):
     tipo, player_id, dettaglio = avvertimento
     if tipo == "ripetuta":
         if len(dettaglio) == 1:
-            return _("gia' incontrati al turno {turno}").format(turno=dettaglio[0])
-        return _("gia' incontrati ai turni {turni}").format(turni=", ".join(str(t) for t in dettaglio))
+            return _("già incontrati al turno {turno}").format(turno=dettaglio[0])
+        return _("già incontrati ai turni {turni}").format(turni=", ".join(str(t) for t in dettaglio))
     nome = _nome_breve(torneo, player_id)
     if tipo == "bye_vietato":
         if len(dettaglio) == 1:
-            return _("{nome} ha gia' avuto un bye o una vittoria a tavolino, al turno {turno}").format(nome=nome, turno=dettaglio[0])
-        return _("{nome} ha gia' avuto un bye o una vittoria a tavolino, ai turni {turni}").format(nome=nome, turni=", ".join(str(t) for t in dettaglio))
+            return _("{nome} ha già avuto un bye o una vittoria a tavolino, al turno {turno}").format(nome=nome, turno=dettaglio[0])
+        return _("{nome} ha già avuto un bye o una vittoria a tavolino, ai turni {turni}").format(nome=nome, turni=", ".join(str(t) for t in dettaglio))
     if tipo == "squilibrio":
         if dettaglio > 0:
-            return _("{nome} con {numero} bianchi piu' dei neri").format(nome=nome, numero=dettaglio)
-        return _("{nome} con {numero} neri piu' dei bianchi").format(nome=nome, numero=-dettaglio)
+            return _("{nome} con {numero} bianchi più dei neri").format(nome=nome, numero=dettaglio)
+        return _("{nome} con {numero} neri più dei bianchi").format(nome=nome, numero=-dettaglio)
     if dettaglio == BIANCO:
         return _("{nome} al terzo bianco di fila").format(nome=nome)
     return _("{nome} al terzo nero di fila").format(nome=nome)
@@ -429,20 +429,20 @@ def valida_turno_manuale(torneo, coppie):
         if nero is None:
             bye += 1
         elif nero == bianco:
-            errori.append(_("{nome} non puo' giocare contro se stesso.").format(nome=_nome_breve(torneo, bianco)))
+            errori.append(_("{nome} non può giocare contro se stesso.").format(nome=_nome_breve(torneo, bianco)))
         for player_id in [bianco] if nero in (None, bianco) else [bianco, nero]:
             giocatore = _giocatore(torneo, player_id)
             if giocatore is None:
-                errori.append(_("Il giocatore {id} non e' iscritto al torneo.").format(id=player_id))
+                errori.append(_("Il giocatore {id} non è iscritto al torneo.").format(id=player_id))
             elif giocatore.get("withdrawn"):
-                errori.append(_("{nome} si e' ritirato dal torneo e non puo' essere abbinato.").format(nome=nome_completo(giocatore)))
+                errori.append(_("{nome} si è ritirato dal torneo e non può essere abbinato.").format(nome=nome_completo(giocatore)))
             presenze[player_id] = presenze.get(player_id, 0) + 1
     for player_id in attivi:
         volte = presenze.get(player_id, 0)
         if volte == 0:
             errori.append(_("{nome} non ha ancora una coppia.").format(nome=nome_completo(_giocatore(torneo, player_id))))
         elif volte > 1:
-            errori.append(_("{nome} compare in piu' di una coppia.").format(nome=nome_completo(_giocatore(torneo, player_id))))
+            errori.append(_("{nome} compare in più di una coppia.").format(nome=nome_completo(_giocatore(torneo, player_id))))
     atteso = len(attivi) % 2
     if bye != atteso:
         if atteso:
@@ -591,5 +591,5 @@ def righe_della_conferma(torneo, coppie, turno):
     else:
         righe.append(_("Avvertimenti: {numero}, su {scacchiere} scacchiere.").format(numero=numero_avvertimenti(torneo, coppie), scacchiere=len(per_scacchiera)))
     righe += per_scacchiera
-    righe.append(_("Prima di registrare il turno Tornello fa una copia di sicurezza del torneo. Il pulsante predefinito e' No."))
+    righe.append(_("Prima di registrare il turno Tornello fa una copia di sicurezza del torneo. Il pulsante predefinito è No."))
     return righe

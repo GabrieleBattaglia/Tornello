@@ -2416,8 +2416,8 @@ class TestCalendarioIcs:
     @pytest.mark.parametrize(
         ("sbagliate", "atteso"),
         [
-            (1, "Calendario esportato in 'calendario.ics', ma una partita pianificata non c'e' entrata: la sua data non e' leggibile."),
-            (2, "Calendario esportato in 'calendario.ics', ma 2 partite pianificate non ci sono entrate: la loro data non e' leggibile."),
+            (1, "Calendario esportato in 'calendario.ics', ma una partita pianificata non c'è entrata: la sua data non è leggibile."),
+            (2, "Calendario esportato in 'calendario.ics', ma 2 partite pianificate non ci sono entrate: la loro data non è leggibile."),
         ],
     )
     def test_le_partite_dalla_data_illeggibile(self, principale, suoni, monkeypatch, tmp_path, sbagliate, atteso):

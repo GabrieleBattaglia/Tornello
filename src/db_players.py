@@ -714,7 +714,7 @@ def aggiorna_db_fide_locale(progress_callback=None, stats_output=None, interromp
             stats_output,
             db_temporaneo,
             _(
-                "Il sito FIDE non ha risposto entro il tempo previsto. Riprova piu' tardi."
+                "Il sito FIDE non ha risposto entro il tempo previsto. Riprova più tardi."
             ),
         )
     except requests.exceptions.RequestException as e_req:

@@ -498,17 +498,17 @@ class ResultDialog(wx.Dialog):
                 "1-F",
                 # "Forfait X / Assenza Y" non diceva a chi si riferisse cosa,
                 # perche' forfait e assenza sono la stessa cosa detta in due modi.
-                _("1 - F (vince {} a tavolino, non si e' presentato {})").format(
+                _("1 - F (vince {} a tavolino, non si è presentato {})").format(
                     self.white_name, self.black_name
                 ),
             ),
             (
                 "F-1",
-                _("F - 1 (vince {} a tavolino, non si e' presentato {})").format(
+                _("F - 1 (vince {} a tavolino, non si è presentato {})").format(
                     self.black_name, self.white_name
                 ),
             ),
-            ("0-0F", _("0 - 0F (non si e' presentato nessuno dei due)")),
+            ("0-0F", _("0 - 0F (non si è presentato nessuno dei due)")),
         ]
 
         # Dalla 10.6.4 i pulsanti sono figli del riquadro, come vuole

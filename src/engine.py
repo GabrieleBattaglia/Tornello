@@ -50,12 +50,12 @@ def handle_bbpairings_failure(torneo, round_number, error_message, esaurito=Fals
     if esaurito:
         print(
             _(
-                "Causa: con i giocatori rimasti nessun abbinamento rispetta i criteri assoluti del sistema svizzero, per esempio perche' ogni coppia ripeterebbe un incontro gia' giocato."
+                "Causa: con i giocatori rimasti nessun abbinamento rispetta i criteri assoluti del sistema svizzero, per esempio perché ogni coppia ripeterebbe un incontro già giocato."
             )
         )
         print(
             _(
-                "Il regolamento lascia allora la decisione all'arbitro, che compone il turno a mano. La composizione manuale c'e' solo nella finestra di Tornello: chiudi la versione a riga di comando, avvia Tornello senza l'opzione --cli e calcola il turno {round_num}, e la finestra ti proporra' di comporlo a mano."
+                "Il regolamento lascia allora la decisione all'arbitro, che compone il turno a mano. La composizione manuale c'è solo nella finestra di Tornello: chiudi la versione a riga di comando, avvia Tornello senza l'opzione --cli e calcola il turno {round_num}, e la finestra ti proporrà di comporlo a mano."
             ).format(round_num=round_number)
         )
     else:
@@ -414,7 +414,7 @@ def run_bbpairings_engine(trf_content_string):
                 "Non ho il permesso di scrivere nella cartella del programma:\n{folder}\n\n"
                 "Tornello conserva i propri file accanto a se stesso, quindi ha bisogno "
                 "di trovarsi in una cartella dove puoi scrivere. Spostalo per esempio "
-                "sul Desktop, in Documenti o su un'altra unita', e riprova."
+                "sul Desktop, in Documenti o su un'altra unità, e riprova."
             ).format(folder=os.path.dirname(BBP_INPUT_TRF)),
         )
     except OSError as e:

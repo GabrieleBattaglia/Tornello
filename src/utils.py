@@ -961,7 +961,7 @@ def resolve_and_verify_save_path(path, default_fallback=None):
     # Verifica se la cartella esistente è scrivibile
     if not cartella_scrivibile(path):
         msg = _(
-            "La cartella '{path}' non e' scrivibile. Uso la cartella di default: '{fallback}'."
+            "La cartella '{path}' non è scrivibile. Uso la cartella di default: '{fallback}'."
         ).format(path=path, fallback=default_fallback)
         print(f"LOG: {msg}")
         return default_fallback, msg
