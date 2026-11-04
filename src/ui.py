@@ -1701,9 +1701,18 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # --- Fase 1: Determina K-Factor e conta partite giocate nel torneo ---
     print(_("Accesso al DB e calcolo K-Factor e partite giocate..."))
     tournament_start_date = torneo.get("start_date")
+    # La cadenza del torneo, che sceglie il fattore K, la tabella del
+    # punteggio atteso e le regole della soglia dei 400 punti e dei 600 punti.
+    cadenza_del_torneo = torneo.get("tournament_category", "standard")
     for p in torneo.get("players", []):
         player_id = p.get("id")
-        if not player_id or p.get("withdrawn", False):
+        # Anche un ritirato ha il suo K e le sue partite: quelle che ha
+        # giocato prima del ritiro si valutano, come tutte le partite in cui
+        # i due giocatori hanno fatto almeno una mossa (articolo 5.1 del
+        # regolamento FIDE sul rating, B.02, e 4.1 di quello rapid e blitz).
+        # Fino alla 10.19.0 (issue 73) restavano fuori dalla sua variazione
+        # e dalle sue partite giocate, mentre i suoi avversari le avevano.
+        if not player_id:
             p["k_factor"] = None
             p["games_this_tournament"] = 0
             continue
@@ -1715,13 +1724,14 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
         # la finalizzazione applica (10.13.17).
         # Dalla 10.13.54 il K e' quello della cadenza del torneo (issue 65).
         p["k_factor"] = fattore_k_della_finalizzazione(
-            p, players_db, tournament_start_date, torneo.get("tournament_category", "standard")
+            p, players_db, tournament_start_date, cadenza_del_torneo
         )
         # Le partite che entrano nelle partite giocate del database: dalla
         # 10.13.53 non i forfait, come vuole l'articolo 5.1 del regolamento
-        # FIDE sul rating (issue 65).
+        # FIDE sul rating (issue 65), e dalla 10.19.5, nei rapid e nei
+        # blitz, non quelle della regola dei 600 punti (issue 73).
         p["games_this_tournament"] = partite_giocate_nel_torneo(
-            p, torneo["players_dict"]
+            p, torneo["players_dict"], cadenza_del_torneo
         )
     # --- Fase 2: Calcola Spareggi, Performance, Elo Change ---
     print(_("Ricalcolo finale Buchholz, ARO, Performance Rating, Variazione Elo..."))
@@ -1735,7 +1745,13 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             p["buchholz_cut1"] = None  # O 0.0 se preferisci non avere None
             p["aro"] = None
             p["performance_rating"] = None
-            p["elo_change"] = None
+            # Il ritirato ha la variazione delle partite giocate prima del
+            # ritiro, dalla 10.19.5 (issue 73): vedi la fase 1.
+            p["elo_change"] = (
+                calculate_elo_change(p, players_dict_for_calculations, cadenza_del_torneo)
+                if p_id
+                else None
+            )
             continue
 
         p["buchholz"] = compute_buchholz(p_id, torneo)
@@ -1745,7 +1761,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             p, players_dict_for_calculations
         )
         p["elo_change"] = calculate_elo_change(
-            p, players_dict_for_calculations
+            p, players_dict_for_calculations, cadenza_del_torneo
         )  # Usa K da p['k_factor']
 
     # --- Fase 3: Ordinamento Finale e Assegnazione Rank ---
@@ -1955,8 +1971,8 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             # rimette il valore di prima anche senza la copia pre_finalize_db.
             # Una voce senza elo_field e' di una finalizzazione fino alla
             # 10.13.3, che la variazione la metteva su current_elo, oppure di
-            # un giocatore senza variazione: un ritirato, o chi resta senza
-            # l'Elo della cadenza, qui sotto.
+            # un giocatore senza variazione: un ritirato, fino alla 10.19.0,
+            # o chi resta senza l'Elo della cadenza, qui sotto.
             elo_nello_storico = {}
             # Nei rapid e nei blitz l'Elo della cadenza nasce solo con almeno
             # una partita valida per l'Elo, scelta come la sceglie il calcolo
@@ -1969,7 +1985,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
             resta_senza_elo_della_cadenza = (
                 campo_elo != "current_elo"
                 and not db_player_record.get(campo_elo)
-                and not partite_valide_per_elo(p_final_data, torneo["players_dict"])
+                and not partite_valide_per_elo(p_final_data, torneo["players_dict"], category=categoria)
             )
             if elo_change_from_tournament is not None and not resta_senza_elo_della_cadenza:
                 elo_nello_storico["elo_field"] = campo_elo

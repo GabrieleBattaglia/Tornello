@@ -1119,12 +1119,15 @@ class TestSpareggiSulRatingSenzaForfait:
         return {"players": giocatori, "players_dict": {g["id"]: g for g in giocatori}, "rounds": [], "total_rounds": 3}
 
     def test_tpr_e_ptp_sulle_sole_partite_giocate(self):
+        """Dalla 10.19.5 (issue 73) il PTP della patta con A da 1600 e'
+        1597, dalla tabella 8.1.2 del B.02: con 3 punti di differenza la
+        probabilita' e' ancora 0,50. La formula logistica dava 1600."""
         from stats import compute_tiebreak_value
 
         torneo = self._torneo()
 
         assert compute_tiebreak_value("P", torneo, "TPR", {}) == 1600
-        assert compute_tiebreak_value("P", torneo, "PTP", {}) == 1600
+        assert compute_tiebreak_value("P", torneo, "PTP", {}) == 1597
 
     def test_apro_e_appo_usano_tpr_e_ptp_senza_forfait(self):
         from stats import compute_tiebreak_value
@@ -1132,7 +1135,7 @@ class TestSpareggiSulRatingSenzaForfait:
         torneo = self._torneo()
 
         assert compute_tiebreak_value("A", torneo, "APRO", {}) == 1600
-        assert compute_tiebreak_value("A", torneo, "APPO", {}) == 1600
+        assert compute_tiebreak_value("A", torneo, "APPO", {}) == 1597
 
     def test_il_tpr_coincide_con_la_colonna_perf(self):
         from stats import compute_tpr
@@ -1228,16 +1231,18 @@ class TestPtpAgliEstremi:
 
     def test_fra_gli_estremi_la_ricerca_resta_quella_di_prima(self):
         """Un punto e mezzo su due contro 1400 e 1600 non e' un estremo: il
-        PTP e' quello della formula logistica, 1706, fra lo zero e il pieno
-        degli stessi avversari, 600 e 2336. La tabella 8.1.2 darebbe 1703:
-        fra gli estremi Tornello usa la formula logistica, e la prova lo
-        fissa."""
+        PTP e' quello della ricerca, 1703, fra lo zero e il pieno degli
+        stessi avversari, 600 e 2336. Dalla 10.19.5 (issue 73) le
+        probabilita' vengono dalla tabella 8.1.2 del B.02, come vuole
+        l'articolo 10.3 del C.07: con 1703 la differenza con A e' 303, che
+        da' 0,86, e con B 103, che da' 0,64, in tutto 1,50; con 1702 sono
+        0,85 e 0,64. Fino alla 10.19.0 la formula logistica dava 1706."""
         from stats import compute_ptp
 
         elo = {"A": 1400, "B": 1600}
         torneo = self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1/2-1/2", 0.5)], elo)
 
-        assert compute_ptp("P", torneo) == 1706
+        assert compute_ptp("P", torneo) == 1703
         assert compute_ptp("P", self._torneo([(1, "A", "0-1", 0.0), (2, "B", "0-1", 0.0)], elo)) == 600
         assert compute_ptp("P", self._torneo([(1, "A", "1-0", 1.0), (2, "B", "1-0", 1.0)], elo)) == 2336
 
@@ -1463,3 +1468,244 @@ class TestTettoDelFattoreK:
     def test_anche_le_sconfitte(self):
         giocatore, avversari = self._giocatore(40, 0, perse=20)
         assert calculate_elo_change(giocatore, avversari) == -350
+
+
+# Le righe della tabella 8.1.2 del regolamento FIDE sul rating (B.02), come
+# le scrive il regolamento: la differenza D da e a, e la PD del piu' forte in
+# centesimi. La tabella 7.1.2 di quello rapid e blitz ha gli stessi valori.
+# Ricopiate qui dal testo del regolamento, e non dalla tabella del
+# programma, perche' la prova la controlli.
+RIGHE_DELLA_TABELLA_8_1_2 = (
+    (0, 3, 50), (4, 10, 51), (11, 17, 52), (18, 25, 53), (26, 32, 54),
+    (33, 39, 55), (40, 46, 56), (47, 53, 57), (54, 61, 58), (62, 68, 59),
+    (69, 76, 60), (77, 83, 61), (84, 91, 62), (92, 98, 63), (99, 106, 64),
+    (107, 113, 65), (114, 121, 66), (122, 129, 67), (130, 137, 68), (138, 145, 69),
+    (146, 153, 70), (154, 162, 71), (163, 170, 72), (171, 179, 73), (180, 188, 74),
+    (189, 197, 75), (198, 206, 76), (207, 215, 77), (216, 225, 78), (226, 235, 79),
+    (236, 245, 80), (246, 256, 81), (257, 267, 82), (268, 278, 83), (279, 290, 84),
+    (291, 302, 85), (303, 315, 86), (316, 328, 87), (329, 344, 88), (345, 357, 89),
+    (358, 374, 90), (375, 391, 91), (392, 411, 92), (412, 432, 93), (433, 456, 94),
+    (457, 484, 95), (485, 517, 96), (518, 559, 97), (560, 619, 98), (620, 735, 99),
+)
+
+
+def _voce_elo(turno, avversario, risultato, punti):
+    return {"round": turno, "opponent_id": avversario, "result": risultato, "score": punti}
+
+
+class TestPunteggioAttesoDallaTabella:
+    """Dalla 10.19.5 (issue 73) il punteggio atteso della variazione Elo
+    viene dalla tabella 8.1.2 del regolamento FIDE sul rating (B.02), come
+    vuole l'articolo 8.3.2 a, e nei rapid e nei blitz dalla 7.1.2, che ha
+    gli stessi valori, come vuole l'articolo 7.3.2 a. Fino alla 10.19.0
+    veniva dalla formula logistica 1/(1+10^(D/400)): con D 350 dava 0,882
+    invece di 0,89."""
+
+    @pytest.mark.parametrize(("da", "a", "centesimi"), RIGHE_DELLA_TABELLA_8_1_2)
+    def test_ogni_riga_ai_suoi_bordi(self, da, a, centesimi):
+        """La PD del piu' forte al primo e all'ultimo valore della riga, e
+        quella del piu' debole, 100 meno, con la differenza in negativo."""
+        from stats import centesimi_della_tabella
+
+        for differenza in (da, a):
+            assert centesimi_della_tabella(differenza) == centesimi, differenza
+            assert centesimi_della_tabella(-differenza) == 100 - centesimi, differenza
+
+    def test_oltre_735_la_vittoria_e_certa(self):
+        from stats import centesimi_della_tabella
+
+        assert centesimi_della_tabella(736) == 100
+        assert centesimi_della_tabella(1200) == 100
+        assert centesimi_della_tabella(-736) == 0
+
+    def test_d_350_da_0_89_e_0_11(self):
+        """L'esempio della issue: D da 345 a 357 da' 0,89 al piu' forte e
+        0,11 al piu' debole."""
+        from stats import calculate_expected_score
+
+        assert calculate_expected_score(2000, 1650) == 0.89
+        assert calculate_expected_score(1650, 2000) == 0.11
+        assert calculate_expected_score(2000, 1650, "rapid") == 0.89
+        assert calculate_expected_score(1650, 2000, "blitz") == 0.11
+
+    def test_elo_non_validi_danno_mezzo_punto(self):
+        from stats import calculate_expected_score
+
+        assert calculate_expected_score("non un numero", 1650) == 0.5
+
+
+class TestSogliaDei400Punti:
+    """Dalla 10.19.5 (issue 73) la soglia dei 400 punti segue la cadenza e
+    l'Elo: negli standard, per l'articolo 8.3.1 del B.02 in vigore dal 1
+    ottobre 2025, una differenza oltre 400 conta come 400 soltanto per i
+    giocatori sotto 2650, e da 2650 in su si usa quella vera; nei rapid e
+    nei blitz, articolo 7.3.1, la soglia vale per tutti. Fino alla 10.19.0
+    valeva per tutti anche negli standard."""
+
+    def test_negli_standard_un_2649_ha_la_soglia(self):
+        """500 punti di differenza contano come 400: 0,92, e non 0,96."""
+        from stats import centesimi_attesi
+
+        assert centesimi_attesi(2649, 2149) == 92
+        assert centesimi_attesi(2649, 2249) == 92
+        assert centesimi_attesi(2649, 1500) == 92
+
+    def test_negli_standard_un_2650_usa_la_differenza_vera(self):
+        """500 punti danno 0,96, e 800 punti 1,00. Il piu' debole, sotto
+        2650, ha sempre la soglia: 0,08 anche contro il 2650."""
+        from stats import centesimi_attesi
+
+        assert centesimi_attesi(2650, 2150) == 96
+        assert centesimi_attesi(2650, 1850) == 100
+        assert centesimi_attesi(2150, 2650) == 8
+        # Sotto i 400 punti la soglia non c'entra.
+        assert centesimi_attesi(2650, 2300) == 89
+
+    @pytest.mark.parametrize("cadenza", ["rapid", "blitz"])
+    def test_nei_rapid_e_nei_blitz_la_soglia_vale_per_tutti(self, cadenza):
+        from stats import centesimi_attesi
+
+        assert centesimi_attesi(2650, 2150, cadenza) == 92
+        assert centesimi_attesi(2800, 2200, cadenza) == 92
+        assert centesimi_attesi(2149, 2649, cadenza) == 8
+        assert centesimi_attesi(2649, 2149, cadenza) == 92
+
+    def test_la_cadenza_maiuscola_o_mancante_vale_come_le_altre(self):
+        """La categoria si legge come la legge il fattore K: una
+        sconosciuta o mancante vale standard."""
+        from stats import centesimi_attesi
+
+        assert centesimi_attesi(2650, 2150, "Rapid") == 92
+        assert centesimi_attesi(2650, 2150, None) == 96
+        assert centesimi_attesi(2650, 2150, "classica") == 96
+
+
+class TestRegolaDei600Punti:
+    """Dalla 10.19.5 (issue 73) nei rapid e nei blitz vale l'articolo 7.3.1
+    del regolamento FIDE sul rating rapid e blitz, in vigore dal 1 dicembre
+    2024: una partita fra due giocatori con una differenza di rating di 600
+    punti o piu' non si valuta, se almeno uno dei due ha piu' di 2600 nella
+    lista della cadenza. Negli standard la regola non c'e'."""
+
+    @pytest.mark.parametrize("cadenza", ["rapid", "blitz"])
+    def test_seicento_punti_e_piu_di_2600(self, cadenza):
+        from stats import partita_non_valutata
+
+        assert partita_non_valutata(2601, 2001, cadenza)
+        assert partita_non_valutata(2001, 2601, cadenza)
+        assert partita_non_valutata(2700, 1500, cadenza)
+        # 2600 non e' piu' di 2600, e 599 punti non sono 600.
+        assert not partita_non_valutata(2600, 2000, cadenza)
+        assert not partita_non_valutata(2601, 2002, cadenza)
+        assert not partita_non_valutata(2500, 1500, cadenza)
+
+    def test_negli_standard_si_valuta(self):
+        from stats import partita_non_valutata
+
+        assert not partita_non_valutata(2601, 2001)
+        assert not partita_non_valutata(2700, 1500, "standard")
+
+    def test_una_partita_rapid_non_valutata(self):
+        """Un 2601 con K 10 batte un 2001 e patta con un 2400. Nel rapid la
+        prima partita non si valuta: resta la patta, D 201, PD 0,76, Delta R
+        -0,26, per 10 fa -2,6, cioe' -3, su una partita sola. Nello standard
+        si valutano tutte e due: la vittoria con la soglia dei 400, PD 0,92,
+        Delta R +0,08, e la patta -0,26, in tutto -0,18, per 10 -1,8, cioe'
+        -2, su due partite. Il 2001 nel rapid non ha partite valide."""
+        from stats import partite_giocate_nel_torneo, partite_valide_per_elo
+
+        avversari = {
+            "F": {"id": "F", "initial_elo": 2601, "k_factor": 10, "results_history": [_voce_elo(1, "D", "1-0", 1.0), _voce_elo(2, "M", "1/2-1/2", 0.5)]},
+            "D": {"id": "D", "initial_elo": 2001, "k_factor": 20, "results_history": [_voce_elo(1, "F", "0-1", 0.0)]},
+            "M": {"id": "M", "initial_elo": 2400, "k_factor": 10, "results_history": [_voce_elo(2, "F", "1/2-1/2", 0.5)]},
+        }
+        forte, debole = avversari["F"], avversari["D"]
+
+        assert calculate_elo_change(forte, avversari, "rapid") == -3
+        assert partite_giocate_nel_torneo(forte, avversari, "rapid") == 1
+        assert partite_valide_per_elo(forte, avversari, category="blitz") == [(2400.0, 0.5)]
+        assert calculate_elo_change(debole, avversari, "rapid") == 0
+        assert partite_giocate_nel_torneo(debole, avversari, "rapid") == 0
+        assert calculate_elo_change(forte, avversari) == -2
+        assert partite_giocate_nel_torneo(forte, avversari) == 2
+        assert calculate_elo_change(debole, avversari, "standard") == -2
+
+
+class TestVariazioneEloSecondoIlRegolamento:
+    """Un torneo completo, un girone di quattro giocatori, con le variazioni
+    calcolate a mano dal regolamento, partita per partita, dalla tabella
+    8.1.2 del B.02 (7.1.2 nei rapid e nei blitz) con la soglia della
+    cadenza: Delta R e' il punteggio meno PD, e la variazione e' K per la
+    somma dei Delta R, arrotondata all'intero (articoli 8.3.2, 8.3.4, 7.3.2).
+    A 2700 con K 10, B 2250 con K 20, C 2100 con K 20, D 1640 con K 40.
+    Turno 1: A batte D, B e C pattano. Turno 2: A e C pattano, B batte D.
+    Turno 3: B batte A, C batte D."""
+
+    @staticmethod
+    def _girone():
+        partite = [(1, "A", "D", "1-0"), (1, "B", "C", "1/2-1/2"), (2, "A", "C", "1/2-1/2"), (2, "B", "D", "1-0"), (3, "B", "A", "1-0"), (3, "C", "D", "1-0")]
+        punti = {"1-0": (1.0, 0.0), "1/2-1/2": (0.5, 0.5)}
+        speculare = {"1-0": "0-1", "1/2-1/2": "1/2-1/2"}
+        giocatori = {
+            pid: {"id": pid, "initial_elo": elo, "k_factor": k, "results_history": []}
+            for pid, elo, k in (("A", 2700, 10), ("B", 2250, 20), ("C", 2100, 20), ("D", 1640, 40))
+        }
+        for turno, bianco, nero, risultato in partite:
+            del_bianco, del_nero = punti[risultato]
+            giocatori[bianco]["results_history"].append(_voce_elo(turno, nero, risultato, del_bianco))
+            giocatori[nero]["results_history"].append(_voce_elo(turno, bianco, speculare[risultato], del_nero))
+        return giocatori
+
+    def test_standard(self):
+        """A, da 2650 in su, usa le differenze vere: con D 1060 PD 1,00,
+        Delta R 0; con C, 600, PD 0,98, Delta R -0,48; con B, 450, PD 0,94,
+        Delta R -0,94. Somma -1,42, per 10 -14,2: -14. La formula di prima,
+        con la soglia per tutti, dava -12.
+        B, sotto 2650: con C, 150, PD 0,70, -0,20; con D, 610 che contano
+        400, PD 0,92, +0,08; con A, -450 che contano -400, PD 0,08, +0,92.
+        Somma 0,80, per 20: +16.
+        C: con B, -150, PD 0,30, +0,20; con A, -600, PD 0,08, +0,42; con D,
+        460, PD 0,92, +0,08. Somma 0,70, per 20: +14.
+        D: tre sconfitte, tutte oltre i 400 punti, PD 0,08: -0,24 per 40,
+        -9,6: -10."""
+        from stats import partite_giocate_nel_torneo
+
+        giocatori = self._girone()
+
+        variazioni = {pid: calculate_elo_change(g, giocatori, "standard") for pid, g in giocatori.items()}
+        assert variazioni == {"A": -14, "B": 16, "C": 14, "D": -10}
+        assert {pid: partite_giocate_nel_torneo(g, giocatori) for pid, g in giocatori.items()} == dict.fromkeys("ABCD", 3)
+
+    @pytest.mark.parametrize("cadenza", ["rapid", "blitz"])
+    def test_rapid_e_blitz(self, cadenza):
+        """A ha piu' di 2600: le partite con D, 1060 punti, e con C, 600, non
+        si valutano. Resta la sconfitta con B, 450 che contano 400, PD 0,92,
+        -0,92 per 10, -9,2: -9, su una partita.
+        B: le stesse tre partite dello standard, perche' con D, 610 punti,
+        nessuno dei due ha piu' di 2600: +16.
+        C: senza la patta con A, +0,20 e +0,08, 0,28 per 20, 5,6: +6, su due
+        partite.
+        D: senza la partita con A, -0,08 e -0,08, -0,16 per 40, -6,4: -6, su
+        due partite."""
+        from stats import partite_giocate_nel_torneo
+
+        giocatori = self._girone()
+
+        variazioni = {pid: calculate_elo_change(g, giocatori, cadenza) for pid, g in giocatori.items()}
+        assert variazioni == {"A": -9, "B": 16, "C": 6, "D": -6}
+        partite = {pid: partite_giocate_nel_torneo(g, giocatori, cadenza) for pid, g in giocatori.items()}
+        assert partite == {"A": 1, "B": 3, "C": 2, "D": 2}
+
+    def test_il_conto_in_centesimi_e_esatto(self):
+        """Un 1500 con K 10 perde con un 1500, PD 0,50, e batte un 1390, D
+        110, PD 0,65: punteggio 1, atteso 1,15, Delta R -0,15, per 10 -1,5,
+        che si arrotonda a -2. Con le frazioni del calcolatore 0,50 piu'
+        0,65 fa 1,1499..., e la variazione sarebbe diventata -1. Lo stesso
+        con le vittorie: 0,5 e 1 contro 0,50 e 0,85 fanno +1,5, cioe' +2."""
+        avversari = {"PARI": {"id": "PARI", "initial_elo": 1500}, "DEBOLE": {"id": "DEBOLE", "initial_elo": 1390}, "PIU_DEBOLE": {"id": "PIU_DEBOLE", "initial_elo": 1200}}
+        giocatore = {"id": "P", "initial_elo": 1500, "k_factor": 10, "results_history": [_voce_elo(1, "PARI", "0-1", 0.0), _voce_elo(2, "DEBOLE", "1-0", 1.0)]}
+
+        assert calculate_elo_change(giocatore, avversari) == -2
+        # Con 1200, D 300, PD 0,85.
+        vince = dict(giocatore, results_history=[_voce_elo(1, "PARI", "1/2-1/2", 0.5), _voce_elo(2, "PIU_DEBOLE", "1-0", 1.0)])
+        assert calculate_elo_change(vince, avversari) == 2

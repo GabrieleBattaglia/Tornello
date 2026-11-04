@@ -1202,6 +1202,36 @@ class TestCicloCompleto:
         assert _finalizza(_leggi(ambiente.file_torneo), ambiente.file_torneo) is True
         assert _leggi(ambiente.percorsi.database) == database_finalizzato
 
+    @pytest.mark.parametrize("da_dove", ["pre_finalize", "turno"])
+    def test_un_ritirato_con_la_sua_partita_riaperto_rida_il_database_di_prima(self, ambiente, da_dove):
+        """Dalla 10.19.5 (issue 73) un ritirato riceve la variazione e le
+        partite che ha giocato prima del ritiro, e la sua voce dello storico
+        ha i campi dell'Elo: G4 patta con G3 e si ritira, +6 e una partita.
+        Riaperto il torneo, dalla copia di prima della finalizzazione o da
+        quella di un turno, il database torna identico a prima, anche per
+        lui, e la conferma lo nomina; rifinalizzando si torna alla prima
+        finalizzazione."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        next(g for g in ambiente.torneo["players"] if g["id"] == "G4")["withdrawn"] = True
+        _scrivi(ambiente.file_torneo, ambiente.torneo)
+        database_iniziale = _leggi(ambiente.percorsi.database)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        database_finalizzato = _leggi(ambiente.percorsi.database)
+        g4 = next(g for g in database_finalizzato["players"] if g["id"] == "G4")
+        assert (g4["current_elo"], g4["games_played"]) == (1506, 11)
+        copia = self._copia_di_un_turno(ambiente) if da_dove == "turno" else _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto is None
+        assert any(r.startswith("  CognomeG4 NomeG4: Elo 1506 a 1500 (-6), partite 11 a 10") for r in piano.righe), piano.righe
+        assert ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino).riuscito
+        assert _leggi(ambiente.percorsi.database) == database_iniziale
+
+        assert _finalizza(_leggi(ambiente.file_torneo), ambiente.file_torneo) is True
+        assert _leggi(ambiente.percorsi.database) == database_finalizzato
+
     def test_un_rapid_di_prima_della_10_13_4_riaperto_da_una_copia_di_un_turno(self, ambiente):
         """Rilievo bloccante della revisione. Un rapid finalizzato fino alla
         10.13.3 ha la variazione su current_elo, e le voci dello storico

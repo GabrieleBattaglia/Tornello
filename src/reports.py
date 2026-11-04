@@ -975,29 +975,32 @@ def get_standings_text(torneo, final=False, players_db=None):
             if p.get("withdrawn", False):
                 p["final_rank"] = "RIT"
                 p["performance_rating"] = None
-                p["elo_change"] = None
             else:
-                # Il K e' quello della finalizzazione, ricalcolato ogni volta:
-                # fino alla 10.13.16 veniva dal giocatore del torneo, che non
-                # ha experienced, partite giocate e data di nascita del
-                # database, e poi restava salvato nel torneo. Per chi non li
-                # ha la regola dava 40 dove la finalizzazione dava 20.
                 p["performance_rating"] = calculate_performance_rating(
                     p, torneo["players_dict"]
                 )
-                if database_illeggibile:
-                    p["k_factor"] = None
-                    p["elo_change"] = None
-                else:
-                    p["k_factor"] = fattore_k_della_finalizzazione(
-                        p,
-                        players_db,
-                        torneo.get("start_date"),
-                        torneo.get("tournament_category", "standard"),
-                    )
-                    p["elo_change"] = calculate_elo_change(
-                        p, torneo["players_dict"]
-                    )
+            # Il K e' quello della finalizzazione, ricalcolato ogni volta:
+            # fino alla 10.13.16 veniva dal giocatore del torneo, che non
+            # ha experienced, partite giocate e data di nascita del
+            # database, e poi restava salvato nel torneo. Per chi non li
+            # ha la regola dava 40 dove la finalizzazione dava 20.
+            # Dalla 10.19.5 (issue 73) anche un ritirato ha la variazione
+            # delle partite giocate prima del ritiro, come alla
+            # finalizzazione; fino alla 10.19.0 la colonna diceva n.d.
+            if database_illeggibile:
+                p["k_factor"] = None
+                p["elo_change"] = None
+            else:
+                categoria = torneo.get("tournament_category", "standard")
+                p["k_factor"] = fattore_k_della_finalizzazione(
+                    p,
+                    players_db,
+                    torneo.get("start_date"),
+                    categoria,
+                )
+                p["elo_change"] = calculate_elo_change(
+                    p, torneo["players_dict"], categoria
+                )
 
     tiebreak_order = criteri_di_spareggio(torneo)
 
@@ -1392,17 +1395,21 @@ def get_standings_text(torneo, final=False, players_db=None):
             line += " " + " ".join(vals_list)
 
         if show_ratings:
+            elo_change_val = player.get("elo_change")
+            elo_change_str = (
+                f"{int(elo_change_val):+4d}"
+                if elo_change_val is not None
+                else _("n.d.")
+            )
             if ritirato:
-                perf_str, elo_change_str = _("n.d."), _("n.d.")
+                # Il ritirato non ha performance, ma dalla 10.19.5 ha la
+                # variazione Elo delle partite giocate prima del ritiro
+                # (issue 73). Nei tornei finalizzati fino alla 10.19.0 non
+                # l'ha, e la colonna dice n.d. senza la riga in fondo.
+                perf_str = _("n.d.")
             else:
                 perf_val = player.get("performance_rating")
                 perf_str = f"{int(perf_val):4d}" if perf_val is not None else _("n.d.")
-                elo_change_val = player.get("elo_change")
-                elo_change_str = (
-                    f"{int(elo_change_val):+4d}"
-                    if elo_change_val is not None
-                    else _("n.d.")
-                )
                 if concluso:
                     valori_mancanti += (perf_val is None) + (elo_change_val is None)
             line += f" {perf_str} {elo_change_str}"

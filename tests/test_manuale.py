@@ -591,3 +591,26 @@ class TestSpareggiDellaSezione91:
         assert "ha PTP 2336" in testo
         assert "l'articolo 2.1" not in testo
         assert "il bando o il regolamento del torneo deve quindi dire" in testo
+        # Dalla 10.19.5 (issue 73) il PTP viene dalla tabella.
+        assert "ha PTP 1597" in testo
+        assert "si calcola con la formula Elo" not in testo
+
+
+class TestEloDellaSezione92:
+    """Dalla 10.19.5 (issue 73) la sezione 9.2 dice come si calcola la
+    variazione Elo, con gli articoli del regolamento FIDE sul rating: la
+    tabella 8.1.2 e la 7.1.2, la soglia dei 400 punti degli articoli 8.3.1 e
+    7.3.1 con i 2650 degli standard, la regola dei 600 punti dei rapid e dei
+    blitz, e le partite dei ritirati. Fino alla 10.19.0 parlava soltanto
+    delle formule ufficiali FIDE."""
+
+    def test_tabella_soglia_seicento_e_ritirati(self):
+        testo = "\n".join(sezione(leggi("MANUALE.txt"), (9, 2)))
+
+        assert "applicando le formule ufficiali FIDE." not in testo
+        for citato in ("la 8.1.2 del regolamento standard e la 7.1.2", "(articolo 8.3.1)", "(articolo 7.3.1)", "dal 1 ottobre 2025", "dal 1 dicembre 2024"):
+            assert citato in testo, citato
+        assert "soltanto per i giocatori sotto 2650" in testo
+        assert "600 punti o più non si valuta, se almeno uno dei due ha più di 2600" in testo
+        assert "il più forte ha 0,89 e il più debole 0,11" in testo
+        assert "- Giocatori ritirati: le partite che un giocatore ritirato ha giocato prima del ritiro si valutano" in testo

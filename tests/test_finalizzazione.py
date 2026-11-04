@@ -840,18 +840,28 @@ class TestEloDellaCadenza:
                 attesa,
             ), pid
 
-    def test_un_ritirato_non_ha_l_elo_nella_voce(self, banco):
-        """Un ritirato non ha variazione, e la sua voce dello storico non ha
-        i campi dell'Elo: lo storno non ne tocca nessuno."""
+    def test_un_ritirato_ha_l_elo_nella_voce(self, banco):
+        """Dalla 10.19.5 (issue 73) un ritirato riceve la variazione delle
+        partite giocate prima del ritiro, sull'Elo della cadenza, e la sua
+        voce dello storico ha i campi dell'Elo, come quella degli altri: lo
+        storno della riapertura li usa. G4, senza Elo rapid, patta con G3 da
+        1600 partendo dal suo current_elo, 1500: D -100, PD 0,36, Delta R
+        +0,14, per K 40 +5,6, cioe' +6, e l'Elo rapid gli nasce da 1500. Fino
+        alla 10.19.0 restava senza variazione, con l'Elo rapid a zero e la
+        voce senza i campi dell'Elo."""
         _con_la_cadenza(banco, "rapid")
         banco.torneo["players"][3]["withdrawn"] = True
         _scrivi(banco.file_torneo, banco.torneo)
 
         assert _finalizza(banco) is True
 
-        voce = _giocatori_del_db(banco.db)["G4"]["tournaments_played"][-1]
-        assert not {"elo_field", "elo_before", "elo_after"} & voce.keys()
-        assert _giocatori_del_db(banco.db)["G4"]["elo_rapid"] == 0
+        g4 = _giocatori_del_db(banco.db)["G4"]
+        voce = g4["tournaments_played"][-1]
+        assert _variazioni_archiviate()["G4"] == 6
+        assert (voce["elo_field"], voce["elo_before"], voce["elo_after"]) == ("elo_rapid", 0, 1506)
+        assert g4["elo_rapid"] == 1506
+        assert (g4["games_played"], g4["games_played_rapid"]) == (11, 1)
+        assert voce["rank"] == "RIT"
 
     @pytest.mark.parametrize("categoria", ["rapid", "blitz", "standard"])
     def test_la_console_fa_come_la_finestra(self, banco, categoria):
@@ -1398,8 +1408,8 @@ class TestPartiteGiocateSenzaForfait:
         contate = {}
         originale = controller.partite_giocate_nel_torneo
 
-        def annota(giocatore, giocatori):
-            contate[giocatore["id"]] = originale(giocatore, giocatori)
+        def annota(giocatore, giocatori, categoria="standard"):
+            contate[giocatore["id"]] = originale(giocatore, giocatori, categoria)
             return contate[giocatore["id"]]
 
         with unittest.mock.patch.object(controller, "partite_giocate_nel_torneo", annota):
@@ -1545,3 +1555,223 @@ class TestFattoreKDellaCadenzaAllaFinalizzazione:
 
         assert set(chiesti) == {(pid, "blitz") for pid in ELO_INIZIALI}
         assert {p["id"]: p["k_factor"] for p in _leggi(_json_in_archivio())["players"]}["G1"] == 10
+
+
+def _ritira_g4(banco):
+    """G4 si ritira dopo il turno, con la sua partita giocata o a forfait."""
+    banco.torneo["players"][3]["withdrawn"] = True
+    _scrivi(banco.file_torneo, banco.torneo)
+
+
+def _dati_archiviati():
+    """K, partite e variazione di ogni giocatore del torneo archiviato."""
+    return {p["id"]: (p["k_factor"], p["games_this_tournament"], p["elo_change"]) for p in _leggi(_json_in_archivio())["players"]}
+
+
+class TestPartiteDeiRitirati:
+    """Dalla 10.19.5 (issue 73) le partite che un ritirato ha giocato prima
+    del ritiro si valutano: l'articolo 5.1 del regolamento FIDE sul rating
+    (B.02), e il 4.1 di quello rapid e blitz, valutano ogni partita in cui i
+    due giocatori hanno fatto almeno una mossa, e lasciano fuori soltanto
+    quelle non giocate, per forfait o per qualunque altro motivo. Il
+    ritirato riceve variazione, partite giocate e voce dello storico con i
+    campi dell'Elo, nella finestra e nella console, e la colonna Elo Var.
+    della classifica in corso dice la stessa variazione. Fino alla 10.19.0
+    restava senza variazione e senza partite, mentre i suoi avversari
+    avevano le partite giocate con lui.
+    G4, 1500, patta con G3, 1600, e si ritira: D -100, PD 0,36, Delta R
+    +0,14, per K 40 +5,6, cioe' +6. G3: PD 0,64, Delta R -0,14, -6."""
+
+    def test_le_partite_giocate_si_valutano(self, banco):
+        _ritira_g4(banco)
+
+        assert _finalizza(banco) is True
+
+        archiviati = _dati_archiviati()
+        assert archiviati["G4"] == (40, 1, 6)
+        assert archiviati["G3"] == (40, 1, -6)
+        dopo = _giocatori_del_db(banco.db)
+        assert (dopo["G4"]["current_elo"], dopo["G4"]["games_played"]) == (1506, 11)
+        assert (dopo["G3"]["current_elo"], dopo["G3"]["games_played"]) == (1594, 11)
+        voce = dopo["G4"]["tournaments_played"][-1]
+        assert (voce["elo_field"], voce["elo_before"], voce["elo_after"], voce["rank"]) == ("current_elo", 1500, 1506, "RIT")
+        assert dopo["G4"]["medals"] == {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}
+
+    def test_a_soli_forfait_niente_variazione_e_niente_partite(self, banco):
+        """G4 perde a forfait con G3 e si ritira: la partita non giocata
+        resta fuori, come per tutti, e G4 resta con l'Elo e le partite di
+        prima."""
+        _g3_vince_a_forfait(banco.torneo)
+        _ritira_g4(banco)
+
+        assert _finalizza(banco) is True
+
+        assert _dati_archiviati()["G4"] == (40, 0, 0)
+        dopo = _giocatori_del_db(banco.db)
+        assert (dopo["G4"]["current_elo"], dopo["G4"]["games_played"]) == (1500, 10)
+
+    @pytest.mark.parametrize(("categoria", "variazione"), [("standard", 6), ("rapid", 6), ("blitz", 4)])
+    def test_la_console_fa_come_la_finestra(self, banco, categoria, variazione):
+        """Lo stesso torneo con il ritirato, finalizzato dalla finestra e,
+        rimesso tutto com'era, dalla console: il database viene uguale, e il
+        primo calcolo del controller dice le stesse partite e la stessa
+        variazione. Nel blitz G3 ha 1580: D -80, PD 0,39, +0,11 per 40,
+        +4,4, cioe' +4."""
+        import shutil
+
+        import controller
+        from db_players import load_players_db
+        from models import Tournament
+
+        prima = _con_la_cadenza(banco, categoria)
+        _ritira_g4(banco)
+        database_prima = _leggi_byte(banco.db)
+        assert _finalizza(banco) is True
+        dalla_finestra = _giocatori_del_db(banco.db)
+        archiviati = _dati_archiviati()
+
+        with open(banco.db, "wb") as f:
+            f.write(database_prima)
+        _scrivi(banco.file_torneo, banco.torneo)
+        shutil.rmtree(_cartella_archivio())
+        messaggi = []
+        finto = types.SimpleNamespace(
+            tournament=Tournament.from_dict(copy.deepcopy(banco.torneo)),
+            players_db=load_players_db(),
+            active_filename=banco.file_torneo,
+            ui=types.SimpleNamespace(show_message=messaggi.append, show_error=messaggi.append),
+        )
+        assert controller.TournamentController._finalize_tournament(finto) is True
+
+        assert _giocatori_del_db(banco.db) == dalla_finestra
+        dal_controller = {p.id: (p.k_factor, p.games_this_tournament, p.elo_change) for p in finto.tournament.players}
+        assert dal_controller == archiviati
+        assert archiviati["G4"][1:] == (1, variazione)
+        campo = {"rapid": "elo_rapid", "blitz": "elo_blitz"}.get(categoria, "current_elo")
+        assert dalla_finestra["G4"][campo] == (prima["G4"][campo] or prima["G4"]["current_elo"]) + variazione
+
+    def test_la_colonna_elo_var_della_classifica_in_corso(self, banco):
+        """La classifica in corso dice per il ritirato la variazione che la
+        finalizzazione applica, e non piu' n.d.; la performance resta n.d."""
+        from reports import get_standings_text
+
+        _ritira_g4(banco)
+        in_corso = copy.deepcopy(banco.torneo)
+
+        testo = get_standings_text(in_corso)
+
+        colonna = {p["id"]: (p["k_factor"], p["elo_change"]) for p in in_corso["players"]}
+        assert colonna["G4"] == (40, 6)
+        riga = next(r for r in testo.splitlines() if "CognomeG4, NomeG4" in r)
+        assert _("n.d.") + "   +6" in riga
+        assert riga.endswith("[RITIRATO]")
+        assert _finalizza(banco) is True
+        archiviati = {pid: (k, variazione) for pid, (k, _partite, variazione) in _dati_archiviati().items()}
+        assert colonna == archiviati
+
+    def test_la_classifica_del_torneo_concluso_dice_la_variazione(self, banco):
+        """Il torneo archiviato, riletto, mostra la variazione salvata del
+        ritirato, senza la riga dei valori non salvati."""
+        from reports import get_standings_text
+
+        _ritira_g4(banco)
+        assert _finalizza(banco) is True
+
+        testo = get_standings_text(_leggi(_json_in_archivio()))
+
+        riga = next(r for r in testo.splitlines() if "CognomeG4, NomeG4" in r)
+        assert "   +6" in riga
+        assert "I valori n.d. dei giocatori non ritirati" not in testo
+
+
+def _con_gli_elo(banco, categoria, **per_giocatore):
+    """Il torneo della cadenza scelta, come _con_la_cadenza, con i campi di
+    per_giocatore nelle schede del database e l'Elo di partenza che
+    l'iscrizione darebbe con quei campi."""
+    from stats import get_initial_elo_for_tournament
+
+    _con_la_cadenza(banco, categoria)
+    dati = _leggi(banco.db)
+    for scheda in dati["players"]:
+        scheda.update(per_giocatore.get(scheda["id"], {}))
+    _scrivi(banco.db, dati)
+    schede = {g["id"]: g for g in dati["players"]}
+    for giocatore in banco.torneo["players"]:
+        giocatore["initial_elo"] = get_initial_elo_for_tournament(schede[giocatore["id"]], categoria)
+    _scrivi(banco.file_torneo, banco.torneo)
+    return copy.deepcopy(schede)
+
+
+class TestRegoleFideAllaFinalizzazione:
+    """Dalla 10.19.5 (issue 73) la finalizzazione, nella finestra e nella
+    console, e la colonna Elo Var. della classifica in corso passano la
+    cadenza del torneo al calcolo della variazione: la soglia dei 400 punti
+    dell'articolo 8.3.1 del B.02 vale negli standard soltanto sotto 2650, e
+    nei rapid e nei blitz per tutti (articolo 7.3.1), dove una partita con
+    600 punti di differenza e un giocatore sopra 2600 non si valuta. G1
+    batte G2, G3 e G4 pattano; il K e' 40 per tutti, con dieci partite."""
+
+    @pytest.mark.parametrize(("elo_di_g1", "elo_di_g2", "attese"), [(2650, 2150, (2, -3)), (2649, 2149, (3, -3))])
+    def test_la_soglia_dei_400_negli_standard(self, banco, elo_di_g1, elo_di_g2, attese):
+        """Con 500 punti di differenza un 2650 usa la differenza vera, PD
+        0,96: +0,04 per 40, +1,6, cioe' +2; un 2649 la soglia, PD 0,92:
+        +0,08 per 40, +3,2, cioe' +3. G2, sotto 2650, ha la soglia: -0,08
+        per 40, -3. La formula di prima dava +4 e -4."""
+        _con_gli_elo(banco, "standard", G1={"current_elo": elo_di_g1}, G2={"current_elo": elo_di_g2})
+
+        assert _finalizza(banco) is True
+
+        archiviati = _dati_archiviati()
+        assert (archiviati["G1"][2], archiviati["G2"][2]) == attese
+        dopo = _giocatori_del_db(banco.db)
+        assert (dopo["G1"]["current_elo"], dopo["G2"]["current_elo"]) == (elo_di_g1 + attese[0], elo_di_g2 + attese[1])
+
+    @pytest.mark.parametrize(("categoria", "campo"), [("rapid", "elo_rapid"), ("blitz", "elo_blitz")])
+    def test_nei_rapid_e_nei_blitz_la_soglia_vale_per_tutti(self, banco, categoria, campo):
+        """Lo stesso 2650 contro un 2150: 500 punti contano 400, +3 e -3."""
+        _con_gli_elo(banco, categoria, G1={campo: 2650}, G2={campo: 2150})
+
+        assert _finalizza(banco) is True
+
+        archiviati = _dati_archiviati()
+        assert (archiviati["G1"][2], archiviati["G2"][2]) == (3, -3)
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    @pytest.mark.parametrize(("categoria", "campo"), [("rapid", "elo_rapid"), ("blitz", "elo_blitz")])
+    def test_una_partita_con_600_punti_non_si_valuta(self, banco, categoria, campo, dove):
+        """G1, 2700 nella cadenza, batte G2, 2000: 700 punti e un giocatore
+        sopra 2600, la partita non si valuta. Tutti e due restano con la
+        variazione zero, l'Elo della cadenza di prima e le partite di prima;
+        G3, 1600 nella cadenza, e G4, che parte dal suo current_elo, 1500,
+        hanno la loro patta, -6 e +6. La colonna Elo Var. della classifica in
+        corso dice gli stessi valori."""
+        from reports import get_standings_text
+
+        prima = _con_gli_elo(banco, categoria, G1={campo: 2700}, G2={campo: 2000}, G3={campo: 1600})
+        in_corso = copy.deepcopy(banco.torneo)
+        get_standings_text(in_corso)
+
+        assert (_finalizza(banco) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        archiviati = _dati_archiviati()
+        assert {pid: valori[1:] for pid, valori in archiviati.items()} == {"G1": (0, 0), "G2": (0, 0), "G3": (1, -6), "G4": (1, 6)}
+        assert {p["id"]: p["elo_change"] for p in in_corso["players"]} == {"G1": 0, "G2": 0, "G3": -6, "G4": 6}
+        dopo = _giocatori_del_db(banco.db)
+        for pid in ("G1", "G2"):
+            assert dopo[pid][campo] == prima[pid][campo], pid
+            assert (dopo[pid]["games_played"], dopo[pid][f"games_played_{categoria}"]) == (10, 0), pid
+        assert (dopo["G3"]["games_played"], dopo["G4"]["games_played"]) == (11, 11)
+
+    def test_negli_standard_la_stessa_partita_si_valuta(self, banco):
+        """La stessa partita in uno standard: G1, da 2650 in su, usa la
+        differenza vera, 700 punti, PD 0,99, +0,01 per 40, +0,4, cioe' 0;
+        G2 la soglia, PD 0,08, -0,08 per 40, -3. Tutti e due hanno la
+        partita."""
+        _con_gli_elo(banco, "standard", G1={"current_elo": 2700}, G2={"current_elo": 2000})
+
+        assert _finalizza(banco) is True
+
+        archiviati = _dati_archiviati()
+        assert (archiviati["G1"][1:], archiviati["G2"][1:]) == ((1, 0), (1, -3))
+        dopo = _giocatori_del_db(banco.db)
+        assert (dopo["G1"]["games_played"], dopo["G2"]["games_played"]) == (11, 11)

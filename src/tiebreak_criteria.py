@@ -285,9 +285,10 @@ CRITERIA = {
         "formula": _(
             "Valore intero corrispondente al rating più basso per cui il "
             "punteggio atteso raggiunge quello ottenuto, senza applicare il "
-            "limite di ±400 punti. Il punteggio atteso si calcola con la formula "
-            "Elo delle probabilità di punteggio, che differisce di pochi punti "
-            "dalla tabella FIDE. Con zero punti vale 800 punti meno del rating "
+            "limite di ±400 punti. Il punteggio atteso è la somma delle "
+            "probabilità di punteggio della tabella FIDE che converte le "
+            "differenze di rating, la stessa della variazione Elo. Con zero "
+            "punti vale 800 punti meno del rating "
             "dell'avversario più debole, con tutte le partite vinte 736 punti più "
             "di quello dell'avversario più forte. Come per il TPR contano le sole "
             "partite giocate sulla scacchiera: le partite vinte o perse a forfait "

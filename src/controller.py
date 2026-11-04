@@ -1052,11 +1052,11 @@ class TournamentController:
         # Fase 1: Determina K-Factor e conta partite
         self.ui.show_message(_("Accesso al DB e calcolo K-Factor e partite giocate..."))
         giocatori_del_torneo = {q.id: q.to_dict() for q in self.tournament.players}
+        cadenza_del_torneo = self.tournament.tournament_category
         for p in self.tournament.players:
-            if p.withdrawn:
-                p.k_factor = None
-                p.games_this_tournament = 0
-                continue
+            # Anche un ritirato ha il suo K, le sue partite e la sua
+            # variazione, sulle partite giocate prima del ritiro, come in
+            # ui.finalize_tournament (10.19.5, issue 73).
             # Il K passa dallo stesso punto della finalizzazione e della
             # colonna Elo Var. (10.13.33): fino alla 10.13.32 qui chi il
             # database non aveva prendeva 20, mentre la finalizzazione gli
@@ -1065,14 +1065,15 @@ class TournamentController:
                 p.to_dict(),
                 self.players_db,
                 self.tournament.start_date,
-                self.tournament.tournament_category,
+                cadenza_del_torneo,
             )
 
             # Le partite contate come in ui.finalize_tournament: dalla
             # 10.13.53 senza i forfait (articolo 5.1 del regolamento FIDE
-            # sul rating, issue 65).
+            # sul rating, issue 65), dalla 10.19.5 nei rapid e nei blitz
+            # senza quelle della regola dei 600 punti (issue 73).
             p.games_this_tournament = partite_giocate_nel_torneo(
-                giocatori_del_torneo[p.id], giocatori_del_torneo
+                giocatori_del_torneo[p.id], giocatori_del_torneo, cadenza_del_torneo
             )
 
         # Fase 2: Calcola spareggi
@@ -1091,7 +1092,9 @@ class TournamentController:
                 p.buchholz_cut1 = None
                 p.aro = None
                 p.performance_rating = None
-                p.elo_change = None
+                p.elo_change = calculate_elo_change(
+                    p.to_dict(), torneo_dict["players_dict"], cadenza_del_torneo
+                )
                 continue
 
             p.buchholz = compute_buchholz(p.id, torneo_dict)
@@ -1101,7 +1104,7 @@ class TournamentController:
                 p.to_dict(), torneo_dict["players_dict"]
             )
             p.elo_change = calculate_elo_change(
-                p.to_dict(), torneo_dict["players_dict"]
+                p.to_dict(), torneo_dict["players_dict"], cadenza_del_torneo
             )
 
         # Fase 3: Ordinamento dinamico basato sui criteri di spareggio configurati

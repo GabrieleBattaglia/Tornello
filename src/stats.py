@@ -126,6 +126,90 @@ DP_FIDE = {
 }
 
 
+# La tabella 8.1.2 del regolamento FIDE sul rating (B.02, in vigore dal 1
+# marzo 2024), che converte la differenza di rating D nella probabilita' di
+# punteggio PD, cioe' il punteggio atteso di una partita. Ogni riga ha la D
+# piu' alta della riga e la PD del giocatore piu' forte, H, in centesimi; il
+# piu' debole, L, ha 100 meno quella PD. Oltre 735 punti la PD e' 1,00 e
+# 0,00. La tabella 7.1.2 del regolamento sul rating rapid e blitz (dal 1
+# marzo 2024) ha gli stessi valori, riga per riga. I centesimi tengono esatto
+# il calcolo della variazione, che con le frazioni del calcolatore, come
+# 0,15, potrebbe cadere dall'altra parte di un arrotondamento. Dalla 10.19.5
+# (issue 73) il punteggio atteso viene da qui, come vogliono l'articolo
+# 8.3.2 a e il 7.3.2 a, e anche la performance perfetta, il PTP, come vuole
+# l'articolo 10.3 del regolamento FIDE sugli spareggi (C.07): fino alla
+# 10.19.0 veniva dalla formula logistica 1/(1+10^(D/400)), che se ne
+# allontana di poco, per esempio 0,882 invece di 0,89 con D 350.
+TABELLA_PD_FIDE = (
+    (3, 50),
+    (10, 51),
+    (17, 52),
+    (25, 53),
+    (32, 54),
+    (39, 55),
+    (46, 56),
+    (53, 57),
+    (61, 58),
+    (68, 59),
+    (76, 60),
+    (83, 61),
+    (91, 62),
+    (98, 63),
+    (106, 64),
+    (113, 65),
+    (121, 66),
+    (129, 67),
+    (137, 68),
+    (145, 69),
+    (153, 70),
+    (162, 71),
+    (170, 72),
+    (179, 73),
+    (188, 74),
+    (197, 75),
+    (206, 76),
+    (215, 77),
+    (225, 78),
+    (235, 79),
+    (245, 80),
+    (256, 81),
+    (267, 82),
+    (278, 83),
+    (290, 84),
+    (302, 85),
+    (315, 86),
+    (328, 87),
+    (344, 88),
+    (357, 89),
+    (374, 90),
+    (391, 91),
+    (411, 92),
+    (432, 93),
+    (456, 94),
+    (484, 95),
+    (517, 96),
+    (559, 97),
+    (619, 98),
+    (735, 99),
+)
+# Oltre l'ultima riga, D piu' di 735, la PD del piu' forte e' 1,00.
+PD_OLTRE_LA_TABELLA = 100
+
+# Articolo 8.3.1 del regolamento FIDE sul rating (B.02), in vigore dal 1
+# ottobre 2025: una differenza di rating di piu' di 400 punti conta come una
+# di 400 per i giocatori sotto 2650; da 2650 in su si usa la differenza vera.
+# Nell'articolo 7.3.1 del regolamento rapid e blitz (dal 1 marzo 2024) la
+# soglia dei 400 vale per tutti.
+DIFFERENZA_MASSIMA = 400
+ELO_SENZA_SOGLIA_STANDARD = 2650
+# Articolo 7.3.1 del regolamento FIDE sul rating rapid e blitz, in vigore dal
+# 1 dicembre 2024: una partita fra due giocatori con una differenza di rating
+# di 600 punti o piu' non si valuta, se almeno uno dei due ha piu' di 2600
+# nella lista della cadenza.
+DIFFERENZA_NON_VALUTATA = 600
+ELO_DELLA_PARTITA_NON_VALUTATA = 2600
+
+
 # I campi della scheda del database da cui viene il fattore K di ogni
 # cadenza, dalla 10.13.54 (issue 65): il K FIDE importato della cadenza,
 # gli Elo della cadenza, il primo che vale, con l'Elo FIDE della cadenza che
@@ -271,14 +355,77 @@ def ha_raggiunto_2400(player_data_dict, category="standard"):
     return False
 
 
-def calculate_expected_score(player_elo, opponent_elo):
-    """Calcola il punteggio atteso di un giocatore contro un avversario."""
+def centesimi_della_tabella(differenza):
+    """La probabilita' di punteggio PD della tabella 8.1.2 del regolamento
+    FIDE sul rating (B.02), la stessa della 7.1.2 di quello rapid e blitz,
+    in centesimi, per la differenza di rating differenza, cioe' il rating
+    del giocatore meno quello dell'avversario: la PD del piu' forte se e'
+    zero o positiva, 100 meno quella PD se e' negativa. La differenza si usa
+    intera, senza la soglia dei 400 punti: chi la vuole la applica prima,
+    come centesimi_attesi; il PTP la usa cosi', perche' l'articolo 10.3 del
+    regolamento FIDE sugli spareggi (C.07) vuole tutta la scala."""
+    distanza = abs(differenza)
+    centesimi = PD_OLTRE_LA_TABELLA
+    for massimo, valore in TABELLA_PD_FIDE:
+        if distanza <= massimo:
+            centesimi = valore
+            break
+    return centesimi if differenza >= 0 else 100 - centesimi
+
+
+def differenza_con_la_soglia(differenza, player_elo, category="standard"):
+    """La differenza di rating, il rating del giocatore meno quello
+    dell'avversario, che conta per il punteggio atteso del giocatore, per
+    l'articolo 8.3.1 del regolamento FIDE sul rating (B.02) negli standard
+    e il 7.3.1 di quello rapid e blitz nei rapid e nei blitz: oltre 400
+    punti, in piu' o in meno, conta come 400. Negli standard, dal 1 ottobre
+    2025, la soglia vale soltanto per i giocatori sotto 2650: con player_elo
+    da 2650 in su la differenza resta quella vera. Nei rapid e nei blitz
+    vale per tutti. La soglia la decide il rating del giocatore di cui si
+    calcola la variazione: in una partita fra un 2700 e un 2200 il primo
+    conta 500 punti, il secondo 400. Fino alla 10.19.0 (issue 73) la soglia
+    valeva per tutti anche negli standard."""
+    if _cadenza_del_fattore_k(category) == "standard" and player_elo >= ELO_SENZA_SOGLIA_STANDARD:
+        return differenza
+    return max(-DIFFERENZA_MASSIMA, min(DIFFERENZA_MASSIMA, differenza))
+
+
+def centesimi_attesi(player_elo, opponent_elo, category="standard"):
+    """Il punteggio atteso del giocatore contro l'avversario, in centesimi,
+    dalla tabella della cadenza del torneo, category: la 8.1.2 del
+    regolamento FIDE sul rating (B.02) negli standard e la 7.1.2 di quello
+    rapid e blitz, che ha gli stessi valori, come vogliono gli articoli
+    8.3.2 a e 7.3.2 a; la differenza passa prima dalla soglia dei 400 punti
+    di differenza_con_la_soglia. Per esempio con D da 345 a 357 il piu'
+    forte ha 89 e il piu' debole 11. Gli Elo devono essere numeri."""
+    giocatore = float(player_elo)
+    differenza = differenza_con_la_soglia(giocatore - float(opponent_elo), giocatore, category)
+    return centesimi_della_tabella(differenza)
+
+
+def partita_non_valutata(player_elo, opponent_elo, category="standard"):
+    """Vero se la partita, valida per il resto, non si valuta per la regola
+    dei 600 punti dell'articolo 7.3.1 del regolamento FIDE sul rating rapid
+    e blitz, in vigore dal 1 dicembre 2024: nei rapid e nei blitz, una
+    partita fra due giocatori con una differenza di rating di 600 punti o
+    piu' non si valuta se almeno uno dei due ha piu' di 2600 nella lista
+    della cadenza. La differenza e' quella vera, senza la soglia dei 400; i
+    rating sono gli Elo di partenza del torneo, quelli della cadenza. Negli
+    standard la regola non c'e'. Nata con la 10.19.5 (issue 73)."""
+    if _cadenza_del_fattore_k(category) == "standard":
+        return False
+    giocatore, avversario = float(player_elo), float(opponent_elo)
+    return abs(giocatore - avversario) >= DIFFERENZA_NON_VALUTATA and max(giocatore, avversario) > ELO_DELLA_PARTITA_NON_VALUTATA
+
+
+def calculate_expected_score(player_elo, opponent_elo, category="standard"):
+    """Il punteggio atteso di un giocatore contro un avversario, come
+    frazione, per esempio 0,89: centesimi_attesi diviso 100, con la tabella
+    e la soglia della cadenza del torneo, category. Dalla 10.19.5 (issue
+    73): fino alla 10.19.0 veniva dalla formula logistica, con la soglia dei
+    400 punti per tutti. Con Elo non validi da' 0,5."""
     try:
-        p_elo = float(player_elo)
-        o_elo = float(opponent_elo)
-        # Limita la differenza Elo a +/- 400 come da specifiche FIDE
-        diff = max(-400, min(400, o_elo - p_elo))
-        return 1 / (1 + 10 ** (diff / 400))
+        return centesimi_attesi(player_elo, opponent_elo, category) / 100
     except (ValueError, TypeError):
         print(
             _(
@@ -288,7 +435,16 @@ def calculate_expected_score(player_elo, opponent_elo):
         return 0.5  # Ritorna 0.5 in caso di Elo non validi
 
 
-def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
+def _elo_di_partenza(player):
+    """L'Elo di partenza del giocatore, initial_elo, come numero: DEFAULT_ELO
+    se manca o non e' un numero, come in calculate_elo_change."""
+    try:
+        return float(player.get("initial_elo", DEFAULT_ELO))
+    except (ValueError, TypeError):
+        return float(DEFAULT_ELO)
+
+
+def partite_valide_per_elo(player, tournament_players_dict, avvisa=None, category="standard"):
     """Le partite del giocatore che concorrono alla variazione Elo, come
     coppie (Elo di partenza dell'avversario, punteggio). Restano fuori i bye,
     le voci senza avversario o senza punteggio, le partite non giocate, cioe'
@@ -297,8 +453,14 @@ def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
     c'e', riceve il motivo. calculate_elo_change calcola la variazione su
     queste partite, e dalla 10.13.7 la finalizzazione le guarda per decidere
     se l'Elo della cadenza di un rapid o di un blitz puo' nascere: una
-    funzione sola, perche' le due scelte non si separino."""
+    funzione sola, perche' le due scelte non si separino.
+    Dalla 10.19.5 (issue 73) nei rapid e nei blitz, category, restano fuori
+    anche le partite che la regola dei 600 punti dell'articolo 7.3.1 non
+    valuta, partita_non_valutata: non entrano nella variazione e nemmeno
+    nelle partite giocate del database. Contano anche le partite di un
+    giocatore ritirato, giocate prima del ritiro."""
     partite = []
+    elo_del_giocatore = _elo_di_partenza(player)
     for result_entry in player.get("results_history") or []:
         opponent_id = result_entry.get("opponent_id")
         score = result_entry.get("score")
@@ -334,11 +496,15 @@ def partite_valide_per_elo(player, tournament_players_dict, avvisa=None):
                 )
             continue
 
+        # La regola dei 600 punti dei rapid e dei blitz (articolo 7.3.1).
+        if partita_non_valutata(elo_del_giocatore, opponent_elo, category):
+            continue
+
         partite.append((opponent_elo, score))
     return partite
 
 
-def partite_giocate_nel_torneo(player, tournament_players_dict):
+def partite_giocate_nel_torneo(player, tournament_players_dict, category="standard"):
     """Quante partite del torneo la finalizzazione somma alle partite
     giocate della scheda del database, games_this_tournament: le partite
     valide per l'Elo di partite_valide_per_elo, cioe' quelle su cui si
@@ -349,12 +515,24 @@ def partite_giocate_nel_torneo(player, tournament_players_dict):
     rating (B.02, dal 1 marzo 2024), e allo stesso modo l'articolo 4.1 di
     quello rapid e blitz. Fino alla 10.13.52 contavano, e un giocatore
     arrivava prima alle trenta partite dopo le quali il fattore K scende da
-    40 a 20. La finestra e la console passano tutte e due da qui."""
-    return len(partite_valide_per_elo(player, tournament_players_dict))
+    40 a 20. La finestra e la console passano tutte e due da qui.
+    category e' la cadenza del torneo: dalla 10.19.5 (issue 73) nei rapid e
+    nei blitz una partita che la regola dei 600 punti non valuta non conta."""
+    return len(partite_valide_per_elo(player, tournament_players_dict, category=category))
 
 
-def calculate_elo_change(player, tournament_players_dict):
-    """Calcola la variazione Elo per un giocatore basata sulle partite del torneo."""
+def calculate_elo_change(player, tournament_players_dict, category="standard"):
+    """Calcola la variazione Elo per un giocatore basata sulle partite del torneo.
+    Dalla 10.19.5 (issue 73) segue alla lettera l'articolo 8.3.2 del
+    regolamento FIDE sul rating (B.02) negli standard e il 7.3.2 di quello
+    rapid e blitz nei rapid e nei blitz, secondo la cadenza del torneo,
+    category: per ogni partita valida il punteggio atteso PD dalla tabella,
+    centesimi_attesi, con la soglia dei 400 punti della cadenza; Delta R e'
+    il punteggio meno PD, la somma dei Delta R per K e' la variazione,
+    arrotondata all'intero con lo 0,5 che si allontana dallo zero (articolo
+    8.3.4). Il conto si fa in centesimi, esatto. Fino alla 10.19.0 il
+    punteggio atteso veniva dalla formula logistica, con la soglia dei 400
+    per tutti. La finestra e la console passano tutte e due da qui."""
     if not player or "initial_elo" not in player or "results_history" not in player:
         print(
             _(
@@ -370,8 +548,8 @@ def calculate_elo_change(player, tournament_players_dict):
     if k is None:
         k = DEFAULT_K_FACTOR
     # --- FINE MODIFICA K-FACTOR ---
-    total_expected_score = 0.0
-    actual_score = 0.0
+    # La somma dei Delta R, punteggio meno PD, in centesimi.
+    scarto_in_centesimi = 0
     games_played_count = 0  # Rinomina variabile locale per chiarezza
     initial_elo = player["initial_elo"]
     try:
@@ -391,11 +569,9 @@ def calculate_elo_change(player, tournament_players_dict):
     # Le partite valide per l'Elo le sceglie partite_valide_per_elo, la
     # stessa funzione che la finalizzazione usa per l'Elo della cadenza.
     for opponent_elo, score in partite_valide_per_elo(
-        player, tournament_players_dict, avvisa=print
+        player, tournament_players_dict, avvisa=print, category=category
     ):
-        expected_score = calculate_expected_score(initial_elo, opponent_elo)
-        total_expected_score += expected_score
-        actual_score += score
+        scarto_in_centesimi += round(score * 100) - centesimi_attesi(initial_elo, opponent_elo, category)
         games_played_count += 1  # Conta solo partite valide per Elo
 
     if games_played_count == 0:
@@ -411,13 +587,14 @@ def calculate_elo_change(player, tournament_players_dict):
     if k * games_played_count > 700:
         k = 700 // games_played_count
 
-    # Calcolo variazione Elo grezza usando il K specifico
-    elo_change_raw = k * (actual_score - total_expected_score)
-
-    # Arrotondamento FIDE standard
-    if elo_change_raw > 0:
-        return math.floor(elo_change_raw + 0.5)
-    return math.ceil(elo_change_raw - 0.5)
+    # La variazione, K per la somma dei Delta R (articoli 8.3.2 d e 7.3.2 d),
+    # in centesimi, arrotondata all'intero con lo 0,5 che si allontana dallo
+    # zero (articolo 8.3.4): 22,50 diventa 23, e -22,50 diventa -23.
+    variazione_in_centesimi = k * scarto_in_centesimi
+    interi, resto = divmod(abs(variazione_in_centesimi), 100)
+    if resto >= 50:
+        interi += 1
+    return int(interi) if variazione_in_centesimi >= 0 else -int(interi)
 
 
 def calculate_performance_rating(player, tournament_players_dict):
@@ -1493,16 +1670,23 @@ def compute_tpr(player_id, torneo):
 def compute_ptp(player_id, torneo):
     """PTP: Perfect Tournament Performance, articolo 10.3 del C.07.
 
-    Trova il più basso intero R tale che il punteggio atteso (calcolato con
-    la formula logistica di probabilità, SENZA cap ±400) >= punteggio reale.
-    Ricerca binaria nell'intervallo 0-4000.
+    Trova il più basso intero R tale che il punteggio atteso, SENZA cap
+    ±400, sia >= punteggio reale. Ricerca binaria nell'intervallo 0-4000.
 
-    E = sum(1 / (1 + 10^((Ri - R) / 400))) per ogni Elo avversario Ri.
+    E = somma delle probabilita' di punteggio PD(R - Ri) per ogni Elo
+    avversario Ri, dalla tabella 8.1.2 del regolamento FIDE sul rating
+    (B.02), centesimi_della_tabella, con tutta la scala.
 
-    La formula logistica approssima di pochi punti la tabella 8.1.2 del
-    regolamento FIDE sul rating (B.02), che l'articolo 10.3 richiama: per
-    una patta contro un avversario da 1600 la formula da' 1600, la tabella
-    1597. Agli estremi vale l'articolo, dalla 10.13.34: con zero punti il
+    Dalla 10.19.5 (issue 73) le probabilita' vengono dalla tabella, come
+    vuole l'articolo 10.3: il punteggio atteso e' la somma delle
+    probabilita' di punteggio che il regolamento FIDE sul rating definisce
+    con la tabella di conversione, senza la soglia dei 400 punti. Fino alla
+    10.19.0 venivano dalla formula logistica 1/(1+10^((Ri-R)/400)), che se
+    ne allontana di pochi punti: per una patta contro un avversario da 1600
+    la formula dava 1600, la tabella da' 1597, il rating piu' basso per cui
+    la differenza, 3 punti, da' ancora 0,50.
+
+    Agli estremi vale l'articolo, dalla 10.13.34: con zero punti il
     PTP e' 800 meno del rating dell'avversario piu' debole, e con tutte le
     partite vinte e' il rating dell'avversario piu' forte piu' 736, il piu'
     basso per cui la tabella 8.1.2 da' probabilita' 1,00 contro ciascuno
@@ -1560,23 +1744,28 @@ def compute_ptp(player_id, torneo):
     # Gli estremi, che la ricerca non trova (10.13.34). Con zero punti il
     # punteggio atteso lo raggiunge qualunque rating, e l'articolo 10.3 fissa
     # il PTP a 800 meno dell'avversario piu' debole. Con tutte le partite
-    # vinte la formula logistica non lo raggiunge mai, e vale la tabella
-    # 8.1.2 del B.02: probabilita' 1,00 soltanto oltre 735 punti di
-    # differenza, quindi 736 piu' dell'avversario piu' forte.
+    # vinte vale la tabella 8.1.2 del B.02: probabilita' 1,00 soltanto oltre
+    # 735 punti di differenza, quindi 736 piu' dell'avversario piu' forte.
     if total_score <= 0:
         return round(min(opponent_elos)) - 800
     if total_score >= len(opponent_elos):
         return round(max(opponent_elos)) + 736
 
-    def expected_score_for_rating(r):
-        """Punteggio atteso senza cap ±400."""
-        return sum(1.0 / (1.0 + 10.0 ** ((ri - r) / 400.0)) for ri in opponent_elos)
+    # Punteggio reale e atteso in centesimi, come nella tabella, perche' il
+    # confronto sia esatto.
+    punteggio_in_centesimi = round(total_score * 100)
 
-    # Ricerca binaria: trova il più basso R dove E(R) >= actual_score
+    def expected_score_for_rating(r):
+        """Punteggio atteso in centesimi, dalla tabella, senza cap ±400."""
+        return sum(centesimi_della_tabella(r - ri) for ri in opponent_elos)
+
+    # Ricerca binaria: trova il più basso R dove E(R) >= actual_score.
+    # La somma delle probabilita' della tabella non scende mai quando R
+    # cresce, e la ricerca vale come con la formula.
     lo, hi = 0, 4000
     while lo < hi:
         mid = (lo + hi) // 2
-        if expected_score_for_rating(mid) >= total_score:
+        if expected_score_for_rating(mid) >= punteggio_in_centesimi:
             hi = mid
         else:
             lo = mid + 1
