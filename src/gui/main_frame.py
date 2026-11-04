@@ -3670,7 +3670,7 @@ class MainFrame(wx.Frame):
             _("Il nome del torneo resta quello di prima: sposta quel file in un'altra cartella, poi riprova."),
         )
 
-    def _raccolta_altrui_in_salvo(self, torneo, file_del_torneo, conclusione):
+    def _raccolta_altrui_in_salvo(self, torneo, file_del_torneo, conclusione, solo_archiviate=False):
         """Vero se il torneo, con il file file_del_torneo, puo' salvare la
         sua raccolta delle partite in PGN senza distruggere quella di un
         altro torneo. Lo chiede il primo salvataggio di un torneo nuovo, e di
@@ -3686,7 +3686,15 @@ class MainFrame(wx.Frame):
         Gabriele). Un messaggio dice dov'e' andata. Se non va da nessuna
         parte, per esempio su un disco senza cestino, si sente l'errore, un
         messaggio lo dice, con conclusione in fondo, e la risposta e' falso:
-        il torneo non nasce, o non cambia nome."""
+        il torneo non nasce, o non cambia nome.
+        Con solo_archiviate, come in ogni salvataggio della finestra, conta
+        soltanto la raccolta identica a quella di un'edizione archiviata, di
+        un'altra edizione: ogni altra raccolta resta al torneo, che la
+        sostituisce, perche' dopo un PGN nuovo e' la sua di prima. Il file
+        del torneo e un'edizione archiviata con la stessa identita' non
+        contano: sono il torneo stesso, per esempio nella cartella di lavoro
+        esterna dopo la finalizzazione."""
+        from db_players import identita_del_torneo
         from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
         from ui import _copia_verificata
         from utils import play_sound, stessi_byte
@@ -3707,10 +3715,14 @@ class MainFrame(wx.Frame):
         cartella, nome_file = os.path.split(percorso)
         titolo = _("Raccolta delle partite di un altro torneo")
         nome = torneo.get("name", "")
-        for json_archiviato, dati in edizioni_nell_archivio(nome):
+        trovata = False
+        for json_archiviato, dati in edizioni_nell_archivio(nome, escluso=file_del_torneo):
             suo = byte_della_raccolta_pgn(dati) if dati else None
             if suo is None or not contiene(percorso, suo):
                 continue
+            if torneo.get("start_date") and identita_del_torneo(dati) == identita_del_torneo(torneo):
+                continue
+            trovata = True
             destinazione = os.path.join(os.path.dirname(json_archiviato), nome_file)
             # Una raccolta diversa gia' nella cartella d'archivio resta
             # com'e': quella trovata va nel cestino, piu' sotto.
@@ -3738,6 +3750,8 @@ class MainFrame(wx.Frame):
                     nome=nome,
                 ),
             )
+            return True
+        if solo_archiviate and not trovata:
             return True
         if self._nel_cestino(percorso):
             self._dialogo_informativo(
@@ -3995,6 +4009,21 @@ class MainFrame(wx.Frame):
                 pgn_filename = file_della_raccolta_pgn(
                     self.current_tournament, self.active_filename
                 )
+                # La raccolta di un'edizione archiviata, al posto di quella
+                # del torneo, si mette in salvo prima di sostituirla o di
+                # cancellarla, in ogni salvataggio: un torneo nato in
+                # console, che non scrive la raccolta e non passa dalla
+                # procedura guidata, la trovava al primo salvataggio nella
+                # finestra (correzione della revisione della 10.19.7, issue
+                # 66). Se non si mette in salvo, resta com'e', e la raccolta
+                # del torneo non si scrive.
+                if not self._raccolta_altrui_in_salvo(
+                    self.current_tournament,
+                    self.active_filename,
+                    _("La raccolta delle partite del torneo non è stata scritta: sposta quel file in un'altra cartella, e la scriverà il prossimo salvataggio."),
+                    solo_archiviate=True,
+                ):
+                    return
                 contenuto = byte_della_raccolta_pgn(self.current_tournament)
                 if contenuto is not None:
                     try:

@@ -1863,3 +1863,106 @@ class TestRaccoltaDellePartiteInArchivio:
         assert _finalizza(banco) is True
 
         assert _leggi_byte(raccolta) == contenuto
+
+
+def _contenuto_della_cartella(cartella):
+    """Nome e byte di ogni file della cartella."""
+    return {n: _leggi_byte(os.path.join(cartella, n)) for n in sorted(os.listdir(cartella))}
+
+
+class TestEdizioneRinominataDaDati:
+    """Correzione della revisione della 10.19.7 (issue 66): un torneo
+    rinominato da Dati con il nome di un'edizione archiviata tiene il file di
+    prima, per esempio Tornello - Alfa.json. Concluso nello stesso mese di
+    quell'edizione, entrava nella sua cartella d'archivio, che sembrava
+    libera perche' non conteneva un json con lo stesso nome di file, e ne
+    sostituiva la classifica e la raccolta delle partite. Adesso conta ogni
+    json della cartella: il torneo prende la cartella con la data di inizio,
+    come le altre edizioni dello stesso mese, e quella della prima resta
+    com'era. Lo stesso quando il file con l'altro nome e' quello della prima
+    edizione."""
+
+    SECONDA = "2026-07-20"
+    PGN_SECONDA = '[Event "Seconda"]\n\n1. d4 d5 1/2-1/2'
+
+    def _seconda_edizione(self, file_della_seconda):
+        """La seconda edizione, con il nome della prima, un'altra data di
+        inizio nello stesso mese, il suo PGN e la sua raccolta nella cartella
+        del programma. Restituisce il torneo e il contenuto della raccolta."""
+        import config
+
+        seconda = copy.deepcopy(_torneo_finito())
+        seconda.update(tournament_id="ALFA", start_date=self.SECONDA, end_date="2026-07-21")
+        seconda["rounds"][0]["matches"][0]["pgn"] = self.PGN_SECONDA
+        _scrivi(config.user_data_path(file_della_seconda), seconda)
+        contenuto = (self.PGN_SECONDA + "\n").replace("\n", os.linesep).encode("utf-8")
+        with open(config.user_data_path(RACCOLTA), "wb") as f:
+            f.write(contenuto)
+        return seconda, contenuto
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    @pytest.mark.parametrize(
+        ("file_della_prima", "file_della_seconda"),
+        [(f"Tornello - {NOME}.json", "Tornello - Alfa.json"), ("Tornello - Alfa.json", f"Tornello - {NOME}.json")],
+        ids=["rinominata la seconda", "rinominata la prima"],
+    )
+    def test_ognuna_nella_sua_cartella(self, banco, dove, file_della_prima, file_della_seconda):
+        import config
+
+        # La prima edizione, con la sua raccolta, nel file file_della_prima.
+        os.remove(banco.file_torneo)
+        banco.file_torneo = config.user_data_path(file_della_prima)
+        _raccolta, contenuto_prima = _con_la_raccolta(banco)
+        assert _finalizza(banco) is True
+        cartella = _cartella_archivio()
+        prima = _contenuto_della_cartella(cartella)
+        assert prima[RACCOLTA] == contenuto_prima
+        assert file_della_prima in prima
+
+        banco.torneo, contenuto_seconda = self._seconda_edizione(file_della_seconda)
+        banco.file_torneo = config.user_data_path(file_della_seconda)
+        avvisi = []
+        if dove == "finestra":
+            assert _finalizza(banco, avvisi) is True
+        else:
+            assert _finalizza_in_console(banco) is True
+
+        assert _contenuto_della_cartella(cartella) == prima
+        cartella_seconda = f"{cartella}_{self.SECONDA}"
+        assert _leggi_byte(os.path.join(cartella_seconda, RACCOLTA)) == contenuto_seconda
+        assert _leggi(os.path.join(cartella_seconda, file_della_seconda))["tournament_id"] == "ALFA"
+        assert os.path.exists(os.path.join(cartella_seconda, f"Tornello - {NOME} - Classifica.txt"))
+        assert _copie(banco.backup, "pre_archiviazione") == []
+        if dove == "finestra":
+            assert any(cartella_seconda in a for a in avvisi)
+
+    def test_una_cartella_con_un_json_che_non_si_legge_non_si_usa(self, banco):
+        """Un json rovinato con un altro nome, nella cartella con il nome del
+        torneo, conta come quello di un altro torneo, come gia' quello con
+        lo stesso nome."""
+        cartella = _cartella_archivio()
+        os.makedirs(cartella)
+        rovinato = os.path.join(cartella, "Tornello - Alfa.json")
+        with open(rovinato, "wb") as f:
+            f.write(b"{non e' json")
+
+        assert _finalizza(banco) is True
+
+        assert _leggi_byte(rovinato) == b"{non e' json"
+        assert os.listdir(cartella) == ["Tornello - Alfa.json"]
+        assert _leggi(_json_in_archivio(f"{cartella}_{INIZIO}"))["concluded"] is True
+
+    def test_un_file_al_posto_della_cartella_non_la_occupa(self, banco):
+        """Un file con il nome della cartella del torneo, nella cartella del
+        mese, non si puo' leggere come cartella: il torneo prende quella con
+        la data di inizio. Prima la cartella sembrava libera, e la sua
+        creazione non riusciva."""
+        cartella = _cartella_archivio()
+        os.makedirs(os.path.dirname(cartella))
+        with open(cartella, "wb") as f:
+            f.write(b"un file, non una cartella")
+
+        assert _finalizza(banco) is True
+
+        assert _leggi_byte(cartella) == b"un file, non una cartella"
+        assert _leggi(_json_in_archivio(f"{cartella}_{INIZIO}"))["concluded"] is True

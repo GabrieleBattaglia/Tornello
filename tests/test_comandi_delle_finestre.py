@@ -3308,6 +3308,201 @@ class TestRaccoltaDellePartiteDelleEdizioni:
             assert suoni == ["errore"]
 
 
+class TestRaccoltaAlSalvataggioNellaFinestra:
+    """Correzione della revisione della 10.19.7 (issue 66): ogni salvataggio
+    della finestra mette in salvo la raccolta di un'edizione archiviata che
+    trova al posto di quella del torneo, prima di sostituirla o di
+    cancellarla. Il caso e' quello di una nuova edizione nata in console,
+    che non scrive la raccolta e non passa dalla procedura guidata: aperta
+    nella finestra, il suo primo salvataggio cancellava per sempre con
+    os.remove la raccolta lasciata da un'edizione archiviata prima della
+    10.19.7, o la sostituiva con la sua. Ogni altra raccolta, come quella
+    del torneo stesso dopo un PGN nuovo, si sostituisce come prima, senza
+    messaggi. Il cestino e le finestre di messaggio sono finti."""
+
+    PGN_NUOVO = '[Event "Nuova"]\n\n1. d4 d5 1/2-1/2'
+
+    @staticmethod
+    def _archiviata_con_la_raccolta_lasciata():
+        """Primavera 2 archiviata, con un PGN, e la sua raccolta nella
+        cartella del programma, come la lasciava la finalizzazione fino alla
+        10.19.5. Restituisce il file archiviato, la raccolta e il suo
+        contenuto."""
+        import gui.main_frame as mf
+        from config import user_data_path
+
+        archiviato = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Primavera_2", "Tornello - Primavera_2.json")
+        dati = dict(_torneo_in_corso("Primavera 2", finito=True), concluded=True)
+        dati["rounds"][0]["matches"][0]["pgn"] = PGN_VALIDO
+        TestNomeDelTorneoNuovo._scrivi(archiviato, dati)
+        lasciata = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        with open(lasciata, "wb") as f:
+            f.write(contenuto)
+        return archiviato, lasciata, contenuto
+
+    @staticmethod
+    def _nata_in_console(principale, con_pgn=False):
+        """La nuova edizione di Primavera 2 come la scrive la console, con
+        l'identificativo con l'ora, aperta nella finestra; con con_pgn la
+        seconda partita ha un PGN, come dopo un Salva PGN nella finestra."""
+        from config import user_data_path
+
+        nuovo = _torneo_in_corso("Primavera 2")
+        nuovo.update(tournament_id="Primavera_2_20261104120000", start_date="2026-11-02", end_date="2026-11-20")
+        if con_pgn:
+            nuovo["rounds"][0]["matches"][1]["pgn"] = TestRaccoltaAlSalvataggioNellaFinestra.PGN_NUOVO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, nuovo)
+        principale.load_tournament(percorso)
+        assert principale.active_filename == percorso
+        return percorso
+
+    @staticmethod
+    def _rimozioni(monkeypatch):
+        """os.remove annotato: i file cancellati per sempre."""
+        rimossi = []
+        vero = os.remove
+
+        def annota(percorso, *a, **k):
+            rimossi.append(os.path.normcase(os.path.abspath(percorso)))
+            return vero(percorso, *a, **k)
+
+        monkeypatch.setattr(os, "remove", annota)
+        return rimossi
+
+    @pytest.mark.parametrize("con_pgn", [False, True], ids=["senza PGN", "con un PGN"])
+    def test_la_raccolta_lasciata_va_nella_sua_cartella_d_archivio(self, principale, suoni, monkeypatch, tmp_path, con_pgn):
+        from config import user_data_path
+
+        archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
+        self._nata_in_console(principale, con_pgn)
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        rimossi = self._rimozioni(monkeypatch)
+
+        principale._save_state()
+
+        with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
+            assert f.read() == contenuto
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        with open(tmp_path / "cestino" / "0_Primavera_2 - raccolta partite.pgn", "rb") as f:
+            assert f.read() == contenuto
+        assert os.path.normcase(os.path.abspath(lasciata)) not in rimossi
+        if con_pgn:
+            with open(lasciata, "rb") as f:
+                assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_NUOVO)
+        else:
+            assert not os.path.exists(lasciata)
+        assert "errore" not in suoni
+        cartella = os.path.abspath(user_data_path(""))
+        archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            (
+                "Raccolta delle partite di un altro torneo",
+                f"Nella cartella {cartella} c'era la raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2, concluso e archiviato nella cartella {archivio}: il torneo Primavera 2 l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                f"Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, e quella della cartella {cartella} è andata nel cestino di Windows.",
+            )
+        ]
+
+        # Il salvataggio dopo non trova piu' niente da mettere in salvo.
+        finestre.clear()
+        principale._save_state()
+        assert finestre == []
+        assert len(ricevuti) == 1
+
+    def test_se_non_si_mette_in_salvo_resta_e_la_raccolta_non_si_scrive(self, principale, suoni, monkeypatch, tmp_path):
+        """La copia nella cartella d'archivio non riesce e il cestino non la
+        prende: si sente l'errore, un messaggio lo dice, la raccolta lasciata
+        resta com'era, e quella del torneo non si scrive. Il file del torneo
+        si salva lo stesso."""
+        import json
+
+        import ui
+        from config import user_data_path
+
+        archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
+        percorso = self._nata_in_console(principale, con_pgn=True)
+        monkeypatch.setattr(ui, "_copia_verificata", lambda *a, **k: False)
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        principale.current_tournament["rounds"][0]["matches"][0]["result"] = "1-0"
+
+        principale._save_state()
+
+        with open(lasciata, "rb") as f:
+            assert f.read() == contenuto
+        assert not os.path.exists(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"))
+        assert ricevuti == []
+        with open(percorso, encoding="utf-8") as f:
+            assert json.load(f)["rounds"][0]["matches"][0]["result"] == "1-0"
+        assert "errore" in suoni
+        cartella = os.path.abspath(user_data_path(""))
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            (
+                "Raccolta delle partite di un altro torneo",
+                f"Nella cartella {cartella} c'è la raccolta delle partite Primavera_2 - raccolta partite.pgn, che non è del torneo Primavera 2: il torneo la sostituirebbe con la sua raccolta, o la cancellerebbe.\n"
+                "Non si è potuta mettere in salvo, né nella cartella d'archivio di un torneo concluso con lo stesso nome né nel cestino di Windows, per esempio perché quel disco non ha il cestino.\n"
+                "La raccolta delle partite del torneo non è stata scritta: sposta quel file in un'altra cartella, e la scriverà il prossimo salvataggio.",
+            )
+        ]
+
+    def test_la_raccolta_del_torneo_stesso_si_sostituisce_senza_messaggi(self, principale, suoni, monkeypatch, tmp_path):
+        """Dopo un PGN nuovo la raccolta sul disco e' quella del torneo,
+        scritta dal salvataggio di prima: si sostituisce, senza cestino e
+        senza messaggi, anche con un'edizione archiviata con lo stesso nome.
+        Una guardia: la mette in salvo soltanto la raccolta identica a
+        quella di un'edizione archiviata."""
+        from config import user_data_path
+
+        self._archiviata_con_la_raccolta_lasciata()
+        os.remove(user_data_path("Primavera_2 - raccolta partite.pgn"))
+        self._nata_in_console(principale, con_pgn=True)
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_NUOVO)
+
+        principale.current_tournament["rounds"][0]["matches"][0]["pgn"] = PGN_VALIDO
+        principale._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO, self.PGN_NUOVO)
+        assert ricevuti == []
+        assert finestre == []
+
+    def test_l_edizione_stessa_nell_archivio_non_conta(self, principale, suoni, monkeypatch, tmp_path):
+        """Il torneo concluso e archiviato, aperto da una sua copia fuori
+        dall'archivio, come quella che resta nella cartella di lavoro
+        esterna: la raccolta accanto e' identica a quella dell'archivio,
+        perche' e' sua. Dopo un PGN nuovo si sostituisce, senza cestino e
+        senza messaggi: un'edizione archiviata con la stessa identita' e' il
+        torneo stesso."""
+        import json
+
+        from config import user_data_path
+
+        archiviato, lasciata, _contenuto = self._archiviata_con_la_raccolta_lasciata()
+        copia = user_data_path("Tornello - Primavera_2.json")
+        with open(archiviato, encoding="utf-8") as f:
+            TestNomeDelTorneoNuovo._scrivi(copia, json.load(f))
+        principale.load_tournament(copia)
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = self.PGN_NUOVO
+
+        principale._save_state()
+
+        with open(lasciata, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO, self.PGN_NUOVO)
+        assert ricevuti == []
+        assert finestre == []
+
+
 class TestNomeEDataDiInizioDaDati:
     """Dalla 10.19.7 (issue 66, decisione di Gabriele del 4 novembre 2026)
     il nome e la data di inizio cambiati dai campi di Dati passano dagli

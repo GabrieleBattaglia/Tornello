@@ -1592,7 +1592,7 @@ def _leggi_json_del_torneo(percorso):
     return dati if isinstance(dati, dict) else None
 
 
-def _cartella_d_archivio(cartella_del_mese, nome_cartella, nome_json, identita):
+def _cartella_d_archivio(cartella_del_mese, nome_cartella, identita):
     """La cartella d'archivio del torneo dentro quella del mese: la cartella
     con il suo nome, se non contiene il json di un altro torneo; altrimenti
     la stessa seguita dalla data di inizio, e poi da _2, _3.
@@ -1600,14 +1600,28 @@ def _cartella_d_archivio(cartella_del_mese, nome_cartella, nome_json, identita):
     stessa cartella, e il json della seconda prendeva il posto di quello
     della prima, che spariva dai tornei conclusi. Un json che non si legge
     conta come quello di un altro torneo: meglio una cartella in piu' che
-    sostituire un file di cui non si sa niente."""
+    sostituire un file di cui non si sa niente.
+    Conta ogni json della cartella, con qualunque nome: fino alla revisione
+    della 10.19.7 si guardava soltanto quello con il nome del file del
+    torneo, e un torneo rinominato da Dati con il nome di un'edizione
+    archiviata, che tiene il file di prima, per esempio Tornello - Alfa.json,
+    entrava nella cartella di quell'edizione, se concluso nello stesso mese,
+    e ne sostituiva la classifica, gli altri report e la raccolta delle
+    partite (issue 66). Una cartella che c'e' e non si legge non si usa;
+    una che non c'e' va bene, e nasce dopo."""
 
     def adatta(cartella):
-        json_presente = os.path.join(cartella, nome_json)
-        if not os.path.exists(json_presente):
-            return True
-        dati = _leggi_json_del_torneo(json_presente)
-        return dati is not None and _identita_del_torneo(dati) == identita
+        try:
+            nomi = os.listdir(cartella)
+        except OSError:
+            return not os.path.exists(cartella)
+        for nome in nomi:
+            if not nome.lower().endswith(".json"):
+                continue
+            dati = _leggi_json_del_torneo(os.path.join(cartella, nome))
+            if dati is None or _identita_del_torneo(dati) != identita:
+                return False
+        return True
 
     base = os.path.join(cartella_del_mese, nome_cartella)
     if adatta(base):
@@ -2185,7 +2199,6 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     full_archive_path = _cartella_d_archivio(
         cartella_del_mese,
         sanitized_tournament_name,
-        json_filename_only,
         (id_nello_storico, inizio_nello_storico),
     )
     try:
