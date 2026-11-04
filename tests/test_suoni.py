@@ -18,7 +18,9 @@ lascia il posto all'avvertimento, che segue il suono dell'azione. Dalla
 10.13.62 la campanella non suona piu' in nessun punto di Tornello: l'avvio
 della procedura di un torneo nuovo, l'avviso degli omonimi ambigui della
 sincronizzazione e il suono di prova del volume hanno ciascuno il suo evento,
-e nessun preset serve due eventi in tutto il programma (issue 57).
+e nessun preset serve due eventi in tutto il programma (issue 57). Dalla
+10.19.10 le due voci del PUB nel menu Aiuto hanno i loro eventi, con i preset
+di MESS e di MeTeOra (issue 70); dove suonano lo prova test_pub.py.
 Niente suona davvero: la collezione dei preset si legge come json, i
 sorgenti come testo, e dove servono le finestre vere play_sound e' sostituita
 da una finta che annota gli eventi.
@@ -38,7 +40,8 @@ FINESTRA_DEI_RISULTATI = os.path.join(CARTELLA_SRC, "gui", "dialogs", "result_di
 
 # I due eventi nati con la 10.6.1, quello del ripristino, nato con la
 # 10.10.0, i sette della composizione manuale del turno, nati con la
-# 10.12.0 e la 10.13.0, e i tre che con la 10.13.62 lasciano la campanella.
+# 10.12.0 e la 10.13.0, i tre che con la 10.13.62 lasciano la campanella e
+# i due delle voci del PUB, nati con la 10.19.10.
 EVENTI_NUOVI = (
     "apertura_risultati",
     "controllo_risultati",
@@ -53,6 +56,8 @@ EVENTI_NUOVI = (
     "nuovo_torneo",
     "omonimi_ambigui",
     "prova_volume",
+    "pub_entra",
+    "pub_aiuto",
 )
 # Dove suonano i tre eventi della 10.13.62, che fino alla 10.13.61 suonavano
 # la campanella (issue 57).

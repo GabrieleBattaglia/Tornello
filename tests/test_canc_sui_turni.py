@@ -423,7 +423,7 @@ class TestSuUnTurnoCompletato:
             [
                 "Vuoi tornare al turno 2 del torneo Turni? Spariscono 2 turni, il turno 3 e il turno 4, con i loro abbinamenti e i loro risultati, e il turno 2 torna il turno corrente, con i suoi risultati. Questa azione è irreversibile.",
                 f"Torna in gioco {nome}, ritirato, che ha un risultato in uno dei turni che spariscono.",
-                "Il pulsante predefinito e' No.",
+                "Il pulsante predefinito è No.",
             ]
         )
         salvato = _dal_file(percorso)
@@ -593,7 +593,7 @@ class TestDoveLaTimeMachineNonLavora:
 
         assert suoni == ["errore"]
         assert [(d.titolo, d.domanda) for d in domande.aperte] == [("Torneo concluso", False)]
-        assert domande.aperte[0].testo.startswith("Il torneo Turni e' concluso, e la Time Machine non toglie i turni di un torneo finalizzato.")
+        assert domande.aperte[0].testo.startswith("Il torneo Turni è concluso, e la Time Machine non toglie i turni di un torneo finalizzato.")
         assert "Copie di sicurezza" in domande.aperte[0].testo
         assert _dal_file(percorso) == prima
         assert principale.item_rollback.IsEnabled() is False
@@ -609,7 +609,7 @@ class TestDoveLaTimeMachineNonLavora:
 
         assert suoni == ["errore"]
         assert [d.titolo for d in domande.aperte] == ["Torneo non aperto"]
-        assert domande.aperte[0].testo.startswith("Il turno 2 non e' del torneo aperto")
+        assert domande.aperte[0].testo.startswith("Il turno 2 non è del torneo aperto")
         assert _dal_file(percorso) == prima
 
 
@@ -620,7 +620,7 @@ class TestSulGiocatoreDiUnTorneoConcluso:
     con Si' cambiava il file archiviato e scriveva i report nella cartella
     di salvataggio."""
 
-    TESTO = "Il torneo Turni e' concluso, e i suoi giocatori non si tolgono e non si ritirano piu'. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+    TESTO = "Il torneo Turni è concluso, e i suoi giocatori non si tolgono e non si ritirano più. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
 
     @pytest.mark.parametrize("aperto", [True, False], ids=["aperto", "non aperto"])
     def test_nessun_ritiro_e_nessun_file_toccato(self, principale, suoni, monkeypatch, aperto):

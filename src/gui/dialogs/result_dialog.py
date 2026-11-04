@@ -72,7 +72,7 @@ def domanda_togli_programmazione(scacchiera, bianco, nero, programmazione):
             time=programmazione.get("time"),
         )
         + "\n\n"
-        + _("Il pulsante predefinito e' No.")
+        + _("Il pulsante predefinito è No.")
     )
 
 

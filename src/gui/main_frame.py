@@ -4061,7 +4061,7 @@ class MainFrame(wx.Frame):
         # archiviato e scriveva i report nella cartella di salvataggio.
         if t_data.get("concluded"):
             self._canc_sul_torneo_concluso(
-                _("Il torneo {name} e' concluso, e i suoi giocatori non si tolgono e non si ritirano piu'.").format(
+                _("Il torneo {name} è concluso, e i suoi giocatori non si tolgono e non si ritirano più.").format(
                     name=t_data.get("name", "")
                 )
             )
@@ -4836,14 +4836,14 @@ class MainFrame(wx.Frame):
         if not self._e_il_torneo_aperto(dati.get("filepath")) or numero not in turni:
             self._canc_non_lavora_qui(
                 _(
-                    "Il turno {round} non e' del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
+                    "Il turno {round} non è del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
                 ).format(round=numero),
                 _("Torneo non aperto"),
             )
             return
         if self.current_tournament.get("concluded"):
             self._canc_sul_torneo_concluso(
-                _("Il torneo {name} e' concluso, e la Time Machine non toglie i turni di un torneo finalizzato.").format(
+                _("Il torneo {name} è concluso, e la Time Machine non toglie i turni di un torneo finalizzato.").format(
                     name=self.current_tournament.get("name", "")
                 )
             )
@@ -4888,7 +4888,7 @@ class MainFrame(wx.Frame):
             if not self._e_il_torneo_aperto(dati.get("filepath")):
                 self._canc_non_lavora_qui(
                     _(
-                        "La partita non e' del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
+                        "La partita non è del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
                     ),
                     _("Torneo non aperto"),
                 )
@@ -4902,7 +4902,7 @@ class MainFrame(wx.Frame):
             self._togli_programmazione_dall_albero(partita, turno)
             return
         self._canc_non_lavora_qui(
-            _("La partita e' da giocare e non e' programmata: CANC non ha niente da togliere.")
+            _("La partita è da giocare e non è programmata: CANC non ha niente da togliere.")
         )
 
     def _togli_programmazione_dall_albero(self, partita, turno):
@@ -4994,7 +4994,7 @@ class MainFrame(wx.Frame):
             )
         if partita.get("pgn"):
             parti.append(_("Il PGN resta con la partita, con il risultato in sospeso, e lo ritrovi quando apri di nuovo la sua finestra del risultato."))
-        parti.append(_("Il pulsante predefinito e' No."))
+        parti.append(_("Il pulsante predefinito è No."))
         dlg = AccessibleMsgDialog(
             self,
             _("Cancellazione del risultato"),
@@ -5030,17 +5030,17 @@ class MainFrame(wx.Frame):
         motivo_per_tenere_il_risultato."""
         if motivo == "torneo_concluso":
             return _("Torneo concluso"), _(
-                "Il torneo {name} e' concluso, e i risultati delle sue partite non si cancellano piu'. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+                "Il torneo {name} è concluso, e i risultati delle sue partite non si cancellano più. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
             ).format(name=self.current_tournament.get("name", ""))
         if motivo == "riposo":
             return _("Riposo"), _(
-                "Il riposo di {name} nel turno {round} non e' un risultato da cancellare: lo ha assegnato l'abbinamento, insieme ai suoi punti, e resta finche' resta il turno. La Time Machine (Ctrl+Z) toglie il turno intero, con i suoi abbinamenti."
+                "Il riposo di {name} nel turno {round} non è un risultato da cancellare: lo ha assegnato l'abbinamento, insieme ai suoi punti, e resta finché resta il turno. La Time Machine (Ctrl+Z) toglie il turno intero, con i suoi abbinamenti."
             ).format(name=self._nome_del_giocatore(partita.get("white_player_id")), round=numero)
         if motivo == "turno_chiuso":
             # Dalla 10.19.0 il messaggio dice anche la strada di CANC sulla
             # voce del turno, che riapre il turno in una volta sola.
             return _("Turno chiuso"), _(
-                "Il risultato della scacchiera {board} del turno {round} non si cancella: dopo quel turno e' gia' stato abbinato il turno {next}, e i risultati del turno {round} ne hanno deciso gli abbinamenti. Per riaprire il turno {round} c'e' la Time Machine: CANC sulla voce Turno {round}, fra i Completati, toglie in una volta sola tutti i turni che vengono dopo, e il turno {round} torna il turno corrente con i suoi risultati; Ctrl+Z invece toglie l'ultimo turno abbinato, uno alla volta. Poi CANC su questa partita la riporta fra quelle da giocare."
+                "Il risultato della scacchiera {board} del turno {round} non si cancella: dopo quel turno è già stato abbinato il turno {next}, e i risultati del turno {round} ne hanno deciso gli abbinamenti. Per riaprire il turno {round} c'è la Time Machine: CANC sulla voce Turno {round}, fra i Completati, toglie in una volta sola tutti i turni che vengono dopo, e il turno {round} torna il turno corrente con i suoi risultati; Ctrl+Z invece toglie l'ultimo turno abbinato, uno alla volta. Poi CANC su questa partita la riporta fra quelle da giocare."
             ).format(board=scacchiera, round=numero, next=numero + 1)
         if motivo == "ritirato":
             ritirati = [
@@ -5050,14 +5050,14 @@ class MainFrame(wx.Frame):
             ]
             if len(ritirati) == 1:
                 premessa = _(
-                    "Il risultato della scacchiera {board} non si cancella: {name} si e' ritirato dal torneo con questa partita, e senza il risultato il suo ritiro resterebbe senza il turno da cui vale."
+                    "Il risultato della scacchiera {board} non si cancella: {name} si è ritirato dal torneo con questa partita, e senza il risultato il suo ritiro resterebbe senza il turno da cui vale."
                 ).format(board=scacchiera, name=ritirati[0])
             else:
                 premessa = _(
                     "Il risultato della scacchiera {board} non si cancella: {white} e {black} si sono ritirati dal torneo con questa partita, e senza il risultato il loro ritiro resterebbe senza il turno da cui vale."
                 ).format(board=scacchiera, white=ritirati[0], black=ritirati[1])
             return _("Giocatore ritirato"), premessa + "\n\n" + _(
-                "Finche' il turno ha partite da giocare, il risultato si cambia aprendo la partita con INVIO e scegliendone un altro. Altrimenti c'e' la Time Machine (Ctrl+Z), che toglie il turno corrente con i suoi abbinamenti e annulla anche il ritiro."
+                "Finché il turno ha partite da giocare, il risultato si cambia aprendo la partita con INVIO e scegliendone un altro. Altrimenti c'è la Time Machine (Ctrl+Z), che toglie il turno corrente con i suoi abbinamenti e annulla anche il ritiro."
             )
         return _("Risultato"), _("La partita non ha un risultato da cancellare.")
 
@@ -5527,7 +5527,10 @@ class MainFrame(wx.Frame):
             return
         from gui.dialogs.donation_dialog import DonationDialog
 
-        dlg = DonationDialog(self, _("Offri un caffè"), testo, self.settings)
+        # Dalla 10.19.10 la finestra si intitola come la voce, Offrimi un
+        # caffe': fino alla 10.19.7 era Offri un caffe' (decisione di Gabriele
+        # del 4 novembre 2026).
+        dlg = DonationDialog(self, _("Offrimi un caffè"), testo, self.settings)
         dlg.ShowModal()
         dlg.Destroy()
 
@@ -5535,13 +5538,17 @@ class MainFrame(wx.Frame):
     # informazioni sul computer e mail vengono da GBUtils, la finestra della
     # mail da GBwx, le parole da gui/pub.py. La finestra si apre sempre, anche
     # quando il programma di posta c'e', e senza posta guida un passo alla
-    # volta, copiando negli appunti un campo per volta.
+    # volta, copiando negli appunti un campo per volta. Dalla 10.19.10 ogni
+    # voce ha il suo suono, che parte appena la si sceglie, prima della
+    # finestra, come in MeTeOra.
 
     def on_entra_al_pub(self, event):
         """Entra al PUB, nel menu Aiuto: la mail che iscrive al gruppo di
         supporto."""
         from gui import pub
+        from utils import play_sound
 
+        play_sound("pub_entra")
         self._mail_al_pub(
             pub.mail_d_iscrizione(),
             _("Entra al PUB: la mail d'iscrizione è pronta, spediscila tu."),
@@ -5562,7 +5569,9 @@ class MainFrame(wx.Frame):
 
         from config import lingua_rilevata
         from gui import pub
+        from utils import play_sound
 
+        play_sound("pub_aiuto")
         informazioni = informazioni_di_sistema(pub.separatore_decimale(lingua_rilevata))
         mail = pub.mail_d_aiuto(__version__, bool(getattr(sys, "frozen", False)), informazioni, lingua_rilevata, __bbp_info__)
         self._mail_al_pub(
@@ -5875,7 +5884,7 @@ class MainFrame(wx.Frame):
             )
         elif tornano:
             parti.append("\n".join([_("Tornano in gioco i giocatori ritirati che hanno un risultato in uno dei turni che spariscono:"), *tornano]))
-        parti.append(_("Il pulsante predefinito e' No."))
+        parti.append(_("Il pulsante predefinito è No."))
         return "\n\n".join(parti)
 
     def _database_dei_giocatori(self):
@@ -6808,7 +6817,7 @@ class MainFrame(wx.Frame):
             self,
             _("Forfait dopo il Ritiro"),
             _(
-                "{name} e' ritirato dal torneo, e questa partita non ha ancora un risultato. Vuoi registrare la vittoria a tavolino di {opponent}, {result}? Se rispondi di no la partita resta senza risultato, e il turno non si chiude finche' non ne riceve uno."
+                "{name} è ritirato dal torneo, e questa partita non ha ancora un risultato. Vuoi registrare la vittoria a tavolino di {opponent}, {result}? Se rispondi di no la partita resta senza risultato, e il turno non si chiude finché non ne riceve uno."
             ).format(
                 name=self._nome_del_giocatore(ritirato_id),
                 opponent=self._nome_del_giocatore(avversario),

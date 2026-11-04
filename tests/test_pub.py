@@ -9,7 +9,8 @@ dell'interfaccia. Niente si apre davvero: la finestra della mail e' una finta
 che annota cio' che riceve, oppure quella vera, mai mostrata, con ShowModal
 che preme i pulsanti da se'; il programma di posta, os.startfile e gli
 appunti sono sostituiti, e il guardiano di conftest fa fallire chi li
-toccasse davvero.
+toccasse davvero. Dalla 10.19.10 le due voci hanno un suono: play_sound e'
+una finta che annota gli eventi, e niente suona.
 """
 
 import pytest
@@ -34,27 +35,39 @@ BBP = "using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine creat
 
 
 @pytest.fixture
-def principale(app_grafica, monkeypatch):
-    """La finestra principale, mai mostrata, senza i controlli dell'avvio e
-    senza suoni."""
-    import gui.main_frame as mf
+def suoni(monkeypatch):
+    """play_sound sostituita da una finta che annota gli eventi: niente
+    suona."""
     import utils
+
+    registro = []
+    monkeypatch.setattr(utils, "play_sound", lambda evento, *a, **k: registro.append(evento) or True)
+    return registro
+
+
+@pytest.fixture
+def principale(app_grafica, suoni, monkeypatch):
+    """La finestra principale, mai mostrata, senza i controlli dell'avvio e
+    senza suoni: i suoi suoni li annota suoni, che riparte vuoto dopo la
+    creazione della finestra."""
+    import gui.main_frame as mf
     from gui.settings import DEFAULT_SETTINGS
 
-    monkeypatch.setattr(utils, "play_sound", lambda *a, **k: True)
     for nome in ("_check_fide_db_on_startup", "_check_backup_on_startup", "_scan_and_load_initial_tournament", "_check_updates_async"):
         monkeypatch.setattr(mf.MainFrame, nome, lambda self: None)
     monkeypatch.setattr(mf.MainFrame, "Maximize", lambda self, *a: None)
     finestra = mf.MainFrame(None, "Tornello", dict(DEFAULT_SETTINGS))
     finestra._timer_pie_di_pagina.Stop()
+    suoni.clear()
     yield finestra
     finestra.Destroy()
 
 
 @pytest.fixture
-def finestre_della_mail(monkeypatch):
-    """finestra_mail di GBwx sostituita da una finta che annota gli argomenti
-    e risponde con l'esito di registro["esito"], vero se non detto."""
+def finestre_della_mail(suoni, monkeypatch):
+    """finestra_mail di GBwx sostituita da una finta che annota gli argomenti,
+    e i suoni gia' suonati quando la finestra si apre, e risponde con l'esito
+    di registro["esito"], vero se non detto."""
     import GBwx
 
     registro = {"chiamate": [], "esito": True}
@@ -71,6 +84,7 @@ def finestre_della_mail(monkeypatch):
                 "passi": passi,
                 "pulsanti": pulsanti,
                 "senza_posta": senza_posta,
+                "suoni_prima": list(suoni),
             }
         )
         return registro["esito"]
@@ -170,6 +184,67 @@ class TestMenuAiuto:
 
         assert separatori == [","]
         assert principale.last_status_msg == principale_testo("Chiedi aiuto al PUB: finestra chiusa, nessuna mail preparata.")
+
+
+class TestSuoniDelPub:
+    """Dalla 10.19.10 le due voci suonano appena le si sceglie, prima che si
+    apra la finestra della mail, come in MeTeOra: Entra al PUB il campanello
+    della porta del pub, mess_pub_entra, e Chiedi aiuto al PUB la domanda,
+    mess_pub_aiuto, i preset di MESS e di MeTeOra, con la firma di Tornello
+    dalla V242 di GBUtils. Fino alla 10.19.7 le voci non avevano un suono
+    (decisione di Gabriele del 4 novembre 2026, issue 70)."""
+
+    def test_entra_al_pub_suona_prima_della_finestra(self, principale, finestre_della_mail, suoni):
+        _dal_menu(principale, principale.item_entra_al_pub)
+
+        (chiamata,) = finestre_della_mail["chiamate"]
+        assert chiamata["suoni_prima"] == ["pub_entra"]
+        assert suoni == ["pub_entra"]
+
+    def test_chiedi_aiuto_suona_prima_delle_informazioni_e_della_finestra(self, principale, finestre_della_mail, suoni, monkeypatch):
+        """Il suono parte prima di leggere le informazioni sul computer, che
+        possono chiedere un momento, come in MeTeOra."""
+        import GBUtils
+
+        letture = []
+        monkeypatch.setattr(GBUtils, "informazioni_di_sistema", lambda separatore=".": letture.append(list(suoni)) or INFORMAZIONI)
+
+        _dal_menu(principale, principale.item_chiedi_aiuto_al_pub)
+
+        (chiamata,) = finestre_della_mail["chiamate"]
+        assert letture == [["pub_aiuto"]]
+        assert chiamata["suoni_prima"] == ["pub_aiuto"]
+        assert suoni == ["pub_aiuto"]
+
+    @pytest.mark.parametrize(("voce", "evento"), [("item_entra_al_pub", "pub_entra"), ("item_chiedi_aiuto_al_pub", "pub_aiuto")])
+    def test_suona_una_volta_anche_con_la_finestra_chiusa_prima(self, principale, finestre_della_mail, suoni, monkeypatch, voce, evento):
+        import GBUtils
+
+        monkeypatch.setattr(GBUtils, "informazioni_di_sistema", lambda separatore=".": INFORMAZIONI)
+        finestre_della_mail["esito"] = False
+
+        _dal_menu(principale, getattr(principale, voce))
+
+        assert suoni == [evento]
+
+    def test_i_preset_sono_quelli_di_meteora(self):
+        from utils import EVENTI
+
+        assert EVENTI["pub_entra"] == "mess_pub_entra"
+        assert EVENTI["pub_aiuto"] == "mess_pub_aiuto"
+
+    @pytest.mark.parametrize("preset", ["mess_pub_entra", "mess_pub_aiuto"])
+    def test_il_preset_ha_la_firma_di_tornello(self, preset):
+        import json
+        import os
+
+        GBUtils = pytest.importorskip("GBUtils")
+        percorso = os.path.join(os.path.dirname(os.path.abspath(GBUtils.__file__)), "Acu_Collection.json")
+        with open(percorso, encoding="utf-8") as f:
+            dati = json.load(f).get(preset)
+        assert dati is not None and dati.get("score")
+        firme = dati["descrizione"].split("Usato da:")[-1]
+        assert "tornello" in [nome.strip(" .") for nome in firme.split(",")]
 
 
 def principale_testo(testo):

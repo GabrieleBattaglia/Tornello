@@ -769,8 +769,9 @@ class TestForfaitDopoIlRitiro:
         titolo, testo, no_predefinito = finestre.aperte[0]
         assert titolo == "Forfait dopo il Ritiro"
         assert no_predefinito is False
-        assert testo.startswith(f"Cognome{chi[1]} Nome e' ritirato dal torneo, e questa partita non ha ancora un risultato.")
+        assert testo.startswith(f"Cognome{chi[1]} Nome è ritirato dal torneo, e questa partita non ha ancora un risultato.")
         assert f"la vittoria a tavolino di Cognome{avversario[1]} Nome, {etichetta}?" in testo
+        assert testo.endswith("e il turno non si chiude finché non ne riceve uno.")
         partita = torneo["rounds"][1]["matches"][0]
         assert partita["result"] == risultato
         giocatori = torneo["players_dict"]

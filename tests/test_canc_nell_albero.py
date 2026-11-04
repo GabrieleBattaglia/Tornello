@@ -364,7 +364,7 @@ class TestCancSullaPartitaGiocata:
         assert "Vuoi cancellare il risultato 0-1 della scacchiera 1 del turno 2, Verdi Anna contro Neri Paolo?" in domanda.testo
         assert "Torna fra le programmate, con la programmazione di prima" in domanda.testo
         assert "Il PGN resta con la partita" in domanda.testo
-        assert domanda.testo.endswith("Il pulsante predefinito e' No.")
+        assert domanda.testo.endswith("Il pulsante predefinito è No.")
         partita = _partita(principale.current_tournament, 4)
         assert partita["result"] is None
         salvata = _partita(_dal_file(percorso), 4)
@@ -456,17 +456,20 @@ class TestRisultatiCheRestano:
         messaggio = self._rifiuto(principale, suoni, monkeypatch, _torneo(), 1, 1, 1)
 
         assert messaggio.titolo == "Turno chiuso"
-        assert "dopo quel turno e' gia' stato abbinato il turno 2" in messaggio.testo
+        assert "dopo quel turno è già stato abbinato il turno 2" in messaggio.testo
         # Dalla 10.19.0 il messaggio dice anche la strada di CANC sul turno.
         assert "CANC sulla voce Turno 1, fra i Completati, toglie in una volta sola tutti i turni che vengono dopo" in messaggio.testo
         assert "Ctrl+Z invece toglie l'ultimo turno abbinato, uno alla volta" in messaggio.testo
+        # Dalla 10.19.10 con gli accenti veri, non piu' con gli apostrofi.
+        assert "Per riaprire il turno 1 c'è la Time Machine" in messaggio.testo
         assert _partita(principale.current_tournament, 1)["result"] == "1-0"
 
     def test_il_riposo(self, principale, suoni, monkeypatch):
         messaggio = self._rifiuto(principale, suoni, monkeypatch, _torneo(), 2, 3, 6)
 
         assert messaggio.titolo == "Riposo"
-        assert "Il riposo di Bianchi Luca nel turno 2 non e' un risultato da cancellare" in messaggio.testo
+        assert "Il riposo di Bianchi Luca nel turno 2 non è un risultato da cancellare" in messaggio.testo
+        assert "e resta finché resta il turno." in messaggio.testo
         assert _partita(principale.current_tournament, 6)["result"] == "BYE"
 
     def test_il_giocatore_ritirato(self, principale, suoni, monkeypatch):
@@ -479,8 +482,10 @@ class TestRisultatiCheRestano:
         messaggio = self._rifiuto(principale, suoni, monkeypatch, torneo, 2, 1, 4)
 
         assert messaggio.titolo == "Giocatore ritirato"
-        assert "Neri Paolo si e' ritirato dal torneo con questa partita" in messaggio.testo
+        assert "Neri Paolo si è ritirato dal torneo con questa partita" in messaggio.testo
         assert "aprendo la partita con INVIO" in messaggio.testo
+        assert "Finché il turno ha partite da giocare" in messaggio.testo
+        assert "Altrimenti c'è la Time Machine (Ctrl+Z)" in messaggio.testo
         assert _partita(principale.current_tournament, 4)["result"] == "1-F"
 
     def test_i_due_giocatori_ritirati(self, principale, suoni, monkeypatch):
@@ -499,6 +504,7 @@ class TestRisultatiCheRestano:
 
         assert messaggio.titolo == "Torneo concluso"
         assert "Copie di sicurezza" in messaggio.testo
+        assert messaggio.testo.startswith(f"Il torneo {torneo['name']} è concluso, e i risultati delle sue partite non si cancellano più.")
 class TestSmistamentoDelCanc:
     """CANC, e la voce Elimina o annulla la voce scelta del menu File, che
     dalla 10.19.0 e' lo stesso comando, smistano per voce scelta."""
@@ -577,7 +583,7 @@ class TestSmistamentoDelCanc:
 
         assert suoni == ["errore"]
         assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [
-            ("Elimina o annulla", "La partita e' da giocare e non e' programmata: CANC non ha niente da togliere.", False)
+            ("Elimina o annulla", "La partita è da giocare e non è programmata: CANC non ha niente da togliere.", False)
         ]
         assert _dal_file(percorso) == prima
 
@@ -590,7 +596,7 @@ class TestSmistamentoDelCanc:
 
         assert suoni == ["errore"]
         assert [d.titolo for d in domande.aperte] == ["Torneo non aperto"]
-        assert "La partita non e' del torneo aperto" in domande.aperte[0].testo
+        assert "La partita non è del torneo aperto" in domande.aperte[0].testo
 
     def test_sul_torneo_lo_elimina_come_prima(self, principale, monkeypatch):
         percorso = _apri(principale)
@@ -882,7 +888,7 @@ class TestTogliProgrammazione:
         testo = domanda_togli_programmazione(2, "Russo Marco", "Ferrari Elena", {"date": "2026-11-06", "time": "18:00"})
 
         assert testo.startswith(f"Vuoi togliere la programmazione della scacchiera 2, Russo Marco contro Ferrari Elena, per {format_date_locale('2026-11-06')} alle 18:00?")
-        assert testo.endswith("Il pulsante predefinito e' No.")
+        assert testo.endswith("Il pulsante predefinito è No.")
 
     @staticmethod
     def _programmazione(cornice, programmata):

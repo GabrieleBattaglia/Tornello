@@ -90,7 +90,8 @@ def _voci_del_menu_aiuto(principale):
 class TestVoceOffrimiUnCaffe:
     """Dalla 10.17.0 la voce Offrimi un caffe' del menu Aiuto chiede il testo
     a Donazione, con probabilita=100 perche' compaia sempre, e lo mostra nella
-    finestra Offri un caffe' (issue 69)."""
+    finestra dell'invito (issue 69), che dalla 10.19.10 si intitola come la
+    voce, Offrimi un caffe': fino alla 10.19.7 era Offri un caffe'."""
 
     def test_passa_cento_stampa_falso_e_la_lingua_delle_impostazioni(
         self, monkeypatch, registro, capsys
@@ -107,7 +108,7 @@ class TestVoceOffrimiUnCaffe:
         ]
         assert len(registro["dialoghi"]) == 1
         assert registro["dialoghi"][0]["messaggio"] == "Offrimi un caffe'."
-        assert registro["dialoghi"][0]["titolo"] == mf._("Offri un caffè")
+        assert registro["dialoghi"][0]["titolo"] == mf._("Offrimi un caffè")
         assert registro["dialoghi"][0]["parent"] is telaio
         assert registro["dialoghi"][0]["settings"] == {"language": "en"}
         assert registro["mostrati"] == 1
@@ -164,6 +165,21 @@ class TestVoceOffrimiUnCaffe:
         assert registro["dialoghi"][0]["parent"] is principale
         assert registro["mostrati"] == 1
 
+    def test_il_titolo_della_finestra_e_il_nome_della_voce(self, principale, monkeypatch, registro):
+        """Dalla 10.19.10 il titolo e' la voce del menu senza la & della
+        lettera di scelta rapida e senza i puntini: fino alla 10.19.7 la
+        finestra si chiamava Offri un caffe', e la voce Offrimi un caffe'."""
+        import wx
+
+        _donazione_finta(monkeypatch, "Un caffe'?")
+        evento = wx.CommandEvent(wx.wxEVT_MENU, principale.item_caffe.GetId())
+        evento.SetEventObject(principale)
+
+        assert principale.GetEventHandler().ProcessEvent(evento)
+
+        voce = principale.item_caffe.GetItemLabel().replace("&", "").removesuffix("...")
+        assert registro["dialoghi"][0]["titolo"] == voce == "Offrimi un caffè"
+
 
 class TestChiusura:
     """on_close ferma il timer, fa le copie e suona, e la finestra si chiude.
@@ -219,7 +235,7 @@ class TestChiusura:
 
 
 class TestSuonoDellInvito:
-    """La finestra Offri un caffe' suona all'apertura il preset donazione
+    """La finestra Offrimi un caffe' suona all'apertura il preset donazione
     della collezione comune, lo stesso degli altri programmi del parco, con
     la firma di Tornello (issue 69)."""
 
@@ -229,7 +245,7 @@ class TestSuonoDellInvito:
 
         suonati = []
         monkeypatch.setattr(utils, "play_sound", lambda nome, *a, **k: suonati.append(nome))
-        dlg = DonationDialog(None, "Offri un caffè", "Testo", {})
+        dlg = DonationDialog(None, "Offrimi un caffè", "Testo", {})
         try:
             assert suonati == ["donazione"]
         finally:
@@ -250,7 +266,7 @@ class TestSuonoDellInvito:
 
 
 class TestFinestraDellInvito:
-    """Dalla 10.13.32 il pulsante predefinito della finestra Offri un caffe'
+    """Dalla 10.13.32 il pulsante predefinito della finestra Offrimi un caffe'
     e' Chiudi, e non piu' Dona con PayPal. INVIO nel testo preme Chiudi, come
     nelle finestre di messaggio, ed ESC chiude: fino alla 10.13.31, dal testo,
     nessuno dei due chiudeva la finestra. Il browser si apre soltanto con Dona
@@ -267,7 +283,7 @@ class TestFinestraDellInvito:
         aperti = []
         monkeypatch.setattr(utils, "play_sound", lambda *a, **k: None)
         monkeypatch.setattr(webbrowser, "open", aperti.append)
-        dlg = DonationDialog(None, "Offri un caffè", "Prima riga\nSeconda riga", {})
+        dlg = DonationDialog(None, "Offrimi un caffè", "Prima riga\nSeconda riga", {})
         dlg.chiusure = []
         dlg.aperti = aperti
         dlg.EndModal = dlg.chiusure.append

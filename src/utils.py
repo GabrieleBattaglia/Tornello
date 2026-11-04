@@ -680,6 +680,14 @@ EVENTI = {
     "nuovo_torneo": "partenza",
     "omonimi_ambigui": "mess_arretrati_aperti",
     "prova_volume": "mess_prova_volume",
+    # Dalla 10.19.10 le due voci del PUB, il gruppo di supporto, nel menu
+    # Aiuto, suonano quando le si sceglie, prima che si apra la finestra della
+    # mail, come in MeTeOra: gli stessi preset di MESS e di MeTeOra, il
+    # campanello della porta del pub per Entra al PUB e la domanda per Chiedi
+    # aiuto al PUB, con la firma di Tornello dalla V242 di GBUtils. Decisione
+    # di Gabriele del 4 novembre 2026 (issue 70).
+    "pub_entra": "mess_pub_entra",
+    "pub_aiuto": "mess_pub_aiuto",
 }
 
 
