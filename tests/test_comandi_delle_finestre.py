@@ -2523,7 +2523,8 @@ class TestLettereDeiMenu:
         etichette = [v.GetItemLabel() for v in principale.item_export_ics.GetMenu().GetMenuItems() if not v.IsSeparator()]
         assert [_lettera(e) for e in etichette] == ["n", "a", "p", "l", "c", "e"]
         assert principale.item_export_ics.GetItemLabel() == "Es&porta partite pianificate...\tCtrl+Shift+E"
-        assert principale.item_delete_tournament.GetItemLabel() == "E&limina Torneo Attivo...\tDelete"
+        # Dalla 10.19.0 la voce che fa quello che fa CANC, con la L di prima.
+        assert principale.item_canc.GetItemLabel() == "E&limina o annulla la voce scelta...\tCanc"
 
     def test_ogni_menu_ha_lettere_tutte_diverse(self, principale):
         barra = principale.GetMenuBar()

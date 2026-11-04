@@ -314,9 +314,10 @@ def rollback_to_previous_round(torneo, cestino=None):
     Dalla 10.13.60 il file dei dettagli del turno tolto, se il turno era
     concluso, va nel cestino con cestino, come dice
     dettagli_dei_turni_nel_cestino.
+    Dalla 10.19.0 il lavoro sui dati lo fa _togli_l_ultimo_turno, lo stesso
+    di torna_al_turno, che la finestra usa per Ctrl+Z e per CANC sulla voce
+    di un turno.
     """
-    current_round = torneo.get("current_round", 1)
-
     # 1. Se il torneo ha rounds, rimuoviamo l'ultimo round
     rounds = torneo.get("rounds", [])
     if not rounds:
@@ -328,6 +329,46 @@ def rollback_to_previous_round(torneo, cestino=None):
             f"Tornello - {sanitize_filename(torneo['name'])}.json"
         )
         create_backup(current_filename, "pre_rollback")
+
+    last_round_num = _togli_l_ultimo_turno(torneo)
+
+    # Il turno tolto, se era concluso, aveva il suo file dei dettagli: per
+    # esempio annullando due turni di seguito, il secondo e' quello gia'
+    # concluso. Il turno che torna in corso tiene il suo, che descrive
+    # ancora i suoi risultati.
+    dettagli_dei_turni_nel_cestino(torneo, [last_round_num], cestino)
+
+    from utils import play_sound
+
+    play_sound("time_machine", torneo)
+    return True
+
+
+def torna_al_turno(torneo, numero):
+    """Toglie dal torneo i turni che vengono dopo il turno numero, uno alla
+    volta a partire dall'ultimo, con _togli_l_ultimo_turno, come altrettante
+    chiamate di rollback_to_previous_round: il turno numero torna il turno
+    corrente, con i suoi risultati, e con numero zero il torneo torna in
+    preparazione. Dalla 10.19.0, per la Time Machine della finestra, Ctrl+Z
+    e CANC sulla voce di un turno. Cambia soltanto il torneo che riceve:
+    copia di sicurezza, salvataggio, cestino dei file dei dettagli e suono
+    li fa chi la chiama, una volta sola, cosi' puo' lavorare su una copia e
+    salvarla soltanto alla fine. Restituisce i numeri dei turni tolti,
+    dall'ultimo; una lista vuota se dopo il turno numero non ce n'erano."""
+    tolti = []
+    while torneo.get("rounds") and torneo["rounds"][-1].get("round", 0) > numero:
+        tolti.append(_togli_l_ultimo_turno(torneo))
+    return tolti
+
+
+def _togli_l_ultimo_turno(torneo):
+    """Toglie l'ultimo turno del torneo, che deve averne almeno uno, con i
+    suoi abbinamenti e i suoi risultati, e riporta il torneo allo stato del
+    turno prima: storico, punti, colori e ritiri dei giocatori, turno
+    corrente e numero della prossima partita. Restituisce il numero del
+    turno tolto. Fino alla 10.18.1 stava dentro rollback_to_previous_round."""
+    current_round = torneo.get("current_round", 1)
+    rounds = torneo["rounds"]
 
     # Rimuovi l'ultimo round
     last_round_obj = rounds.pop()
@@ -366,17 +407,7 @@ def rollback_to_previous_round(torneo, cestino=None):
 
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
-
-    # Il turno tolto, se era concluso, aveva il suo file dei dettagli: per
-    # esempio annullando due turni di seguito, il secondo e' quello gia'
-    # concluso. Il turno che torna in corso tiene il suo, che descrive
-    # ancora i suoi risultati.
-    dettagli_dei_turni_nel_cestino(torneo, [last_round_num], cestino)
-
-    from utils import play_sound
-
-    play_sound("time_machine", torneo)
-    return True
+    return last_round_num
 
 
 def load_tournament(filename_to_load):

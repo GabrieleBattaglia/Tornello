@@ -349,8 +349,13 @@ class MainFrame(wx.Frame):
         self.item_export_ics = file_menu.Append(
             wx.ID_ANY, _("Es&porta partite pianificate...\tCtrl+Shift+E")
         )
-        self.item_delete_tournament = file_menu.Append(
-            wx.ID_ANY, _("E&limina Torneo Attivo...\tDelete")
+        # Dalla 10.19.0 la voce fa quello che fa CANC, sulla voce scelta
+        # nell'albero, e ne porta il nome: fino alla 10.18.1 si chiamava
+        # Elimina Torneo Attivo. Dopo la tabulazione c'e' Canc, il nome
+        # scritto sul tasto, che NVDA legge con la voce: wx non lo riconosce
+        # come tasto, e l'acceleratore lo da' _setup_shortcuts.
+        self.item_canc = file_menu.Append(
+            wx.ID_ANY, _("E&limina o annulla la voce scelta...\tCanc")
         )
         # Dalla 10.9.0 la finestra di pulizia e' la finestra Copie di
         # sicurezza, che legge, confronta e ripristina le copie (issue 39).
@@ -445,11 +450,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_new_tournament, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open_tournament, id=wx.ID_OPEN)
         self.Bind(wx.EVT_MENU, self.on_export_ics, self.item_export_ics)
-        self.Bind(
-            wx.EVT_MENU,
-            self.on_delete_active_tournament_menu,
-            self.item_delete_tournament,
-        )
+        self.Bind(wx.EVT_MENU, self.on_canc, self.item_canc)
         self.Bind(wx.EVT_MENU, self.on_backup_cleanup, self.item_backup_cleanup)
         self.Bind(wx.EVT_MENU, self.on_enroll_players, self.item_enroll)
         self.Bind(wx.EVT_MENU, self.on_view_players, self.item_players)
@@ -464,17 +465,18 @@ class MainFrame(wx.Frame):
     def _setup_shortcuts(self):
         # Mappa i tasti funzione globali F1-F7
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key_hook)
-        # CANC ha un acceleratore suo, nella tabella della finestra
-        # principale, che Windows guarda prima di quella del menu: la voce
-        # Elimina Torneo Attivo continua a mostrare il tasto, e NVDA a
-        # leggerlo, ma CANC arriva a on_canc, che agisce sulla voce scelta
-        # nell'albero, e la voce scelta dal menu a
-        # on_delete_active_tournament_menu. Prima della revisione della
-        # 10.14.0 CANC era l'acceleratore della voce, e i due non si
-        # distinguevano.
-        self.id_canc = wx.NewIdRef()
-        self.Bind(wx.EVT_MENU, self.on_canc, id=self.id_canc)
-        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_DELETE, self.id_canc)]))
+        # CANC e' il tasto della voce Elimina o annulla la voce scelta del
+        # menu File, e arriva con lei a on_canc: dalla 10.19.0 tasto e menu
+        # fanno la stessa cosa. La voce mostra il tasto come Canc, che wx non
+        # riconosce, e l'acceleratore sta nella tabella della finestra
+        # principale, con l'identificativo della voce. La tabella vale per
+        # l'albero e per le due aree di testo della finestra, in sola
+        # lettura, dove CANC non ha un lavoro suo; le finestre di dialogo
+        # hanno i loro tasti, perche' wx non guarda gli acceleratori della
+        # finestra che le ha aperte. Dalla revisione della 10.14.0 alla
+        # 10.18.1 CANC aveva un identificativo suo, e la voce scelta dal
+        # menu eliminava soltanto il torneo o toglieva il giocatore.
+        self.SetAcceleratorTable(wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_DELETE, self.item_canc.GetId())]))
 
     def on_key_hook(self, event):
         key_code = event.GetKeyCode()
@@ -843,6 +845,11 @@ class MainFrame(wx.Frame):
             __authors__,
             age_str,
             format_date_locale(__date__.replace(".", "-")),
+        )
+        # Dalla 10.19.0 anche CANC, in una stringa sua, cosi' le traduzioni
+        # del resto della presentazione restano buone.
+        intro += _(
+            " - Canc: nell'albero, elimina o annulla la voce scelta (torneo, giocatore, turno, partita giocata o programmata)\n"
         )
         self.append_log(intro)
         self.set_status(_("Pronto. Nessun torneo caricato."))
@@ -3764,10 +3771,19 @@ class MainFrame(wx.Frame):
 
     def _save_state(self):
         if self.current_tournament:
-            from reports import save_current_tournament_round_file, save_standings_text
             from tournament import save_tournament
 
             save_tournament(self.current_tournament, filepath=self.active_filename)
+            self._salva_i_report()
+
+    def _salva_i_report(self):
+        """I file che descrivono il torneo aperto: il turno corrente, la
+        classifica e la raccolta delle partite. Dalla 10.19.0 stanno qui, fuori
+        da _save_state, perche' la Time Machine li scrive soltanto dopo aver
+        salvato il file del torneo."""
+        if self.current_tournament:
+            from reports import save_current_tournament_round_file, save_standings_text
+
             save_current_tournament_round_file(self.current_tournament)
             save_standings_text(self.current_tournament, final=False)
 
@@ -3823,9 +3839,9 @@ class MainFrame(wx.Frame):
             event.Skip()
             return
 
-        # Di solito CANC non arriva qui: lo prende l'acceleratore della
-        # finestra principale, che chiama on_canc. Se arriva, fa lo stesso,
-        # dallo stesso smistamento.
+        # Di solito CANC non arriva qui: lo prende l'acceleratore della voce
+        # Elimina o annulla la voce scelta, che chiama on_canc. Se arriva,
+        # fa lo stesso, dallo stesso smistamento.
         if key_code == wx.WXK_DELETE and item and data:
             self._canc_sulla_voce(item, data)
             return
@@ -4545,37 +4561,14 @@ class MainFrame(wx.Frame):
             print(err_msg)
             self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
 
-    def on_delete_active_tournament_menu(self, event):
-        """La voce Elimina Torneo Attivo del menu File, scelta dal menu: CANC,
-        che la voce mostra come suo tasto, arriva invece a on_canc. Sul
-        torneo scelto nell'albero lo elimina, sul giocatore lo toglie o ne
-        propone il ritiro; sulle altre voci, partite comprese, suona l'errore
-        e un messaggio dice di scegliere prima un torneo, come fino alla
-        10.13.62. Dalla 10.14.0 alla sua revisione la voce smistava come
-        CANC: su una partita giocata proponeva di cancellarne il risultato, e
-        sulle altre voci faceva sentire soltanto l'errore, senza dire
-        perche'."""
-        from utils import play_sound
-
-        item = self.tree_ctrl.GetSelection()
-        data = self.tree_ctrl.GetItemData(item) if item and item.IsOk() else None
-        dati = data if isinstance(data, dict) else {}
-        azione = dati.get("action")
-        if azione == "show_player_detail":
-            self.delete_player_from_tournament(item, dati.get("player"))
-            return
-        if azione in ("select_tournament", "load_concluded") and dati.get("filepath"):
-            self.delete_tournament_completely(item, dati["filepath"])
-            return
-        play_sound("errore", self.current_tournament)
-        self._dialogo_informativo(
-            _("Avviso"),
-            _("Seleziona prima un torneo attivo dall'albero per poterlo eliminare."),
-        )
-
     def on_canc(self, event):
-        """CANC, dall'acceleratore della finestra principale: agisce sulla
-        voce scelta nell'albero, con _canc_sulla_voce."""
+        """CANC e la voce Elimina o annulla la voce scelta del menu File, che
+        dalla 10.19.0 sono la stessa cosa: agiscono sulla voce scelta
+        nell'albero, con _canc_sulla_voce. Dalla revisione della 10.14.0
+        alla 10.18.1 la voce del menu, che si chiamava Elimina Torneo
+        Attivo, aveva un gestore suo, che eliminava soltanto il torneo o
+        toglieva il giocatore, e sulle altre voci diceva di scegliere prima
+        un torneo."""
         item = self.tree_ctrl.GetSelection()
         data = self.tree_ctrl.GetItemData(item) if item and item.IsOk() else None
         self._canc_sulla_voce(item, data)
@@ -4583,12 +4576,12 @@ class MainFrame(wx.Frame):
     def _canc_sulla_voce(self, item, data):
         """CANC sulla voce scelta nell'albero. Sul torneo lo elimina, sul
         giocatore lo toglie o ne propone il ritiro, come prima; dalla
-        10.14.0, sulla partita, decide _canc_sulla_partita. Sulle altre voci
-        suona l'errore, senza messaggio: fino alla 10.13.62 il messaggio
-        diceva di scegliere un torneo, e non c'entrava con quello che si
-        voleva fare."""
-        from utils import play_sound
-
+        10.14.0, sulla partita, decide _canc_sulla_partita, e dalla 10.19.0,
+        sul turno, _canc_sul_turno. Sulle altre voci suona l'errore, e dalla
+        10.19.0 un messaggio di una riga dice su quali voci CANC lavora:
+        dalla 10.14.0 alla 10.18.1 si sentiva soltanto l'errore, e fino alla
+        10.13.62 il messaggio diceva di scegliere un torneo, che non
+        c'entrava con quello che si voleva fare."""
         dati = data if isinstance(data, dict) else {}
         azione = dati.get("action")
         if azione == "show_player_detail":
@@ -4600,7 +4593,51 @@ class MainFrame(wx.Frame):
         if azione == "activate_match":
             self._canc_sulla_partita(dati)
             return
+        if azione == "show_round_report":
+            self._canc_sul_turno(dati)
+            return
+        self._canc_non_lavora_qui(
+            _("CANC lavora sulle voci di tornei, giocatori, turni, partite giocate e partite programmate.")
+        )
+
+    def _canc_non_lavora_qui(self, messaggio, titolo=None):
+        """Il suono dell'errore e un messaggio che dice perche' CANC non fa
+        niente sulla voce scelta, dalla 10.19.0."""
+        from utils import play_sound
+
         play_sound("errore", self.current_tournament)
+        self._dialogo_informativo(titolo or _("Elimina o annulla"), messaggio)
+
+    def _canc_sul_turno(self, dati):
+        """CANC sulla voce di un turno, dalla 10.19.0: la Time Machine. Sul
+        turno corrente, l'ultimo abbinato, anche quando ha tutti i risultati
+        e sta fra i Completati, fa quello che fa Ctrl+Z, con la stessa
+        domanda. Su un turno di prima torna a quel turno, che ridiventa il
+        turno corrente con i suoi risultati, togliendo tutti i turni dopo,
+        come tanti Ctrl+Z quanti sono quei turni. Il cursore dell'albero va
+        sul turno che torna corrente. Su un torneo concluso, dove Ctrl+Z e'
+        spento, e su un turno che non e' del torneo aperto suona l'errore, e
+        un messaggio dice perche'."""
+        numero = dati.get("round")
+        turni = [r.get("round") for r in (self.current_tournament or {}).get("rounds", [])]
+        if not self._e_il_torneo_aperto(dati.get("filepath")) or numero not in turni:
+            self._canc_non_lavora_qui(
+                _(
+                    "Il turno {round} non e' del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
+                ).format(round=numero),
+                _("Torneo non aperto"),
+            )
+            return
+        if self.current_tournament.get("concluded"):
+            self._canc_non_lavora_qui(
+                _(
+                    "Il torneo {name} e' concluso, e la Time Machine non toglie i turni di un torneo finalizzato. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+                ).format(name=self.current_tournament.get("name", "")),
+                _("Torneo concluso"),
+            )
+            return
+        ultimo = max(turni)
+        self._time_machine(numero if numero < ultimo else ultimo - 1, cursore_sul_turno=True)
 
     def _partita_della_voce(self, dati):
         """La partita e il turno di una voce dell'albero, presi dal torneo
@@ -4628,12 +4665,22 @@ class MainFrame(wx.Frame):
         partita giocata, o il riposo, passa da _cancella_risultato, che dice
         anche perche' un risultato resta. Dalla 10.15.0 una partita da
         giocare programmata perde la programmazione, dopo una domanda (issue
-        58). Su una partita da giocare non programmata suona l'errore."""
+        58). Su una partita da giocare non programmata suona l'errore, e
+        dalla 10.19.0 un messaggio dice che non c'e' niente da togliere; lo
+        stesso per una partita di un torneo che non e' quello aperto."""
         from tournament import e_un_riposo
         from utils import play_sound
 
         partita, turno = self._partita_della_voce(dati)
         if partita is None:
+            if not self._e_il_torneo_aperto(dati.get("filepath")):
+                self._canc_non_lavora_qui(
+                    _(
+                        "La partita non e' del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
+                    ),
+                    _("Torneo non aperto"),
+                )
+                return
             play_sound("errore", self.current_tournament)
             return
         if partita.get("result") is not None or e_un_riposo(partita):
@@ -4642,7 +4689,9 @@ class MainFrame(wx.Frame):
         if partita.get("is_scheduled") and partita.get("schedule_info"):
             self._togli_programmazione_dall_albero(partita, turno)
             return
-        play_sound("errore", self.current_tournament)
+        self._canc_non_lavora_qui(
+            _("La partita e' da giocare e non e' programmata: CANC non ha niente da togliere.")
+        )
 
     def _togli_programmazione_dall_albero(self, partita, turno):
         """CANC su una partita da giocare programmata, dalla 10.15.0 (issue
@@ -4776,8 +4825,10 @@ class MainFrame(wx.Frame):
                 "Il riposo di {name} nel turno {round} non e' un risultato da cancellare: lo ha assegnato l'abbinamento, insieme ai suoi punti, e resta finche' resta il turno. La Time Machine (Ctrl+Z) toglie il turno intero, con i suoi abbinamenti."
             ).format(name=self._nome_del_giocatore(partita.get("white_player_id")), round=numero)
         if motivo == "turno_chiuso":
+            # Dalla 10.19.0 il messaggio dice anche la strada di CANC sulla
+            # voce del turno, che riapre il turno in una volta sola.
             return _("Turno chiuso"), _(
-                "Il risultato della scacchiera {board} del turno {round} non si cancella: dopo quel turno e' gia' stato abbinato il turno {next}, e i risultati del turno {round} ne hanno deciso gli abbinamenti. Per riaprire il turno {round} c'e' la Time Machine (Ctrl+Z), che toglie l'ultimo turno abbinato, con i suoi risultati: ogni Ctrl+Z ne toglie uno."
+                "Il risultato della scacchiera {board} del turno {round} non si cancella: dopo quel turno e' gia' stato abbinato il turno {next}, e i risultati del turno {round} ne hanno deciso gli abbinamenti. Per riaprire il turno {round} c'e' la Time Machine: CANC sulla voce Turno {round}, fra i Completati, toglie in una volta sola tutti i turni che vengono dopo, e il turno {round} torna il turno corrente con i suoi risultati; Ctrl+Z invece toglie l'ultimo turno abbinato, uno alla volta. Poi CANC su questa partita la riporta fra quelle da giocare."
             ).format(board=scacchiera, round=numero, next=numero + 1)
         if motivo == "ritirato":
             ritirati = [
@@ -5480,56 +5531,140 @@ class MainFrame(wx.Frame):
                 wx.ICON_ERROR,
             )
             return
+        # Ctrl+Z toglie l'ultimo turno abbinato, e il cursore dell'albero
+        # resta dov'era, se la sua voce c'e' ancora.
+        self._time_machine(max(r.get("round", 0) for r in rounds) - 1)
 
-        # La domanda nomina il torneo: il menu Torneo vale per il torneo
-        # appena scelto nell'albero, e l'ultima parola prima di un'azione
-        # irreversibile deve dire su quale torneo si agisce.
-        dlg = AccessibleMsgDialog(
-            self,
-            _("Annulla Turno"),
-            _(
-                "Sei sicuro di voler annullare l'ultimo turno del torneo {name} e tornare indietro? Questa azione è irreversibile."
-            ).format(name=self.current_tournament.get("name", _("Torneo Sconosciuto"))),
-            style=wx.YES_NO,
-        )
-        if dlg.ShowModal() == wx.ID_YES:
-            from tournament import rollback_to_previous_round
+    def _time_machine(self, arrivo, cursore_sul_turno=False):
+        """La Time Machine della finestra: riporta il torneo aperto al turno
+        arrivo, che torna il turno corrente con i suoi risultati, togliendo
+        i turni dopo con torna_al_turno di tournament.py; con arrivo zero il
+        torneo torna in preparazione. La usano Ctrl+Z e, dalla 10.19.0, CANC
+        sulla voce di un turno. Per un turno solo la domanda e' quella di
+        Ctrl+Z, Annulla Turno, con Si' predefinito; per piu' turni una
+        domanda li conta e li nomina, con No predefinito. Poi una copia di
+        sicurezza sola, il lavoro su una copia del torneo e un salvataggio
+        solo, alla fine: se il file del torneo non si scrive, il torneo resta
+        com'era, in memoria e sul disco, e un messaggio lo dice. Fino alla
+        10.18.1 Ctrl+Z, con rollback_to_previous_round, cambiava il torneo in
+        memoria prima di salvarlo, e un salvataggio mancato non si sapeva.
+        Salvato il torneo, i report, i file dei dettagli dei turni tolti nel
+        cestino, il suono della Time Machine, l'albero, l'area centrale e la
+        barra di stato. Con cursore_sul_turno il cursore dell'albero va sul
+        turno che torna corrente, o sul calcolo del turno 1 se non ne resta
+        nessuno; senza, resta dov'era, come dopo Ctrl+Z."""
+        import copy
 
-            # Dalla 10.13.60 il file dei dettagli del turno tolto va nel
-            # cestino, con la finestra principale come proprietaria della
-            # domanda di Windows, come per l'eliminazione di un torneo (issue
-            # 68). Un file che il cestino non prende resta, e lo si dice.
-            rimasti = []
+        from tournament import dettagli_dei_turni_nel_cestino, save_tournament, torna_al_turno
+        from utils import create_backup, play_sound
 
-            def nel_cestino(percorso):
-                if self._nel_cestino(percorso):
-                    return True
-                rimasti.append(percorso)
-                return False
-
-            if rollback_to_previous_round(self.current_tournament, cestino=nel_cestino):
-                self._save_state()
-                self.populate_tree()
-                self.show_current_round_report()
-                self.set_status(
-                    _("Time Machine attivata: tornati al turno precedente.")
-                )
-                if rimasti:
-                    from utils import play_sound
-
-                    play_sound("errore", self.current_tournament)
-                    self._dialogo_informativo(
-                        _("File rimasto fuori dal cestino"),
-                        "\n".join(
-                            [
-                                _(
-                                    "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:"
-                                ),
-                                *rimasti,
-                            ]
-                        ),
-                    )
+        nome = self.current_tournament.get("name", _("Torneo Sconosciuto"))
+        nuovo = copy.deepcopy(self.current_tournament)
+        tolti = torna_al_turno(nuovo, arrivo)
+        if not tolti:
+            return
+        if len(tolti) == 1:
+            # La domanda nomina il torneo: il menu Torneo vale per il torneo
+            # appena scelto nell'albero, e l'ultima parola prima di un'azione
+            # irreversibile deve dire su quale torneo si agisce.
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Annulla Turno"),
+                _(
+                    "Sei sicuro di voler annullare l'ultimo turno del torneo {name} e tornare indietro? Questa azione è irreversibile."
+                ).format(name=nome),
+                style=wx.YES_NO,
+            )
+        else:
+            dlg = AccessibleMsgDialog(
+                self,
+                _("Torna al turno {round}").format(round=arrivo),
+                self._domanda_del_ritorno(nuovo, tolti, arrivo),
+                style=wx.YES_NO,
+                settings=self.settings,
+                no_predefinito=True,
+            )
+        risposta = dlg.ShowModal()
         dlg.Destroy()
+        if risposta != wx.ID_YES:
+            return
+
+        # La copia di sicurezza del file com'e' adesso, una sola anche per
+        # piu' turni. Se non riesce si va avanti, come la Time Machine ha
+        # sempre fatto.
+        if not create_backup(self.active_filename, "pre_rollback" if len(tolti) == 1 else "pre_timemachine"):
+            print(_("ATTENZIONE: Impossibile creare il backup di sicurezza. Procedo ugualmente..."))
+        if not save_tournament(nuovo, filepath=self.active_filename):
+            play_sound("errore", self.current_tournament)
+            messaggio = _(
+                "Il file del torneo {path} non si è potuto scrivere, e la Time Machine si è fermata: il torneo {name} resta com'era, con tutti i suoi turni. Succede per esempio quando un altro programma, come Dropbox o l'antivirus, tiene bloccato il file, o con il disco pieno."
+            ).format(path=self.active_filename, name=nome)
+            self.set_status(messaggio)
+            self._dialogo_informativo(_("Time Machine non riuscita"), messaggio)
+            return
+        self.current_tournament = nuovo
+        self._salva_i_report()
+        # Dalla 10.13.60 i file dei dettagli dei turni tolti vanno nel
+        # cestino, con la finestra principale come proprietaria della
+        # domanda di Windows, come per l'eliminazione di un torneo (issue
+        # 68): soltanto adesso, a torneo salvato. Un file che il cestino non
+        # prende resta, e lo si dice.
+        rimasti = dettagli_dei_turni_nel_cestino(nuovo, tolti, self._nel_cestino)
+        play_sound("time_machine", nuovo)
+        if cursore_sul_turno:
+            if arrivo:
+                self._tree_restore_target = {"action": "show_round_report", "filepath": self.active_filename, "round": arrivo}
+            else:
+                self._tree_restore_target = {"action": "start_tournament_matchmaking_action", "filepath": self.active_filename}
+        self.populate_tree()
+        self.show_current_round_report()
+        if len(tolti) == 1:
+            self.set_status(_("Time Machine attivata: tornati al turno precedente."))
+        else:
+            self.set_status(
+                _("Time Machine attivata: tornati al turno {round}, tolti {count} turni.").format(round=arrivo, count=len(tolti))
+            )
+        if rimasti:
+            play_sound("errore", self.current_tournament)
+            if len(rimasti) == 1:
+                titolo = _("File rimasto fuori dal cestino")
+                frase = _(
+                    "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:"
+                )
+            else:
+                titolo = _("File rimasti fuori dal cestino")
+                frase = _(
+                    "I file dei dettagli dei turni tolti non sono andati nel cestino, e restano dove sono, anche se i turni non ci sono più:"
+                )
+            self._dialogo_informativo(titolo, "\n".join([frase, *rimasti]))
+
+    def _domanda_del_ritorno(self, nuovo, tolti, arrivo):
+        """Il testo della domanda di _time_machine quando i turni da togliere
+        sono piu' di uno, dalla 10.19.0: quanti e quali, il turno che torna
+        corrente, i ritiri che si annullano, uno per riga, e il pulsante
+        predefinito. nuovo e' il torneo come sara' dopo."""
+        primo, ultimo = min(tolti), max(tolti)
+        quali = (_("il turno {first} e il turno {last}") if len(tolti) == 2 else _("dal turno {first} al turno {last}")).format(first=primo, last=ultimo)
+        parti = [
+            _(
+                "Vuoi tornare al turno {round} del torneo {name}? Spariscono {count} turni, {which}, con i loro abbinamenti e i loro risultati, e il turno {round} torna il turno corrente, con i suoi risultati. Questa azione è irreversibile."
+            ).format(round=arrivo, name=self.current_tournament.get("name", _("Torneo Sconosciuto")), count=len(tolti), which=quali)
+        ]
+        # Chi e' ritirato adesso e non lo sara' piu': ha un risultato in uno
+        # dei turni che spariscono, come per tanti Ctrl+Z.
+        tornano = [
+            self._nome_del_giocatore(giocatore.get("id"))
+            for giocatore in self.current_tournament.get("players", [])
+            if giocatore.get("withdrawn") and not nuovo.get("players_dict", {}).get(giocatore.get("id"), {}).get("withdrawn")
+        ]
+        if len(tornano) == 1:
+            parti.append(
+                _("Torna in gioco {name}, ritirato, che ha un risultato in uno dei turni che spariscono.").format(name=tornano[0])
+            )
+        elif tornano:
+            parti.append("\n".join([_("Tornano in gioco i giocatori ritirati che hanno un risultato in uno dei turni che spariscono:"), *tornano]))
+        parti.append(_("Il pulsante predefinito e' No."))
+        return "\n\n".join(parti)
 
     def _database_dei_giocatori(self):
         """Il database dei giocatori letto dal disco, oppure None, dopo il

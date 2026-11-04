@@ -5,10 +5,11 @@ quelle da giocare, come [cancella] della console, dopo una domanda con No
 predefinito; il riposo, i turni gia' chiusi, i tornei conclusi e le partite
 con un giocatore ritirato si rifiutano con un messaggio. CANC smista per
 voce scelta: sul torneo e sul giocatore fa quello che faceva, sulle altre
-voci suona l'errore senza parlare di tornei da eliminare. Dalla revisione
-della 10.14.0 CANC ha un acceleratore suo, della finestra principale, e la
-voce Elimina Torneo Attivo del menu File, scelta dal menu, fa quello che
-faceva fino alla 10.13.62.
+voci suona l'errore senza parlare di tornei da eliminare. Dalla 10.19.0 la
+voce del menu File si chiama Elimina o annulla la voce scelta, mostra Canc
+come suo tasto e fa quello che fa CANC, dallo stesso gestore; sulle voci
+dove CANC non lavora un messaggio di una riga dice dove lavora. CANC sui
+turni, la Time Machine, ha le sue prove in test_canc_sui_turni.py.
 Dalla 10.15.0 una programmazione si toglie con CANC sulla partita da giocare
 programmata e con il pulsante Togli programmazione della finestra di
 programmazione (issue 58).
@@ -331,15 +332,11 @@ def _comando(principale, voce, identificativo):
 
 
 def _canc(principale, voce):
-    """La voce scelta nell'albero, poi CANC: il tasto arriva come comando
-    dell'acceleratore della finestra principale, id_canc."""
-    _comando(principale, voce, principale.id_canc)
-
-
-def _dal_menu(principale, voce):
-    """La voce scelta nell'albero, poi Elimina Torneo Attivo scelta dal menu
-    File."""
-    _comando(principale, voce, principale.item_delete_tournament.GetId())
+    """La voce scelta nell'albero, poi CANC, o la voce Elimina o annulla la
+    voce scelta del menu File: dalla 10.19.0 il tasto arriva dalla tabella
+    degli acceleratori con l'identificativo della voce, ed e' lo stesso
+    comando."""
+    _comando(principale, voce, principale.item_canc.GetId())
 
 
 def _domande(monkeypatch, *risposte):
@@ -460,7 +457,9 @@ class TestRisultatiCheRestano:
 
         assert messaggio.titolo == "Turno chiuso"
         assert "dopo quel turno e' gia' stato abbinato il turno 2" in messaggio.testo
-        assert "Time Machine (Ctrl+Z)" in messaggio.testo
+        # Dalla 10.19.0 il messaggio dice anche la strada di CANC sul turno.
+        assert "CANC sulla voce Turno 1, fra i Completati, toglie in una volta sola tutti i turni che vengono dopo" in messaggio.testo
+        assert "Ctrl+Z invece toglie l'ultimo turno abbinato, uno alla volta" in messaggio.testo
         assert _partita(principale.current_tournament, 1)["result"] == "1-0"
 
     def test_il_riposo(self, principale, suoni, monkeypatch):
@@ -500,13 +499,71 @@ class TestRisultatiCheRestano:
 
         assert messaggio.titolo == "Torneo concluso"
         assert "Copie di sicurezza" in messaggio.testo
-
-
 class TestSmistamentoDelCanc:
-    """Il gestore della voce Elimina Torneo Attivo smista per voce scelta."""
+    """CANC, e la voce Elimina o annulla la voce scelta del menu File, che
+    dalla 10.19.0 e' lo stesso comando, smistano per voce scelta."""
 
-    def test_sulle_altre_voci_solo_il_suono_dell_errore(self, principale, suoni, monkeypatch):
-        """Fino alla 10.13.62 diceva di scegliere un torneo da eliminare."""
+    MESSAGGIO_DELLE_ALTRE_VOCI = "CANC lavora sulle voci di tornei, giocatori, turni, partite giocate e partite programmate."
+
+    def test_sulle_altre_voci_l_errore_e_un_messaggio_di_una_riga(self, principale, suoni, monkeypatch):
+        """Dalla 10.19.0 un messaggio di una riga dice su quali voci CANC
+        lavora; dalla 10.14.0 alla 10.18.1 si sentiva soltanto l'errore, e
+        fino alla 10.13.62 un messaggio diceva di scegliere un torneo da
+        eliminare. Il torneo resta com'era."""
+        percorso = _apri(principale)
+        domande = _domande(monkeypatch)
+        prima = _dal_file(percorso)
+        voci = [
+            _voce(principale, action="show_data", filepath=percorso),
+            _voce(principale, action="show_data", filepath=percorso, field_active="site"),
+            _voce(principale, action="show_players", filepath=percorso),
+            _voce(principale, action="add_player_action", filepath=percorso),
+            # Il ramo turni e il ramo Completati.
+            _voce(principale, action="show_rounds", filepath=percorso),
+            _voce(principale, action="category_giocate", filepath=percorso, round=2),
+            _voce(principale, action="category_da_giocare", filepath=percorso, round=2),
+            _voce(principale, action="category_programmate", filepath=percorso, round=2),
+            _voce(principale, action="category_da_programmare", filepath=percorso, round=2),
+            _voce(principale, action="show_standings", filepath=percorso),
+            _voce(principale, action="show_tiebreaks", filepath=percorso),
+            _voce(principale, action="show_pgn_matches_list", filepath=percorso),
+            _voce(principale, action="show_single_pgn", filepath=percorso, round=2, board_num=1, match={"id": 4}),
+            _voce(principale, action="start_new_tournament"),
+        ]
+        albero = principale.tree_ctrl
+        assert albero.GetItemText(albero.GetItemParent(_voce(principale, action="show_round_report", filepath=percorso, round=1))).startswith("Completati")
+        for voce in voci:
+            suoni.clear()
+            domande.aperte.clear()
+            _canc(principale, voce)
+            assert suoni == ["errore"], albero.GetItemData(voce)
+            assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [("Elimina o annulla", self.MESSAGGIO_DELLE_ALTRE_VOCI, False)], albero.GetItemData(voce)
+        assert "\n" not in self.MESSAGGIO_DELLE_ALTRE_VOCI
+        assert _dal_file(percorso) == prima
+
+    def test_senza_voce_scelta_lo_stesso_messaggio(self, principale, suoni, monkeypatch):
+        domande = _domande(monkeypatch)
+        suoni.clear()
+
+        principale._canc_sulla_voce(None, None)
+
+        assert suoni == ["errore"]
+        assert [d.testo for d in domande.aperte] == [self.MESSAGGIO_DELLE_ALTRE_VOCI]
+
+    def test_sul_calcolo_del_turno_successivo(self, principale, suoni, monkeypatch):
+        torneo = _torneo()
+        _partita(torneo, 5)["result"] = "1-0"
+        percorso = _apri(principale, torneo)
+        domande = _domande(monkeypatch)
+
+        _canc(principale, _voce(principale, action="generate_next_round_action", filepath=percorso))
+
+        assert suoni[-1] == "errore"
+        assert [d.testo for d in domande.aperte] == [self.MESSAGGIO_DELLE_ALTRE_VOCI]
+        assert len(principale.current_tournament["rounds"]) == 2
+
+    def test_la_partita_da_giocare_non_programmata(self, principale, suoni, monkeypatch):
+        """Dalla 10.19.0 il messaggio dice che non c'e' niente da togliere."""
         torneo = _torneo()
         da_giocare = _partita(torneo, 5)
         da_giocare["is_scheduled"] = False
@@ -514,130 +571,243 @@ class TestSmistamentoDelCanc:
         percorso = _apri(principale, torneo)
         domande = _domande(monkeypatch)
         prima = _dal_file(percorso)
-        voci = [
-            _voce(principale, action="show_data", filepath=percorso),
-            _voce(principale, action="show_round_report", filepath=percorso, round=2),
-            _voce(principale, action="category_giocate", filepath=percorso, round=2),
-            _voce(principale, action="show_standings", filepath=percorso),
-            # La partita da giocare non programmata: CANC non ha niente da
-            # togliere.
-            _voce_della_partita(principale, percorso, 2, 2, 5),
+        suoni.clear()
+
+        _canc(principale, _voce_della_partita(principale, percorso, 2, 2, 5))
+
+        assert suoni == ["errore"]
+        assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [
+            ("Elimina o annulla", "La partita e' da giocare e non e' programmata: CANC non ha niente da togliere.", False)
         ]
-        for voce in voci:
-            suoni.clear()
-            _canc(principale, voce)
-            assert suoni == ["errore"], principale.tree_ctrl.GetItemData(voce)
-        assert domande.aperte == []
         assert _dal_file(percorso) == prima
 
-    @pytest.mark.parametrize("come", (_canc, _dal_menu))
-    def test_sul_torneo_lo_elimina_come_prima(self, principale, monkeypatch, come):
+    def test_la_partita_di_un_torneo_che_non_e_aperto(self, principale, suoni, monkeypatch):
+        _apri(principale)
+        domande = _domande(monkeypatch)
+        suoni.clear()
+
+        principale._canc_sulla_voce(None, {"action": "activate_match", "filepath": "Tornello - Altro.json", "round": 2, "match": {"id": 4}})
+
+        assert suoni == ["errore"]
+        assert [d.titolo for d in domande.aperte] == ["Torneo non aperto"]
+        assert "La partita non e' del torneo aperto" in domande.aperte[0].testo
+
+    def test_sul_torneo_lo_elimina_come_prima(self, principale, monkeypatch):
         percorso = _apri(principale)
         eliminati = []
         monkeypatch.setattr(principale, "delete_tournament_completely", lambda voce, filepath: eliminati.append(filepath))
 
-        come(principale, _voce(principale, action="select_tournament", filepath=percorso))
+        _canc(principale, _voce(principale, action="select_tournament", filepath=percorso))
 
         assert eliminati == [percorso]
 
-    @pytest.mark.parametrize("come", (_canc, _dal_menu))
-    def test_sul_giocatore_come_prima(self, principale, monkeypatch, come):
+    def test_sul_giocatore_come_prima(self, principale, monkeypatch):
         percorso = _apri(principale)
         tolti = []
         monkeypatch.setattr(principale, "delete_player_from_tournament", lambda voce, giocatore: tolti.append(giocatore["id"]))
         voce = _voce(principale, action="show_player_detail", filepath=percorso)
 
-        come(principale, voce)
+        _canc(principale, voce)
 
         assert tolti == [principale.tree_ctrl.GetItemData(voce)["player"]["id"]]
 
-    def test_la_voce_del_menu_tiene_il_suo_tasto(self, principale):
-        assert principale.item_delete_tournament.GetItemLabel() == "E&limina Torneo Attivo...\tDelete"
+    def test_dal_menu_sulla_partita_giocata_come_canc(self, principale, suoni, monkeypatch):
+        """Dalla revisione della 10.14.0 alla 10.18.1 la voce del menu,
+        Elimina Torneo Attivo, su una partita giocata diceva di scegliere
+        prima un torneo; dalla 10.19.0 fa quello che fa CANC, dallo stesso
+        gestore, on_canc."""
+        import wx
 
-    def test_dal_menu_sulle_altre_voci_dice_di_scegliere_un_torneo(self, principale, suoni, monkeypatch):
-        """La voce Elimina Torneo Attivo scelta dal menu, su una voce che non
-        e' un torneo ne' un giocatore, partita giocata compresa, fa sentire
-        l'errore e dice di scegliere prima un torneo, come fino alla
-        10.13.62, e non tocca la partita. Dalla 10.14.0 alla sua revisione
-        smistava come CANC: sulla partita giocata chiedeva Cancellazione
-        del risultato, e sulle altre voci si sentiva soltanto l'errore."""
         percorso = _apri(principale)
-        domande = _domande(monkeypatch)
-        prima = _dal_file(percorso)
-        voci = [
-            _voce(principale, action="show_data", filepath=percorso),
-            _voce(principale, action="show_standings", filepath=percorso),
-            _voce_della_partita(principale, percorso, 2, 1, 4),
-        ]
-        for voce in voci:
-            suoni.clear()
-            domande.aperte.clear()
-            _dal_menu(principale, voce)
-            assert suoni == ["errore"], principale.tree_ctrl.GetItemData(voce)
-            assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [
-                ("Avviso", "Seleziona prima un torneo attivo dall'albero per poterlo eliminare.", False)
-            ]
-        assert _partita(principale.current_tournament, 4)["result"] is not None
-        assert _dal_file(percorso) == prima
+        domande = _domande(monkeypatch, wx.ID_YES)
+        voce = _voce_della_partita(principale, percorso, 2, 1, 4)
+        principale.tree_ctrl.SelectItem(voce)
+        evento = wx.CommandEvent(wx.wxEVT_MENU, principale.item_canc.GetId())
+        evento.SetEventObject(principale.item_canc.GetMenu())
+
+        assert principale.GetEventHandler().ProcessEvent(evento)
+
+        assert [d.titolo for d in domande.aperte] == ["Cancellazione del risultato"]
+        assert _partita(principale.current_tournament, 4)["result"] is None
+        assert not hasattr(principale, "on_delete_active_tournament_menu")
+        assert not hasattr(principale, "id_canc")
 
 
-@pytest.mark.finestre_vere
-@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
-def test_il_tasto_canc_arriva_a_on_canc_e_non_alla_voce_del_menu(app_grafica, suoni, monkeypatch):
-    """CANC premuto davvero sull'albero, con WM_KEYDOWN e WM_KEYUP mandati
-    al controllo sulla finestra principale mostrata sul desktop nascosto,
-    mai SendInput: lo prende l'acceleratore della finestra, che Windows
-    guarda prima di quello della voce Elimina Torneo Attivo, e arriva a
-    on_canc. Prima della revisione della 10.14.0 arrivava alla voce del
-    menu, che non sapeva distinguere il tasto dalla scelta dal menu."""
-    import wx
-    from test_fuoco_alla_chiusura import _attendi, _user32
+class TestLaVoceDelMenu:
+    """Dalla 10.19.0 la voce del menu File si chiama Elimina o annulla la
+    voce scelta, con la L, e mostra Canc, il nome scritto sul tasto, che
+    NVDA legge con la voce. Fino alla 10.18.1 si chiamava Elimina Torneo
+    Attivo e mostrava Delete."""
 
+    def test_l_etichetta(self, principale):
+        assert principale.item_canc.GetItemLabel() == "E&limina o annulla la voce scelta...\tCanc"
+        assert principale.item_canc.GetItemLabelText() == "Elimina o annulla la voce scelta..."
+
+    def test_windows_scrive_nel_menu_il_tasto_canc(self, principale):
+        """Il testo della voce come lo ha il menu di Windows, che NVDA legge:
+        dopo la tabulazione c'e' Canc. Con Delete, o Del, wx l'avrebbe
+        riscritto come Delete."""
+        import ctypes
+        from ctypes import wintypes
+
+        user32 = ctypes.WinDLL("user32")
+        user32.GetMenu.restype = wintypes.HMENU
+        user32.GetMenu.argtypes = [wintypes.HWND]
+        user32.GetSubMenu.restype = wintypes.HMENU
+        user32.GetSubMenu.argtypes = [wintypes.HMENU, ctypes.c_int]
+        user32.GetMenuStringW.argtypes = [wintypes.HMENU, wintypes.UINT, wintypes.LPWSTR, ctypes.c_int, wintypes.UINT]
+        menu_file = principale.item_canc.GetMenu()
+        posizione = next(i for i, v in enumerate(menu_file.GetMenuItems()) if v.GetId() == principale.item_canc.GetId())
+        maniglia = user32.GetSubMenu(user32.GetMenu(principale.GetHandle()), 0)
+        testo = ctypes.create_unicode_buffer(256)
+        user32.GetMenuStringW(maniglia, posizione, testo, 256, 0x400)
+
+        assert testo.value == "E&limina o annulla la voce scelta...\tCanc"
+
+    def test_la_voce_non_ha_un_acceleratore_suo(self, principale):
+        """wx non riconosce Canc come nome di un tasto: la voce non ha un
+        acceleratore suo, e CANC lo da' la tabella della finestra
+        principale, con l'identificativo della voce, come prova sul desktop
+        nascosto test_il_tasto_canc_nell_albero_arriva_a_on_canc_con_la_voce_del_menu."""
+        assert principale.item_canc.GetAccel() is None
+
+    def test_la_finestra_principale_non_ha_campi_modificabili(self, principale):
+        """L'acceleratore di CANC vale per tutta la finestra principale: non
+        toglie il tasto a nessun campo dove avrebbe un lavoro suo, perche'
+        i campi di testo della finestra, l'area centrale e la barra di stato,
+        sono in sola lettura. Se ne nascesse uno modificabile, questa prova
+        lo direbbe."""
+        import wx
+
+        def discendenti(finestra):
+            for figlio in finestra.GetChildren():
+                if not figlio.IsTopLevel():
+                    yield figlio
+                    yield from discendenti(figlio)
+
+        testi = [w for w in discendenti(principale) if isinstance(w, wx.TextCtrl)]
+        assert {w.GetName() for w in testi} == {"Vista principale", "Barra di stato"}
+        assert not any(w.IsEditable() for w in testi)
+        assert not [w for w in discendenti(principale) if isinstance(w, (wx.ComboBox, wx.SearchCtrl, wx.SpinCtrl, wx.ListCtrl, wx.ListBox))]
+
+    def test_la_presentazione_dice_il_tasto(self, principale):
+        principale.show_intro_message()
+
+        assert " - Canc: nell'albero, elimina o annulla la voce scelta (torneo, giocatore, turno, partita giocata o programmata)" in principale.main_text.GetValue().splitlines()
+
+
+def _finestra_vera(monkeypatch, arrivati):
+    """La finestra principale, che si mostra sul desktop nascosto, con
+    on_canc che annota e non fa niente: il gestore si lega alla nascita
+    della finestra, e va sostituito prima."""
     import gui.main_frame as mf
     from gui.settings import DEFAULT_SETTINGS
 
     for nome in ("_check_fide_db_on_startup", "_check_backup_on_startup", "_scan_and_load_initial_tournament", "_check_updates_async"):
         monkeypatch.setattr(mf.MainFrame, nome, lambda self: None)
     monkeypatch.setattr(mf.MainFrame, "Maximize", lambda self, *a: None)
-    # I due gestori si legano alla nascita della finestra: si annotano
-    # prima.
-    arrivati = []
-    monkeypatch.setattr(mf.MainFrame, "on_canc", lambda self, evento: arrivati.append("canc"), raising=False)
-    monkeypatch.setattr(mf.MainFrame, "on_delete_active_tournament_menu", lambda self, evento: arrivati.append("menu"))
+    monkeypatch.setattr(mf.MainFrame, "on_canc", lambda self, evento: arrivati.append(evento.GetId()))
     finestra = mf.MainFrame(None, "Tornello", dict(DEFAULT_SETTINGS))
+    finestra._timer_pie_di_pagina.Stop()
+    return finestra
+
+
+def _attiva(finestra):
+    import wx
+    from test_fuoco_alla_chiusura import _attendi, _user32
+
+    finestra.Show()
+    finestra.Raise()
+    user32 = _user32()
+    for _tentativo in range(10):
+        user32.SetForegroundWindow(finestra.GetHandle())
+        if _attendi(lambda: wx.GetActiveWindow() is finestra, 0.5):
+            return user32
+    pytest.fail("la finestra non si e' attivata")
+
+
+def _premi_canc(user32, controllo):
+    """CANC sul controllo, con WM_KEYDOWN e WM_KEYUP mandati con
+    PostMessage, mai SendInput: VK_DELETE, con il codice di scansione 0x53
+    e il bit del tasto esteso, come lo manda la tastiera. Il ciclo degli
+    eventi gira finche' i due messaggi non sono passati."""
+    import wx
+
+    ciclo = wx.GUIEventLoop()
+
+    def premi():
+        dati = 1 | 0x53 << 16 | 1 << 24
+        user32.PostMessageW(controllo.GetHandle(), 0x100, 0x2E, dati)
+        user32.PostMessageW(controllo.GetHandle(), 0x101, 0x2E, dati | 0xC0000000)
+        wx.CallLater(300, ciclo.Exit)
+
+    wx.CallLater(50, premi)
+    rete = wx.CallLater(5000, ciclo.Exit)
+    ciclo.Run()
+    rete.Stop()
+
+
+@pytest.mark.finestre_vere
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+def test_il_tasto_canc_nell_albero_arriva_a_on_canc_con_la_voce_del_menu(app_grafica, suoni, monkeypatch):
+    """CANC premuto davvero sull'albero, sulla finestra principale mostrata
+    sul desktop nascosto: lo prende la tabella degli acceleratori della
+    finestra, e arriva a on_canc con l'identificativo della voce Elimina o
+    annulla la voce scelta, come la voce scelta dal menu. Dalla revisione
+    della 10.14.0 alla 10.18.1 arrivava con un identificativo suo."""
+    import wx
+    from test_fuoco_alla_chiusura import _attendi
+
+    arrivati = []
+    finestra = _finestra_vera(monkeypatch, arrivati)
     try:
-        finestra._timer_pie_di_pagina.Stop()
         percorso = _apri(finestra)
         voce = _voce(finestra, action="show_data", filepath=percorso)
-        finestra.Show()
-        finestra.Raise()
-        user32 = _user32()
-        for _tentativo in range(10):
-            user32.SetForegroundWindow(finestra.GetHandle())
-            if _attendi(lambda: wx.GetActiveWindow() is finestra, 0.5):
-                break
-        else:
-            pytest.fail("la finestra principale non si e' attivata")
+        user32 = _attiva(finestra)
         finestra.tree_ctrl.SelectItem(voce)
         finestra.tree_ctrl.SetFocus()
         assert _attendi(lambda: wx.Window.FindFocus() is finestra.tree_ctrl)
-        ciclo = wx.GUIEventLoop()
 
-        def premi():
-            # VK_DELETE, con il codice di scansione 0x53 e il bit del tasto
-            # esteso, come lo manda la tastiera.
-            dati = 1 | 0x53 << 16 | 1 << 24
-            user32.PostMessageW(finestra.tree_ctrl.GetHandle(), 0x100, 0x2E, dati)
-            user32.PostMessageW(finestra.tree_ctrl.GetHandle(), 0x101, 0x2E, dati | 0xC0000000)
-            wx.CallLater(300, ciclo.Exit)
+        _premi_canc(user32, finestra.tree_ctrl)
 
-        wx.CallLater(50, premi)
-        rete = wx.CallLater(5000, ciclo.Exit)
-        ciclo.Run()
-        rete.Stop()
-
-        assert arrivati == ["canc"]
+        assert arrivati == [finestra.item_canc.GetId()]
     finally:
+        finestra.Destroy()
+        _attendi(lambda: not finestra, 1.0)
+
+
+@pytest.mark.finestre_vere
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+def test_canc_in_un_campo_di_una_finestra_aperta_dalla_principale_cancella_il_carattere(app_grafica, suoni, monkeypatch):
+    """Le finestre che la principale apre, come la finestra del risultato o
+    quella di un dato del torneo, hanno i loro campi di testo: li' CANC
+    cancella il carattere dopo il cursore, e non arriva a on_canc, perche'
+    wx non guarda gli acceleratori della finestra che le ha aperte. La
+    prova lo misura con un dialogo che non blocca, figlio della
+    principale, mostrato sul desktop nascosto."""
+    import wx
+    from test_fuoco_alla_chiusura import _attendi
+
+    arrivati = []
+    finestra = _finestra_vera(monkeypatch, arrivati)
+    dialogo = None
+    try:
+        dialogo = wx.Dialog(finestra, title="Prova")
+        campo = wx.TextCtrl(dialogo, value="Coppa")
+        campo.SetName("Nome")
+        dialogo.Show()
+        user32 = _attiva(dialogo)
+        campo.SetFocus()
+        campo.SetInsertionPoint(0)
+        assert _attendi(lambda: wx.Window.FindFocus() is campo)
+
+        _premi_canc(user32, campo)
+
+        assert campo.GetValue() == "oppa"
+        assert arrivati == []
+    finally:
+        if dialogo:
+            dialogo.Destroy()
         finestra.Destroy()
         _attendi(lambda: not finestra, 1.0)
 
