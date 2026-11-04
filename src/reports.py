@@ -375,6 +375,58 @@ def file_dei_dettagli_del_turno(torneo, numero):
     return _nella_cartella_dei_report(torneo, nome)
 
 
+def nome_della_raccolta_pgn(nome_sanitizzato):
+    """Il nome del file della raccolta delle partite in PGN del torneo il cui
+    nome ripulito da sanitize_filename e' nome_sanitizzato, senza cartella:
+    <nome> - raccolta partite.pgn, nella lingua di Tornello. Non comincia con
+    Tornello -, come i report, e file_del_torneo non lo riconosce."""
+    return _("{name} - raccolta partite.pgn").format(name=nome_sanitizzato)
+
+
+def file_della_raccolta_pgn(torneo, file_del_torneo=None):
+    """Il percorso della raccolta delle partite in PGN del torneo: nella
+    cartella di lavoro scelta per il torneo, come i report, e senza una
+    cartella scelta in quella di file_del_torneo, il file del torneo, o,
+    senza nemmeno quello, accanto al programma. La scrive la finestra a ogni
+    salvataggio; dalla 10.19.7 la finalizzazione la porta in archivio con i
+    report, e il primo salvataggio di un torneo nuovo, o rinominato da Dati,
+    mette in salvo quella di un altro torneo che trova al suo posto (issue
+    66): il percorso si fa in un posto solo, perche' le tre strade trovino
+    lo stesso file."""
+    from utils import resolve_and_verify_save_path
+
+    cartella = torneo.get("custom_save_path")
+    if cartella:
+        cartella, _avviso = resolve_and_verify_save_path(cartella)
+    elif file_del_torneo:
+        cartella = os.path.dirname(os.path.abspath(file_del_torneo))
+    else:
+        cartella, _avviso = resolve_and_verify_save_path(None)
+    nome = nome_della_raccolta_pgn(
+        sanitize_filename(torneo.get("name", "Torneo_Senza_Nome"))
+    )
+    return os.path.join(cartella, nome)
+
+
+def byte_della_raccolta_pgn(torneo):
+    """Il contenuto della raccolta delle partite del torneo, come si scrive
+    sul disco: il PGN di ogni partita che lo ha, turno dopo turno, separati
+    da una riga vuota e con l'a capo in fondo, in UTF-8 e con l'a capo del
+    sistema. None se nessuna partita ha il PGN: allora la raccolta non c'e'.
+    Le stesse parole servono a scriverla e a riconoscerla, nella cartella di
+    un torneo nuovo, come quella di un'edizione archiviata (10.19.7)."""
+    partite = [
+        m["pgn"].strip()
+        for r in torneo.get("rounds", [])
+        for m in r.get("matches", [])
+        if m.get("pgn")
+    ]
+    if not partite:
+        return None
+    testo = "\n\n".join(partite) + "\n"
+    return testo.replace("\n", os.linesep).encode("utf-8")
+
+
 def append_completed_round_to_history_file(torneo, completed_round_number):
     """
     Salva i dettagli di un turno concluso in un FILE SEPARATO per quel turno.

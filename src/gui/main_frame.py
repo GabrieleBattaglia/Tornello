@@ -97,14 +97,16 @@ def _leggi_json(percorso):
         return None
 
 
-def coincidenza_del_nome(nome):
+def coincidenza_del_nome(nome, escluso=None):
     """Con che cosa coincide il file di un torneo nuovo chiamato nome: una
     frase, da mettere dopo il nome del file nel messaggio, oppure None se il
     nome e' libero. Il file di un torneo si chiama Tornello - <nome
     ripulito>.json, con il nome ripulito da sanitize_filename, e si
     confronta senza badare alle maiuscole, come fa Windows: con il database
     dei giocatori e le impostazioni, e con ogni altro file Tornello - *.json
-    della cartella del programma, torneo o no.
+    della cartella del programma, torneo o no. escluso e' il file del torneo
+    aperto, che non coincide con se stesso quando cambia il nome o la data
+    di inizio da Dati (10.19.7).
     Nata con la 10.13.52 (issue 66): fino ad allora la procedura guidata non
     guardava, e un torneo chiamato come uno che c'era gia' ne sovrascriveva
     il file, con i turni e i risultati; uno chiamato Players_db o Settings
@@ -124,6 +126,8 @@ def coincidenza_del_nome(nome):
     for percorso in in_cartella:
         if os.path.basename(percorso).lower() != cercato:
             continue
+        if escluso and _chiave_del_percorso(percorso) == _chiave_del_percorso(escluso):
+            continue
         dati = _leggi_json(percorso)
         # Un file che non ha la forma di un torneo, o che non si legge, e' un
         # file del programma, e non si sovrascrive lo stesso.
@@ -139,7 +143,7 @@ def coincidenza_del_nome(nome):
     return None
 
 
-def edizioni_nell_archivio(nome):
+def edizioni_nell_archivio(nome, escluso=None):
     """I tornei conclusi dell'archivio il cui file coincide con quello di un
     torneo nuovo chiamato nome, confrontato come in coincidenza_del_nome:
     una lista di coppie (percorso, dati), in ordine di percorso, quindi di
@@ -148,12 +152,15 @@ def edizioni_nell_archivio(nome):
     di una nuova edizione, e la procedura guidata lo accetta dopo una
     domanda (10.13.52, issue 66, decisione di Gabriele del 4 novembre 2026):
     le edizioni si distinguono, nell'archivio e nello storico dei giocatori,
-    dalla data di inizio."""
+    dalla data di inizio. escluso e' il file del torneo aperto, che da Dati
+    non e' un'edizione di se stesso quando sta nell'archivio (10.19.7)."""
     cercato = _file_del_torneo_nuovo(nome).lower()
     trovate = []
     in_archivio = glob.glob(os.path.join(glob.escape(ARCHIVED_TOURNAMENTS_DIR), "**", "Tornello - *.json"), recursive=True)
     for percorso in sorted(in_archivio):
         if os.path.basename(percorso).lower() != cercato:
+            continue
+        if escluso and _chiave_del_percorso(percorso) == _chiave_del_percorso(escluso):
             continue
         dati = _leggi_json(percorso)
         trovate.append((percorso, dati if _ha_la_forma_di_un_torneo(dati) else None))
@@ -3496,7 +3503,7 @@ class MainFrame(wx.Frame):
                 if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
                     self.tree_ctrl.Expand(self.tree_root)
 
-    def _nome_del_torneo_libero(self, nome):
+    def _nome_del_torneo_libero(self, nome, controllo=None, escluso=None, nome_suo=False):
         """Vero se un torneo nuovo puo' chiamarsi nome. Se il suo file
         coinciderebbe con un file del programma o con un torneo della
         cartella del programma, in corso, in preparazione o concluso
@@ -3507,22 +3514,32 @@ class MainFrame(wx.Frame):
         (_nuova_edizione_confermata), a meno che una di loro abbia la stessa
         data di inizio del torneo nuovo: lo storico dei giocatori e
         l'archivio distinguono le edizioni dalla data di inizio, e con la
-        stessa la finalizzazione le confonderebbe."""
+        stessa la finalizzazione le confonderebbe.
+        controllo e' il dizionario con la data di inizio, start_date, e con il
+        Si' alla domanda, NUOVA_EDIZIONE_CONFERMATA: creation_data nella
+        procedura guidata, quello di _nome_e_inizio_accettati per i campi di
+        Dati, dalla 10.19.7. escluso e' il file del torneo aperto, che non
+        conta ne' fra i file della cartella del programma ne' fra le
+        edizioni archiviate. nome_suo dice che il nome e' gia' quello del
+        torneo aperto, e allora i file della cartella del programma non si
+        guardano: il nome non cambia, e non porta via il file a nessuno."""
         from utils import format_date_locale, play_sound
 
-        coincidenza = coincidenza_del_nome(nome)
+        if controllo is None:
+            controllo = self.creation_data
+        coincidenza = None if nome_suo else coincidenza_del_nome(nome, escluso)
         if coincidenza is None:
-            edizioni = edizioni_nell_archivio(nome)
+            edizioni = edizioni_nell_archivio(nome, escluso)
             if not edizioni:
                 return True
-            inizio = self.creation_data.get("start_date")
+            inizio = controllo.get("start_date")
             stessa_data = [
                 (percorso, dati)
                 for percorso, dati in edizioni
                 if dati and inizio and dati.get("start_date") == inizio
             ]
             if not stessa_data:
-                return self._nuova_edizione_confermata(nome, edizioni)
+                return self._nuova_edizione_confermata(nome, edizioni, controllo)
             percorso, dati = stessa_data[0]
             play_sound("errore")
             self._dialogo_informativo(
@@ -3553,7 +3570,7 @@ class MainFrame(wx.Frame):
         )
         return False
 
-    def _nuova_edizione_confermata(self, nome, edizioni):
+    def _nuova_edizione_confermata(self, nome, edizioni, controllo=None):
         """La domanda per un nome il cui file coincide soltanto con tornei
         dell'archivio, edizioni come le da' edizioni_nell_archivio: dice
         quali e in quale cartella, e chiede se creare una nuova edizione.
@@ -3562,8 +3579,11 @@ class MainFrame(wx.Frame):
         della stessa procedura, prima dell'iscrizione e prima di scrivere il
         file, non chiedono di nuovo, mentre un altro nome si controlla da
         capo (10.13.52, issue 66, decisione di Gabriele del 4 novembre
-        2026)."""
-        if self.creation_data.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
+        2026). controllo, se c'e', prende il posto di creation_data, come per i
+        campi di Dati (10.19.7)."""
+        if controllo is None:
+            controllo = self.creation_data
+        if controllo.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
             return True
         descrizioni = [
             _("{torneo}, nella cartella {cartella}").format(
@@ -3601,8 +3621,162 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
         if risposta != wx.ID_YES:
             return False
-        self.creation_data[NUOVA_EDIZIONE_CONFERMATA] = nome
+        controllo[NUOVA_EDIZIONE_CONFERMATA] = nome
         return True
+
+    def _nome_e_inizio_accettati(self, nome, inizio):
+        """Vero se il torneo aperto puo' avere, dai campi di Dati, il nome
+        nome e la data di inizio inizio, uno dei due appena cambiato: gli
+        stessi controlli della procedura guidata, con _nome_del_torneo_libero
+        (10.19.7, issue 66, decisione di Gabriele del 4 novembre 2026). Il
+        file del torneo aperto non conta, ne' nella cartella del programma
+        ne' nell'archivio. Un nome il cui file coincide con quello del nome
+        di adesso, come lo stesso nome con la data di inizio cambiata o con
+        altre maiuscole, e' gia' quello del torneo: i file della cartella del
+        programma non si guardano, la domanda sulla nuova edizione non si
+        fa, e resta il rifiuto della data di inizio di un'edizione archiviata
+        con lo stesso nome. Fino alla 10.19.5 Dati non controllava niente:
+        una nuova edizione poteva prendere la data di inizio di quella
+        archiviata, e alla finalizzazione Tornello la prendeva per una
+        finalizzazione ripetuta della prima, e i giocatori restavano senza
+        Elo, partite e storico della seconda."""
+        controllo = {"start_date": inizio}
+        attuale = self.current_tournament.get("name", "")
+        suo = _file_del_torneo_nuovo(nome).lower() == _file_del_torneo_nuovo(attuale).lower()
+        if suo:
+            controllo[NUOVA_EDIZIONE_CONFERMATA] = nome
+        return self._nome_del_torneo_libero(nome, controllo, escluso=self.active_filename, nome_suo=suo)
+
+    def _nome_da_dati_accettato(self, nome):
+        """Vero se il torneo aperto puo' prendere da Dati il nome nome: i
+        controlli di _nome_e_inizio_accettati, tranne per un nome vuoto,
+        come nella procedura guidata, e la raccolta delle partite di un
+        altro torneo, al posto di quella che il torneo scrivera' con il nome
+        nuovo, messa in salvo (10.19.7, issue 66). Il file del torneo non
+        cambia nome: i report e la raccolta delle partite prendono il nome
+        nuovo, e quelli con il nome di prima restano dove sono."""
+        from reports import file_della_raccolta_pgn
+
+        if nome and not self._nome_e_inizio_accettati(nome, self.current_tournament.get("start_date")):
+            return False
+        rinominato = dict(self.current_tournament, name=nome)
+        prima = file_della_raccolta_pgn(self.current_tournament, self.active_filename)
+        dopo = file_della_raccolta_pgn(rinominato, self.active_filename)
+        if _chiave_del_percorso(prima) == _chiave_del_percorso(dopo):
+            return True
+        return self._raccolta_altrui_in_salvo(
+            rinominato,
+            self.active_filename,
+            _("Il nome del torneo resta quello di prima: sposta quel file in un'altra cartella, poi riprova."),
+        )
+
+    def _raccolta_altrui_in_salvo(self, torneo, file_del_torneo, conclusione):
+        """Vero se il torneo, con il file file_del_torneo, puo' salvare la
+        sua raccolta delle partite in PGN senza distruggere quella di un
+        altro torneo. Lo chiede il primo salvataggio di un torneo nuovo, e di
+        un torneo rinominato da Dati, che al posto della sua raccolta non
+        hanno ancora scritto niente: una raccolta che c'e', e che non e'
+        identica a quella che il torneo scriverebbe, e' di un altro torneo,
+        per esempio di un'edizione archiviata prima della 10.19.7, quando la
+        raccolta restava nella cartella di salvataggio (issue 66). Se e'
+        identica a quella di un'edizione archiviata con lo stesso nome, va
+        nella sua cartella d'archivio, con una copia riletta, e l'originale
+        nel cestino; altrimenti va nel cestino. Mai cancellata per sempre:
+        dalla 10.10.0 le cancellazioni vanno nel cestino (decisione di
+        Gabriele). Un messaggio dice dov'e' andata. Se non va da nessuna
+        parte, per esempio su un disco senza cestino, si sente l'errore, un
+        messaggio lo dice, con conclusione in fondo, e la risposta e' falso:
+        il torneo non nasce, o non cambia nome."""
+        from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
+        from ui import _copia_verificata
+        from utils import play_sound, stessi_byte
+
+        def contiene(percorso, contenuto):
+            try:
+                with open(percorso, "rb") as f:
+                    return f.read() == contenuto
+            except OSError:
+                return False
+
+        percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
+        if not os.path.isfile(percorso):
+            return True
+        proprio = byte_della_raccolta_pgn(torneo)
+        if proprio is not None and contiene(percorso, proprio):
+            return True
+        cartella, nome_file = os.path.split(percorso)
+        titolo = _("Raccolta delle partite di un altro torneo")
+        nome = torneo.get("name", "")
+        for json_archiviato, dati in edizioni_nell_archivio(nome):
+            suo = byte_della_raccolta_pgn(dati) if dati else None
+            if suo is None or not contiene(percorso, suo):
+                continue
+            destinazione = os.path.join(os.path.dirname(json_archiviato), nome_file)
+            # Una raccolta diversa gia' nella cartella d'archivio resta
+            # com'e': quella trovata va nel cestino, piu' sotto.
+            if os.path.exists(destinazione) and not stessi_byte(percorso, destinazione):
+                break
+            if not os.path.exists(destinazione) and not _copia_verificata(percorso, destinazione, lambda _frase: None):
+                break
+            if self._nel_cestino(percorso):
+                testo = _(
+                    "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                    "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, e quella della cartella {cartella} è andata nel cestino di Windows."
+                )
+            else:
+                testo = _(
+                    "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                    "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e il torneo {nome} la sostituirà con la sua raccolta, o la cancellerà."
+                )
+            self._dialogo_informativo(
+                titolo,
+                testo.format(
+                    cartella=cartella,
+                    file=nome_file,
+                    torneo=dati.get("name", nome),
+                    archivio=_cartella_nell_archivio(json_archiviato),
+                    nome=nome,
+                ),
+            )
+            return True
+        if self._nel_cestino(percorso):
+            self._dialogo_informativo(
+                titolo,
+                _(
+                    "Nella cartella {cartella} c'era la raccolta delle partite {file}, che non è del torneo {nome}: il torneo l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                    "È andata nel cestino di Windows, da dove si può recuperare."
+                ).format(cartella=cartella, file=nome_file, nome=nome),
+            )
+            return True
+        play_sound("errore")
+        self._dialogo_informativo(
+            titolo,
+            _(
+                "Nella cartella {cartella} c'è la raccolta delle partite {file}, che non è del torneo {nome}: il torneo la sostituirebbe con la sua raccolta, o la cancellerebbe.\n"
+                "Non si è potuta mettere in salvo, né nella cartella d'archivio di un torneo concluso con lo stesso nome né nel cestino di Windows, per esempio perché quel disco non ha il cestino."
+            ).format(cartella=cartella, file=nome_file, nome=nome)
+            + "\n"
+            + conclusione,
+        )
+        return False
+
+    def _raccolta_del_torneo_nuovo_in_salvo(self):
+        """_raccolta_altrui_in_salvo per il torneo della procedura guidata,
+        con la sua cartella di salvataggio e il file che avra' nella
+        cartella del programma: prima dell'iscrizione dei giocatori, che
+        altrimenti andrebbe persa, e prima di scrivere il file del torneo
+        (10.19.7, issue 66)."""
+        from utils import sanitize_filename
+
+        torneo = {
+            "name": self.creation_data.get("name", ""),
+            "custom_save_path": self.creation_data.get("save_path"),
+        }
+        return self._raccolta_altrui_in_salvo(
+            torneo,
+            user_data_path(f"Tornello - {sanitize_filename(torneo['name'])}.json"),
+            _("Il torneo non è stato creato: sposta quel file in un'altra cartella, poi riprova."),
+        )
 
     def on_wizard_next(self):
         from utils import play_sound
@@ -3620,6 +3794,12 @@ class MainFrame(wx.Frame):
         # salvare (10.13.15).
         players_db = self._database_dei_giocatori()
         if players_db is None:
+            return
+
+        # La raccolta delle partite di un altro torneo, al posto di quella
+        # del torneo nuovo, si mette in salvo gia' qui: se non si puo', il
+        # torneo non nascera', e l'iscrizione andrebbe persa (10.19.7).
+        if not self._raccolta_del_torneo_nuovo_in_salvo():
             return
 
         play_sound("conferma")
@@ -3693,7 +3873,9 @@ class MainFrame(wx.Frame):
         save_dir = resolved_save_dir
 
         sanitized = sanitize_filename(self.creation_data["name"])
-        self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
+        # Il file del torneo nuovo diventa quello aperto solo quando il
+        # torneo nasce davvero, dopo la guardia sulla raccolta delle partite.
+        nuovo_file = user_data_path(f"Tornello - {sanitized}.json")
 
         from tournament import calculate_dates
 
@@ -3747,6 +3929,15 @@ class MainFrame(wx.Frame):
             "tournament_category": tournament_category,
         }
 
+        # Il primo salvataggio scrive la raccolta delle partite, o la toglie
+        # se non ci sono partite in PGN: una raccolta che c'e' gia' e' di un
+        # altro torneo, per esempio di un'edizione archiviata prima della
+        # 10.19.7, e va messa in salvo prima (issue 66), anche se e' nata
+        # dopo l'iscrizione. Fino alla 10.19.5 il primo salvataggio la
+        # cancellava per sempre.
+        if not self._raccolta_del_torneo_nuovo_in_salvo():
+            return
+
         tournament = Tournament.from_dict(t_dict)
         tournament.update_players_dict()
 
@@ -3754,6 +3945,7 @@ class MainFrame(wx.Frame):
         # dell'albero, "calcola il turno 1" sotto i turni oppure la voce in
         # fondo al centro comandi: piu' chiaro di una domanda che compariva una
         # volta sola e che, se rispondevi di no, spariva.
+        self.active_filename = nuovo_file
         self.current_tournament = tournament.to_dict()
         self.current_tournament["players_dict"] = {
             p["id"]: p for p in self.current_tournament.get("players", [])
@@ -3793,31 +3985,21 @@ class MainFrame(wx.Frame):
             if self.active_filename:
                 import os
 
-                from utils import resolve_and_verify_save_path, sanitize_filename
+                from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
 
-                t_name = self.current_tournament.get("name", "Torneo_Senza_Nome")
-                sanitized_name = sanitize_filename(t_name)
                 # La raccolta partite e' un file che appartiene al torneo, non
                 # al programma: va nella cartella di lavoro scelta dall'arbitro,
-                # come i report di testo.
-                cartella_pgn = self.current_tournament.get("custom_save_path")
-                if cartella_pgn:
-                    cartella_pgn, _avviso = resolve_and_verify_save_path(cartella_pgn)
-                else:
-                    cartella_pgn = os.path.dirname(self.active_filename)
-                pgn_filename = os.path.join(
-                    cartella_pgn,
-                    _("{name} - raccolta partite.pgn").format(name=sanitized_name),
+                # come i report di testo. Percorso e contenuto vengono da
+                # reports, come per la finalizzazione, che dalla 10.19.7 la
+                # porta in archivio (issue 66).
+                pgn_filename = file_della_raccolta_pgn(
+                    self.current_tournament, self.active_filename
                 )
-                all_pgns = []
-                for r in self.current_tournament.get("rounds", []):
-                    for m in r.get("matches", []):
-                        if m.get("pgn"):
-                            all_pgns.append(m["pgn"].strip())
-                if all_pgns:
+                contenuto = byte_della_raccolta_pgn(self.current_tournament)
+                if contenuto is not None:
                     try:
-                        with open(pgn_filename, "w", encoding="utf-8") as f:
-                            f.write("\n\n".join(all_pgns) + "\n")
+                        with open(pgn_filename, "wb") as f:
+                            f.write(contenuto)
                     except Exception as e:
                         print(f"Errore durante il salvataggio della raccolta PGN: {e}")
                 else:
@@ -5888,6 +6070,15 @@ class MainFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 new_val = dlg.GetValue().strip()
                 if new_val != self.current_tournament.get("name"):
+                    # Dalla 10.19.7 il nome nuovo passa dagli stessi
+                    # controlli della procedura guidata, e la raccolta delle
+                    # partite di un altro torneo che ha gia' quel nome si
+                    # mette in salvo (issue 66): con un rifiuto o con No il
+                    # nome resta quello di prima. Il file del torneo resta
+                    # quello di prima, come sempre.
+                    if not self._nome_da_dati_accettato(new_val):
+                        dlg.Destroy()
+                        return
                     self.current_tournament["name"] = new_val
                     self.tree_ctrl.SetItemText(
                         item, _("Nome torneo: {}").format(new_val)
@@ -5926,12 +6117,20 @@ class MainFrame(wx.Frame):
                         from datetime import datetime
 
                         datetime.strptime(val, "%Y-%m-%d")
-                        self.current_tournament["start_date"] = val
-                        self.tree_ctrl.SetItemText(
-                            item, _("Data inizio: {}").format(format_date_locale(val))
-                        )
-                        self._save_state()
-                        play_sound("conferma")
+                        # Dalla 10.19.7 la data nuova passa dagli stessi
+                        # controlli della procedura guidata (issue 66): la
+                        # data di inizio di un'edizione archiviata con lo
+                        # stesso nome non si accetta, e il campo resta
+                        # com'era. Un nome vuoto, come nella procedura, non
+                        # si controlla.
+                        nome = self.current_tournament.get("name", "")
+                        if not nome or self._nome_e_inizio_accettati(nome, val):
+                            self.current_tournament["start_date"] = val
+                            self.tree_ctrl.SetItemText(
+                                item, _("Data inizio: {}").format(format_date_locale(val))
+                            )
+                            self._save_state()
+                            play_sound("conferma")
                     except ValueError:
                         play_sound("errore")
                         dlg_err = AccessibleMsgDialog(

@@ -1497,6 +1497,36 @@ class TestCicloCompleto:
         assert _leggi(ambiente.file_torneo) == _leggi(copia)
         assert _leggi(ambiente.percorsi.database) == database_di_prima
 
+    def test_la_raccolta_delle_partite_non_ferma_la_riapertura(self, ambiente):
+        """Dalla 10.19.7 la finalizzazione porta in archivio anche la
+        raccolta delle partite in PGN (issue 66): e' un file del torneo, e la
+        cartella d'archivio va nel cestino con lei. Un altro file .pgn la
+        ferma, come prima."""
+        from copie_di_sicurezza import prepara_ripristino, ripristina
+
+        raccolta = ambiente.tmp / f"{NOME} - raccolta partite.pgn"
+        raccolta.write_bytes(b'[Event "Coppa"]\r\n')
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        cartella = _cartella_d_archivio(ambiente)
+        assert os.path.exists(os.path.join(cartella, raccolta.name))
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+        estranea = os.path.join(cartella, "Altro - raccolta partite.pgn")
+        with open(estranea, "wb") as f:
+            f.write(b"altro")
+
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+
+        assert piano.rifiuto.endswith(": Altro - raccolta partite.pgn. Il ripristino non la manda nel cestino: sistemala a mano e riprova.")
+
+        os.remove(estranea)
+        piano = prepara_ripristino(copia, ambiente.percorsi)
+        esito = ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino)
+
+        assert (piano.tipo, piano.rifiuto) == ("finalizzato", None)
+        assert esito.riuscito, esito.righe
+        assert not os.path.exists(cartella)
+        assert _leggi(ambiente.file_torneo) == _leggi(copia)
+
     def test_se_la_copia_di_prima_non_torna_non_la_si_nomina(self, ambiente):
         """Dopo la finalizzazione gli Elo cambiano ancora, per esempio con un
         aggiornamento FIDE: la copia del database di prima non torna, e la

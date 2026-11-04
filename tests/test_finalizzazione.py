@@ -1775,3 +1775,91 @@ class TestRegoleFideAllaFinalizzazione:
         assert (archiviati["G1"][1:], archiviati["G2"][1:]) == ((1, 0), (1, -3))
         dopo = _giocatori_del_db(banco.db)
         assert (dopo["G1"]["games_played"], dopo["G2"]["games_played"]) == (11, 11)
+
+
+# Il PGN della prima partita del torneo della prova e il nome della sua
+# raccolta delle partite, come li scrive la finestra.
+PGN_DELLA_PROVA = '[Event "Coppa Prova"]\n\n1. e4 e5 2. Nf3 Nc6 1-0'
+RACCOLTA = f"{NOME} - raccolta partite.pgn"
+
+
+def _con_la_raccolta(banco, cartella=None):
+    """Il torneo con il PGN della prima partita, salvato, e la sua raccolta
+    nella cartella di lavoro, senza cartella quella del file del torneo,
+    con l'a capo del sistema. Restituisce il percorso e il contenuto della
+    raccolta."""
+    banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+    _scrivi(banco.file_torneo, banco.torneo)
+    percorso = os.path.join(cartella or os.path.dirname(banco.file_torneo), RACCOLTA)
+    contenuto = (PGN_DELLA_PROVA + "\n").replace("\n", os.linesep).encode("utf-8")
+    with open(percorso, "wb") as f:
+        f.write(contenuto)
+    return percorso, contenuto
+
+
+class TestRaccoltaDellePartiteInArchivio:
+    """Dalla 10.19.7 (issue 66, decisione di Gabriele del 4 novembre 2026)
+    la raccolta delle partite in PGN va in archivio con i report, nella
+    finestra e in console, e segue la loro strada: spostata dalla cartella
+    del programma, copiata dalla cartella di lavoro esterna, messa nella
+    cartella backup da una finalizzazione ripetuta. Fino alla 10.19.5
+    restava nella cartella di salvataggio, dove la nuova edizione con lo
+    stesso nome la cancellava o la sostituiva."""
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    def test_va_in_archivio_e_lascia_la_cartella(self, banco, dove):
+        raccolta, contenuto = _con_la_raccolta(banco)
+
+        assert (_finalizza(banco) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == contenuto
+        assert not os.path.exists(raccolta)
+        assert _copie(banco.backup, "pre_archiviazione") == []
+
+    def test_dalla_cartella_esterna_si_copia_e_resta(self, banco, tmp_path):
+        esterna = tmp_path / "esterna"
+        esterna.mkdir()
+        banco.torneo["custom_save_path"] = str(esterna)
+        raccolta, contenuto = _con_la_raccolta(banco, str(esterna))
+
+        assert _finalizza(banco) is True
+
+        assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == contenuto
+        assert _leggi_byte(raccolta) == contenuto
+
+    def test_nella_finalizzazione_ripetuta_va_nella_cartella_backup(self, banco):
+        """L'archivio resta com'era, con la sua raccolta, e quella nuova va
+        nella cartella backup con rifinalizzazione nel nome, come i report."""
+        raccolta, contenuto = _con_la_raccolta(banco)
+        assert _finalizza(banco) is True
+        in_archivio = os.path.join(_cartella_archivio(), RACCOLTA)
+        assert _leggi_byte(in_archivio) == contenuto
+
+        _scrivi(banco.file_torneo, banco.torneo)
+        with open(raccolta, "wb") as f:
+            f.write(b"raccolta scritta dopo")
+        avvisi = []
+        assert _finalizza(banco, avvisi) is True
+
+        assert any("già finalizzato e archiviato" in a for a in avvisi)
+        assert _leggi_byte(in_archivio) == contenuto
+        assert not os.path.exists(raccolta)
+        messe_da_parte = [c for c in _copie(banco.backup, "rifinalizzazione") if c.endswith(".pgn")]
+        assert [_leggi_byte(c) for c in messe_da_parte] == [b"raccolta scritta dopo"]
+
+    def test_quella_gia_nella_cartella_d_archivio_resta(self, banco):
+        """Il torneo aperto da un file dell'archivio, senza una cartella di
+        lavoro: la sua raccolta sta gia' nella cartella d'archivio, e non si
+        sposta su se stessa, che vorrebbe dire cancellarla. Una guardia: con
+        la 10.19.5 la raccolta non si spostava mai."""
+        cartella = _cartella_archivio()
+        os.makedirs(cartella)
+        aperto = _json_in_archivio(cartella)
+        os.remove(banco.file_torneo)
+        banco.file_torneo = aperto
+        raccolta, contenuto = _con_la_raccolta(banco)
+        assert os.path.dirname(raccolta) == cartella
+
+        assert _finalizza(banco) is True
+
+        assert _leggi_byte(raccolta) == contenuto

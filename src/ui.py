@@ -33,7 +33,11 @@ from db_players import (
 # che deve trovare le stesse voci che la finalizzazione ha scritto.
 from db_players import identita_del_torneo as _identita_del_torneo
 from db_players import voce_di_questo_torneo as _voce_di_questo_torneo
-from reports import save_standings_text, save_suspended_tournament_summary
+from reports import (
+    file_della_raccolta_pgn,
+    save_standings_text,
+    save_suspended_tournament_summary,
+)
 from stats import (
     calculate_elo_change,
     calculate_performance_rating,
@@ -2248,6 +2252,22 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
                 local_json_path
             ):
                 report_files.append(file_in_dir)
+
+    # La raccolta delle partite in PGN, che la finestra scrive a ogni
+    # salvataggio, dalla 10.19.7 va in archivio con i report, per la stessa
+    # strada: spostata, o copiata dalla cartella di lavoro esterna, e nella
+    # finalizzazione ripetuta messa nella cartella backup (decisione di
+    # Gabriele del 4 novembre 2026, issue 66). Fino alla 10.19.5 restava nella
+    # cartella di salvataggio, dove il primo salvataggio di una nuova edizione
+    # con lo stesso nome la cancellava o la sostituiva. Il nome non comincia
+    # con Tornello -, e il glob dei report non la prende. Quella che e' gia'
+    # nella cartella d'archivio, come per un torneo aperto dall'archivio
+    # senza una cartella di lavoro, resta dov'e'.
+    raccolta = file_della_raccolta_pgn(torneo, percorso_del_torneo)
+    if os.path.isfile(raccolta) and not _stesso_file(
+        raccolta, os.path.join(full_archive_path, os.path.basename(raccolta))
+    ):
+        report_files.append(raccolta)
 
     # Una finalizzazione ripetuta di un torneo gia' archiviato: l'archivio ha
     # il json della stessa edizione, e almeno un giocatore aveva gia' la voce

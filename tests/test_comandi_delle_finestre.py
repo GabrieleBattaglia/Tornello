@@ -3064,6 +3064,525 @@ class TestNomeDelTorneoNuovo:
         assert finestre == []
 
 
+def _raccolta_come_la_scrive_la_finestra(*pgn):
+    """Il contenuto della raccolta delle partite con questi PGN, come lo
+    scrive la finestra: separati da una riga vuota, con l'a capo in fondo,
+    in UTF-8 e con l'a capo del sistema."""
+    return ("\n\n".join(p.strip() for p in pgn) + "\n").replace("\n", os.linesep).encode("utf-8")
+
+
+class TestRaccoltaDellePartiteDelleEdizioni:
+    """Dalla 10.19.7 (issue 66, decisione di Gabriele del 4 novembre 2026)
+    la finalizzazione porta in archivio la raccolta delle partite in PGN,
+    con i report, e il primo salvataggio di un torneo nuovo non distrugge la
+    raccolta di un altro torneo che trova al suo posto: quella di
+    un'edizione archiviata va nella sua cartella d'archivio, con una copia
+    riletta, e l'originale nel cestino; un'altra va nel cestino; se il
+    cestino non la prende, il torneo non nasce. Fino alla 10.19.5 la
+    raccolta restava nella cartella di salvataggio, e il primo salvataggio
+    della nuova edizione la cancellava per sempre. Il cestino e le finestre
+    di messaggio sono finti."""
+
+    @staticmethod
+    def _cestino(monkeypatch, cartella, prende=True):
+        """Al posto di delete_file_to_trash: sposta i file in cartella e li
+        annota; con prende falso li lascia dove sono, come un disco senza
+        cestino."""
+        import shutil
+
+        import utils
+
+        ricevuti = []
+
+        def cestino(percorso, finestra=None):
+            if not prende:
+                return False
+            os.makedirs(cartella, exist_ok=True)
+            shutil.move(percorso, os.path.join(cartella, f"{len(ricevuti)}_{os.path.basename(percorso)}"))
+            ricevuti.append(os.path.normcase(os.path.abspath(percorso)))
+            return True
+
+        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+        return ricevuti
+
+    @staticmethod
+    def _database_dei_giocatori():
+        """Il database con le schede dei giocatori dei tornei delle prove."""
+        from config import PLAYER_DB_FILE
+
+        schede = [
+            {"id": codice, "first_name": nome, "last_name": cognome, "current_elo": 1500.0, "initial_elo": 1500.0, "games_played": 10, "medals": {"gold": 0, "silver": 0, "bronze": 0, "wood": 0}, "tournaments_played": []}
+            for codice, cognome, nome in GIOCATORI_DEI_TORNEI
+        ]
+        TestNomeDelTorneoNuovo._scrivi(PLAYER_DB_FILE, {"schema_version": 2, "players": schede})
+
+    @staticmethod
+    def _nuova_edizione(principale, monkeypatch, inizio, fine, nome="Primavera 2"):
+        """Il torneo nome dalla procedura guidata, con un turno, le due date
+        e gli iscritti dei tornei delle prove, fino alla sua nascita."""
+        principale.start_new_tournament_wizard()
+        principale.creation_data.update(start_date=inizio, end_date=fine, rounds=1)
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, nome)
+        assert principale.creation_data["name"] == nome
+        principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+
+    def test_la_finalizzazione_porta_la_raccolta_in_archivio(self, principale, suoni, monkeypatch):
+        """La strada intera, sulla finestra principale vera, mai mostrata:
+        Primavera 2 nasce dalla procedura guidata, una partita ha il PGN, il
+        salvataggio scrive la raccolta nella cartella del programma, e
+        on_finalize_tournament la porta nella cartella d'archivio. La nuova
+        edizione con lo stesso nome nasce senza trovarla e senza messaggi
+        sulla raccolta, e quella dell'archivio resta com'era."""
+        from datetime import datetime
+
+        import wx
+
+        import ui
+        from config import user_data_path
+        from utils import cartella_per_data
+
+        monkeypatch.setattr(ui, "play_sound", lambda *a, **k: None)
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: pytest.fail(f"MessageBox: {a}"))
+        self._database_dei_giocatori()
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+
+        self._nuova_edizione(principale, monkeypatch, "2026-10-01", "2026-10-10")
+        TestNomeDelTorneoNuovo._gioca_il_turno(principale)
+        principale.current_tournament["rounds"][0]["matches"][0]["pgn"] = PGN_VALIDO
+        principale._save_state()
+        contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        principale.on_finalize_tournament(None)
+
+        assert principale.current_tournament is None
+        mese = cartella_per_data(ui.ARCHIVED_TOURNAMENTS_DIR, datetime(2026, 10, 1), crea=False)
+        in_archivio = os.path.join(mese, "Primavera_2", "Primavera_2 - raccolta partite.pgn")
+        with open(in_archivio, "rb") as f:
+            assert f.read() == contenuto
+        assert not os.path.exists(raccolta)
+
+        self._nuova_edizione(principale, monkeypatch, "2026-10-15", "2026-10-25")
+
+        assert principale.active_filename == user_data_path("Tornello - Primavera_2.json")
+        with open(in_archivio, "rb") as f:
+            assert f.read() == contenuto
+        assert [f.titolo for f in finestre if f.domanda] == ["Finalizza Torneo", "Nuova edizione di un torneo concluso"]
+        assert not any(f.titolo == "Raccolta delle partite di un altro torneo" for f in finestre)
+
+    def test_la_raccolta_lasciata_da_un_edizione_archiviata_va_nella_sua_cartella(self, principale, suoni, monkeypatch, tmp_path):
+        """Primavera 2, archiviata prima della 10.19.7, ha lasciato la sua
+        raccolta nella cartella del programma. La nuova edizione la trova,
+        identica a quella che scriverebbe il file archiviato: va nella sua
+        cartella d'archivio, con una copia riletta, l'originale va nel
+        cestino, un messaggio lo dice, e il torneo nuovo nasce."""
+        import gui.main_frame as mf
+        from config import user_data_path
+
+        archiviato = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Primavera_2", "Tornello - Primavera_2.json")
+        dati = dict(_torneo_in_corso("Primavera 2", finito=True), concluded=True)
+        dati["rounds"][0]["matches"][0]["pgn"] = PGN_VALIDO
+        TestNomeDelTorneoNuovo._scrivi(archiviato, dati)
+        lasciata = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        with open(lasciata, "wb") as f:
+            f.write(contenuto)
+        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        self._nuova_edizione(principale, monkeypatch, "2026-11-02", "2026-11-20")
+
+        assert principale.active_filename == user_data_path("Tornello - Primavera_2.json")
+        with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
+            assert f.read() == contenuto
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert not os.path.exists(lasciata)
+        assert "errore" not in suoni
+        cartella = os.path.abspath(user_data_path(""))
+        archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert [(f.titolo, f.testo) for f in finestre if not f.domanda] == [
+            (
+                "Raccolta delle partite di un altro torneo",
+                f"Nella cartella {cartella} c'era la raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2, concluso e archiviato nella cartella {archivio}: il torneo Primavera 2 l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                f"Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, e quella della cartella {cartella} è andata nel cestino di Windows.",
+            )
+        ]
+
+    @pytest.mark.parametrize("prende", [True, False])
+    def test_una_raccolta_di_nessuna_edizione_archiviata(self, principale, suoni, monkeypatch, tmp_path, prende):
+        """Una raccolta con il nome di quella del torneo nuovo, che nessuna
+        edizione archiviata scriverebbe, per esempio di un torneo eliminato,
+        va nel cestino, e il torneo nasce. Se il cestino non la prende si
+        sente l'errore, un messaggio lo dice, la raccolta resta com'era e il
+        torneo non nasce: la procedura guidata resta dov'e'."""
+        from config import user_data_path
+
+        lasciata = user_data_path("Gamma - raccolta partite.pgn")
+        with open(lasciata, "wb") as f:
+            f.write(b"partite di un torneo eliminato")
+        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        self._nuova_edizione(principale, monkeypatch, "2026-11-02", "2026-11-20", nome="Gamma")
+
+        cartella = os.path.abspath(user_data_path(""))
+        nuovo = user_data_path("Tornello - Gamma.json")
+        if prende:
+            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert principale.active_filename == nuovo
+            assert "errore" not in suoni
+            assert [(f.titolo, f.testo) for f in finestre] == [
+                (
+                    "Raccolta delle partite di un altro torneo",
+                    f"Nella cartella {cartella} c'era la raccolta delle partite Gamma - raccolta partite.pgn, che non è del torneo Gamma: il torneo l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                    "È andata nel cestino di Windows, da dove si può recuperare.",
+                )
+            ]
+        else:
+            with open(lasciata, "rb") as f:
+                assert f.read() == b"partite di un torneo eliminato"
+            assert not os.path.exists(nuovo)
+            assert principale.creation_mode
+            assert principale.current_tournament is None
+            assert principale.active_filename is None
+            assert "errore" in suoni
+            assert [(f.titolo, f.testo) for f in finestre] == [
+                (
+                    "Raccolta delle partite di un altro torneo",
+                    f"Nella cartella {cartella} c'è la raccolta delle partite Gamma - raccolta partite.pgn, che non è del torneo Gamma: il torneo la sostituirebbe con la sua raccolta, o la cancellerebbe.\n"
+                    "Non si è potuta mettere in salvo, né nella cartella d'archivio di un torneo concluso con lo stesso nome né nel cestino di Windows, per esempio perché quel disco non ha il cestino.\n"
+                    "Il torneo non è stato creato: sposta quel file in un'altra cartella, poi riprova.",
+                )
+            ]
+
+
+    @pytest.mark.parametrize("prende", [True, False])
+    def test_la_raccolta_si_mette_in_salvo_prima_dell_iscrizione(self, principale, suoni, monkeypatch, tmp_path, prende):
+        """La guardia sta anche prima dell'iscrizione dei giocatori, come
+        quella del nome: la raccolta va nel cestino prima che la finestra di
+        iscrizione si apra, e se il cestino non la prende la finestra non si
+        apre, e l'iscrizione non va persa."""
+        import wx
+
+        import gui.dialogs as finestre_di_dialogo
+        from config import user_data_path
+
+        class IscrizioneFinta:
+            def __init__(self, *a, **k):
+                aperte.append(os.path.exists(lasciata))
+
+            def ShowModal(self):
+                return wx.ID_CANCEL
+
+            def Destroy(self):
+                pass
+
+        aperte = []
+        monkeypatch.setattr(finestre_di_dialogo, "PlayerEnrollmentDialog", IscrizioneFinta)
+        lasciata = user_data_path("Gamma - raccolta partite.pgn")
+        with open(lasciata, "wb") as f:
+            f.write(b"partite di un torneo eliminato")
+        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.start_new_tournament_wizard()
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, "Gamma")
+        suoni.clear()
+
+        principale.on_wizard_next()
+
+        assert principale.creation_mode
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
+        if prende:
+            # La finestra di iscrizione si apre con la raccolta gia' nel
+            # cestino.
+            assert aperte == [False]
+            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert suoni == ["conferma"]
+        else:
+            assert aperte == []
+            with open(lasciata, "rb") as f:
+                assert f.read() == b"partite di un torneo eliminato"
+            assert suoni == ["errore"]
+
+
+class TestNomeEDataDiInizioDaDati:
+    """Dalla 10.19.7 (issue 66, decisione di Gabriele del 4 novembre 2026)
+    il nome e la data di inizio cambiati dai campi di Dati passano dagli
+    stessi controlli della procedura guidata: un file del programma o un
+    torneo della cartella del programma si rifiutano, un torneo
+    dell'archivio chiede, con No predefinito, e la data di inizio di
+    un'edizione archiviata con lo stesso nome si rifiuta. Con un rifiuto o
+    con No il campo resta com'era, e il file del torneo pure; il file del
+    torneo aperto non conta. Fino alla 10.19.5 Dati non controllava niente.
+    Le finestre del campo e dei messaggi sono finte."""
+
+    @staticmethod
+    def _apri(principale, nome, **altro):
+        """Il torneo nome in corso nella cartella del programma, dal 2 al 20
+        novembre 2026 se altro non dice altro, aperto nella finestra."""
+        from config import user_data_path
+
+        percorso = user_data_path(f"Tornello - {nome.replace(' ', '_')}.json")
+        dati = _torneo_in_corso(nome)
+        dati.update(start_date="2026-11-02", end_date="2026-11-20")
+        dati.update(altro)
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        assert principale.current_tournament["name"] == nome
+        return percorso
+
+    @staticmethod
+    def _campo(principale, monkeypatch, percorso, campo, valore):
+        """Il campo di Dati, con valore scritto nella sua finestra e
+        confermato con OK. Restituisce la voce dell'albero."""
+        import wx
+
+        class CampoFinto:
+            def __init__(self, *a, **k):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetValue(self):
+                return valore
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "TextEntryDialog", CampoFinto)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": campo})
+        assert voce and voce.IsOk(), campo
+        principale.on_active_field_activated(voce, campo)
+        return voce
+
+    @staticmethod
+    def _nel_file(percorso):
+        import json
+
+        with open(percorso, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_il_nome_di_un_torneo_della_cartella_non_si_accetta(self, principale, suoni, monkeypatch):
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo()._torneo_nella_cartella("Beta", rounds=[{"round": 1, "matches": []}])
+        percorso = self._apri(principale, "Alfa")
+        with open(percorso, "rb") as f:
+            prima = f.read()
+        suoni.clear()
+
+        voce = self._campo(principale, monkeypatch, percorso, "name", "beta")
+
+        assert principale.current_tournament["name"] == "Alfa"
+        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Alfa"
+        with open(percorso, "rb") as f:
+            assert f.read() == prima
+        assert suoni == ["apertura", "errore"]
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                "Il nome beta non si può usare: il file del torneo si chiamerebbe Tornello - beta.json, come il file del torneo Beta, in corso nella cartella del programma.\n"
+                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo.",
+                False,
+            )
+        ]
+
+    def test_il_nome_di_un_torneo_dell_archivio_chiede(self, principale, suoni, monkeypatch):
+        """La domanda della procedura guidata, con No predefinito: con No il
+        nome resta, con Si' cambia e si salva, nel file di prima, che non
+        cambia nome."""
+        import wx
+
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO])
+        TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        percorso = self._apri(principale, "Alfa")
+        suoni.clear()
+
+        voce = self._campo(principale, monkeypatch, percorso, "name", "Primavera 2")
+
+        assert principale.current_tournament["name"] == "Alfa"
+        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Alfa"
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        assert suoni == ["apertura"]
+        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
+            (
+                "Nuova edizione di un torneo concluso",
+                TestNomeDelTorneoNuovo._domanda_attesa("Primavera 2", "Tornello - Primavera_2.json", [("Primavera 2", cartella)]),
+                True,
+                True,
+            )
+        ]
+
+        self._campo(principale, monkeypatch, percorso, "name", "Primavera 2")
+
+        assert principale.current_tournament["name"] == "Primavera 2"
+        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Primavera 2"
+        assert self._nel_file(percorso)["name"] == "Primavera 2"
+        assert not os.path.exists(user_data_path("Tornello - Primavera_2.json"))
+        assert [f.titolo for f in finestre] == ["Nuova edizione di un torneo concluso"] * 2
+        assert suoni[-1] == "conferma"
+
+    def test_il_nome_con_la_data_di_un_edizione_archiviata_non_si_accetta(self, principale, suoni, monkeypatch):
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        percorso = self._apri(principale, "Alfa", start_date="2026-09-01")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", "Primavera 2")
+
+        assert principale.current_tournament["name"] == "Alfa"
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        assert suoni == ["apertura", "errore"]
+        assert [(f.titolo, f.domanda) for f in finestre] == [("Nome del torneo già in uso", False)]
+        assert finestre[0].testo.startswith("Il nome Primavera 2 non si può usare con la data di inizio ")
+
+    def test_la_data_di_inizio_di_un_edizione_archiviata_non_si_accetta(self, principale, suoni, monkeypatch):
+        """La nuova edizione di Primavera 2 prova a prendere da Dati la data
+        di inizio di quella archiviata: si rifiuta, senza domanda, e il
+        campo resta com'era; un'altra data passa, senza domanda."""
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        percorso = self._apri(principale, "Primavera 2")
+        suoni.clear()
+
+        voce = self._campo(principale, monkeypatch, percorso, "start_date", "2026-09-01")
+
+        assert principale.current_tournament["start_date"] == "2026-11-02"
+        assert self._nel_file(percorso)["start_date"] == "2026-11-02"
+        assert principale.tree_ctrl.GetItemText(voce) == f"Data inizio: {format_date_locale('2026-11-02')}"
+        assert suoni == ["apertura", "errore"]
+        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                f"Il nome Primavera 2 non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il file del torneo si chiamerebbe Tornello - Primavera_2.json, come quello del torneo Primavera 2, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
+                "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo.",
+                False,
+            )
+        ]
+        finestre.clear()
+
+        self._campo(principale, monkeypatch, percorso, "start_date", "2026-11-03")
+
+        assert principale.current_tournament["start_date"] == "2026-11-03"
+        assert self._nel_file(percorso)["start_date"] == "2026-11-03"
+        assert finestre == []
+        assert suoni[-1] == "conferma"
+
+    def test_il_torneo_aperto_non_coincide_con_se_stesso(self, principale, suoni, monkeypatch):
+        """Il file del torneo aperto non conta: Alfa, rinominato Beta da
+        Dati, torna Alfa nel suo file di sempre, e poi ALFA, e il torneo
+        aperto dall'archivio prende lo stesso nome con le minuscole senza
+        essere l'edizione archiviata di se stesso, con la sua stessa data di
+        inizio. La domanda sulla nuova edizione non si fa per un nome che e'
+        gia' quello del torneo."""
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        archiviato = TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        percorso = self._apri(principale, "Alfa")
+
+        for nome in ("Beta", "Alfa", "ALFA"):
+            self._campo(principale, monkeypatch, percorso, "name", nome)
+            assert self._nel_file(percorso)["name"] == nome
+        self._campo(principale, monkeypatch, percorso, "start_date", "2026-11-05")
+
+        assert self._nel_file(percorso)["start_date"] == "2026-11-05"
+        assert finestre == []
+
+        principale.load_tournament(archiviato)
+        self._campo(principale, monkeypatch, archiviato, "name", "primavera 2")
+        self._campo(principale, monkeypatch, archiviato, "start_date", "2026-09-02")
+
+        dati = self._nel_file(archiviato)
+        assert (dati["name"], dati["start_date"]) == ("primavera 2", "2026-09-02")
+        assert finestre == []
+
+    @pytest.mark.parametrize("prende", [True, False])
+    def test_la_raccolta_di_un_altro_torneo_con_il_nome_nuovo(self, principale, suoni, monkeypatch, tmp_path, prende):
+        """Il nome nuovo ha gia' la raccolta delle partite di un altro
+        torneo: va nel cestino prima del salvataggio, e il nome cambia; se il
+        cestino non la prende, si sente l'errore, la raccolta resta com'era
+        e il nome anche."""
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        percorso = self._apri(principale, "Alfa")
+        lasciata = user_data_path("Beta - raccolta partite.pgn")
+        with open(lasciata, "wb") as f:
+            f.write(b"partite di un altro torneo")
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", "Beta")
+
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
+        if prende:
+            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert self._nel_file(percorso)["name"] == "Beta"
+            assert suoni == ["apertura", "conferma"]
+        else:
+            with open(lasciata, "rb") as f:
+                assert f.read() == b"partite di un altro torneo"
+            assert principale.current_tournament["name"] == "Alfa"
+            assert self._nel_file(percorso)["name"] == "Alfa"
+            assert suoni == ["apertura", "errore"]
+            assert finestre[0].testo.endswith("\nIl nome del torneo resta quello di prima: sposta quel file in un'altra cartella, poi riprova.")
+
+    def test_la_data_rifiutata_tiene_distinte_le_edizioni_alla_finalizzazione(self, principale, suoni, monkeypatch):
+        """La strada intera: la prima edizione di Primavera 2 nasce, si gioca
+        e si finalizza con on_finalize_tournament; la seconda nasce con
+        un'altra data di inizio, e da Dati prova a prendere quella della
+        prima, che si rifiuta. Finalizzata, la seconda ha la sua cartella
+        d'archivio, e lo storico di ogni giocatore ha le due edizioni. Fino
+        alla 10.19.5 la data passava, e la finalizzazione prendeva la seconda
+        per una finalizzazione ripetuta della prima: i giocatori restavano
+        senza Elo, partite e storico della seconda."""
+        import json
+        from datetime import datetime
+
+        import wx
+
+        import ui
+        from config import PLAYER_DB_FILE
+        from utils import cartella_per_data
+
+        monkeypatch.setattr(ui, "play_sound", lambda *a, **k: None)
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: pytest.fail(f"MessageBox: {a}"))
+        TestRaccoltaDellePartiteDelleEdizioni._database_dei_giocatori()
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestRaccoltaDellePartiteDelleEdizioni._nuova_edizione(principale, monkeypatch, "2026-10-01", "2026-10-10")
+        TestNomeDelTorneoNuovo._gioca_il_turno(principale)
+        principale.on_finalize_tournament(None)
+        TestRaccoltaDellePartiteDelleEdizioni._nuova_edizione(principale, monkeypatch, "2026-10-15", "2026-10-25")
+        TestNomeDelTorneoNuovo._gioca_il_turno(principale)
+        finestre.clear()
+
+        self._campo(principale, monkeypatch, principale.active_filename, "start_date", "2026-10-01")
+
+        assert principale.current_tournament["start_date"] == "2026-10-15"
+        assert [f.titolo for f in finestre] == ["Nome del torneo già in uso"]
+
+        principale.on_finalize_tournament(None)
+
+        assert principale.current_tournament is None
+        with open(PLAYER_DB_FILE, encoding="utf-8") as f:
+            database = {p["id"]: p for p in json.load(f)["players"]}
+        for codice, _cognome, _nome in GIOCATORI_DEI_TORNEI:
+            assert [v["date_started"] for v in database[codice]["tournaments_played"]] == ["2026-10-01", "2026-10-15"], codice
+            assert database[codice]["games_played"] == 12, codice
+        mese = cartella_per_data(ui.ARCHIVED_TOURNAMENTS_DIR, datetime(2026, 10, 1), crea=False)
+        with open(os.path.join(mese, "Primavera_2_2026-10-15", "Tornello - Primavera_2.json"), encoding="utf-8") as f:
+            assert json.load(f)["start_date"] == "2026-10-15"
+        assert not any("già finalizzato e archiviato" in f.testo for f in finestre)
+
+
 class TestPartiteDellaCadenzaNelDatabase:
     """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori
     Locale mostra, sotto le Partite Locali Giocate, le partite dei tornei

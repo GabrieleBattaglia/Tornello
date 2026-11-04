@@ -1355,10 +1355,16 @@ def _file_estranei(cartella, nome_sanitizzato, json_archiviato):
     """I file e le cartelle dentro la cartella d'archivio che non sono del
     torneo: se ce ne sono, la cartella non va nel cestino. Il json archiviato
     e' del torneo anche con un nome diverso, quello del file da cui il torneo
-    e' stato aperto."""
+    e' stato aperto. Dalla 10.19.7 e' del torneo anche la sua raccolta delle
+    partite in PGN, che la finalizzazione porta in archivio con i report
+    (issue 66): senza, la riapertura di un torneo con le partite in PGN si
+    sarebbe rifiutata."""
+    from reports import nome_della_raccolta_pgn
+
+    raccolta = nome_della_raccolta_pgn(nome_sanitizzato)
     estranei = []
     for voce in os.scandir(cartella):
-        if voce.name == json_archiviato:
+        if voce.name == json_archiviato or (voce.name == raccolta and voce.is_file()):
             continue
         if voce.is_dir() or not file_del_torneo(voce.name, nome_sanitizzato):
             estranei.append(voce.name)
