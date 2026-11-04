@@ -469,9 +469,11 @@ class MainFrame(wx.Frame):
         # menu File, e arriva con lei a on_canc: dalla 10.19.0 tasto e menu
         # fanno la stessa cosa. La voce mostra il tasto come Canc, che wx non
         # riconosce, e l'acceleratore sta nella tabella della finestra
-        # principale, con l'identificativo della voce. La tabella vale per
-        # l'albero e per le due aree di testo della finestra, in sola
-        # lettura, dove CANC non ha un lavoro suo; le finestre di dialogo
+        # principale, con l'identificativo della voce. CANC arriva a on_canc
+        # soltanto dall'albero: nei campi di testo, anche in sola lettura come
+        # l'area centrale e la barra di stato, wx lascia il tasto al campo e
+        # non lo passa alla tabella. La voce del menu, scelta da qualunque
+        # punto, agisce sulla voce scelta nell'albero. Le finestre di dialogo
         # hanno i loro tasti, perche' wx non guarda gli acceleratori della
         # finestra che le ha aperte. Dalla revisione della 10.14.0 alla
         # 10.18.1 CANC aveva un identificativo suo, e la voce scelta dal
@@ -3871,6 +3873,18 @@ class MainFrame(wx.Frame):
             )
             return
 
+        # Dalla 10.19.0 i giocatori di un torneo concluso restano come sono,
+        # come i suoi turni: fino alla 10.18.1 CANC ne proponeva il ritiro,
+        # dal turno dopo, che non c'e', e con Si' cambiava il file del torneo
+        # archiviato e scriveva i report nella cartella di salvataggio.
+        if t_data.get("concluded"):
+            self._canc_sul_torneo_concluso(
+                _("Il torneo {name} e' concluso, e i suoi giocatori non si tolgono e non si ritirano piu'.").format(
+                    name=t_data.get("name", "")
+                )
+            )
+            return
+
         if len(t_data.get("rounds", [])) > 0:
             self._proponi_ritiro_dal_torneo(item, player_data, filepath)
             return
@@ -4575,7 +4589,8 @@ class MainFrame(wx.Frame):
 
     def _canc_sulla_voce(self, item, data):
         """CANC sulla voce scelta nell'albero. Sul torneo lo elimina, sul
-        giocatore lo toglie o ne propone il ritiro, come prima; dalla
+        giocatore lo toglie o ne propone il ritiro, come prima, tranne che in
+        un torneo concluso, dalla 10.19.0; dalla
         10.14.0, sulla partita, decide _canc_sulla_partita, e dalla 10.19.0,
         sul turno, _canc_sul_turno. Sulle altre voci suona l'errore, e dalla
         10.19.0 un messaggio di una riga dice su quali voci CANC lavora:
@@ -4608,6 +4623,22 @@ class MainFrame(wx.Frame):
         play_sound("errore", self.current_tournament)
         self._dialogo_informativo(titolo or _("Elimina o annulla"), messaggio)
 
+    def _canc_sul_torneo_concluso(self, frase):
+        """Il messaggio Torneo concluso di CANC sui turni e sui giocatori di
+        un torneo concluso, dalla 10.19.0: frase dice che cosa CANC non fa, e
+        il messaggio aggiunge come si riapre il torneo."""
+        self._canc_non_lavora_qui(
+            " ".join(
+                [
+                    frase,
+                    _(
+                        "Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+                    ),
+                ]
+            ),
+            _("Torneo concluso"),
+        )
+
     def _canc_sul_turno(self, dati):
         """CANC sulla voce di un turno, dalla 10.19.0: la Time Machine. Sul
         turno corrente, l'ultimo abbinato, anche quando ha tutti i risultati
@@ -4629,11 +4660,10 @@ class MainFrame(wx.Frame):
             )
             return
         if self.current_tournament.get("concluded"):
-            self._canc_non_lavora_qui(
-                _(
-                    "Il torneo {name} e' concluso, e la Time Machine non toglie i turni di un torneo finalizzato. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
-                ).format(name=self.current_tournament.get("name", "")),
-                _("Torneo concluso"),
+            self._canc_sul_torneo_concluso(
+                _("Il torneo {name} e' concluso, e la Time Machine non toglie i turni di un torneo finalizzato.").format(
+                    name=self.current_tournament.get("name", "")
+                )
             )
             return
         ultimo = max(turni)

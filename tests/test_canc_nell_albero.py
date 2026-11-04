@@ -672,10 +672,13 @@ class TestLaVoceDelMenu:
         assert principale.item_canc.GetAccel() is None
 
     def test_la_finestra_principale_non_ha_campi_modificabili(self, principale):
-        """L'acceleratore di CANC vale per tutta la finestra principale: non
-        toglie il tasto a nessun campo dove avrebbe un lavoro suo, perche'
-        i campi di testo della finestra, l'area centrale e la barra di stato,
-        sono in sola lettura. Se ne nascesse uno modificabile, questa prova
+        """I campi di testo della finestra principale sono l'area centrale e
+        la barra di stato, in sola lettura, e non ci sono altri controlli
+        dove CANC abbia un lavoro suo. Nei campi di testo wx lascia CANC al
+        campo, e il tasto non arriva all'acceleratore, come misura
+        test_canc_nell_area_centrale_e_nella_barra_di_stato_resta_al_campo;
+        un controllo di un altro tipo potrebbe invece perderlo, e un campo
+        modificabile avrebbe un lavoro suo. Se ne nascesse uno, questa prova
         lo direbbe."""
         import wx
 
@@ -771,6 +774,37 @@ def test_il_tasto_canc_nell_albero_arriva_a_on_canc_con_la_voce_del_menu(app_gra
         _premi_canc(user32, finestra.tree_ctrl)
 
         assert arrivati == [finestra.item_canc.GetId()]
+    finally:
+        finestra.Destroy()
+        _attendi(lambda: not finestra, 1.0)
+
+
+@pytest.mark.finestre_vere
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+@pytest.mark.parametrize("campo", ["main_text", "status_text"])
+def test_canc_nell_area_centrale_e_nella_barra_di_stato_resta_al_campo(app_grafica, suoni, monkeypatch, campo):
+    """CANC premuto davvero nell'area centrale e nella barra di stato, sulla
+    finestra principale mostrata sul desktop nascosto: wx lascia il tasto al
+    campo di testo, anche in sola lettura, e non lo passa alla tabella degli
+    acceleratori, quindi CANC arriva a on_canc soltanto dall'albero. Se nella
+    finestra nascesse un controllo che non e' un campo di testo, questa prova
+    e test_la_finestra_principale_non_ha_campi_modificabili lo direbbero."""
+    import wx
+    from test_fuoco_alla_chiusura import _attendi
+
+    arrivati = []
+    finestra = _finestra_vera(monkeypatch, arrivati)
+    try:
+        percorso = _apri(finestra)
+        finestra.tree_ctrl.SelectItem(_voce(finestra, action="show_data", filepath=percorso))
+        controllo = getattr(finestra, campo)
+        user32 = _attiva(finestra)
+        controllo.SetFocus()
+        assert _attendi(lambda: wx.Window.FindFocus() is controllo)
+
+        _premi_canc(user32, controllo)
+
+        assert arrivati == []
     finally:
         finestra.Destroy()
         _attendi(lambda: not finestra, 1.0)

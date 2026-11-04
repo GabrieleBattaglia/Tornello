@@ -171,6 +171,25 @@ def _senza_i_valori_della_classifica(torneo, modello):
     return dict(torneo, players=[{k: v for k, v in g.items() if k in chiavi[g["id"]]} for g in torneo["players"]])
 
 
+def _archiviato(torneo):
+    """Il torneo, concluso, scritto nell'archivio, in Closed Tournaments,
+    2026, 11 Novembre, Turni: il percorso del suo file."""
+    import config
+
+    torneo["concluded"] = True
+    cartella = os.path.join(config.ARCHIVED_TOURNAMENTS_DIR, "2026", "11 Novembre", "Turni")
+    os.makedirs(cartella)
+    archiviato = os.path.join(cartella, "Tornello - Turni.json")
+    with open(archiviato, "w", encoding="utf-8") as f:
+        json.dump({k: v for k, v in torneo.items() if k != "players_dict"}, f, default=sorted)
+    return archiviato
+
+
+def _byte(percorso):
+    with open(percorso, "rb") as f:
+        return f.read()
+
+
 def _turno(principale, percorso, numero):
     return _voce(principale, action="show_round_report", filepath=percorso, round=numero)
 
@@ -558,15 +577,8 @@ class TestDoveLaTimeMachineNonLavora:
         """Sul turno di un torneo dei Tornei Conclusi, dove Ctrl+Z e' spento,
         CANC fa sentire l'errore e un messaggio dice perche' e come si
         riapre il torneo; il file resta com'era."""
-        import config
-
         torneo, _fotografie, _ritirato = _torneo_vero(ultimo_completo=True)
-        torneo["concluded"] = True
-        cartella = os.path.join(config.ARCHIVED_TOURNAMENTS_DIR, "2026", "11 Novembre", "Turni")
-        os.makedirs(cartella)
-        archiviato = os.path.join(cartella, "Tornello - Turni.json")
-        with open(archiviato, "w", encoding="utf-8") as f:
-            json.dump({k: v for k, v in torneo.items() if k != "players_dict"}, f, default=sorted)
+        archiviato = _archiviato(torneo)
         principale.load_tournament(archiviato)
         percorso = principale.active_filename
         prima = _dal_file(percorso)
@@ -599,6 +611,53 @@ class TestDoveLaTimeMachineNonLavora:
         assert [d.titolo for d in domande.aperte] == ["Torneo non aperto"]
         assert domande.aperte[0].testo.startswith("Il turno 2 non e' del torneo aperto")
         assert _dal_file(percorso) == prima
+
+
+class TestSulGiocatoreDiUnTorneoConcluso:
+    """Dalla 10.19.0 CANC sul giocatore di un torneo concluso fa sentire
+    l'errore, e il messaggio Torneo concluso dice perche' e come si riapre
+    il torneo, come sui suoi turni. Fino alla 10.18.1 proponeva il ritiro, e
+    con Si' cambiava il file archiviato e scriveva i report nella cartella
+    di salvataggio."""
+
+    TESTO = "Il torneo Turni e' concluso, e i suoi giocatori non si tolgono e non si ritirano piu'. Un torneo finalizzato si riapre dalla finestra Copie di sicurezza del menu File, ripristinando la sua copia di prima della finalizzazione."
+
+    @pytest.mark.parametrize("aperto", [True, False], ids=["aperto", "non aperto"])
+    def test_nessun_ritiro_e_nessun_file_toccato(self, principale, suoni, monkeypatch, aperto):
+        """Il torneo archiviato aperto, come nella revisione, oppure un altro
+        torneo aperto: allora CANC arriva sulla voce senza sceglierla, perche'
+        scelta aprirebbe il suo torneo, come in
+        test_il_turno_di_un_torneo_che_non_e_aperto."""
+        import wx
+
+        from config import user_data_path
+
+        torneo, _fotografie, _ritirato = _torneo_vero(ultimo_completo=True)
+        archiviato = _archiviato(torneo)
+        if aperto:
+            principale.load_tournament(archiviato)
+        else:
+            canc._apri(principale)
+            principale.populate_tree()
+        prima = _byte(archiviato)
+        cartelle = (user_data_path(""), os.path.dirname(archiviato))
+        file_di_prima = [sorted(os.listdir(cartella)) for cartella in cartelle]
+        domande = _domande(monkeypatch, wx.ID_YES, wx.ID_YES)
+        albero = principale.tree_ctrl
+        voce = _voce(principale, action="show_player_detail", filepath=archiviato)
+        assert albero.GetItemData(voce)["player"]["id"] == "ALF"
+        suoni.clear()
+
+        if aperto:
+            _canc(principale, voce)
+        else:
+            principale._canc_sulla_voce(voce, albero.GetItemData(voce))
+
+        assert principale._e_il_torneo_aperto(archiviato) is aperto
+        assert suoni == ["errore"]
+        assert [(d.titolo, d.testo, d.domanda) for d in domande.aperte] == [("Torneo concluso", self.TESTO, False)]
+        assert _byte(archiviato) == prima
+        assert [sorted(os.listdir(cartella)) for cartella in cartelle] == file_di_prima
 
 
 def test_la_domanda_con_piu_ritiri_annullati_li_elenca_uno_per_riga(principale):
