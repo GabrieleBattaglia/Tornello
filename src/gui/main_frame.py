@@ -74,6 +74,67 @@ class FileNonTorneo(ValueError):
     dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
 
 
+class _SenzaLAvvisoSulTasto(wx.Log):
+    """Il bersaglio dei messaggi di wx che li passa tutti a quello di prima,
+    precedente, come fa wx.LogChain, tranne uno: l'avviso di debug che wx
+    scrive quando non riconosce il nome del tasto dopo la tabulazione
+    nell'etichetta di una voce di menu, per la voce Elimina o annulla la
+    voce scelta, che dopo la tabulazione ha Canc, il nome scritto sul tasto,
+    che NVDA legge. avviso e' quel messaggio, intero.
+    Misurato il 4 novembre 2026 con wxPython 4.3.2 e wxWidgets 3.3.4, sulla
+    finestra principale mostrata sul desktop nascosto: wx legge l'etichetta
+    una volta quando la voce entra nel menu, in wxMenu::UpdateAccel, e poi a
+    ogni tasto premuto in qualunque controllo della finestra, tranne quelli
+    della tabella degli acceleratori, come CANC: per sapere se il tasto e'
+    l'acceleratore di una voce, wxWindow::MSWShouldUseAcceleratorForKey
+    chiede a FindItemForAccelKey della barra dei menu, che rilegge l'etichetta
+    di ogni voce con GetAccel. Ogni lettura scriveva in console Unrecognized
+    accel key 'Canc', accel string ignored., una riga per tasto: 62 righe in
+    una prova del banco. La lettura a ogni tasto avviene nel ciclo degli
+    eventi, dove una chiamata di Python non si puo' racchiudere in un
+    wx.LogNull, e un GetAccel scritto in Python, in una sottoclasse di
+    wx.MenuItem, wx non lo chiama. Gli altri messaggi di wx passano come
+    prima, compresi quelli su un altro tasto sconosciuto, e Flush passa a
+    precedente, che per esempio mostra gli errori in una finestra (revisione
+    della 10.19.15, decisione di Gabriele del 4 novembre 2026).
+    Il bersaglio lo tiene wx, da wx.Log.SetActiveTarget: nessun riferimento
+    di Python lo deve tenere in vita, e tiene lui quello di prima."""
+
+    def __init__(self, avviso, precedente):
+        super().__init__()
+        self.avviso = avviso
+        self.precedente = precedente
+
+    def DoLogRecord(self, livello, testo, informazioni):
+        if livello == wx.LOG_Debug and testo == self.avviso:
+            return
+        if self.precedente is not None:
+            self.precedente.LogRecord(livello, testo, informazioni)
+
+    def Flush(self):
+        if self.precedente is not None:
+            self.precedente.Flush()
+
+
+def _senza_l_avviso_sul_tasto(etichetta):
+    """Mette davanti ai messaggi di wx un _SenzaLAvvisoSulTasto per il nome
+    del tasto dopo la tabulazione di etichetta, se il bersaglio attivo non
+    e' gia' uno per lo stesso avviso: ogni finestra principale lo chiede,
+    prima di mettere la voce nel menu, e un bersaglio messo nel frattempo
+    da altri, per esempio da una prova, riceve anche lui un filtro davanti.
+    Un'etichetta senza tabulazione non fa niente. GetActiveTarget crea, se
+    manca, il bersaglio normale di wx, che cosi' diventa quello di prima."""
+    nome = etichetta.partition("\t")[2]
+    if not nome:
+        return
+    avviso = f"Unrecognized accel key '{nome}', accel string ignored."
+    attivo = wx.Log.GetActiveTarget()
+    if isinstance(attivo, _SenzaLAvvisoSulTasto) and attivo.avviso == avviso:
+        return
+    filtro = _SenzaLAvvisoSulTasto(avviso, None)
+    filtro.precedente = wx.Log.SetActiveTarget(filtro)
+
+
 class CustomAccessible(wx.Accessible):
     """Classe custom per MSAA per esporre il nome corretto del controllo ai lettori dello schermo."""
 
@@ -284,10 +345,13 @@ class MainFrame(wx.Frame):
         # nell'albero, e ne porta il nome: fino alla 10.18.1 si chiamava
         # Elimina Torneo Attivo. Dopo la tabulazione c'e' Canc, il nome
         # scritto sul tasto, che NVDA legge con la voce: wx non lo riconosce
-        # come tasto, e l'acceleratore lo da' _setup_shortcuts.
-        self.item_canc = file_menu.Append(
-            wx.ID_ANY, _("E&limina o annulla la voce scelta...\tCanc")
-        )
+        # come tasto, e l'acceleratore lo da' _setup_shortcuts. Dalla
+        # revisione della 10.19.15 l'avviso che wx ne scriveva in console,
+        # qui e a ogni tasto premuto, lo tiene fuori _senza_l_avviso_sul_tasto,
+        # e soltanto lui.
+        etichetta_canc = _("E&limina o annulla la voce scelta...\tCanc")
+        _senza_l_avviso_sul_tasto(etichetta_canc)
+        self.item_canc = file_menu.Append(wx.ID_ANY, etichetta_canc)
         # Dalla 10.9.0 la finestra di pulizia e' la finestra Copie di
         # sicurezza, che legge, confronta e ripristina le copie (issue 39).
         self.item_backup_cleanup = file_menu.Append(wx.ID_ANY, _("&Copie di sicurezza..."))

@@ -740,14 +740,20 @@ def _premi_canc(user32, controllo):
     PostMessage, mai SendInput: VK_DELETE, con il codice di scansione 0x53
     e il bit del tasto esteso, come lo manda la tastiera. Il ciclo degli
     eventi gira finche' i due messaggi non sono passati."""
+    _premi(user32, controllo, 0x2E, 0x53)
+
+
+def _premi(user32, controllo, tasto, scansione):
+    """Il tasto virtuale tasto, con il codice di scansione scansione e il
+    bit del tasto esteso, sul controllo, come _premi_canc."""
     import wx
 
     ciclo = wx.GUIEventLoop()
 
     def premi():
-        dati = 1 | 0x53 << 16 | 1 << 24
-        user32.PostMessageW(controllo.GetHandle(), 0x100, 0x2E, dati)
-        user32.PostMessageW(controllo.GetHandle(), 0x101, 0x2E, dati | 0xC0000000)
+        dati = 1 | scansione << 16 | 1 << 24
+        user32.PostMessageW(controllo.GetHandle(), 0x100, tasto, dati)
+        user32.PostMessageW(controllo.GetHandle(), 0x101, tasto, dati | 0xC0000000)
         wx.CallLater(300, ciclo.Exit)
 
     wx.CallLater(50, premi)
@@ -783,6 +789,64 @@ def test_il_tasto_canc_nell_albero_arriva_a_on_canc_con_la_voce_del_menu(app_gra
     finally:
         finestra.Destroy()
         _attendi(lambda: not finestra, 1.0)
+
+
+@pytest.mark.finestre_vere
+@pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto esiste solo in Windows")
+def test_wx_non_scrive_l_avviso_sul_tasto_canc(app_grafica, suoni, monkeypatch):
+    """Revisione della 10.19.15 (decisione di Gabriele del 4 novembre 2026).
+    wx non riconosce Canc, scritto dopo la tabulazione nell'etichetta della
+    voce Elimina o annulla la voce scelta, e scriveva in console
+    Unrecognized accel key 'Canc', accel string ignored. quando la voce
+    entrava nel menu e a ogni tasto premuto nella finestra principale,
+    cercando fra le voci della barra dei menu quella del tasto. Un
+    raccoglitore dei messaggi di wx, messo prima che la finestra nasca, li
+    riceve mentre la finestra nasce, si mostra sul desktop nascosto, apre
+    tre tornei dall'albero e riceve una freccia dopo ciascuno: nessuno
+    parla di Canc. Gli altri messaggi di wx passano: quello su un tasto
+    sconosciuto in un'altra stringa arriva al raccoglitore. L'etichetta,
+    il testo nel menu di Windows e CANC dalla tabella degli acceleratori li
+    controllano le prove di TestLaVoceDelMenu e quella qui sopra."""
+    import wx
+    from test_fuoco_alla_chiusura import _attendi
+
+    from config import user_data_path
+
+    messaggi = []
+
+    class Raccoglitore(wx.Log):
+        def DoLogTextAtLevel(self, livello, testo):
+            messaggi.append(testo)
+
+    percorsi = []
+    for nome in ("Alfa", "Beta", "Gamma"):
+        percorso = user_data_path(f"Tornello - {nome}.json")
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in dict(_torneo(), name=nome).items() if k != "players_dict"}, f)
+        percorsi.append(percorso)
+    aperti = []
+    vecchio = wx.Log.SetActiveTarget(Raccoglitore())
+    try:
+        finestra = _finestra_vera(monkeypatch, [])
+        try:
+            finestra.populate_tree()
+            user32 = _attiva(finestra)
+            for percorso in percorsi:
+                finestra.tree_ctrl.SelectItem(_voce(finestra, action="select_tournament", filepath=percorso))
+                finestra.tree_ctrl.SetFocus()
+                assert _attendi(lambda: wx.Window.FindFocus() is finestra.tree_ctrl)
+                aperti.append(finestra.active_filename)
+                _premi(user32, finestra.tree_ctrl, 0x28, 0x50)
+            wx.AcceleratorEntry().FromString("Xyz")
+        finally:
+            finestra.Destroy()
+            _attendi(lambda: not finestra, 1.0)
+    finally:
+        wx.Log.SetActiveTarget(vecchio)
+
+    assert [os.path.normcase(p) for p in aperti] == [os.path.normcase(p) for p in percorsi]
+    assert [m for m in messaggi if "'Canc'" in m] == []
+    assert [m for m in messaggi if "Unrecognized accel key 'Xyz', accel string ignored." in m]
 
 
 @pytest.mark.finestre_vere
