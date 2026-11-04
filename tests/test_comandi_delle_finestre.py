@@ -3741,8 +3741,11 @@ class TestNomeEDataDiInizioDaDati:
         cambia nome. Dalla 10.19.15 la premessa dice il motivo vero, i
         report e la raccolta delle partite con i nomi di quelli
         dell'edizione archiviata, e non come si chiamerebbe il file del
-        torneo; la domanda resta quella della procedura guidata, che tiene
-        anche la sua premessa con il file."""
+        torneo. Dalla revisione della 10.19.15 anche la fine della domanda ha
+        parole sue, Vuoi che questo torneo diventi una nuova edizione, perche'
+        da Dati il torneo c'e' gia'; la procedura guidata tiene la sua
+        premessa con il file e la sua domanda, Vuoi creare una nuova
+        edizione."""
         import wx
 
         from config import user_data_path
@@ -3765,9 +3768,7 @@ class TestNomeEDataDiInizioDaDati:
             (
                 "Nuova edizione di un torneo concluso",
                 "Il torneo Primavera 2 avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: "
-                f"Primavera 2, nella cartella {cartella}.\n"
-                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
-                "Vuoi creare una nuova edizione con il nome Primavera 2? Il pulsante predefinito è No.",
+                f"Primavera 2, nella cartella {cartella}.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome="Primavera 2"),
                 True,
                 True,
             )
@@ -4070,18 +4071,19 @@ class TestNomeEDataDiInizioDaDati:
             (
                 "Nuova edizione di un torneo concluso",
                 "Il torneo Primavera 2 avrebbe il nome di 2 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
-                f"Primavera 2, nella cartella {prima}; Primavera 2, nella cartella {seconda}.\n"
-                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
-                "Vuoi creare una nuova edizione con il nome Primavera 2? Il pulsante predefinito è No.",
+                f"Primavera 2, nella cartella {prima}; Primavera 2, nella cartella {seconda}.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome="Primavera 2"),
                 True,
                 True,
             )
         ]
 
-    # Il seguito della domanda sulla nuova edizione da Dati, dopo la premessa.
+    # Il seguito della domanda sulla nuova edizione da Dati, dopo la
+    # premessa. Dalla revisione della 10.19.15 ha parole sue: da Dati il
+    # torneo c'e' gia', e diventa la nuova edizione, mentre la procedura
+    # guidata ne crea una (decisione di Gabriele del 4 novembre 2026).
     SEGUITO_DELLA_DOMANDA = (
-        "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
-        "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
+        "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+        "Vuoi che questo torneo diventi una nuova edizione di {nome}? Il pulsante predefinito è No."
     )
 
     @staticmethod

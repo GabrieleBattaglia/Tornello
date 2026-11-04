@@ -3552,8 +3552,9 @@ class MainFrame(wx.Frame):
         Con da_dati, dai campi di Dati, dove il file del torneo non cambia
         nome, dalla 10.19.15 la domanda dice sempre il motivo vero, i report e
         la raccolta delle partite con lo stesso nome, e mai come si
-        chiamerebbe il file; il resto della domanda e' quello della procedura
-        guidata (decisione di Gabriele del 4 novembre 2026).
+        chiamerebbe il file; il resto della domanda, fino alla revisione della
+        10.19.15, era quello della procedura guidata (decisione di Gabriele
+        del 4 novembre 2026).
         Dalla revisione della 10.19.15, sempre da Dati, un'edizione trovata
         soltanto per il nome del file, come Beta nel file Tornello - Alfa.json
         per il nome Alfa, ha un altro nome: la premessa dice che il nome e'
@@ -3564,7 +3565,11 @@ class MainFrame(wx.Frame):
         suoi, e non era vero. Con edizioni dei due tipi la premessa ha una
         frase per ciascuno, e ogni edizione la sua descrizione vera; la
         domanda si fa per gli stessi nomi di prima (decisione di Gabriele del
-        4 novembre 2026)."""
+        4 novembre 2026). Dalla stessa revisione anche il seguito, da Dati,
+        ha parole sue: il torneo c'e' gia', e la domanda chiede se debba
+        diventare una nuova edizione, non se crearne una, come nella
+        procedura guidata, che tiene i suoi testi. Il titolo, il No
+        predefinito, ESC che vale No e il ricordo del Si' restano come sono."""
         if controllo is None:
             controllo = self.creation_data
         if controllo.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
@@ -3654,10 +3659,19 @@ class MainFrame(wx.Frame):
                     frase.format(nome=nome, numero=len(per_il_file), edizioni=descritte(per_il_file, lambda _percorso, dati: dati is not None))
                 )
             premessa = " ".join(frasi)
-        testo = premessa + "\n" + _(
-            "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
-            "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
-        ).format(nome=nome)
+        if da_dati:
+            # Da Dati il torneo c'e' gia', e diventa la nuova edizione: non se
+            # ne crea una (revisione della 10.19.15).
+            seguito = _(
+                "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+                "Vuoi che questo torneo diventi una nuova edizione di {nome}? Il pulsante predefinito è No."
+            )
+        else:
+            seguito = _(
+                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+                "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
+            )
+        testo = premessa + "\n" + seguito.format(nome=nome)
         dlg = AccessibleMsgDialog(
             self,
             _("Nuova edizione di un torneo concluso"),
