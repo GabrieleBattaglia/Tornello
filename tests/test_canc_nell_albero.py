@@ -804,19 +804,27 @@ def test_wx_non_scrive_l_avviso_sul_tasto_canc(app_grafica, suoni, monkeypatch):
     riceve mentre la finestra nasce, si mostra sul desktop nascosto, apre
     tre tornei dall'albero e riceve una freccia dopo ciascuno: nessuno
     parla di Canc. Gli altri messaggi di wx passano: quello su un tasto
-    sconosciuto in un'altra stringa arriva al raccoglitore. L'etichetta,
-    il testo nel menu di Windows e CANC dalla tabella degli acceleratori li
-    controllano le prove di TestLaVoceDelMenu e quella qui sopra."""
+    sconosciuto in un'altra stringa arriva al raccoglitore, e un errore di
+    wx arriva com'e', come errore. Passa anche Flush, con cui wx chiede al
+    bersaglio di mostrare i messaggi che tiene da parte: il bersaglio
+    normale di wx tiene da parte gli errori fino a Flush, e senza non li
+    mostrerebbe piu' (revisione del quinto giro). L'etichetta, il testo nel
+    menu di Windows e CANC dalla tabella degli acceleratori li controllano
+    le prove di TestLaVoceDelMenu e quella qui sopra."""
     import wx
     from test_fuoco_alla_chiusura import _attendi
 
     from config import user_data_path
 
     messaggi = []
+    svuotati = []
 
     class Raccoglitore(wx.Log):
         def DoLogTextAtLevel(self, livello, testo):
-            messaggi.append(testo)
+            messaggi.append((livello, testo))
+
+        def Flush(self):
+            svuotati.append(len(messaggi))
 
     percorsi = []
     for nome in ("Alfa", "Beta", "Gamma"):
@@ -829,6 +837,13 @@ def test_wx_non_scrive_l_avviso_sul_tasto_canc(app_grafica, suoni, monkeypatch):
     try:
         finestra = _finestra_vera(monkeypatch, [])
         try:
+            # La finestra ha messo il filtro davanti al raccoglitore, e
+            # SetActiveTarget, mettendolo, ha gia' chiamato un Flush suo sul
+            # raccoglitore: conta quello che arriva dopo.
+            prima = len(svuotati)
+            wx.LogError("Errore della prova")
+            wx.Log.FlushActive()
+            flush_arrivati = len(svuotati) - prima
             finestra.populate_tree()
             user32 = _attiva(finestra)
             for percorso in percorsi:
@@ -845,8 +860,10 @@ def test_wx_non_scrive_l_avviso_sul_tasto_canc(app_grafica, suoni, monkeypatch):
         wx.Log.SetActiveTarget(vecchio)
 
     assert [os.path.normcase(p) for p in aperti] == [os.path.normcase(p) for p in percorsi]
-    assert [m for m in messaggi if "'Canc'" in m] == []
-    assert [m for m in messaggi if "Unrecognized accel key 'Xyz', accel string ignored." in m]
+    assert [m for m in messaggi if "'Canc'" in m[1]] == []
+    assert [m for m in messaggi if "Unrecognized accel key 'Xyz', accel string ignored." in m[1]]
+    assert [m[0] for m in messaggi if "Errore della prova" in m[1]] == [wx.LOG_Error]
+    assert flush_arrivati == 1
 
 
 @pytest.mark.finestre_vere
