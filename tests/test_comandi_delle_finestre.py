@@ -4244,6 +4244,53 @@ class TestNomeEDataDiInizioDaDati:
             "Vuoi creare una nuova edizione con il nome Alfa? Il pulsante predefinito è No."
         ]
 
+    @pytest.mark.parametrize("stessa_data", [False, True], ids=["un'altra data", "la stessa data"])
+    @pytest.mark.parametrize("scritto", ["coppa prova", "Coppa_Prova"], ids=["altre maiuscole", "trattino basso"])
+    def test_lo_stesso_nome_scritto_in_un_altro_modo_non_e_riservato(self, principale, suoni, monkeypatch, scritto, stessa_data):
+        """Revisione della 10.19.15. Coppa Prova, archiviata nel file
+        Tornello - Coppa_Prova.json, e il nome scritto da Dati con altre
+        maiuscole, o con il trattino basso al posto dello spazio, sono lo
+        stesso nome, confrontato ripulito come nei nomi dei file
+        (stesso_nome_scritto di omonimi.py): i report e la raccolta delle
+        partite si chiamerebbero davvero come i suoi. Con un'altra data di
+        inizio lo dice la premessa della domanda, con la stessa data il
+        rifiuto, e nessuno dei due dice che il nome e' riservato, che vale
+        soltanto per un'edizione trovata per il solo nome del file."""
+        import wx
+
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO])
+        coppa = self._archiviata(("2026", "06 Giugno", "Coppa_Prova"), "Tornello - Coppa_Prova.json", "Coppa Prova", "2026-06-01")
+        percorso = self._apri(principale, "Gamma", start_date="2026-06-01") if stessa_data else self._apri(principale, "Gamma")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", scritto)
+
+        assert principale.current_tournament["name"] == "Gamma"
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        if stessa_data:
+            assert suoni == ["apertura", "errore"]
+            attese = [
+                (
+                    "Nome del torneo già in uso",
+                    f"Il nome {scritto} non si può usare con la data di inizio {format_date_locale('2026-06-01')}: il torneo Coppa Prova, concluso e archiviato nella cartella {coppa} con il file Tornello - Coppa_Prova.json, ha lo stesso nome e la stessa data di inizio, e i report e la raccolta delle partite si chiamerebbero come i suoi.\n"
+                    + self.SPIEGAZIONE_DELLA_DATA,
+                    False,
+                )
+            ]
+        else:
+            assert suoni == ["apertura"]
+            attese = [
+                (
+                    "Nuova edizione di un torneo concluso",
+                    f"Il torneo {scritto} avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: "
+                    f"Coppa Prova, nella cartella {coppa}.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome=scritto),
+                    True,
+                )
+            ]
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == attese
+
 
 class TestPartiteDellaCadenzaNelDatabase:
     """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori
