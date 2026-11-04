@@ -350,6 +350,7 @@ Nel file di configurazione "Acu_Collection.json" sono mappati tutti i suoni di s
 - Procedura guidata di un torneo nuovo: quando comincia, con Ctrl+N o con la voce Nuovo torneo, una scivolata grave e morbida che sale (sezione 4.2).
 - Sincronizzazione del database in blocco: quando restano omonimi da risolvere, insieme al messaggio che li conta, quattro note che ricadono e restano sospese (sezione 10.3).
 - Prova del volume: a ogni spostamento del cursore del volume, nelle impostazioni, una nota sola, morbida e tenuta, che cresce fino al volume scelto e si spegne (sezione 11.1). Come i due qui sopra, è un suono che il programma non usa in nessun altro punto; fino alla versione 10.13.61 tutti e tre suonavano la campanella delle notifiche, acuta e lunga, che Tornello non usa più.
+- Menu Aiuto: all'apertura della finestra Offrimi un caffè il suono della donazione (sezione 12.1); appena scegli Entra al PUB, prima che si apra la finestra della mail, il campanello della porta del pub, e appena scegli Chiedi aiuto al PUB una domanda (sezione 12.2). Sono gli stessi suoni degli altri programmi di Gabriele Battaglia che hanno queste voci, e tre suoni che il programma non usa in nessun altro punto.
 
 8. LA MACCHINA DEL TEMPO (TIME MACHINE - Ctrl+Z)
 

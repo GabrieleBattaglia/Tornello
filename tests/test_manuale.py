@@ -616,3 +616,29 @@ class TestEloDellaSezione92:
         assert "600 punti o più non si valuta, se almeno uno dei due ha più di 2600" in testo
         assert "il più forte ha 0,89 e il più debole 0,11" in testo
         assert "- Giocatori ritirati: le partite che un giocatore ritirato ha giocato prima del ritiro si valutano" in testo
+
+
+class TestSuoniDelMenuAiutoNellaSezione72:
+    """La sezione 7.2, l'elenco degli eventi sonori, dice di averli tutti, e
+    dalla 10.19.10 ha la riga dei suoni del menu Aiuto: il campanello della
+    porta del pub per Entra al PUB e la domanda per Chiedi aiuto al PUB,
+    eventi pub_entra e pub_aiuto, e il suono della donazione della finestra
+    Offrimi un caffè, che dalla 10.17.0 mancava. Correzione della revisione
+    della 10.19.10: la 10.19.10 li descriveva soltanto nella 12.2."""
+
+    def test_la_riga_del_menu_aiuto(self):
+        from utils import EVENTI
+
+        righe = [r for r in sezione(leggi("MANUALE.txt"), (7, 2)) if r.startswith("- Menu Aiuto:")]
+
+        assert len(righe) == 1
+        riga = righe[0]
+        for citato in ("Offrimi un caffè il suono della donazione (sezione 12.1)", "Entra al PUB, prima che si apra la finestra della mail, il campanello della porta del pub", "Chiedi aiuto al PUB una domanda (sezione 12.2)", "tre suoni che il programma non usa in nessun altro punto"):
+            assert citato in riga, citato
+        assert (EVENTI["pub_entra"], EVENTI["pub_aiuto"]) == ("mess_pub_entra", "mess_pub_aiuto")
+        assert list(EVENTI.values()).count("mess_pub_entra") == list(EVENTI.values()).count("mess_pub_aiuto") == 1
+        # Il suono della donazione si chiede con il nome del preset, e
+        # soltanto dalla finestra del caffè.
+        assert "donazione" not in EVENTI.values()
+        sorgenti = [os.path.relpath(os.path.join(radice, nome), CARTELLA_SRC) for radice, _cartelle, nomi in os.walk(CARTELLA_SRC) for nome in nomi if nome.endswith(".py")]
+        assert [s for s in sorgenti if "donazione" in stringhe_del_sorgente(s)] == [os.path.join("gui", "dialogs", "donation_dialog.py")]
