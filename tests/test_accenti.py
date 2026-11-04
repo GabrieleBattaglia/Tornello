@@ -7,12 +7,16 @@ braille mostra come due caratteri e la sintesi vocale puo' leggere male. Le
 prove leggono i sorgenti di src con ast, senza importarli, e cercano in ogni
 stringa in _() una vocale seguita dall'apostrofo, o dall'accento grave della
 tastiera, e poi da un carattere che non e' una lettera: quello e' un accento
-mancato. Le eccezioni vere sono poche. Un po' si scrive con l'apostrofo. Una
-parola fra apici, come 'No', 'si' o 'Inizia torneo', finisce con l'apice
-che la chiude, e non con un accento. Le frasi di FRASI_AGGIORNAMENTO_GBUTILS,
-in aggiornamenti.py, devono restare identiche, carattere per carattere, a
-quelle che GBUtils scrive, perche' la traduzione si trova dal testo: lo
-controlla test_aggiornamento.py, e li' l'apostrofo lo decide GBUtils.
+mancato. Le eccezioni vere sono poche. Un po' si scrive con l'apostrofo, come
+i troncamenti da', di', fa', sta', va', mo' e be'. Una parola fra apici, come
+'No', 'si' o 'Inizia torneo', finisce con l'apice che la chiude, e non con un
+accento, anche con un'elisione dentro, come 'Coppa d'Inverno'. Dalla
+revisione della 10.19.15 conta anche l'apostrofo tipografico, U+2019, che
+arriva dai testi incollati, e gli apici tipografici di una citazione. Le
+frasi di FRASI_AGGIORNAMENTO_GBUTILS, in aggiornamenti.py, devono restare
+identiche, carattere per carattere, a quelle che GBUtils scrive, perche'
+la traduzione si trova dal testo: lo controlla test_aggiornamento.py, e li'
+l'apostrofo lo decide GBUtils.
 Le elisioni, come l'albero o dell'arbitro, hanno l'apostrofo dopo una
 consonante, o prima di una lettera, e non contano.
 """
@@ -24,19 +28,31 @@ import re
 RADICE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CARTELLA_SRC = os.path.join(RADICE, "src")
 LETTERA = r"[\wÀ-ÿ]"
-# Una parola che finisce con una vocale seguita dall'apostrofo, o
-# dall'accento grave, e poi da un carattere che non e' una lettera.
-PAROLA_SENZA_ACCENTO = re.compile(rf"{LETTERA}*[aeiouAEIOU]['`](?!{LETTERA})")
+# Gli apostrofi: quello della tastiera, l'accento grave usato al suo posto, e
+# quello tipografico, U+2019.
+APOSTROFO = "['`\u2019]"
+# Una parola che finisce con una vocale seguita da un apostrofo, e poi da un
+# carattere che non e' una lettera.
+PAROLA_SENZA_ACCENTO = re.compile(rf"{LETTERA}*[aeiouAEIOU]{APOSTROFO}(?!{LETTERA})")
 # Una citazione fra apici: l'apice che la apre non segue una lettera, e
-# quello che la chiude non e' seguito da una lettera.
-CITAZIONE = re.compile(rf"(?<!{LETTERA})'[^'\n]*?[^\s']'(?!{LETTERA})")
+# quello che la chiude non e' seguito da una lettera; dentro, un apostrofo
+# seguito da una lettera e' un'elisione, come in 'Coppa d'Inverno'. Lo
+# stesso con gli apici tipografici, U+2018 e U+2019.
+CITAZIONE = re.compile(
+    rf"(?<!{LETTERA})'(?:[^'\n]|'(?={LETTERA}))*?[^\s']'(?!{LETTERA})"
+    rf"|(?<!{LETTERA})\u2018(?:[^\u2018\u2019\n]|\u2019(?={LETTERA}))*?[^\s\u2019]\u2019(?!{LETTERA})"
+)
+# Le parole che si scrivono con l'apostrofo: un po' e i troncamenti degli
+# imperativi, da', di', fa', sta' e va', e mo' e be'.
+TRONCAMENTI = ("po'", "da'", "di'", "fa'", "sta'", "va'", "mo'", "be'")
 
 
 def apostrofi_al_posto_degli_accenti(testo):
     """Le parole di testo con l'apostrofo al posto dell'accento, fuori dalle
-    citazioni fra apici, tranne po'."""
+    citazioni fra apici, tranne quelle di TRONCAMENTI, con qualunque
+    apostrofo."""
     fuori = CITAZIONE.sub(" ", testo)
-    return [p for p in PAROLA_SENZA_ACCENTO.findall(fuori) if p.lower() not in ("po'", "po`")]
+    return [p for p in PAROLA_SENZA_ACCENTO.findall(fuori) if re.sub(APOSTROFO, "'", p.lower()) not in TRONCAMENTI]
 
 
 def stringhe_in_traduzione():
@@ -99,6 +115,11 @@ class TestAccentiVeri:
         assert apostrofi_al_posto_degli_accenti("E' finito perche' c'e' un solo giocatore.") == ["E'", "perche'", "e'"]
         assert apostrofi_al_posto_degli_accenti("La cartella '{path}' non e' scrivibile.") == ["e'"]
         assert apostrofi_al_posto_degli_accenti("Non e` stato possibile.") == ["e`"]
+        # Revisione della 10.19.15: l'apostrofo tipografico, U+2019, conta
+        # come quello della tastiera.
+        assert apostrofi_al_posto_degli_accenti("Il torneo e\u2019 concluso.") == ["e\u2019"]
+        assert apostrofi_al_posto_degli_accenti("Non c\u2019e\u2019 piu\u2019 niente.") == ["e\u2019", "piu\u2019"]
+        assert apostrofi_al_posto_degli_accenti("Il torneo 'Coppa d'Inverno' e' concluso.") == ["e'"]
         for giusto in (
             "Aspetta un po', poi riprova. Po' di tempo.",
             "Scegliendo 'No', questo controllo non si ripete.",
@@ -107,5 +128,14 @@ class TestAccentiVeri:
             "Inserisci 't' o 'u'.",
             "Il torneo è già concluso, e non si cambia più: c'è la Time Machine.",
             "Un'altra unità, dell'arbitro, l'ha già avuto.",
+            # Revisione della 10.19.15: i troncamenti, e le elisioni nelle
+            # citazioni, anche con gli apici tipografici.
+            "Da' un'occhiata al manuale.",
+            "Fa' attenzione, e va' alla voce Dati.",
+            "Di' a Tornello di aspettare, e sta' tranquillo.",
+            "A mo' di esempio. Be', ci siamo.",
+            "Aspetta un po\u2019, e da\u2019 un'occhiata.",
+            "Il torneo 'Coppa d'Inverno' è già concluso.",
+            "Il torneo \u2018Coppa d\u2019Inverno\u2019 è già concluso.",
         ):
             assert apostrofi_al_posto_degli_accenti(giusto) == [], giusto
