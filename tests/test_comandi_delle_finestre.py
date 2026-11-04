@@ -2578,13 +2578,13 @@ class TestNomeDelTorneoNuovo:
     def test_il_database_dei_giocatori(self):
         from gui.main_frame import coincidenza_del_nome
 
-        assert coincidenza_del_nome("Players db") == "come il database dei giocatori"
-        assert coincidenza_del_nome("PLAYERS_DB") == "come il database dei giocatori"
+        assert coincidenza_del_nome("Players db") == ("come il database dei giocatori", True)
+        assert coincidenza_del_nome("PLAYERS_DB").frase == "come il database dei giocatori"
 
     def test_le_impostazioni(self):
         from gui.main_frame import coincidenza_del_nome
 
-        assert coincidenza_del_nome("settings") == "come il file delle impostazioni del programma"
+        assert coincidenza_del_nome("settings") == ("come il file delle impostazioni del programma", True)
 
     def test_un_altro_file_del_programma(self):
         """Un file Tornello - *.json che non e' un torneo, o che non si
@@ -2595,7 +2595,7 @@ class TestNomeDelTorneoNuovo:
         self._scrivi(user_data_path("Tornello - Appunti.json"), {"voci": [1, 2]})
         with open(user_data_path("Tornello - Rovinato.json"), "w", encoding="utf-8") as f:
             f.write("{ non e' json")
-        atteso = "come un altro file del programma, che c'è già nella sua cartella"
+        atteso = ("come un altro file del programma, che c'è già nella sua cartella", True)
         assert coincidenza_del_nome("Appunti") == atteso
         assert coincidenza_del_nome("rovinato") == atteso
 
@@ -2604,19 +2604,19 @@ class TestNomeDelTorneoNuovo:
         from gui.main_frame import coincidenza_del_nome
 
         self._torneo_nella_cartella("Coppa_dAutunno")
-        assert coincidenza_del_nome("coppa d'autunno") == "come il file del torneo Coppa dAutunno, in preparazione nella cartella del programma"
+        assert coincidenza_del_nome("coppa d'autunno") == ("come il file del torneo Coppa dAutunno, in preparazione nella cartella del programma", True)
 
     def test_un_torneo_in_corso(self):
         from gui.main_frame import coincidenza_del_nome
 
         self._torneo_nella_cartella("Alfa", rounds=[{"round": 1, "matches": []}])
-        assert coincidenza_del_nome("ALFA") == "come il file del torneo Alfa, in corso nella cartella del programma"
+        assert coincidenza_del_nome("ALFA") == ("come il file del torneo Alfa, in corso nella cartella del programma", True)
 
     def test_un_torneo_concluso_nella_cartella(self):
         from gui.main_frame import coincidenza_del_nome
 
         self._torneo_nella_cartella("Gamma", rounds=[{"round": 1, "matches": []}], concluded=True)
-        assert coincidenza_del_nome("Gamma") == "come il file del torneo Gamma, concluso, nella cartella del programma"
+        assert coincidenza_del_nome("Gamma") == ("come il file del torneo Gamma, concluso, nella cartella del programma", True)
 
     def test_un_torneo_in_archivio(self):
         """Un torneo dell'archivio non e' una coincidenza da rifiutare, ma
@@ -3813,3 +3813,370 @@ class TestPartiteDellaCadenzaNelDatabase:
             assert voci["Partite Locali Blitz: 0"] == {"type": "field", "key": "games_played_blitz", "is_int": True}
         finally:
             _chiudi(dlg)
+
+
+class TestNomeScrittoNelJson:
+    """Dalla 10.19.13 (issue 66, decisione di Gabriele del 4 novembre 2026)
+    coincidenza_del_nome ed edizioni_nell_archivio, e con loro la procedura
+    guidata, il nome e la data di inizio da Dati e la guardia della raccolta
+    delle partite, riconoscono un torneo anche dal nome scritto nel suo json,
+    nella cartella del programma e nell'archivio, ripulito come quello che da'
+    il nome ai report e alla raccolta. Un torneo rinominato dal ramo Dati
+    tiene il file di prima, e fino alla 10.19.10 sfuggiva: si guardava
+    soltanto il nome dei file. Le finestre del nome e dei messaggi e il
+    cestino sono finti."""
+
+    RIFIUTO_DI_BETA = (
+        "Nome del torneo già in uso",
+        "Il nome Beta non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Alfa.json.\n"
+        "Nei nomi dei file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo.",
+    )
+
+    @staticmethod
+    def _beta_nel_file_di_alfa():
+        """Beta, in corso nella cartella del programma nel file Tornello -
+        Alfa.json, come dopo un cambio di nome dal ramo Dati."""
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dict(_torneo_in_corso("Beta"), start_date="2026-11-02", end_date="2026-11-20"))
+        return percorso
+
+    @staticmethod
+    def _coppa_nel_file_di_alfa(con_pgn=False):
+        """Coppa_Prova, concluso e archiviato nel file Tornello - Alfa.json,
+        con la data di inizio 2026-09-01; con con_pgn la prima partita ha il
+        PGN."""
+        import gui.main_frame as mf
+
+        percorso = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Coppa_Prova", "Tornello - Alfa.json")
+        dati = dict(_torneo_in_corso("Coppa_Prova", finito=True), concluded=True)
+        if con_pgn:
+            dati["rounds"][0]["matches"][0]["pgn"] = PGN_VALIDO
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        return percorso
+
+    def test_la_coincidenza_nella_cartella_del_programma(self):
+        """Beta coincide per il nome scritto, Alfa per il file, come prima;
+        il file del torneo aperto non coincide con se stesso."""
+        from gui.main_frame import coincidenza_del_nome
+
+        percorso = self._beta_nel_file_di_alfa()
+
+        assert coincidenza_del_nome("beta") == ("come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Alfa.json", False)
+        assert coincidenza_del_nome("Alfa") == ("come il file del torneo Beta, in corso nella cartella del programma", True)
+        assert coincidenza_del_nome("beta", escluso=percorso) is None
+        assert coincidenza_del_nome("Gamma") is None
+
+    def test_un_json_che_non_si_legge_non_ferma_niente(self):
+        """Un json rovinato, uno annidato oltre il limite di Python e uno che
+        non e' un torneo, con un nome scritto o senza, non coincidono per il
+        nome scritto e non fanno cadere niente; per il nome del file restano
+        un altro file del programma, come prima. Fino alla 10.19.10 il json
+        annidato faceva cadere il controllo con RecursionError."""
+        import gui.main_frame as mf
+        from config import user_data_path
+
+        profondo = "[" * 100000 + "]" * 100000
+        in_archivio = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Varie")
+        os.makedirs(in_archivio)
+        for cartella in (user_data_path(""), in_archivio):
+            with open(os.path.join(cartella, "Tornello - Rovinato.json"), "w", encoding="utf-8") as f:
+                f.write("{ non e' json")
+            with open(os.path.join(cartella, "Tornello - Profondo.json"), "w", encoding="utf-8") as f:
+                f.write(profondo)
+            TestNomeDelTorneoNuovo._scrivi(os.path.join(cartella, "Tornello - Appunti.json"), {"name": "Beta", "voci": []})
+
+        assert mf.coincidenza_del_nome("Beta") is None
+        assert mf.edizioni_nell_archivio("Beta") == []
+        assert mf.coincidenza_del_nome("profondo") == ("come un altro file del programma, che c'è già nella sua cartella", True)
+        assert [(os.path.basename(p), d) for p, d in mf.edizioni_nell_archivio("Profondo")] == [("Tornello - Profondo.json", None)]
+
+    def test_le_edizioni_nell_archivio(self):
+        """L'edizione archiviata nel file di Alfa e' un'edizione di Coppa
+        Prova, per il nome scritto, e di Alfa, per il file; il file del
+        torneo aperto non conta."""
+        from gui.main_frame import edizioni_nell_archivio, stesso_nome_di_file
+
+        percorso = self._coppa_nel_file_di_alfa()
+
+        assert [(p, d["name"]) for p, d in edizioni_nell_archivio("coppa prova")] == [(percorso, "Coppa_Prova")]
+        assert [(p, d["name"]) for p, d in edizioni_nell_archivio("ALFA")] == [(percorso, "Coppa_Prova")]
+        assert edizioni_nell_archivio("Coppa Prova", escluso=percorso) == []
+        assert (stesso_nome_di_file(percorso, "alfa"), stesso_nome_di_file(percorso, "Coppa Prova")) == (True, False)
+
+    def test_la_procedura_guidata_non_accetta_beta(self, principale, suoni, monkeypatch):
+        """Il nome si rifiuta con il motivo vero, e anche l'ultima guardia
+        prima di scrivere il file non crea il torneo."""
+        from config import user_data_path
+
+        finestre = TestDatabaseCheNonSiLeggeNelleFinestre._dialoghi_finti(monkeypatch)
+        self._beta_nel_file_di_alfa()
+        principale.start_new_tournament_wizard()
+        suoni.clear()
+
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, "Beta")
+
+        assert principale.creation_data["name"] == ""
+        assert suoni == ["apertura", "errore"]
+        assert finestre == [self.RIFIUTO_DI_BETA]
+
+        principale.creation_data["name"] = "Beta"
+        principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+
+        assert not os.path.exists(user_data_path("Tornello - Beta.json"))
+        assert principale.current_tournament is None
+        assert finestre == [self.RIFIUTO_DI_BETA] * 2
+
+    def test_da_dati_un_altro_torneo_non_prende_il_nome_beta(self, principale, suoni, monkeypatch):
+        """Gamma non prende da Dati il nome Beta, e resta com'era; Beta, nel
+        file di Alfa, non coincide con se stesso, e cambia le maiuscole del
+        nome e la data di inizio senza messaggi."""
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        alfa = self._beta_nel_file_di_alfa()
+        percorso = TestNomeEDataDiInizioDaDati._apri(principale, "Gamma")
+        suoni.clear()
+
+        voce = TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, percorso, "name", "Beta")
+
+        assert principale.current_tournament["name"] == "Gamma"
+        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Gamma"
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["name"] == "Gamma"
+        assert suoni == ["apertura", "errore"]
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*self.RIFIUTO_DI_BETA, False)]
+
+        finestre.clear()
+        principale.load_tournament(alfa)
+        TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, alfa, "name", "BETA")
+        TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, alfa, "start_date", "2026-11-03")
+
+        dati = TestNomeEDataDiInizioDaDati._nel_file(alfa)
+        assert (dati["name"], dati["start_date"]) == ("BETA", "2026-11-03")
+        assert finestre == []
+
+    def test_l_edizione_rinominata_nell_archivio(self, principale, suoni, monkeypatch):
+        """Coppa Prova con la data di inizio dell'edizione archiviata nel
+        file di Alfa si rifiuta, con il motivo vero; con un'altra data viene
+        la domanda sulla nuova edizione, che dice anche il file, e con No il
+        nome resta quello di prima."""
+        import wx
+
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO])
+        self._coppa_nel_file_di_alfa()
+        principale.start_new_tournament_wizard()
+        principale.creation_data["start_date"] = "2026-09-01"
+        suoni.clear()
+
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, "Coppa Prova")
+
+        assert principale.creation_data["name"] == ""
+        assert suoni == ["apertura", "errore"]
+        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Coppa_Prova")
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                f"Il nome Coppa Prova non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il torneo Coppa_Prova, concluso e archiviato nella cartella {cartella} con il file Tornello - Alfa.json, ha lo stesso nome e la stessa data di inizio, e i report e la raccolta delle partite si chiamerebbero come i suoi.\n"
+                "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo.",
+                False,
+            )
+        ]
+
+        finestre.clear()
+        principale.creation_data["start_date"] = "2026-11-02"
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, "Coppa Prova")
+
+        assert principale.creation_data["name"] == ""
+        assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
+            (
+                "Nuova edizione di un torneo concluso",
+                f"Il torneo Coppa Prova avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: Coppa_Prova, nella cartella {cartella}, con il file Tornello - Alfa.json.\n"
+                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+                "Vuoi creare una nuova edizione con il nome Coppa Prova? Il pulsante predefinito è No.",
+                True,
+                True,
+            )
+        ]
+
+    def test_la_guardia_riconosce_la_raccolta_dell_edizione_rinominata(self, principale, suoni, monkeypatch, tmp_path):
+        """L'edizione archiviata nel file di Alfa, prima della 10.19.7, ha
+        lasciato la sua raccolta nella cartella del programma; la nuova Coppa
+        Prova, nata in console, la trova al primo salvataggio nella finestra:
+        va nella cartella d'archivio dell'edizione rinominata, con una copia
+        riletta, e l'originale nel cestino. Fino alla 10.19.10 la guardia non
+        la riconosceva, e il salvataggio la cancellava per sempre."""
+        from config import user_data_path
+
+        archiviato = self._coppa_nel_file_di_alfa(con_pgn=True)
+        lasciata = user_data_path("Coppa_Prova - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        with open(lasciata, "wb") as f:
+            f.write(contenuto)
+        nuovo = dict(_torneo_in_corso("Coppa_Prova"), tournament_id="Coppa_Prova_20261104120000", start_date="2026-11-02", end_date="2026-11-20")
+        percorso = user_data_path("Tornello - Coppa_Prova.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, nuovo)
+        principale.load_tournament(percorso)
+        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        principale._save_state()
+
+        with open(os.path.join(os.path.dirname(archiviato), "Coppa_Prova - raccolta partite.pgn"), "rb") as f:
+            assert f.read() == contenuto
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert not os.path.exists(lasciata)
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
+        assert os.path.join("Closed Tournaments", "2026", "06 Giugno", "Coppa_Prova") in finestre[0].testo
+
+    def test_i_nomi_scritti_si_ricordano_per_i_file_vecchi(self, monkeypatch):
+        """La guardia della raccolta legge tutto l'archivio a ogni
+        salvataggio dopo un PGN nuovo: il nome scritto in un file vecchio si
+        ricorda per percorso, dimensione e data di modifica, e il file non si
+        rilegge finche' non cambia. Un file cambiato da poco si rilegge
+        sempre, perche' una seconda scrittura nello stesso istante avrebbe la
+        stessa data. I dati di un'edizione trovata si leggono sempre."""
+        import time
+
+        import omonimi
+
+        monkeypatch.setattr(omonimi, "_NOMI_SCRITTI", {})
+        letti = []
+        vero = omonimi._leggi_json
+
+        def annota(percorso):
+            letti.append(os.path.basename(percorso))
+            return vero(percorso)
+
+        monkeypatch.setattr(omonimi, "_leggi_json", annota)
+        percorso = self._coppa_nel_file_di_alfa()
+
+        for _volta in range(2):
+            assert omonimi.edizioni_nell_archivio("Beta") == []
+        assert letti == ["Tornello - Alfa.json"] * 2
+
+        vecchio = time.time() - 3600
+        os.utime(percorso, (vecchio, vecchio))
+        letti.clear()
+        for _volta in range(3):
+            assert omonimi.edizioni_nell_archivio("Beta") == []
+        assert letti == ["Tornello - Alfa.json"]
+
+        letti.clear()
+        assert [p for p, _d in omonimi.edizioni_nell_archivio("Coppa Prova")] == [percorso]
+        assert letti == ["Tornello - Alfa.json"]
+
+        TestNomeDelTorneoNuovo._scrivi(percorso, dict(_torneo_in_corso("Coppa_Prova_2", finito=True), concluded=True))
+        os.utime(percorso, (vecchio, vecchio))
+        letti.clear()
+        assert omonimi.edizioni_nell_archivio("Coppa Prova") == []
+        assert [p for p, _d in omonimi.edizioni_nell_archivio("Coppa Prova 2")] == [percorso]
+        assert letti == ["Tornello - Alfa.json"] * 2
+
+
+class TestRaccoltaSenzaPartiteNelCestino:
+    """Dalla 10.19.13 (decisione di Gabriele del 4 novembre 2026) la raccolta
+    delle partite di un torneo che non ha piu' partite in PGN, per esempio
+    dopo una Time Machine, va nel cestino di Windows al salvataggio della
+    finestra, come gli altri file dell'utente: fino alla 10.19.10
+    _salva_i_report la cancellava per sempre con os.remove. Se il cestino non
+    la prende resta dov'e', un messaggio lo dice una volta, e fino alla
+    chiusura i salvataggi non ci riprovano, senza disturbare. Il cestino e le
+    finestre di messaggio sono finti."""
+
+    @staticmethod
+    def _senza_piu_pgn(principale):
+        """Primavera 2 in corso, con il PGN della seconda partita, aperta e
+        salvata nella finestra, che ne scrive la raccolta; poi la partita
+        perde il PGN, come dopo una Time Machine. Restituisce la raccolta e
+        il suo contenuto."""
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        with open(raccolta, "rb") as f:
+            contenuto = f.read()
+        assert contenuto == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        principale.current_tournament["rounds"][0]["matches"][1].pop("pgn")
+        return raccolta, contenuto
+
+    @staticmethod
+    def _cestino(monkeypatch, cartella, prende=True):
+        """Al posto di delete_file_to_trash: annota ogni tentativo, e con
+        prende sposta il file in cartella; senza lo lascia dov'e', come un
+        disco senza cestino."""
+        import shutil
+
+        import utils
+
+        tentativi = []
+
+        def cestino(percorso, finestra=None):
+            tentativi.append(os.path.normcase(os.path.abspath(percorso)))
+            if not prende:
+                return False
+            os.makedirs(cartella, exist_ok=True)
+            shutil.move(percorso, os.path.join(cartella, os.path.basename(percorso)))
+            return True
+
+        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+        return tentativi
+
+    def test_va_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+        raccolta, contenuto = self._senza_piu_pgn(principale)
+        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"))
+        rimossi = TestRaccoltaAlSalvataggioNellaFinestra._rimozioni(monkeypatch)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        principale._save_state()
+
+        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        assert not os.path.exists(raccolta)
+        with open(tmp_path / "cestino" / os.path.basename(raccolta), "rb") as f:
+            assert f.read() == contenuto
+        assert os.path.normcase(os.path.abspath(raccolta)) not in rimossi
+        assert finestre == []
+        assert "errore" not in suoni
+
+    def test_se_il_cestino_non_la_prende_resta_e_lo_dice_una_volta(self, principale, suoni, monkeypatch, tmp_path):
+        """Resta com'era, con il suono dell'errore e un messaggio; il
+        salvataggio dopo non riprova e non ripete il messaggio. Quando il
+        torneo ha di nuovo il PGN la raccolta si scrive, e quando lo perde di
+        nuovo si riprova, e il messaggio torna."""
+        from config import user_data_path
+
+        raccolta, contenuto = self._senza_piu_pgn(principale)
+        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        rimossi = TestRaccoltaAlSalvataggioNellaFinestra._rimozioni(monkeypatch)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        principale._save_state()
+        principale._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        assert rimossi == []
+        assert suoni.count("errore") == 1
+        cartella = os.path.abspath(user_data_path(""))
+        messaggio = (
+            "Raccolta delle partite rimasta",
+            f"Il torneo Primavera 2 non ha più partite in PGN, e la sua raccolta delle partite Primavera_2 - raccolta partite.pgn, nella cartella {cartella}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre.\n"
+            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete: se non ti serve più, spostala o cancellala tu.",
+        )
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+
+        principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        principale._save_state()
+        principale.current_tournament["rounds"][0]["matches"][1].pop("pgn")
+        principale._save_state()
+
+        assert len(tentativi) == 2
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio] * 2

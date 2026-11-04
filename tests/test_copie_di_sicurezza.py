@@ -1501,11 +1501,14 @@ class TestCicloCompleto:
         """Dalla 10.19.7 la finalizzazione porta in archivio anche la
         raccolta delle partite in PGN (issue 66): e' un file del torneo, e la
         cartella d'archivio va nel cestino con lei. Un altro file .pgn la
-        ferma, come prima."""
+        ferma, come prima. Dalla 10.19.13 in archivio va soltanto la raccolta
+        con le partite del torneo, che percio' ha il PGN della prima
+        partita."""
         from copie_di_sicurezza import prepara_ripristino, ripristina
 
+        ambiente.torneo["rounds"][0]["matches"][0]["pgn"] = '[Event "Coppa"]'
         raccolta = ambiente.tmp / f"{NOME} - raccolta partite.pgn"
-        raccolta.write_bytes(b'[Event "Coppa"]\r\n')
+        raccolta.write_bytes(f'[Event "Coppa"]{os.linesep}'.encode())
         assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
         cartella = _cartella_d_archivio(ambiente)
         assert os.path.exists(os.path.join(cartella, raccolta.name))

@@ -1783,6 +1783,14 @@ PGN_DELLA_PROVA = '[Event "Coppa Prova"]\n\n1. e4 e5 2. Nf3 Nc6 1-0'
 RACCOLTA = f"{NOME} - raccolta partite.pgn"
 
 
+def _raccolta_di(*pgn):
+    """Il contenuto della raccolta delle partite con questi PGN, come la
+    scrivono la finestra e, dalla 10.19.13, la finalizzazione: separati da
+    una riga vuota, con l'a capo in fondo, in UTF-8 e con l'a capo del
+    sistema."""
+    return ("\n\n".join(p.strip() for p in pgn) + "\n").replace("\n", os.linesep).encode("utf-8")
+
+
 def _con_la_raccolta(banco, cartella=None):
     """Il torneo con il PGN della prima partita, salvato, e la sua raccolta
     nella cartella di lavoro, senza cartella quella del file del torneo,
@@ -1829,12 +1837,17 @@ class TestRaccoltaDellePartiteInArchivio:
 
     def test_nella_finalizzazione_ripetuta_va_nella_cartella_backup(self, banco):
         """L'archivio resta com'era, con la sua raccolta, e quella nuova va
-        nella cartella backup con rifinalizzazione nel nome, come i report."""
+        nella cartella backup con rifinalizzazione nel nome, come i report.
+        Dalla 10.19.13 la finalizzazione scrive prima la raccolta del torneo,
+        come l'ultimo salvataggio della finestra: quella che c'era, scritta
+        dopo, si sostituisce, e nella cartella backup va quella con la
+        partita in PGN in piu'."""
         raccolta, contenuto = _con_la_raccolta(banco)
         assert _finalizza(banco) is True
         in_archivio = os.path.join(_cartella_archivio(), RACCOLTA)
         assert _leggi_byte(in_archivio) == contenuto
 
+        banco.torneo["rounds"][0]["matches"][1]["pgn"] = TestEdizioneRinominataDaDati.PGN_SECONDA
         _scrivi(banco.file_torneo, banco.torneo)
         with open(raccolta, "wb") as f:
             f.write(b"raccolta scritta dopo")
@@ -1845,7 +1858,7 @@ class TestRaccoltaDellePartiteInArchivio:
         assert _leggi_byte(in_archivio) == contenuto
         assert not os.path.exists(raccolta)
         messe_da_parte = [c for c in _copie(banco.backup, "rifinalizzazione") if c.endswith(".pgn")]
-        assert [_leggi_byte(c) for c in messe_da_parte] == [b"raccolta scritta dopo"]
+        assert [_leggi_byte(c) for c in messe_da_parte] == [_raccolta_di(PGN_DELLA_PROVA, TestEdizioneRinominataDaDati.PGN_SECONDA)]
 
     def test_quella_gia_nella_cartella_d_archivio_resta(self, banco):
         """Il torneo aperto da un file dell'archivio, senza una cartella di
@@ -1966,3 +1979,193 @@ class TestEdizioneRinominataDaDati:
 
         assert _leggi_byte(cartella) == b"un file, non una cartella"
         assert _leggi(_json_in_archivio(f"{cartella}_{INIZIO}"))["concluded"] is True
+
+
+# La prima edizione di Coppa_Prova, archiviata a giugno 2026 da una versione
+# fino alla 10.19.5, con il PGN della sua prima partita.
+PGN_DELLA_PRIMA = '[Event "Prima"]\n\n1. c4 e5 0-1'
+
+
+def _cestino_finto(monkeypatch, cartella, prende=True):
+    """Al posto di delete_file_to_trash: annota ogni file che riceve, e lo
+    sposta in cartella; con prende falso lo lascia dov'e', come un disco
+    senza cestino."""
+    import shutil
+
+    import utils
+
+    ricevuti = []
+
+    def cestino(percorso, finestra=None):
+        ricevuti.append(os.path.normcase(os.path.abspath(percorso)))
+        if not prende:
+            return False
+        os.makedirs(cartella, exist_ok=True)
+        shutil.move(percorso, os.path.join(cartella, f"{len(ricevuti)}_{os.path.basename(percorso)}"))
+        return True
+
+    monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+    return ricevuti
+
+
+def _prima_edizione_con_la_raccolta_lasciata(file_della_prima=f"Tornello - {NOME}.json"):
+    """La prima edizione di Coppa_Prova, dal 1 al 2 giugno 2026, archiviata
+    nel file file_della_prima, e la sua raccolta delle partite lasciata
+    nella cartella del programma, come la lasciava la finalizzazione fino
+    alla 10.19.5. Con Tornello - Alfa.json e' un'edizione rinominata dal ramo
+    Dati prima di finalizzarla. Restituisce la sua cartella d'archivio e il
+    contenuto della raccolta."""
+    import config
+    import ui
+
+    prima = copy.deepcopy(_torneo_finito())
+    prima.update(start_date="2026-06-01", end_date="2026-06-02", concluded=True)
+    prima["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PRIMA
+    cartella = os.path.join(ui.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", NOME)
+    os.makedirs(cartella)
+    _scrivi(os.path.join(cartella, file_della_prima), prima)
+    contenuto = _raccolta_di(PGN_DELLA_PRIMA)
+    with open(config.user_data_path(RACCOLTA), "wb") as f:
+        f.write(contenuto)
+    return cartella, contenuto
+
+
+class TestRaccoltaDiUnAltraEdizioneAllaFinalizzazione:
+    """Dalla 10.19.13 (issue 66, decisione di Gabriele del 4 novembre 2026)
+    la finalizzazione, nella finestra e in console, scrive prima la raccolta
+    delle partite del torneo, come l'ultimo salvataggio della finestra, e
+    porta in archivio soltanto quella. La raccolta identica a quella di
+    un'altra edizione archiviata con lo stesso nome, anche rinominata dal
+    ramo Dati, va nella cartella d'archivio di quell'edizione, con una copia
+    riletta, e l'originale nel cestino. Fino alla 10.19.10 la finalizzazione
+    portava nel suo archivio la raccolta che trovava al suo percorso,
+    qualunque fosse, e la console, che la raccolta non la scrive, ne portava
+    una vecchia, o nessuna. Il cestino e' finto."""
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    @pytest.mark.parametrize("file_della_prima", [f"Tornello - {NOME}.json", "Tornello - Alfa.json"], ids=["stesso file", "rinominata da Dati"])
+    def test_va_nella_cartella_della_sua_edizione(self, banco, monkeypatch, tmp_path, capsys, dove, file_della_prima):
+        """La nuova edizione, senza partite in PGN, nata e finalizzata in
+        console, trova la raccolta della prima: va nella cartella d'archivio
+        della prima, l'originale nel cestino, e l'archivio della nuova
+        edizione resta senza raccolta. Una riga lo dice."""
+        import config
+
+        cartella_prima, contenuto = _prima_edizione_con_la_raccolta_lasciata(file_della_prima)
+        lasciata = config.user_data_path(RACCOLTA)
+        ricevuti = _cestino_finto(monkeypatch, str(tmp_path / "cestino"))
+        avvisi = []
+
+        assert (_finalizza(banco, avvisi) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        assert _leggi_byte(os.path.join(cartella_prima, RACCOLTA)) == contenuto
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert _leggi_byte(tmp_path / "cestino" / f"1_{RACCOLTA}") == contenuto
+        assert not os.path.exists(lasciata)
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", NOME)
+        frase = (
+            f"Nella cartella {os.path.dirname(lasciata)} c'era la raccolta delle partite {RACCOLTA} del torneo {NOME}, concluso e archiviato nella cartella {archivio}: il torneo {NOME} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+            f"Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, e quella della cartella {os.path.dirname(lasciata)} è andata nel cestino di Windows."
+        )
+        if dove == "finestra":
+            assert frase in avvisi
+        else:
+            assert frase in capsys.readouterr().out
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    def test_il_torneo_con_le_sue_partite_porta_in_archivio_la_sua(self, banco, monkeypatch, tmp_path, dove):
+        """La nuova edizione ha la sua partita in PGN: la raccolta della prima
+        va nella sua cartella, e nell'archivio della nuova c'e' la sua."""
+        import config
+
+        cartella_prima, contenuto = _prima_edizione_con_la_raccolta_lasciata()
+        _cestino_finto(monkeypatch, str(tmp_path / "cestino"))
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        _scrivi(banco.file_torneo, banco.torneo)
+
+        assert (_finalizza(banco) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        assert _leggi_byte(os.path.join(cartella_prima, RACCOLTA)) == contenuto
+        assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == _raccolta_di(PGN_DELLA_PROVA)
+        assert not os.path.exists(config.user_data_path(RACCOLTA))
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    @pytest.mark.parametrize("di_prima", [False, True], ids=["senza raccolta", "con la raccolta di prima"])
+    def test_in_archivio_la_raccolta_del_torneo_com_e_alla_fine(self, banco, dove, di_prima):
+        """Le due partite del torneo hanno il PGN, e la raccolta sul disco
+        non c'e', come per un torneo giocato in console, o ha soltanto la
+        prima. In archivio va la raccolta con tutte e due, come dalla
+        finestra, che la scrive a ogni salvataggio."""
+        import config
+
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        banco.torneo["rounds"][0]["matches"][1]["pgn"] = TestEdizioneRinominataDaDati.PGN_SECONDA
+        _scrivi(banco.file_torneo, banco.torneo)
+        raccolta = config.user_data_path(RACCOLTA)
+        if di_prima:
+            with open(raccolta, "wb") as f:
+                f.write(_raccolta_di(PGN_DELLA_PROVA))
+
+        assert (_finalizza(banco) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        attesa = _raccolta_di(PGN_DELLA_PROVA, TestEdizioneRinominataDaDati.PGN_SECONDA)
+        assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == attesa
+        assert not os.path.exists(raccolta)
+
+    def test_se_non_si_mette_in_salvo_resta_e_non_va_in_archivio(self, banco, monkeypatch, tmp_path):
+        """La cartella della prima edizione ha gia' una raccolta diversa, e
+        il cestino non prende quella lasciata: resta dov'era, non va
+        nell'archivio della nuova edizione, e un avviso lo dice. La
+        finalizzazione va in fondo lo stesso."""
+        import config
+
+        cartella_prima, contenuto = _prima_edizione_con_la_raccolta_lasciata()
+        diversa = os.path.join(cartella_prima, RACCOLTA)
+        with open(diversa, "wb") as f:
+            f.write(b"un'altra raccolta")
+        lasciata = config.user_data_path(RACCOLTA)
+        ricevuti = _cestino_finto(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        avvisi = []
+
+        assert _finalizza(banco, avvisi) is True
+
+        assert _leggi_byte(lasciata) == contenuto
+        assert _leggi_byte(diversa) == b"un'altra raccolta"
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        cartella = os.path.dirname(lasciata)
+        assert (
+            f"Nella cartella {cartella} c'è la raccolta delle partite {RACCOLTA}, che non è del torneo {NOME}: il torneo la sostituirebbe con la sua raccolta, o la cancellerebbe.\n"
+            "Non si è potuta mettere in salvo, né nella cartella d'archivio di un torneo concluso con lo stesso nome né nel cestino di Windows, per esempio perché quel disco non ha il cestino.\n"
+            f"La raccolta delle partite del torneo {NOME} non è stata scritta e non va in archivio, e quella che c'è resta dov'è: spostala tu in un'altra cartella. Le partite del torneo restano nel suo file, in archivio."
+        ) in avvisi
+
+    @pytest.mark.parametrize("prende", [True, False])
+    def test_senza_partite_in_pgn_la_raccolta_va_nel_cestino(self, banco, monkeypatch, tmp_path, prende):
+        """Il torneo non ha piu' partite in PGN, per esempio dopo una Time
+        Machine, e la sua raccolta di prima e' ancora nella cartella del
+        programma: va nel cestino, e non in archivio. Se il cestino non la
+        prende resta dov'e', mai cancellata per sempre, e un avviso lo dice.
+        Fino alla 10.19.10 andava in archivio."""
+        import config
+
+        raccolta = config.user_data_path(RACCOLTA)
+        with open(raccolta, "wb") as f:
+            f.write(_raccolta_di(PGN_DELLA_PROVA))
+        ricevuti = _cestino_finto(monkeypatch, str(tmp_path / "cestino"), prende)
+        avvisi = []
+
+        assert _finalizza(banco, avvisi) is True
+
+        assert ricevuti == [os.path.normcase(os.path.abspath(raccolta))]
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        detto = [a for a in avvisi if RACCOLTA in a]
+        if prende:
+            assert not os.path.exists(raccolta)
+            assert detto == []
+        else:
+            assert _leggi_byte(raccolta) == _raccolta_di(PGN_DELLA_PROVA)
+            assert detto == [
+                f"Il torneo {NOME} non ha più partite in PGN, e la sua raccolta delle partite {RACCOLTA}, nella cartella {os.path.dirname(raccolta)}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre. Non va in archivio con il torneo."
+            ]

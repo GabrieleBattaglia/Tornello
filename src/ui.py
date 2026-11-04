@@ -34,6 +34,7 @@ from db_players import (
 from db_players import identita_del_torneo as _identita_del_torneo
 from db_players import voce_di_questo_torneo as _voce_di_questo_torneo
 from reports import (
+    byte_della_raccolta_pgn,
     file_della_raccolta_pgn,
     save_standings_text,
     save_suspended_tournament_summary,
@@ -1637,6 +1638,43 @@ def _cartella_d_archivio(cartella_del_mese, nome_cartella, identita):
     return f"{base}_{numero}"
 
 
+def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa):
+    """La raccolta delle partite in PGN del torneo che si finalizza, come la
+    lascerebbe l'ultimo salvataggio della finestra (10.19.13, issue 66):
+    quella di un'altra edizione archiviata, identica byte per byte a quella
+    che il suo json scriverebbe, va nella sua cartella d'archivio, con una
+    copia riletta, e l'originale nel cestino (raccolta_altrui_in_salvo);
+    poi quella del torneo si scrive, o, se il torneo non ha partite in PGN,
+    quella che c'e' va nel cestino (aggiorna_la_raccolta_pgn). Le frasi per
+    l'utente passano da avvisa, che le stampa e le da' alla finestra Avvisi
+    della finalizzazione. Vero se al percorso della raccolta c'e' adesso
+    quella del torneo, da portare in archivio con i report."""
+    from omonimi import _contiene, aggiorna_la_raccolta_pgn, raccolta_altrui_in_salvo, raccolta_rimasta
+
+    nome = torneo.get("name", "")
+    esito = raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=True)
+    if not esito.in_salvo:
+        avvisa(
+            esito.testo
+            + "\n"
+            + _(
+                "La raccolta delle partite del torneo {name} non è stata scritta e non va in archivio, e quella che c'è resta dov'è: spostala tu in un'altra cartella. Le partite del torneo restano nel suo file, in archivio."
+            ).format(name=nome)
+        )
+        return False
+    if esito.testo:
+        avvisa(esito.testo)
+    rimasta = aggiorna_la_raccolta_pgn(torneo, file_del_torneo)
+    if rimasta:
+        avvisa(
+            raccolta_rimasta(rimasta, nome)
+            + " "
+            + _("Non va in archivio con il torneo.")
+        )
+    proprio = byte_della_raccolta_pgn(torneo)
+    return proprio is not None and _contiene(file_della_raccolta_pgn(torneo, file_del_torneo), proprio)
+
+
 def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=None):
     """
     Completa il torneo: calcola Elo/Performance/Spareggi, aggiorna DB giocatori,
@@ -2276,11 +2314,22 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # con Tornello -, e il glob dei report non la prende. Quella che e' gia'
     # nella cartella d'archivio, come per un torneo aperto dall'archivio
     # senza una cartella di lavoro, resta dov'e'.
-    raccolta = file_della_raccolta_pgn(torneo, percorso_del_torneo)
-    if os.path.isfile(raccolta) and not _stesso_file(
-        raccolta, os.path.join(full_archive_path, os.path.basename(raccolta))
-    ):
-        report_files.append(raccolta)
+    # Dalla 10.19.13 la finalizzazione la scrive prima, come ogni salvataggio
+    # della finestra, con la stessa guardia, raccolta_altrui_in_salvo, e lo
+    # stesso aggiornamento, aggiorna_la_raccolta_pgn, di omonimi.py, e porta
+    # in archivio soltanto quella con le partite del torneo: l'archivio ha la
+    # stessa raccolta dalla finestra e dalla console, che la raccolta non la
+    # scrive mai. Fino alla 10.19.10 prendeva qualunque raccolta trovasse al
+    # suo percorso: in console una nuova edizione portava nel suo archivio
+    # quella lasciata nella cartella del programma da un'edizione archiviata
+    # prima della 10.19.7, che invece va nella cartella d'archivio di
+    # quell'edizione (decisione di Gabriele del 4 novembre 2026, issue 66).
+    if _raccolta_del_torneo_scritta(torneo, percorso_del_torneo, avvisa):
+        raccolta = file_della_raccolta_pgn(torneo, percorso_del_torneo)
+        if not _stesso_file(
+            raccolta, os.path.join(full_archive_path, os.path.basename(raccolta))
+        ):
+            report_files.append(raccolta)
 
     # Una finalizzazione ripetuta di un torneo gia' archiviato: l'archivio ha
     # il json della stessa edizione, e almeno un giocatore aveva gia' la voce
