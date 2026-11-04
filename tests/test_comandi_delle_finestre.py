@@ -4992,6 +4992,39 @@ class TestRaccoltaSenzaPartiteNelCestino:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
         assert len(self._copie_della_raccolta()) == 1
 
+    def test_dopo_una_chiusura_un_torneo_con_pgn_non_fa_copie(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+        """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
+        2026): soltanto un torneo senza partite in PGN ha una raccolta
+        rimasta. Primavera 2 ha il PGN della seconda partita, e il
+        salvataggio ne scrive la raccolta. Tornello si chiude e si riapre:
+        all'apertura il torneo ha partite in PGN, e la sua raccolta non e'
+        una raccolta rimasta. Al primo PGN nuovo la raccolta nuova la
+        sostituisce come sempre, senza copie nella cartella backup e senza
+        messaggi. Senza la condizione sul PGN in raccolta_rimasta_all_apertura
+        ogni torneo con partite in PGN, riaperto, faceva una copia."""
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        seconda = dopo_una_chiusura()
+        seconda.load_tournament(percorso)
+        seconda.current_tournament["rounds"][0]["matches"][0]["pgn"] = self.ALTRO_PGN
+        seconda._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
+        assert self._copie_della_raccolta() == []
+        assert finestre == []
+
     @pytest.mark.parametrize("prende", [False, True], ids=["il cestino non la prende", "il cestino la prende"])
     def test_dopo_una_chiusura_il_primo_salvataggio_senza_pgn_riprova_il_cestino(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, prende):
         """Revisione della 10.19.13. Dopo una chiusura di Tornello la raccolta
