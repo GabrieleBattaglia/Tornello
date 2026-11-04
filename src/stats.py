@@ -529,8 +529,8 @@ def calculate_elo_change(player, tournament_players_dict, category="standard"):
     category: per ogni partita valida il punteggio atteso PD dalla tabella,
     centesimi_attesi, con la soglia dei 400 punti della cadenza; Delta R e'
     il punteggio meno PD, la somma dei Delta R per K e' la variazione,
-    arrotondata all'intero con lo 0,5 che si allontana dallo zero (articolo
-    8.3.4). Il conto si fa in centesimi, esatto. Fino alla 10.19.0 il
+    arrotondata all'intero con lo 0,5 che si allontana dallo zero (articoli
+    8.3.4 e 7.3.4). Il conto si fa in centesimi, esatto. Fino alla 10.19.0 il
     punteggio atteso veniva dalla formula logistica, con la soglia dei 400
     per tutti. La finestra e la console passano tutte e due da qui."""
     if not player or "initial_elo" not in player or "results_history" not in player:
@@ -589,7 +589,7 @@ def calculate_elo_change(player, tournament_players_dict, category="standard"):
 
     # La variazione, K per la somma dei Delta R (articoli 8.3.2 d e 7.3.2 d),
     # in centesimi, arrotondata all'intero con lo 0,5 che si allontana dallo
-    # zero (articolo 8.3.4): 22,50 diventa 23, e -22,50 diventa -23.
+    # zero (articoli 8.3.4 e 7.3.4): 22,50 diventa 23, e -22,50 diventa -23.
     variazione_in_centesimi = k * scarto_in_centesimi
     interi, resto = divmod(abs(variazione_in_centesimi), 100)
     if resto >= 50:

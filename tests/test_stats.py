@@ -1636,7 +1636,8 @@ class TestVariazioneEloSecondoIlRegolamento:
     calcolate a mano dal regolamento, partita per partita, dalla tabella
     8.1.2 del B.02 (7.1.2 nei rapid e nei blitz) con la soglia della
     cadenza: Delta R e' il punteggio meno PD, e la variazione e' K per la
-    somma dei Delta R, arrotondata all'intero (articoli 8.3.2, 8.3.4, 7.3.2).
+    somma dei Delta R, arrotondata all'intero (articoli 8.3.2, 8.3.4, 7.3.2,
+    7.3.4).
     A 2700 con K 10, B 2250 con K 20, C 2100 con K 20, D 1640 con K 40.
     Turno 1: A batte D, B e C pattano. Turno 2: A e C pattano, B batte D.
     Turno 3: B batte A, C batte D."""
@@ -1700,12 +1701,18 @@ class TestVariazioneEloSecondoIlRegolamento:
         """Un 1500 con K 10 perde con un 1500, PD 0,50, e batte un 1390, D
         110, PD 0,65: punteggio 1, atteso 1,15, Delta R -0,15, per 10 -1,5,
         che si arrotonda a -2. Con le frazioni del calcolatore 0,50 piu'
-        0,65 fa 1,1499..., e la variazione sarebbe diventata -1. Lo stesso
-        con le vittorie: 0,5 e 1 contro 0,50 e 0,85 fanno +1,5, cioe' +2."""
-        avversari = {"PARI": {"id": "PARI", "initial_elo": 1500}, "DEBOLE": {"id": "DEBOLE", "initial_elo": 1390}, "PIU_DEBOLE": {"id": "PIU_DEBOLE", "initial_elo": 1200}}
+        0,65 fa 1,1499..., e la variazione sarebbe diventata -1. Questo caso
+        e' una guardia dell'aritmetica: la formula logistica di prima dava
+        anche lei -2, da -1,53.
+        Il secondo caso coglie anche il cambiamento: lo stesso 1500 patta con
+        un 1499, D 1, PD 0,50, e batte un 1199, D 301, PD 0,85: punteggio 1,5,
+        atteso 1,35, per 10 +1,5, cioe' +2. La formula logistica di prima
+        dava +1, da 1,49, e la tabella in frazioni del calcolatore, con gli
+        attesi sommati a parte come faceva il codice di prima, +1, da
+        1,4999... (correzione della revisione della 10.19.5)."""
+        avversari = {"PARI": {"id": "PARI", "initial_elo": 1500}, "DEBOLE": {"id": "DEBOLE", "initial_elo": 1390}, "QUASI_PARI": {"id": "QUASI_PARI", "initial_elo": 1499}, "PIU_DEBOLE": {"id": "PIU_DEBOLE", "initial_elo": 1199}}
         giocatore = {"id": "P", "initial_elo": 1500, "k_factor": 10, "results_history": [_voce_elo(1, "PARI", "0-1", 0.0), _voce_elo(2, "DEBOLE", "1-0", 1.0)]}
 
         assert calculate_elo_change(giocatore, avversari) == -2
-        # Con 1200, D 300, PD 0,85.
-        vince = dict(giocatore, results_history=[_voce_elo(1, "PARI", "1/2-1/2", 0.5), _voce_elo(2, "PIU_DEBOLE", "1-0", 1.0)])
+        vince = dict(giocatore, results_history=[_voce_elo(1, "QUASI_PARI", "1/2-1/2", 0.5), _voce_elo(2, "PIU_DEBOLE", "1-0", 1.0)])
         assert calculate_elo_change(vince, avversari) == 2

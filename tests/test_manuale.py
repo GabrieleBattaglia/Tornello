@@ -602,13 +602,15 @@ class TestEloDellaSezione92:
     tabella 8.1.2 e la 7.1.2, la soglia dei 400 punti degli articoli 8.3.1 e
     7.3.1 con i 2650 degli standard, la regola dei 600 punti dei rapid e dei
     blitz, e le partite dei ritirati. Fino alla 10.19.0 parlava soltanto
-    delle formule ufficiali FIDE."""
+    delle formule ufficiali FIDE. L'arrotondamento cita l'articolo dei
+    rapid e dei blitz, il 7.3.4, accanto all'8.3.4 degli standard
+    (correzione della revisione della 10.19.5)."""
 
     def test_tabella_soglia_seicento_e_ritirati(self):
         testo = "\n".join(sezione(leggi("MANUALE.txt"), (9, 2)))
 
         assert "applicando le formule ufficiali FIDE." not in testo
-        for citato in ("la 8.1.2 del regolamento standard e la 7.1.2", "(articolo 8.3.1)", "(articolo 7.3.1)", "dal 1 ottobre 2025", "dal 1 dicembre 2024"):
+        for citato in ("la 8.1.2 del regolamento standard e la 7.1.2", "(articolo 8.3.1)", "(articolo 7.3.1)", "(articoli 8.3.4 e 7.3.4)", "dal 1 ottobre 2025", "dal 1 dicembre 2024"):
             assert citato in testo, citato
         assert "soltanto per i giocatori sotto 2650" in testo
         assert "600 punti o più non si valuta, se almeno uno dei due ha più di 2600" in testo
