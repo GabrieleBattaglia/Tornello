@@ -1,28 +1,31 @@
-PROVA 1: Tornei di prova rigenerati
-Prima: Tornello chiuso.
-Passo 1: apri il prompt dei comandi e scrivi: cd /d E:\git\mine\Tornello-lavori
-Passo 2: scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py programmazione canc forfait time_machine annulla ritorno voci rapid
-Passo 3: aspetta la fine, un paio di minuti.
-Domanda 1: l'ultima riga dice "Verifica superata per tutti i tornei."?
+PROVA 1: Costruzione del banco di collaudo
+Prima: Tornello chiuso, e nessun Tornello del banco aperto: se ce n'è uno, lo script si ferma e lo dice.
+Passo 1: apri il prompt dei comandi e scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\prepara_banco.py
+Passo 2: aspetta la fine, qualche minuto: lo script costruisce il banco da zero in E:\git\tmp\banco-tornello, poi verifica i tornei.
+Domanda 1: la penultima riga dice "Verifica superata per tutti i tornei."?
+Domanda 2: l'ultima riga comincia con "Banco pronto in E:\git\tmp\banco-tornello" e dice 18 tornei e 24 giocatori di fantasia?
 Esito: 
 
 PROVA 2: CANC su una partita giocata
-Prima: dal prompt dei comandi, in E:\git\mine\Tornello-lavori, avvia Tornello con: python E:\git\mine\Tornello-lavori\tornello.py
-Prima: Tornello resta aperto fino alla prova 11; nell'albero non toccare mai Autunneo2.
-Prima: nell'albero scegli Prova canc, poi turni, Turno corrente (2/4), giocate (2/4, 50.0%).
-Passo 1: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
-Domanda 1: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima e il PGN che resta?
-Passo 2: premi TAB fino a Sì e poi INVIO.
-Domanda 2: il cursore resta sulla partita, adesso nel ramo programmate (2), e NVDA te lo dice senza muoverti?
-Domanda 3: il suono della cancellazione è quello dell'annullamento delle finestre: va bene, o ne vuoi uno suo?
-Passo 3: sulla Scacchiera 2, Galli Giulia vs Ferri Fabio [0-1], premi CANC e poi subito INVIO.
-Domanda 4: INVIO risponde No e la partita resta fra le giocate?
-Passo 4: apri Completati (1), Turno 1, giocate, e premi CANC sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0].
-Domanda 5: si sente l'errore e il messaggio Turno chiuso si legge bene, con le due strade per riaprire il turno: CANC sulla voce Turno 1, fra i Completati, oppure Ctrl+Z?
+Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
+Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alla prova 14.
+Prima: Tornello resta aperto fino alla prova 13. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
+Passo 1: con il fuoco nell'albero premi NVDA+T.
+Domanda 1: il titolo dice Tornello - Versione 10.19.15 - Data Rilascio 2026.11.04 - [Nessun Torneo Caricato]?
+Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
+Passo 3: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
+Domanda 2: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima, il giorno e l'ora delle 18:00, e il PGN che resta con la partita?
+Passo 4: premi TAB fino a Sì e poi INVIO.
+Domanda 3: il cursore resta sulla partita, adesso nel ramo programmate (2), e NVDA te lo dice senza muoverti?
+Domanda 4: il suono della cancellazione è lo stesso dell'annullamento nelle finestre: ti va bene così?
+Passo 5: sulla Scacchiera 2, Galli Giulia vs Ferri Fabio [0-1], premi CANC e poi subito INVIO.
+Domanda 5: INVIO risponde No e la partita resta fra le giocate?
+Passo 6: apri Completati (1), Turno 1, giocate (4/4, 100.0%), e premi CANC sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0].
+Domanda 6: si sente l'errore e il messaggio Turno chiuso si legge bene, con le due strade per riaprire il turno: CANC sulla voce Turno 1, fra i Completati, oppure Ctrl+Z?
 Esito: 
 
 PROVA 3: Rami delle partite da giocare e Togli programmazione
-Prima: nell'albero scegli Prova programmazione, poi turni, Turno corrente (1/5), da giocare (5).
+Prima: nell'albero scegli Prova programmazione, poi turni (1), Turno corrente (1/5), da giocare (5).
 Passo 1: scorri con le frecce i rami programmate (2) e da programmare (3) e le loro partite.
 Domanda 1: voci e conteggi si leggono bene in voce e sulla barra braille?
 Domanda 2: fra le programmate la Scacchiera 4 viene prima della 2, che è programmata il giorno dopo: l'ordine per giorno e ora ti è comodo?
@@ -38,14 +41,14 @@ Passo 6: premi ESC due volte.
 Esito: 
 
 PROVA 4: Forfait dopo il ritiro e INVIO senza risultato
-Prima: nell'albero scegli Prova forfait, poi turni, Turno corrente (1/4), da giocare (4), da programmare (4).
+Prima: nell'albero scegli Prova forfait, poi turni (1), Turno corrente (1/4), da giocare (4), da programmare (4).
 Passo 1: sulla Scacchiera 1, Pellegrini Paolo vs Sala Sergio, premi INVIO, poi Ritira Giocatore, scegli Sala Sergio e conferma.
 Domanda 1: arriva la domanda Forfait dopo il Ritiro, con Sì predefinito, che propone 1 - F per Pellegrini Paolo?
 Passo 2: premi INVIO.
 Domanda 2: la barra di stato dice Sala Sergio ritirato, risultato registrato: 1-F, e il cursore va sulla Scacchiera 2?
 Passo 3: sulla Scacchiera 2, Neri Nadia vs Longo Lucia, premi INVIO, poi Ritira Giocatore, scegli Neri Nadia e conferma; alla domanda TAB fino a No e INVIO.
 Domanda 3: la partita resta da giocare?
-Domanda 4: la domanda diceva Neri Nadia è ritirato, al maschile: va bene, o preferisci una frase che valga per tutti?
+Domanda 4: la domanda diceva Neri Nadia è ritirato dal torneo, al maschile: ti va bene così?
 Passo 4: sulla Scacchiera 3, Rinaldi Rita vs Testa Teresa, premi INVIO e, senza scegliere un risultato, di nuovo INVIO.
 Domanda 5: si sente l'errore e la finestra resta aperta?
 Passo 5: premi ESC, poi torna sulla Scacchiera 2, premi INVIO, scegli F - 1 e premi INVIO.
@@ -53,13 +56,14 @@ Domanda 6: il risultato si registra senza chiederti di nuovo se Neri Nadia si ri
 Esito: 
 
 PROVA 5: Time Machine, l'esempio del capitolo 8 del manuale
-Prima: nell'albero scegli Prova time machine: i turni da 1 a 3 sono completi, e sotto turni c'è calcola il turno successivo.
+Prima: nell'albero scegli Prova time machine: i turni da 1 a 3 sono completi, e sotto turni (3) c'è calcola il turno successivo.
 Passo 1: premi Ctrl+Z e alla domanda Annulla Turno premi INVIO.
-Domanda 1: si sente la Time Machine, e il Turno 2 è di nuovo il turno corrente, fra i Completati?
-Domanda 2: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova time machine il file del Turno 3 Dettagli non c'è più, è nel cestino, e Windows non ti ha chiesto niente?
-Passo 2: apri Completati, Turno 2, giocate, e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi CANC, poi TAB fino a Sì e INVIO.
+Domanda 1: si sente la Time Machine, e sotto turni (2) ci sono Completati (2), con il Turno 1 e il Turno 2, e calcola il turno successivo?
+Passo 2: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova time machine.
+Domanda 2: il file Tornello - Prova_time_machine - Turno 3 Dettagli.txt non c'è più, e nella cartella E:\git\tmp\banco-tornello\cestino c'è lo stesso nome, con un numero e un trattino basso davanti, senza che Windows ti abbia chiesto niente?
+Passo 3: torna in Tornello, apri Completati (2), Turno 2, giocate (3/3, 100.0%), e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi CANC, poi TAB fino a Sì e INVIO.
 Domanda 3: il turno diventa Turno corrente (2/5) e il cursore resta sulla partita, fra le da programmare?
-Passo 3: premi INVIO, scegli 1 - 0 e premi INVIO.
+Passo 4: premi INVIO, scegli 1 - 0 e premi INVIO.
 Domanda 4: si sente la fine del turno e il cursore passa su calcola il turno successivo?
 Esito: 
 
@@ -71,11 +75,11 @@ Passo 2: sali su Completati (1), aprilo, scendi su Turno 1, premi CANC e alla do
 Domanda 2: è di nuovo la domanda Annulla Turno, e con INVIO si sente la Time Machine e la barra di stato dice "Time Machine attivata: tornati al turno precedente."?
 Domanda 3: il cursore è su Turno 1, fra i Completati (1), NVDA te lo dice senza muoverti, e sotto turni (1) c'è di nuovo calcola il turno successivo?
 Passo 3: sul Turno 1 premi ancora CANC e alla domanda Annulla Turno premi INVIO.
-Domanda 4: Prova annulla turno è passato fra In Preparazione (1), e il cursore è su calcola il turno 1, sotto turni (0)?
+Domanda 4: Prova annulla turno è passato fra In Preparazione (2), insieme a Prova spareggi, e il cursore è su calcola il turno 1, sotto turni (0)?
 Esito: 
 
 PROVA 7: CANC su un turno dei Completati, più turni in una volta
-Prima: nell'albero scegli Prova ritorno: i turni da 1 a 3 sono completi, il Turno corrente (4/5) ha una partita giocata, e fra gli iscritti c'è Orlando Oscar, ritirato.
+Prima: nell'albero scegli Prova ritorno: i turni da 1 a 3 sono completi, il Turno corrente (4/5) ha una partita giocata e un riposo, e fra gli iscritti c'è Orlando Oscar, ritirato.
 Passo 1: apri turni (4), poi Completati (3), scendi su Turno 2 e premi CANC.
 Domanda 1: la domanda Torna al turno 2 dice che spariscono 2 turni, il turno 3 e il turno 4, non nomina nessun ritirato e dice che il pulsante predefinito è No?
 Passo 2: premi INVIO.
@@ -85,7 +89,8 @@ Domanda 3: la domanda Torna al turno 1 dice che spariscono 3 turni, dal turno 2 
 Passo 4: premi TAB fino a Sì e poi INVIO.
 Domanda 4: si sente la Time Machine, la barra di stato dice "Time Machine attivata: tornati al turno 1, tolti 3 turni.", e il cursore è su Turno 1, fra i Completati (1)?
 Domanda 5: sotto turni (1) c'è calcola il turno successivo, e in iscritti (6) Orlando Oscar non è più ritirato?
-Domanda 6: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova ritorno i file del Turno 2 Dettagli e del Turno 3 Dettagli sono nel cestino, quello del Turno 1 Dettagli c'è ancora, e Windows non ti ha chiesto niente?
+Passo 5: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova ritorno.
+Domanda 6: il file del Turno 1 Dettagli c'è ancora, mentre quelli del Turno 2 Dettagli e del Turno 3 Dettagli sono nella cartella E:\git\tmp\banco-tornello\cestino, con un numero davanti, e Windows non ti ha chiesto niente?
 Esito: 
 
 PROVA 8: CANC sulle voci dove non lavora e la voce del menu File
@@ -95,7 +100,7 @@ Domanda 1: si sente l'errore, e il messaggio Elimina o annulla dice in una riga 
 Passo 2: chiudi il messaggio, poi premi CANC su turni (1) e, dentro Turno corrente (1/3) e da giocare (1), su da programmare (1), chiudendo ogni volta il messaggio.
 Domanda 2: le due volte arriva lo stesso messaggio, con l'errore?
 Passo 3: dentro da programmare (1), sulla Scacchiera 2, De Santis Dario vs Bruni Bruno (Non pianificata), premi CANC.
-Domanda 3: si sente l'errore, e il messaggio dice "La partita e' da giocare e non e' programmata: CANC non ha niente da togliere."?
+Domanda 3: si sente l'errore, e il messaggio dice "La partita è da giocare e non è programmata: CANC non ha niente da togliere."?
 Passo 4: chiudi il messaggio, premi ALT, poi F, e scorri con le frecce le voci del menu File.
 Domanda 4: dopo Esporta partite pianificate c'è Elimina o annulla la voce scelta..., con il tasto Canc e la lettera L?
 Passo 5: premi ESC due volte, poi nel Turno corrente (1/3) apri giocate (1/2, 50.0%), scendi sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0], e premi ALT, poi F, poi L.
@@ -104,52 +109,120 @@ Passo 6: premi INVIO.
 Domanda 6: la partita resta fra le giocate, con il suo risultato?
 Esito: 
 
-PROVA 9: Nomi già in uso nella procedura guidata, e i tornei dell'archivio
-Prima: Tornello aperto.
+PROVA 9: Nomi già in uso nella procedura guidata, e l'edizione archiviata Coppa Fantasia
+Prima: Tornello aperto. Fra i Tornei Conclusi (2) c'è Coppa Fantasia, iniziata sabato 6 giugno 2026, archiviata con la sua raccolta di due partite in PGN.
 Passo 1: premi Ctrl+N, scendi su Nome torneo e premi INVIO.
 Passo 2: scrivi prova FORFAIT e premi INVIO.
-Domanda 1: si sente l'errore, e il messaggio dice che il nome coincide con il torneo Prova forfait, in corso nella cartella del programma?
+Domanda 1: si sente l'errore, e il messaggio dice che il file del torneo si chiamerebbe Tornello - prova_FORFAIT.json, come il file del torneo Prova forfait, in corso nella cartella del programma?
 Passo 3: chiudi il messaggio, premi INVIO su Nome torneo, scrivi Players DB e premi INVIO.
-Domanda 2: il messaggio dice che coincide con il database dei giocatori?
-Passo 4: chiudi il messaggio, premi INVIO su Nome torneo, scrivi primavera 2 e premi INVIO.
-Domanda 3: senza l'errore arriva la domanda Nuova edizione di un torneo concluso, che nomina Primavera 2, nella cartella Closed Tournaments\2026\06 Giugno\Primavera_2, e dice che il pulsante predefinito è No?
+Domanda 2: il messaggio dice che il file del torneo si chiamerebbe Tornello - Players_DB.json, come il database dei giocatori?
+Passo 4: chiudi il messaggio, premi INVIO su Nome torneo, scrivi coppa fantasia e premi INVIO.
+Domanda 3: senza l'errore arriva la domanda Nuova edizione di un torneo concluso, che nomina Coppa Fantasia, nella cartella Closed Tournaments\2026\06 Giugno\Coppa_Fantasia, e finisce con "Vuoi creare una nuova edizione con il nome coppa fantasia? Il pulsante predefinito è No."?
 Passo 5: premi INVIO.
 Domanda 4: INVIO risponde No, e la voce dice ancora Nome torneo *: Non impostato?
-Passo 6: premi INVIO su Nome torneo, scrivi primavera 2 e premi INVIO; alla domanda premi TAB fino a Sì e poi INVIO.
-Domanda 5: la voce dice Nome torneo *: primavera 2, e in fondo all'elenco è comparsa Iscrizione Giocatori?
-Passo 7: scendi su Iscrizione Giocatori e premi INVIO.
-Domanda 6: la domanda sulla nuova edizione non torna, e si apre subito la finestra Iscrizione Giocatori?
-Passo 8: chiudi la finestra con ESC, senza iscrivere nessuno, poi sali su Indietro e premi INVIO.
-Domanda 7: la procedura si chiude senza creare niente, e nell'albero non c'è un torneo primavera 2?
+Passo 6: premi INVIO su Nome torneo, scrivi coppa fantasia e premi INVIO; alla domanda premi TAB fino a Sì e poi INVIO.
+Domanda 5: la voce dice Nome torneo *: coppa fantasia, e in fondo all'elenco è comparsa Iscrizione Giocatori?
+Passo 7: scendi su Data inizio, premi INVIO, scrivi 2026-06-06 al posto della data che c'è e premi INVIO.
+Domanda 6: la voce dice Data inizio: Sabato 6 giugno 2026, senza nessun messaggio?
+Passo 8: scendi su Iscrizione Giocatori e premi INVIO.
+Domanda 7: si sente l'errore, e il messaggio Nome del torneo già in uso dice che il nome coppa fantasia non si può usare con la data di inizio Sabato 6 giugno 2026, perché Coppa Fantasia, archiviata nella cartella Closed Tournaments\2026\06 Giugno\Coppa_Fantasia, ha la stessa data di inizio?
+Domanda 8: il messaggio finisce con "Cambia la data di inizio, oppure scegli un altro nome per il torneo."?
+Passo 9: chiudi il messaggio, sali su Data inizio, premi INVIO, scrivi 2026-12-01 e premi INVIO; poi scendi su Iscrizione Giocatori e premi INVIO.
+Domanda 9: la domanda sulla nuova edizione non torna, e si apre subito la finestra Iscrizione Giocatori?
+Passo 10: chiudi la finestra con ESC, senza iscrivere nessuno, poi sali su Indietro e premi INVIO.
+Domanda 10: la procedura si chiude senza creare niente, e nell'albero non c'è un torneo coppa fantasia?
 Esito: 
 
-PROVA 10: Fattore K del rapid e partite della cadenza
-Prima: nell'albero scegli Prova rapid: i due turni sono completi, e sotto turni c'è Finalizza il torneo.
-Passo 1: premi Ctrl+F, rispondi Sì e chiudi il messaggio di successo.
-Passo 2: premi Ctrl+D, scrivi Valli nel campo Filtra Giocatori, scegli Valli Vera e passa all'albero della scheda.
-Passo 3: apri Anagrafica e scorri fino a Partite Locali Blitz; poi apri ELO e Titoli.
-Domanda 1: NVDA legge Partite Locali Rapid: 1, Partite Locali Blitz: 0 ed ELO Rapid 1630?
-Domanda 2: le due voci nuove delle partite si capiscono, accanto a Partite Locali Giocate?
-Passo 4: chiudi la finestra con ESC, senza modificare niente.
+PROVA 10: Nomi e data di inizio cambiati da Dati
+Prima: Tornello aperto. Beta è la seconda edizione di Alfa: il suo file è Tornello - Alfa.json, ha l'identificativo ALFA della prima edizione, e da Dati ha preso il nome Beta. Alfa, la prima edizione, iniziata sabato 2 maggio 2026, è fra i Tornei Conclusi (2).
+Passo 1: nell'albero scegli Prova voci, apri Dati, premi INVIO su Nome torneo: Prova voci, scrivi Beta al posto del nome e premi INVIO.
+Domanda 1: si sente l'errore, e il messaggio Nome del torneo già in uso dice che i report e la raccolta delle partite si chiamerebbero come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Alfa.json?
+Domanda 2: il messaggio non dice come si chiamerebbe il file del torneo, che da Dati non cambia nome?
+Passo 2: chiudi il messaggio, premi INVIO su Nome torneo: Prova voci, scrivi Alfa al posto del nome e premi INVIO.
+Domanda 3: il messaggio dice che il nome Alfa non si può usare perché è riservato: il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Alfa.json, come il file del torneo Beta, in corso nella cartella del programma?
+Passo 3: senza chiudere il messaggio leggi la prima riga sulla barra braille.
+Domanda 4: in "non si può usare: è riservato" la u accentata di può e la e accentata di è occupano una cella ciascuna, senza un apostrofo dopo la vocale?
+Passo 4: chiudi il messaggio, premi INVIO su Nome torneo: Prova voci, scrivi Settings al posto del nome e premi INVIO.
+Domanda 5: il messaggio dice che il nome Settings è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Settings.json, come il file delle impostazioni del programma?
+Passo 5: chiudi il messaggio.
+Domanda 6: la voce dice ancora Nome torneo: Prova voci?
+Passo 6: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
+Domanda 7: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
+Domanda 8: la domanda finisce con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare" e poi "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
+Passo 7: premi ESC.
+Domanda 9: ESC risponde No, e la voce dice ancora Nome torneo: Beta?
+Passo 8: scendi su Data inizio, premi INVIO, scrivi 2026-05-02 al posto della data che c'è e premi INVIO.
+Domanda 10: si sente l'errore, e il messaggio Data di inizio già in uso dice che il torneo Alfa, archiviato nella cartella Closed Tournaments\2026\05 Maggio\Alfa con il file Tornello - Alfa.json, ha lo stesso identificativo, ALFA, e la stessa data di inizio?
+Domanda 11: chiuso il messaggio, la voce Data inizio dice ancora la data di prima, e non Sabato 2 maggio 2026?
 Esito: 
 
-PROVA 11: Menu Aiuto e chiusura senza invito
-Prima: Tornello aperto.
+PROVA 11: Time Machine e raccolta delle partite nel cestino del banco
+Prima: nell'albero scegli Prova raccolta: il Turno 1 è completo, e nel Turno corrente (2/3) la Scacchiera 1, Neri Nadia vs Esposito Ettore [1/2-1/2], è l'unica partita con il PGN.
+Prima: nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova raccolta c'è il file Prova_raccolta - raccolta partite.pgn.
+Passo 1: scendi su Partite PGN.
+Domanda 1: la voce dice Partite PGN (1), e dentro c'è T2 (1) con la partita di Neri Nadia ed Esposito Ettore?
+Passo 2: premi Ctrl+Z e alla domanda Annulla Turno premi INVIO.
+Domanda 2: si sente la Time Machine, la barra di stato dice "Time Machine attivata: tornati al turno precedente.", e non arriva nessun messaggio?
+Domanda 3: scorrendo l'albero di Prova raccolta, la voce dice adesso Partite PGN (0)?
+Passo 3: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova raccolta.
+Domanda 4: il file Prova_raccolta - raccolta partite.pgn non c'è più?
+Passo 4: apri la cartella E:\git\tmp\banco-tornello\cestino.
+Domanda 5: c'è un file che finisce con Prova_raccolta - raccolta partite.pgn, con un numero e un trattino basso davanti, e Windows non ti ha chiesto niente?
+Esito: 
+
+PROVA 12: Il rapid del ritirato e le sue partite nel database
+Prima: nell'albero scegli Prova ritirato, un rapid 15+10 di tre turni. Weiss Wanda, ELO Rapid 1600, ha battuto Jannelli Jacopo, ELO Rapid 1780, al turno 1, ha perso con Hofer Helga, ELO Rapid 1850, al turno 2, e poi si è ritirata.
+Prima: i tre turni sono completi, e sotto turni (3) c'è Finalizza il torneo.
+Passo 1: premi Ctrl+D, scrivi Weiss nel campo Filtra Giocatori, scegli Weiss Wanda e passa all'albero della scheda; apri Anagrafica e poi ELO e Titoli.
+Domanda 1: prima della finalizzazione NVDA legge Partite Locali Giocate: 0, Partite Locali Rapid: 0 ed ELO Rapid: 1600?
+Passo 2: chiudi la finestra con ESC, senza modificare niente.
+Passo 3: premi Ctrl+F, rispondi Sì alla domanda Finalizza Torneo, e leggi il messaggio.
+Domanda 2: il messaggio dice "Torneo finalizzato con successo! I dati dei giocatori sono stati aggiornati.", senza avvisi?
+Passo 4: chiudi il messaggio, premi Ctrl+D, scrivi Weiss nel campo Filtra Giocatori, scegli Weiss Wanda e passa all'albero della scheda; apri Anagrafica.
+Domanda 3: NVDA legge Partite Locali Giocate: 2, Partite Locali Rapid: 2 e Partite Locali Blitz: 0?
+Passo 5: apri ELO e Titoli.
+Domanda 4: NVDA legge ELO Standard: 1610, com'era, ed ELO Rapid: 1611, cioè 11 punti in più per le due partite giocate prima del ritiro?
+Passo 6: apri Storico Tornei.
+Domanda 5: c'è la voce Prova ritirato: Pos. RIT/4 (2026-10-24), con RIT al posto della posizione?
+Passo 7: scrivi Hofer nel campo Filtra Giocatori, scegli Hofer Helga e leggi Anagrafica ed ELO e Titoli.
+Domanda 6: NVDA legge Partite Locali Rapid: 3 ed ELO Rapid: 1848, con la partita vinta su Weiss Wanda fra le tre?
+Passo 8: chiudi la finestra con ESC, senza modificare niente.
+Esito: 
+
+PROVA 13: Menu Aiuto, il PUB e la chiusura senza invito
+Prima: Tornello aperto. Nel banco le mail del PUB vanno al tuo Gmail e non al gruppo; i passi della mail copiano negli appunti indirizzo, oggetto e testo.
 Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
-Domanda 1: dopo Crediti ci sono Offrimi un caffè con la O, un separatore, Entra al PUB con la E e Chiedi aiuto al PUB con la A?
-Passo 2: scegli Offrimi un caffè, leggi il testo e premi INVIO.
-Domanda 2: la finestra si chiude con Chiudi, il pulsante predefinito, senza aprire il browser?
-Passo 3: dal menu Aiuto scegli Entra al PUB, leggi l'area di testo con le frecce e chiudi con ESC.
-Domanda 3: spiegazione e pulsanti si leggono bene?
-Passo 4: dal menu Aiuto scegli Chiedi aiuto al PUB, leggi la mail e chiudi con ESC, senza spedire niente.
-Domanda 4: nella mail ci sono la versione 10.19.0, BBP Pairings con la sua versione e la lingua it?
-Passo 5: chiudi Tornello con ALT+F4.
-Domanda 5: Tornello si chiude senza l'invito a offrire un caffè?
+Domanda 1: dopo Crediti ci sono Offrimi un caffè... con la O, un separatore, Entra al PUB (gruppo di supporto)... con la E e Chiedi aiuto al PUB... con la A?
+Passo 2: scegli Offrimi un caffè.
+Domanda 2: la finestra si intitola Offrimi un caffè, come la voce?
+Passo 3: leggi il testo e premi INVIO.
+Domanda 3: la finestra si chiude con Chiudi, il pulsante predefinito, senza aprire il browser?
+Passo 4: dal menu Aiuto scegli Entra al PUB.
+Domanda 4: appena scegli la voce si sente il campanello della porta del pub, prima che si apra la finestra?
+Passo 5: leggi l'area di testo con le frecce e chiudi con ESC.
+Passo 6: dal menu Aiuto scegli Chiedi aiuto al PUB.
+Domanda 5: appena scegli la voce si sente il suono della domanda, diverso dal campanello?
+Passo 7: se la finestra mostra la spiegazione, premi ALT+P, Passo per passo, e non INVIO, che lì sceglie Apri nel programma di posta; se mostra già il passo 1 di 4, vai avanti.
+Domanda 6: il passo 1 di 4 dice che l'indirizzo è gabriele.battaglia@gmail.com, il tuo Gmail?
+Passo 8: premi INVIO, per il passo 2 di 4.
+Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.15?
+Passo 9: aspetta un secondo e premi INVIO, per il passo 3 di 4.
+Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.15, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
+Passo 10: premi ESC, senza spedire niente.
+Passo 11: chiudi Tornello con ALT+F4.
+Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
 Esito: 
 
-PROVA 12: Ascolto dei tre suoni al posto della campanella
+PROVA 14: La console del banco dopo la chiusura
+Prima: Tornello del banco chiuso alla prova 13. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
+Passo 1: torna al prompt dei comandi da cui hai avviato banco.py e leggi le ultime righe.
+Domanda 1: c'è la riga "Banco di collaudo chiuso. Dati vivi invariati:", seguita da un numero e da "file controllati."?
+Domanda 2: subito dopo c'è la riga "Nessuna operazione rifiutata dal guardiano."?
+Esito: 
+
+PROVA 15: Ascolto dei tre suoni al posto della campanella
 Prima: Tornello chiuso, con il volume che usi di solito.
-Passo 1: dal prompt dei comandi scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
+Passo 1: dal prompt dei comandi scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
 Passo 2: segui lo script fino in fondo.
-Domanda 1: lo script ha scritto gli esiti in E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_57_esiti.txt?
+Domanda 1: lo script ha scritto gli esiti in E:\git\Mine\Tornello-lavori\scratch\collaudo\ascolto_57_esiti.txt?
 Esito: 
