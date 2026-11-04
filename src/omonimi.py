@@ -402,13 +402,20 @@ def _partite_che_il_torneo_non_ha(torneo, percorso):
     confronto e' sul testo, con _senza_risultato, e una partita che cambia
     soltanto nel risultato, come dopo CANC, e' la stessa; una che il torneo
     ha due volte nella raccolta non toglie niente. Una raccolta vuota non ha
-    partite; un file che non si legge, o che non e' in UTF-8, ne ha, perche'
-    non si puo' dire che non ne abbia. Nata con la revisione della 10.19.13
-    (issue 66, decisione di Gabriele del 4 novembre 2026)."""
+    partite; una che non e' in UTF-8 ne ha, perche' non si puo' dire che non
+    ne abbia. Nata con la revisione della 10.19.13 (issue 66, decisione di
+    Gabriele del 4 novembre 2026).
+    Un file che non si legge, per esempio perche' un altro programma lo
+    tiene aperto senza lasciarlo leggere, solleva OSError: non si sa se abbia
+    partite che il torneo non ha, e chi chiama lo dice com'e'. Fino alla
+    correzione della stessa revisione ne aveva, e il messaggio della copia
+    non riuscita diceva che aveva partite che il torneo non ha anche della
+    raccolta identica di un torneo normale, bloccata da un altro programma."""
+    with open(percorso, "rb") as f:
+        dati = f.read()
     try:
-        with open(percorso, "rb") as f:
-            testo = f.read().decode("utf-8")
-    except (OSError, UnicodeDecodeError):
+        testo = dati.decode("utf-8")
+    except UnicodeDecodeError:
         return True
     pezzi = testo.replace(os.linesep, "\n").strip().split("\n\n")
     if pezzi == [""]:
@@ -440,8 +447,9 @@ def _edizioni_della_raccolta(torneo, file_del_torneo, percorso):
     stesso nome, in quell'ordine, la cui raccolta, come la scriverebbe il
     loro json, e' identica byte per byte a percorso, tranne un'edizione con
     l'identita' del torneo, che e' il torneo stesso. La usano la guardia,
-    raccolta_altrui_in_salvo, e raccolta_rimasta_all_apertura, perche'
-    riconoscano la stessa raccolta (revisione della 10.19.13)."""
+    raccolta_altrui_in_salvo, e _da_mettere_in_salvo, all'apertura del
+    torneo e prima di sostituire una raccolta rimasta, perche' riconoscano
+    la stessa raccolta (revisione della 10.19.13)."""
     from db_players import identita_del_torneo
     from reports import byte_della_raccolta_pgn
 
@@ -494,7 +502,8 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     10.19.13 ogni salvataggio della finestra riprovava, e ripeteva il
     messaggio e la domanda di Windows.
     Le edizioni di cui e' la raccolta le trova _edizioni_della_raccolta,
-    come all'apertura del torneo raccolta_rimasta_all_apertura."""
+    come _da_mettere_in_salvo all'apertura del torneo e prima di sostituire
+    una raccolta rimasta."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn, nome_della_raccolta_pgn
     from ui import _copia_verificata
     from utils import delete_file_to_trash, stessi_byte
@@ -580,9 +589,9 @@ def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
     """La chiave di percorso della raccolta delle partite del torneo, con
     il file file_del_torneo, se all'apertura del torneo e' una raccolta
     rimasta: al percorso dove il torneo la scriverebbe c'e' una raccolta che
-    ha partite che il torneo non ha, con _partite_che_il_torneo_non_ha;
-    altrimenti None. Non lo e' la raccolta di un'altra edizione archiviata,
-    che la guardia, raccolta_altrui_in_salvo, riconosce con
+    ha partite che il torneo non ha, con _da_mettere_in_salvo; altrimenti
+    None. Non lo e' la raccolta di un'altra edizione archiviata, che la
+    guardia, raccolta_altrui_in_salvo, riconosce con
     _edizioni_della_raccolta: segue la strada della guardia. Non lo e'
     nemmeno, e il confronto non si fa, la raccolta identica a quella che il
     torneo scriverebbe, come quella di un torneo aperto e salvato ogni
@@ -603,7 +612,12 @@ def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
     non riuscita, con il torneo salvato con il suo PGN nuovo, lasciavano
     dopo una chiusura una raccolta con le partite di prima che il primo
     salvataggio sostituiva senza copia, e cosi' la finalizzazione in console
-    (decisione di Gabriele del 4 novembre 2026)."""
+    (decisione di Gabriele del 4 novembre 2026).
+    Una raccolta che non si legge, per esempio perche' un altro programma la
+    tiene aperta, e' rimasta, perche' non si puo' dire che non abbia partite
+    che il torneo non ha: aggiorna_la_raccolta_pgn non la sostituisce finche'
+    non si legge, e lo dice come un errore di scrittura (correzione della
+    stessa revisione)."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
 
     percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
@@ -612,11 +626,50 @@ def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
     proprio = byte_della_raccolta_pgn(torneo)
     if proprio is not None and _contiene(percorso, proprio):
         return None
-    if not _partite_che_il_torneo_non_ha(torneo, percorso):
-        return None
-    if next(_edizioni_della_raccolta(torneo, file_del_torneo, percorso), None) is not None:
-        return None
+    try:
+        if not _da_mettere_in_salvo(torneo, file_del_torneo, percorso):
+            return None
+    except OSError:
+        pass
     return _chiave_del_percorso(percorso)
+
+
+def _da_mettere_in_salvo(torneo, file_del_torneo, percorso):
+    """Vero se la raccolta delle partite percorso, al posto di quella del
+    torneo con il file file_del_torneo, ha partite che il torneo non ha,
+    con _partite_che_il_torneo_non_ha, e non e' la raccolta di un'altra
+    edizione archiviata, che la guardia, raccolta_altrui_in_salvo,
+    riconosce con _edizioni_della_raccolta, e le cui partite sono nel json
+    di quell'edizione: la regola di Gabriele per una raccolta rimasta (4
+    novembre 2026), la stessa all'apertura del torneo,
+    raccolta_rimasta_all_apertura, e prima di sostituirla,
+    aggiorna_la_raccolta_pgn. Un file che non si legge solleva OSError.
+    Nata con la correzione della revisione della 10.19.13: fino ad allora la
+    copia prima di sostituirla non guardava le altre edizioni, e nella
+    stessa sessione la raccolta di un'altra edizione, gia' copiata nella sua
+    cartella d'archivio e rimasta perche' il cestino non l'aveva presa,
+    andava anche nella cartella backup al primo PGN nuovo."""
+    if not _partite_che_il_torneo_non_ha(torneo, percorso):
+        return False
+    return next(_edizioni_della_raccolta(torneo, file_del_torneo, percorso), None) is None
+
+
+def _gia_nella_cartella_backup(percorso):
+    """Vero se l'ultima copia del file percorso nella cartella backup, di
+    qualunque momento, e' identica byte per byte al file, come per le copie
+    della chiusura del programma (copie_di_chiusura di utils.py): la
+    raccolta e' gia' in salvo, e un'altra copia non serve. Nata con la
+    correzione della revisione della 10.19.13: una raccolta rimasta che si
+    legge ma non si riscrive, per esempio aperta in un visualizzatore di PGN
+    che non lascia scrivere, resta fra le rimaste dopo la copia, e ogni
+    salvataggio ne faceva un'altra copia identica, in silenzio, che con la
+    regola delle ultime dieci copie poteva spingere fuori copie piu' vecchie
+    e diverse della stessa raccolta."""
+    from copie_di_sicurezza import ultima_copia_di
+    from utils import stessi_byte
+
+    ultima = ultima_copia_di(percorso, user_data_path("backup"))
+    return bool(ultima) and stessi_byte(percorso, ultima)
 
 
 def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None, ritrovate=None):
@@ -642,16 +695,29 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
     sostituita dalla raccolta nuova, va nella cartella backup, con una copia
     riletta: fino ad allora le partite di prima si perdevano al primo PGN
     nuovo, mentre il messaggio prometteva che Tornello non le cancellava.
-    La copia si fa se la raccolta ha ancora partite che il torneo non ha,
-    con _partite_che_il_torneo_non_ha, la stessa regola dell'apertura
-    (decisione di Gabriele del 4 novembre 2026): se il torneo le ha di nuovo
-    tutte, anche con un altro risultato, non c'e' niente da perdere.
+    La copia si fa se la raccolta ha ancora partite che il torneo non ha, e
+    non e' quella di un'altra edizione archiviata, con _da_mettere_in_salvo,
+    la stessa regola dell'apertura (decisione di Gabriele del 4 novembre
+    2026): se il torneo le ha di nuovo tutte, anche con un altro risultato,
+    non c'e' niente da perdere, e le partite di un'altra edizione sono nel
+    suo json, e la guardia ne ha gia' messo la raccolta nella sua cartella
+    d'archivio. Non si fa nemmeno quando l'ultima copia della raccolta nella
+    cartella backup le e' identica, con _gia_nella_cartella_backup: una
+    raccolta che si legge ma non si riscrive resta fra le rimaste, e fino
+    alla correzione della stessa revisione ogni salvataggio ne faceva
+    un'altra copia identica.
     Se la copia non riesce, la raccolta resta com'e', e la risposta ha
     copia_non_riuscita vero e la frase in non_scritta. Un errore di
     scrittura si stampa, come sempre, la raccolta di prima resta com'era, e
     dalla stessa revisione la frase sta in non_scritta, perche' la
     finalizzazione lo dica: fino ad allora l'archivio restava senza raccolta
-    senza nessun avviso.
+    senza nessun avviso. Una raccolta rimasta che non si legge, per esempio
+    perche' un altro programma la tiene aperta, non si sostituisce, perche'
+    puo' avere partite che il torneo non ha, e la risposta lo dice come un
+    errore di scrittura, con l'errore della lettura: fino alla correzione
+    della stessa revisione la copia non riusciva, e la frase diceva che la
+    raccolta aveva partite che il torneo non ha anche quando era quella del
+    torneo.
     ritrovate e' l'insieme, come chiavi di percorso, delle raccolte rimaste
     ritrovate sul disco all'apertura del loro torneo, dopo una chiusura di
     Tornello, o alla finalizzazione, con raccolta_rimasta_all_apertura: per
@@ -676,21 +742,25 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
         if chiave in ritrovate:
             ritrovate.discard(chiave)
             rimaste.add(chiave)
-        if (
-            chiave in rimaste
-            and os.path.isfile(percorso)
-            and not _contiene(percorso, contenuto)
-            and _partite_che_il_torneo_non_ha(torneo, percorso)
-        ):
-            copia = copia_di_sicurezza(percorso, "pre_sostituzione_raccolta")
-            if not copia or not stessi_byte(percorso, copia):
-                return RaccoltaAggiornata(
-                    non_scritta=_(
-                        "La raccolta delle partite {file}, nella cartella {cartella}, ha partite che il torneo {nome} non ha: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta."
-                    ).format(file=file, cartella=cartella, nome=torneo.get("name", "")),
-                    copia_non_riuscita=True,
-                )
         try:
+            # Una raccolta rimasta che non si legge solleva OSError da
+            # _da_mettere_in_salvo, e non si sostituisce: la frase e' quella
+            # della scrittura che non riesce.
+            if (
+                chiave in rimaste
+                and os.path.isfile(percorso)
+                and not _contiene(percorso, contenuto)
+                and _da_mettere_in_salvo(torneo, file_del_torneo, percorso)
+                and not _gia_nella_cartella_backup(percorso)
+            ):
+                copia = copia_di_sicurezza(percorso, "pre_sostituzione_raccolta")
+                if not copia or not stessi_byte(percorso, copia):
+                    return RaccoltaAggiornata(
+                        non_scritta=_(
+                            "La raccolta delle partite {file}, nella cartella {cartella}, ha partite che il torneo {nome} non ha: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta."
+                        ).format(file=file, cartella=cartella, nome=torneo.get("name", "")),
+                        copia_non_riuscita=True,
+                    )
             with open(percorso, "wb") as f:
                 f.write(contenuto)
         except OSError as e:

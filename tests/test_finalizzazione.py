@@ -2305,8 +2305,9 @@ class TestRaccoltaDiUnAltraEdizioneAllaFinalizzazione:
 class TestRaccoltaRimastaAllaFinalizzazione:
     """Revisione della 10.19.13 (issue 66). La finestra passa alla
     finalizzazione le raccolte che il suo cestino non ha preso: una rimasta,
-    prima di essere sostituita dalla raccolta del torneo, va nella cartella
-    backup, come nei salvataggi della finestra. Una raccolta che non si puo'
+    se ha ancora partite che il torneo non ha, prima di essere sostituita
+    dalla raccolta del torneo va nella cartella backup, come nei salvataggi
+    della finestra. Una raccolta che non si puo'
     scrivere, per esempio tenuta aperta da un altro programma, lo dice un
     avviso: fino ad allora l'archivio restava senza raccolta, e l'errore
     andava soltanto sulla console, che la finestra non mostra."""
@@ -2352,8 +2353,8 @@ class TestRaccoltaRimastaAllaFinalizzazione:
 
     @pytest.mark.parametrize(
         ("di_prima", "con_la_copia"),
-        [((PGN_DELLA_PRIMA, PGN_DELLA_PROVA), True), ((PGN_DELLA_PROVA,), False)],
-        ids=["con una partita che il torneo non ha", "con le sole partite del torneo"],
+        [((PGN_DELLA_PRIMA, PGN_DELLA_PROVA), True), ((PGN_DELLA_PROVA, PGN_DELLA_PRIMA), True), ((PGN_DELLA_PROVA,), False)],
+        ids=["con una partita che il torneo non ha", "con la partita che il torneo non ha dopo una sua", "con le sole partite del torneo"],
     )
     def test_dalla_console_la_raccolta_con_partite_che_il_torneo_non_ha_va_nella_cartella_backup(self, banco, di_prima, con_la_copia):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre

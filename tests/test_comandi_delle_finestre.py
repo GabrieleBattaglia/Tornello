@@ -17,6 +17,7 @@ chiusure delle finestre modali pure.
 """
 
 import os
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -3510,10 +3511,10 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         fino alla chiusura i salvataggi non ci riprovano. Senza PGN la
         raccolta resta dov'e', e il messaggio lo dice; con un PGN il torneo
         la sostituisce con la sua. Quando il torneo senza PGN ne ha uno, la
-        raccolta si scrive, senza altri messaggi. Fino ad allora ogni
-        salvataggio riprovava il cestino, e ripeteva il messaggio, che
-        diceva anche al torneo senza PGN che l'avrebbe sostituita, o
-        cancellata."""
+        raccolta si scrive, senza altri messaggi e senza copie nella cartella
+        backup. Fino ad allora ogni salvataggio riprovava il cestino, e
+        ripeteva il messaggio, che diceva anche al torneo senza PGN che
+        l'avrebbe sostituita, o cancellata."""
         from config import user_data_path
 
         archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
@@ -3548,6 +3549,12 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_NUOVO)
         assert len(tentativi) == 1
         assert len(finestre) == 1
+        # La raccolta dell'altra edizione non e' una raccolta rimasta del
+        # torneo, nemmeno nella stessa sessione: la sua copia identica e' gia'
+        # nella cartella d'archivio, e non va anche nella cartella backup.
+        # Fino alla correzione della revisione della 10.19.13, senza PGN, ci
+        # andava al primo PGN nuovo.
+        assert TestRaccoltaSenzaPartiteNelCestino._copie_della_raccolta() == []
 
 
 class TestNomeEDataDiInizioDaDati:
@@ -4792,7 +4799,10 @@ class TestRaccoltaSenzaPartiteNelCestino:
     finestra, come gli altri file dell'utente: fino alla 10.19.10
     _salva_i_report la cancellava per sempre con os.remove. Se il cestino non
     la prende resta dov'e', un messaggio lo dice una volta, e fino alla
-    chiusura i salvataggi non ci riprovano, senza disturbare. Il cestino e le
+    chiusura i salvataggi non ci riprovano, senza disturbare. Dalla revisione
+    della 10.19.13 una raccolta rimasta, che il cestino non ha preso o che
+    all'apertura del torneo ha partite che il torneo non ha, se ne ha ancora
+    va nella cartella backup prima di essere sostituita. Il cestino e le
     finestre di messaggio sono finti."""
 
     @staticmethod
@@ -5069,14 +5079,15 @@ class TestRaccoltaSenzaPartiteNelCestino:
 
     def test_dopo_una_chiusura_un_torneo_con_pgn_non_fa_copie(self, principale, suoni, monkeypatch, dopo_una_chiusura):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
-        2026): soltanto un torneo senza partite in PGN ha una raccolta
-        rimasta. Primavera 2 ha il PGN della seconda partita, e il
-        salvataggio ne scrive la raccolta. Tornello si chiude e si riapre:
-        all'apertura il torneo ha partite in PGN, e la sua raccolta non e'
-        una raccolta rimasta. Al primo PGN nuovo la raccolta nuova la
-        sostituisce come sempre, senza copie nella cartella backup e senza
-        messaggi. Senza la condizione sul PGN in raccolta_rimasta_all_apertura
-        ogni torneo con partite in PGN, riaperto, faceva una copia."""
+        2026). Primavera 2 ha il PGN della seconda partita, e il salvataggio
+        ne scrive la raccolta. Tornello si chiude e si riapre: all'apertura
+        la raccolta e' quella che il torneo scriverebbe, e non e' una
+        raccolta rimasta. Al primo PGN nuovo la raccolta nuova la sostituisce
+        come sempre, senza copie nella cartella backup e senza messaggi.
+        Nella prima stesura della revisione lo diceva la condizione sul PGN
+        in raccolta_rimasta_all_apertura, e senza ogni torneo con partite in
+        PGN, riaperto, faceva una copia; dalla regola piu' larga lo dice il
+        confronto con la raccolta che il torneo scriverebbe."""
         from config import user_data_path
 
         dati = _torneo_in_corso("Primavera 2")
@@ -5473,3 +5484,332 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert finestre == []
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(finestra.current_tournament["rounds"][0]["matches"][0]["pgn"], self.ALTRO_PGN)
+
+    def test_dopo_una_chiusura_il_ripristino_che_cambia_la_seconda_partita_fa_la_copia(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+        """Correzione della revisione della 10.19.13. La raccolta di Primavera
+        2 ha due partite, e quella che il torneo non ha piu' e' la seconda:
+        dopo una chiusura di Tornello, dalla finestra Copie di sicurezza, con
+        nessun torneo aperto, il torneo torna com'era in una copia, con la
+        stessa prima partita e un'altra seconda. La raccolta e' rimasta, e
+        prima di essere sostituita va nella cartella backup, con una copia
+        identica, senza messaggi. Nelle altre prove la partita che il torneo
+        non ha era la prima della raccolta, o l'unica, e un confronto che si
+        fermasse alla prima partita coperta non se ne accorgeva."""
+        import json
+
+        from config import user_data_path
+        from copie_di_sicurezza import Esito
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][0]["pgn"] = self.PGN_ESPORTATO
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        seconda = dopo_una_chiusura()
+        with open(percorso, encoding="utf-8") as f:
+            ripristinato = json.load(f)
+        ripristinato["rounds"][0]["matches"][1]["pgn"] = self.ALTRO_PGN
+        TestNomeDelTorneoNuovo._scrivi(percorso, ripristinato)
+        seconda._dopo_il_ripristino(Esito(True, tipo="torneo", destinazione=percorso))
+
+        copie = self._copie_della_raccolta()
+        assert len(copie) == 1
+        with open(copie[0], "rb") as f:
+            assert f.read() == contenuto
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, self.ALTRO_PGN)
+        assert finestre == []
+
+    @pytest.mark.parametrize("sul_disco", ["non in UTF-8", "vuota"])
+    def test_dopo_una_chiusura_la_raccolta_non_in_utf8_fa_la_copia_e_quella_vuota_no(self, principale, suoni, monkeypatch, dopo_una_chiusura, sul_disco):
+        """Revisione della 10.19.13. Primavera 2 ha il PGN della seconda
+        partita, e la finestra ne scrive la raccolta. Fra due sessioni al
+        suo posto finisce una raccolta non in UTF-8, con Città scritto in
+        cp1252, o una raccolta vuota. Dopo una chiusura il torneo si apre e
+        si salva: la raccolta non in UTF-8 non si puo' confrontare, e
+        potrebbe avere partite che il torneo non ha, quindi e' rimasta, e
+        prima di essere sostituita va nella cartella backup; quella vuota non
+        ha partite, e si sostituisce senza copie. Nessun messaggio."""
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        if sul_disco == "non in UTF-8":
+            contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO.replace("Prova", "Città"), self.ALTRO_PGN).decode("utf-8").encode("cp1252")
+            with pytest.raises(UnicodeDecodeError):
+                contenuto.decode("utf-8")
+        else:
+            contenuto = b""
+        with open(raccolta, "wb") as f:
+            f.write(contenuto)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        finestra = dopo_una_chiusura()
+        finestra.load_tournament(percorso)
+        finestra._save_state()
+
+        letti = []
+        for copia in self._copie_della_raccolta():
+            with open(copia, "rb") as f:
+                letti.append(f.read())
+        assert letti == ([contenuto] if sul_disco == "non in UTF-8" else [])
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
+        assert finestre == []
+
+    # La condivisione che un altro programma lascia, aprendo la raccolta
+    # con CreateFileW: con FILE_SHARE_READ gli altri la leggono ma non la
+    # scrivono, come con un visualizzatore di PGN; con FILE_SHARE_WRITE la
+    # scrivono ma non la leggono; con zero non la leggono e non la scrivono.
+    FILE_SHARE_READ = 0x1
+    FILE_SHARE_WRITE = 0x2
+
+    @staticmethod
+    def _bloccata(percorso, condivisione):
+        """Apre il file percorso come lo terrebbe aperto un altro programma,
+        con un blocco vero di Windows, e restituisce la funzione che lo
+        chiude."""
+        import ctypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        kernel32.CreateFileW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_void_p]
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+        generic_read, open_existing = 0x80000000, 3
+        maniglia = kernel32.CreateFileW(percorso, generic_read, condivisione, None, open_existing, 0, None)
+        assert maniglia not in (None, ctypes.c_void_p(-1).value), ctypes.get_last_error()
+        return lambda: kernel32.CloseHandle(maniglia)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_raccolta_che_non_si_riscrive_va_nella_cartella_backup_una_volta(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+        """Correzione della revisione della 10.19.13. Primavera 2 ha due
+        partite in PGN, e la finestra ne scrive la raccolta. Fra due sessioni
+        il torneo torna com'era in una copia, con un altro PGN alla prima
+        partita, come dopo un ripristino: all'apertura la raccolta ha una
+        partita che il torneo non ha, ed e' rimasta. Un visualizzatore di PGN
+        la tiene aperta, e la lascia leggere ma non scrivere: il primo
+        salvataggio la mette nella cartella backup e non la riscrive, e i due
+        dopo non fanno altre copie, senza messaggi e senza il suono
+        dell'errore. Tolto il blocco, il salvataggio scrive la raccolta nuova,
+        con la copia di prima e basta. Fino alla correzione ogni salvataggio
+        faceva un'altra copia identica, in silenzio."""
+        import json
+
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][0]["pgn"] = self.PGN_ESPORTATO
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        with open(percorso, encoding="utf-8") as f:
+            ripristinato = json.load(f)
+        ripristinato["rounds"][0]["matches"][0]["pgn"] = self.ALTRO_PGN
+        TestNomeDelTorneoNuovo._scrivi(percorso, ripristinato)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_READ)
+        try:
+            seconda = dopo_una_chiusura()
+            seconda.load_tournament(percorso)
+            for _volta in range(3):
+                seconda._save_state()
+            copie = self._copie_della_raccolta()
+            with open(raccolta, "rb") as f:
+                ancora = f.read()
+        finally:
+            sblocca()
+
+        assert ancora == contenuto
+        assert len(copie) == 1
+        with open(copie[0], "rb") as f:
+            assert f.read() == contenuto
+        assert finestre == []
+        assert "errore" not in suoni
+
+        seconda._save_state()
+
+        assert self._copie_della_raccolta() == copie
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
+        assert finestre == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_raccolta_rimasta_che_non_si_legge_non_si_sostituisce(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+        """Correzione della revisione della 10.19.13. Come sopra, la raccolta
+        ha una partita che il torneo, tornato com'era in una copia, non ha
+        piu'. Dopo una chiusura di Tornello un altro programma la tiene
+        aperta, e la lascia scrivere ma non leggere: all'apertura non si sa
+        se abbia partite che il torneo non ha, e' rimasta, e i salvataggi non
+        la sostituiscono, senza copie e senza messaggi, perche' non si
+        potrebbe mettere nella cartella backup. Tolto il blocco, il
+        salvataggio la mette nella cartella backup e poi scrive la raccolta
+        nuova. Se la raccolta che non si legge non fosse rimasta, il primo
+        salvataggio la sostituirebbe senza copia, e la partita che il torneo
+        non ha si perderebbe."""
+        import json
+
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][0]["pgn"] = self.PGN_ESPORTATO
+        dati["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        principale._save_state()
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        with open(percorso, encoding="utf-8") as f:
+            ripristinato = json.load(f)
+        ripristinato["rounds"][0]["matches"][0]["pgn"] = self.ALTRO_PGN
+        TestNomeDelTorneoNuovo._scrivi(percorso, ripristinato)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_WRITE)
+        try:
+            with pytest.raises(OSError):
+                open(raccolta, "rb").close()
+            seconda = dopo_una_chiusura()
+            seconda.load_tournament(percorso)
+            seconda._save_state()
+            seconda._save_state()
+        finally:
+            sblocca()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        assert self._copie_della_raccolta() == []
+        assert finestre == []
+        assert "errore" not in suoni
+
+        seconda._save_state()
+
+        copie = self._copie_della_raccolta()
+        assert len(copie) == 1
+        with open(copie[0], "rb") as f:
+            assert f.read() == contenuto
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
+        assert finestre == []
+
+    @staticmethod
+    def _torneo_normale():
+        """Primavera 2 con il PGN della prima partita, come un torneo aperto
+        e salvato ogni giorno: la raccolta nella cartella e' quella che il
+        torneo scrive. Restituisce il file del torneo, la raccolta e il suo
+        contenuto."""
+        from config import user_data_path
+
+        dati = _torneo_in_corso("Primavera 2")
+        dati["rounds"][0]["matches"][0]["pgn"] = TestRaccoltaSenzaPartiteNelCestino.PGN_ESPORTATO
+        percorso = user_data_path("Tornello - Primavera_2.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
+        contenuto = _raccolta_come_la_scrive_la_finestra(TestRaccoltaSenzaPartiteNelCestino.PGN_ESPORTATO)
+        with open(raccolta, "wb") as f:
+            f.write(contenuto)
+        return percorso, raccolta, contenuto
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_raccolta_che_non_si_legge_non_ha_partite_in_piu(self, principale, suoni, monkeypatch, capsys, dopo_una_chiusura):
+        """Correzione della revisione della 10.19.13. Primavera 2 e' un torneo
+        normale, e la sua raccolta e' quella che il torneo scrive. Dopo una
+        chiusura di Tornello un altro programma la tiene aperta, e non la
+        lascia ne' leggere ne' scrivere: all'apertura e ai salvataggi, anche
+        con un PGN nuovo, la raccolta resta com'era, nessuna copia va nella
+        cartella backup, e non ci sono messaggi, come per ogni raccolta che
+        non si scrive; l'errore si stampa. Tolto il blocco, il salvataggio
+        scrive la raccolta nuova senza copie, perche' quella di prima ha
+        soltanto partite del torneo. Fino alla correzione una raccolta che
+        non si leggeva aveva partite che il torneo non ha, e il messaggio
+        Raccolta delle partite non scritta, con il suono dell'errore, lo
+        diceva anche della raccolta del torneo."""
+        percorso, raccolta, contenuto = self._torneo_normale()
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        capsys.readouterr()
+
+        sblocca = self._bloccata(raccolta, 0)
+        try:
+            seconda = dopo_una_chiusura()
+            seconda.load_tournament(percorso)
+            suoni.clear()
+            seconda._save_state()
+            seconda.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+            seconda._save_state()
+        finally:
+            sblocca()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        assert self._copie_della_raccolta() == []
+        assert finestre == []
+        assert "errore" not in suoni
+        assert capsys.readouterr().out.count("Errore durante il salvataggio della raccolta PGN: ") == 2
+
+        seconda._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
+        assert self._copie_della_raccolta() == []
+        assert finestre == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_finalizzazione_in_console_con_la_raccolta_che_non_si_legge(self, suoni):
+        """Correzione della revisione della 10.19.13. Lo stesso torneo
+        normale si finalizza nella versione a riga di comando, mentre un
+        altro programma tiene aperta la raccolta, senza lasciarla ne'
+        leggere ne' scrivere: la raccolta resta com'era, nessuna copia va
+        nella cartella backup, e l'avviso dice che non si e' potuta
+        scrivere, con l'errore. Fino alla correzione diceva che la raccolta
+        aveva partite che il torneo non ha, e che la copia nella cartella
+        backup non era riuscita."""
+        import json
+
+        import ui
+
+        percorso, raccolta, contenuto = self._torneo_normale()
+        with open(percorso, encoding="utf-8") as f:
+            torneo = json.load(f)
+        avvisi = []
+
+        sblocca = self._bloccata(raccolta, 0)
+        try:
+            scritta = ui._raccolta_del_torneo_scritta(torneo, percorso, avvisi.append)
+        finally:
+            sblocca()
+
+        assert scritta is False
+        cartella = os.path.dirname(os.path.abspath(raccolta))
+        assert len(avvisi) == 1
+        assert avvisi[0].startswith(f"La raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2 non si è potuta scrivere nella cartella {cartella}: ")
+        assert avvisi[0].endswith(
+            f"\nNon va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: "
+            "se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
+        )
+        assert self._copie_della_raccolta() == []
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto

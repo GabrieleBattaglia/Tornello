@@ -217,7 +217,8 @@ class MainFrame(wx.Frame):
         # raccolta nella cartella del torneo, con o senza partite in PGN, che
         # ha partite che il torneo non ha, e che non e' quella di un'altra
         # edizione archiviata. Senza PGN il cestino si riprova, come per ogni
-        # raccolta, ma al primo PGN nuovo la raccolta va nella cartella
+        # raccolta; al primo salvataggio che scrive la raccolta nuova, per un
+        # torneo senza PGN al primo PGN nuovo, la raccolta va nella cartella
         # backup prima di essere sostituita, anche dopo una chiusura di
         # Tornello: fino alla revisione della 10.19.13 la copia la faceva
         # soltanto una raccolta rimasta nella stessa sessione (decisione di
@@ -1287,9 +1288,13 @@ class MainFrame(wx.Frame):
     def _ricorda_la_raccolta_rimasta(self):
         """All'apertura del torneo, se la sua raccolta delle partite nella
         cartella ha partite che il torneo non ha, e' una raccolta rimasta, e
-        si ricorda in _raccolte_ritrovate: al primo PGN nuovo va nella
-        cartella backup prima di essere sostituita, anche dopo una chiusura
-        di Tornello. La raccolta di un'altra edizione archiviata non lo e', e
+        si ricorda in _raccolte_ritrovate: al primo salvataggio che scrive la
+        raccolta nuova, che per un torneo senza partite in PGN e' quello del
+        primo PGN nuovo, va nella cartella backup prima di essere sostituita,
+        anche dopo una chiusura di Tornello. Anche una raccolta che non si
+        legge, per esempio perche' un altro programma la tiene aperta, e'
+        rimasta, e non si sostituisce finche' non si legge. La raccolta di
+        un'altra edizione archiviata non lo e', e
         segue la strada della guardia; nemmeno quella identica alla raccolta
         che il torneo scriverebbe. Lo decide raccolta_rimasta_all_apertura di
         omonimi.py; l'apertura non salva il torneo, e non tocca la raccolta
@@ -4217,7 +4222,9 @@ class MainFrame(wx.Frame):
                 # del torneo, dopo una chiusura di Tornello, che dalla stessa
                 # revisione sta in _raccolte_ritrovate: senza PGN il cestino
                 # si riprova, come per ogni raccolta. La copia si fa se la
-                # raccolta ha ancora partite che il torneo non ha.
+                # raccolta ha ancora partite che il torneo non ha, se non e'
+                # quella di un'altra edizione archiviata, e se la sua ultima
+                # copia nella cartella backup non le e' gia' identica.
                 aggiornata = aggiorna_la_raccolta_pgn(
                     self.current_tournament,
                     self.active_filename,
