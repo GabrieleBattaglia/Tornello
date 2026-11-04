@@ -131,6 +131,18 @@ def stesso_nome_di_file(percorso, nome):
     return os.path.basename(percorso).lower() == _file_del_torneo_nuovo(nome).lower()
 
 
+def stesso_nome_scritto(dati, nome):
+    """Vero se dati, i dati di un torneo letti dal suo json, hanno scritto
+    il nome di un torneo nuovo chiamato nome, confrontato ripulito come in
+    coincidenza_del_nome. Falso per dati None, cioe' per un file che non si
+    legge o che non ha la forma di un torneo, e per un torneo che coincide
+    soltanto per il nome del file, come Beta archiviata nel file Tornello -
+    Alfa.json per il nome Alfa: il suo nome e' un altro, e i report e la
+    raccolta delle partite non si chiamerebbero come i suoi (revisione della
+    10.19.15, issue 66)."""
+    return _ha_la_forma_di_un_torneo(dati) and _nome_ripulito(dati["name"]) == _nome_ripulito(nome)
+
+
 def _nome_scritto(percorso):
     """Il nome scritto nel json percorso, ripulito da _nome_ripulito, e i
     dati letti: (nome, dati). Il nome e' None per un file che non si legge o

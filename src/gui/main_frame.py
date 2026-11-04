@@ -28,6 +28,7 @@ from omonimi import (
     edizione_con_l_identita,
     edizioni_nell_archivio,
     stesso_nome_di_file,
+    stesso_nome_scritto,
 )
 
 # Ogni quanto il pie' di pagina ricalcola le sue percentuali quando non ha il
@@ -3448,7 +3449,13 @@ class MainFrame(wx.Frame):
         e per un nome che coincide soltanto con un file del programma, o con
         il file di un torneo che si chiama in un altro modo, che il nome e'
         riservato. La procedura guidata tiene i suoi testi (issue 66,
-        decisione di Gabriele del 4 novembre 2026)."""
+        decisione di Gabriele del 4 novembre 2026). Dalla revisione della
+        10.19.15 e' riservato anche il nome di un'edizione archiviata trovata
+        soltanto per il nome del file, come Beta nel file Tornello -
+        Alfa.json per il nome Alfa: fino ad allora il rifiuto della stessa
+        data di inizio diceva che aveva lo stesso nome, e che i report e la
+        raccolta delle partite si sarebbero chiamati come i suoi, e non era
+        vero. I nomi rifiutati restano gli stessi."""
         from utils import format_date_locale, play_sound
 
         if controllo is None:
@@ -3470,6 +3477,16 @@ class MainFrame(wx.Frame):
             if stesso_nome_di_file(percorso, nome) and not da_dati:
                 testo = _(
                     "Il nome {nome} non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe {file}, come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
+                    "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+                )
+            elif da_dati and not stesso_nome_scritto(dati, nome):
+                # Da Dati un'edizione trovata soltanto per il nome del file,
+                # come Beta archiviata nel file Tornello - Alfa.json per il
+                # nome Alfa, ha un altro nome, e i report e la raccolta non
+                # si chiamerebbero come i suoi: il nome e' riservato, come
+                # quello di un file del programma (revisione della 10.19.15).
+                testo = _(
+                    "Il nome {nome} non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella} con il file {suo}, che ha la stessa data di inizio.\n"
                     "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
                 )
             else:
@@ -3536,48 +3553,108 @@ class MainFrame(wx.Frame):
         nome, dalla 10.19.15 la domanda dice sempre il motivo vero, i report e
         la raccolta delle partite con lo stesso nome, e mai come si
         chiamerebbe il file; il resto della domanda e' quello della procedura
-        guidata (decisione di Gabriele del 4 novembre 2026)."""
+        guidata (decisione di Gabriele del 4 novembre 2026).
+        Dalla revisione della 10.19.15, sempre da Dati, un'edizione trovata
+        soltanto per il nome del file, come Beta nel file Tornello - Alfa.json
+        per il nome Alfa, ha un altro nome: la premessa dice che il nome e'
+        riservato, perche' il file di un torneo nuovo con quel nome si
+        chiamerebbe come il suo, e la nomina con il suo nome, la sua cartella
+        e il suo file. Fino ad allora diceva che aveva lo stesso nome, e che
+        i report e la raccolta delle partite si sarebbero chiamati come i
+        suoi, e non era vero. Con edizioni dei due tipi la premessa ha una
+        frase per ciascuno, e ogni edizione la sua descrizione vera; la
+        domanda si fa per gli stessi nomi di prima (decisione di Gabriele del
+        4 novembre 2026)."""
         if controllo is None:
             controllo = self.creation_data
         if controllo.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
             return True
-        descrizioni = []
-        tutte_per_il_file = not da_dati
-        for percorso, dati in edizioni:
-            if stesso_nome_di_file(percorso, nome):
-                descrizione = _("{torneo}, nella cartella {cartella}")
-            else:
-                tutte_per_il_file = False
-                descrizione = _("{torneo}, nella cartella {cartella}, con il file {file}")
-            descrizioni.append(
-                descrizione.format(
-                    torneo=dati["name"] if dati else os.path.basename(percorso),
-                    cartella=_cartella_nell_archivio(percorso),
-                    file=os.path.basename(percorso),
+
+        def descritte(elenco, con_il_file):
+            """Le edizioni di elenco, una dopo l'altra: nome, cartella e,
+            dove con_il_file lo dice, il file."""
+            descrizioni = []
+            for percorso, dati in elenco:
+                descrizione = (
+                    _("{torneo}, nella cartella {cartella}, con il file {file}")
+                    if con_il_file(percorso, dati)
+                    else _("{torneo}, nella cartella {cartella}")
                 )
-            )
-        if tutte_per_il_file and len(edizioni) == 1:
-            premessa = _(
-                "Il file del torneo {nome} si chiamerebbe {file}, come quello di un torneo concluso e archiviato fra i Tornei Conclusi: {edizioni}."
-            )
-        elif tutte_per_il_file:
-            premessa = _(
-                "Il file del torneo {nome} si chiamerebbe {file}, come quello di {numero} tornei conclusi e archiviati fra i Tornei Conclusi: {edizioni}."
-            )
-        elif len(edizioni) == 1:
-            premessa = _(
-                "Il torneo {nome} avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: {edizioni}."
+                descrizioni.append(
+                    descrizione.format(
+                        torneo=dati["name"] if dati else os.path.basename(percorso),
+                        cartella=_cartella_nell_archivio(percorso),
+                        file=os.path.basename(percorso),
+                    )
+                )
+            return "; ".join(descrizioni)
+
+        def di_un_altro_file(percorso, _dati):
+            return not stesso_nome_di_file(percorso, nome)
+
+        if not da_dati:
+            if all(stesso_nome_di_file(percorso, nome) for percorso, _dati in edizioni):
+                if len(edizioni) == 1:
+                    premessa = _(
+                        "Il file del torneo {nome} si chiamerebbe {file}, come quello di un torneo concluso e archiviato fra i Tornei Conclusi: {edizioni}."
+                    )
+                else:
+                    premessa = _(
+                        "Il file del torneo {nome} si chiamerebbe {file}, come quello di {numero} tornei conclusi e archiviati fra i Tornei Conclusi: {edizioni}."
+                    )
+            elif len(edizioni) == 1:
+                premessa = _(
+                    "Il torneo {nome} avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: {edizioni}."
+                )
+            else:
+                premessa = _(
+                    "Il torneo {nome} avrebbe il nome di {numero} tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: {edizioni}."
+                )
+            premessa = premessa.format(
+                nome=nome,
+                file=_file_del_torneo_nuovo(nome),
+                numero=len(edizioni),
+                edizioni=descritte(edizioni, di_un_altro_file),
             )
         else:
-            premessa = _(
-                "Il torneo {nome} avrebbe il nome di {numero} tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: {edizioni}."
-            )
-        testo = premessa.format(
-            nome=nome,
-            file=_file_del_torneo_nuovo(nome),
-            numero=len(edizioni),
-            edizioni="; ".join(descrizioni),
-        ) + "\n" + _(
+            per_il_nome = [(p, d) for p, d in edizioni if stesso_nome_scritto(d, nome)]
+            per_il_file = [(p, d) for p, d in edizioni if not stesso_nome_scritto(d, nome)]
+            frasi = []
+            if per_il_nome:
+                if len(per_il_nome) == 1:
+                    frase = _(
+                        "Il torneo {nome} avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: {edizioni}."
+                    )
+                else:
+                    frase = _(
+                        "Il torneo {nome} avrebbe il nome di {numero} tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: {edizioni}."
+                    )
+                frasi.append(frase.format(nome=nome, numero=len(per_il_nome), edizioni=descritte(per_il_nome, di_un_altro_file)))
+            if per_il_file:
+                if per_il_nome and len(per_il_file) == 1:
+                    frase = _(
+                        "Il nome {nome} è anche riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: {edizioni}."
+                    )
+                elif per_il_nome:
+                    frase = _(
+                        "Il nome {nome} è anche riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di {numero} tornei conclusi e archiviati fra i Tornei Conclusi: {edizioni}."
+                    )
+                elif len(per_il_file) == 1:
+                    frase = _(
+                        "Il nome {nome} è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: {edizioni}."
+                    )
+                else:
+                    frase = _(
+                        "Il nome {nome} è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di {numero} tornei conclusi e archiviati fra i Tornei Conclusi: {edizioni}."
+                    )
+                # Un'edizione trovata per il solo nome del file si nomina
+                # con il suo file; un file che non si legge ha gia' il file
+                # al posto del nome.
+                frasi.append(
+                    frase.format(nome=nome, numero=len(per_il_file), edizioni=descritte(per_il_file, lambda _percorso, dati: dati is not None))
+                )
+            premessa = " ".join(frasi)
+        testo = premessa + "\n" + _(
             "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
             "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
         ).format(nome=nome)

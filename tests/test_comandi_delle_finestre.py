@@ -4078,6 +4078,170 @@ class TestNomeEDataDiInizioDaDati:
             )
         ]
 
+    # Il seguito della domanda sulla nuova edizione da Dati, dopo la premessa.
+    SEGUITO_DELLA_DOMANDA = (
+        "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+        "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
+    )
+
+    @staticmethod
+    def _archiviata(cartella, file, nome, inizio=None):
+        """Il torneo nome, concluso e archiviato con il file file nella
+        cartella cartella, una tupla sotto Closed Tournaments, con la data
+        di inizio inizio; senza nome, un file che non si legge. Restituisce
+        la cartella come la dicono i messaggi."""
+        import gui.main_frame as mf
+
+        percorso = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, *cartella, file)
+        if nome:
+            TestNomeDelTorneoNuovo._scrivi(percorso, dict(_torneo_in_corso(nome), concluded=True, start_date=inizio))
+        else:
+            os.makedirs(os.path.dirname(percorso), exist_ok=True)
+            with open(percorso, "w", encoding="utf-8") as f:
+                f.write("{ non e' json")
+        return os.path.join("Closed Tournaments", *cartella)
+
+    def test_un_edizione_trovata_per_il_solo_file_ha_il_nome_riservato(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15 (issue 66, decisione di Gabriele del 4
+        novembre 2026). Beta, archiviata nel file Tornello - Alfa.json, come
+        dopo un cambio di nome da Dati prima della finalizzazione, coincide
+        con il nome Alfa soltanto per il file: da Dati la premessa della
+        domanda dice che il nome e' riservato, e nomina Beta con la sua
+        cartella e il suo file. Fino ad allora diceva che Beta aveva lo
+        stesso nome, e che i report e la raccolta delle partite si sarebbero
+        chiamati come i suoi. La domanda si fa lo stesso, e con No il nome
+        resta; la procedura guidata tiene la sua."""
+        import wx
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO, wx.ID_NO])
+        beta = self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Alfa")
+        percorso = self._apri(principale, "Gamma")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        assert principale.current_tournament["name"] == "Gamma"
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        assert suoni == ["apertura"]
+        assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
+            (
+                "Nuova edizione di un torneo concluso",
+                "Il nome Alfa è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: "
+                f"Beta, nella cartella {beta}, con il file Tornello - Alfa.json.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+                True,
+                True,
+            )
+        ]
+        assert procedura == [TestNomeDelTorneoNuovo._domanda_attesa("Alfa", "Tornello - Alfa.json", [("Beta", beta)])]
+
+    def test_con_la_stessa_data_un_edizione_trovata_per_il_solo_file(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15. Con la data di inizio di Beta,
+        archiviata nel file Tornello - Alfa.json, il nome Alfa da Dati si
+        rifiuta come prima, ma il messaggio dice che e' riservato, con il
+        nome, la cartella e il file di Beta, e non piu' che Beta ha lo stesso
+        nome. La procedura guidata tiene il suo messaggio."""
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        beta = self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Alfa", inizio="2026-06-01")
+        percorso = self._apri(principale, "Gamma", start_date="2026-06-01")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        assert principale.current_tournament["name"] == "Gamma"
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        assert suoni == ["apertura", "errore"]
+        data = format_date_locale("2026-06-01")
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                f"Il nome Alfa non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Beta, concluso e archiviato nella cartella {beta} con il file Tornello - Alfa.json, che ha la stessa data di inizio.\n"
+                + self.SPIEGAZIONE_DELLA_DATA,
+                False,
+            )
+        ]
+        assert procedura == [
+            f"Il nome Alfa non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe Tornello - Alfa.json, come quello del torneo Beta, concluso e archiviato nella cartella {beta}, che ha la stessa data di inizio.\n"
+            + self.SPIEGAZIONE_DELLA_DATA
+        ]
+
+    def test_due_edizioni_una_per_il_nome_e_una_per_il_file(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15. Alfa, archiviata nel 2025 nel suo file,
+        ha il nome Alfa; Beta, archiviata nel 2026 nel file Tornello -
+        Alfa.json, soltanto il file. Da Dati la premessa ha una frase per
+        ciascuna, ognuna con la sua descrizione vera: Alfa con la sua
+        cartella, Beta con la cartella e il file. La procedura guidata tiene
+        la sua, con il file per tutte e due."""
+        import wx
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO, wx.ID_NO])
+        alfa = self._archiviata(("2025", "09 Settembre", "Alfa"), "Tornello - Alfa.json", "Alfa", "2025-09-01")
+        beta = self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Alfa")
+        percorso = self._apri(principale, "Gamma")
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
+            (
+                "Nuova edizione di un torneo concluso",
+                "Il torneo Alfa avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: "
+                f"Alfa, nella cartella {alfa}. "
+                "Il nome Alfa è anche riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: "
+                f"Beta, nella cartella {beta}, con il file Tornello - Alfa.json.\n" + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+                True,
+                True,
+            )
+        ]
+        assert procedura == [TestNomeDelTorneoNuovo._domanda_attesa("Alfa", "Tornello - Alfa.json", [("Alfa", alfa), ("Beta", beta)])]
+
+    def test_edizioni_dei_due_tipi_al_plurale(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15. Due edizioni con il nome Alfa, una nel
+        suo file e una nel file Tornello - Delta.json, e due soltanto con il
+        file Tornello - Alfa.json, Beta e un file che non si legge: da Dati
+        le due frasi della premessa sono al plurale, e il file che non si
+        legge si nomina con il suo file, come nella procedura guidata, che
+        tiene la sua premessa. Tolte le due con il nome Alfa, resta la sola
+        frase del nome riservato, al plurale."""
+        import wx
+
+        import gui.main_frame as mf
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO] * 3)
+        alfa = self._archiviata(("2025", "09 Settembre", "Alfa"), "Tornello - Alfa.json", "Alfa", "2025-09-01")
+        delta = self._archiviata(("2026", "03 Marzo", "Alfa"), "Tornello - Delta.json", "Alfa", "2026-03-01")
+        beta = self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        varie = self._archiviata(("2026", "07 Luglio", "Varie"), "Tornello - Alfa.json", None)
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Alfa")
+        percorso = self._apri(principale, "Gamma")
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+        for cartella, file in ((alfa, "Tornello - Alfa.json"), (delta, "Tornello - Delta.json")):
+            os.remove(os.path.join(os.path.dirname(mf.ARCHIVED_TOURNAMENTS_DIR), cartella, file))
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        riservato = (
+            "perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di 2 tornei conclusi e archiviati fra i Tornei Conclusi: "
+            f"Beta, nella cartella {beta}, con il file Tornello - Alfa.json; Tornello - Alfa.json, nella cartella {varie}.\n"
+        )
+        assert [f.testo for f in finestre] == [
+            "Il torneo Alfa avrebbe il nome di 2 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
+            f"Alfa, nella cartella {alfa}; Alfa, nella cartella {delta}, con il file Tornello - Delta.json. "
+            "Il nome Alfa è anche riservato, " + riservato + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+            "Il nome Alfa è riservato, " + riservato + self.SEGUITO_DELLA_DOMANDA.format(nome="Alfa"),
+        ]
+        assert procedura == [
+            "Il torneo Alfa avrebbe il nome di 4 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
+            f"Alfa, nella cartella {alfa}; Alfa, nella cartella {delta}, con il file Tornello - Delta.json; Beta, nella cartella {beta}; Tornello - Alfa.json, nella cartella {varie}.\n"
+            "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+            "Vuoi creare una nuova edizione con il nome Alfa? Il pulsante predefinito è No."
+        ]
+
 
 class TestPartiteDellaCadenzaNelDatabase:
     """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori
