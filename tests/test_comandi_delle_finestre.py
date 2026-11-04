@@ -4047,6 +4047,37 @@ class TestNomeEDataDiInizioDaDati:
             assert voci == [("Primavera 2", "2026-10-01"), ("Primavera Bis", "2026-10-15")], codice
             assert database[codice]["games_played"] == 12, codice
 
+    def test_due_edizioni_dell_archivio_al_plurale(self, principale, suoni, monkeypatch):
+        """Revisione della 10.19.15: con due edizioni archiviate la premessa
+        della domanda da Dati e' al plurale, con i report e la raccolta come
+        i loro, e le elenca tutte e due, con la loro cartella."""
+        import wx
+
+        import gui.main_frame as mf
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO])
+        for anno, inizio in (("2025", "2025-09-01"), ("2026", "2026-09-01")):
+            archiviato = os.path.join(mf.ARCHIVED_TOURNAMENTS_DIR, anno, "09 Settembre", "Primavera_2", "Tornello - Primavera_2.json")
+            TestNomeDelTorneoNuovo._scrivi(archiviato, dict(_torneo_in_corso("Primavera 2"), concluded=True, start_date=inizio))
+        percorso = self._apri(principale, "Alfa")
+
+        self._campo(principale, monkeypatch, percorso, "name", "Primavera 2")
+
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        prima = os.path.join("Closed Tournaments", "2025", "09 Settembre", "Primavera_2")
+        seconda = os.path.join("Closed Tournaments", "2026", "09 Settembre", "Primavera_2")
+        assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
+            (
+                "Nuova edizione di un torneo concluso",
+                "Il torneo Primavera 2 avrebbe il nome di 2 tornei conclusi e archiviati fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i loro: "
+                f"Primavera 2, nella cartella {prima}; Primavera 2, nella cartella {seconda}.\n"
+                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+                "Vuoi creare una nuova edizione con il nome Primavera 2? Il pulsante predefinito è No.",
+                True,
+                True,
+            )
+        ]
+
 
 class TestPartiteDellaCadenzaNelDatabase:
     """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori
