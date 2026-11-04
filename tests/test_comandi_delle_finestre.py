@@ -4215,6 +4215,62 @@ class TestNomeEDataDiInizioDaDati:
             + self.SPIEGAZIONE_DELLA_DATA
         ]
 
+    # La seconda frase dello stesso rifiuto quando il nome e' gia' quello del
+    # torneo, e cambia la data di inizio: la domanda non viene, e il nome
+    # resta (revisione della 10.19.15, decisione di Gabriele del 4 novembre
+    # 2026).
+    SPIEGAZIONE_DEL_NOME_CHE_RESTA = "Con un'altra data di inizio il nome resta. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+
+    @pytest.mark.parametrize("nome_di_prima", ["Alfa", "Gamma"], ids=["il nome di sempre", "il nome dopo il Sì"])
+    def test_la_data_di_un_edizione_trovata_per_il_solo_file_con_il_nome_gia_del_torneo(self, principale, suoni, monkeypatch, nome_di_prima):
+        """Revisione della 10.19.15 (decisione di Gabriele del 4 novembre
+        2026). Beta e' archiviata nel file Tornello - Alfa.json con la data
+        di inizio 2026-06-01. Il torneo si chiama gia' Alfa: da sempre, o
+        perche' Gamma ha preso il nome Alfa da Dati, con Si' alla domanda.
+        Da Dati la data di inizio diventa quella di Beta: si rifiuta, con la
+        stessa prima frase di quando cambia il nome, e la seconda dice che
+        con un'altra data il nome resta, perche' la domanda Nuova edizione
+        di un torneo concluso, per il nome che e' gia' del torneo, non
+        viene. Con un'altra data la data cambia, senza domande. Fino ad
+        allora il rifiuto prometteva la domanda, che non arrivava."""
+        import wx
+
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_YES])
+        beta = self._archiviata(("2026", "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        percorso = self._apri(principale, nome_di_prima, tournament_id="NUOVO")
+        if nome_di_prima == "Gamma":
+            self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+            assert [f.titolo for f in finestre] == ["Nuova edizione di un torneo concluso"]
+            assert principale.current_tournament["name"] == "Alfa"
+        finestre.clear()
+        prima = self._nel_file(percorso)
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "start_date", "2026-06-01")
+
+        assert principale.current_tournament["start_date"] == "2026-11-02"
+        assert self._nel_file(percorso) == prima
+        assert suoni == ["apertura", "errore"]
+        data = format_date_locale("2026-06-01")
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                f"Il nome Alfa non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Beta, concluso e archiviato nella cartella {beta} con il file Tornello - Alfa.json, che ha la stessa data di inizio.\n"
+                + self.SPIEGAZIONE_DEL_NOME_CHE_RESTA,
+                False,
+            )
+        ]
+        finestre.clear()
+
+        self._campo(principale, monkeypatch, percorso, "start_date", "2026-07-01")
+
+        assert principale.current_tournament["start_date"] == "2026-07-01"
+        assert self._nel_file(percorso)["start_date"] == "2026-07-01"
+        assert principale.current_tournament["name"] == "Alfa"
+        assert finestre == []
+
     @pytest.mark.parametrize("prima", ["per il file", "per il nome"])
     def test_con_la_stessa_data_due_edizioni_una_per_il_nome_e_una_per_il_file(self, principale, suoni, monkeypatch, prima):
         """Revisione della 10.19.15 (decisione di Gabriele del 4 novembre

@@ -3557,7 +3557,11 @@ class MainFrame(wx.Frame):
         usa dopo la domanda, e non spiega piu' le edizioni con lo stesso
         nome, che la finalizzazione confonderebbe: identita', cartella
         d'archivio e file sono diversi (decisione di Gabriele del 4 novembre
-        2026)."""
+        2026). Con nome_suo, quando il nome e' gia' quello del torneo, come
+        quando da Dati cambia soltanto la data di inizio, la domanda non
+        viene, e la seconda frase dice che con un'altra data il nome resta:
+        fino alla stessa revisione prometteva la domanda anche li' (decisione
+        di Gabriele del 4 novembre 2026)."""
         from utils import format_date_locale, play_sound
 
         if controllo is None:
@@ -3580,6 +3584,17 @@ class MainFrame(wx.Frame):
                 testo = _(
                     "Il nome {nome} non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe {file}, come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
                     "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+                )
+            elif da_dati and nome_suo and not stesso_nome_scritto(dati, nome):
+                # Come qui sotto, ma il nome e' gia' quello del torneo, per
+                # esempio quando da Dati cambia soltanto la data di inizio:
+                # con un'altra data la domanda non viene, perche' il nome e'
+                # gia' suo, e la seconda frase dice che il nome resta. Fino
+                # alla revisione della 10.19.15 prometteva la domanda, che
+                # non arrivava (decisione di Gabriele del 4 novembre 2026).
+                testo = _(
+                    "Il nome {nome} non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella} con il file {suo}, che ha la stessa data di inizio.\n"
+                    "Con un'altra data di inizio il nome resta. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
                 )
             elif da_dati and not stesso_nome_scritto(dati, nome):
                 # Da Dati un'edizione trovata soltanto per il nome del file,
