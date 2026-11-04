@@ -370,6 +370,27 @@ def _contiene(percorso, contenuto):
         return False
 
 
+def _edizioni_della_raccolta(torneo, file_del_torneo, percorso):
+    """Le edizioni archiviate di cui la raccolta delle partite percorso, al
+    posto di quella del torneo con il file file_del_torneo, e' la raccolta:
+    le coppie (percorso del json, dati) di edizioni_nell_archivio con lo
+    stesso nome, in quell'ordine, la cui raccolta, come la scriverebbe il
+    loro json, e' identica byte per byte a percorso, tranne un'edizione con
+    l'identita' del torneo, che e' il torneo stesso. La usano la guardia,
+    raccolta_altrui_in_salvo, e raccolta_rimasta_all_apertura, perche'
+    riconoscano la stessa raccolta (revisione della 10.19.13)."""
+    from db_players import identita_del_torneo
+    from reports import byte_della_raccolta_pgn
+
+    for json_archiviato, dati in edizioni_nell_archivio(torneo.get("name", ""), escluso=file_del_torneo):
+        suo = byte_della_raccolta_pgn(dati) if dati else None
+        if suo is None or not _contiene(percorso, suo):
+            continue
+        if torneo.get("start_date") and identita_del_torneo(dati) == identita_del_torneo(torneo):
+            continue
+        yield json_archiviato, dati
+
+
 def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, cestino=None, rimaste=None):
     """Se il torneo, con il file file_del_torneo, puo' scrivere la sua
     raccolta delle partite in PGN senza distruggere quella di un altro
@@ -408,8 +429,9 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     il cestino non si riprova e il messaggio non si ripete: fino alla
     revisione della
     10.19.13 ogni salvataggio della finestra riprovava, e ripeteva il
-    messaggio e la domanda di Windows."""
-    from db_players import identita_del_torneo
+    messaggio e la domanda di Windows.
+    Le edizioni di cui e' la raccolta le trova _edizioni_della_raccolta,
+    come all'apertura del torneo raccolta_rimasta_all_apertura."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn, nome_della_raccolta_pgn
     from ui import _copia_verificata
     from utils import delete_file_to_trash, stessi_byte
@@ -425,12 +447,7 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     cartella, nome_file = os.path.split(percorso)
     nome = torneo.get("name", "")
     trovata = False
-    for json_archiviato, dati in edizioni_nell_archivio(nome, escluso=file_del_torneo):
-        suo = byte_della_raccolta_pgn(dati) if dati else None
-        if suo is None or not _contiene(percorso, suo):
-            continue
-        if torneo.get("start_date") and identita_del_torneo(dati) == identita_del_torneo(torneo):
-            continue
+    for json_archiviato, dati in _edizioni_della_raccolta(torneo, file_del_torneo, percorso):
         trovata = True
         destinazione = os.path.join(
             os.path.dirname(json_archiviato), nome_della_raccolta_pgn(sanitize_filename(dati["name"]))
@@ -496,7 +513,34 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     )
 
 
-def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None):
+def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
+    """La chiave di percorso della raccolta delle partite del torneo, con
+    il file file_del_torneo, se all'apertura del torneo e' una raccolta
+    rimasta: il torneo non ha partite in PGN, e la sua raccolta c'e' lo
+    stesso, al percorso dove la scriverebbe; altrimenti None. Non lo e' la
+    raccolta di un'altra edizione archiviata, che la guardia,
+    raccolta_altrui_in_salvo, riconosce con _edizioni_della_raccolta: segue
+    la strada della guardia. La finestra la chiede a ogni apertura di un
+    torneo, e la passa ad aggiorna_la_raccolta_pgn fra le ritrovate.
+    Nata con la revisione della 10.19.13 (issue 66, decisione di Gabriele
+    del 4 novembre 2026): la memoria delle raccolte rimaste nasce vuota a
+    ogni avvio, e dopo una chiusura di Tornello il primo PGN nuovo
+    sostituiva una raccolta rimasta senza metterla nella cartella backup, e
+    le partite di prima si perdevano. La memoria si ricostruisce dal disco,
+    senza campi nuovi nel file del torneo e senza file in piu'."""
+    from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
+
+    if byte_della_raccolta_pgn(torneo) is not None:
+        return None
+    percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
+    if not os.path.isfile(percorso):
+        return None
+    if next(_edizioni_della_raccolta(torneo, file_del_torneo, percorso), None) is not None:
+        return None
+    return _chiave_del_percorso(percorso)
+
+
+def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None, ritrovate=None):
     """Scrive la raccolta delle partite in PGN del torneo, con il contenuto
     di byte_della_raccolta_pgn, al percorso di file_della_raccolta_pgn: lo
     fa ogni salvataggio della finestra, dopo raccolta_altrui_in_salvo, e
@@ -524,17 +568,31 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
     scrittura si stampa, come sempre, la raccolta di prima resta com'era, e
     dalla stessa revisione la frase sta in non_scritta, perche' la
     finalizzazione lo dica: fino ad allora l'archivio restava senza raccolta
-    senza nessun avviso."""
+    senza nessun avviso.
+    ritrovate e' l'insieme, come chiavi di percorso, delle raccolte rimaste
+    ritrovate sul disco all'apertura del loro torneo, dopo una chiusura di
+    Tornello, con raccolta_rimasta_all_apertura: per una di loro il
+    salvataggio senza partite in PGN riprova il cestino, come per ogni
+    raccolta, e se il cestino non la prende diventa una delle rimaste;
+    quando il torneo ha di nuovo una partita in PGN, prima di essere
+    sostituita va nella cartella backup, come le rimaste (revisione della
+    10.19.13, decisione di Gabriele del 4 novembre 2026). Fino ad allora la
+    memoria delle rimaste nasceva vuota a ogni avvio, e il primo PGN nuovo
+    dopo una chiusura sostituiva la raccolta senza copia."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
     from utils import copia_di_sicurezza, delete_file_to_trash, stessi_byte
 
     cestino = cestino or delete_file_to_trash
     rimaste = set() if rimaste is None else rimaste
+    ritrovate = set() if ritrovate is None else ritrovate
     percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
     chiave = _chiave_del_percorso(percorso)
     cartella, file = os.path.split(percorso)
     contenuto = byte_della_raccolta_pgn(torneo)
     if contenuto is not None:
+        if chiave in ritrovate:
+            ritrovate.discard(chiave)
+            rimaste.add(chiave)
         if chiave in rimaste and os.path.isfile(percorso) and not _contiene(percorso, contenuto):
             copia = copia_di_sicurezza(percorso, "pre_sostituzione_raccolta")
             if not copia or not stessi_byte(percorso, copia):
@@ -558,9 +616,11 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
         return RaccoltaAggiornata()
     if not os.path.isfile(percorso):
         rimaste.discard(chiave)
+        ritrovate.discard(chiave)
         return RaccoltaAggiornata()
     if chiave in rimaste:
         return RaccoltaAggiornata(rimasta=percorso, gia_detta=True)
+    ritrovate.discard(chiave)
     if cestino(percorso):
         return RaccoltaAggiornata()
     rimaste.add(chiave)

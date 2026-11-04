@@ -151,6 +151,16 @@ class MainFrame(wx.Frame):
         # messaggio. Le usano raccolta_altrui_in_salvo e
         # aggiorna_la_raccolta_pgn di omonimi.py.
         self._raccolte_rimaste = set()
+        # Le raccolte rimaste ritrovate sul disco all'apertura del loro
+        # torneo, con raccolta_rimasta_all_apertura di omonimi.py: un torneo
+        # senza partite in PGN con la sua raccolta nella cartella, che non e'
+        # quella di un'altra edizione archiviata. Il cestino si riprova, come
+        # per ogni raccolta, ma al primo PGN nuovo la raccolta va nella
+        # cartella backup prima di essere sostituita, anche dopo una
+        # chiusura di Tornello: fino alla revisione della 10.19.13 la copia
+        # la faceva soltanto una raccolta rimasta nella stessa sessione
+        # (decisione di Gabriele del 4 novembre 2026).
+        self._raccolte_ritrovate = set()
         # Le raccolte rimaste che non si sono potute mettere nella cartella
         # backup prima di sostituirle con la raccolta nuova: il messaggio si
         # dice una volta, fino alla chiusura (revisione della 10.19.13).
@@ -1181,6 +1191,7 @@ class MainFrame(wx.Frame):
             self.current_tournament["players_dict"] = {
                 p["id"]: p for p in self.current_tournament.get("players", [])
             }
+            self._ricorda_la_raccolta_rimasta()
 
             t_name = data.get("name", _("Torneo Sconosciuto"))
             self._aggiorna_titolo()
@@ -1207,6 +1218,22 @@ class MainFrame(wx.Frame):
             self.set_status(esito)
         except Exception as errore:
             self._torneo_non_aperto(filepath, errore, rebuild_tree, False)
+
+    def _ricorda_la_raccolta_rimasta(self):
+        """All'apertura del torneo, se non ha partite in PGN e la sua
+        raccolta delle partite c'e' lo stesso nella cartella, e' una
+        raccolta rimasta, e si ricorda in _raccolte_ritrovate: al primo PGN
+        nuovo va nella cartella backup prima di essere sostituita, anche
+        dopo una chiusura di Tornello. La raccolta di un'altra edizione
+        archiviata non lo e', e segue la strada della guardia. Lo decide
+        raccolta_rimasta_all_apertura di omonimi.py; l'apertura non salva
+        il torneo, e non tocca la raccolta (revisione della 10.19.13,
+        decisione di Gabriele del 4 novembre 2026)."""
+        from omonimi import raccolta_rimasta_all_apertura
+
+        chiave = raccolta_rimasta_all_apertura(self.current_tournament, self.active_filename)
+        if chiave:
+            self._raccolte_ritrovate.add(chiave)
 
     def _leggi_il_torneo(self, filepath):
         """I dati del torneo scritto nel file. Un file del programma, come il
@@ -4073,8 +4100,16 @@ class MainFrame(wx.Frame):
                 # 10.19.13 una raccolta rimasta, prima di essere sostituita
                 # dalla raccolta nuova, va nella cartella backup: fino ad
                 # allora le partite di prima si perdevano al primo PGN nuovo.
+                # Lo stesso per una raccolta rimasta ritrovata all'apertura
+                # del torneo, dopo una chiusura di Tornello, che dalla stessa
+                # revisione sta in _raccolte_ritrovate: senza PGN il cestino
+                # si riprova, come per ogni raccolta.
                 aggiornata = aggiorna_la_raccolta_pgn(
-                    self.current_tournament, self.active_filename, self._nel_cestino, self._raccolte_rimaste
+                    self.current_tournament,
+                    self.active_filename,
+                    self._nel_cestino,
+                    self._raccolte_rimaste,
+                    self._raccolte_ritrovate,
                 )
                 if aggiornata.rimasta and not aggiornata.gia_detta:
                     play_sound("errore")
@@ -4083,7 +4118,7 @@ class MainFrame(wx.Frame):
                         raccolta_rimasta(aggiornata.rimasta, self.current_tournament.get("name", ""))
                         + "\n"
                         + _(
-                            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Se nel frattempo il torneo ha di nuovo una partita in PGN, prima di scrivere la raccolta nuova Tornello mette questa nella cartella backup. Se non ti serve più, spostala o cancellala tu."
+                            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Quando il torneo ha di nuovo una partita in PGN, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello. Se non ti serve più, spostala o cancellala tu."
                         ),
                     )
                 chiave = _chiave_del_percorso(

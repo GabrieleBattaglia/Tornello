@@ -4704,13 +4704,24 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert finestre == []
         assert "errore" not in suoni
 
+    @staticmethod
+    def _messaggio_della_raccolta_rimasta():
+        """Il titolo e il testo del messaggio Raccolta delle partite rimasta
+        per la raccolta di Primavera 2 nella cartella del programma."""
+        from config import user_data_path
+
+        cartella = os.path.abspath(user_data_path(""))
+        return (
+            "Raccolta delle partite rimasta",
+            f"Il torneo Primavera 2 non ha più partite in PGN, e la sua raccolta delle partite Primavera_2 - raccolta partite.pgn, nella cartella {cartella}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre.\n"
+            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Quando il torneo ha di nuovo una partita in PGN, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello. Se non ti serve più, spostala o cancellala tu.",
+        )
+
     def test_se_il_cestino_non_la_prende_resta_e_lo_dice_una_volta(self, principale, suoni, monkeypatch, tmp_path):
         """Resta com'era, con il suono dell'errore e un messaggio; il
         salvataggio dopo non riprova e non ripete il messaggio. Quando il
         torneo ha di nuovo il PGN la raccolta si scrive, e quando lo perde di
         nuovo si riprova, e il messaggio torna."""
-        from config import user_data_path
-
         raccolta, contenuto = self._senza_piu_pgn(principale)
         tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
         rimossi = TestRaccoltaAlSalvataggioNellaFinestra._rimozioni(monkeypatch)
@@ -4725,12 +4736,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
         assert rimossi == []
         assert suoni.count("errore") == 1
-        cartella = os.path.abspath(user_data_path(""))
-        messaggio = (
-            "Raccolta delle partite rimasta",
-            f"Il torneo Primavera 2 non ha più partite in PGN, e la sua raccolta delle partite Primavera_2 - raccolta partite.pgn, nella cartella {cartella}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre.\n"
-            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Se nel frattempo il torneo ha di nuovo una partita in PGN, prima di scrivere la raccolta nuova Tornello mette questa nella cartella backup. Se non ti serve più, spostala o cancellala tu.",
-        )
+        messaggio = self._messaggio_della_raccolta_rimasta()
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
 
         principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
@@ -4831,3 +4837,141 @@ class TestRaccoltaSenzaPartiteNelCestino:
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
         assert len(self._copie_della_raccolta()) == 1
+
+    @pytest.fixture
+    def dopo_una_chiusura(self, principale):
+        """Tornello che si chiude e si riapre: ogni chiamata da' una finestra
+        principale nuova, con la memoria delle raccolte rimaste vuota, come
+        all'avvio. I controlli dell'avvio li ha tolti la fixture principale,
+        sulla classe della finestra; le finestre si distruggono alla fine."""
+        import gui.main_frame as mf
+        from gui.settings import DEFAULT_SETTINGS
+
+        nuove = []
+
+        def riapri():
+            finestra = mf.MainFrame(None, "Tornello", dict(DEFAULT_SETTINGS))
+            finestra._timer_pie_di_pagina.Stop()
+            nuove.append(finestra)
+            return finestra
+
+        yield riapri
+        for finestra in nuove:
+            finestra.Destroy()
+
+    def test_dopo_una_chiusura_la_raccolta_rimasta_va_nella_cartella_backup(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura):
+        """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
+        2026). Il cestino non prende la raccolta di Primavera 2, che non ha
+        piu' PGN, e il messaggio lo dice. Tornello si chiude e si riapre: la
+        finestra nuova ha la memoria delle raccolte rimaste vuota, ma
+        all'apertura del torneo, senza partite in PGN e con la sua raccolta
+        nella cartella, la raccolta e' una raccolta rimasta. Al primo PGN
+        nuovo va nella cartella backup, con una copia identica, prima che la
+        raccolta nuova la sostituisca, senza altri messaggi; i salvataggi
+        dopo la sostituiscono come sempre. Fino ad allora la copia la faceva
+        soltanto una raccolta rimasta nella stessa sessione, e dopo una
+        chiusura le partite di prima si perdevano."""
+        raccolta, contenuto = self._senza_piu_pgn(principale)
+        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale._save_state()
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite rimasta"]
+
+        seconda = dopo_una_chiusura()
+        seconda.load_tournament(principale.active_filename)
+        seconda.current_tournament["rounds"][0]["matches"][0]["pgn"] = self.ALTRO_PGN
+        seconda._save_state()
+
+        copie = self._copie_della_raccolta()
+        assert len(copie) == 1
+        with open(copie[0], "rb") as f:
+            assert f.read() == contenuto
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite rimasta"]
+
+        seconda.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        seconda._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
+        assert len(self._copie_della_raccolta()) == 1
+
+    @pytest.mark.parametrize("prende", [False, True], ids=["il cestino non la prende", "il cestino la prende"])
+    def test_dopo_una_chiusura_il_primo_salvataggio_senza_pgn_riprova_il_cestino(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, prende):
+        """Revisione della 10.19.13. Dopo una chiusura di Tornello la raccolta
+        rimasta ritrovata all'apertura non cambia quello che si vede senza
+        PGN: il primo salvataggio riprova il cestino, come prima. Se il
+        cestino non la prende, si sente l'errore e il messaggio Raccolta
+        delle partite rimasta lo dice una volta, e il salvataggio dopo non
+        riprova; se la prende, la raccolta va nel cestino, senza messaggi."""
+        raccolta, contenuto = self._senza_piu_pgn(principale)
+        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale._save_state()
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio_della_raccolta_rimasta()]
+
+        seconda = dopo_una_chiusura()
+        seconda.load_tournament(principale.active_filename)
+        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=prende)
+        finestre.clear()
+        suoni.clear()
+
+        seconda._save_state()
+        seconda._save_state()
+
+        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        if prende:
+            assert not os.path.exists(raccolta)
+            with open(tmp_path / "cestino" / os.path.basename(raccolta), "rb") as f:
+                assert f.read() == contenuto
+            assert finestre == []
+            assert "errore" not in suoni
+        else:
+            with open(raccolta, "rb") as f:
+                assert f.read() == contenuto
+            assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio_della_raccolta_rimasta()]
+            assert suoni.count("errore") == 1
+        assert self._copie_della_raccolta() == []
+
+    def test_dopo_una_chiusura_la_raccolta_di_un_altra_edizione_segue_la_guardia(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura):
+        """Revisione della 10.19.13. Al posto della raccolta della nuova
+        edizione di Primavera 2, nata in console e senza partite in PGN, c'e'
+        quella lasciata da Primavera 2 archiviata, identica a quella che il
+        suo file scriverebbe: la guardia la copia nella cartella d'archivio
+        di quell'edizione, il cestino non la prende, e il messaggio lo dice.
+        Dopo una chiusura di Tornello, all'apertura non e' una raccolta
+        rimasta della nuova edizione: al primo PGN nuovo la guardia la
+        ritrova e lo dice, e la raccolta nuova la sostituisce senza copie
+        nella cartella backup, come prima. La copia identica e' gia' nella
+        cartella d'archivio."""
+        from config import user_data_path
+
+        T = TestRaccoltaAlSalvataggioNellaFinestra
+        archiviato, lasciata, contenuto = T._archiviata_con_la_raccolta_lasciata()
+        percorso = T._nata_in_console(principale)
+        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale._save_state()
+        assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
+
+        seconda = dopo_una_chiusura()
+        seconda.load_tournament(percorso)
+        seconda.current_tournament["rounds"][0]["matches"][1]["pgn"] = T.PGN_NUOVO
+        finestre.clear()
+        seconda._save_state()
+
+        cartella = os.path.abspath(user_data_path(""))
+        archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            (
+                "Raccolta delle partite di un altro torneo",
+                f"Nella cartella {cartella} c'era la raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2, concluso e archiviato nella cartella {archivio}: il torneo Primavera 2 l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                f"Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e il torneo Primavera 2 la sostituirà con la sua raccolta.",
+            )
+        ]
+        with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
+            assert f.read() == contenuto
+        with open(lasciata, "rb") as f:
+            assert f.read() == _raccolta_come_la_scrive_la_finestra(T.PGN_NUOVO)
+        assert self._copie_della_raccolta() == []
