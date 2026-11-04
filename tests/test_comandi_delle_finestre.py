@@ -4449,6 +4449,80 @@ class TestNomeEDataDiInizioDaDati:
             ]
         assert [(f.titolo, f.testo, f.domanda) for f in finestre] == attese
 
+    @staticmethod
+    def _voci_dell_albero(principale, genitore=None):
+        """Tutte le voci dell'albero, in profondita', come coppie di voce e
+        testo."""
+        albero = principale.tree_ctrl
+        if genitore is None:
+            genitore = principale.tree_root
+        voci = []
+        voce, cookie = albero.GetFirstChild(genitore)
+        while voce.IsOk():
+            voci.append((voce, albero.GetItemText(voce)))
+            voci += TestNomeEDataDiInizioDaDati._voci_dell_albero(principale, voce)
+            voce, cookie = albero.GetNextChild(genitore, cookie)
+        return voci
+
+    @pytest.mark.parametrize("dove", ["in corso", "in preparazione", "da un'altra cartella"])
+    def test_il_nome_nuovo_nel_titolo_e_nell_albero(self, principale, suoni, monkeypatch, tmp_path, dove):
+        """10.19.16 (decisione di Gabriele del 5 novembre 2026). Il cursore
+        sta sulla voce Nome torneo del ramo Dati di Alfa, e da li' il nome
+        diventa Beta: il titolo della finestra e la voce del torneo
+        nell'albero dicono subito Beta, e per un torneo in preparazione anche
+        la voce Avvio torneo; la voce di un torneo aperto da un'altra
+        cartella tiene la cartella fra parentesi. Il cursore resta sulla voce
+        Nome torneo, e l'albero non si ricostruisce: DeleteAllItems non si
+        chiama, le voci sono le stesse, e le altre dicono quello che
+        dicevano. Fino alla 10.19.15, e gia' nella 10.0.0, il titolo e la
+        voce del torneo dicevano Alfa finche' l'albero non si ricostruiva."""
+        if dove == "da un'altra cartella":
+            # tmp_path e' la cartella del programma, nelle prove.
+            altrove = tmp_path / "chiavetta"
+            altrove.mkdir()
+            percorso = str(altrove / "Tornello - Alfa.json")
+            dati = _torneo_in_corso("Alfa")
+            dati.update(start_date="2026-11-02", end_date="2026-11-20")
+            TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+            principale.load_tournament(percorso)
+            percorso = principale.active_filename
+        else:
+            percorso = self._apri(principale, "Alfa", **({"rounds": []} if dove == "in preparazione" else {}))
+        albero = principale.tree_ctrl
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": "name"})
+        with principale._albero_senza_caricamenti():
+            albero.SelectItem(voce)
+        del_torneo = principale._voce_del_torneo_aperto()
+        prima = self._voci_dell_albero(principale)
+        etichetta = albero.GetItemText(del_torneo)
+        if dove == "da un'altra cartella":
+            assert etichetta.startswith("Alfa (dalla cartella ")
+        else:
+            assert etichetta == "Alfa"
+        assert ("Avvio torneo: Alfa" in [t for _v, t in prima]) == (dove == "in preparazione")
+        assert principale.GetTitle().endswith(" - [Alfa]")
+        cancellazioni = []
+        vera = albero.DeleteAllItems
+        monkeypatch.setattr(albero, "DeleteAllItems", lambda: (cancellazioni.append(True), vera())[1])
+
+        self._campo(principale, monkeypatch, percorso, "name", "Beta")
+
+        assert principale.current_tournament["name"] == "Beta"
+        assert self._nel_file(percorso)["name"] == "Beta"
+        assert principale.GetTitle().endswith(" - [Beta]")
+        assert cancellazioni == []
+        assert albero.GetSelection() == voce
+        attesi = []
+        for v, testo in prima:
+            if v == voce:
+                testo = "Nome torneo: Beta"
+            elif v == del_torneo:
+                testo = "Beta" + etichetta[len("Alfa") :]
+            elif testo == "Avvio torneo: Alfa":
+                testo = "Avvio torneo: Beta"
+            attesi.append((v, testo))
+        assert self._voci_dell_albero(principale) == attesi
+
 
 class TestPartiteDellaCadenzaNelDatabase:
     """Dalla 10.13.54 (issue 65) la finestra Gestione Database Giocatori

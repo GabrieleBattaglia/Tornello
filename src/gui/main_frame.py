@@ -1431,6 +1431,39 @@ class MainFrame(wx.Frame):
             ).format(__version__, __date__)
         self.SetTitle(f"Tornello - {titolo}")
 
+    def _nome_nuovo_nel_titolo_e_nell_albero(self, vecchio, nuovo):
+        """Dopo il cambio di nome dal ramo Dati, da vecchio a nuovo, il titolo
+        della finestra e le voci dell'albero che dicono il nome del torneo
+        aperto, la voce del torneo e, per un torneo in preparazione, Avvio
+        torneo, dicono subito il nome nuovo. L'albero non si ricostruisce, e
+        il cursore resta dov'era, sulla voce Nome torneo del ramo Dati: NVDA
+        non sente un albero nuovo. La voce del torneo tiene quello che ha
+        dopo il nome, come la cartella fra parentesi di un torneo aperto da
+        un'altra cartella. Fino alla 10.19.15, e gia' nella 10.0.0, il titolo
+        e quelle voci dicevano il nome di prima finche' l'albero non si
+        ricostruiva (decisione di Gabriele del 5 novembre 2026)."""
+        self._aggiorna_titolo()
+        radice = getattr(self, "tree_root", None)
+        if not (radice and radice.IsOk()):
+            return
+        voce = self._voce_del_torneo_aperto()
+        if voce is not None:
+            testo = self.tree_ctrl.GetItemText(voce)
+            if testo.startswith(vecchio):
+                self.tree_ctrl.SetItemText(voce, nuovo + testo[len(vecchio) :])
+        # Avvio torneo sta al primo livello; sotto i turni c'e' calcola il
+        # turno 1, con la stessa azione, che il nome non lo dice.
+        figlia, cookie = self.tree_ctrl.GetFirstChild(radice)
+        while figlia.IsOk():
+            dati = self.tree_ctrl.GetItemData(figlia)
+            if (
+                isinstance(dati, dict)
+                and dati.get("action") == "start_tournament_matchmaking_action"
+                and self._e_il_torneo_aperto(dati.get("filepath"))
+            ):
+                self.tree_ctrl.SetItemText(figlia, _("Avvio torneo: {name}").format(name=nuovo))
+            figlia, cookie = self.tree_ctrl.GetNextChild(radice, cookie)
+
     def _nessun_torneo_aperto(self):
         """Toglie dalla memoria il torneo aperto, e il titolo e il menu
         Torneo lo dicono subito. Fino alla 10.13.9, dopo una finalizzazione,
@@ -6367,10 +6400,12 @@ class MainFrame(wx.Frame):
                     if not self._nome_da_dati_accettato(new_val):
                         dlg.Destroy()
                         return
+                    vecchio = self.current_tournament.get("name", "")
                     self.current_tournament["name"] = new_val
                     self.tree_ctrl.SetItemText(
                         item, _("Nome torneo: {}").format(new_val)
                     )
+                    self._nome_nuovo_nel_titolo_e_nell_albero(vecchio, new_val)
                     self._save_state()
                 play_sound("conferma")
             dlg.Destroy()

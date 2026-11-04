@@ -1,5 +1,5 @@
-__version__ = "10.19.15"
-__date__ = "2026.11.04"
+__version__ = "10.19.16"
+__date__ = "2026.11.05"
 __authors__ = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)"
 __bbp_info__ = "using BBP Pairings (v6.0.0), a Swiss-system chess tournament engine created by Bierema Boyz Programming."
 
