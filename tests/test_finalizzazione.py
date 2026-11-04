@@ -2220,6 +2220,39 @@ class TestRaccoltaDiUnAltraEdizioneAllaFinalizzazione:
             assert detti[0].count(frase) == 1
             assert "non ha più partite in PGN" not in detti[0]
 
+    def test_la_raccolta_rimasta_del_torneo_gia_detta_dalla_finestra_ha_il_suo_avviso(self, banco, monkeypatch, tmp_path):
+        """Revisione della 10.19.13 (issue 66). Il torneo non ha piu'
+        partite in PGN, e la finestra passa fra le sue rimaste la raccolta
+        del torneo stesso, che il suo cestino non ha preso. Non e' la
+        raccolta di un'altra edizione: la finalizzazione non riprova il
+        cestino, la raccolta resta dov'e' e non va in archivio, e l'avviso
+        della raccolta rimasta lo dice ancora. Soltanto per la raccolta di
+        un'altra edizione, che la guardia ha riconosciuto, basta l'avviso
+        della guardia: la finestra, che la raccolta rimasta l'ha gia' detta,
+        non la ripete, ma la finalizzazione dice anche che non va in
+        archivio."""
+        import config
+        from db_players import load_players_db
+        from omonimi import _chiave_del_percorso
+        from ui import finalize_tournament
+
+        raccolta = config.user_data_path(RACCOLTA)
+        contenuto = _raccolta_di(PGN_DELLA_PROVA)
+        with open(raccolta, "wb") as f:
+            f.write(contenuto)
+        ricevuti = _cestino_finto(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        avvisi = []
+        rimaste = {_chiave_del_percorso(raccolta)}
+
+        assert finalize_tournament(copy.deepcopy(banco.torneo), load_players_db(), banco.file_torneo, avvisi, rimaste) is True
+
+        assert ricevuti == []
+        assert _leggi_byte(raccolta) == contenuto
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        assert [a for a in avvisi if RACCOLTA in a] == [
+            f"Il torneo {NOME} non ha più partite in PGN, e la sua raccolta delle partite {RACCOLTA}, nella cartella {os.path.dirname(raccolta)}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre. Non va in archivio con il torneo."
+        ]
+
     def test_con_il_nome_della_raccolta_della_sua_edizione(self, banco, monkeypatch, tmp_path):
         """Revisione della 10.19.13. La nuova edizione si chiama coppa_prova,
         la prima Coppa_Prova: la raccolta della prima va nella sua cartella
