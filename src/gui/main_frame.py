@@ -3482,7 +3482,12 @@ class MainFrame(wx.Frame):
         Alfa.json per il nome Alfa: fino ad allora il rifiuto della stessa
         data di inizio diceva che aveva lo stesso nome, e che i report e la
         raccolta delle partite si sarebbero chiamati come i suoi, e non era
-        vero. I nomi rifiutati restano gli stessi."""
+        vero. I nomi rifiutati restano gli stessi. Dalla stessa revisione la
+        seconda frase di quel rifiuto dice che con un'altra data il nome si
+        usa dopo la domanda, e non spiega piu' le edizioni con lo stesso
+        nome, che la finalizzazione confonderebbe: identita', cartella
+        d'archivio e file sono diversi (decisione di Gabriele del 4 novembre
+        2026)."""
         from utils import format_date_locale, play_sound
 
         if controllo is None:
@@ -3512,9 +3517,16 @@ class MainFrame(wx.Frame):
                 # nome Alfa, ha un altro nome, e i report e la raccolta non
                 # si chiamerebbero come i suoi: il nome e' riservato, come
                 # quello di un file del programma (revisione della 10.19.15).
+                # La seconda frase non spiega le edizioni con lo stesso nome,
+                # che qui non lo sono: identita', cartella d'archivio e file
+                # sono diversi, e con un'altra data viene la domanda
+                # (decisione di Gabriele del 4 novembre 2026). Con edizioni
+                # dei due tipi con la stessa data il messaggio e' quello
+                # della prima, in ordine di percorso, e ognuno dei due e' vero
+                # anche con l'altra.
                 testo = _(
                     "Il nome {nome} non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella} con il file {suo}, che ha la stessa data di inizio.\n"
-                    "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+                    "Con un'altra data di inizio il nome si può usare, dopo la domanda Nuova edizione di un torneo concluso. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
                 )
             else:
                 testo = _(

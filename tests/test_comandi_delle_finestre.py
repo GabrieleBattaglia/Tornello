@@ -4137,12 +4137,25 @@ class TestNomeEDataDiInizioDaDati:
         ]
         assert procedura == [TestNomeDelTorneoNuovo._domanda_attesa("Alfa", "Tornello - Alfa.json", [("Beta", beta)])]
 
+    # La seconda frase del rifiuto da Dati per un'edizione trovata soltanto
+    # per il nome del file, con la stessa data di inizio: dalla revisione
+    # della 10.19.15 non spiega le edizioni con lo stesso nome, che qui non
+    # lo sono (decisione di Gabriele del 4 novembre 2026).
+    SPIEGAZIONE_DEL_RISERVATO = (
+        "Con un'altra data di inizio il nome si può usare, dopo la domanda Nuova edizione di un torneo concluso. "
+        "Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+    )
+
     def test_con_la_stessa_data_un_edizione_trovata_per_il_solo_file(self, principale, suoni, monkeypatch):
         """Revisione della 10.19.15. Con la data di inizio di Beta,
         archiviata nel file Tornello - Alfa.json, il nome Alfa da Dati si
         rifiuta come prima, ma il messaggio dice che e' riservato, con il
         nome, la cartella e il file di Beta, e non piu' che Beta ha lo stesso
-        nome. La procedura guidata tiene il suo messaggio."""
+        nome. La seconda frase dice che con un'altra data il nome si usa,
+        dopo la domanda, e non piu' che con la stessa data la finalizzazione
+        confonderebbe le edizioni: Beta e il torneo rinominato Alfa hanno
+        identita', cartelle d'archivio e file diversi. La procedura guidata
+        tiene il suo messaggio."""
         from utils import format_date_locale
 
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
@@ -4161,7 +4174,7 @@ class TestNomeEDataDiInizioDaDati:
             (
                 "Nome del torneo già in uso",
                 f"Il nome Alfa non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Beta, concluso e archiviato nella cartella {beta} con il file Tornello - Alfa.json, che ha la stessa data di inizio.\n"
-                + self.SPIEGAZIONE_DELLA_DATA,
+                + self.SPIEGAZIONE_DEL_RISERVATO,
                 False,
             )
         ]
@@ -4169,6 +4182,55 @@ class TestNomeEDataDiInizioDaDati:
             f"Il nome Alfa non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe Tornello - Alfa.json, come quello del torneo Beta, concluso e archiviato nella cartella {beta}, che ha la stessa data di inizio.\n"
             + self.SPIEGAZIONE_DELLA_DATA
         ]
+
+    @pytest.mark.parametrize("prima", ["per il file", "per il nome"])
+    def test_con_la_stessa_data_due_edizioni_una_per_il_nome_e_una_per_il_file(self, principale, suoni, monkeypatch, prima):
+        """Revisione della 10.19.15 (decisione di Gabriele del 4 novembre
+        2026). Con la stessa data di inizio ci sono Alfa, archiviata nel
+        suo file con il nome Alfa, e Beta, archiviata nel file Tornello -
+        Alfa.json: il nome Alfa da Dati si rifiuta, e il messaggio e' quello
+        della prima delle due in ordine di percorso, con le sue frasi, vere
+        anche con l'altra. Per Beta prima, il nome e' riservato, e con
+        un'altra data si usa dopo la domanda, che c'e' davvero; per Alfa
+        prima, le due edizioni con lo stesso nome e la stessa data. La
+        procedura guidata tiene il suo messaggio, con il file."""
+        from utils import format_date_locale
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        # L'ordine di percorso dipende dalla cartella dell'anno.
+        anno_di_beta, anno_di_alfa = ("2025", "2026") if prima == "per il file" else ("2026", "2025")
+        alfa = self._archiviata((anno_di_alfa, "06 Giugno", "Alfa"), "Tornello - Alfa.json", "Alfa", "2026-06-01")
+        beta = self._archiviata((anno_di_beta, "06 Giugno", "Beta"), "Tornello - Alfa.json", "Beta", "2026-06-01")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Alfa", inizio="2026-06-01")
+        percorso = self._apri(principale, "Gamma", start_date="2026-06-01")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", "Alfa")
+
+        assert principale.current_tournament["name"] == "Gamma"
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        assert suoni == ["apertura", "errore"]
+        data = format_date_locale("2026-06-01")
+        if prima == "per il file":
+            atteso = (
+                f"Il nome Alfa non si può usare con la data di inizio {data}: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Beta, concluso e archiviato nella cartella {beta} con il file Tornello - Alfa.json, che ha la stessa data di inizio.\n"
+                + self.SPIEGAZIONE_DEL_RISERVATO
+            )
+            della_procedura = (
+                f"Il nome Alfa non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe Tornello - Alfa.json, come quello del torneo Beta, concluso e archiviato nella cartella {beta}, che ha la stessa data di inizio.\n"
+                + self.SPIEGAZIONE_DELLA_DATA
+            )
+        else:
+            atteso = (
+                f"Il nome Alfa non si può usare con la data di inizio {data}: il torneo Alfa, concluso e archiviato nella cartella {alfa} con il file Tornello - Alfa.json, ha lo stesso nome e la stessa data di inizio, e i report e la raccolta delle partite si chiamerebbero come i suoi.\n"
+                + self.SPIEGAZIONE_DELLA_DATA
+            )
+            della_procedura = (
+                f"Il nome Alfa non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe Tornello - Alfa.json, come quello del torneo Alfa, concluso e archiviato nella cartella {alfa}, che ha la stessa data di inizio.\n"
+                + self.SPIEGAZIONE_DELLA_DATA
+            )
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [("Nome del torneo già in uso", atteso, False)]
+        assert procedura == [della_procedura]
 
     def test_due_edizioni_una_per_il_nome_e_una_per_il_file(self, principale, suoni, monkeypatch):
         """Revisione della 10.19.15. Alfa, archiviata nel 2025 nel suo file,
