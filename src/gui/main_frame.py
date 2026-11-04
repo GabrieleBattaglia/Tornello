@@ -33,6 +33,12 @@ RIPROVA_A_FINESTRA_LIBERA_MS = 1000
 # quale l'avviso di avvio sulle copie di sicurezza vecchie resta rinviato.
 RINVIO_AVVISO_BACKUP = "backup_check_postponed_until"
 
+# La chiave di creation_data con il nome per cui l'arbitro ha risposto Si'
+# alla domanda sulla nuova edizione di un torneo dell'archivio: per quel nome
+# la domanda non si ripete nei controlli successivi della stessa procedura
+# guidata (10.13.52, issue 66).
+NUOVA_EDIZIONE_CONFERMATA = "nuova_edizione_confermata"
+
 
 def _cartella_predefinita_tornei():
     """La cartella dove proporre di salvare un torneo nuovo, cioe' quella del
@@ -74,39 +80,51 @@ def _ha_la_forma_di_un_torneo(dati):
     )
 
 
+def _file_del_torneo_nuovo(nome):
+    """Il nome del file di un torneo nuovo chiamato nome, senza la cartella:
+    Tornello - seguito dal nome ripulito da sanitize_filename, .json."""
+    from utils import sanitize_filename
+
+    return f"Tornello - {sanitize_filename(nome)}.json"
+
+
+def _leggi_json(percorso):
+    """Il contenuto di un file JSON, oppure None se il file non si legge."""
+    try:
+        with open(percorso, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
 def coincidenza_del_nome(nome):
     """Con che cosa coincide il file di un torneo nuovo chiamato nome: una
     frase, da mettere dopo il nome del file nel messaggio, oppure None se il
     nome e' libero. Il file di un torneo si chiama Tornello - <nome
     ripulito>.json, con il nome ripulito da sanitize_filename, e si
     confronta senza badare alle maiuscole, come fa Windows: con il database
-    dei giocatori e le impostazioni, con ogni altro file Tornello - *.json
-    della cartella del programma, torneo o no, e con i tornei dell'archivio.
+    dei giocatori e le impostazioni, e con ogni altro file Tornello - *.json
+    della cartella del programma, torneo o no.
     Nata con la 10.13.52 (issue 66): fino ad allora la procedura guidata non
     guardava, e un torneo chiamato come uno che c'era gia' ne sovrascriveva
     il file, con i turni e i risultati; uno chiamato Players_db o Settings
-    prendeva il nome del database dei giocatori o delle impostazioni."""
+    prendeva il nome del database dei giocatori o delle impostazioni. I
+    tornei dell'archivio non sono qui: un nome che coincide soltanto con
+    loro e' quello di una nuova edizione, che si accetta dopo una domanda
+    (edizioni_nell_archivio, decisione di Gabriele del 4 novembre 2026)."""
     from config import PLAYER_DB_FILE
-    from utils import sanitize_filename
 
-    cercato = f"Tornello - {sanitize_filename(nome)}.json".lower()
+    cercato = _file_del_torneo_nuovo(nome).lower()
     if cercato == os.path.basename(PLAYER_DB_FILE).lower():
         return _("come il database dei giocatori")
     if cercato == "tornello - settings.json":
         return _("come il file delle impostazioni del programma")
 
-    def leggi(percorso):
-        try:
-            with open(percorso, encoding="utf-8") as f:
-                return json.load(f)
-        except (OSError, ValueError):
-            return None
-
     in_cartella = glob.glob(os.path.join(glob.escape(user_data_path("")), "Tornello - *.json"))
     for percorso in in_cartella:
         if os.path.basename(percorso).lower() != cercato:
             continue
-        dati = leggi(percorso)
+        dati = _leggi_json(percorso)
         # Un file che non ha la forma di un torneo, o che non si legge, e' un
         # file del programma, e non si sovrascrive lo stesso.
         if not _ha_la_forma_di_un_torneo(dati):
@@ -118,14 +136,36 @@ def coincidenza_del_nome(nome):
         else:
             stato = _("in preparazione nella cartella del programma")
         return _("come il file del torneo {torneo}, {stato}").format(torneo=dati["name"], stato=stato)
+    return None
+
+
+def edizioni_nell_archivio(nome):
+    """I tornei conclusi dell'archivio il cui file coincide con quello di un
+    torneo nuovo chiamato nome, confrontato come in coincidenza_del_nome:
+    una lista di coppie (percorso, dati), in ordine di percorso, quindi di
+    anno e di mese, con dati None per un file che non si legge o che non ha
+    la forma di un torneo. Un nome che coincide soltanto con loro e' quello
+    di una nuova edizione, e la procedura guidata lo accetta dopo una
+    domanda (10.13.52, issue 66, decisione di Gabriele del 4 novembre 2026):
+    le edizioni si distinguono, nell'archivio e nello storico dei giocatori,
+    dalla data di inizio."""
+    cercato = _file_del_torneo_nuovo(nome).lower()
+    trovate = []
     in_archivio = glob.glob(os.path.join(glob.escape(ARCHIVED_TOURNAMENTS_DIR), "**", "Tornello - *.json"), recursive=True)
-    for percorso in in_archivio:
+    for percorso in sorted(in_archivio):
         if os.path.basename(percorso).lower() != cercato:
             continue
-        dati = leggi(percorso)
-        torneo = dati["name"] if _ha_la_forma_di_un_torneo(dati) else os.path.basename(percorso)
-        return _("come il file del torneo {torneo}, concluso e archiviato fra i Tornei Conclusi").format(torneo=torneo)
-    return None
+        dati = _leggi_json(percorso)
+        trovate.append((percorso, dati if _ha_la_forma_di_un_torneo(dati) else None))
+    return trovate
+
+
+def _cartella_nell_archivio(percorso):
+    """La cartella d'archivio di un torneo concluso, da dire nei messaggi:
+    il percorso da Closed Tournaments in giu', con l'anno e il mese, per
+    esempio Closed Tournaments\\2026\\06 Giugno\\Primavera_2."""
+    cartella = os.path.dirname(os.path.abspath(percorso))
+    return os.path.relpath(cartella, os.path.dirname(os.path.abspath(ARCHIVED_TOURNAMENTS_DIR)))
 
 
 class CustomAccessible(wx.Accessible):
@@ -3181,12 +3221,18 @@ class MainFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 nuovo_nome = dlg.GetValue().strip()
                 # Dalla 10.13.52 un nome il cui file coincide con un file
-                # del programma o con un torneo che c'e' gia' non si accetta
-                # (issue 66): il messaggio dice perche', e il nome resta
-                # quello di prima.
+                # del programma o con un torneo della sua cartella non si
+                # accetta (issue 66): il messaggio dice perche', e il nome
+                # resta quello di prima. Uno che coincide soltanto con un
+                # torneo dell'archivio si accetta dopo una domanda.
                 if not nuovo_nome or self._nome_del_torneo_libero(nuovo_nome):
                     play_sound("conferma")
                     self.creation_data["name"] = nuovo_nome
+                    # Il Si' alla domanda sulla nuova edizione vale soltanto
+                    # per il suo nome: con un altro, anche tornando a quello
+                    # di prima, si chiede da capo.
+                    if self.creation_data.get(NUOVA_EDIZIONE_CONFERMATA) != nuovo_nome:
+                        self.creation_data.pop(NUOVA_EDIZIONE_CONFERMATA, None)
                     self.tree_ctrl.SetItemText(
                         item,
                         _("Nome torneo *: {}").format(
@@ -3443,15 +3489,47 @@ class MainFrame(wx.Frame):
 
     def _nome_del_torneo_libero(self, nome):
         """Vero se un torneo nuovo puo' chiamarsi nome. Se il suo file
-        coinciderebbe con un file del programma o con un torneo che c'e'
-        gia', in corso, in preparazione o in archivio (coincidenza_del_nome),
-        suona l'errore, lo dice in un messaggio e restituisce False: la
-        procedura guidata resta dov'e' (10.13.52, issue 66)."""
-        from utils import play_sound, sanitize_filename
+        coinciderebbe con un file del programma o con un torneo della
+        cartella del programma, in corso, in preparazione o concluso
+        (coincidenza_del_nome), suona l'errore, lo dice in un messaggio e
+        restituisce False: la procedura guidata resta dov'e' (10.13.52,
+        issue 66). Se coincide soltanto con tornei dell'archivio e' una
+        nuova edizione, che si accetta dopo una domanda
+        (_nuova_edizione_confermata), a meno che una di loro abbia la stessa
+        data di inizio del torneo nuovo: lo storico dei giocatori e
+        l'archivio distinguono le edizioni dalla data di inizio, e con la
+        stessa la finalizzazione le confonderebbe."""
+        from utils import format_date_locale, play_sound
 
         coincidenza = coincidenza_del_nome(nome)
         if coincidenza is None:
-            return True
+            edizioni = edizioni_nell_archivio(nome)
+            if not edizioni:
+                return True
+            inizio = self.creation_data.get("start_date")
+            stessa_data = [
+                (percorso, dati)
+                for percorso, dati in edizioni
+                if dati and inizio and dati.get("start_date") == inizio
+            ]
+            if not stessa_data:
+                return self._nuova_edizione_confermata(nome, edizioni)
+            percorso, dati = stessa_data[0]
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Nome del torneo già in uso"),
+                _(
+                    "Il nome {nome} non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe {file}, come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
+                    "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+                ).format(
+                    nome=nome,
+                    data=format_date_locale(inizio),
+                    file=_file_del_torneo_nuovo(nome),
+                    torneo=dati["name"],
+                    cartella=_cartella_nell_archivio(percorso),
+                ),
+            )
+            return False
         play_sound("errore")
         self._dialogo_informativo(
             _("Nome del torneo già in uso"),
@@ -3460,18 +3538,71 @@ class MainFrame(wx.Frame):
                 "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
             ).format(
                 nome=nome,
-                file=f"Tornello - {sanitize_filename(nome)}.json",
+                file=_file_del_torneo_nuovo(nome),
                 coincidenza=coincidenza,
             ),
         )
         return False
+
+    def _nuova_edizione_confermata(self, nome, edizioni):
+        """La domanda per un nome il cui file coincide soltanto con tornei
+        dell'archivio, edizioni come le da' edizioni_nell_archivio: dice
+        quali e in quale cartella, e chiede se creare una nuova edizione.
+        No e' il pulsante predefinito, ed ESC vale No. Risponde vero con Si',
+        e il Si' resta in creation_data per quel nome: i controlli successivi
+        della stessa procedura, prima dell'iscrizione e prima di scrivere il
+        file, non chiedono di nuovo, mentre un altro nome si controlla da
+        capo (10.13.52, issue 66, decisione di Gabriele del 4 novembre
+        2026)."""
+        if self.creation_data.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
+            return True
+        descrizioni = [
+            _("{torneo}, nella cartella {cartella}").format(
+                torneo=dati["name"] if dati else os.path.basename(percorso),
+                cartella=_cartella_nell_archivio(percorso),
+            )
+            for percorso, dati in edizioni
+        ]
+        if len(edizioni) == 1:
+            premessa = _(
+                "Il file del torneo {nome} si chiamerebbe {file}, come quello di un torneo concluso e archiviato fra i Tornei Conclusi: {edizioni}."
+            )
+        else:
+            premessa = _(
+                "Il file del torneo {nome} si chiamerebbe {file}, come quello di {numero} tornei conclusi e archiviati fra i Tornei Conclusi: {edizioni}."
+            )
+        testo = premessa.format(
+            nome=nome,
+            file=_file_del_torneo_nuovo(nome),
+            numero=len(edizioni),
+            edizioni="; ".join(descrizioni),
+        ) + "\n" + _(
+            "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+            "Vuoi creare una nuova edizione con il nome {nome}? Il pulsante predefinito è No."
+        ).format(nome=nome)
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Nuova edizione di un torneo concluso"),
+            testo,
+            style=wx.YES_NO,
+            settings=self.settings,
+            no_predefinito=True,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        if risposta != wx.ID_YES:
+            return False
+        self.creation_data[NUOVA_EDIZIONE_CONFERMATA] = nome
+        return True
 
     def on_wizard_next(self):
         from utils import play_sound
 
         # Il nome si controlla di nuovo prima dell'iscrizione: un file con
         # lo stesso nome puo' essere nato dopo che lo si e' scritto, e
-        # l'iscrizione andrebbe persa (10.13.52).
+        # l'iscrizione andrebbe persa (10.13.52). La domanda sulla nuova
+        # edizione di un torneo dell'archivio non si ripete, se per questo
+        # nome ha gia' avuto il Si'.
         if not self._nome_del_torneo_libero(self.creation_data.get("name", "")):
             return
 
@@ -3531,6 +3662,8 @@ class MainFrame(wx.Frame):
         # 66): fino alla 10.13.51 un torneo con il nome di uno che c'era
         # gia' ne sovrascriveva il file, e uno chiamato Players_db o
         # Settings quello del database dei giocatori o delle impostazioni.
+        # Il nome di un torneo dell'archivio, gia' confermato come nuova
+        # edizione, passa senza chiedere di nuovo.
         if not self._nome_del_torneo_libero(self.creation_data["name"]):
             return
 
