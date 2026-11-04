@@ -5593,8 +5593,32 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert maniglia not in (None, ctypes.c_void_p(-1).value), ctypes.get_last_error()
         return lambda: kernel32.CloseHandle(maniglia)
 
+    @staticmethod
+    def _messaggio_della_raccolta_non_scritta(errore):
+        """Il titolo e il testo del messaggio Raccolta delle partite non
+        scritta per la raccolta di Primavera 2 nella cartella del programma,
+        che un salvataggio non ha potuto scrivere, con errore, il motivo che
+        da' il sistema (decisione di Gabriele del 5 novembre 2026)."""
+        from config import user_data_path
+
+        cartella = os.path.abspath(user_data_path(""))
+        return (
+            "Raccolta delle partite non scritta",
+            f"La raccolta delle partite Primavera_2 - raccolta partite.pgn, nella cartella {cartella}, non si è potuta scrivere: {errore}. "
+            "Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio.",
+        )
+
+    RIGA_DELLA_CONSOLE = "Errore durante il salvataggio della raccolta PGN: "
+
+    @classmethod
+    def _errori_in_console(cls, capsys):
+        """I motivi degli errori della raccolta che i salvataggi hanno
+        stampato in console, una riga per salvataggio, come sempre."""
+        righe = capsys.readouterr().out.splitlines()
+        return [r[len(cls.RIGA_DELLA_CONSOLE) :] for r in righe if r.startswith(cls.RIGA_DELLA_CONSOLE)]
+
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_la_raccolta_che_non_si_riscrive_va_nella_cartella_backup_una_volta(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+    def test_la_raccolta_che_non_si_riscrive_va_nella_cartella_backup_una_volta(self, principale, suoni, monkeypatch, capsys, dopo_una_chiusura):
         """Correzione della revisione della 10.19.13. Primavera 2 ha due
         partite in PGN, e la finestra ne scrive la raccolta. Fra due sessioni
         il torneo torna com'era in una copia, con un altro PGN alla prima
@@ -5602,10 +5626,14 @@ class TestRaccoltaSenzaPartiteNelCestino:
         partita che il torneo non ha, ed e' rimasta. Un visualizzatore di PGN
         la tiene aperta, e la lascia leggere ma non scrivere: il primo
         salvataggio la mette nella cartella backup e non la riscrive, e i due
-        dopo non fanno altre copie, senza messaggi e senza il suono
-        dell'errore. Tolto il blocco, il salvataggio scrive la raccolta nuova,
-        con la copia di prima e basta. Fino alla correzione ogni salvataggio
-        faceva un'altra copia identica, in silenzio."""
+        dopo non fanno altre copie. Tolto il blocco, il salvataggio scrive la
+        raccolta nuova, con la copia di prima e basta. Fino alla correzione
+        ogni salvataggio faceva un'altra copia identica, in silenzio.
+        Dalla decisione di Gabriele del 5 novembre 2026 il primo salvataggio
+        dice con un messaggio, e con il suono dell'errore, che la raccolta
+        non si e' potuta scrivere, con il motivo che da' il sistema, e i due
+        dopo non lo ripetono; la console stampa l'errore a ogni salvataggio,
+        come prima. Fino ad allora c'era soltanto la riga in console."""
         import json
 
         from config import user_data_path
@@ -5627,6 +5655,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         TestNomeDelTorneoNuovo._scrivi(percorso, ripristinato)
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
+        capsys.readouterr()
 
         sblocca = self._bloccata(raccolta, self.FILE_SHARE_READ)
         try:
@@ -5644,29 +5673,39 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert len(copie) == 1
         with open(copie[0], "rb") as f:
             assert f.read() == contenuto
-        assert finestre == []
-        assert "errore" not in suoni
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 3
+        assert errori[0]
+        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
 
         seconda._save_state()
 
         assert self._copie_della_raccolta() == copie
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
-        assert finestre == []
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert self._errori_in_console(capsys) == []
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_la_raccolta_rimasta_che_non_si_legge_non_si_sostituisce(self, principale, suoni, monkeypatch, dopo_una_chiusura):
+    def test_la_raccolta_rimasta_che_non_si_legge_non_si_sostituisce(self, principale, suoni, monkeypatch, capsys, dopo_una_chiusura):
         """Correzione della revisione della 10.19.13. Come sopra, la raccolta
         ha una partita che il torneo, tornato com'era in una copia, non ha
         piu'. Dopo una chiusura di Tornello un altro programma la tiene
         aperta, e la lascia scrivere ma non leggere: all'apertura non si sa
         se abbia partite che il torneo non ha, e' rimasta, e i salvataggi non
-        la sostituiscono, senza copie e senza messaggi, perche' non si
-        potrebbe mettere nella cartella backup. Tolto il blocco, il
-        salvataggio la mette nella cartella backup e poi scrive la raccolta
-        nuova. Se la raccolta che non si legge non fosse rimasta, il primo
-        salvataggio la sostituirebbe senza copia, e la partita che il torneo
-        non ha si perderebbe."""
+        la sostituiscono, senza copie, perche' non si potrebbe mettere nella
+        cartella backup. Tolto il blocco, il salvataggio la mette nella
+        cartella backup e poi scrive la raccolta nuova. Se la raccolta che
+        non si legge non fosse rimasta, il primo salvataggio la sostituirebbe
+        senza copia, e la partita che il torneo non ha si perderebbe.
+        Dalla decisione di Gabriele del 5 novembre 2026 il primo dei tre
+        salvataggi dice con un messaggio, e con il suono dell'errore, che la
+        raccolta non si e' potuta scrivere, con il motivo della lettura che
+        non riesce, e gli altri due non lo ripetono. Il messaggio della copia
+        non riuscita non c'e': la copia non si e' fatta perche' la raccolta
+        non si legge."""
         import json
 
         from config import user_data_path
@@ -5689,22 +5728,27 @@ class TestRaccoltaSenzaPartiteNelCestino:
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
 
+        capsys.readouterr()
         sblocca = self._bloccata(raccolta, self.FILE_SHARE_WRITE)
         try:
             with pytest.raises(OSError):
                 open(raccolta, "rb").close()
             seconda = dopo_una_chiusura()
             seconda.load_tournament(percorso)
-            seconda._save_state()
-            seconda._save_state()
+            for _volta in range(3):
+                seconda._save_state()
         finally:
             sblocca()
 
         with open(raccolta, "rb") as f:
             assert f.read() == contenuto
         assert self._copie_della_raccolta() == []
-        assert finestre == []
-        assert "errore" not in suoni
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 3
+        assert errori[0]
+        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
 
         seconda._save_state()
 
@@ -5714,7 +5758,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
             assert f.read() == contenuto
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN, PGN_VALIDO)
-        assert finestre == []
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
 
     @staticmethod
     def _torneo_normale():
@@ -5740,14 +5784,18 @@ class TestRaccoltaSenzaPartiteNelCestino:
         normale, e la sua raccolta e' quella che il torneo scrive. Dopo una
         chiusura di Tornello un altro programma la tiene aperta, e non la
         lascia ne' leggere ne' scrivere: all'apertura e ai salvataggi, anche
-        con un PGN nuovo, la raccolta resta com'era, nessuna copia va nella
-        cartella backup, e non ci sono messaggi, come per ogni raccolta che
-        non si scrive; l'errore si stampa. Tolto il blocco, il salvataggio
+        con un PGN nuovo, la raccolta resta com'era, e nessuna copia va nella
+        cartella backup; l'errore si stampa. Tolto il blocco, il salvataggio
         scrive la raccolta nuova senza copie, perche' quella di prima ha
         soltanto partite del torneo. Fino alla correzione una raccolta che
         non si leggeva aveva partite che il torneo non ha, e il messaggio
-        Raccolta delle partite non scritta, con il suono dell'errore, lo
-        diceva anche della raccolta del torneo."""
+        della copia non riuscita, con il suono dell'errore, lo diceva anche
+        della raccolta del torneo.
+        Dalla decisione di Gabriele del 5 novembre 2026 il primo dei tre
+        salvataggi dice soltanto, con un messaggio e con il suono
+        dell'errore, che la raccolta non si e' potuta scrivere, con il motivo
+        che da' il sistema, e gli altri due non lo ripetono; il messaggio
+        della copia non riuscita non c'e' mai."""
         percorso, raccolta, contenuto = self._torneo_normale()
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         capsys.readouterr()
@@ -5760,22 +5808,93 @@ class TestRaccoltaSenzaPartiteNelCestino:
             seconda._save_state()
             seconda.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
             seconda._save_state()
+            seconda._save_state()
         finally:
             sblocca()
 
         with open(raccolta, "rb") as f:
             assert f.read() == contenuto
         assert self._copie_della_raccolta() == []
-        assert finestre == []
-        assert "errore" not in suoni
-        assert capsys.readouterr().out.count("Errore durante il salvataggio della raccolta PGN: ") == 2
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 3
+        assert errori[0]
+        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
 
         seconda._save_state()
 
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
         assert self._copie_della_raccolta() == []
-        assert finestre == []
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_messaggio_della_raccolta_non_scritta_una_volta_fino_alla_chiusura(self, principale, suoni, monkeypatch, capsys, dopo_una_chiusura):
+        """Decisione di Gabriele del 5 novembre 2026. Primavera 2 e' un
+        torneo normale, aperto nella finestra. Un visualizzatore di PGN
+        tiene aperta la sua raccolta, e la lascia leggere ma non scrivere: il
+        salvataggio con un PGN nuovo non la scrive, e il messaggio lo dice,
+        con il suono dell'errore e con il motivo che da' il sistema, lo
+        stesso della riga in console. Tolto il blocco, il salvataggio la
+        scrive. Bloccata di nuovo, i due salvataggi dopo, con un altro
+        risultato nel PGN, non la scrivono, e il messaggio non torna: si dice
+        una volta per quella raccolta, fino alla chiusura di Tornello. Dopo
+        una chiusura il primo salvataggio che non la scrive lo dice di nuovo,
+        una volta, e nessuna copia va nella cartella backup."""
+        percorso, raccolta, contenuto = self._torneo_normale()
+        principale.load_tournament(percorso)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_READ)
+        try:
+            principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+            principale._save_state()
+            with open(raccolta, "rb") as f:
+                ancora = f.read()
+        finally:
+            sblocca()
+
+        assert ancora == contenuto
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 1
+        assert errori[0]
+        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
+
+        principale._save_state()
+        scritta = _raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO, PGN_VALIDO)
+        with open(raccolta, "rb") as f:
+            assert f.read() == scritta
+
+        # Un altro risultato nel PGN della seconda partita: la raccolta da
+        # riscrivere ha le stesse partite, e non e' una raccolta rimasta.
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_READ)
+        try:
+            principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO.replace("1/2-1/2", "1-0")
+            principale._save_state()
+            principale._save_state()
+            with open(raccolta, "rb") as f:
+                ancora = f.read()
+            assert len(self._errori_in_console(capsys)) == 2
+            assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+            assert suoni.count("errore") == 1
+
+            seconda = dopo_una_chiusura()
+            seconda.load_tournament(percorso)
+            seconda._save_state()
+            seconda._save_state()
+        finally:
+            sblocca()
+
+        assert ancora == scritta
+        assert len(self._errori_in_console(capsys)) == 2
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio] * 2
+        assert suoni.count("errore") == 2
+        assert self._copie_della_raccolta() == []
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     def test_la_finalizzazione_in_console_con_la_raccolta_che_non_si_legge(self, suoni):

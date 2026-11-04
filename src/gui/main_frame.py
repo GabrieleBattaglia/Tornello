@@ -228,6 +228,13 @@ class MainFrame(wx.Frame):
         # backup prima di sostituirle con la raccolta nuova: il messaggio si
         # dice una volta, fino alla chiusura (revisione della 10.19.13).
         self._copie_non_riuscite = set()
+        # Le raccolte delle partite che un salvataggio non ha potuto
+        # scrivere, per esempio perche' un altro programma le tiene aperte o
+        # bloccate, o perche' non si leggono e quindi non si sostituiscono:
+        # il messaggio, con il suono dell'errore, si dice una volta per
+        # raccolta, fino alla chiusura di Tornello. Fino alla decisione di
+        # Gabriele del 5 novembre 2026 c'era soltanto la riga in console.
+        self._raccolte_non_scritte = set()
 
         self._init_ui()
         self._setup_shortcuts()
@@ -4242,11 +4249,25 @@ class MainFrame(wx.Frame):
                             "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Quando il torneo ha di nuovo una partita in PGN, se la raccolta ha ancora partite che il torneo non ha, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello. Se non ti serve più, spostala o cancellala tu."
                         ),
                     )
-                chiave = _chiave_del_percorso(
-                    file_della_raccolta_pgn(self.current_tournament, self.active_filename)
-                )
+                percorso_della_raccolta = file_della_raccolta_pgn(self.current_tournament, self.active_filename)
+                chiave = _chiave_del_percorso(percorso_della_raccolta)
                 if not aggiornata.copia_non_riuscita:
                     self._copie_non_riuscite.discard(chiave)
+                    # La raccolta che non si e' potuta scrivere, o leggere
+                    # prima di sostituirla: un messaggio, una volta per
+                    # raccolta fino alla chiusura, e mai nello stesso
+                    # salvataggio del messaggio della copia non riuscita, qui
+                    # sotto (decisione di Gabriele del 5 novembre 2026).
+                    if aggiornata.errore is not None and chiave not in self._raccolte_non_scritte:
+                        self._raccolte_non_scritte.add(chiave)
+                        cartella, file = os.path.split(percorso_della_raccolta)
+                        play_sound("errore")
+                        self._dialogo_informativo(
+                            _("Raccolta delle partite non scritta"),
+                            _(
+                                "La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
+                            ).format(file=file, cartella=cartella, errore=aggiornata.errore),
+                        )
                 elif chiave not in self._copie_non_riuscite:
                     self._copie_non_riuscite.add(chiave)
                     play_sound("errore")

@@ -88,12 +88,16 @@ class RaccoltaAggiornata(NamedTuple):
     non_scritta e' la frase che dice perche' la raccolta del torneo non e'
     stata scritta, oppure None; copia_non_riuscita e' vero quando e' perche'
     la raccolta rimasta non si e' potuta mettere nella cartella backup
-    (revisione della 10.19.13)."""
+    (revisione della 10.19.13). errore e' il motivo che da' il sistema
+    quando la raccolta non si e' potuta scrivere, o leggere prima di
+    sostituirla, oppure None: la finestra lo dice nel suo messaggio
+    (decisione di Gabriele del 5 novembre 2026)."""
 
     rimasta: str | None = None
     gia_detta: bool = False
     non_scritta: str | None = None
     copia_non_riuscita: bool = False
+    errore: str | None = None
 
 
 def _chiave_del_percorso(percorso):
@@ -717,7 +721,10 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
     errore di scrittura, con l'errore della lettura: fino alla correzione
     della stessa revisione la copia non riusciva, e la frase diceva che la
     raccolta aveva partite che il torneo non ha anche quando era quella del
-    torneo.
+    torneo. In tutti e due i casi la risposta ha in errore il motivo che da'
+    il sistema, che la finestra dice nel suo messaggio: fino alla decisione
+    di Gabriele del 5 novembre 2026 nella finestra c'era soltanto la riga
+    in console.
     ritrovate e' l'insieme, come chiavi di percorso, delle raccolte rimaste
     ritrovate sul disco all'apertura del loro torneo, dopo una chiusura di
     Tornello, o alla finalizzazione, con raccolta_rimasta_all_apertura: per
@@ -768,7 +775,8 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
             return RaccoltaAggiornata(
                 non_scritta=_("La raccolta delle partite {file} del torneo {nome} non si è potuta scrivere nella cartella {cartella}: {errore}").format(
                     file=file, nome=torneo.get("name", ""), cartella=cartella, errore=e
-                )
+                ),
+                errore=str(e),
             )
         rimaste.discard(chiave)
         return RaccoltaAggiornata()
