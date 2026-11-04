@@ -98,10 +98,10 @@ def verifica_permessi_di_scrittura():
         return True
 
     messaggio = _(
-        "Tornello non puo' scrivere nella propria cartella:\n{cartella}\n\n"
-        "Il programma tiene accanto a se' il database dei giocatori, i tornei, "
+        "Tornello non può scrivere nella propria cartella:\n{cartella}\n\n"
+        "Il programma tiene accanto a sé il database dei giocatori, i tornei, "
         "l'archivio e le copie di sicurezza, quindi senza permesso di scrittura "
-        "non puo' funzionare.\n\n"
+        "non può funzionare.\n\n"
         "Sposta la cartella di Tornello dove hai i permessi di scrittura, per "
         "esempio nei tuoi Documenti o sul Desktop, e riavvia il programma."
     ).format(cartella=cartella)
