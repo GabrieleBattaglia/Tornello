@@ -141,7 +141,7 @@ Domanda 2: il messaggio non dice come si chiamerebbe il file del torneo, che da 
 Passo 2: chiudi il messaggio, premi INVIO su Nome torneo: Prova voci, scrivi Alfa al posto del nome e premi INVIO.
 Domanda 3: il messaggio dice che il nome Alfa non si può usare perché è riservato: il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Alfa.json, come il file del torneo Beta, in corso nella cartella del programma?
 Passo 3: senza chiudere il messaggio leggi la prima riga sulla barra braille.
-Domanda 4: in "non si può usare: è riservato" la u accentata di può e la e accentata di è occupano una cella ciascuna, senza un apostrofo dopo la vocale?
+Domanda 4: in "non si può usare: è riservato" la o accentata di può e la e accentata di è occupano una cella ciascuna, senza un apostrofo dopo la vocale?
 Passo 4: chiudi il messaggio, premi INVIO su Nome torneo: Prova voci, scrivi Settings al posto del nome e premi INVIO.
 Domanda 5: il messaggio dice che il nome Settings è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Settings.json, come il file delle impostazioni del programma?
 Passo 5: chiudi il messaggio.
