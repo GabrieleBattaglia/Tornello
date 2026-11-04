@@ -111,7 +111,7 @@ Esito:
 
 PROVA 9: Nomi già in uso nella procedura guidata, e l'edizione archiviata Coppa Fantasia
 Prima: Tornello aperto. Fra i Tornei Conclusi (2) c'è Coppa Fantasia, iniziata sabato 6 giugno 2026, archiviata con la sua raccolta di due partite in PGN.
-Passo 1: premi Ctrl+N, scendi su Nome torneo e premi INVIO.
+Passo 1: premi Ctrl+N; il cursore va da solo su Nome torneo *: Non impostato, e lì premi INVIO.
 Passo 2: scrivi prova FORFAIT e premi INVIO.
 Domanda 1: si sente l'errore, e il messaggio dice che il file del torneo si chiamerebbe Tornello - prova_FORFAIT.json, come il file del torneo Prova forfait, in corso nella cartella del programma?
 Passo 3: chiudi il messaggio, premi INVIO su Nome torneo, scrivi Players DB e premi INVIO.
@@ -148,7 +148,7 @@ Passo 5: chiudi il messaggio.
 Domanda 6: la voce dice ancora Nome torneo: Prova voci?
 Passo 6: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
 Domanda 7: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
-Domanda 8: la domanda finisce con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare" e poi "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
+Domanda 8: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
 Passo 7: premi ESC.
 Domanda 9: ESC risponde No, e la voce dice ancora Nome torneo: Beta?
 Passo 8: scendi su Data inizio, premi INVIO, scrivi 2026-05-02 al posto della data che c'è e premi INVIO.
@@ -163,7 +163,7 @@ Passo 1: scendi su Partite PGN.
 Domanda 1: la voce dice Partite PGN (1), e dentro c'è T2 (1) con la partita di Neri Nadia ed Esposito Ettore?
 Passo 2: premi Ctrl+Z e alla domanda Annulla Turno premi INVIO.
 Domanda 2: si sente la Time Machine, la barra di stato dice "Time Machine attivata: tornati al turno precedente.", e non arriva nessun messaggio?
-Domanda 3: scorrendo l'albero di Prova raccolta, la voce dice adesso Partite PGN (0)?
+Domanda 3: il cursore resta su quella voce, che adesso dice Partite PGN (0)?
 Passo 3: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova raccolta.
 Domanda 4: il file Prova_raccolta - raccolta partite.pgn non c'è più?
 Passo 4: apri la cartella E:\git\tmp\banco-tornello\cestino.
@@ -184,7 +184,7 @@ Passo 5: apri ELO e Titoli.
 Domanda 4: NVDA legge ELO Standard: 1610, com'era, ed ELO Rapid: 1611, cioè 11 punti in più per le due partite giocate prima del ritiro?
 Passo 6: apri Storico Tornei.
 Domanda 5: c'è la voce Prova ritirato: Pos. RIT/4 (2026-10-24), con RIT al posto della posizione?
-Passo 7: scrivi Hofer nel campo Filtra Giocatori, scegli Hofer Helga e leggi Anagrafica ed ELO e Titoli.
+Passo 7: torna al campo Filtra Giocatori, scrivi Hofer al posto di Weiss, scegli Hofer Helga e leggi Anagrafica ed ELO e Titoli.
 Domanda 6: NVDA legge Partite Locali Rapid: 3 ed ELO Rapid: 1848, con la partita vinta su Weiss Wanda fra le tre?
 Passo 8: chiudi la finestra con ESC, senza modificare niente.
 Esito: 
@@ -192,7 +192,7 @@ Esito:
 PROVA 13: Menu Aiuto, il PUB e la chiusura senza invito
 Prima: Tornello aperto. Nel banco le mail del PUB vanno al tuo Gmail e non al gruppo; i passi della mail copiano negli appunti indirizzo, oggetto e testo.
 Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
-Domanda 1: dopo Crediti ci sono Offrimi un caffè... con la O, un separatore, Entra al PUB (gruppo di supporto)... con la E e Chiedi aiuto al PUB... con la A?
+Domanda 1: dopo Crediti vengono, nell'ordine, Offrimi un caffè... con la O, Entra al PUB (gruppo di supporto)... con la E e Chiedi aiuto al PUB... con la A?
 Passo 2: scegli Offrimi un caffè.
 Domanda 2: la finestra si intitola Offrimi un caffè, come la voce?
 Passo 3: leggi il testo e premi INVIO.
