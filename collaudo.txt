@@ -3,13 +3,13 @@ Prima: Tornello chiuso, e nessun Tornello del banco aperto: se ce n'è uno, lo s
 Passo 1: apri il prompt dei comandi e scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\prepara_banco.py
 Passo 2: aspetta la fine, qualche minuto: lo script costruisce il banco da zero in E:\git\tmp\banco-tornello, poi verifica i tornei.
 Domanda 1: la penultima riga dice "Verifica superata per tutti i tornei."?
-Domanda 2: l'ultima riga comincia con "Banco pronto in E:\git\tmp\banco-tornello" e dice 18 tornei e 24 giocatori di fantasia?
+Domanda 2: l'ultima riga comincia con "Banco pronto in E:\git\tmp\banco-tornello" e dice 20 tornei e 24 giocatori di fantasia?
 Esito: 
 
 PROVA 2: CANC su una partita giocata
 Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
-Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alla prova 14.
-Prima: Tornello resta aperto fino alla prova 13. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
+Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove 15 e 16.
+Prima: Tornello resta aperto fino alla prova 14. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
 Passo 1: con il fuoco nell'albero premi NVDA+T.
 Domanda 1: il titolo dice Tornello - Versione 10.19.15 - Data Rilascio 2026.11.04 - [Nessun Torneo Caricato]?
 Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
@@ -110,7 +110,7 @@ Domanda 6: la partita resta fra le giocate, con il suo risultato?
 Esito: 
 
 PROVA 9: Nomi già in uso nella procedura guidata, e l'edizione archiviata Coppa Fantasia
-Prima: Tornello aperto. Fra i Tornei Conclusi (2) c'è Coppa Fantasia, iniziata sabato 6 giugno 2026, archiviata con la sua raccolta di due partite in PGN.
+Prima: Tornello aperto. Fra i Tornei Conclusi (3) c'è Coppa Fantasia, iniziata sabato 6 giugno 2026, archiviata con la sua raccolta di due partite in PGN.
 Passo 1: premi Ctrl+N; il cursore va da solo su Nome torneo *: Non impostato, e lì premi INVIO.
 Passo 2: scrivi prova FORFAIT e premi INVIO.
 Domanda 1: si sente l'errore, e il messaggio dice che il file del torneo si chiamerebbe Tornello - prova_FORFAIT.json, come il file del torneo Prova forfait, in corso nella cartella del programma?
@@ -134,7 +134,7 @@ Domanda 10: la procedura si chiude senza creare niente, e nell'albero non c'è u
 Esito: 
 
 PROVA 10: Nomi e data di inizio cambiati da Dati
-Prima: Tornello aperto. Beta è la seconda edizione di Alfa: il suo file è Tornello - Alfa.json, ha l'identificativo ALFA della prima edizione, e da Dati ha preso il nome Beta. Alfa, la prima edizione, iniziata sabato 2 maggio 2026, è fra i Tornei Conclusi (2).
+Prima: Tornello aperto. Beta è la seconda edizione di Alfa: il suo file è Tornello - Alfa.json, ha l'identificativo ALFA della prima edizione, e da Dati ha preso il nome Beta. Alfa, la prima edizione, iniziata sabato 2 maggio 2026, è fra i Tornei Conclusi (3).
 Passo 1: nell'albero scegli Prova voci, apri Dati, premi INVIO su Nome torneo: Prova voci, scrivi Beta al posto del nome e premi INVIO.
 Domanda 1: si sente l'errore, e il messaggio Nome del torneo già in uso dice che i report e la raccolta delle partite si chiamerebbero come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Alfa.json?
 Domanda 2: il messaggio non dice come si chiamerebbe il file del torneo, che da Dati non cambia nome?
@@ -156,7 +156,28 @@ Domanda 10: si sente l'errore, e il messaggio Data di inizio già in uso dice ch
 Domanda 11: chiuso il messaggio, la voce Data inizio dice ancora la data di prima, e non Sabato 2 maggio 2026?
 Esito: 
 
-PROVA 11: Time Machine e raccolta delle partite nel cestino del banco
+PROVA 11: Da Dati il nome del file di un'edizione archiviata
+Prima: Tornello aperto. Fra i Tornei Conclusi (3) c'è Diadema, iniziata sabato 4 aprile 2026: è nata con il nome Corona, ha preso da Dati il nome Diadema prima della finalizzazione, ed è archiviata nella cartella Closed Tournaments\2026\04 Aprile\Diadema con il file di prima, Tornello - Corona.json.
+Prima: Prova stessa data, in corso, ha la stessa data di inizio di Diadema, sabato 4 aprile 2026.
+Passo 1: nell'albero scegli Prova stessa data, apri Dati, premi INVIO su Nome torneo: Prova stessa data, scrivi Corona al posto del nome e premi INVIO.
+Domanda 1: si sente l'errore, e il messaggio Nome del torneo già in uso dice che il nome Corona non si può usare con la data di inizio Sabato 4 aprile 2026, perché è riservato: il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Diadema, archiviato nella cartella Closed Tournaments\2026\04 Aprile\Diadema con il file Tornello - Corona.json, che ha la stessa data di inizio?
+Domanda 2: la seconda riga del messaggio è "Con un'altra data di inizio il nome si può usare, dopo la domanda Nuova edizione di un torneo concluso. Cambia la data di inizio, oppure scegli un altro nome per il torneo."?
+Passo 2: chiudi il messaggio.
+Domanda 3: la voce dice ancora Nome torneo: Prova stessa data?
+Passo 3: scendi su Data inizio, premi INVIO, scrivi 2026-04-11 al posto della data che c'è e premi INVIO.
+Domanda 4: senza nessun messaggio la voce dice Data inizio: Sabato 11 aprile 2026?
+Passo 4: sali su Nome torneo, premi INVIO, scrivi Corona al posto del nome e premi INVIO.
+Domanda 5: arriva la domanda Nuova edizione di un torneo concluso, che comincia con "Il nome Corona è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe come quello di un torneo concluso e archiviato fra i Tornei Conclusi: Diadema, nella cartella Closed Tournaments\2026\04 Aprile\Diadema, con il file Tornello - Corona.json."?
+Domanda 6: la domanda finisce con "Vuoi dare lo stesso il nome Corona a questo torneo? Il pulsante predefinito è No.", senza la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo"?
+Passo 5: premi ESC.
+Domanda 7: ESC risponde No, e la voce dice ancora Nome torneo: Prova stessa data?
+Passo 6: premi INVIO su Nome torneo, scrivi Corona al posto del nome e premi INVIO; alla domanda premi TAB fino a Sì e poi INVIO.
+Domanda 8: la voce dice Nome torneo: Corona, senza altri messaggi?
+Passo 7: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello.
+Domanda 9: c'è ancora il file Tornello - Prova_stessa_data.json, e non c'è un file Tornello - Corona.json?
+Esito: 
+
+PROVA 12: Time Machine e raccolta delle partite nel cestino del banco
 Prima: nell'albero scegli Prova raccolta: il Turno 1 è completo, e nel Turno corrente (2/3) la Scacchiera 1, Neri Nadia vs Esposito Ettore [1/2-1/2], è l'unica partita con il PGN.
 Prima: nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova raccolta c'è il file Prova_raccolta - raccolta partite.pgn.
 Passo 1: scendi su Partite PGN.
@@ -170,7 +191,7 @@ Passo 4: apri la cartella E:\git\tmp\banco-tornello\cestino.
 Domanda 5: c'è un file che finisce con Prova_raccolta - raccolta partite.pgn, con un numero e un trattino basso davanti, e Windows non ti ha chiesto niente?
 Esito: 
 
-PROVA 12: Il rapid del ritirato e le sue partite nel database
+PROVA 13: Il rapid del ritirato e le sue partite nel database
 Prima: nell'albero scegli Prova ritirato, un rapid 15+10 di tre turni. Weiss Wanda, ELO Rapid 1600, ha battuto Jannelli Jacopo, ELO Rapid 1780, al turno 1, ha perso con Hofer Helga, ELO Rapid 1850, al turno 2, e poi si è ritirata.
 Prima: i tre turni sono completi, e sotto turni (3) c'è Finalizza il torneo.
 Passo 1: premi Ctrl+D, scrivi Weiss nel campo Filtra Giocatori, scegli Weiss Wanda e passa all'albero della scheda; apri Anagrafica e poi ELO e Titoli.
@@ -189,7 +210,7 @@ Domanda 6: NVDA legge Partite Locali Rapid: 3 ed ELO Rapid: 1848, con la partita
 Passo 8: chiudi la finestra con ESC, senza modificare niente.
 Esito: 
 
-PROVA 13: Menu Aiuto, il PUB e la chiusura senza invito
+PROVA 14: Menu Aiuto, il PUB e la chiusura senza invito
 Prima: Tornello aperto. Nel banco le mail del PUB vanno al tuo Gmail e non al gruppo; i passi della mail copiano negli appunti indirizzo, oggetto e testo.
 Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
 Domanda 1: dopo Crediti vengono, nell'ordine, Offrimi un caffè... con la O, Entra al PUB (gruppo di supporto)... con la E e Chiedi aiuto al PUB... con la A?
@@ -213,14 +234,49 @@ Passo 11: chiudi Tornello con ALT+F4.
 Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
 Esito: 
 
-PROVA 14: La console del banco dopo la chiusura
-Prima: Tornello del banco chiuso alla prova 13. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
+PROVA 15: La console del banco dopo la chiusura
+Prima: Tornello del banco chiuso alla prova 14. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
 Passo 1: torna al prompt dei comandi da cui hai avviato banco.py e leggi le ultime righe.
 Domanda 1: c'è la riga "Banco di collaudo chiuso. Dati vivi invariati:", seguita da un numero e da "file controllati."?
 Domanda 2: subito dopo c'è la riga "Nessuna operazione rifiutata dal guardiano."?
+Passo 2: leggi le righe sopra quella di chiusura del banco, almeno una ventina, fino a quelle delle ultime prove.
+Domanda 3: nessuna di quelle righe comincia con Unrecognized accel key?
 Esito: 
 
-PROVA 15: Ascolto dei tre suoni al posto della campanella
+PROVA 16: La raccolta rimasta dopo una chiusura di Tornello
+Prima: Tornello del banco chiuso alla prova 14, e il prompt dei comandi della prova 2 ancora aperto.
+Prima: in Prova rimasta il Turno 1 è completo; nel Turno corrente (2/3) la Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], è l'unica partita con il PGN, e la Scacchiera 2, Sala Sergio vs Testa Teresa, è da giocare. Nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta c'è la sua raccolta, Prova_rimasta - raccolta partite.pgn.
+Prima: in questa prova il cestino del banco rifiuta i file, come Windows su un disco senza cestino.
+Passo 1: nel prompt dei comandi scrivi questo comando e premi INVIO: set BANCO_CESTINO_RIFIUTA=1
+Passo 2: poi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
+Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il cestino del banco rifiuta i file, come un disco senza cestino."?
+Passo 3: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), giocate (1/2, 50.0%), e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi INVIO.
+Passo 4: premi TAB fino al campo Incolla qui il pgn della partita (opzionale).
+Domanda 2: nel campo c'è il PGN della partita, che finisce con 5. O-O Be7 1/2-1/2?
+Passo 5: premi Ctrl+A e poi BACKSPACE, così il campo resta vuoto; poi premi TAB fino a Conferma Risultato e premi INVIO.
+Domanda 3: si sente l'errore, e il messaggio Raccolta delle partite rimasta dice che la raccolta Prova_rimasta - raccolta partite.pgn doveva andare nel cestino di Windows, che non l'ha presa, e che resta dov'è, con le partite di prima?
+Domanda 4: il messaggio dice "Quando il torneo ha di nuovo una partita in PGN, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello.", senza le parole nel frattempo?
+Passo 6: chiudi il messaggio, e in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
+Domanda 5: il file Prova_rimasta - raccolta partite.pgn c'è ancora, e nella cartella E:\git\tmp\banco-tornello\cestino non c'è nessun file che finisce con Prova_rimasta - raccolta partite.pgn?
+Passo 7: torna in Tornello e chiudilo con ALT+F4.
+Domanda 6: nel prompt dei comandi le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
+Passo 8: nello stesso prompt dei comandi avvia di nuovo Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
+Passo 9: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), da giocare (1), da programmare (1), e sulla Scacchiera 2, Sala Sergio vs Testa Teresa (Non pianificata), premi INVIO.
+Passo 10: scegli 1 - 0 (Vince Sala Sergio), poi premi TAB fino al campo del PGN e scrivi: 1. d4 d5
+Passo 11: premi TAB fino a Conferma Risultato e premi INVIO.
+Domanda 7: si sente la fine del turno, senza nessun messaggio, e il cursore passa su calcola il turno successivo?
+Passo 12: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\backup, poi la cartella dell'anno e quella del mese di oggi, per esempio 2026 e 11 Novembre.
+Domanda 8: c'è un file che comincia con Prova_rimasta - raccolta partite_pre_sostituzione_raccolta_, seguito dalla data e dall'ora di oggi, e che finisce con .pgn?
+Passo 13: apri quel file con il Blocco note.
+Domanda 9: dentro c'è la partita di prima, con White "Rinaldi, Rita", Black "Pellegrini, Paolo" e le mosse da 1. e4 e5 fino a 5. O-O Be7 1/2-1/2?
+Passo 14: chiudi il Blocco note, poi apri con il Blocco note il file Prova_rimasta - raccolta partite.pgn della cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
+Domanda 10: dentro c'è soltanto la partita nuova, con White "Sala, Sergio", Black "Testa, Teresa" e le mosse 1. d4 d5 1-0?
+Passo 15: chiudi il Blocco note, torna in Tornello e chiudilo con ALT+F4.
+Domanda 11: nel prompt dei comandi le ultime due righe dicono di nuovo che i dati vivi sono invariati, e "Nessuna operazione rifiutata dal guardiano."?
+Passo 16: perché il cestino del banco torni a prendere i file, nel prompt dei comandi scrivi questo comando e premi INVIO: set BANCO_CESTINO_RIFIUTA=
+Esito: 
+
+PROVA 17: Ascolto dei tre suoni al posto della campanella
 Prima: Tornello chiuso, con il volume che usi di solito.
 Passo 1: dal prompt dei comandi scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
 Passo 2: segui lo script fino in fondo.
