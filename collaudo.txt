@@ -173,8 +173,13 @@ Passo 5: premi ESC.
 Domanda 7: ESC risponde No, e la voce dice ancora Nome torneo: Prova stessa data?
 Passo 6: premi INVIO su Nome torneo, scrivi Corona al posto del nome e premi INVIO; alla domanda premi TAB fino a Sì e poi INVIO.
 Domanda 8: la voce dice Nome torneo: Corona, senza altri messaggi?
-Passo 7: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello.
-Domanda 9: c'è ancora il file Tornello - Prova_stessa_data.json, e non c'è un file Tornello - Corona.json?
+Passo 7: scendi su Data inizio, premi INVIO, scrivi 2026-04-04, la data di inizio di Diadema, al posto della data che c'è e premi INVIO.
+Domanda 9: si sente l'errore, e il messaggio Nome del torneo già in uso dice che il nome Corona non si può usare con la data di inizio Sabato 4 aprile 2026, perché è riservato: il file di un torneo nuovo con questo nome si chiamerebbe come quello del torneo Diadema, archiviato con il file Tornello - Corona.json, che ha la stessa data di inizio?
+Domanda 10: la seconda riga del messaggio è "Con un'altra data di inizio il nome resta. Cambia la data di inizio, oppure scegli un altro nome per il torneo."?
+Passo 8: chiudi il messaggio.
+Domanda 11: la voce dice ancora Data inizio: Sabato 11 aprile 2026, e non Sabato 4 aprile 2026?
+Passo 9: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello.
+Domanda 12: c'è ancora il file Tornello - Prova_stessa_data.json, e non c'è un file Tornello - Corona.json?
 Esito: 
 
 PROVA 12: Time Machine e raccolta delle partite nel cestino del banco
@@ -246,34 +251,33 @@ Esito:
 PROVA 16: La raccolta rimasta dopo una chiusura di Tornello
 Prima: Tornello del banco chiuso alla prova 14, e il prompt dei comandi della prova 2 ancora aperto.
 Prima: in Prova rimasta il Turno 1 è completo; nel Turno corrente (2/3) la Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], è l'unica partita con il PGN, e la Scacchiera 2, Sala Sergio vs Testa Teresa, è da giocare. Nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta c'è la sua raccolta, Prova_rimasta - raccolta partite.pgn.
-Prima: in questa prova il cestino del banco rifiuta i file, come Windows su un disco senza cestino.
-Passo 1: nel prompt dei comandi scrivi questo comando e premi INVIO: set BANCO_CESTINO_RIFIUTA=1
-Passo 2: poi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
+Prima: nella prima parte di questa prova il cestino del banco rifiuta i file, come Windows su un disco senza cestino: lo accende l'argomento --cestino-rifiuta di banco.py, soltanto per quell'avvio del banco.
+Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py --cestino-rifiuta
 Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il cestino del banco rifiuta i file, come un disco senza cestino."?
-Passo 3: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), giocate (1/2, 50.0%), e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi INVIO.
-Passo 4: premi TAB fino al campo Incolla qui il pgn della partita (opzionale).
+Passo 2: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), giocate (1/2, 50.0%), e sulla Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], premi INVIO.
+Passo 3: premi TAB fino al campo Incolla qui il pgn della partita (opzionale).
 Domanda 2: nel campo c'è il PGN della partita, che finisce con 5. O-O Be7 1/2-1/2?
-Passo 5: premi Ctrl+A e poi BACKSPACE, così il campo resta vuoto; poi premi TAB fino a Conferma Risultato e premi INVIO.
+Passo 4: premi Ctrl+A e poi BACKSPACE, così il campo resta vuoto; poi premi TAB fino a Conferma Risultato e premi INVIO.
 Domanda 3: si sente l'errore, e il messaggio Raccolta delle partite rimasta dice che la raccolta Prova_rimasta - raccolta partite.pgn doveva andare nel cestino di Windows, che non l'ha presa, e che resta dov'è, con le partite di prima?
-Domanda 4: il messaggio dice "Quando il torneo ha di nuovo una partita in PGN, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello.", senza le parole nel frattempo?
-Passo 6: chiudi il messaggio, e in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
+Domanda 4: il messaggio dice "Quando il torneo ha di nuovo una partita in PGN, se la raccolta ha ancora partite che il torneo non ha, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello."?
+Passo 5: chiudi il messaggio, e in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
 Domanda 5: il file Prova_rimasta - raccolta partite.pgn c'è ancora, e nella cartella E:\git\tmp\banco-tornello\cestino non c'è nessun file che finisce con Prova_rimasta - raccolta partite.pgn?
-Passo 7: torna in Tornello e chiudilo con ALT+F4.
+Passo 6: torna in Tornello e chiudilo con ALT+F4.
 Domanda 6: nel prompt dei comandi le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
-Passo 8: nello stesso prompt dei comandi avvia di nuovo Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
-Passo 9: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), da giocare (1), da programmare (1), e sulla Scacchiera 2, Sala Sergio vs Testa Teresa (Non pianificata), premi INVIO.
-Passo 10: scegli 1 - 0 (Vince Sala Sergio), poi premi TAB fino al campo del PGN e scrivi: 1. d4 d5
-Passo 11: premi TAB fino a Conferma Risultato e premi INVIO.
-Domanda 7: si sente la fine del turno, senza nessun messaggio, e il cursore passa su calcola il turno successivo?
-Passo 12: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\backup, poi la cartella dell'anno e quella del mese di oggi, per esempio 2026 e 11 Novembre.
-Domanda 8: c'è un file che comincia con Prova_rimasta - raccolta partite_pre_sostituzione_raccolta_, seguito dalla data e dall'ora di oggi, e che finisce con .pgn?
-Passo 13: apri quel file con il Blocco note.
-Domanda 9: dentro c'è la partita di prima, con White "Rinaldi, Rita", Black "Pellegrini, Paolo" e le mosse da 1. e4 e5 fino a 5. O-O Be7 1/2-1/2?
-Passo 14: chiudi il Blocco note, poi apri con il Blocco note il file Prova_rimasta - raccolta partite.pgn della cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
-Domanda 10: dentro c'è soltanto la partita nuova, con White "Sala, Sergio", Black "Testa, Teresa" e le mosse 1. d4 d5 1-0?
-Passo 15: chiudi il Blocco note, torna in Tornello e chiudilo con ALT+F4.
-Domanda 11: nel prompt dei comandi le ultime due righe dicono di nuovo che i dati vivi sono invariati, e "Nessuna operazione rifiutata dal guardiano."?
-Passo 16: perché il cestino del banco torni a prendere i file, nel prompt dei comandi scrivi questo comando e premi INVIO: set BANCO_CESTINO_RIFIUTA=
+Passo 7: nello stesso prompt dei comandi avvia di nuovo Tornello del banco, questa volta senza l'argomento, con: python E:\git\tmp\banco-tornello\banco.py
+Domanda 7: sotto il comando la console scrive subito le due righe del banco, senza la riga che dice che il cestino del banco rifiuta i file?
+Passo 8: nell'albero scegli Prova rimasta, poi turni (2), Turno corrente (2/3), da giocare (1), da programmare (1), e sulla Scacchiera 2, Sala Sergio vs Testa Teresa (Non pianificata), premi INVIO.
+Passo 9: scegli 1 - 0 (Vince Sala Sergio), poi premi TAB fino al campo del PGN e scrivi: 1. d4 d5
+Passo 10: premi TAB fino a Conferma Risultato e premi INVIO.
+Domanda 8: si sente la fine del turno, senza nessun messaggio, e il cursore passa su calcola il turno successivo?
+Passo 11: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\backup, poi la cartella dell'anno e quella del mese di oggi, per esempio 2026 e 11 Novembre.
+Domanda 9: c'è un file che comincia con Prova_rimasta - raccolta partite_pre_sostituzione_raccolta_, seguito dalla data e dall'ora di oggi, e che finisce con .pgn?
+Passo 12: apri quel file con il Blocco note.
+Domanda 10: dentro c'è la partita di prima, con White "Rinaldi, Rita", Black "Pellegrini, Paolo" e le mosse da 1. e4 e5 fino a 5. O-O Be7 1/2-1/2?
+Passo 13: chiudi il Blocco note, poi apri con il Blocco note il file Prova_rimasta - raccolta partite.pgn della cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta.
+Domanda 11: dentro c'è soltanto la partita nuova, con White "Sala, Sergio", Black "Testa, Teresa" e le mosse 1. d4 d5 1-0?
+Passo 14: chiudi il Blocco note, torna in Tornello e chiudilo con ALT+F4.
+Domanda 12: nel prompt dei comandi le ultime due righe dicono di nuovo che i dati vivi sono invariati, e "Nessuna operazione rifiutata dal guardiano."?
 Esito: 
 
 PROVA 17: Ascolto dei tre suoni al posto della campanella
