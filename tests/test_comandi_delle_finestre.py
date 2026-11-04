@@ -3561,9 +3561,38 @@ class TestNomeEDataDiInizioDaDati:
         with open(percorso, encoding="utf-8") as f:
             return json.load(f)
 
+    SPIEGAZIONE_DEL_FILE = "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+    SPIEGAZIONE_DEI_NOMI = "Nei nomi dei file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+    SPIEGAZIONE_DELLA_DATA = (
+        "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: "
+        "con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+    )
+
+    @staticmethod
+    def _dalla_procedura_guidata(principale, monkeypatch, finestre, nome, inizio=None):
+        """I testi dei messaggi della procedura guidata di un torneo nuovo
+        chiamato nome, con la data di inizio inizio se c'e', tolti da
+        finestre; poi la procedura si chiude con Indietro. Servono a vedere
+        che la procedura tiene i suoi testi, con il file del torneo, mentre
+        Dati dice i suoi (10.19.15)."""
+        principale.start_new_tournament_wizard()
+        if inizio:
+            principale.creation_data["start_date"] = inizio
+        TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, nome)
+        principale.on_wizard_back()
+        testi = [f.testo for f in finestre]
+        finestre.clear()
+        return testi
+
     def test_il_nome_di_un_torneo_della_cartella_non_si_accetta(self, principale, suoni, monkeypatch):
+        """Dalla 10.19.15 il messaggio dice il motivo vero, i report e la
+        raccolta delle partite con i nomi di quelli di Beta, e non come si
+        chiamerebbe il file del torneo, che da Dati non cambia nome; la
+        procedura guidata, dove il file nasce con il nome, dice il file come
+        prima (decisione di Gabriele del 4 novembre 2026)."""
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         TestNomeDelTorneoNuovo()._torneo_nella_cartella("Beta", rounds=[{"round": 1, "matches": []}])
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "beta")
         percorso = self._apri(principale, "Alfa")
         with open(percorso, "rb") as f:
             prima = f.read()
@@ -3579,22 +3608,102 @@ class TestNomeEDataDiInizioDaDati:
         assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
             (
                 "Nome del torneo già in uso",
-                "Il nome beta non si può usare: il file del torneo si chiamerebbe Tornello - beta.json, come il file del torneo Beta, in corso nella cartella del programma.\n"
-                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo.",
+                "Il nome beta non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Beta.json.\n"
+                + self.SPIEGAZIONE_DEI_NOMI,
                 False,
             )
+        ]
+        assert procedura == [
+            "Il nome beta non si può usare: il file del torneo si chiamerebbe Tornello - beta.json, come il file del torneo Beta, in corso nella cartella del programma.\n"
+            + self.SPIEGAZIONE_DEL_FILE
+        ]
+
+    @pytest.mark.parametrize(
+        ("nome", "file", "coincidenza"),
+        [
+            ("Players db", "Tornello - Players_db.json", "come il database dei giocatori"),
+            ("settings", "Tornello - settings.json", "come il file delle impostazioni del programma"),
+            ("Appunti", "Tornello - Appunti.json", "come un altro file del programma, che c'è già nella sua cartella"),
+        ],
+    )
+    def test_il_nome_di_un_file_del_programma_e_riservato(self, principale, suoni, monkeypatch, nome, file, coincidenza):
+        """Il nome di un file del programma da Dati non porterebbe via il
+        file a nessuno, perche' il file del torneo non cambia nome, e i report
+        non coinciderebbero con nessuno: si rifiuta lo stesso, e dalla 10.19.15
+        il messaggio lo dice riservato, con il file che avrebbe un torneo
+        nuovo con quel nome. La procedura guidata dice il file come prima."""
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Appunti.json"), {"voci": [1, 2]})
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, nome)
+        percorso = self._apri(principale, "Alfa")
+        suoni.clear()
+
+        self._campo(principale, monkeypatch, percorso, "name", nome)
+
+        assert principale.current_tournament["name"] == "Alfa"
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        assert suoni == ["apertura", "errore"]
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Nome del torneo già in uso",
+                f"Il nome {nome} non si può usare: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe {file}, {coincidenza}.\n"
+                + self.SPIEGAZIONE_DEL_FILE,
+                False,
+            )
+        ]
+        assert procedura == [f"Il nome {nome} non si può usare: il file del torneo si chiamerebbe {file}, {coincidenza}.\n" + self.SPIEGAZIONE_DEL_FILE]
+
+    def test_da_dati_conta_prima_il_nome_scritto(self, principale, suoni, monkeypatch):
+        """Gamma, rinominato da Dati, sta nel file Tornello - Beta.json, e
+        Beta nel file Tornello - Delta.json. Da Dati il nome Beta si rifiuta
+        per i report e la raccolta delle partite di Beta, il motivo vero, e
+        non per il file di Gamma, con cui i report non coincidono; senza Beta
+        resta il file di Gamma, e il nome e' riservato. La procedura guidata,
+        dove il file Tornello - Beta.json si sovrascriverebbe, dice il file di
+        Gamma, come prima (10.19.15)."""
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Beta.json"), _torneo_in_corso("Gamma"))
+        delta = user_data_path("Tornello - Delta.json")
+        TestNomeDelTorneoNuovo._scrivi(delta, _torneo_in_corso("Beta"))
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Beta")
+        percorso = self._apri(principale, "Alfa")
+
+        self._campo(principale, monkeypatch, percorso, "name", "Beta")
+        os.remove(delta)
+        self._campo(principale, monkeypatch, percorso, "name", "Beta")
+
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        assert [f.testo for f in finestre] == [
+            "Il nome Beta non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero come quelli del torneo Beta, in corso nella cartella del programma, nel file Tornello - Delta.json.\n"
+            + self.SPIEGAZIONE_DEI_NOMI,
+            "Il nome Beta non si può usare: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Beta.json, come il file del torneo Gamma, in corso nella cartella del programma.\n"
+            + self.SPIEGAZIONE_DEL_FILE,
+        ]
+        assert procedura == [
+            "Il nome Beta non si può usare: il file del torneo si chiamerebbe Tornello - Beta.json, come il file del torneo Gamma, in corso nella cartella del programma.\n"
+            + self.SPIEGAZIONE_DEL_FILE
         ]
 
     def test_il_nome_di_un_torneo_dell_archivio_chiede(self, principale, suoni, monkeypatch):
         """La domanda della procedura guidata, con No predefinito: con No il
         nome resta, con Si' cambia e si salva, nel file di prima, che non
-        cambia nome."""
+        cambia nome. Dalla 10.19.15 la premessa dice il motivo vero, i
+        report e la raccolta delle partite con i nomi di quelli
+        dell'edizione archiviata, e non come si chiamerebbe il file del
+        torneo; la domanda resta quella della procedura guidata, che tiene
+        anche la sua premessa con il file."""
         import wx
 
         from config import user_data_path
 
-        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO])
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_NO, wx.ID_NO])
         TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Primavera 2")
         percorso = self._apri(principale, "Alfa")
         suoni.clear()
 
@@ -3604,11 +3713,14 @@ class TestNomeEDataDiInizioDaDati:
         assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Alfa"
         assert self._nel_file(percorso)["name"] == "Alfa"
         assert suoni == ["apertura"]
-        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        assert procedura == [TestNomeDelTorneoNuovo._domanda_attesa("Primavera 2", "Tornello - Primavera_2.json", [("Primavera 2", cartella)])]
         assert [(f.titolo, f.testo, f.domanda, f.no_predefinito) for f in finestre] == [
             (
                 "Nuova edizione di un torneo concluso",
-                TestNomeDelTorneoNuovo._domanda_attesa("Primavera 2", "Tornello - Primavera_2.json", [("Primavera 2", cartella)]),
+                "Il torneo Primavera 2 avrebbe il nome di un torneo concluso e archiviato fra i Tornei Conclusi, e i report e la raccolta delle partite si chiamerebbero come i suoi: "
+                f"Primavera 2, nella cartella {cartella}.\n"
+                "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse.\n\n"
+                "Vuoi creare una nuova edizione con il nome Primavera 2? Il pulsante predefinito è No.",
                 True,
                 True,
             )
@@ -3623,9 +3735,28 @@ class TestNomeEDataDiInizioDaDati:
         assert [f.titolo for f in finestre] == ["Nuova edizione di un torneo concluso"] * 2
         assert suoni[-1] == "conferma"
 
+    def _rifiuto_della_data(self, cartella):
+        """Il rifiuto della data di inizio di Primavera 2, archiviata nella
+        cartella con la data di inizio 2026-09-01, come lo dice Dati dalla
+        10.19.15: con il file dell'edizione archiviata, e senza dire come si
+        chiamerebbe il file del torneo, che da Dati non cambia nome."""
+        from utils import format_date_locale
+
+        return (
+            f"Il nome Primavera 2 non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il torneo Primavera 2, concluso e archiviato nella cartella {cartella} con il file Tornello - Primavera_2.json, ha lo stesso nome e la stessa data di inizio, e i report e la raccolta delle partite si chiamerebbero come i suoi.\n"
+            + self.SPIEGAZIONE_DELLA_DATA
+        )
+
     def test_il_nome_con_la_data_di_un_edizione_archiviata_non_si_accetta(self, principale, suoni, monkeypatch):
+        """Dalla 10.19.15 il rifiuto dice il torneo archiviato, con il suo
+        file, e non come si chiamerebbe il file del torneo; la procedura
+        guidata dice il file come prima."""
+        from utils import format_date_locale
+
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         TestNomeDelTorneoNuovo()._torneo_in_archivio("Primavera_2")
+        cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
+        procedura = self._dalla_procedura_guidata(principale, monkeypatch, finestre, "Primavera 2", inizio="2026-09-01")
         percorso = self._apri(principale, "Alfa", start_date="2026-09-01")
         suoni.clear()
 
@@ -3634,8 +3765,11 @@ class TestNomeEDataDiInizioDaDati:
         assert principale.current_tournament["name"] == "Alfa"
         assert self._nel_file(percorso)["name"] == "Alfa"
         assert suoni == ["apertura", "errore"]
-        assert [(f.titolo, f.domanda) for f in finestre] == [("Nome del torneo già in uso", False)]
-        assert finestre[0].testo.startswith("Il nome Primavera 2 non si può usare con la data di inizio ")
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [("Nome del torneo già in uso", self._rifiuto_della_data(cartella), False)]
+        assert procedura == [
+            f"Il nome Primavera 2 non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il file del torneo si chiamerebbe Tornello - Primavera_2.json, come quello del torneo Primavera 2, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
+            + self.SPIEGAZIONE_DELLA_DATA
+        ]
 
     def test_la_data_di_inizio_di_un_edizione_archiviata_non_si_accetta(self, principale, suoni, monkeypatch):
         """La nuova edizione di Primavera 2 prova a prendere da Dati la data
@@ -3655,14 +3789,7 @@ class TestNomeEDataDiInizioDaDati:
         assert principale.tree_ctrl.GetItemText(voce) == f"Data inizio: {format_date_locale('2026-11-02')}"
         assert suoni == ["apertura", "errore"]
         cartella = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
-        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
-            (
-                "Nome del torneo già in uso",
-                f"Il nome Primavera 2 non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il file del torneo si chiamerebbe Tornello - Primavera_2.json, come quello del torneo Primavera 2, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
-                "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo.",
-                False,
-            )
-        ]
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [("Nome del torneo già in uso", self._rifiuto_della_data(cartella), False)]
         finestre.clear()
 
         self._campo(principale, monkeypatch, percorso, "start_date", "2026-11-03")

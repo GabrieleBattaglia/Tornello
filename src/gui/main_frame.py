@@ -3405,7 +3405,7 @@ class MainFrame(wx.Frame):
                 if not (self.tree_ctrl.GetWindowStyleFlag() & wx.TR_HIDE_ROOT):
                     self.tree_ctrl.Expand(self.tree_root)
 
-    def _nome_del_torneo_libero(self, nome, controllo=None, escluso=None, nome_suo=False):
+    def _nome_del_torneo_libero(self, nome, controllo=None, escluso=None, nome_suo=False, da_dati=False):
         """Vero se un torneo nuovo puo' chiamarsi nome. Se il suo file
         coinciderebbe con un file del programma o con un torneo della
         cartella del programma, in corso, in preparazione o concluso
@@ -3429,12 +3429,20 @@ class MainFrame(wx.Frame):
         nell'archivio, coincide anche per il nome scritto nel suo json, con
         un file di nome diverso, come un torneo rinominato dal ramo Dati: il
         messaggio dice allora il motivo vero, i report e la raccolta delle
-        partite con lo stesso nome, e il file di quel torneo (issue 66)."""
+        partite con lo stesso nome, e il file di quel torneo (issue 66).
+        da_dati dice che il nome viene dai campi di Dati, dove il file del
+        torneo non cambia nome: dalla 10.19.15 i messaggi non dicono come si
+        chiamerebbe il file del torneo, ma il motivo vero, i report e la
+        raccolta delle partite con lo stesso nome di quelli dell'altro torneo,
+        e per un nome che coincide soltanto con un file del programma, o con
+        il file di un torneo che si chiama in un altro modo, che il nome e'
+        riservato. La procedura guidata tiene i suoi testi (issue 66,
+        decisione di Gabriele del 4 novembre 2026)."""
         from utils import format_date_locale, play_sound
 
         if controllo is None:
             controllo = self.creation_data
-        coincidenza = None if nome_suo else coincidenza_del_nome(nome, escluso)
+        coincidenza = None if nome_suo else coincidenza_del_nome(nome, escluso, da_dati=da_dati)
         if coincidenza is None:
             edizioni = edizioni_nell_archivio(nome, escluso)
             if not edizioni:
@@ -3446,9 +3454,9 @@ class MainFrame(wx.Frame):
                 if dati and inizio and dati.get("start_date") == inizio
             ]
             if not stessa_data:
-                return self._nuova_edizione_confermata(nome, edizioni, controllo)
+                return self._nuova_edizione_confermata(nome, edizioni, controllo, da_dati=da_dati)
             percorso, dati = stessa_data[0]
-            if stesso_nome_di_file(percorso, nome):
+            if stesso_nome_di_file(percorso, nome) and not da_dati:
                 testo = _(
                     "Il nome {nome} non si può usare con la data di inizio {data}: il file del torneo si chiamerebbe {file}, come quello del torneo {torneo}, concluso e archiviato nella cartella {cartella}, che ha la stessa data di inizio.\n"
                     "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
@@ -3471,7 +3479,12 @@ class MainFrame(wx.Frame):
                 ),
             )
             return False
-        if coincidenza.del_file:
+        if coincidenza.del_file and da_dati:
+            testo = _(
+                "Il nome {nome} non si può usare: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe {file}, {coincidenza}.\n"
+                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+            )
+        elif coincidenza.del_file:
             testo = _(
                 "Il nome {nome} non si può usare: il file del torneo si chiamerebbe {file}, {coincidenza}.\n"
                 "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
@@ -3492,7 +3505,7 @@ class MainFrame(wx.Frame):
         )
         return False
 
-    def _nuova_edizione_confermata(self, nome, edizioni, controllo=None):
+    def _nuova_edizione_confermata(self, nome, edizioni, controllo=None, da_dati=False):
         """La domanda per un nome il cui file coincide soltanto con tornei
         dell'archivio, edizioni come le da' edizioni_nell_archivio: dice
         quali e in quale cartella, e chiede se creare una nuova edizione.
@@ -3507,13 +3520,18 @@ class MainFrame(wx.Frame):
         file di nome diverso e lo stesso nome scritto nel suo json, come
         un'edizione rinominata dal ramo Dati prima di finalizzarla: la sua
         descrizione dice anche il suo file, e la domanda dice il motivo vero,
-        i report e la raccolta delle partite con lo stesso nome (issue 66)."""
+        i report e la raccolta delle partite con lo stesso nome (issue 66).
+        Con da_dati, dai campi di Dati, dove il file del torneo non cambia
+        nome, dalla 10.19.15 la domanda dice sempre il motivo vero, i report e
+        la raccolta delle partite con lo stesso nome, e mai come si
+        chiamerebbe il file; il resto della domanda e' quello della procedura
+        guidata (decisione di Gabriele del 4 novembre 2026)."""
         if controllo is None:
             controllo = self.creation_data
         if controllo.get(NUOVA_EDIZIONE_CONFERMATA) == nome:
             return True
         descrizioni = []
-        tutte_per_il_file = True
+        tutte_per_il_file = not da_dati
         for percorso, dati in edizioni:
             if stesso_nome_di_file(percorso, nome):
                 descrizione = _("{torneo}, nella cartella {cartella}")
@@ -3582,13 +3600,16 @@ class MainFrame(wx.Frame):
         una nuova edizione poteva prendere la data di inizio di quella
         archiviata, e alla finalizzazione Tornello la prendeva per una
         finalizzazione ripetuta della prima, e i giocatori restavano senza
-        Elo, partite e storico della seconda."""
+        Elo, partite e storico della seconda. Dalla 10.19.15 i messaggi sono
+        quelli di Dati, che dicono il motivo vero senza parlare del nome del
+        file del torneo, che da Dati non cambia (da_dati di
+        _nome_del_torneo_libero, issue 66)."""
         controllo = {"start_date": inizio}
         attuale = self.current_tournament.get("name", "")
         suo = _file_del_torneo_nuovo(nome).lower() == _file_del_torneo_nuovo(attuale).lower()
         if suo:
             controllo[NUOVA_EDIZIONE_CONFERMATA] = nome
-        return self._nome_del_torneo_libero(nome, controllo, escluso=self.active_filename, nome_suo=suo)
+        return self._nome_del_torneo_libero(nome, controllo, escluso=self.active_filename, nome_suo=suo, da_dati=True)
 
     def _nome_da_dati_accettato(self, nome):
         """Vero se il torneo aperto puo' prendere da Dati il nome nome: i

@@ -161,7 +161,47 @@ def _stato_nella_cartella(dati):
     return _("in preparazione nella cartella del programma")
 
 
-def coincidenza_del_nome(nome, escluso=None):
+def _coincidenza_per_il_file(in_cartella, cercato):
+    """La Coincidenza del file cercato, il nome in minuscolo del file di un
+    torneo nuovo, con uno dei file in_cartella, oppure None."""
+    for percorso in in_cartella:
+        if os.path.basename(percorso).lower() != cercato:
+            continue
+        dati = _leggi_json(percorso)
+        # Un file che non ha la forma di un torneo, o che non si legge, e' un
+        # file del programma, e non si sovrascrive lo stesso.
+        if not _ha_la_forma_di_un_torneo(dati):
+            return Coincidenza(_("come un altro file del programma, che c'è già nella sua cartella"), True)
+        return Coincidenza(
+            _("come il file del torneo {torneo}, {stato}").format(torneo=dati["name"], stato=_stato_nella_cartella(dati)),
+            True,
+        )
+    return None
+
+
+def _coincidenza_per_il_nome_scritto(in_cartella, ripulito, saltati):
+    """La Coincidenza di un torneo dei file in_cartella, tranne quelli il cui
+    nome in minuscolo e' fra saltati, con il nome scritto nel json, ripulito,
+    uguale a ripulito: i report e la raccolta delle partite avrebbero lo
+    stesso nome. None se non ce n'e'."""
+    for percorso in in_cartella:
+        if os.path.basename(percorso).lower() in saltati:
+            continue
+        dati = _con_lo_stesso_nome_scritto(percorso, ripulito)
+        if dati is None:
+            continue
+        return Coincidenza(
+            _("come quelli del torneo {torneo}, {stato}, nel file {file}").format(
+                torneo=dati["name"],
+                stato=_stato_nella_cartella(dati),
+                file=os.path.basename(percorso),
+            ),
+            False,
+        )
+    return None
+
+
+def coincidenza_del_nome(nome, escluso=None, da_dati=False):
     """Con che cosa coincide un torneo nuovo chiamato nome, nella cartella
     del programma: una Coincidenza, oppure None se il nome e' libero.
     Il file di un torneo si chiama Tornello - <nome ripulito>.json, con il
@@ -177,6 +217,16 @@ def coincidenza_del_nome(nome, escluso=None):
     soltanto con il suo nome di file. escluso e' il file del torneo
     aperto, che non coincide con se stesso quando cambia il nome o la data
     di inizio da Dati (10.19.7).
+    da_dati dice che il nome viene dal ramo Dati, dove il file del torneo
+    non cambia nome: un torneo con lo stesso nome scritto nel json conta
+    allora prima del nome dei file, anche quando il suo file si chiama
+    come quello di un torneo nuovo con quel nome, perche' il motivo vero e'
+    che i report e la raccolta delle partite dei due tornei avrebbero lo
+    stesso nome, e la Coincidenza ha del_file falso. Il nome che coincide
+    soltanto con un file si rifiuta lo stesso, con del_file vero. I nomi
+    rifiutati sono gli stessi, con o senza da_dati: cambia soltanto il
+    motivo che il messaggio dice (10.19.15, issue 66, decisione di
+    Gabriele del 4 novembre 2026).
     Nata con la 10.13.52 (issue 66): fino ad allora la procedura guidata non
     guardava, e un torneo chiamato come uno che c'era gia' ne sovrascriveva
     il file, con i turni e i risultati; uno chiamato Players_db o Settings
@@ -199,34 +249,11 @@ def coincidenza_del_nome(nome, escluso=None):
         for percorso in sorted(glob.glob(os.path.join(glob.escape(user_data_path("")), "Tornello - *.json")))
         if not (escluso and _chiave_del_percorso(percorso) == _chiave_del_percorso(escluso))
     ]
-    for percorso in in_cartella:
-        if os.path.basename(percorso).lower() != cercato:
-            continue
-        dati = _leggi_json(percorso)
-        # Un file che non ha la forma di un torneo, o che non si legge, e' un
-        # file del programma, e non si sovrascrive lo stesso.
-        if not _ha_la_forma_di_un_torneo(dati):
-            return Coincidenza(_("come un altro file del programma, che c'è già nella sua cartella"), True)
-        return Coincidenza(
-            _("come il file del torneo {torneo}, {stato}").format(torneo=dati["name"], stato=_stato_nella_cartella(dati)),
-            True,
-        )
     ripulito = _nome_ripulito(nome)
-    for percorso in in_cartella:
-        if os.path.basename(percorso).lower() in (del_database, delle_impostazioni):
-            continue
-        dati = _con_lo_stesso_nome_scritto(percorso, ripulito)
-        if dati is None:
-            continue
-        return Coincidenza(
-            _("come quelli del torneo {torneo}, {stato}, nel file {file}").format(
-                torneo=dati["name"],
-                stato=_stato_nella_cartella(dati),
-                file=os.path.basename(percorso),
-            ),
-            False,
-        )
-    return None
+    saltati = (del_database, delle_impostazioni)
+    if da_dati:
+        return _coincidenza_per_il_nome_scritto(in_cartella, ripulito, saltati) or _coincidenza_per_il_file(in_cartella, cercato)
+    return _coincidenza_per_il_file(in_cartella, cercato) or _coincidenza_per_il_nome_scritto(in_cartella, ripulito, saltati)
 
 
 def edizioni_nell_archivio(nome, escluso=None):
