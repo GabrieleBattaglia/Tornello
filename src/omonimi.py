@@ -57,10 +57,17 @@ class RaccoltaInSalvo(NamedTuple):
     """La risposta di raccolta_altrui_in_salvo. in_salvo e' vero se il
     torneo puo' scrivere la sua raccolta; testo e' il messaggio che dice
     dove e' andata quella dell'altro torneo, o perche' non si e' potuta
-    mettere in salvo, oppure None se non c'era niente da dire."""
+    mettere in salvo, oppure None se non c'era niente da dire.
+    di_un_altra_edizione e' vero quando la raccolta al posto di quella del
+    torneo e' di un'altra edizione archiviata, che adesso ne ha una copia
+    nella sua cartella d'archivio: se resta dov'e', perche' il cestino non
+    l'ha presa e il torneo non ha partite in PGN, non e' la raccolta rimasta
+    del torneo, e la finalizzazione non lo dice, come la finestra (revisione
+    della 10.19.13, decisione di Gabriele del 4 novembre 2026)."""
 
     in_salvo: bool
     testo: str | None = None
+    di_un_altra_edizione: bool = False
 
 
 class RaccoltaAggiornata(NamedTuple):
@@ -438,7 +445,7 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
         if chiave in rimaste:
             # Il cestino non l'ha gia' presa, e il messaggio e' gia' stato
             # detto: la copia in archivio c'e', e la raccolta resta.
-            return RaccoltaInSalvo(True)
+            return RaccoltaInSalvo(True, di_un_altra_edizione=True)
         if cestino(percorso):
             testo = _(
                 "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
@@ -468,6 +475,7 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
                 archivio=_cartella_nell_archivio(json_archiviato),
                 nome=nome,
             ),
+            di_un_altra_edizione=True,
         )
     if solo_archiviate and not trovata:
         return RaccoltaInSalvo(True)

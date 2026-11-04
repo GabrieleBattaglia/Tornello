@@ -2170,6 +2170,56 @@ class TestRaccoltaDiUnAltraEdizioneAllaFinalizzazione:
                 f"Il torneo {NOME} non ha più partite in PGN, e la sua raccolta delle partite {RACCOLTA}, nella cartella {os.path.dirname(raccolta)}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre. Non va in archivio con il torneo."
             ]
 
+    @pytest.mark.parametrize("dove", ["finestra", "console", "finestra, gia' detta"])
+    def test_la_raccolta_dell_altra_edizione_che_resta_la_dice_un_avviso_solo(self, banco, monkeypatch, tmp_path, capsys, dove):
+        """Revisione della 10.19.13 (issue 66, decisione di Gabriele del 4
+        novembre 2026). La nuova edizione, senza partite in PGN, trova la
+        raccolta della prima, e il cestino non la prende, come su un disco
+        senza cestino: la copia va nella cartella d'archivio della prima, la
+        raccolta resta dov'e', e lo dice soltanto l'avviso della guardia.
+        Fino ad allora lo seguiva quello della raccolta rimasta, che la
+        chiamava raccolta del torneo e diceva che il torneo non aveva piu'
+        partite in PGN; la finestra non lo diceva gia' piu'. Se la finestra
+        ha gia' detto la guardia, e passa la raccolta fra le sue rimaste, la
+        finalizzazione non dice niente, e non riprova il cestino."""
+        import config
+        from db_players import load_players_db
+        from omonimi import _chiave_del_percorso
+        from ui import finalize_tournament
+
+        cartella_prima, contenuto = _prima_edizione_con_la_raccolta_lasciata()
+        lasciata = config.user_data_path(RACCOLTA)
+        ricevuti = _cestino_finto(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        avvisi = []
+
+        if dove == "console":
+            assert _finalizza_in_console(banco) is True
+            detti = [capsys.readouterr().out]
+        else:
+            rimaste = {_chiave_del_percorso(lasciata)} if dove != "finestra" else None
+            assert finalize_tournament(copy.deepcopy(banco.torneo), load_players_db(), banco.file_torneo, avvisi, rimaste) is True
+            detti = [a for a in avvisi if RACCOLTA in a]
+
+        assert _leggi_byte(lasciata) == contenuto
+        assert _leggi_byte(os.path.join(cartella_prima, RACCOLTA)) == contenuto
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        if dove == "finestra, gia' detta":
+            assert ricevuti == []
+            assert detti == []
+            return
+        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        cartella = os.path.dirname(lasciata)
+        archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", NOME)
+        frase = (
+            f"Nella cartella {cartella} c'era la raccolta delle partite {RACCOLTA} del torneo {NOME}, concluso e archiviato nella cartella {archivio}: il torneo {NOME} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+            f"Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e resta dov'è: la copia nella cartella d'archivio basta, e se vuoi la puoi cancellare tu."
+        )
+        if dove == "finestra":
+            assert detti == [frase]
+        else:
+            assert detti[0].count(frase) == 1
+            assert "non ha più partite in PGN" not in detti[0]
+
     def test_con_il_nome_della_raccolta_della_sua_edizione(self, banco, monkeypatch, tmp_path):
         """Revisione della 10.19.13. La nuova edizione si chiama coppa_prova,
         la prima Coppa_Prova: la raccolta della prima va nella sua cartella

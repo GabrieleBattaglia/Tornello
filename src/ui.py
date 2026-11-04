@@ -1656,7 +1656,10 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa, rimaste=None):
     che non si e' potuta scrivere, per esempio perche' un altro programma
     la tiene bloccata, lo dice un avviso: fino ad allora l'archivio restava
     senza raccolta, e l'errore andava soltanto sulla console, che la
-    finestra non mostra."""
+    finestra non mostra. Una raccolta di un'altra edizione archiviata che
+    resta dov'e' la dice soltanto l'avviso della guardia: fino alla stessa
+    revisione la seguiva quello della raccolta rimasta, che la chiamava
+    raccolta del torneo."""
     from omonimi import _contiene, aggiorna_la_raccolta_pgn, raccolta_altrui_in_salvo, raccolta_rimasta
 
     rimaste = set() if rimaste is None else rimaste
@@ -1674,7 +1677,13 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa, rimaste=None):
     if esito.testo:
         avvisa(esito.testo)
     aggiornata = aggiorna_la_raccolta_pgn(torneo, file_del_torneo, rimaste=rimaste)
-    if aggiornata.rimasta:
+    # La raccolta di un'altra edizione archiviata, che la guardia ha appena
+    # riconosciuto e che resta dov'e', non e' la raccolta rimasta del torneo:
+    # l'avviso di raccolta_rimasta la chiamerebbe sua, e direbbe che il
+    # torneo non ha piu' partite in PGN. Non segue, come nella finestra, dove
+    # non segue gia' dalla revisione della 10.19.13 (decisione di Gabriele
+    # del 4 novembre 2026).
+    if aggiornata.rimasta and not esito.di_un_altra_edizione:
         avvisa(
             raccolta_rimasta(aggiornata.rimasta, nome)
             + " "
