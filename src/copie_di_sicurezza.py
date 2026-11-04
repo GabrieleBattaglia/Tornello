@@ -65,6 +65,10 @@ CONTESTI_NOTI = (
     "rifinalizzazione",
     # Dalla 10.12.0, prima di registrare un turno composto a mano (issue 38).
     "pre_turno_manuale",
+    # Dalla revisione della 10.19.13, la raccolta delle partite di un torneo
+    # senza piu' partite in PGN che il cestino non ha preso, prima che la
+    # raccolta nuova la sostituisca (issue 66).
+    "pre_sostituzione_raccolta",
 )
 
 # Il nome di una copia: il file d'origine, il momento, la data, l'ora, il
@@ -86,13 +90,17 @@ NOME_CON_LA_DATA = re.compile(
 # concluso, quelle che la finalizzazione mette da parte, di pre_archiviazione
 # e di rifinalizzazione, e quelle fatte prima di un ripristino, che
 # permettono di tornare indietro. Decisione di Gabriele del 25 settembre
-# 2026. La finestra dice la regola con righe_della_regola, da qui.
+# 2026. La finestra dice la regola con righe_della_regola, da qui. Dalla
+# revisione della 10.19.13 restano anche le copie di una raccolta delle
+# partite rimasta, fatte prima di sostituirla: hanno le partite di prima, che
+# il torneo non ha piu', e non ce n'e' un'altra copia (issue 66).
 CONTESTI_CONSERVATI = (
     "pre_finalize_torneo",
     "pre_finalize_db",
     "pre_archiviazione",
     "rifinalizzazione",
     "pre_ripristino",
+    "pre_sostituzione_raccolta",
 )
 # Quante copie tiene la regola per ogni origine.
 COPIE_DA_TENERE = 10
@@ -159,6 +167,7 @@ def momento_in_parole(contesto):
         "pre_archiviazione": _("prima di una sostituzione in archivio"),
         "rifinalizzazione": _("da una finalizzazione ripetuta"),
         "pre_turno_manuale": _("prima di un turno composto a mano"),
+        "pre_sostituzione_raccolta": _("prima di sostituire una raccolta delle partite rimasta"),
     }
     return parole.get(contesto, contesto)
 

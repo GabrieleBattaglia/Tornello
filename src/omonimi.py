@@ -63,6 +63,22 @@ class RaccoltaInSalvo(NamedTuple):
     testo: str | None = None
 
 
+class RaccoltaAggiornata(NamedTuple):
+    """La risposta di aggiorna_la_raccolta_pgn. rimasta e' il percorso della
+    raccolta di un torneo che non ha piu' partite in PGN, che doveva andare
+    nel cestino e che il cestino non ha preso, oppure None; gia_detta e'
+    vero quando era gia' fra le rimaste, e il cestino non si e' riprovato.
+    non_scritta e' la frase che dice perche' la raccolta del torneo non e'
+    stata scritta, oppure None; copia_non_riuscita e' vero quando e' perche'
+    la raccolta rimasta non si e' potuta mettere nella cartella backup
+    (revisione della 10.19.13)."""
+
+    rimasta: str | None = None
+    gia_detta: bool = False
+    non_scritta: str | None = None
+    copia_non_riuscita: bool = False
+
+
 def _chiave_del_percorso(percorso):
     """Il percorso nella forma in cui si confronta con un altro: assoluto e,
     su Windows, senza differenze di maiuscole e di barre. None e la stringa
@@ -289,6 +305,35 @@ def edizioni_nell_archivio(nome, escluso=None):
     return trovate
 
 
+def edizione_con_l_identita(identita, escluso=None, saltati=()):
+    """Il primo torneo concluso dell'archivio con l'identita' identita, cioe'
+    con lo stesso identificativo e la stessa data di inizio, come le da'
+    identita_del_torneo: una coppia (percorso, dati), oppure None. escluso
+    e' il file del torneo aperto, saltati i percorsi da non guardare. Un
+    json che non si legge, o che non ha la forma di un torneo, non conta.
+    Lo storico dei giocatori riconosce un torneo dall'identita', e
+    l'identificativo non cambia quando il torneo cambia nome da Dati: un
+    torneo rinominato con la data di inizio di un'edizione archiviata con
+    lo stesso identificativo sarebbe, alla finalizzazione, una
+    finalizzazione ripetuta di quell'edizione, e i giocatori non ne
+    riceverebbero niente. Nata con la revisione della 10.19.13 (issue 66,
+    decisione di Gabriele del 4 novembre 2026): i controlli guardavano
+    soltanto il nome, e il torneo rinominato sfuggiva."""
+    from db_players import identita_del_torneo
+
+    via = {_chiave_del_percorso(p) for p in saltati}
+    if escluso:
+        via.add(_chiave_del_percorso(escluso))
+    in_archivio = glob.glob(os.path.join(glob.escape(ARCHIVED_TOURNAMENTS_DIR), "**", "Tornello - *.json"), recursive=True)
+    for percorso in sorted(in_archivio):
+        if _chiave_del_percorso(percorso) in via:
+            continue
+        dati = _leggi_json(percorso)
+        if _ha_la_forma_di_un_torneo(dati) and identita_del_torneo(dati) == identita:
+            return percorso, dati
+    return None
+
+
 def _cartella_nell_archivio(percorso):
     """La cartella d'archivio di un torneo concluso, da dire nei messaggi:
     il percorso da Closed Tournaments in giu', con l'anno e il mese, per
@@ -306,7 +351,7 @@ def _contiene(percorso, contenuto):
         return False
 
 
-def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, cestino=None):
+def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, cestino=None, rimaste=None):
     """Se il torneo, con il file file_del_torneo, puo' scrivere la sua
     raccolta delle partite in PGN senza distruggere quella di un altro
     torneo: una RaccoltaInSalvo. Una raccolta che c'e' al suo posto, e che
@@ -329,13 +374,29 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     cestino e' la funzione che manda un percorso nel cestino e risponde vero
     se ci e' riuscita; senza, quella del programma. Fino alla 10.19.10 la
     guardia stava in MainFrame, e la finalizzazione in console non la
-    faceva."""
+    faceva.
+    La copia va nella cartella d'archivio dell'edizione con il nome della
+    sua raccolta, quello che le da' il nome scritto nel suo json: fino alla
+    revisione della 10.19.13 prendeva quello della raccolta del torneo, e con
+    altre maiuscole, o per un'edizione rinominata da Dati e trovata per il
+    nome del file, l'edizione non la riconosceva come sua, e il ripristino
+    la vedeva come un file estraneo.
+    rimaste e' l'insieme, come chiavi di percorso, delle raccolte che il
+    cestino non ha preso, lo stesso di aggiorna_la_raccolta_pgn: la finestra
+    passa il suo, che vale fino alla chiusura, la finalizzazione uno suo.
+    Una raccolta rifiutata qui, che resta dov'e' perche' il torneo non ha
+    partite in PGN e non la sostituisce, ci entra, e per una che c'e' gia'
+    il cestino non si riprova e il messaggio non si ripete: fino alla
+    revisione della
+    10.19.13 ogni salvataggio della finestra riprovava, e ripeteva il
+    messaggio e la domanda di Windows."""
     from db_players import identita_del_torneo
-    from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
+    from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn, nome_della_raccolta_pgn
     from ui import _copia_verificata
     from utils import delete_file_to_trash, stessi_byte
 
     cestino = cestino or delete_file_to_trash
+    rimaste = set() if rimaste is None else rimaste
     percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
     if not os.path.isfile(percorso):
         return RaccoltaInSalvo(True)
@@ -352,22 +413,39 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
         if torneo.get("start_date") and identita_del_torneo(dati) == identita_del_torneo(torneo):
             continue
         trovata = True
-        destinazione = os.path.join(os.path.dirname(json_archiviato), nome_file)
+        destinazione = os.path.join(
+            os.path.dirname(json_archiviato), nome_della_raccolta_pgn(sanitize_filename(dati["name"]))
+        )
         # Una raccolta diversa gia' nella cartella d'archivio resta com'e':
         # quella trovata va nel cestino, piu' sotto.
         if os.path.exists(destinazione) and not stessi_byte(percorso, destinazione):
             break
         if not os.path.exists(destinazione) and not _copia_verificata(percorso, destinazione, lambda _frase: None):
             break
+        chiave = _chiave_del_percorso(percorso)
+        if chiave in rimaste:
+            # Il cestino non l'ha gia' presa, e il messaggio e' gia' stato
+            # detto: la copia in archivio c'e', e la raccolta resta.
+            return RaccoltaInSalvo(True)
         if cestino(percorso):
             testo = _(
                 "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
                 "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, e quella della cartella {cartella} è andata nel cestino di Windows."
             )
-        else:
+        elif proprio is not None:
+            # Il torneo la sostituisce subito con la sua raccolta, e non
+            # resta: non si ricorda.
             testo = _(
                 "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
-                "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e il torneo {nome} la sostituirà con la sua raccolta, o la cancellerà."
+                "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e il torneo {nome} la sostituirà con la sua raccolta."
+            )
+        else:
+            # Il torneo non ha partite in PGN, e non scrive la sua raccolta:
+            # quella trovata resta dov'e' (revisione della 10.19.13).
+            rimaste.add(chiave)
+            testo = _(
+                "Nella cartella {cartella} c'era la raccolta delle partite {file} del torneo {torneo}, concluso e archiviato nella cartella {archivio}: il torneo {nome} l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+                "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo. Quella della cartella {cartella} non è andata nel cestino, e resta dov'è: la copia nella cartella d'archivio basta, e se vuoi la puoi cancellare tu."
             )
         return RaccoltaInSalvo(
             True,
@@ -398,7 +476,7 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     )
 
 
-def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None):
+def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None):
     """Scrive la raccolta delle partite in PGN del torneo, con il contenuto
     di byte_della_raccolta_pgn, al percorso di file_della_raccolta_pgn: lo
     fa ogni salvataggio della finestra, dopo raccolta_altrui_in_salvo, e
@@ -406,31 +484,67 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None):
     l'archivio abbia la raccolta del torneo com'e' alla fine (issue 66). La
     console la raccolta non la scrive mai, e fino alla 10.19.10 la sua
     finalizzazione portava in archivio quella che trovava, o nessuna.
+    Risponde con una RaccoltaAggiornata.
     Se il torneo non ha piu' partite in PGN, per esempio dopo una Time
     Machine, la raccolta che c'e' va nel cestino con cestino, la funzione
     che manda un percorso nel cestino e risponde vero se ci e' riuscita, e
     senza, quella del programma: fino alla 10.19.10 si cancellava per sempre
     con os.remove (decisione di Gabriele del 4 novembre 2026). Se il cestino
-    non la prende resta dov'e', mai cancellata per sempre, e la risposta e'
-    il suo percorso, da dire con raccolta_rimasta; altrimenti None. Un
-    errore di scrittura si stampa, come sempre, e la raccolta di prima resta
-    com'era."""
+    non la prende resta dov'e', mai cancellata per sempre, entra in rimaste,
+    e la risposta ha il suo percorso, da dire con raccolta_rimasta.
+    rimaste e' l'insieme, come chiavi di percorso, delle raccolte che il
+    cestino non ha preso, lo stesso di raccolta_altrui_in_salvo: per una che
+    c'e' gia' il cestino non si riprova, e la risposta ha gia_detta vero.
+    Dalla revisione della 10.19.13 una raccolta rimasta, prima di essere
+    sostituita dalla raccolta nuova, va nella cartella backup, con una copia
+    riletta: fino ad allora le partite di prima si perdevano al primo PGN
+    nuovo, mentre il messaggio prometteva che Tornello non le cancellava.
+    Se la copia non riesce, la raccolta resta com'e', e la risposta ha
+    copia_non_riuscita vero e la frase in non_scritta. Un errore di
+    scrittura si stampa, come sempre, la raccolta di prima resta com'era, e
+    dalla stessa revisione la frase sta in non_scritta, perche' la
+    finalizzazione lo dica: fino ad allora l'archivio restava senza raccolta
+    senza nessun avviso."""
     from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
-    from utils import delete_file_to_trash
+    from utils import copia_di_sicurezza, delete_file_to_trash, stessi_byte
 
     cestino = cestino or delete_file_to_trash
+    rimaste = set() if rimaste is None else rimaste
     percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
+    chiave = _chiave_del_percorso(percorso)
+    cartella, file = os.path.split(percorso)
     contenuto = byte_della_raccolta_pgn(torneo)
     if contenuto is not None:
+        if chiave in rimaste and os.path.isfile(percorso) and not _contiene(percorso, contenuto):
+            copia = copia_di_sicurezza(percorso, "pre_sostituzione_raccolta")
+            if not copia or not stessi_byte(percorso, copia):
+                return RaccoltaAggiornata(
+                    non_scritta=_(
+                        "La raccolta delle partite {file}, nella cartella {cartella}, ha ancora le partite di prima, che il torneo {nome} non ha più: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta."
+                    ).format(file=file, cartella=cartella, nome=torneo.get("name", "")),
+                    copia_non_riuscita=True,
+                )
         try:
             with open(percorso, "wb") as f:
                 f.write(contenuto)
         except OSError as e:
             print(f"Errore durante il salvataggio della raccolta PGN: {e}")
-        return None
-    if os.path.isfile(percorso) and not cestino(percorso):
-        return percorso
-    return None
+            return RaccoltaAggiornata(
+                non_scritta=_("La raccolta delle partite {file} del torneo {nome} non si è potuta scrivere nella cartella {cartella}: {errore}").format(
+                    file=file, nome=torneo.get("name", ""), cartella=cartella, errore=e
+                )
+            )
+        rimaste.discard(chiave)
+        return RaccoltaAggiornata()
+    if not os.path.isfile(percorso):
+        rimaste.discard(chiave)
+        return RaccoltaAggiornata()
+    if chiave in rimaste:
+        return RaccoltaAggiornata(rimasta=percorso, gia_detta=True)
+    if cestino(percorso):
+        return RaccoltaAggiornata()
+    rimaste.add(chiave)
+    return RaccoltaAggiornata(rimasta=percorso)
 
 
 def raccolta_rimasta(percorso, nome):

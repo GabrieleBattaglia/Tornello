@@ -2169,3 +2169,141 @@ class TestRaccoltaDiUnAltraEdizioneAllaFinalizzazione:
             assert detto == [
                 f"Il torneo {NOME} non ha più partite in PGN, e la sua raccolta delle partite {RACCOLTA}, nella cartella {os.path.dirname(raccolta)}, doveva andare nel cestino di Windows, che non l'ha presa, per esempio perché quel disco non ha il cestino. Resta dov'è, con le partite di prima: Tornello non la cancella per sempre. Non va in archivio con il torneo."
             ]
+
+    def test_con_il_nome_della_raccolta_della_sua_edizione(self, banco, monkeypatch, tmp_path):
+        """Revisione della 10.19.13. La nuova edizione si chiama coppa_prova,
+        la prima Coppa_Prova: la raccolta della prima va nella sua cartella
+        d'archivio con il nome che le da' la prima, e per il ripristino della
+        prima non e' un file estraneo. Fino ad allora prendeva il nome della
+        raccolta della nuova edizione, con le minuscole."""
+        from copie_di_sicurezza import _file_estranei
+
+        cartella_prima, contenuto = _prima_edizione_con_la_raccolta_lasciata()
+        _cestino_finto(monkeypatch, str(tmp_path / "cestino"))
+        banco.torneo["name"] = NOME.lower()
+        _scrivi(banco.file_torneo, banco.torneo)
+
+        assert _finalizza_in_console(banco) is True
+
+        assert sorted(os.listdir(cartella_prima)) == [RACCOLTA, f"Tornello - {NOME}.json"]
+        assert _leggi_byte(os.path.join(cartella_prima, RACCOLTA)) == contenuto
+        assert _file_estranei(cartella_prima, NOME, f"Tornello - {NOME}.json") == []
+
+    def test_con_il_nome_dell_edizione_rinominata(self, banco, monkeypatch, tmp_path):
+        """La prima edizione, nata Coppa_Prova e rinominata Beta da Dati, e'
+        archiviata nel file Tornello - Coppa_Prova.json, e nella cartella del
+        programma e' rimasta la sua raccolta con il nome di prima. La nuova
+        Coppa_Prova la riconosce per il nome del file, e la raccolta va nella
+        cartella di Beta come Beta - raccolta partite.pgn, il nome che Beta
+        le da'. Fino alla revisione della 10.19.13 ci andava con il nome
+        Coppa_Prova, e per il ripristino di Beta era un file estraneo."""
+        import config
+        import ui
+        from copie_di_sicurezza import _file_estranei
+
+        prima = copy.deepcopy(_torneo_finito())
+        prima.update(name="Beta", start_date="2026-06-01", end_date="2026-06-02", concluded=True)
+        prima["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PRIMA
+        cartella_prima = os.path.join(ui.ARCHIVED_TOURNAMENTS_DIR, "2026", "06 Giugno", "Beta")
+        os.makedirs(cartella_prima)
+        _scrivi(os.path.join(cartella_prima, f"Tornello - {NOME}.json"), prima)
+        contenuto = _raccolta_di(PGN_DELLA_PRIMA)
+        with open(config.user_data_path(RACCOLTA), "wb") as f:
+            f.write(contenuto)
+        _cestino_finto(monkeypatch, str(tmp_path / "cestino"))
+
+        assert _finalizza_in_console(banco) is True
+
+        assert sorted(os.listdir(cartella_prima)) == ["Beta - raccolta partite.pgn", f"Tornello - {NOME}.json"]
+        assert _leggi_byte(os.path.join(cartella_prima, "Beta - raccolta partite.pgn")) == contenuto
+        assert _file_estranei(cartella_prima, "Beta", f"Tornello - {NOME}.json") == []
+
+
+class TestRaccoltaRimastaAllaFinalizzazione:
+    """Revisione della 10.19.13 (issue 66). La finestra passa alla
+    finalizzazione le raccolte che il suo cestino non ha preso: una rimasta,
+    prima di essere sostituita dalla raccolta del torneo, va nella cartella
+    backup, come nei salvataggi della finestra. Una raccolta che non si puo'
+    scrivere, per esempio tenuta aperta da un altro programma, lo dice un
+    avviso: fino ad allora l'archivio restava senza raccolta, e l'errore
+    andava soltanto sulla console, che la finestra non mostra."""
+
+    @pytest.mark.parametrize("riesce", [True, False], ids=["copia riuscita", "copia non riuscita"])
+    def test_la_raccolta_rimasta_va_nella_cartella_backup(self, banco, monkeypatch, riesce):
+        import config
+        import utils
+        from db_players import load_players_db
+        from omonimi import _chiave_del_percorso
+        from ui import finalize_tournament
+
+        raccolta = config.user_data_path(RACCOLTA)
+        rimasta = _raccolta_di(PGN_DELLA_PRIMA)
+        with open(raccolta, "wb") as f:
+            f.write(rimasta)
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        _scrivi(banco.file_torneo, banco.torneo)
+        if not riesce:
+            vera = utils.copia_di_sicurezza
+            monkeypatch.setattr(utils, "copia_di_sicurezza", lambda p, *a, **k: None if p.endswith(".pgn") else vera(p, *a, **k))
+        avvisi = []
+
+        esito = finalize_tournament(copy.deepcopy(banco.torneo), load_players_db(), banco.file_torneo, avvisi, {_chiave_del_percorso(raccolta)})
+
+        assert esito is True
+        copie = _copie(banco.backup, "pre_sostituzione_raccolta")
+        detti = [a for a in avvisi if RACCOLTA in a]
+        if riesce:
+            assert [_leggi_byte(c) for c in copie] == [rimasta]
+            assert _leggi_byte(os.path.join(_cartella_archivio(), RACCOLTA)) == _raccolta_di(PGN_DELLA_PROVA)
+            assert not os.path.exists(raccolta)
+            assert detti == []
+        else:
+            cartella = os.path.dirname(raccolta)
+            assert copie == []
+            assert _leggi_byte(raccolta) == rimasta
+            assert RACCOLTA not in os.listdir(_cartella_archivio())
+            assert detti == [
+                f"La raccolta delle partite {RACCOLTA}, nella cartella {cartella}, ha ancora le partite di prima, che il torneo {NOME} non ha più: prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. Resta com'è, e la raccolta nuova non è stata scritta.\n"
+                f"Non va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
+            ]
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    def test_la_raccolta_che_non_si_scrive_lo_dice_un_avviso(self, banco, capsys, dove):
+        """La raccolta vecchia, in sola lettura come un file tenuto aperto da
+        un altro programma, non si riscrive: la finalizzazione va in fondo,
+        la raccolta non va in archivio, e un avviso dice che non e' stata
+        scritta e dove resta quella vecchia."""
+        import stat
+
+        import config
+
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        _scrivi(banco.file_torneo, banco.torneo)
+        raccolta = config.user_data_path(RACCOLTA)
+        with open(raccolta, "wb") as f:
+            f.write(b"raccolta vecchia")
+        os.chmod(raccolta, stat.S_IREAD)
+        avvisi = []
+        try:
+            assert (_finalizza(banco, avvisi) if dove == "finestra" else _finalizza_in_console(banco)) is True
+            nell_archivio = os.listdir(_cartella_archivio())
+            vecchia = _leggi_byte(raccolta)
+        finally:
+            os.chmod(raccolta, stat.S_IREAD | stat.S_IWRITE)
+
+        assert RACCOLTA not in nell_archivio
+        assert vecchia == b"raccolta vecchia"
+        cartella = os.path.dirname(raccolta)
+        inizio = f"La raccolta delle partite {RACCOLTA} del torneo {NOME} non si è potuta scrivere nella cartella {cartella}: "
+        fine = (
+            f"\nNon va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: "
+            "se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
+        )
+        if dove == "finestra":
+            detti = [a for a in avvisi if RACCOLTA in a]
+            assert len(detti) == 1
+            assert detti[0].startswith(inizio) and detti[0].endswith(fine)
+        else:
+            uscita = capsys.readouterr().out
+            assert uscita.count(inizio) == 1
+            assert fine in uscita

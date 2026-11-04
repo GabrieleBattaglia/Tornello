@@ -25,6 +25,7 @@ from omonimi import (
     _file_del_torneo_nuovo,
     _ha_la_forma_di_un_torneo,
     coincidenza_del_nome,
+    edizione_con_l_identita,
     edizioni_nell_archivio,
     stesso_nome_di_file,
 )
@@ -141,8 +142,18 @@ class MainFrame(wx.Frame):
         # Le raccolte delle partite, come chiavi di percorso, che dovevano
         # andare nel cestino perche' il loro torneo non ha piu' partite in PGN
         # e che il cestino non ha preso: fino alla chiusura i salvataggi non
-        # ci riprovano, e il messaggio non si ripete (10.19.13).
+        # ci riprovano, e il messaggio non si ripete (10.19.13). Dalla
+        # revisione della 10.19.13 ci entrano anche quelle di un'altra
+        # edizione archiviata, gia' copiate nella sua cartella d'archivio,
+        # che la guardia della raccolta non ha potuto mandare nel cestino:
+        # fino ad allora ogni salvataggio ci riprovava, e ripeteva il
+        # messaggio. Le usano raccolta_altrui_in_salvo e
+        # aggiorna_la_raccolta_pgn di omonimi.py.
         self._raccolte_rimaste = set()
+        # Le raccolte rimaste che non si sono potute mettere nella cartella
+        # backup prima di sostituirle con la raccolta nuova: il messaggio si
+        # dice una volta, fino alla chiusura (revisione della 10.19.13).
+        self._copie_non_riuscite = set()
 
         self._init_ui()
         self._setup_shortcuts()
@@ -3603,13 +3614,63 @@ class MainFrame(wx.Frame):
         Elo, partite e storico della seconda. Dalla 10.19.15 i messaggi sono
         quelli di Dati, che dicono il motivo vero senza parlare del nome del
         file del torneo, che da Dati non cambia (da_dati di
-        _nome_del_torneo_libero, issue 66)."""
+        _nome_del_torneo_libero, issue 66).
+        Prima del nome si guarda l'identita', con _identita_libera: dalla
+        revisione della 10.19.13 un torneo rinominato, che tiene il suo
+        identificativo, non prende la data di inizio di un'edizione
+        archiviata con lo stesso identificativo e un altro nome."""
         controllo = {"start_date": inizio}
         attuale = self.current_tournament.get("name", "")
         suo = _file_del_torneo_nuovo(nome).lower() == _file_del_torneo_nuovo(attuale).lower()
         if suo:
             controllo[NUOVA_EDIZIONE_CONFERMATA] = nome
+        if not self._identita_libera(nome, inizio):
+            return False
         return self._nome_del_torneo_libero(nome, controllo, escluso=self.active_filename, nome_suo=suo, da_dati=True)
+
+    def _identita_libera(self, nome, inizio):
+        """Vero se il torneo aperto, con il nome nome e la data di inizio
+        inizio dai campi di Dati, non ha l'identita' di un torneo concluso
+        dell'archivio: lo stesso identificativo e la stessa data di inizio,
+        con cui lo storico dei giocatori riconosce un torneo. Altrimenti
+        suona l'errore, un messaggio lo dice, e la risposta e' falso.
+        L'identificativo non cambia quando il torneo cambia nome: la seconda
+        edizione di Coppa, con l'identificativo COPPA, rinominata Beta da
+        Dati, prendeva la data di inizio della prima, perche' i controlli
+        guardavano soltanto il nome, e alla finalizzazione i giocatori
+        risultavano gia' registrati, senza ricevere ne' l'Elo ne' le partite
+        (revisione della 10.19.13, issue 66, decisione di Gabriele del 4
+        novembre 2026). Non si guarda un'identita' che non cambia, ne' il
+        file del torneo aperto, ne' le edizioni con lo stesso nome, per le
+        quali la stessa data di inizio la rifiuta gia' _nome_del_torneo_libero,
+        con il suo messaggio."""
+        from db_players import identita_del_torneo
+        from utils import format_date_locale, play_sound
+
+        dopo = identita_del_torneo(dict(self.current_tournament, name=nome, start_date=inizio))
+        if not inizio or dopo == identita_del_torneo(self.current_tournament):
+            return True
+        con_lo_stesso_nome = [p for p, _dati in edizioni_nell_archivio(nome, self.active_filename)]
+        trovata = edizione_con_l_identita(dopo, escluso=self.active_filename, saltati=con_lo_stesso_nome)
+        if trovata is None:
+            return True
+        percorso, dati = trovata
+        play_sound("errore")
+        self._dialogo_informativo(
+            _("Data di inizio già in uso"),
+            _(
+                "La data di inizio {data} non si può usare per il torneo {nome}: il torneo {torneo}, concluso e archiviato nella cartella {cartella} con il file {file}, ha lo stesso identificativo, {identificativo}, e la stessa data di inizio.\n"
+                "Nello storico dei giocatori un torneo si riconosce dall'identificativo e dalla data di inizio, e l'identificativo resta lo stesso quando il torneo cambia nome: con la stessa data la finalizzazione prenderebbe il torneo {nome} per quello archiviato, e i giocatori non ne riceverebbero né l'Elo né le partite. Scegli un'altra data di inizio."
+            ).format(
+                data=format_date_locale(inizio),
+                nome=nome,
+                torneo=dati["name"],
+                cartella=_cartella_nell_archivio(percorso),
+                file=os.path.basename(percorso),
+                identificativo=dopo[0],
+            ),
+        )
+        return False
 
     def _nome_da_dati_accettato(self, nome):
         """Vero se il torneo aperto puo' prendere da Dati il nome nome: i
@@ -3647,11 +3708,14 @@ class MainFrame(wx.Frame):
         l'errore, un messaggio lo dice, con conclusione in fondo, e la
         risposta e' falso: il torneo non nasce, o non cambia nome, o non
         scrive la sua raccolta. Fino alla 10.19.10 la guardia stava tutta
-        qui, e la finalizzazione in console non la faceva (10.19.13)."""
+        qui, e la finalizzazione in console non la faceva (10.19.13).
+        La guardia riceve _raccolte_rimaste: una raccolta che il cestino non
+        ha preso non si riprova, e il messaggio non si ripete (revisione della
+        10.19.13)."""
         from omonimi import raccolta_altrui_in_salvo
         from utils import play_sound
 
-        esito = raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate, self._nel_cestino)
+        esito = raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate, self._nel_cestino, self._raccolte_rimaste)
         titolo = _("Raccolta delle partite di un altro torneo")
         if esito.in_salvo:
             if esito.testo:
@@ -3914,33 +3978,39 @@ class MainFrame(wx.Frame):
                 # del 4 novembre 2026). Se il cestino non la prende resta
                 # dov'e', un messaggio lo dice una volta, e fino alla chiusura
                 # i salvataggi dopo non ci riprovano: niente messaggi e niente
-                # domande di Windows a ogni salvataggio.
-                chiave = _chiave_del_percorso(
-                    file_della_raccolta_pgn(self.current_tournament, self.active_filename)
+                # domande di Windows a ogni salvataggio. Dalla revisione della
+                # 10.19.13 una raccolta rimasta, prima di essere sostituita
+                # dalla raccolta nuova, va nella cartella backup: fino ad
+                # allora le partite di prima si perdevano al primo PGN nuovo.
+                aggiornata = aggiorna_la_raccolta_pgn(
+                    self.current_tournament, self.active_filename, self._nel_cestino, self._raccolte_rimaste
                 )
-                rimasta = aggiorna_la_raccolta_pgn(
-                    self.current_tournament, self.active_filename, self._cestino_della_raccolta
-                )
-                if rimasta is None:
-                    self._raccolte_rimaste.discard(chiave)
-                elif chiave not in self._raccolte_rimaste:
-                    self._raccolte_rimaste.add(chiave)
+                if aggiornata.rimasta and not aggiornata.gia_detta:
                     play_sound("errore")
                     self._dialogo_informativo(
                         _("Raccolta delle partite rimasta"),
-                        raccolta_rimasta(rimasta, self.current_tournament.get("name", ""))
+                        raccolta_rimasta(aggiornata.rimasta, self.current_tournament.get("name", ""))
                         + "\n"
-                        + _("Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete: se non ti serve più, spostala o cancellala tu."),
+                        + _(
+                            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Se nel frattempo il torneo ha di nuovo una partita in PGN, prima di scrivere la raccolta nuova Tornello mette questa nella cartella backup. Se non ti serve più, spostala o cancellala tu."
+                        ),
                     )
-
-    def _cestino_della_raccolta(self, percorso):
-        """Il cestino per la raccolta delle partite di un torneo che non ha
-        piu' partite in PGN, in _salva_i_report: quello della finestra, che
-        per una raccolta gia' rifiutata non ci riprova fino alla chiusura del
-        programma, e risponde falso (10.19.13)."""
-        if _chiave_del_percorso(percorso) in self._raccolte_rimaste:
-            return False
-        return self._nel_cestino(percorso)
+                chiave = _chiave_del_percorso(
+                    file_della_raccolta_pgn(self.current_tournament, self.active_filename)
+                )
+                if not aggiornata.copia_non_riuscita:
+                    self._copie_non_riuscite.discard(chiave)
+                elif chiave not in self._copie_non_riuscite:
+                    self._copie_non_riuscite.add(chiave)
+                    play_sound("errore")
+                    self._dialogo_informativo(
+                        _("Raccolta delle partite non scritta"),
+                        aggiornata.non_scritta
+                        + "\n"
+                        + _(
+                            "I salvataggi ci riprovano, e fino alla chiusura di Tornello questo messaggio non si ripete. Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova."
+                        ),
+                    )
 
     def on_tree_key_down(self, event):
         if not self or not getattr(self, "tree_ctrl", None) or not self.tree_ctrl:
@@ -5946,8 +6016,12 @@ class MainFrame(wx.Frame):
             # nello storico, copie di sicurezza non riuscite, file del torneo
             # rimasto al suo posto perche' la copia in archivio non torna.
             avvisi = []
+            # Le raccolte delle partite che il cestino della finestra non ha
+            # preso valgono anche qui: niente domande ripetute a Windows, e
+            # una rimasta va nella cartella backup prima di essere
+            # sostituita (revisione della 10.19.13).
             success = finalize_tournament(
-                self.current_tournament, players_db, self.active_filename, avvisi
+                self.current_tournament, players_db, self.active_filename, avvisi, self._raccolte_rimaste
             )
             esito = self._esito_della_finalizzazione(success, avvisi)
             if esito is None:

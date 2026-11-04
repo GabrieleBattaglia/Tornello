@@ -164,6 +164,18 @@ class TestNomi:
         assert momento_in_parole("pre_turno_manuale") == "prima di un turno composto a mano"
         assert momento_in_parole(None) == "momento sconosciuto"
 
+    def test_la_copia_di_una_raccolta_rimasta(self):
+        """Revisione della 10.19.13 (issue 66): la copia della raccolta delle
+        partite rimasta, fatta prima di sostituirla, ha il suo momento, detto
+        a parole, e la regola di conservazione non la manda mai nel
+        cestino."""
+        from copie_di_sicurezza import CONTESTI_CONSERVATI, analizza_nome, momento_in_parole
+
+        parti = analizza_nome("Primavera_2 - raccolta partite_pre_sostituzione_raccolta_20261104_153000.pgn")
+        assert (parti["base"], parti["contesto"], parti["estensione"]) == ("Primavera_2 - raccolta partite", "pre_sostituzione_raccolta", ".pgn")
+        assert momento_in_parole("pre_sostituzione_raccolta") == "prima di sostituire una raccolta delle partite rimasta"
+        assert "pre_sostituzione_raccolta" in CONTESTI_CONSERVATI
+
 
 class TestLettura:
     def test_un_torneo_vero(self, sample_tournament_dict, tmp_path):

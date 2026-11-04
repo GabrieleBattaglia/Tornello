@@ -1638,7 +1638,7 @@ def _cartella_d_archivio(cartella_del_mese, nome_cartella, identita):
     return f"{base}_{numero}"
 
 
-def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa):
+def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa, rimaste=None):
     """La raccolta delle partite in PGN del torneo che si finalizza, come la
     lascerebbe l'ultimo salvataggio della finestra (10.19.13, issue 66):
     quella di un'altra edizione archiviata, identica byte per byte a quella
@@ -1648,11 +1648,20 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa):
     quella che c'e' va nel cestino (aggiorna_la_raccolta_pgn). Le frasi per
     l'utente passano da avvisa, che le stampa e le da' alla finestra Avvisi
     della finalizzazione. Vero se al percorso della raccolta c'e' adesso
-    quella del torneo, da portare in archivio con i report."""
+    quella del torneo, da portare in archivio con i report.
+    rimaste sono le raccolte che il cestino non ha preso, come chiavi di
+    percorso: la finestra passa le sue, e senza la finalizzazione ne ha di
+    sue, cosi' la guardia e l'aggiornamento non chiedono due volte al
+    cestino la stessa raccolta. Dalla revisione della 10.19.13 una raccolta
+    che non si e' potuta scrivere, per esempio perche' un altro programma
+    la tiene bloccata, lo dice un avviso: fino ad allora l'archivio restava
+    senza raccolta, e l'errore andava soltanto sulla console, che la
+    finestra non mostra."""
     from omonimi import _contiene, aggiorna_la_raccolta_pgn, raccolta_altrui_in_salvo, raccolta_rimasta
 
+    rimaste = set() if rimaste is None else rimaste
     nome = torneo.get("name", "")
-    esito = raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=True)
+    esito = raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=True, rimaste=rimaste)
     if not esito.in_salvo:
         avvisa(
             esito.testo
@@ -1664,18 +1673,28 @@ def _raccolta_del_torneo_scritta(torneo, file_del_torneo, avvisa):
         return False
     if esito.testo:
         avvisa(esito.testo)
-    rimasta = aggiorna_la_raccolta_pgn(torneo, file_del_torneo)
-    if rimasta:
+    aggiornata = aggiorna_la_raccolta_pgn(torneo, file_del_torneo, rimaste=rimaste)
+    if aggiornata.rimasta:
         avvisa(
-            raccolta_rimasta(rimasta, nome)
+            raccolta_rimasta(aggiornata.rimasta, nome)
             + " "
             + _("Non va in archivio con il torneo.")
         )
+    percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
+    if aggiornata.non_scritta:
+        if os.path.isfile(percorso):
+            coda = _(
+                "Non va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
+            )
+        else:
+            coda = _("Non va in archivio con il torneo. Le partite del torneo restano nel suo file, in archivio.")
+        avvisa(aggiornata.non_scritta + "\n" + coda.format(cartella=os.path.dirname(percorso)))
+        return False
     proprio = byte_della_raccolta_pgn(torneo)
-    return proprio is not None and _contiene(file_della_raccolta_pgn(torneo, file_del_torneo), proprio)
+    return proprio is not None and _contiene(percorso, proprio)
 
 
-def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=None):
+def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=None, raccolte_rimaste=None):
     """
     Completa il torneo: calcola Elo/Performance/Spareggi, aggiorna DB giocatori,
     e archivia tutti i file del torneo in una sottocartella dedicata.
@@ -1688,6 +1707,11 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     le stesse che vengono stampate: la finestra non vede la console, e senza
     di loro non saprebbe dei giocatori lasciati come erano o del file del
     torneo rimasto al suo posto.
+    raccolte_rimaste, se c'e', e' l'insieme delle raccolte delle partite
+    che il cestino della finestra non ha preso, come chiavi di percorso:
+    la finalizzazione non ci riprova, e una rimasta, prima di essere
+    sostituita, va nella cartella backup, come nei salvataggi della
+    finestra (revisione della 10.19.13).
     """
     if avvisi is None:
         avvisi = []
@@ -2324,7 +2348,7 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # quella lasciata nella cartella del programma da un'edizione archiviata
     # prima della 10.19.7, che invece va nella cartella d'archivio di
     # quell'edizione (decisione di Gabriele del 4 novembre 2026, issue 66).
-    if _raccolta_del_torneo_scritta(torneo, percorso_del_torneo, avvisa):
+    if _raccolta_del_torneo_scritta(torneo, percorso_del_torneo, avvisa, raccolte_rimaste):
         raccolta = file_della_raccolta_pgn(torneo, percorso_del_torneo)
         if not _stesso_file(
             raccolta, os.path.join(full_archive_path, os.path.basename(raccolta))
