@@ -1,14 +1,14 @@
 PROVA 1: Tornei di prova rigenerati
 Prima: Tornello chiuso.
 Passo 1: apri il prompt dei comandi e scrivi: cd /d E:\git\mine\Tornello-lavori
-Passo 2: scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py programmazione canc forfait time_machine rapid
+Passo 2: scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\tornei_di_prova.py programmazione canc forfait time_machine annulla ritorno voci rapid
 Passo 3: aspetta la fine, un paio di minuti.
 Domanda 1: l'ultima riga dice "Verifica superata per tutti i tornei."?
 Esito: 
 
 PROVA 2: CANC su una partita giocata
 Prima: dal prompt dei comandi, in E:\git\mine\Tornello-lavori, avvia Tornello con: python E:\git\mine\Tornello-lavori\tornello.py
-Prima: Tornello resta aperto fino alla prova 8; nell'albero non toccare mai Autunneo2.
+Prima: Tornello resta aperto fino alla prova 11; nell'albero non toccare mai Autunneo2.
 Prima: nell'albero scegli Prova canc, poi turni, Turno corrente (2/4), giocate (2/4, 50.0%).
 Passo 1: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
 Domanda 1: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima e il PGN che resta?
@@ -18,7 +18,7 @@ Domanda 3: il suono della cancellazione è quello dell'annullamento delle finest
 Passo 3: sulla Scacchiera 2, Galli Giulia vs Ferri Fabio [0-1], premi CANC e poi subito INVIO.
 Domanda 4: INVIO risponde No e la partita resta fra le giocate?
 Passo 4: apri Completati (1), Turno 1, giocate, e premi CANC sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0].
-Domanda 5: si sente l'errore e il messaggio Turno chiuso si legge bene, con il rimando a Ctrl+Z?
+Domanda 5: si sente l'errore e il messaggio Turno chiuso si legge bene, con le due strade per riaprire il turno: CANC sulla voce Turno 1, fra i Completati, oppure Ctrl+Z?
 Esito: 
 
 PROVA 3: Rami delle partite da giocare e Togli programmazione
@@ -63,18 +63,67 @@ Passo 3: premi INVIO, scegli 1 - 0 e premi INVIO.
 Domanda 4: si sente la fine del turno e il cursore passa su calcola il turno successivo?
 Esito: 
 
-PROVA 6: Nomi già in uso nella procedura guidata
+PROVA 6: CANC sul turno corrente, un turno alla volta
+Prima: nell'albero scegli Prova annulla turno e apri turni (2).
+Passo 1: su Turno corrente (2/4) premi CANC, e alla domanda premi ESC.
+Domanda 1: la domanda è Annulla Turno, la stessa di Ctrl+Z, con il nome Prova annulla turno, e dopo ESC c'è ancora il Turno corrente (2/4)?
+Passo 2: sali su Completati (1), aprilo, scendi su Turno 1, premi CANC e alla domanda premi INVIO.
+Domanda 2: è di nuovo la domanda Annulla Turno, e con INVIO si sente la Time Machine e la barra di stato dice "Time Machine attivata: tornati al turno precedente."?
+Domanda 3: il cursore è su Turno 1, fra i Completati (1), NVDA te lo dice senza muoverti, e sotto turni (1) c'è di nuovo calcola il turno successivo?
+Passo 3: sul Turno 1 premi ancora CANC e alla domanda Annulla Turno premi INVIO.
+Domanda 4: Prova annulla turno è passato fra In Preparazione (1), e il cursore è su calcola il turno 1, sotto turni (0)?
+Esito: 
+
+PROVA 7: CANC su un turno dei Completati, più turni in una volta
+Prima: nell'albero scegli Prova ritorno: i turni da 1 a 3 sono completi, il Turno corrente (4/5) ha una partita giocata, e fra gli iscritti c'è Orlando Oscar, ritirato.
+Passo 1: apri turni (4), poi Completati (3), scendi su Turno 2 e premi CANC.
+Domanda 1: la domanda Torna al turno 2 dice che spariscono 2 turni, il turno 3 e il turno 4, non nomina nessun ritirato e dice che il pulsante predefinito è No?
+Passo 2: premi INVIO.
+Domanda 2: INVIO risponde No, e il ramo è ancora turni (4)?
+Passo 3: sali su Turno 1 e premi CANC.
+Domanda 3: la domanda Torna al turno 1 dice che spariscono 3 turni, dal turno 2 al turno 4, e che torna in gioco Orlando Oscar, ritirato?
+Passo 4: premi TAB fino a Sì e poi INVIO.
+Domanda 4: si sente la Time Machine, la barra di stato dice "Time Machine attivata: tornati al turno 1, tolti 3 turni.", e il cursore è su Turno 1, fra i Completati (1)?
+Domanda 5: sotto turni (1) c'è calcola il turno successivo, e in iscritti (6) Orlando Oscar non è più ritirato?
+Domanda 6: in E:\git\mine\Tornello-lavori\prova_cartella_esterna\Prova ritorno i file del Turno 2 Dettagli e del Turno 3 Dettagli sono nel cestino, quello del Turno 1 Dettagli c'è ancora, e Windows non ti ha chiesto niente?
+Esito: 
+
+PROVA 8: CANC sulle voci dove non lavora e la voce del menu File
+Prima: nell'albero scegli Prova voci.
+Passo 1: scendi su Dati e premi CANC.
+Domanda 1: si sente l'errore, e il messaggio Elimina o annulla dice in una riga "CANC lavora sulle voci di tornei, giocatori, turni, partite giocate e partite programmate."?
+Passo 2: chiudi il messaggio, poi premi CANC su turni (1) e, dentro Turno corrente (1/3) e da giocare (1), su da programmare (1), chiudendo ogni volta il messaggio.
+Domanda 2: le due volte arriva lo stesso messaggio, con l'errore?
+Passo 3: dentro da programmare (1), sulla Scacchiera 2, De Santis Dario vs Bruni Bruno (Non pianificata), premi CANC.
+Domanda 3: si sente l'errore, e il messaggio dice "La partita e' da giocare e non e' programmata: CANC non ha niente da togliere."?
+Passo 4: chiudi il messaggio, premi ALT, poi F, e scorri con le frecce le voci del menu File.
+Domanda 4: dopo Esporta partite pianificate c'è Elimina o annulla la voce scelta..., con il tasto Canc e la lettera L?
+Passo 5: premi ESC due volte, poi nel Turno corrente (1/3) apri giocate (1/2, 50.0%), scendi sulla Scacchiera 1, Alberti Anna vs Conti Carla [1-0], e premi ALT, poi F, poi L.
+Domanda 5: arriva la domanda Cancellazione del risultato, la stessa di CANC, con No predefinito?
+Passo 6: premi INVIO.
+Domanda 6: la partita resta fra le giocate, con il suo risultato?
+Esito: 
+
+PROVA 9: Nomi già in uso nella procedura guidata, e i tornei dell'archivio
 Prima: Tornello aperto.
 Passo 1: premi Ctrl+N, scendi su Nome torneo e premi INVIO.
 Passo 2: scrivi prova FORFAIT e premi INVIO.
-Domanda 1: si sente l'errore, e il messaggio dice che il nome coincide con il torneo Prova forfait, in corso?
+Domanda 1: si sente l'errore, e il messaggio dice che il nome coincide con il torneo Prova forfait, in corso nella cartella del programma?
 Passo 3: chiudi il messaggio, premi INVIO su Nome torneo, scrivi Players DB e premi INVIO.
 Domanda 2: il messaggio dice che coincide con il database dei giocatori?
-Passo 4: chiudi il messaggio, sali su Indietro e premi INVIO.
-Domanda 3: il nome è rimasto Non impostato, e la procedura si chiude senza creare niente?
+Passo 4: chiudi il messaggio, premi INVIO su Nome torneo, scrivi primavera 2 e premi INVIO.
+Domanda 3: senza l'errore arriva la domanda Nuova edizione di un torneo concluso, che nomina Primavera 2, nella cartella Closed Tournaments\2026\06 Giugno\Primavera_2, e dice che il pulsante predefinito è No?
+Passo 5: premi INVIO.
+Domanda 4: INVIO risponde No, e la voce dice ancora Nome torneo *: Non impostato?
+Passo 6: premi INVIO su Nome torneo, scrivi primavera 2 e premi INVIO; alla domanda premi TAB fino a Sì e poi INVIO.
+Domanda 5: la voce dice Nome torneo *: primavera 2, e in fondo all'elenco è comparsa Iscrizione Giocatori?
+Passo 7: scendi su Iscrizione Giocatori e premi INVIO.
+Domanda 6: la domanda sulla nuova edizione non torna, e si apre subito la finestra Iscrizione Giocatori?
+Passo 8: chiudi la finestra con ESC, senza iscrivere nessuno, poi sali su Indietro e premi INVIO.
+Domanda 7: la procedura si chiude senza creare niente, e nell'albero non c'è un torneo primavera 2?
 Esito: 
 
-PROVA 7: Fattore K del rapid e partite della cadenza
+PROVA 10: Fattore K del rapid e partite della cadenza
 Prima: nell'albero scegli Prova rapid: i due turni sono completi, e sotto turni c'è Finalizza il torneo.
 Passo 1: premi Ctrl+F, rispondi Sì e chiudi il messaggio di successo.
 Passo 2: premi Ctrl+D, scrivi Valli nel campo Filtra Giocatori, scegli Valli Vera e passa all'albero della scheda.
@@ -84,7 +133,7 @@ Domanda 2: le due voci nuove delle partite si capiscono, accanto a Partite Local
 Passo 4: chiudi la finestra con ESC, senza modificare niente.
 Esito: 
 
-PROVA 8: Menu Aiuto e chiusura senza invito
+PROVA 11: Menu Aiuto e chiusura senza invito
 Prima: Tornello aperto.
 Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
 Domanda 1: dopo Crediti ci sono Offrimi un caffè con la O, un separatore, Entra al PUB con la E e Chiedi aiuto al PUB con la A?
@@ -93,12 +142,12 @@ Domanda 2: la finestra si chiude con Chiudi, il pulsante predefinito, senza apri
 Passo 3: dal menu Aiuto scegli Entra al PUB, leggi l'area di testo con le frecce e chiudi con ESC.
 Domanda 3: spiegazione e pulsanti si leggono bene?
 Passo 4: dal menu Aiuto scegli Chiedi aiuto al PUB, leggi la mail e chiudi con ESC, senza spedire niente.
-Domanda 4: nella mail ci sono la versione 10.18.1, BBP Pairings con la sua versione e la lingua it?
+Domanda 4: nella mail ci sono la versione 10.19.0, BBP Pairings con la sua versione e la lingua it?
 Passo 5: chiudi Tornello con ALT+F4.
 Domanda 5: Tornello si chiude senza l'invito a offrire un caffè?
 Esito: 
 
-PROVA 9: Ascolto dei tre suoni al posto della campanella
+PROVA 12: Ascolto dei tre suoni al posto della campanella
 Prima: Tornello chiuso, con il volume che usi di solito.
 Passo 1: dal prompt dei comandi scrivi: python E:\git\mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
 Passo 2: segui lo script fino in fondo.
