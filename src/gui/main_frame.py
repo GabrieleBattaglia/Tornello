@@ -4237,27 +4237,56 @@ class MainFrame(wx.Frame):
         self.current_tournament["players_dict"] = {
             p["id"]: p for p in self.current_tournament.get("players", [])
         }
-        self._save_state()
+        # Il torneo nuovo prende in memoria il posto di quello di prima, come
+        # in load_tournament: se il suo primo salvataggio non riesce, il
+        # messaggio Torneo non salvato lo dice, anche a un secondo tentativo
+        # con lo stesso nome.
+        self._tornei_non_salvati.clear()
+        salvato = self._save_state()
         self.creation_mode = False
         self._tree_restore_target = {
             "action": "start_tournament_matchmaking_action",
             "filepath": self.active_filename,
         }
-        self.load_tournament(self.active_filename)
-        self.set_status(
-            _(
-                "Torneo creato. Quando gli iscritti sono al completo, avvialo con la voce calcola il turno 1."
+        if salvato:
+            self.load_tournament(self.active_filename)
+            self.set_status(
+                _(
+                    "Torneo creato. Quando gli iscritti sono al completo, avvialo con la voce calcola il turno 1."
+                )
             )
-        )
+            return
+        # Il file non si e' scritto, per esempio con la cartella del
+        # programma che non si puo' scrivere, con il disco pieno o con un
+        # nome troppo lungo per un file, e il messaggio Torneo non salvato lo
+        # ha gia' detto. Il torneo nuovo resta aperto, in memoria e
+        # nell'albero, che per un torneo aperto che non e' sul disco prende
+        # la voce dalla memoria, e i salvataggi dopo riprovano a scriverlo.
+        # Fino alla 10.19.19, e gia' nella 10.0.0, load_tournament rileggeva
+        # il file che non c'era: il messaggio Errore nel caricamento del
+        # torneo, il torneo nuovo e i suoi iscritti fuori dalla memoria, e la
+        # barra di stato che diceva lo stesso Torneo creato (decisione di
+        # Gabriele del 5 novembre 2026).
+        self._aggiorna_titolo()
+        self.update_menu_states()
+        self.show_current_round_report()
+        self.populate_tree()
+        self.set_status(_("Torneo creato, ma non ancora salvato nel suo file."))
 
     def _save_state(self):
-        if self.current_tournament:
-            from tournament import save_tournament
+        """Salva il torneo aperto, con i suoi report. Risponde vero se il
+        file del torneo si e' scritto, e falso se non si e' scritto o se non
+        c'e' un torneo aperto: dalla 10.19.20 la procedura guidata lo guarda,
+        e con un torneo nuovo che non si e' salvato non rilegge il file."""
+        if not self.current_tournament:
+            return False
+        from tournament import save_tournament
 
-            motivi = []
-            salvato = save_tournament(self.current_tournament, filepath=self.active_filename, motivi=motivi)
-            self._esito_del_salvataggio(salvato, motivi)
-            self._salva_i_report(torneo_salvato=salvato)
+        motivi = []
+        salvato = save_tournament(self.current_tournament, filepath=self.active_filename, motivi=motivi)
+        self._esito_del_salvataggio(salvato, motivi)
+        self._salva_i_report(torneo_salvato=salvato)
+        return salvato
 
     def _file_del_torneo_aperto(self):
         """Il file in cui save_tournament scrive il torneo aperto: il suo,

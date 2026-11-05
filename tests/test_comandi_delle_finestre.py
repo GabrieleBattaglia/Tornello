@@ -6544,39 +6544,164 @@ class TestTorneoCheNonSiSalva:
         assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(primavera, _descrizione_dell_errore(errori[0])), self._messaggio(primavera, _descrizione_dell_errore(errori[1]))]
         assert suoni.count("errore") == 2
 
+    @staticmethod
+    def _scrittura_negata(monkeypatch):
+        """La scrittura del file del torneo che solleva PermissionError, come
+        con la cartella del programma che non si puo' scrivere o con il disco
+        pieno. Restituisce la scrittura vera, per rimetterla."""
+        import tournament
+
+        vera = tournament.scrivi_json_atomico
+
+        def negata(percorso, dati, indent=1):
+            raise PermissionError(13, "Accesso negato", percorso)
+
+        monkeypatch.setattr(tournament, "scrivi_json_atomico", negata)
+        return vera
+
+    @staticmethod
+    def _creato(principale, nome, luogo="Online"):
+        """La procedura guidata, dall'inizio, con il nome nome, il luogo
+        luogo e i quattro iscritti dei tornei delle prove, fino alla
+        creazione del torneo."""
+        principale.start_new_tournament_wizard()
+        principale.creation_data["name"] = nome
+        principale.creation_data["site"] = luogo
+        principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+
+    @staticmethod
+    def _aperto_dalla_memoria(principale, percorso, nome):
+        """Il torneo nuovo nome, che non si e' salvato nel file percorso, e'
+        quello aperto, con i quattro iscritti, il titolo e la barra di stato
+        che lo dicono; la sua voce nell'albero viene dalla memoria, e dice
+        fra parentesi la cartella del suo file, e il cursore sta sulla voce
+        Avvio torneo, come dopo una creazione riuscita."""
+        assert not os.path.exists(percorso)
+        assert not principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorso)
+        assert principale.current_tournament["name"] == nome
+        assert [p["id"] for p in principale.current_tournament["players"]] == [g[0] for g in GIOCATORI_DEI_TORNEI]
+        assert f"[{nome}]" in principale.GetTitle()
+        assert principale.last_status_msg == "Torneo creato, ma non ancora salvato nel suo file."
+        voce = principale._voce_del_torneo_aperto()
+        assert voce is not None
+        cartella = os.path.basename(os.path.dirname(os.path.abspath(percorso)))
+        assert principale.tree_ctrl.GetItemText(voce) == f"{nome} (dalla cartella {cartella})"
+        assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetSelection()) == {
+            "action": "start_tournament_matchmaking_action",
+            "filepath": principale.active_filename,
+        }
+
     def test_la_procedura_guidata_che_non_salva_lo_dice_ogni_volta(self, principale, suoni, monkeypatch):
         """Correzione della revisione della 10.19.19. Il torneo nuovo della
         procedura guidata non si salva, perche' il suo file non si scrive,
         come con la cartella del programma che non si puo' scrivere: il
-        messaggio esce, e il torneo, che non si rilegge dal file, esce dalla
-        memoria. Il secondo tentativo, con lo stesso nome, lo dice di nuovo.
-        Fino alla revisione il ricordo del messaggio restava, e il secondo
-        tentativo non lo diceva. La scrittura del file e le finestre di
-        messaggio sono finte."""
+        messaggio esce, e dalla 10.19.20 il torneo resta aperto. Il secondo
+        tentativo, con lo stesso nome, lo dice di nuovo, una volta, e il
+        torneo aperto e' il secondo. Fino alla revisione il ricordo del
+        messaggio restava, e il secondo tentativo non lo diceva. La scrittura
+        del file e le finestre di messaggio sono finte."""
+        import wx
+
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        self._scrittura_negata(monkeypatch)
+        suoni.clear()
+
+        self._creato(principale, "Nuovo Sociale", "Bologna")
+        self._creato(principale, "Nuovo Sociale", "Ferrara")
+
+        percorso = user_data_path("Tornello - Nuovo_Sociale.json")
+        messaggio = self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, messaggio]
+        assert suoni.count("errore") == 2
+        assert scatole == []
+        self._aperto_dalla_memoria(principale, percorso, "Nuovo Sociale")
+        assert principale.current_tournament["site"] == "Ferrara"
+
+    def test_il_torneo_nuovo_che_non_si_salva_resta_aperto(self, principale, suoni, monkeypatch, capsys):
+        """10.19.20, decisione di Gabriele del 5 novembre 2026. Il primo
+        salvataggio del torneo nuovo della procedura guidata non riesce,
+        perche' la scrittura del suo file solleva PermissionError: esce il
+        messaggio Torneo non salvato, e il torneo nuovo resta aperto, in
+        memoria e nell'albero, senza il messaggio Errore nel caricamento del
+        torneo, e la barra di stato dice che non e' ancora salvato. I
+        salvataggi dopo riprovano davvero: con la scrittura vera il primo
+        scrive il file con tutto il torneo e gli iscritti, senza messaggi, e
+        fa la copia di sicurezza della creazione. Fino alla 10.19.19, e gia'
+        nella 10.0.0, load_tournament rileggeva il file che non c'era, e il
+        torneo nuovo usciva dalla memoria, mentre la barra diceva Torneo
+        creato."""
+        import json
+
         import wx
 
         import tournament
         from config import user_data_path
 
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
-        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
-
-        def negata(percorso, dati, indent=1):
-            raise PermissionError(13, "Accesso negato", percorso)
-
-        monkeypatch.setattr(tournament, "scrivi_json_atomico", negata)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        vera = self._scrittura_negata(monkeypatch)
         suoni.clear()
 
-        for _volta in range(2):
-            principale.start_new_tournament_wizard()
-            principale.creation_data["name"] = "Nuovo Sociale"
-            principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+        self._creato(principale, "Nuovo Sociale", "Bologna")
+        principale._save_state()
 
         percorso = user_data_path("Tornello - Nuovo_Sociale.json")
-        messaggio = self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")
-        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, messaggio]
-        assert suoni.count("errore") == 2
-        assert principale.current_tournament is None
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")]
+        assert suoni.count("errore") == 1
+        assert scatole == []
+        self._aperto_dalla_memoria(principale, percorso, "Nuovo Sociale")
+        capsys.readouterr()
+
+        monkeypatch.setattr(tournament, "scrivi_json_atomico", vera)
+        principale._save_state()
+
+        nel_file = TestNomeEDataDiInizioDaDati._nel_file(percorso)
+        attesi = {k: v for k, v in principale.current_tournament.items() if k != "players_dict"}
+        assert nel_file == json.loads(json.dumps(attesi))
+        assert nel_file["site"] == "Bologna"
+        assert [p["id"] for p in nel_file["players"]] == [g[0] for g in GIOCATORI_DEI_TORNEI]
+        assert self._errori_in_console(capsys, percorso) == ([], [])
+        assert len(finestre) == 1
+        assert suoni.count("errore") == 1
+        copie = [f for _radice, _cartelle, file in os.walk(user_data_path("backup")) for f in file]
+        assert [f for f in copie if f.startswith("Tornello - Nuovo_Sociale") and "creazione" in f]
+
+    def test_il_torneo_nuovo_con_il_nome_troppo_lungo_resta_aperto(self, principale, suoni, monkeypatch, capsys):
+        """10.19.20. Un salvataggio che non riesce davvero, senza finte: il
+        nome del torneo e' cosi' lungo che il nome del suo file supera il
+        limite di Windows, e il sistema lo rifiuta. Il messaggio Torneo non
+        salvato dice la descrizione del motivo, la stessa della riga in
+        console, e il torneo nuovo resta aperto, con i quattro iscritti; il
+        salvataggio dopo non riesce di nuovo, senza un altro messaggio.
+        Fino alla 10.19.19 il torneo nuovo usciva dalla memoria, con il
+        messaggio Errore nel caricamento del torneo."""
+        import wx
+
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        nome = "Coppa " + "x" * 245
+        suoni.clear()
+        capsys.readouterr()
+
+        self._creato(principale, nome)
+        principale._save_state()
+
+        percorso = user_data_path(f"Tornello - Coppa_{'x' * 245}.json")
+        errori, _della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 2
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(percorso, _descrizione_dell_errore(errori[0]), nome=nome)]
+        assert suoni.count("errore") == 1
+        assert scatole == []
+        self._aperto_dalla_memoria(principale, percorso, nome)
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     def test_dopo_canc_su_un_iscritto_il_messaggio_torna(self, principale, suoni, monkeypatch, capsys):
