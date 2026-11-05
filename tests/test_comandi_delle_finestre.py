@@ -4525,33 +4525,55 @@ class TestNomeEDataDiInizioDaDati:
         assert self._voci_dell_albero(principale) == attesi
 
     @pytest.mark.parametrize("ricostruito", [False, True], ids=["senza ricostruzione", "dopo una ricostruzione"])
-    def test_dopo_un_nome_vuoto_il_nome_nuovo_nella_voce_del_torneo(self, principale, suoni, monkeypatch, ricostruito):
-        """10.19.16. Da Dati Alfa riceve il nome vuoto, che il ramo Dati
-        accetta, come gia' nella 10.0.0, e il file del torneo, senza nome,
-        non si salva: dice ancora Alfa. Poi il nome diventa Gamma: il file, il
-        titolo, la voce Nome torneo e la voce del torneo dicono Gamma. Se
-        prima l'albero si ricostruisce, come dopo un turno nuovo, la voce del
-        torneo dice invece il nome scritto nel file, Alfa, e il nome nuovo
-        non la tocca, perche' il nome di prima, vuoto, non la dice: resta
-        Alfa fino alla ricostruzione dopo. Nella prima stesura della 10.19.16
-        il nome nuovo finiva davanti a tutto il testo, e la voce diceva
-        GammaAlfa."""
+    @pytest.mark.parametrize("scritto", ["", "   "], ids=["vuoto", "di soli spazi"])
+    def test_un_nome_vuoto_non_si_accetta(self, principale, suoni, monkeypatch, capsys, scritto, ricostruito):
+        """10.19.17 (decisione di Gabriele del 5 novembre 2026). Il cursore
+        sta sulla voce Nome torneo del ramo Dati di Alfa, e da li' il nome
+        diventa vuoto, o fatto di soli spazi, che la finestra del campo
+        ripulisce: si sente il suono dell'errore, il messaggio Nome del
+        torneo mancante dice che il nome resta quello di prima, e il nome, il
+        file, il titolo della finestra e tutte le voci dell'albero restano
+        come prima, con il cursore sulla voce Nome torneo; la console non
+        dice niente. Poi il nome Gamma si accetta: il file, il titolo, la
+        voce Nome torneo e la voce del torneo dicono Gamma, anche se prima
+        l'albero si ricostruisce, come dopo un turno nuovo. Fino alla
+        10.19.16, e gia' nella 10.0.0, il nome vuoto si accettava, e da quel
+        momento ogni salvataggio non riusciva, con una riga in console. Nella
+        prima stesura della 10.19.16, con il nome vuoto accettato e una
+        ricostruzione dell'albero, la voce del torneo diventava GammaAlfa."""
         percorso = self._apri(principale, "Alfa")
-        TestNomeDelTorneoNuovo._domande(monkeypatch)
-        self._campo(principale, monkeypatch, percorso, "name", "")
-        assert principale.current_tournament["name"] == ""
+        albero = principale.tree_ctrl
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": "name"})
+        with principale._albero_senza_caricamenti():
+            albero.SelectItem(voce)
+        prima = self._voci_dell_albero(principale)
+        titolo = principale.GetTitle()
+        assert titolo.endswith(" - [Alfa]")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        self._campo(principale, monkeypatch, percorso, "name", scritto)
+
+        assert principale.current_tournament["name"] == "Alfa"
         assert self._nel_file(percorso)["name"] == "Alfa"
+        assert principale.GetTitle() == titolo
+        assert self._voci_dell_albero(principale) == prima
+        assert albero.GetSelection() == voce
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            ("Nome del torneo mancante", "Il nome del torneo non può essere vuoto: il nome resta quello di prima.", False)
+        ]
+        assert suoni == ["apertura", "errore"]
+        assert capsys.readouterr().out == ""
         if ricostruito:
             principale.populate_tree()
-            assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == "Alfa"
 
         voce = self._campo(principale, monkeypatch, percorso, "name", "Gamma")
 
         assert self._nel_file(percorso)["name"] == "Gamma"
         assert principale.GetTitle().endswith(" - [Gamma]")
-        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Gamma"
-        attesa = "Alfa" if ricostruito else "Gamma"
-        assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == attesa
+        assert albero.GetItemText(voce) == "Nome torneo: Gamma"
+        assert albero.GetItemText(principale._voce_del_torneo_aperto()) == "Gamma"
 
 
 class TestPartiteDellaCadenzaNelDatabase:

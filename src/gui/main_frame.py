@@ -1450,16 +1450,13 @@ class MainFrame(wx.Frame):
         voce = self._voce_del_torneo_aperto()
         if voce is not None:
             testo = self.tree_ctrl.GetItemText(voce)
-            seguito = testo[len(vecchio) :]
-            # Dopo il nome la voce ha soltanto la parte fra parentesi, o
-            # niente. Con un nome di prima vuoto, che il ramo Dati accetta, la
-            # voce e' quella parte, oppure, dopo una ricostruzione
-            # dell'albero, il nome scritto nel file, che il salvataggio senza
-            # nome non ha cambiato: allora resta com'e'. Nella prima stesura
-            # della 10.19.16 il nome nuovo finiva davanti a tutto il testo,
-            # per esempio GammaAlfa.
-            if testo.startswith(vecchio) and (vecchio or not seguito or seguito.startswith(" (")):
-                self.tree_ctrl.SetItemText(voce, nuovo + seguito)
+            # Dalla 10.19.17 il ramo Dati non accetta un nome vuoto: un nome
+            # di prima vuoto viene soltanto da un file scritto cosi', e
+            # allora anche la voce lo dice vuoto. Il controllo che la
+            # revisione della 10.19.16 aveva aggiunto per il nome vuoto
+            # accettato da Dati non serve piu'.
+            if testo.startswith(vecchio):
+                self.tree_ctrl.SetItemText(voce, nuovo + testo[len(vecchio) :])
         # Avvio torneo sta al primo livello; sotto i turni c'e' calcola il
         # turno 1, con la stessa azione, che il nome non lo dice.
         figlia, cookie = self.tree_ctrl.GetFirstChild(radice)
@@ -3959,15 +3956,28 @@ class MainFrame(wx.Frame):
 
     def _nome_da_dati_accettato(self, nome):
         """Vero se il torneo aperto puo' prendere da Dati il nome nome: i
-        controlli di _nome_e_inizio_accettati, tranne per un nome vuoto,
-        come nella procedura guidata, e la raccolta delle partite di un
-        altro torneo, al posto di quella che il torneo scrivera' con il nome
-        nuovo, messa in salvo (10.19.7, issue 66). Il file del torneo non
-        cambia nome: i report e la raccolta delle partite prendono il nome
-        nuovo, e quelli con il nome di prima restano dove sono."""
+        controlli di _nome_e_inizio_accettati e la raccolta delle partite di
+        un altro torneo, al posto di quella che il torneo scrivera' con il
+        nome nuovo, messa in salvo (10.19.7, issue 66). Il file del torneo
+        non cambia nome: i report e la raccolta delle partite prendono il
+        nome nuovo, e quelli con il nome di prima restano dove sono.
+        Dalla 10.19.17 un nome vuoto, anche fatto di soli spazi, che la
+        finestra del campo ripulisce, non si accetta: si sente l'errore, e un
+        messaggio dice che il nome resta quello di prima (decisione di
+        Gabriele del 5 novembre 2026). Fino alla 10.19.16, e gia' nella
+        10.0.0, si accettava, e da quel momento save_tournament rifiutava
+        ogni salvataggio, dicendolo soltanto con una riga in console."""
         from reports import file_della_raccolta_pgn
+        from utils import play_sound
 
-        if nome and not self._nome_e_inizio_accettati(nome, self.current_tournament.get("start_date")):
+        if not nome:
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Nome del torneo mancante"),
+                _("Il nome del torneo non può essere vuoto: il nome resta quello di prima."),
+            )
+            return False
+        if not self._nome_e_inizio_accettati(nome, self.current_tournament.get("start_date")):
             return False
         rinominato = dict(self.current_tournament, name=nome)
         prima = file_della_raccolta_pgn(self.current_tournament, self.active_filename)
