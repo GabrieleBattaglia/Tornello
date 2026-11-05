@@ -487,18 +487,27 @@ def _copia_se_torneo_avanza(percorso, turni_prima, turni_ora):
         create_backup(percorso, f"turno_{turni_ora}")
 
 
-def save_tournament(torneo, filepath=None):
+def save_tournament(torneo, filepath=None, motivi=None):
     """Salva lo stato corrente del torneo nel file JSON.
     Risponde vero se il file e' stato scritto. Gli errori restano stampati e
     non salgono, come sempre, ma chi deve fermarsi davanti a un salvataggio
     mancato ora lo sa: la finalizzazione, fino alla 10.8.8, archiviava e
-    toglieva il file di prima, che non conteneva la conclusione."""
+    toglieva il file di prima, che non conteneva la conclusione.
+    Dalla 10.19.19, se motivi e' una lista, il salvataggio che non riesce ci
+    aggiunge il motivo: quello che da' il sistema, o la frase del nome
+    mancante, la stessa della console, che non cambia. La finestra lo dice
+    nel suo messaggio Torneo non salvato (decisione di Gabriele del 5
+    novembre 2026): fino ad allora lo diceva soltanto la riga in console."""
+    if motivi is None:
+        motivi = []
     tournament_name_for_file = None  # Inizializza a None
     dynamic_tournament_filename = None  # Inizializza a None
     try:
         tournament_name_for_file = torneo.get("name")
         if not tournament_name_for_file:
-            print(_("Errore: Nome del torneo non presente. Impossibile salvare."))
+            messaggio = _("Errore: Nome del torneo non presente. Impossibile salvare.")
+            print(messaggio)
+            motivi.append(messaggio)
             return False
         sanitized_name = sanitize_filename(tournament_name_for_file)
         if filepath:
@@ -540,10 +549,12 @@ def save_tournament(torneo, filepath=None):
                 filename=dynamic_tournament_filename, error=e
             )
         )
+        motivi.append(str(e))
         return False
     except Exception as e:
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))
         traceback.print_exc()  # Stampa più dettagli in caso di errore non previsto
+        motivi.append(str(e))
         return False
     return True
 

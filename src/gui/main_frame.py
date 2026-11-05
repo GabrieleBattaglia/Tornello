@@ -235,6 +235,12 @@ class MainFrame(wx.Frame):
         # raccolta, fino alla chiusura di Tornello. Fino alla decisione di
         # Gabriele del 5 novembre 2026 c'era soltanto la riga in console.
         self._raccolte_non_scritte = set()
+        # I file dei tornei che un salvataggio non ha potuto scrivere, per
+        # esempio perche' un altro programma li tiene bloccati, e il cui
+        # messaggio Torneo non salvato si e' gia' sentito: si dice una volta,
+        # finche' un salvataggio di quel torneo non riesce di nuovo
+        # (10.19.19, decisione di Gabriele del 5 novembre 2026).
+        self._tornei_non_salvati = set()
 
         self._init_ui()
         self._setup_shortcuts()
@@ -4232,14 +4238,60 @@ class MainFrame(wx.Frame):
         if self.current_tournament:
             from tournament import save_tournament
 
-            save_tournament(self.current_tournament, filepath=self.active_filename)
-            self._salva_i_report()
+            motivi = []
+            salvato = save_tournament(self.current_tournament, filepath=self.active_filename, motivi=motivi)
+            self._esito_del_salvataggio(salvato, motivi)
+            self._salva_i_report(torneo_salvato=salvato)
 
-    def _salva_i_report(self):
+    def _file_del_torneo_aperto(self):
+        """Il file in cui save_tournament scrive il torneo aperto: il suo,
+        oppure, se non l'ha ancora, quello che nasce dal nome."""
+        if self.active_filename:
+            return self.active_filename
+        from tournament import sanitize_filename
+
+        return user_data_path(f"Tornello - {sanitize_filename(self.current_tournament.get('name', ''))}.json")
+
+    def _esito_del_salvataggio(self, salvato, motivi):
+        """Dalla 10.19.19 un salvataggio del torneo aperto che non riesce, per
+        esempio perche' un altro programma tiene bloccato il suo file, lo
+        dice nella finestra, con il suono dell'errore e il messaggio Torneo
+        non salvato, con il motivo che da' il sistema: una volta, finche' un
+        salvataggio di quel torneo non riesce di nuovo, e allora il
+        messaggio puo' tornare (decisione di Gabriele del 5 novembre 2026).
+        Fino alla 10.19.18, e gia' nella 10.0.0, lo diceva soltanto una riga
+        in console, e le modifiche restavano soltanto in memoria senza che la
+        finestra lo dicesse. La console stampa la sua riga come prima."""
+        from utils import play_sound
+
+        percorso = self._file_del_torneo_aperto()
+        chiave = _chiave_del_percorso(percorso)
+        if salvato:
+            self._tornei_non_salvati.discard(chiave)
+            return
+        if chiave in self._tornei_non_salvati:
+            return
+        self._tornei_non_salvati.add(chiave)
+        play_sound("errore")
+        self._dialogo_informativo(
+            _("Torneo non salvato"),
+            _(
+                "Il torneo {nome} non si è potuto salvare nel file {file}: {errore}. Le ultime modifiche sono soltanto in memoria, e Tornello riprova a ogni salvataggio. Se un altro programma tiene aperto il file, chiudilo."
+            ).format(
+                nome=self.current_tournament.get("name", ""),
+                file=percorso,
+                errore="; ".join(motivi).rstrip("."),
+            ),
+        )
+
+    def _salva_i_report(self, torneo_salvato=True):
         """I file che descrivono il torneo aperto: il turno corrente, la
         classifica e la raccolta delle partite. Dalla 10.19.0 stanno qui, fuori
         da _save_state, perche' la Time Machine li scrive soltanto dopo aver
-        salvato il file del torneo."""
+        salvato il file del torneo. Senza torneo_salvato il salvataggio del
+        file del torneo non e' riuscito: i file si scrivono lo stesso, ma il
+        messaggio della raccolta non scritta, che dice che il torneo e'
+        salvato, non esce, e puo' uscire a un salvataggio dopo (10.19.19)."""
         if self.current_tournament:
             from reports import save_current_tournament_round_file, save_standings_text
 
@@ -4324,7 +4376,11 @@ class MainFrame(wx.Frame):
                     # raccolta fino alla chiusura, e mai nello stesso
                     # salvataggio del messaggio della copia non riuscita, qui
                     # sotto (decisione di Gabriele del 5 novembre 2026).
-                    if aggiornata.errore is not None and chiave not in self._raccolte_non_scritte:
+                    # Dalla 10.19.19 non esce, e non si ricorda, quando il
+                    # file del torneo non si e' salvato: direbbe che il torneo
+                    # e' salvato, e lo dice gia' il messaggio Torneo non
+                    # salvato.
+                    if aggiornata.errore is not None and torneo_salvato and chiave not in self._raccolte_non_scritte:
                         self._raccolte_non_scritte.add(chiave)
                         cartella, file = os.path.split(percorso_della_raccolta)
                         play_sound("errore")
@@ -6165,6 +6221,10 @@ class MainFrame(wx.Frame):
             self._dialogo_informativo(_("Time Machine non riuscita"), messaggio)
             return
         self.current_tournament = nuovo
+        # Anche questo e' un salvataggio riuscito: dalla 10.19.19 il
+        # messaggio Torneo non salvato puo' tornare al prossimo che non
+        # riesce.
+        self._esito_del_salvataggio(True, [])
         self._salva_i_report()
         # Dalla 10.13.60 i file dei dettagli dei turni tolti vanno nel
         # cestino, con la finestra principale come proprietaria della

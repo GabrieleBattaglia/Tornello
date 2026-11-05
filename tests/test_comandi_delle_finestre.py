@@ -6248,3 +6248,219 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert self._copie_della_raccolta() == []
         with open(raccolta, "rb") as f:
             assert f.read() == contenuto
+
+
+class TestTorneoCheNonSiSalva:
+    """Dalla 10.19.19 (decisione di Gabriele del 5 novembre 2026) un
+    salvataggio della finestra che non riesce a scrivere il file del torneo,
+    per esempio perche' un altro programma lo tiene bloccato, lo dice con il
+    suono dell'errore e il messaggio Torneo non salvato, con il motivo che
+    da' il sistema: una volta, finche' un salvataggio di quel torneo non
+    riesce di nuovo. Mentre il torneo non si salva, il messaggio della
+    raccolta non scritta, che direbbe che il torneo e' salvato, non esce.
+    Fino alla 10.19.18, e gia' nella 10.0.0, lo diceva soltanto la riga in
+    console, che resta com'era. I blocchi sono veri, con CreateFileW, come
+    nelle prove della raccolta non scritta: il file del torneo si lascia
+    leggere, ma non sostituire. Le finestre di messaggio sono finte."""
+
+    RIGA_DELLA_CONSOLE = "Errore durante il salvataggio del torneo ({percorso}): "
+
+    @classmethod
+    def _errori_in_console(cls, capsys, percorso):
+        """I motivi degli errori che i salvataggi hanno stampato in console,
+        una riga per salvataggio, come sempre: quelli del file del torneo
+        percorso e quelli della raccolta delle partite."""
+        prefisso = cls.RIGA_DELLA_CONSOLE.format(percorso=percorso)
+        della_raccolta = TestRaccoltaSenzaPartiteNelCestino.RIGA_DELLA_CONSOLE
+        righe = capsys.readouterr().out.splitlines()
+        return (
+            [r[len(prefisso) :] for r in righe if r.startswith(prefisso)],
+            [r[len(della_raccolta) :] for r in righe if r.startswith(della_raccolta)],
+        )
+
+    @staticmethod
+    def _messaggio(percorso, errore, nome="Primavera 2"):
+        """Il titolo e il testo del messaggio Torneo non salvato per il
+        torneo nome, Primavera 2 se non e' un altro, nel file percorso, con
+        errore, il motivo che da' il sistema."""
+        return (
+            "Torneo non salvato",
+            f"Il torneo {nome} non si è potuto salvare nel file {percorso}: {errore}. "
+            "Le ultime modifiche sono soltanto in memoria, e Tornello riprova a ogni salvataggio. Se un altro programma tiene aperto il file, chiudilo.",
+        )
+
+    @staticmethod
+    def _aperto(principale, monkeypatch):
+        """Primavera 2, un torneo normale con la sua raccolta, aperto nella
+        finestra, con le finestre di messaggio annotate. Restituisce il file
+        del torneo, la raccolta e le finestre."""
+        percorso, raccolta, _contenuto = TestRaccoltaSenzaPartiteNelCestino._torneo_normale()
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        return principale.active_filename, raccolta, TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+    @staticmethod
+    def _salvataggi_bloccati(principale, *file, volte=3):
+        """I salvataggi della finestra, volte di fila, con file tenuti aperti
+        da un altro programma, che li lascia leggere ma non scrivere."""
+        bloccati = [TestRaccoltaSenzaPartiteNelCestino._bloccata(f, TestRaccoltaSenzaPartiteNelCestino.FILE_SHARE_READ) for f in file]
+        try:
+            for _volta in range(volte):
+                principale._save_state()
+        finally:
+            for sblocca in bloccati:
+                sblocca()
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_messaggio_una_volta_finche_un_salvataggio_non_riesce(self, principale, suoni, monkeypatch, capsys):
+        """Primavera 2 cambia luogo, e un altro programma tiene aperto il suo
+        file: dei tre salvataggi soltanto il primo dice il messaggio, con il
+        suono dell'errore e lo stesso motivo della riga in console, che c'e'
+        a ogni salvataggio. Il file resta com'era, e il luogo nuovo resta in
+        memoria. Tolto il blocco, il salvataggio scrive il luogo nuovo, senza
+        messaggi: Tornello riprova davvero. Bloccato di nuovo, il messaggio
+        torna, una volta in altri tre salvataggi."""
+        percorso, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        with open(percorso, "rb") as f:
+            prima = f.read()
+        suoni.clear()
+        capsys.readouterr()
+        principale.current_tournament["site"] = "Roma"
+
+        self._salvataggi_bloccati(principale, percorso)
+
+        with open(percorso, "rb") as f:
+            assert f.read() == prima
+        assert principale.current_tournament["site"] == "Roma"
+        errori, della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 3
+        assert errori[0]
+        assert della_raccolta == []
+        messaggio = self._messaggio(percorso, errori[0])
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*messaggio, False)]
+        assert suoni.count("errore") == 1
+
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["site"] == "Roma"
+        assert self._errori_in_console(capsys, percorso) == ([], [])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
+
+        self._salvataggi_bloccati(principale, percorso)
+
+        errori, _della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 3
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, self._messaggio(percorso, errori[0])]
+        assert suoni.count("errore") == 2
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_raccolta_non_scritta_non_si_dice_mentre_il_torneo_non_si_salva(self, principale, suoni, monkeypatch, capsys):
+        """Primavera 2 ha un PGN nuovo, e un altro programma tiene aperti il
+        suo file e la sua raccolta: dei tre salvataggi il primo dice soltanto
+        Torneo non salvato, e il messaggio della raccolta non scritta, che
+        direbbe che il torneo e' salvato, non esce; la console stampa i due
+        errori a ogni salvataggio, come prima. Tolto il blocco del file del
+        torneo, il salvataggio lo scrive, e il messaggio della raccolta non
+        scritta esce allora, una volta, perche' adesso e' vero. Fino alla
+        10.19.18 il primo salvataggio diceva soltanto che la raccolta non si
+        era scritta, e che il torneo era salvato."""
+        percorso, raccolta, finestre = self._aperto(principale, monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+        principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+
+        self._salvataggi_bloccati(principale, percorso, raccolta)
+
+        errori, della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 3
+        assert len(della_raccolta) == 3
+        messaggio = self._messaggio(percorso, errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
+        assert suoni.count("errore") == 1
+
+        self._salvataggi_bloccati(principale, raccolta, volte=2)
+
+        errori, della_raccolta = self._errori_in_console(capsys, percorso)
+        assert errori == []
+        assert len(della_raccolta) == 2
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["rounds"][0]["matches"][1]["pgn"] == PGN_VALIDO
+        raccolta_non_scritta = TestRaccoltaSenzaPartiteNelCestino._messaggio_della_raccolta_non_scritta(della_raccolta[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, raccolta_non_scritta]
+        assert suoni.count("errore") == 2
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_dopo_una_time_machine_riuscita_il_messaggio_torna(self, principale, suoni, monkeypatch, capsys, tmp_path):
+        """Anche la Time Machine che scrive il file del torneo e' un
+        salvataggio riuscito. Il file di Primavera 2 bloccato non si salva, e
+        il messaggio esce; tolto il blocco, Ctrl+Z, con Si', riporta il torneo
+        in preparazione e lo salva. Bloccato di nuovo, il primo salvataggio
+        dice di nuovo il messaggio. Il cestino e' finto."""
+        percorso, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        TestRaccoltaSenzaPartiteNelCestino._cestino(monkeypatch, str(tmp_path / "cestino"))
+        capsys.readouterr()
+
+        self._salvataggi_bloccati(principale, percorso, volte=1)
+        principale.on_rollback_round(None)
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["rounds"] == []
+        self._salvataggi_bloccati(principale, percorso, volte=2)
+
+        errori, _della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 3
+        non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
+        assert non_salvato == [self._messaggio(percorso, errori[0]), self._messaggio(percorso, errori[1])]
+        assert [f.titolo for f in finestre] == ["Torneo non salvato", "Annulla Turno", "Torneo non salvato"]
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_messaggio_si_dice_per_ogni_torneo(self, principale, suoni, monkeypatch, capsys):
+        """Il messaggio si ricorda per il file del torneo: dopo quello di
+        Primavera 2, che non si e' salvata, Estate 3 aperta nella stessa
+        sessione, con il suo file bloccato, ha il suo, una volta."""
+        from config import user_data_path
+
+        primavera, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        suoni.clear()
+        capsys.readouterr()
+
+        self._salvataggi_bloccati(principale, primavera, volte=2)
+        errori_primavera, _della_raccolta = self._errori_in_console(capsys, primavera)
+        principale.load_tournament(estate)
+        assert principale._e_il_torneo_aperto(estate)
+        estate = principale.active_filename
+        self._salvataggi_bloccati(principale, estate, volte=2)
+        errori_estate, _della_raccolta = self._errori_in_console(capsys, estate)
+
+        assert len(errori_primavera) == 2
+        assert len(errori_estate) == 2
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            self._messaggio(primavera, errori_primavera[0]),
+            self._messaggio(estate, errori_estate[0], nome="Estate 3"),
+        ]
+        assert suoni.count("errore") == 2
+
+    def test_un_file_con_il_nome_vuoto(self, principale, suoni, monkeypatch, capsys):
+        """Un file di torneo scritto a mano con il nome vuoto, che dal ramo
+        Dati dalla 10.19.17 non si puo' piu' dare, si apre, e i suoi
+        salvataggi non riescono: save_tournament fa arrivare come motivo la
+        frase che stampa in console, a ogni salvataggio come prima, e il
+        messaggio la dice una volta."""
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Senza_nome.json")
+        TestNomeDelTorneoNuovo._scrivi(percorso, _torneo_in_corso(""))
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        principale._save_state()
+        principale._save_state()
+
+        frase = "Errore: Nome del torneo non presente. Impossibile salvare."
+        assert capsys.readouterr().out.splitlines().count(frase) == 2
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(principale.active_filename, frase[:-1], nome="")]
+        assert suoni.count("errore") == 1
