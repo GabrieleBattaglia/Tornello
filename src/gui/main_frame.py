@@ -4285,7 +4285,16 @@ class MainFrame(wx.Frame):
                 percorso_della_raccolta = file_della_raccolta_pgn(self.current_tournament, self.active_filename)
                 chiave = _chiave_del_percorso(percorso_della_raccolta)
                 if not aggiornata.copia_non_riuscita:
-                    self._copie_non_riuscite.discard(chiave)
+                    # Il messaggio della copia non riuscita puo' tornare
+                    # soltanto dopo un salvataggio che ha scritto la
+                    # raccolta, o che non doveva scriverla: uno che non ha
+                    # potuto scriverla, o leggerla, non ha nemmeno fatto la
+                    # copia. Fino alla correzione della revisione della
+                    # 10.19.13 la memoria si svuotava anche li', e il
+                    # messaggio, che promette di non ripetersi fino alla
+                    # chiusura, tornava.
+                    if aggiornata.errore is None:
+                        self._copie_non_riuscite.discard(chiave)
                     # La raccolta che non si e' potuta scrivere, o leggere
                     # prima di sostituirla: un messaggio, una volta per
                     # raccolta fino alla chiusura, e mai nello stesso

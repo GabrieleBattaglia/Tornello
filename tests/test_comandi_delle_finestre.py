@@ -5668,17 +5668,18 @@ class TestRaccoltaSenzaPartiteNelCestino:
         return lambda: kernel32.CloseHandle(maniglia)
 
     @staticmethod
-    def _messaggio_della_raccolta_non_scritta(errore):
+    def _messaggio_della_raccolta_non_scritta(errore, file="Primavera_2 - raccolta partite.pgn"):
         """Il titolo e il testo del messaggio Raccolta delle partite non
-        scritta per la raccolta di Primavera 2 nella cartella del programma,
-        che un salvataggio non ha potuto scrivere, con errore, il motivo che
-        da' il sistema (decisione di Gabriele del 5 novembre 2026)."""
+        scritta per la raccolta file, di Primavera 2 se non e' un'altra,
+        nella cartella del programma, che un salvataggio non ha potuto
+        scrivere, con errore, il motivo che da' il sistema (decisione di
+        Gabriele del 5 novembre 2026)."""
         from config import user_data_path
 
         cartella = os.path.abspath(user_data_path(""))
         return (
             "Raccolta delle partite non scritta",
-            f"La raccolta delle partite Primavera_2 - raccolta partite.pgn, nella cartella {cartella}, non si è potuta scrivere: {errore}. "
+            f"La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. "
             "Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio.",
         )
 
@@ -5969,6 +5970,115 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio] * 2
         assert suoni.count("errore") == 2
         assert self._copie_della_raccolta() == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("dopo", ["un altro torneo", "il nome nuovo da Dati"])
+    def test_il_messaggio_della_raccolta_non_scritta_una_volta_per_raccolta(self, principale, suoni, monkeypatch, capsys, dopo):
+        """Decisione di Gabriele del 5 novembre 2026. Un visualizzatore di
+        PGN tiene aperta la raccolta di Primavera 2, aperta nella finestra, e
+        il salvataggio con un PGN nuovo non la scrive: il messaggio lo dice.
+        Poi, nella stessa sessione, la finestra salva un'altra raccolta,
+        quella di Estate 3, aperto dopo, oppure quella che Primavera 2 scrive
+        con il nome Primavera 3, preso dal ramo Dati, con lo stesso file del
+        torneo, e anche quella e' tenuta aperta: il messaggio esce di nuovo,
+        con il nome di quella raccolta, perche' si dice una volta per
+        raccolta, e non una volta per finestra o per file del torneo. Il
+        salvataggio dopo, con la raccolta ancora bloccata, non lo ripete."""
+        from config import user_data_path
+
+        percorso, raccolta, _contenuto = self._torneo_normale()
+        principale.load_tournament(percorso)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_READ)
+        try:
+            principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+            principale._save_state()
+        finally:
+            sblocca()
+
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 1
+        assert errori[0]
+        primo = self._messaggio_della_raccolta_non_scritta(errori[0])
+        assert [(f.titolo, f.testo) for f in finestre] == [primo]
+
+        if dopo == "un altro torneo":
+            dati = _torneo_in_corso("Estate 3")
+            dati["rounds"][0]["matches"][0]["pgn"] = self.PGN_ESPORTATO
+            altro = user_data_path("Tornello - Estate_3.json")
+            TestNomeDelTorneoNuovo._scrivi(altro, dati)
+            file = "Estate_3 - raccolta partite.pgn"
+            with open(user_data_path(file), "wb") as f:
+                f.write(_raccolta_come_la_scrive_la_finestra(self.PGN_ESPORTATO))
+            principale.load_tournament(altro)
+            pgn = PGN_VALIDO
+        else:
+            TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, percorso, "name", "Primavera 3")
+            file = "Primavera_3 - raccolta partite.pgn"
+            pgn = PGN_VALIDO.replace("1/2-1/2", "1-0")
+        seconda = user_data_path(file)
+        assert os.path.isfile(seconda)
+        assert [(f.titolo, f.testo) for f in finestre] == [primo]
+        capsys.readouterr()
+
+        sblocca = self._bloccata(seconda, self.FILE_SHARE_READ)
+        try:
+            principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = pgn
+            principale._save_state()
+            principale._save_state()
+        finally:
+            sblocca()
+
+        errori = self._errori_in_console(capsys)
+        assert len(errori) == 2
+        assert errori[0]
+        assert [(f.titolo, f.testo) for f in finestre] == [primo, self._messaggio_della_raccolta_non_scritta(errori[0], file)]
+        assert suoni.count("errore") == 2
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_copia_non_riuscita_non_torna_dopo_la_raccolta_non_scritta(self, principale, suoni, monkeypatch, tmp_path, capsys):
+        """Correzione della revisione della 10.19.13. Il cestino non prende
+        la raccolta di Primavera 2, che resta, e il torneo ha un PGN nuovo: la
+        copia nella cartella backup non riesce, e il messaggio dice che fino
+        alla chiusura non si ripete. Al salvataggio dopo un altro programma
+        tiene la raccolta, e non la lascia leggere: il messaggio della
+        raccolta non scritta lo dice. Tolto il blocco, la copia non riesce
+        ancora, e i due salvataggi non ripetono nessun messaggio. Fino alla
+        correzione il salvataggio che non scriveva la raccolta svuotava la
+        memoria della copia non riuscita, e il suo messaggio tornava."""
+        raccolta, contenuto = self._senza_piu_pgn(principale)
+        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        principale._save_state()
+        self._senza_copie_delle_raccolte(monkeypatch)
+        principale.current_tournament["rounds"][0]["matches"][0]["pgn"] = self.ALTRO_PGN
+        principale._save_state()
+        capsys.readouterr()
+
+        sblocca = self._bloccata(raccolta, self.FILE_SHARE_WRITE)
+        try:
+            principale._save_state()
+        finally:
+            sblocca()
+        errori = self._errori_in_console(capsys)
+        principale._save_state()
+        principale._save_state()
+
+        with open(raccolta, "rb") as f:
+            assert f.read() == contenuto
+        assert self._copie_della_raccolta() == []
+        assert len(errori) == 1
+        assert errori[0]
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            self._messaggio_della_raccolta_rimasta(),
+            self._messaggio_della_copia_non_riuscita(),
+            self._messaggio_della_raccolta_non_scritta(errori[0]),
+        ]
+        assert suoni.count("errore") == 3
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     def test_la_finalizzazione_in_console_con_la_raccolta_che_non_si_legge(self, suoni):
