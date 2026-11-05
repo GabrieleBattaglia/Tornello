@@ -8,10 +8,10 @@ Esito:
 
 PROVA 2: CANC su una partita giocata
 Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
-Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove 15, 16 e 17.
-Prima: Tornello resta aperto fino alla prova 14. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
+Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove 16, 17, 18 e 19.
+Prima: Tornello resta aperto fino alla prova 15. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
 Passo 1: con il fuoco nell'albero premi NVDA+T.
-Domanda 1: il titolo dice Tornello - Versione 10.19.16 - Data Rilascio 2026.11.05 - [Nessun Torneo Caricato]?
+Domanda 1: il titolo dice Tornello - Versione 10.19.19 - Data Rilascio 2026.11.05 - [Nessun Torneo Caricato]?
 Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
 Passo 3: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
 Domanda 2: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima, il giorno e l'ora delle 18:00, e il PGN che resta con la partita?
@@ -146,14 +146,20 @@ Passo 4: chiudi il messaggio, premi INVIO su Nome torneo: Prova voci, scrivi Set
 Domanda 5: il messaggio dice che il nome Settings è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe Tornello - Settings.json, come il file delle impostazioni del programma?
 Passo 5: chiudi il messaggio.
 Domanda 6: la voce dice ancora Nome torneo: Prova voci?
-Passo 6: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
-Domanda 7: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
-Domanda 8: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
-Passo 7: premi ESC.
-Domanda 9: ESC risponde No, e la voce dice ancora Nome torneo: Beta?
-Passo 8: scendi su Data inizio, premi INVIO, scrivi 2026-05-02 al posto della data che c'è e premi INVIO.
-Domanda 10: si sente l'errore, e il messaggio Data di inizio già in uso dice che il torneo Alfa, archiviato nella cartella Closed Tournaments\2026\05 Maggio\Alfa con il file Tornello - Alfa.json, ha lo stesso identificativo, ALFA, e la stessa data di inizio?
-Domanda 11: chiuso il messaggio, la voce Data inizio dice ancora la data di prima, e non Sabato 2 maggio 2026?
+Passo 6: premi INVIO su Nome torneo: Prova voci, poi Ctrl+A e BACKSPACE, così il campo resta vuoto, e premi INVIO.
+Domanda 7: si sente l'errore, e il messaggio Nome del torneo mancante dice "Il nome del torneo non può essere vuoto: il nome resta quello di prima."?
+Passo 7: chiudi il messaggio.
+Domanda 8: il cursore è rimasto su Nome torneo: Prova voci, e NVDA te l'ha detta senza che ti muovessi?
+Passo 8: premi NVDA+T.
+Domanda 9: il titolo dice ancora Tornello - Versione 10.19.19 - Data Rilascio 2026.11.05 - [Prova voci]?
+Passo 9: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
+Domanda 10: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
+Domanda 11: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
+Passo 10: premi ESC.
+Domanda 12: ESC risponde No, e la voce dice ancora Nome torneo: Beta?
+Passo 11: scendi su Data inizio, premi INVIO, scrivi 2026-05-02 al posto della data che c'è e premi INVIO.
+Domanda 13: si sente l'errore, e il messaggio Data di inizio già in uso dice che il torneo Alfa, archiviato nella cartella Closed Tournaments\2026\05 Maggio\Alfa con il file Tornello - Alfa.json, ha lo stesso identificativo, ALFA, e la stessa data di inizio?
+Domanda 14: chiuso il messaggio, la voce Data inizio dice ancora la data di prima, e non Sabato 2 maggio 2026?
 Esito: 
 
 PROVA 11: Da Dati il nome del file di un'edizione archiviata
@@ -175,7 +181,7 @@ Passo 6: premi INVIO su Nome torneo, scrivi Corona al posto del nome e premi INV
 Domanda 8: la voce dice Nome torneo: Corona, senza altri messaggi?
 Domanda 9: il cursore è rimasto su quella voce, nel ramo Dati, e NVDA te l'ha detta senza che ti muovessi, senza leggerti altre voci dell'albero?
 Passo 7: premi NVDA+T.
-Domanda 10: il titolo dice subito Tornello - Versione 10.19.16 - Data Rilascio 2026.11.05 - [Corona]?
+Domanda 10: il titolo dice subito Tornello - Versione 10.19.19 - Data Rilascio 2026.11.05 - [Corona]?
 Passo 8: premi due volte freccia su.
 Domanda 11: NVDA legge prima Dati, poi Corona, la voce del torneo, che prima diceva Prova stessa data?
 Passo 9: premi due volte freccia giù, per tornare su Nome torneo: Corona.
@@ -221,7 +227,22 @@ Domanda 6: NVDA legge Partite Locali Rapid: 3 ed ELO Rapid: 1848, con la partita
 Passo 8: chiudi la finestra con ESC, senza modificare niente.
 Esito: 
 
-PROVA 14: Menu Aiuto, il PUB e la chiusura senza invito
+PROVA 14: INVIO sui campi Dati di un torneo il cui file non c'è più
+Prima: Tornello aperto. Prova senza cartella è un torneo in corso che le altre prove non usano, e il suo file è Tornello - Prova_senza_cartella.json, nella cartella E:\git\tmp\banco-tornello.
+Passo 1: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello, scegli il file Tornello - Prova_senza_cartella.json, premi F2, scrivi sparito al posto del nome e premi INVIO: per Tornello il file del torneo non c'è più.
+Passo 2: torna in Tornello e, con le frecce nell'albero, scegli Prova senza cartella, al primo livello.
+Domanda 1: appena il cursore arriva su Prova senza cartella esce il messaggio Errore, che dice "Errore nel caricamento del torneo: [Errno 2] No such file or directory:", seguito dal percorso del file Tornello - Prova_senza_cartella.json fra apici, con le barre rovesciate doppie?
+Passo 3: chiudi il messaggio con INVIO e premi NVDA+T.
+Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.19 - Data Rilascio 2026.11.05 - [Nessun Torneo Caricato]?
+Passo 4: apri il ramo con freccia destra e scendi su Dati, poi apri Dati con freccia destra e scendi su Nome torneo: Prova senza cartella; ogni volta che arriva il messaggio Errore, chiudilo con INVIO.
+Domanda 3: lo stesso messaggio Errore arriva sia su Dati sia su Nome torneo, e mai con la freccia destra?
+Passo 5: su Nome torneo: Prova senza cartella premi INVIO.
+Domanda 4: arriva ancora lo stesso messaggio Errore, e non la finestra Errore Imprevisto?
+Passo 6: chiudi il messaggio con INVIO.
+Domanda 5: non si apre la finestra Nome Torneo, che chiede il nome, e il cursore resta su Nome torneo: Prova senza cartella?
+Esito: 
+
+PROVA 15: Menu Aiuto, il PUB e la chiusura senza invito
 Prima: Tornello aperto. Nel banco le mail del PUB vanno al tuo Gmail e non al gruppo; i passi della mail copiano negli appunti indirizzo, oggetto e testo.
 Passo 1: premi ALT, poi A, e scorri le voci del menu Aiuto con le frecce.
 Domanda 1: dopo Crediti vengono, nell'ordine, Offrimi un caffè... con la O, Entra al PUB (gruppo di supporto)... con la E e Chiedi aiuto al PUB... con la A?
@@ -237,16 +258,16 @@ Domanda 5: appena scegli la voce si sente il suono della domanda, diverso dal ca
 Passo 7: se la finestra mostra la spiegazione, premi ALT+P, Passo per passo, e non INVIO, che lì sceglie Apri nel programma di posta; se mostra già il passo 1 di 4, vai avanti.
 Domanda 6: il passo 1 di 4 dice che l'indirizzo è gabriele.battaglia@gmail.com, il tuo Gmail?
 Passo 8: premi INVIO, per il passo 2 di 4.
-Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.16?
+Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.19?
 Passo 9: aspetta un secondo e premi INVIO, per il passo 3 di 4.
-Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.16, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
+Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.19, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
 Passo 10: premi ESC, senza spedire niente.
 Passo 11: chiudi Tornello con ALT+F4.
 Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
 Esito: 
 
-PROVA 15: La console del banco dopo la chiusura
-Prima: Tornello del banco chiuso alla prova 14. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
+PROVA 16: La console del banco dopo la chiusura
+Prima: Tornello del banco chiuso alla prova 15. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
 Passo 1: torna al prompt dei comandi da cui hai avviato banco.py e leggi le ultime righe.
 Domanda 1: c'è la riga "Banco di collaudo chiuso. Dati vivi invariati:", seguita da un numero e da "file controllati."?
 Domanda 2: subito dopo c'è la riga "Nessuna operazione rifiutata dal guardiano."?
@@ -254,8 +275,8 @@ Passo 2: leggi le righe sopra quella di chiusura del banco, almeno una ventina, 
 Domanda 3: nessuna di quelle righe comincia con Unrecognized accel key?
 Esito: 
 
-PROVA 16: La raccolta rimasta dopo una chiusura di Tornello
-Prima: Tornello del banco chiuso alla prova 14, e il prompt dei comandi della prova 2 ancora aperto.
+PROVA 17: La raccolta rimasta dopo una chiusura di Tornello
+Prima: Tornello del banco chiuso alla prova 15, e il prompt dei comandi della prova 2 ancora aperto.
 Prima: in Prova rimasta il Turno 1 è completo; nel Turno corrente (2/3) la Scacchiera 1, Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], è l'unica partita con il PGN, e la Scacchiera 2, Sala Sergio vs Testa Teresa, è da giocare. Nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova rimasta c'è la sua raccolta, Prova_rimasta - raccolta partite.pgn.
 Prima: nella prima parte di questa prova il cestino del banco rifiuta i file, come Windows su un disco senza cestino: lo accende l'argomento --cestino-rifiuta di banco.py, soltanto per quell'avvio del banco.
 Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py --cestino-rifiuta
@@ -286,8 +307,8 @@ Passo 14: chiudi il Blocco note, torna in Tornello e chiudilo con ALT+F4.
 Domanda 12: nel prompt dei comandi le ultime due righe dicono di nuovo che i dati vivi sono invariati, e "Nessuna operazione rifiutata dal guardiano."?
 Esito: 
 
-PROVA 17: La raccolta delle partite che Tornello non riesce a scrivere
-Prima: Tornello del banco chiuso alla prova 16, e il prompt dei comandi della prova 2 ancora aperto.
+PROVA 18: La raccolta delle partite che Tornello non riesce a scrivere
+Prima: Tornello del banco chiuso alla prova 17, e il prompt dei comandi della prova 2 ancora aperto.
 Prima: in Prova bloccata il Turno 1 è completo; nel Turno corrente (2/3) la Scacchiera 1, Galli Giulia vs Alberti Anna [1/2-1/2], è l'unica partita con il PGN, e le Scacchiere 2, 3 e 4 sono da giocare. Nella cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova bloccata c'è la sua raccolta, Prova_bloccata - raccolta partite.pgn.
 Prima: in questa prova il banco tiene aperta quella raccolta come un altro programma, che la lascia leggere ma non scrivere: lo accende l'argomento --raccolta-bloccata di banco.py, soltanto per quell'avvio del banco e fino alla chiusura di Tornello. Ogni risultato riscrive la raccolta, e la scrittura non riesce.
 Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py --raccolta-bloccata
@@ -306,7 +327,31 @@ Domanda 7: nel prompt dei comandi, sopra le due righe di chiusura del banco, la 
 Domanda 8: le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
 Esito: 
 
-PROVA 18: Ascolto dei tre suoni al posto della campanella
+PROVA 19: Il torneo che Tornello non riesce a salvare
+Prima: Tornello del banco chiuso alla prova 18, e il prompt dei comandi della prova 2 ancora aperto.
+Prima: in Prova ritiri il Turno 1 è completo, e nel Turno corrente (2/5) le Scacchiere 1 e 2 sono da giocare.
+Prima: in questa prova il banco tiene aperto il file del torneo, Tornello - Prova_ritiri.json, come un altro programma, che lo lascia leggere ma non scrivere: lo accende l'argomento --torneo-bloccato di banco.py, soltanto per quell'avvio del banco e fino alla chiusura di Tornello. Ogni risultato salva il torneo, e il salvataggio non riesce.
+Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py --torneo-bloccato
+Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il banco tiene aperto il file del torneo Prova ritiri, come un altro programma, fino alla chiusura di Tornello."?
+Passo 2: nell'albero scegli Prova ritiri, poi turni (2), Turno corrente (2/5), da giocare (2), da programmare (2), e sulla Scacchiera 1, Iori Ivo vs Galli Giulia (Non pianificata), premi INVIO.
+Passo 3: scegli 1 - 0 (Vince Iori Ivo) e premi INVIO.
+Domanda 2: si sente l'errore, e il messaggio Torneo non salvato comincia con "Il torneo Prova ritiri non si è potuto salvare nel file E:\git\tmp\banco-tornello\Tornello - Prova_ritiri.json:"?
+Domanda 3: dopo i due punti c'è il motivo che dà il sistema, [WinError 5] Accesso negato, seguito da due percorsi fra apici, con le barre rovesciate doppie: prima quello di un file temporaneo che comincia con .tornello_, poi quello del torneo?
+Domanda 4: il messaggio finisce con "Le ultime modifiche sono soltanto in memoria, e Tornello riprova a ogni salvataggio. Se un altro programma tiene aperto il file, chiudilo."?
+Passo 4: chiudi il messaggio: il cursore è già sulla Scacchiera 2, Marini Marco vs Longo Lucia (Non pianificata); premi INVIO, scegli 1 - 0 (Vince Marini Marco) e premi INVIO.
+Domanda 5: si sente la fine del turno, senza il suono dell'errore e senza nessun messaggio?
+Passo 5: il cursore è sulla voce Prova ritiri; scendi con le frecce su turni (2), Turno corrente (2/5) e giocate, e apri con freccia destra i rami che sono chiusi.
+Domanda 6: la voce dice ancora giocate (0/2, 0.0%), e sotto da giocare (2) ci sono ancora le due partite, perché l'albero legge il file del torneo, che è rimasto quello di prima: ti va bene così?
+Passo 6: chiudi Tornello con ALT+F4.
+Domanda 7: nel prompt dei comandi, sopra le due righe di chiusura del banco, la riga che comincia con "Errore durante il salvataggio del torneo (E:\git\tmp\banco-tornello\Tornello - Prova_ritiri.json): [WinError 5] Accesso negato" c'è due volte, una per ogni risultato?
+Domanda 8: le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
+Passo 7: i due risultati erano soltanto in memoria, e il file del torneo è rimasto com'era. Per sentirlo, nello stesso prompt dei comandi avvia di nuovo Tornello del banco, senza l'argomento, con: python E:\git\tmp\banco-tornello\banco.py
+Passo 8: nell'albero scegli Prova ritiri, poi turni (2) e Turno corrente (2/5).
+Domanda 9: il ramo giocate dice (0/2, 0.0%), e da giocare (2) ha ancora le due partite, Iori Ivo vs Galli Giulia e Marini Marco vs Longo Lucia?
+Passo 9: chiudi Tornello con ALT+F4.
+Esito: 
+
+PROVA 20: Ascolto dei tre suoni al posto della campanella
 Prima: Tornello chiuso, con il volume che usi di solito.
 Passo 1: dal prompt dei comandi scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
 Passo 2: segui lo script fino in fondo.
