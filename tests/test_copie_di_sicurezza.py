@@ -2066,6 +2066,9 @@ class TestDopoIlRipristino:
             current_tournament={"name": "X"} if in_memoria else None,
             populate_tree=lambda: registro.append("albero"),
             _save_state=lambda: registro.append("salvato"),
+            # Dalla 10.19.21 il ripristino di un altro torneo chiede prima se
+            # si puo' lasciare il torneo aperto: qui si puo'.
+            _si_puo_lasciare_il_torneo=lambda: True,
         )
 
         def carica(percorso):

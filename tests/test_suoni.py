@@ -231,7 +231,9 @@ class TestAlPostoDellaCampanella:
         import gui.main_frame as mf
 
         alberi = []
-        finta = SimpleNamespace(populate_new_tournament_wizard_tree=lambda: alberi.append(suoni[:]))
+        # Dalla 10.19.21 la procedura guidata chiede prima se si puo'
+        # lasciare il torneo aperto: qui non ce n'e' uno.
+        finta = SimpleNamespace(populate_new_tournament_wizard_tree=lambda: alberi.append(suoni[:]), _si_puo_lasciare_il_torneo=lambda: True)
         mf.MainFrame.start_new_tournament_wizard(finta)
         assert suoni == ["nuovo_torneo"]
         # Il suono arriva prima dell'albero della procedura.

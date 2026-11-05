@@ -6599,7 +6599,10 @@ class TestTorneoCheNonSiSalva:
         messaggio esce, e dalla 10.19.20 il torneo resta aperto. Il secondo
         tentativo, con lo stesso nome, lo dice di nuovo, una volta, e il
         torneo aperto e' il secondo. Fino alla revisione il ricordo del
-        messaggio restava, e il secondo tentativo non lo diceva. La scrittura
+        messaggio restava, e il secondo tentativo non lo diceva. Dalla
+        10.19.21 il secondo tentativo comincia con la domanda di
+        TestTorneoNonSalvatoDaLasciare, perche' il primo torneo nuovo ha le
+        ultime modifiche soltanto in memoria, e con Si' parte. La scrittura
         del file e le finestre di messaggio sono finte."""
         import wx
 
@@ -6616,8 +6619,9 @@ class TestTorneoCheNonSiSalva:
 
         percorso = user_data_path("Tornello - Nuovo_Sociale.json")
         messaggio = self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")
-        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, messaggio]
-        assert suoni.count("errore") == 2
+        domanda = TestTorneoNonSalvatoDaLasciare._domanda("Accesso negato", nome="Nuovo Sociale")
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, domanda, messaggio]
+        assert suoni.count("errore") == 3
         assert scatole == []
         self._aperto_dalla_memoria(principale, percorso, "Nuovo Sociale")
         assert principale.current_tournament["site"] == "Ferrara"
@@ -6738,3 +6742,295 @@ class TestTorneoCheNonSiSalva:
         non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
         assert non_salvato == [self._messaggio(percorso, _descrizione_dell_errore(errori[0]), nome="Gamma"), self._messaggio(percorso, _descrizione_dell_errore(errori[1]), nome="Gamma")]
         assert suoni.count("errore") == 2
+
+
+class TestTorneoNonSalvatoDaLasciare:
+    """Dalla 10.19.21 (decisione di Gabriele del 5 novembre 2026) un torneo
+    che ha le ultime modifiche soltanto in memoria, perche' il suo ultimo
+    salvataggio non e' riuscito, prima di lasciarlo si riprova a salvare. Se
+    si salva, si va avanti senza dire niente. Se no, con il suono
+    dell'errore, la domanda Torneo non salvato chiede se lasciarlo lo
+    stesso, con No predefinito: con Si' si va avanti, e le modifiche si
+    perdono; con No si resta sul torneo, e niente cambia. Fino alla 10.19.20,
+    e gia' nella 10.0.0, le modifiche si perdevano senza avviso. Il file del
+    torneo lo tiene aperto un altro programma, con un blocco vero di
+    CreateFileW che lo lascia leggere ma non sostituire; le finestre di
+    messaggio, quella di Apri Torneo e le copie della chiusura sono finte."""
+
+    @staticmethod
+    def _domanda(errore, nome="Primavera 2"):
+        """Il titolo e il testo della domanda per il torneo nome, Primavera 2
+        se non e' un altro, con errore, la descrizione del motivo."""
+        return (
+            "Torneo non salvato",
+            f"Il torneo {nome} non si è potuto salvare: {errore}. Se lo lasci, le ultime modifiche si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No.",
+        )
+
+    @pytest.fixture
+    def bloccata(self, principale, suoni, monkeypatch, capsys):
+        """Primavera 2 aperta, con Estate 3 nella cartella e nell'albero, e il
+        cursore sulla voce Luogo di Primavera 2. Il luogo diventa Roma, e il
+        salvataggio non riesce, perche' un altro programma tiene bloccato il
+        file: il messaggio Torneo non salvato esce. Restituisce i due file, il
+        contenuto di quello di Primavera 2, la voce Luogo, la descrizione del
+        motivo e la funzione che toglie il blocco, che alla fine si toglie da
+        se'. Le finestre annotate le da' _finestre."""
+        from config import user_data_path
+
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        primavera, _raccolta, _contenuto = raccolte._torneo_normale()
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        principale.load_tournament(primavera)
+        primavera = principale.active_filename
+        estate = principale._percorso_come_nell_albero(estate)[0]
+        with open(primavera, "rb") as f:
+            prima = f.read()
+        luogo = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=primavera, field_active="site")
+        with principale._albero_senza_caricamenti():
+            principale.tree_ctrl.SelectItem(luogo)
+        sblocchi = [raccolte._bloccata(primavera, raccolte.FILE_SHARE_READ)]
+
+        def sblocca():
+            while sblocchi:
+                sblocchi.pop()()
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+        principale.current_tournament["site"] = "Roma"
+        principale._save_state()
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, primavera)
+        assert len(errori) == 1
+        descrizione = _descrizione_dell_errore(errori[0])
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        yield SimpleNamespace(primavera=primavera, estate=estate, prima=prima, luogo=luogo, descrizione=descrizione, sblocca=sblocca)
+        sblocca()
+
+    @staticmethod
+    def _finestre(monkeypatch, *risposte):
+        """Da qui le finestre di messaggio annotate, con le risposte alle
+        domande; finite quelle, Si'."""
+        return TestNomeDelTorneoNuovo._domande(monkeypatch, risposte)
+
+    @staticmethod
+    def _domande_fatte(finestre):
+        return [(f.titolo, f.testo, f.no_predefinito) for f in finestre if f.domanda]
+
+    @staticmethod
+    def _primavera_com_era(principale, bloccata):
+        """Primavera 2 e' ancora il torneo aperto, con Roma in memoria, e il
+        suo file e' com'era."""
+        assert principale._e_il_torneo_aperto(bloccata.primavera)
+        assert principale.current_tournament["site"] == "Roma"
+        with open(bloccata.primavera, "rb") as f:
+            assert f.read() == bloccata.prima
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_le_frecce_con_no_tornano_sulla_voce_di_prima(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """Il cursore scende con le frecce sulla voce di Estate 3: il
+        salvataggio si riprova, non riesce, e la domanda esce una volta, con
+        il suono dell'errore e la stessa descrizione del motivo. Con No
+        Primavera 2 resta aperta, con Roma in memoria, e il cursore torna
+        sulla voce Luogo, una volta, senza un'altra domanda e senza rileggere
+        il torneo dal file. Tolto il blocco, il salvataggio dopo scrive
+        Roma."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+
+        TestAlberoETorneoAttivo()._scegli_torneo(principale, bloccata.estate)
+        _eventi_in_coda()
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        assert suoni.count("errore") == 2
+        assert registro.caricati == []
+        assert registro.selezioni == [bloccata.estate, bloccata.primavera]
+        assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+        self._primavera_com_era(principale, bloccata)
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert len(errori) == 1
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_le_frecce_con_si_lasciano_il_torneo(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """Con Si' alla domanda Estate 3 si apre, e Roma si perde: il file di
+        Primavera 2 resta com'era, e riaperto non ha Roma."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_YES)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+
+        TestAlberoETorneoAttivo()._scegli_torneo(principale, bloccata.estate)
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        assert registro.caricati == ["Tornello - Estate_3.json"]
+        assert principale._e_il_torneo_aperto(bloccata.estate)
+        with open(bloccata.primavera, "rb") as f:
+            assert f.read() == bloccata.prima
+        bloccata.sblocca()
+        principale.load_tournament(bloccata.primavera)
+        assert principale.current_tournament.get("site") != "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_tolto_il_blocco_si_salva_e_si_lascia_senza_domande(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """L'altro programma chiude il file prima che il cursore scenda su
+        Estate 3: il salvataggio che si riprova riesce, Roma va nel file di
+        Primavera 2, ed Estate 3 si apre, senza domande e senza messaggi."""
+        finestre = self._finestre(monkeypatch)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        bloccata.sblocca()
+
+        TestAlberoETorneoAttivo()._scegli_torneo(principale, bloccata.estate)
+
+        assert finestre == []
+        assert suoni.count("errore") == 1
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+        assert registro.caricati == ["Tornello - Estate_3.json"]
+        assert principale._e_il_torneo_aperto(bloccata.estate)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_invio_su_un_altro_torneo_con_no_non_fa_niente(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """INVIO sulla voce Dati di Estate 3, che non e' il torneo aperto: la
+        stessa domanda, e con No Primavera 2 resta aperta, e l'azione non
+        parte."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        dati = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=bloccata.estate, field_active=None)
+
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: dati))
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        assert registro.caricati == []
+        self._primavera_com_era(principale, bloccata)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("risposta", ["no", "si", "senza veto"])
+    def test_la_chiusura(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """La chiusura di Tornello. Con No la finestra resta aperta: la
+        chiusura si ferma, senza le copie della chiusura e senza il suo
+        suono, e Primavera 2 resta com'era. Con Si' la chiusura va avanti, e
+        Roma si perde. Una chiusura che non si puo' fermare, come quella di
+        Windows che si spegne, riprova il salvataggio senza domande, e va
+        avanti."""
+        import wx
+
+        import utils
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+        copie = []
+        monkeypatch.setattr(utils, "copie_di_chiusura", lambda percorso: copie.append(percorso))
+        evento = wx.CloseEvent(wx.wxEVT_CLOSE_WINDOW, principale.GetId())
+        evento.SetCanVeto(risposta != "senza veto")
+
+        principale.on_close(evento)
+
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert len(errori) == 1
+        if risposta == "senza veto":
+            assert finestre == []
+        else:
+            assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        if risposta == "no":
+            assert evento.GetVeto()
+            assert copie == []
+            assert "chiusura" not in suoni
+        else:
+            assert not evento.GetVeto()
+            assert copie == [bloccata.primavera]
+            assert "chiusura" in suoni
+        self._primavera_com_era(principale, bloccata)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("risposta", ["no", "si"])
+    def test_apri_torneo(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """Apri Torneo dal menu File. Con No la finestra Apri non si apre, e
+        Primavera 2 resta com'era; con Si' si apre, ed Estate 3, scelto li',
+        diventa il torneo aperto."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+        aperte = []
+
+        class FinestraApri:
+            def __init__(self, *argomenti, **opzioni):
+                aperte.append(argomenti)
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetPath(self):
+                return bloccata.estate
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "FileDialog", FinestraApri)
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        if risposta == "no":
+            assert aperte == []
+            self._primavera_com_era(principale, bloccata)
+        else:
+            assert len(aperte) == 1
+            assert principale._e_il_torneo_aperto(bloccata.estate)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("risposta", ["no", "si"])
+    def test_la_procedura_guidata(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """Nuovo torneo dal menu File. Con No la procedura guidata non parte,
+        e l'albero resta com'era, con il cursore sulla voce Luogo; con Si'
+        parte, con il suo suono."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        if risposta == "no":
+            assert not principale.creation_mode
+            assert "nuovo_torneo" not in suoni
+            assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+            self._primavera_com_era(principale, bloccata)
+        else:
+            assert principale.creation_mode
+            assert "nuovo_torneo" in suoni
+
+    @pytest.mark.parametrize("risposta", ["no", "si"])
+    def test_il_ripristino_di_un_altro_torneo(self, principale, suoni, monkeypatch, risposta):
+        """Il torneo nuovo della procedura guidata che non si e' salvato, e
+        resta aperto senza il suo file, come dalla 10.19.20; poi dalla
+        finestra Copie di sicurezza si ripristina un altro torneo, Estate 3,
+        che di solito prende il suo posto. Il salvataggio si riprova, non
+        riesce, e con No il torneo nuovo resta aperto, mentre con Si' si apre
+        Estate 3. La scrittura del file e le finestre di messaggio sono
+        finte."""
+        import wx
+
+        from config import user_data_path
+
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+        TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale")
+
+        principale._dopo_il_ripristino(SimpleNamespace(riuscito=True, tipo="torneo", destinazione=estate))
+
+        assert self._domande_fatte(finestre) == [(*self._domanda("Accesso negato", nome="Nuovo Sociale"), True)]
+        if risposta == "no":
+            assert principale._e_il_torneo_aperto(user_data_path("Tornello - Nuovo_Sociale.json"))
+        else:
+            assert principale._e_il_torneo_aperto(estate)

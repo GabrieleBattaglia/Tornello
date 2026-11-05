@@ -2662,6 +2662,13 @@ class MainFrame(wx.Frame):
 
         filepath = data.get("filepath")
         if filepath and not self._e_il_torneo_aperto(filepath):
+            # Dalla 10.19.21 il torneo aperto con le ultime modifiche
+            # soltanto in memoria si lascia dopo un salvataggio riuscito, o
+            # con Si' alla domanda; con No il cursore torna sulla voce da cui
+            # era partito, e niente cambia.
+            if not self._si_puo_lasciare_il_torneo():
+                self._torna_alla_voce_di_prima(event.GetOldItem())
+                return
             self.load_tournament(filepath, rebuild_tree=False)
             # Un file che non si e' aperto l'ha gia' detto il messaggio, e
             # quello che segue non vale per un altro torneo.
@@ -3274,6 +3281,11 @@ class MainFrame(wx.Frame):
         filepath = data.get("filepath")
 
         if filepath and not self._e_il_torneo_aperto(filepath):
+            # Come per le frecce, dalla 10.19.21: con No alla domanda di
+            # _si_puo_lasciare_il_torneo il torneo aperto resta, e l'azione
+            # non parte.
+            if not self._si_puo_lasciare_il_torneo():
+                return
             self.load_tournament(filepath, rebuild_tree=False)
             # Se il torneo della voce non si e' aperto, per esempio perche'
             # il suo file non c'e' piu', l'azione non parte: fino alla
@@ -4273,16 +4285,19 @@ class MainFrame(wx.Frame):
         self.populate_tree()
         self.set_status(_("Torneo creato, ma non ancora salvato nel suo file."))
 
-    def _save_state(self):
+    def _save_state(self, motivi=None):
         """Salva il torneo aperto, con i suoi report. Risponde vero se il
         file del torneo si e' scritto, e falso se non si e' scritto o se non
         c'e' un torneo aperto: dalla 10.19.20 la procedura guidata lo guarda,
-        e con un torneo nuovo che non si e' salvato non rilegge il file."""
+        e con un torneo nuovo che non si e' salvato non rilegge il file. In
+        motivi, se e' una lista, arriva il motivo di un salvataggio che non
+        riesce, come in save_tournament: dalla 10.19.21 lo dice la domanda di
+        _si_puo_lasciare_il_torneo."""
         if not self.current_tournament:
             return False
         from tournament import save_tournament
 
-        motivi = []
+        motivi = [] if motivi is None else motivi
         salvato = save_tournament(self.current_tournament, filepath=self.active_filename, motivi=motivi)
         self._esito_del_salvataggio(salvato, motivi)
         self._salva_i_report(torneo_salvato=salvato)
@@ -4336,6 +4351,83 @@ class MainFrame(wx.Frame):
                 errore="; ".join(motivi).rstrip("."),
             ),
         )
+
+    def _ha_modifiche_soltanto_in_memoria(self):
+        """Vero se l'ultimo salvataggio del torneo aperto non e' riuscito, e
+        le sue ultime modifiche sono quindi soltanto in memoria: lo dice
+        _tornei_non_salvati, che tiene al piu' il file del torneo aperto."""
+        if not self.current_tournament:
+            return False
+        return _chiave_del_percorso(self._file_del_torneo_aperto()) in self._tornei_non_salvati
+
+    def _si_puo_lasciare_il_torneo(self):
+        """Dalla 10.19.21 (decisione di Gabriele del 5 novembre 2026), prima
+        di lasciare un torneo che ha le ultime modifiche soltanto in memoria,
+        o di rileggerlo dal suo file, Tornello riprova a salvarlo, con
+        _save_state. Se ci riesce, si va avanti senza dire niente. Se non ci
+        riesce, con il suono dell'errore, la domanda Torneo non salvato dice
+        il motivo, che le ultime modifiche si perdono, e chiede se lasciarlo
+        lo stesso, con No predefinito; il messaggio Torneo non salvato in
+        questo tentativo non esce, perche' il torneo e' gia' fra quelli non
+        salvati. Risponde vero se si puo' andare avanti: con un torneo che
+        non ha modifiche soltanto in memoria, dopo un salvataggio riuscito o
+        con Si'. Fino alla 10.19.20, e gia' nella 10.0.0, le modifiche si
+        perdevano senza avviso: con le frecce su un altro torneo, con Apri
+        Torneo, con una procedura guidata, alla chiusura di Tornello e dopo
+        il ripristino di un altro torneo dalla finestra Copie di sicurezza."""
+        if not self._ha_modifiche_soltanto_in_memoria():
+            return True
+        from utils import play_sound
+
+        motivi = []
+        if self._save_state(motivi):
+            return True
+        play_sound("errore")
+        dlg = AccessibleMsgDialog(
+            self,
+            _("Torneo non salvato"),
+            _(
+                "Il torneo {nome} non si è potuto salvare: {errore}. Se lo lasci, le ultime modifiche si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No."
+            ).format(
+                nome=self.current_tournament.get("name", ""),
+                errore="; ".join(motivi).rstrip("."),
+            ),
+            style=wx.YES_NO,
+            settings=self.settings,
+            no_predefinito=True,
+        )
+        risposta = dlg.ShowModal()
+        dlg.Destroy()
+        return risposta == wx.ID_YES
+
+    def _torna_alla_voce_di_prima(self, voce):
+        """Dopo No alla domanda di _si_puo_lasciare_il_torneo, arrivata con
+        le frecce, il cursore torna sulla voce da cui era partito, o, se non
+        c'e', su quella del torneo aperto. Dentro _albero_senza_caricamenti la
+        selezione rimessa non fa partire un'altra domanda, e non riapre il
+        torneo dal suo file, che perderebbe le modifiche. Dentro il gestore
+        della selezione wxMSW non lascia cambiare la selezione, e lo dice con
+        un'asserzione: si rimette appena il gestore ha finito, con
+        wx.CallAfter, prima di ogni altro evento, cosi' il fuoco che torna
+        all'albero dalla domanda e la voce rimessa arrivano a NVDA quasi
+        insieme. La voce si ritrova dai suoi dati, perche' nel frattempo
+        l'albero potrebbe essersi ricostruito."""
+        dati = self.tree_ctrl.GetItemData(voce) if voce and voce.IsOk() else None
+        wx.CallAfter(self._rimetti_il_cursore, dati)
+
+    def _rimetti_il_cursore(self, dati):
+        """La seconda meta' di _torna_alla_voce_di_prima: il cursore sulla
+        voce con i dati dati, o su quella del torneo aperto, senza caricare
+        niente."""
+        if not self or not getattr(self, "tree_ctrl", None):
+            return
+        voce = self._find_matching_item(self.tree_root, dati) if isinstance(dati, dict) else None
+        if not (voce and voce.IsOk()):
+            voce = self._voce_del_torneo_aperto()
+        if voce and voce.IsOk():
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+            self.tree_ctrl.EnsureVisible(voce)
 
     def _salva_i_report(self, torneo_salvato=True):
         """I file che descrivono il torneo aperto: il turno corrente, la
@@ -5520,6 +5612,12 @@ class MainFrame(wx.Frame):
         from config import DATE_FORMAT_ISO
         from utils import play_sound
 
+        # Il torneo nuovo prende il posto di quello aperto: dalla 10.19.21,
+        # se quello ha le ultime modifiche soltanto in memoria e alla domanda
+        # di _si_puo_lasciare_il_torneo si risponde No, la procedura guidata
+        # non parte.
+        if not self._si_puo_lasciare_il_torneo():
+            return
         oggi_dt = datetime.now()
         oggi_str = oggi_dt.strftime(DATE_FORMAT_ISO)
         future_dt = oggi_dt + timedelta(days=60)
@@ -5855,6 +5953,17 @@ class MainFrame(wx.Frame):
             os.path.abspath(esito.destinazione)
         )
         if stesso or not self.current_tournament or not (aperto and os.path.exists(aperto)):
+            # Il torneo ripristinato prende il posto di un altro torneo
+            # aperto, che non ha il suo file sul disco, come un torneo nuovo
+            # che non si e' salvato: dalla 10.19.21, se ha le ultime modifiche
+            # soltanto in memoria, prima si riprova a salvarlo, e con No alla
+            # domanda resta aperto, e il torneo ripristinato resta sul disco.
+            # Il ripristino del torneo aperto, invece, lo sostituisce
+            # apposta: un salvataggio riscriverebbe sul disco lo stato di
+            # prima al posto della copia.
+            if not stesso and not self._si_puo_lasciare_il_torneo():
+                self.populate_tree()
+                return
             self.load_tournament(esito.destinazione)
             if self.current_tournament:
                 self._save_state()
@@ -5943,6 +6052,17 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_close(self, event):
+        # Dalla 10.19.21 un torneo con le ultime modifiche soltanto in
+        # memoria si riprova a salvare; se non si salva, con No alla domanda
+        # di _si_puo_lasciare_il_torneo la finestra resta aperta. Una
+        # chiusura che non si puo' fermare, come quella di Windows che si
+        # spegne, riprova il salvataggio senza domande, e va avanti.
+        if event.CanVeto():
+            if not self._si_puo_lasciare_il_torneo():
+                event.Veto()
+                return
+        elif self._ha_modifiche_soltanto_in_memoria():
+            self._save_state()
         # Il timer del pie' di pagina si ferma per primo: un timer ancora
         # acceso dopo la chiusura scatterebbe su controlli ormai distrutti.
         self._timer_pie_di_pagina.Stop()
@@ -6061,6 +6181,12 @@ class MainFrame(wx.Frame):
         self.start_new_tournament_wizard()
 
     def on_open_tournament(self, event):
+        # Dalla 10.19.21 Apri Torneo, che lascia il torneo aperto o lo
+        # rilegge dal suo file, non parte se il torneo ha le ultime modifiche
+        # soltanto in memoria e alla domanda di _si_puo_lasciare_il_torneo si
+        # risponde No.
+        if not self._si_puo_lasciare_il_torneo():
+            return
         dlg = wx.FileDialog(
             self,
             _("Apri Torneo"),

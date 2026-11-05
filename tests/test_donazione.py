@@ -205,9 +205,17 @@ class TestChiusura:
                     Stop=lambda: passi["timer"].append("stop")
                 )
 
+            def _si_puo_lasciare_il_torneo(self):
+                # Dalla 10.19.21 la chiusura chiede prima se si puo'
+                # lasciare il torneo aperto: qui non ce n'e' uno.
+                return True
+
         class EventoFinto:
             def Skip(self):
                 passi["skip"] += 1
+
+            def CanVeto(self):
+                return True
 
         return TelaioFinto(), EventoFinto(), passi
 

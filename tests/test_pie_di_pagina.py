@@ -547,9 +547,12 @@ class TestRegolaDiAggiornamento:
         telaio = SimpleNamespace(
             _timer_pie_di_pagina=SimpleNamespace(Stop=lambda: registro.append("stop")),
             active_filename=None,
+            # Dalla 10.19.21 la chiusura chiede prima se si puo' lasciare il
+            # torneo aperto: qui non ce n'e' uno.
+            _si_puo_lasciare_il_torneo=lambda: True,
         )
         with pytest.raises(RuntimeError):
-            main_frame.MainFrame.on_close(telaio, None)
+            main_frame.MainFrame.on_close(telaio, SimpleNamespace(CanVeto=lambda: True))
         assert registro == ["stop"]
 
 
