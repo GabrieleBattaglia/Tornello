@@ -6256,7 +6256,9 @@ class TestTorneoCheNonSiSalva:
     per esempio perche' un altro programma lo tiene bloccato, lo dice con il
     suono dell'errore e il messaggio Torneo non salvato, con il motivo che
     da' il sistema: una volta, finche' un salvataggio di quel torneo non
-    riesce di nuovo. Mentre il torneo non si salva, il messaggio della
+    riesce di nuovo, o finche' il torneo non esce dalla memoria, quando si
+    riapre dal suo file o nessun torneo resta aperto (correzione della
+    revisione della 10.19.19). Mentre il torneo non si salva, il messaggio della
     raccolta non scritta, che direbbe che il torneo e' salvato, non esce.
     Fino alla 10.19.18, e gia' nella 10.0.0, lo diceva soltanto la riga in
     console, che resta com'era. I blocchi sono veri, con CreateFileW, come
@@ -6464,3 +6466,131 @@ class TestTorneoCheNonSiSalva:
         assert capsys.readouterr().out.splitlines().count(frase) == 2
         assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(principale.active_filename, frase[:-1], nome="")]
         assert suoni.count("errore") == 1
+
+    def test_il_motivo_di_un_errore_che_non_viene_dal_sistema(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della revisione della 10.19.19. Un errore che non viene
+        dal sistema, come un insieme in un campo del torneo, che il JSON non
+        sa scrivere: il messaggio dice lo stesso motivo della riga Errore
+        imprevisto in console, e il file resta com'era. Fino alla revisione
+        nessuna prova guardava il motivo di questo errore."""
+        percorso, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        with open(percorso, "rb") as f:
+            prima = f.read()
+        suoni.clear()
+        capsys.readouterr()
+        principale.current_tournament["campo_strano"] = {1, 2}
+
+        principale._save_state()
+
+        prefisso = "Errore imprevisto durante il salvataggio del torneo: "
+        motivi = [r[len(prefisso) :] for r in capsys.readouterr().out.splitlines() if r.startswith(prefisso)]
+        assert len(motivi) == 1
+        assert motivi[0]
+        with open(percorso, "rb") as f:
+            assert f.read() == prima
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(percorso, motivi[0])]
+        assert suoni.count("errore") == 1
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_messaggio_torna_quando_il_torneo_si_riapre(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della revisione della 10.19.19. Primavera 2 cambia luogo
+        con il suo file bloccato, e il messaggio esce. Poi il cursore scende
+        su Estate 3 e risale su Primavera 2, che si riapre dal suo file,
+        ancora bloccato: il torneo letto dal file non ha modifiche soltanto in
+        memoria, e quando il luogo cambia di nuovo il messaggio torna, una
+        volta in due salvataggi. Fino alla revisione il ricordo del messaggio
+        restava, e la finestra non diceva piu' niente."""
+        from config import user_data_path
+
+        primavera, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        suoni.clear()
+        capsys.readouterr()
+        bloccata = TestRaccoltaSenzaPartiteNelCestino._bloccata(primavera, TestRaccoltaSenzaPartiteNelCestino.FILE_SHARE_READ)
+        try:
+            principale.current_tournament["site"] = "Roma"
+            principale._save_state()
+            principale.load_tournament(estate, rebuild_tree=False)
+            principale.load_tournament(primavera, rebuild_tree=False)
+            assert principale._e_il_torneo_aperto(primavera)
+            principale.current_tournament["site"] = "Milano"
+            principale._save_state()
+            principale._save_state()
+        finally:
+            bloccata()
+
+        errori, _della_raccolta = self._errori_in_console(capsys, primavera)
+        assert len(errori) == 3
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(primavera, errori[0]), self._messaggio(primavera, errori[1])]
+        assert suoni.count("errore") == 2
+
+    def test_la_procedura_guidata_che_non_salva_lo_dice_ogni_volta(self, principale, suoni, monkeypatch):
+        """Correzione della revisione della 10.19.19. Il torneo nuovo della
+        procedura guidata non si salva, perche' il suo file non si scrive,
+        come con la cartella del programma che non si puo' scrivere: il
+        messaggio esce, e il torneo, che non si rilegge dal file, esce dalla
+        memoria. Il secondo tentativo, con lo stesso nome, lo dice di nuovo.
+        Fino alla revisione il ricordo del messaggio restava, e il secondo
+        tentativo non lo diceva. La scrittura del file e le finestre di
+        messaggio sono finte."""
+        import wx
+
+        import tournament
+        from config import user_data_path
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
+
+        def negata(percorso, dati, indent=1):
+            raise PermissionError(13, "Accesso negato", percorso)
+
+        monkeypatch.setattr(tournament, "scrivi_json_atomico", negata)
+        suoni.clear()
+
+        for _volta in range(2):
+            principale.start_new_tournament_wizard()
+            principale.creation_data["name"] = "Nuovo Sociale"
+            principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+
+        percorso = user_data_path("Tornello - Nuovo_Sociale.json")
+        messaggio = self._messaggio(percorso, f"[Errno 13] Accesso negato: {percorso!r}", nome="Nuovo Sociale")
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, messaggio]
+        assert suoni.count("errore") == 2
+        assert principale.current_tournament is None
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_dopo_canc_su_un_iscritto_il_messaggio_torna(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della revisione della 10.19.19. Gamma, in preparazione,
+        cambia luogo con il suo file bloccato, e il messaggio esce. Tolto il
+        blocco, CANC su un iscritto, con Si', scrive il file del torneo: e'
+        un salvataggio riuscito, come quello della Time Machine. Bloccato di
+        nuovo, quando il luogo cambia ancora il messaggio torna, una volta in
+        due salvataggi. Fino alla revisione non tornava piu'."""
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Gamma.json")
+        dati = _torneo_in_corso("Gamma")
+        dati["rounds"] = []
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        percorso = principale.active_filename
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        principale.current_tournament["site"] = "Roma"
+        self._salvataggi_bloccati(principale, percorso, volte=1)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
+        principale.delete_player_from_tournament(voce, principale.tree_ctrl.GetItemData(voce)["player"])
+        assert len(TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]) == 3
+        principale.current_tournament["site"] = "Milano"
+        self._salvataggi_bloccati(principale, percorso, volte=2)
+
+        errori, _della_raccolta = self._errori_in_console(capsys, percorso)
+        assert len(errori) == 3
+        assert [f.titolo for f in finestre] == ["Torneo non salvato", "Conferma Rimozione Giocatore", "Torneo non salvato"]
+        non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
+        assert non_salvato == [self._messaggio(percorso, errori[0], nome="Gamma"), self._messaggio(percorso, errori[1], nome="Gamma")]
+        assert suoni.count("errore") == 2

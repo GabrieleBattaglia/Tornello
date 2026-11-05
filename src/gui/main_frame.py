@@ -239,7 +239,9 @@ class MainFrame(wx.Frame):
         # esempio perche' un altro programma li tiene bloccati, e il cui
         # messaggio Torneo non salvato si e' gia' sentito: si dice una volta,
         # finche' un salvataggio di quel torneo non riesce di nuovo
-        # (10.19.19, decisione di Gabriele del 5 novembre 2026).
+        # (10.19.19, decisione di Gabriele del 5 novembre 2026), o finche' il
+        # torneo non esce dalla memoria, quando si apre un torneo dal suo file
+        # o nessun torneo resta aperto (vedi load_tournament).
         self._tornei_non_salvati = set()
 
         self._init_ui()
@@ -1265,6 +1267,15 @@ class MainFrame(wx.Frame):
             # e i confronti esatti fra percorsi, come i bersagli del cursore
             # dopo un risultato, non lo riconoscerebbero.
             self.active_filename, elencato = self._percorso_come_nell_albero(filepath)
+            # Il torneo appena letto dal suo file non ha modifiche soltanto in
+            # memoria, e quelle del torneo di prima non ci sono piu': il
+            # messaggio Torneo non salvato puo' tornare al primo salvataggio
+            # che non riesce. Fino alla correzione della revisione della
+            # 10.19.19 la memoria si svuotava soltanto con un salvataggio
+            # riuscito: un torneo riaperto, per esempio scendendo con le
+            # frecce su un altro torneo e risalendo, non diceva piu' che le
+            # modifiche nuove non si salvavano.
+            self._tornei_non_salvati.clear()
 
             # Ricostruisce players_dict per l'interfaccia grafica
             self.current_tournament["players_dict"] = {
@@ -1479,7 +1490,12 @@ class MainFrame(wx.Frame):
     def _nessun_torneo_aperto(self):
         """Toglie dalla memoria il torneo aperto, e il titolo e il menu
         Torneo lo dicono subito. Fino alla 10.13.9, dopo una finalizzazione,
-        il titolo restava sul torneo appena chiuso."""
+        il titolo restava sul torneo appena chiuso. Con il torneo esce dalla
+        memoria anche il ricordo del suo messaggio Torneo non salvato, come
+        in load_tournament: fino alla correzione della revisione della
+        10.19.19 restava, e un torneo nuovo della procedura guidata con lo
+        stesso file, che di nuovo non si salvava, non lo diceva piu'."""
+        self._tornei_non_salvati.clear()
         self.current_tournament = None
         self.active_filename = None
         self._aggiorna_titolo()
@@ -4261,7 +4277,12 @@ class MainFrame(wx.Frame):
         messaggio puo' tornare (decisione di Gabriele del 5 novembre 2026).
         Fino alla 10.19.18, e gia' nella 10.0.0, lo diceva soltanto una riga
         in console, e le modifiche restavano soltanto in memoria senza che la
-        finestra lo dicesse. La console stampa la sua riga come prima."""
+        finestra lo dicesse. La console stampa la sua riga come prima.
+        Riuscito vale anche per le scritture del file del torneo aperto che
+        non passano da _save_state, come la Time Machine e CANC su un
+        iscritto; il
+        ricordo si perde anche quando il torneo esce dalla memoria (vedi
+        load_tournament e _nessun_torneo_aperto)."""
         from utils import play_sound
 
         percorso = self._file_del_torneo_aperto()
@@ -4486,6 +4507,12 @@ class MainFrame(wx.Frame):
 
                     if self._e_il_torneo_aperto(filepath):
                         self.current_tournament = t_data
+                        # Il file del torneo aperto si e' scritto: e' un
+                        # salvataggio riuscito, come quello della Time
+                        # Machine, e il messaggio Torneo non salvato puo'
+                        # tornare. Fino alla correzione della revisione della
+                        # 10.19.19 non tornava piu'.
+                        self._esito_del_salvataggio(True, [])
 
                     self._tree_restore_target = {
                         "action": "show_players",
