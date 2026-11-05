@@ -497,7 +497,14 @@ def save_tournament(torneo, filepath=None, motivi=None):
     aggiunge il motivo: quello che da' il sistema, o la frase del nome
     mancante, la stessa della console, che non cambia. La finestra lo dice
     nel suo messaggio Torneo non salvato (decisione di Gabriele del 5
-    novembre 2026): fino ad allora lo diceva soltanto la riga in console."""
+    novembre 2026): fino ad allora lo diceva soltanto la riga in console.
+    Del motivo che da' il sistema va nella lista soltanto la descrizione,
+    strerror, per esempio Accesso negato, perche' il percorso del file il
+    messaggio lo dice gia'; per un OSError senza descrizione, e per un errore
+    che non viene dal sistema, il testo intero. Fino alla revisione della
+    10.19.19 c'era sempre il testo intero, che per un file bloccato alla
+    sostituzione ha due percorsi con le barre doppie (decisione di Gabriele
+    del 5 novembre 2026). La console stampa il testo intero, come prima."""
     if motivi is None:
         motivi = []
     tournament_name_for_file = None  # Inizializza a None
@@ -549,7 +556,7 @@ def save_tournament(torneo, filepath=None, motivi=None):
                 filename=dynamic_tournament_filename, error=e
             )
         )
-        motivi.append(str(e))
+        motivi.append(e.strerror or str(e))
         return False
     except Exception as e:
         print(_("Errore imprevisto durante il salvataggio del torneo: {}").format(e))

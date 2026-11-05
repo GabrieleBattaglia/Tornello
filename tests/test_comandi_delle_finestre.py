@@ -38,6 +38,22 @@ def _chiudi(dlg):
     dlg.Destroy()
 
 
+def _descrizione_dell_errore(testo):
+    """La descrizione del motivo che da' il sistema, dal testo intero che
+    la console stampa per un OSError, come [WinError 5] Accesso negato:
+    'a' -> 'b' per un file bloccato alla sostituzione, o [Errno 13]
+    Permission denied: 'c' per uno bloccato all'apertura: dalla revisione
+    della 10.19.19 i messaggi Torneo non salvato e Raccolta delle partite non
+    scritta dicono soltanto quella, perche' il percorso del file lo dicono
+    gia' (decisione di Gabriele del 5 novembre 2026). Il testo intero resta
+    in console."""
+    import re
+
+    trovato = re.fullmatch(r"\[(?:WinError|Errno) \d+\] (.+?): '.*'", testo)
+    assert trovato, testo
+    return trovato.group(1)
+
+
 def _eventi_in_coda():
     """Esegue le chiamate lasciate a wx.CallAfter, come fa il ciclo degli
     eventi quando l'azione e' finita."""
@@ -5883,7 +5899,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 3
         assert errori[0]
-        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        messaggio = self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
         assert suoni.count("errore") == 1
 
@@ -5953,7 +5969,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 3
         assert errori[0]
-        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        messaggio = self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
         assert suoni.count("errore") == 1
 
@@ -6025,7 +6041,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 3
         assert errori[0]
-        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        messaggio = self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
         assert suoni.count("errore") == 1
 
@@ -6068,7 +6084,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 1
         assert errori[0]
-        messaggio = self._messaggio_della_raccolta_non_scritta(errori[0])
+        messaggio = self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
         assert suoni.count("errore") == 1
 
@@ -6134,7 +6150,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 1
         assert errori[0]
-        primo = self._messaggio_della_raccolta_non_scritta(errori[0])
+        primo = self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [primo]
 
         if dopo == "un altro torneo":
@@ -6167,7 +6183,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         errori = self._errori_in_console(capsys)
         assert len(errori) == 2
         assert errori[0]
-        assert [(f.titolo, f.testo) for f in finestre] == [primo, self._messaggio_della_raccolta_non_scritta(errori[0], file)]
+        assert [(f.titolo, f.testo) for f in finestre] == [primo, self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0]), file)]
         assert suoni.count("errore") == 2
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
@@ -6208,7 +6224,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert [(f.titolo, f.testo) for f in finestre] == [
             self._messaggio_della_raccolta_rimasta(),
             self._messaggio_della_copia_non_riuscita(),
-            self._messaggio_della_raccolta_non_scritta(errori[0]),
+            self._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(errori[0])),
         ]
         assert suoni.count("errore") == 3
 
@@ -6336,10 +6352,13 @@ class TestTorneoCheNonSiSalva:
         assert principale.current_tournament["site"] == "Roma"
         errori, della_raccolta = self._errori_in_console(capsys, percorso)
         assert len(errori) == 3
-        assert errori[0]
+        assert errori[0].startswith("[WinError ")
+        assert repr(percorso) in errori[0]
         assert della_raccolta == []
-        messaggio = self._messaggio(percorso, errori[0])
+        messaggio = self._messaggio(percorso, _descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*messaggio, False)]
+        assert "WinError" not in messaggio[1]
+        assert repr(percorso) not in messaggio[1]
         assert suoni.count("errore") == 1
 
         principale._save_state()
@@ -6353,7 +6372,7 @@ class TestTorneoCheNonSiSalva:
 
         errori, _della_raccolta = self._errori_in_console(capsys, percorso)
         assert len(errori) == 3
-        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, self._messaggio(percorso, errori[0])]
+        assert [(f.titolo, f.testo) for f in finestre] == [messaggio, self._messaggio(percorso, _descrizione_dell_errore(errori[0]))]
         assert suoni.count("errore") == 2
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
@@ -6377,7 +6396,7 @@ class TestTorneoCheNonSiSalva:
         errori, della_raccolta = self._errori_in_console(capsys, percorso)
         assert len(errori) == 3
         assert len(della_raccolta) == 3
-        messaggio = self._messaggio(percorso, errori[0])
+        messaggio = self._messaggio(percorso, _descrizione_dell_errore(errori[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio]
         assert suoni.count("errore") == 1
 
@@ -6387,7 +6406,7 @@ class TestTorneoCheNonSiSalva:
         assert errori == []
         assert len(della_raccolta) == 2
         assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["rounds"][0]["matches"][1]["pgn"] == PGN_VALIDO
-        raccolta_non_scritta = TestRaccoltaSenzaPartiteNelCestino._messaggio_della_raccolta_non_scritta(della_raccolta[0])
+        raccolta_non_scritta = TestRaccoltaSenzaPartiteNelCestino._messaggio_della_raccolta_non_scritta(_descrizione_dell_errore(della_raccolta[0]))
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio, raccolta_non_scritta]
         assert suoni.count("errore") == 2
 
@@ -6411,7 +6430,7 @@ class TestTorneoCheNonSiSalva:
         errori, _della_raccolta = self._errori_in_console(capsys, percorso)
         assert len(errori) == 3
         non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
-        assert non_salvato == [self._messaggio(percorso, errori[0]), self._messaggio(percorso, errori[1])]
+        assert non_salvato == [self._messaggio(percorso, _descrizione_dell_errore(errori[0])), self._messaggio(percorso, _descrizione_dell_errore(errori[1]))]
         assert [f.titolo for f in finestre] == ["Torneo non salvato", "Annulla Turno", "Torneo non salvato"]
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
@@ -6438,8 +6457,8 @@ class TestTorneoCheNonSiSalva:
         assert len(errori_primavera) == 2
         assert len(errori_estate) == 2
         assert [(f.titolo, f.testo) for f in finestre] == [
-            self._messaggio(primavera, errori_primavera[0]),
-            self._messaggio(estate, errori_estate[0], nome="Estate 3"),
+            self._messaggio(primavera, _descrizione_dell_errore(errori_primavera[0])),
+            self._messaggio(estate, _descrizione_dell_errore(errori_estate[0]), nome="Estate 3"),
         ]
         assert suoni.count("errore") == 2
 
@@ -6522,7 +6541,7 @@ class TestTorneoCheNonSiSalva:
 
         errori, _della_raccolta = self._errori_in_console(capsys, primavera)
         assert len(errori) == 3
-        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(primavera, errori[0]), self._messaggio(primavera, errori[1])]
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(primavera, _descrizione_dell_errore(errori[0])), self._messaggio(primavera, _descrizione_dell_errore(errori[1]))]
         assert suoni.count("errore") == 2
 
     def test_la_procedura_guidata_che_non_salva_lo_dice_ogni_volta(self, principale, suoni, monkeypatch):
@@ -6554,7 +6573,7 @@ class TestTorneoCheNonSiSalva:
             principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
 
         percorso = user_data_path("Tornello - Nuovo_Sociale.json")
-        messaggio = self._messaggio(percorso, f"[Errno 13] Accesso negato: {percorso!r}", nome="Nuovo Sociale")
+        messaggio = self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio, messaggio]
         assert suoni.count("errore") == 2
         assert principale.current_tournament is None
@@ -6592,5 +6611,5 @@ class TestTorneoCheNonSiSalva:
         assert len(errori) == 3
         assert [f.titolo for f in finestre] == ["Torneo non salvato", "Conferma Rimozione Giocatore", "Torneo non salvato"]
         non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
-        assert non_salvato == [self._messaggio(percorso, errori[0], nome="Gamma"), self._messaggio(percorso, errori[1], nome="Gamma")]
+        assert non_salvato == [self._messaggio(percorso, _descrizione_dell_errore(errori[0]), nome="Gamma"), self._messaggio(percorso, _descrizione_dell_errore(errori[1]), nome="Gamma")]
         assert suoni.count("errore") == 2

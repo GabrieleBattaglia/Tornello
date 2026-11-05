@@ -91,7 +91,11 @@ class RaccoltaAggiornata(NamedTuple):
     (revisione della 10.19.13). errore e' il motivo che da' il sistema
     quando la raccolta non si e' potuta scrivere, o leggere prima di
     sostituirla, oppure None: la finestra lo dice nel suo messaggio
-    (decisione di Gabriele del 5 novembre 2026)."""
+    (decisione di Gabriele del 5 novembre 2026). Dalla revisione della
+    10.19.19 e' soltanto la descrizione, strerror, per esempio Permission
+    denied, perche' il messaggio dice gia' la cartella e il file; senza
+    descrizione e' il testo intero, come prima. La frase in non_scritta,
+    della finalizzazione, e la console tengono il testo intero."""
 
     rimasta: str | None = None
     gia_detta: bool = False
@@ -776,7 +780,7 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
                 non_scritta=_("La raccolta delle partite {file} del torneo {nome} non si è potuta scrivere nella cartella {cartella}: {errore}").format(
                     file=file, nome=torneo.get("name", ""), cartella=cartella, errore=e
                 ),
-                errore=str(e),
+                errore=e.strerror or str(e),
             )
         rimaste.discard(chiave)
         return RaccoltaAggiornata()

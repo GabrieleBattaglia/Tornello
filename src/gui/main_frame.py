@@ -4277,7 +4277,10 @@ class MainFrame(wx.Frame):
         messaggio puo' tornare (decisione di Gabriele del 5 novembre 2026).
         Fino alla 10.19.18, e gia' nella 10.0.0, lo diceva soltanto una riga
         in console, e le modifiche restavano soltanto in memoria senza che la
-        finestra lo dicesse. La console stampa la sua riga come prima.
+        finestra lo dicesse. La console stampa la sua riga come prima. Del
+        motivo che da' il sistema il messaggio dice soltanto la descrizione,
+        come Accesso negato, che save_tournament mette in motivi: il percorso
+        del file c'e' gia' (revisione della 10.19.19).
         Riuscito vale anche per le scritture del file del torneo aperto che
         non passano da _save_state, come la Time Machine e CANC su un
         iscritto; il
