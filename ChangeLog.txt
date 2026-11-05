@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.19.18 (in lavorazione, non ancora pubblicata)
+	+ Fix: Quando il torneo di una voce dell'albero non si apre, per esempio perché il suo file è sparito dopo la costruzione dell'albero, INVIO su una voce del suo ramo Dati, come Nome torneo, Luogo o Valore del BYE, riprova ad aprire quel torneo, come fanno già le altre voci dell'albero: se non si apre, esce di nuovo il messaggio che lo dice, e il campo non si apre; se si apre, il campo si apre come sempre. Fino alla 10.19.17, e già nella 10.0.0, i campi del ramo Dati leggevano il torneo aperto senza controllarlo, e senza un torneo aperto si vedeva la finestra Errore Imprevisto (decisione di Gabriele del 5 novembre 2026). Le altre voci dell'albero che arrivano a funzioni del torneo aperto passavano già da questo controllo. Il manuale lo dice nella sezione 2.2 (issue 66).
+
 10.19.17 (in lavorazione, non ancora pubblicata)
 	+ Fix: Dalla voce Nome torneo del ramo Dati un nome vuoto, anche fatto di soli spazi, che Tornello ripulisce, non si accetta più: si sente il suono dell'errore, il messaggio Nome del torneo mancante dice che il nome del torneo non può essere vuoto e che resta quello di prima, e il nome, il titolo della finestra e l'albero restano come prima, con il cursore sulla voce Nome torneo. Fino alla 10.19.16, e già nella 10.0.0, il nome vuoto si accettava, e da quel momento ogni salvataggio non riusciva, perché un torneo senza nome non si salva, e lo diceva soltanto una riga in console, mentre i report nascevano con il nome Torneo_Senza_Nome (decisione di Gabriele del 5 novembre 2026). Nella versione a riga di comando non succedeva: alla creazione il nome vuoto si rifiuta, e dopo la creazione il nome non si cambia. Il manuale lo dice nella sezione 4.1 (issue 66).
 

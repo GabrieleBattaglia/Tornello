@@ -1778,6 +1778,86 @@ class TestAlberoETorneoAttivo:
         assert len(messaggi) == 1
         assert avviati == []
 
+    CAMPI_DEL_RAMO_DATI = (
+        ("name", "Nome Torneo"),
+        ("site", "Luogo Torneo"),
+        ("start_date", "Data Inizio"),
+        ("end_date", "Data Fine"),
+        ("time_control", "Tempo di riflessione"),
+        ("chief_arbiter", "Arbitro Capo"),
+        ("deputy_chief_arbiters", "Collaboratori / Vice Arbitri"),
+        ("federation_code", "Codice Federazione"),
+        ("color_board1", "Colore al giocatore più forte"),
+        ("bye_value", "Valore del BYE"),
+    )
+
+    @pytest.mark.parametrize("campo, titolo", CAMPI_DEL_RAMO_DATI, ids=[c for c, _t in CAMPI_DEL_RAMO_DATI])
+    def test_invio_su_un_campo_dei_dati_di_un_torneo_che_non_si_apre(self, principale, suoni, monkeypatch, campo, titolo):
+        """10.19.18 (decisione di Gabriele del 5 novembre 2026). Alfa e'
+        aperto, e Beta, in preparazione, ha la sua voce nell'albero, ma il suo
+        file sparisce: il cursore arriva su un campo del suo ramo Dati, il
+        messaggio d'errore lo dice, e nessun torneo resta aperto, con il
+        cursore sulla voce. INVIO su quel campo riprova ad aprire Beta, come
+        le altre voci dell'albero: esce di nuovo lo stesso messaggio, e il
+        campo non si apre. Tornato il file, INVIO apre Beta, e il campo si
+        apre con la sua finestra. Fino alla 10.19.17, e gia' nella 10.0.0,
+        INVIO sui campi del ramo Dati leggeva il torneo aperto, None, e
+        sollevava AttributeError: si vedeva la finestra Errore Imprevisto."""
+        import wx
+
+        from config import user_data_path
+
+        percorsi = self._prepara("Alfa")
+        beta = user_data_path("Tornello - Beta.json")
+        torneo = _torneo_in_corso("Beta")
+        torneo.update(rounds=[], site="Bologna", chief_arbiter="Rossi Anna", federation_code="ITA", time_control={"minutes": 60, "increment": 0})
+        self._scrivi(beta, torneo)
+        principale.load_tournament(percorsi["Alfa"])
+        voce = self._voce(principale, action="show_data", filepath=beta, field_active=campo)
+        messaggi, aperti = [], []
+        monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: messaggi.append(testo))
+
+        class CampoFinto:
+            def __init__(self, genitore, messaggio, titolo, *a, **k):
+                aperti.append((titolo, principale.active_filename))
+
+            def ShowModal(self):
+                return wx.ID_CANCEL
+
+            def SetSelection(self, *a):
+                pass
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "TextEntryDialog", CampoFinto)
+        monkeypatch.setattr(wx, "SingleChoiceDialog", CampoFinto)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        os.remove(beta)
+        principale.tree_ctrl.SelectItem(voce)
+        _eventi_in_coda()
+        assert principale.current_tournament is None
+        assert principale.tree_ctrl.GetSelection() == voce
+        assert len(messaggi) == 1
+        suoni.clear()
+
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
+
+        assert messaggi == [messaggi[0]] * 2
+        assert aperti == []
+        assert finestre == []
+        assert "apertura" not in suoni
+        assert principale.current_tournament is None
+        assert principale.tree_ctrl.GetSelection() == voce
+
+        self._scrivi(beta, torneo)
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
+
+        assert len(messaggi) == 2
+        assert principale._e_il_torneo_aperto(beta)
+        assert aperti == [(titolo, principale.active_filename)]
+        assert finestre == []
+
     def test_finalizza_e_annulla_turno_nominano_il_torneo(self, principale, suoni, monkeypatch):
         """Le due domande prima di un'azione che non si torna indietro dicono
         su quale torneo si agisce; rispondendo No non cambia niente."""

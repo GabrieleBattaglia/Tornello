@@ -3248,11 +3248,6 @@ class MainFrame(wx.Frame):
             self.on_wizard_field_activated(item, field)
             return
 
-        field_active = data.get("field_active")
-        if field_active:
-            self.on_active_field_activated(item, field_active)
-            return
-
         action = data.get("action")
         filepath = data.get("filepath")
 
@@ -3261,9 +3256,19 @@ class MainFrame(wx.Frame):
             # Se il torneo della voce non si e' aperto, per esempio perche'
             # il suo file non c'e' piu', l'azione non parte: fino alla
             # 10.13.9 Avvio torneo proseguiva dopo il messaggio d'errore,
-            # senza un torneo da avviare.
+            # senza un torneo da avviare. Dalla 10.19.18 lo stesso vale per
+            # i campi del ramo Dati, che fino ad allora, gia' nella 10.0.0,
+            # passavano prima di questo controllo: con il torneo della voce
+            # che non si apriva, on_active_field_activated leggeva
+            # current_tournament, che era None, e si vedeva la finestra
+            # Errore Imprevisto.
             if not self._e_il_torneo_aperto(filepath):
                 return
+
+        field_active = data.get("field_active")
+        if field_active:
+            self.on_active_field_activated(item, field_active)
+            return
 
         if action == "add_player_action":
             self.on_enroll_players(None)
