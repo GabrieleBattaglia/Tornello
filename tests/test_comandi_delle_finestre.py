@@ -6712,7 +6712,8 @@ class TestTorneoCheNonSiSalva:
         """Correzione della revisione della 10.19.19. Gamma, in preparazione,
         cambia luogo con il suo file bloccato, e il messaggio esce. Tolto il
         blocco, CANC su un iscritto, con Si', scrive il file del torneo: e'
-        un salvataggio riuscito, come quello della Time Machine. Bloccato di
+        un salvataggio riuscito, come quello della Time Machine, e dalla
+        10.19.22 passa da _save_state, e scrive anche Roma. Bloccato di
         nuovo, quando il luogo cambia ancora il messaggio torna, una volta in
         due salvataggi. Fino alla revisione non tornava piu'."""
         from config import user_data_path
@@ -6733,6 +6734,7 @@ class TestTorneoCheNonSiSalva:
         voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
         principale.delete_player_from_tournament(voce, principale.tree_ctrl.GetItemData(voce)["player"])
         assert len(TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]) == 3
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso).get("site") == "Roma"
         principale.current_tournament["site"] = "Milano"
         self._salvataggi_bloccati(principale, percorso, volte=2)
 
@@ -7034,3 +7036,159 @@ class TestTorneoNonSalvatoDaLasciare:
             assert principale._e_il_torneo_aperto(user_data_path("Tornello - Nuovo_Sociale.json"))
         else:
             assert principale._e_il_torneo_aperto(estate)
+
+
+class TestCancSuUnIscrittoDelTorneoAperto:
+    """Dalla 10.19.22 (decisione di Gabriele del 5 novembre 2026) CANC su un
+    iscritto del torneo aperto, in preparazione, con Si', lo toglie dalla
+    memoria, da players e da players_dict, e salva il torneo con
+    _save_state, come ogni altra modifica, con la scrittura atomica e senza
+    players_dict nel file: le modifiche soltanto in memoria restano, e un
+    file bloccato lo dice il messaggio Torneo non salvato. Fino alla
+    10.19.21, e gia' nella 10.0.0, CANC rileggeva il file, lo riscriveva con
+    json.dump e lo rimetteva in memoria: le modifiche si perdevano senza
+    avviso, e con il file bloccato usciva Impossibile rimuovere il
+    giocatore. Un iscritto di un torneo che non e' quello aperto si toglie
+    dal suo file, scritto con save_tournament. I blocchi sono veri, con
+    CreateFileW; le finestre di messaggio sono finte."""
+
+    @staticmethod
+    def _gamma(principale, aperta=True):
+        """Gamma, in preparazione con i quattro iscritti dei tornei delle
+        prove, nella cartella del programma, aperta se aperta e' vero, con
+        l'albero che la mostra. Restituisce il suo file come lo scrive
+        l'albero."""
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Gamma.json")
+        dati = _torneo_in_corso("Gamma")
+        dati["rounds"] = []
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        if aperta:
+            principale.load_tournament(percorso)
+            assert principale._e_il_torneo_aperto(percorso)
+        else:
+            principale.populate_tree()
+        return principale._percorso_come_nell_albero(percorso)[0]
+
+    @staticmethod
+    def _canc_sul_primo_iscritto(principale, percorso):
+        """CANC sulla voce del primo iscritto di Gamma nell'albero.
+        Restituisce il suo identificativo."""
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
+        assert voce and voce.IsOk()
+        giocatore = principale.tree_ctrl.GetItemData(voce)["player"]
+        principale.delete_player_from_tournament(voce, giocatore)
+        return giocatore["id"]
+
+    @staticmethod
+    def _iscritti_nell_albero(principale, percorso, genitore=None):
+        """Gli identificativi degli iscritti di Gamma nell'albero."""
+        from gui.main_frame import _chiave_del_percorso
+
+        albero = principale.tree_ctrl
+        genitore = principale.tree_root if genitore is None else genitore
+        trovati = []
+        voce, cookie = albero.GetFirstChild(genitore)
+        while voce.IsOk():
+            dati = albero.GetItemData(voce) or {}
+            if dati.get("action") == "show_player_detail" and _chiave_del_percorso(dati.get("filepath")) == _chiave_del_percorso(percorso):
+                trovati.append(dati["player"]["id"])
+            trovati += TestCancSuUnIscrittoDelTorneoAperto._iscritti_nell_albero(principale, percorso, voce)
+            voce, cookie = albero.GetNextChild(genitore, cookie)
+        return trovati
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_luogo_che_non_si_era_salvato_resta(self, principale, suoni, monkeypatch, capsys):
+        """Gamma cambia luogo, Roma, con il suo file bloccato, e il messaggio
+        Torneo non salvato esce. Tolto il blocco, CANC sul primo iscritto, con
+        Si', lo toglie e salva: nel file ci sono Roma e tre iscritti, senza
+        players_dict, e in memoria Roma resta, con tre iscritti anche in
+        players_dict; l'albero ne mostra tre, e non esce un altro messaggio.
+        Fino alla 10.19.21 CANC rileggeva il file, e Roma si perdeva."""
+        percorso = self._gamma(principale)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        suoni.clear()
+        principale.current_tournament["site"] = "Roma"
+        TestTorneoCheNonSiSalva._salvataggi_bloccati(principale, percorso, volte=1)
+
+        tolto = self._canc_sul_primo_iscritto(principale, percorso)
+
+        rimasti = [g[0] for g in GIOCATORI_DEI_TORNEI if g[0] != tolto]
+        nel_file = TestNomeEDataDiInizioDaDati._nel_file(percorso)
+        assert nel_file.get("site") == "Roma"
+        assert [p["id"] for p in nel_file["players"]] == rimasti
+        assert "players_dict" not in nel_file
+        assert principale.current_tournament["site"] == "Roma"
+        assert [p["id"] for p in principale.current_tournament["players"]] == rimasti
+        assert sorted(principale.current_tournament["players_dict"]) == sorted(rimasti)
+        assert self._iscritti_nell_albero(principale, percorso) == rimasti
+        assert [f.titolo for f in finestre] == ["Torneo non salvato", "Conferma Rimozione Giocatore"]
+        assert suoni.count("errore") == 1
+        assert "rimozione_giocatore" in suoni
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_con_il_file_bloccato_lo_dice_torneo_non_salvato(self, principale, suoni, monkeypatch, capsys):
+        """Il file di Gamma e' bloccato, e CANC sul primo iscritto, con Si':
+        l'iscritto esce dalla memoria, e il salvataggio che non riesce lo
+        dice il messaggio Torneo non salvato, con la descrizione del motivo,
+        e non Impossibile rimuovere il giocatore. Il file resta com'era;
+        tolto il blocco, il salvataggio dopo scrive tre iscritti."""
+        import wx
+
+        percorso = self._gamma(principale)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+        capsys.readouterr()
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        sblocca = raccolte._bloccata(percorso, raccolte.FILE_SHARE_READ)
+        try:
+            tolto = self._canc_sul_primo_iscritto(principale, percorso)
+            nel_file = TestNomeEDataDiInizioDaDati._nel_file(percorso)
+        finally:
+            sblocca()
+
+        rimasti = [g[0] for g in GIOCATORI_DEI_TORNEI if g[0] != tolto]
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, percorso)
+        assert len(errori) == 1
+        assert scatole == []
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            ("Conferma Rimozione Giocatore", finestre[0].testo),
+            TestTorneoCheNonSiSalva._messaggio(percorso, _descrizione_dell_errore(errori[0]), nome="Gamma"),
+        ]
+        assert len(nel_file["players"]) == len(GIOCATORI_DEI_TORNEI)
+        assert [p["id"] for p in principale.current_tournament["players"]] == rimasti
+        assert sorted(principale.current_tournament["players_dict"]) == sorted(rimasti)
+
+        principale._save_state()
+
+        assert [p["id"] for p in TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]] == rimasti
+
+    def test_l_iscritto_di_un_torneo_che_non_e_aperto(self, principale, suoni, monkeypatch):
+        """Alfa, in corso, e' il torneo aperto, e CANC arriva sul primo
+        iscritto di Gamma, che non e' aperta: Gamma si legge dal suo file, e
+        con Si' l'iscritto si toglie dal file, scritto con save_tournament,
+        senza players_dict, mentre Alfa resta aperta com'era. Fino alla
+        10.19.21 json.dump scriveva anche players_dict."""
+        import copy
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        principale.load_tournament(alfa)
+        prima = copy.deepcopy(principale.current_tournament)
+        percorso = self._gamma(principale, aperta=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        tolto = self._canc_sul_primo_iscritto(principale, percorso)
+
+        nel_file = TestNomeEDataDiInizioDaDati._nel_file(percorso)
+        assert [p["id"] for p in nel_file["players"]] == [g[0] for g in GIOCATORI_DEI_TORNEI if g[0] != tolto]
+        assert "players_dict" not in nel_file
+        assert [f.titolo for f in finestre] == ["Conferma Rimozione Giocatore"]
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale.current_tournament == prima
+

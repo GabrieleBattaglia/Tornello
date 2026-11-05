@@ -4326,9 +4326,10 @@ class MainFrame(wx.Frame):
         come Accesso negato, che save_tournament mette in motivi: il percorso
         del file c'e' gia' (revisione della 10.19.19).
         Riuscito vale anche per le scritture del file del torneo aperto che
-        non passano da _save_state, come la Time Machine e CANC su un
-        iscritto; il
-        ricordo si perde anche quando il torneo esce dalla memoria (vedi
+        non passano da _save_state, come la Time Machine; CANC su un
+        iscritto, che dalla correzione della revisione della 10.19.19 lo
+        diceva da se', dalla 10.19.22 salva con _save_state. Il ricordo si
+        perde anche quando il torneo esce dalla memoria (vedi
         load_tournament e _nessun_torneo_aperto)."""
         from utils import play_sound
 
@@ -4582,16 +4583,26 @@ class MainFrame(wx.Frame):
 
         from utils import play_sound
 
-        try:
-            with open(filepath, encoding="utf-8") as f_in:
-                t_data = json.load(f_in)
-        except Exception as e:
-            wx.MessageBox(
-                _("Impossibile leggere il file del torneo: {}").format(e),
-                _("Errore"),
-                wx.ICON_ERROR,
-            )
-            return
+        # Dalla 10.19.22 il torneo aperto si legge dalla memoria, e non dal
+        # suo file: le ultime modifiche, che dopo un salvataggio non riuscito
+        # sono soltanto in memoria, restano, e un file bloccato non ferma la
+        # rimozione (decisione di Gabriele del 5 novembre 2026). Fino alla
+        # 10.19.21, e gia' nella 10.0.0, CANC rileggeva il file e lo rimetteva
+        # in memoria, e le modifiche si perdevano senza avviso.
+        aperto = self._e_il_torneo_aperto(filepath)
+        if aperto:
+            t_data = self.current_tournament
+        else:
+            try:
+                with open(filepath, encoding="utf-8") as f_in:
+                    t_data = json.load(f_in)
+            except Exception as e:
+                wx.MessageBox(
+                    _("Impossibile leggere il file del torneo: {}").format(e),
+                    _("Errore"),
+                    wx.ICON_ERROR,
+                )
+                return
 
         # Dalla 10.19.0 i giocatori di un torneo concluso restano come sono,
         # come i suoi turni: fino alla 10.18.1 CANC ne proponeva il ritiro,
@@ -4624,19 +4635,34 @@ class MainFrame(wx.Frame):
                 )
                 if to_remove:
                     players.remove(to_remove)
-                    t_data["players_dict"] = {p["id"]: p for p in players}
+                    if aperto:
+                        # L'iscritto esce dalla memoria, da players e da
+                        # players_dict, gli unici posti in cui un torneo in
+                        # preparazione lo tiene, e il torneo si salva come
+                        # dopo ogni altra modifica, con la scrittura atomica
+                        # e senza players_dict nel file. Un file bloccato lo
+                        # dice il messaggio Torneo non salvato, e la rimozione
+                        # resta in memoria. Fino alla 10.19.21 la scrittura
+                        # era json.dump, che non e' atomica e metteva nel file
+                        # anche players_dict, e con il file bloccato usciva
+                        # Impossibile rimuovere il giocatore.
+                        self.current_tournament["players_dict"] = {p["id"]: p for p in players}
+                        self._save_state()
+                    else:
+                        # Un torneo che non e' quello aperto si scrive con
+                        # save_tournament, senza players_dict: fino alla
+                        # 10.19.21 con json.dump, che ce lo metteva.
+                        from tournament import save_tournament
 
-                    with open(filepath, "w", encoding="utf-8") as f_out:
-                        json.dump(t_data, f_out, indent=4)
-
-                    if self._e_il_torneo_aperto(filepath):
-                        self.current_tournament = t_data
-                        # Il file del torneo aperto si e' scritto: e' un
-                        # salvataggio riuscito, come quello della Time
-                        # Machine, e il messaggio Torneo non salvato puo'
-                        # tornare. Fino alla correzione della revisione della
-                        # 10.19.19 non tornava piu'.
-                        self._esito_del_salvataggio(True, [])
+                        motivi = []
+                        if not save_tournament(t_data, filepath=filepath, motivi=motivi):
+                            wx.MessageBox(
+                                _("Impossibile rimuovere il giocatore: {}").format("; ".join(motivi)),
+                                _("Errore"),
+                                wx.ICON_ERROR,
+                            )
+                            dlg.Destroy()
+                            return
 
                     self._tree_restore_target = {
                         "action": "show_players",
@@ -4645,7 +4671,7 @@ class MainFrame(wx.Frame):
                     self.populate_tree()
                     play_sound("rimozione_giocatore")
 
-                    if self._e_il_torneo_aperto(filepath):
+                    if aperto:
                         self.show_players_list_verbose()
 
                     self.set_status(
