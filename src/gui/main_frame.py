@@ -1440,8 +1440,9 @@ class MainFrame(wx.Frame):
         non sente un albero nuovo. La voce del torneo tiene quello che ha
         dopo il nome, come la cartella fra parentesi di un torneo aperto da
         un'altra cartella. Fino alla 10.19.15, e gia' nella 10.0.0, il titolo
-        e quelle voci dicevano il nome di prima finche' l'albero non si
-        ricostruiva (decisione di Gabriele del 5 novembre 2026)."""
+        diceva il nome di prima finche' il torneo non si riapriva, e quelle
+        voci finche' l'albero non si ricostruiva (decisione di Gabriele del 5
+        novembre 2026)."""
         self._aggiorna_titolo()
         radice = getattr(self, "tree_root", None)
         if not (radice and radice.IsOk()):
@@ -1449,8 +1450,16 @@ class MainFrame(wx.Frame):
         voce = self._voce_del_torneo_aperto()
         if voce is not None:
             testo = self.tree_ctrl.GetItemText(voce)
-            if testo.startswith(vecchio):
-                self.tree_ctrl.SetItemText(voce, nuovo + testo[len(vecchio) :])
+            seguito = testo[len(vecchio) :]
+            # Dopo il nome la voce ha soltanto la parte fra parentesi, o
+            # niente. Con un nome di prima vuoto, che il ramo Dati accetta, la
+            # voce e' quella parte, oppure, dopo una ricostruzione
+            # dell'albero, il nome scritto nel file, che il salvataggio senza
+            # nome non ha cambiato: allora resta com'e'. Nella prima stesura
+            # della 10.19.16 il nome nuovo finiva davanti a tutto il testo,
+            # per esempio GammaAlfa.
+            if testo.startswith(vecchio) and (vecchio or not seguito or seguito.startswith(" (")):
+                self.tree_ctrl.SetItemText(voce, nuovo + seguito)
         # Avvio torneo sta al primo livello; sotto i turni c'e' calcola il
         # turno 1, con la stessa azione, che il nome non lo dice.
         figlia, cookie = self.tree_ctrl.GetFirstChild(radice)

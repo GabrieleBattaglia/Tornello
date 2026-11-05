@@ -4474,8 +4474,9 @@ class TestNomeEDataDiInizioDaDati:
         cartella tiene la cartella fra parentesi. Il cursore resta sulla voce
         Nome torneo, e l'albero non si ricostruisce: DeleteAllItems non si
         chiama, le voci sono le stesse, e le altre dicono quello che
-        dicevano. Fino alla 10.19.15, e gia' nella 10.0.0, il titolo e la
-        voce del torneo dicevano Alfa finche' l'albero non si ricostruiva."""
+        dicevano. Fino alla 10.19.15, e gia' nella 10.0.0, il titolo diceva
+        Alfa finche' il torneo non si riapriva, e la voce del torneo finche'
+        l'albero non si ricostruiva."""
         if dove == "da un'altra cartella":
             # tmp_path e' la cartella del programma, nelle prove.
             altrove = tmp_path / "chiavetta"
@@ -4522,6 +4523,35 @@ class TestNomeEDataDiInizioDaDati:
                 testo = "Avvio torneo: Beta"
             attesi.append((v, testo))
         assert self._voci_dell_albero(principale) == attesi
+
+    @pytest.mark.parametrize("ricostruito", [False, True], ids=["senza ricostruzione", "dopo una ricostruzione"])
+    def test_dopo_un_nome_vuoto_il_nome_nuovo_nella_voce_del_torneo(self, principale, suoni, monkeypatch, ricostruito):
+        """10.19.16. Da Dati Alfa riceve il nome vuoto, che il ramo Dati
+        accetta, come gia' nella 10.0.0, e il file del torneo, senza nome,
+        non si salva: dice ancora Alfa. Poi il nome diventa Gamma: il file, il
+        titolo, la voce Nome torneo e la voce del torneo dicono Gamma. Se
+        prima l'albero si ricostruisce, come dopo un turno nuovo, la voce del
+        torneo dice invece il nome scritto nel file, Alfa, e il nome nuovo
+        non la tocca, perche' il nome di prima, vuoto, non la dice: resta
+        Alfa fino alla ricostruzione dopo. Nella prima stesura della 10.19.16
+        il nome nuovo finiva davanti a tutto il testo, e la voce diceva
+        GammaAlfa."""
+        percorso = self._apri(principale, "Alfa")
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        self._campo(principale, monkeypatch, percorso, "name", "")
+        assert principale.current_tournament["name"] == ""
+        assert self._nel_file(percorso)["name"] == "Alfa"
+        if ricostruito:
+            principale.populate_tree()
+            assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == "Alfa"
+
+        voce = self._campo(principale, monkeypatch, percorso, "name", "Gamma")
+
+        assert self._nel_file(percorso)["name"] == "Gamma"
+        assert principale.GetTitle().endswith(" - [Gamma]")
+        assert principale.tree_ctrl.GetItemText(voce) == "Nome torneo: Gamma"
+        attesa = "Alfa" if ricostruito else "Gamma"
+        assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == attesa
 
 
 class TestPartiteDellaCadenzaNelDatabase:
