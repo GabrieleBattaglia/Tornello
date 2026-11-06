@@ -392,7 +392,7 @@ Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\
 Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il primo salvataggio del torneo nuovo Prova nuova non riesce, con l'errore di Windows Accesso negato; quelli dopo riescono."?
 Passo 2: premi Ctrl+N; il cursore va da solo su Nome torneo *: Non impostato: premi INVIO, scrivi Prova nuova e premi INVIO.
 Passo 3: scendi su Iscrizione Giocatori, in fondo all'elenco, e premi INVIO.
-Passo 4: nella finestra Iscrizione Giocatori premi TAB fino all'elenco Risultati Ricerca Locale, scegli Alberti Anna, la prima, e premi INVIO; il cursore passa su Galli Giulia: premi di nuovo INVIO.
+Passo 4: nella finestra Iscrizione Giocatori premi TAB fino all'elenco Risultati Ricerca Locale, dove nessun giocatore è ancora scelto, e INVIO non farebbe niente; premi freccia giù, che sceglie Alberti Anna, la prima, e poi INVIO; il cursore passa su Galli Giulia: premi di nuovo INVIO.
 Passo 5: premi TAB fino a OK e poi INVIO.
 Domanda 2: si sente l'errore, ed esce il messaggio Torneo non salvato, che comincia con "Il torneo Prova nuova non si è potuto salvare nel file E:\git\tmp\banco-tornello\Tornello - Prova_nuova.json: Accesso negato."?
 Passo 6: chiudi il messaggio.
