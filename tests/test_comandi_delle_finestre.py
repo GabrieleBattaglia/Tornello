@@ -7410,3 +7410,44 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         assert principale._e_il_torneo_aperto(alfa)
         assert principale.current_tournament == prima
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_l_iscritto_di_un_torneo_che_non_e_aperto_con_il_file_bloccato(self, principale, suoni, monkeypatch, capsys):
+        """Alfa e' il torneo aperto, e un altro programma tiene bloccato il
+        file di Gamma, che non e' aperta: CANC sul primo iscritto di Gamma,
+        con Si', non riesce a scriverne il file. Esce il messaggio
+        Impossibile rimuovere il giocatore, con la descrizione del motivo
+        che save_tournament da' dalla revisione della 10.19.19, e niente
+        altro: il file di Gamma ha ancora i quattro iscritti, non si sente il
+        suono della rimozione, e la barra di stato non la dice riuscita.
+        Fino alla revisione del nono giro nessuna prova guardava questo
+        ramo."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        principale.load_tournament(alfa)
+        percorso = self._gamma(principale, aperta=False)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+        capsys.readouterr()
+        barra = principale.last_status_msg
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        sblocca = raccolte._bloccata(percorso, raccolte.FILE_SHARE_READ)
+        try:
+            self._canc_sul_primo_iscritto(principale, percorso)
+        finally:
+            sblocca()
+
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, percorso)
+        assert len(errori) == 1
+        assert [f.titolo for f in finestre] == ["Conferma Rimozione Giocatore"]
+        assert scatole == [(f"Impossibile rimuovere il giocatore: {_descrizione_dell_errore(errori[0])}", "Errore", wx.ICON_ERROR)]
+        assert len(TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]) == len(GIOCATORI_DEI_TORNEI)
+        assert "rimozione_giocatore" not in suoni
+        assert principale.last_status_msg == barra
+        assert principale._e_il_torneo_aperto(alfa)
+
