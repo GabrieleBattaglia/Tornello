@@ -7146,18 +7146,22 @@ class TestTorneoNonSalvatoDaLasciare:
         finestra Copie di sicurezza si ripristina un altro torneo, Estate 3,
         che di solito prende il suo posto. Il salvataggio si riprova, non
         riesce, e con No il torneo nuovo resta aperto, mentre con Si' si apre
-        Estate 3. La scrittura del file e le finestre di messaggio sono
-        finte."""
+        Estate 3. Estate 3 entra nella cartella soltanto con il ripristino,
+        e in tutti e due i casi l'albero ha la sua voce: con No perche'
+        l'albero si ricostruisce, e fino alla revisione del nono giro nessuna
+        prova lo guardava, perche' Estate 3 era gia' nell'albero prima. La
+        scrittura del file e le finestre di messaggio sono finte."""
         import wx
 
         from config import user_data_path
 
-        estate = user_data_path("Tornello - Estate_3.json")
-        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
         finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
         TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
         TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale")
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        assert os.path.normcase(estate) not in TestAlberoETorneoAttivo._tutti_i_file(principale)
 
         principale._dopo_il_ripristino(SimpleNamespace(riuscito=True, tipo="torneo", destinazione=estate))
 
@@ -7166,6 +7170,35 @@ class TestTorneoNonSalvatoDaLasciare:
             assert principale._e_il_torneo_aperto(user_data_path("Tornello - Nuovo_Sociale.json"))
         else:
             assert principale._e_il_torneo_aperto(estate)
+        assert os.path.normcase(principale._percorso_come_nell_albero(estate)[0]) in TestAlberoETorneoAttivo._tutti_i_file(principale)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_ripristino_del_torneo_aperto_non_chiede(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """Il ripristino del torneo aperto stesso dalla finestra Copie di
+        sicurezza non chiede niente e non salva prima, anche con le ultime
+        modifiche soltanto in memoria: lo sostituisce apposta, e un
+        salvataggio riscriverebbe sul disco lo stato di prima al posto della
+        copia. Primavera 2 ha Roma soltanto in memoria; il blocco si toglie,
+        e il ripristino scrive nel suo file la copia, con il luogo Firenze:
+        dopo, nessuna domanda, e nel file e in memoria c'e' Firenze. Fino
+        alla revisione del nono giro nessuna prova lo guardava, e senza la
+        condizione sul torneo aperto stesso la copia si riscriveva in
+        silenzio con Roma."""
+        import json
+
+        finestre = self._finestre(monkeypatch)
+        bloccata.sblocca()
+        copia = TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)
+        copia["site"] = "Firenze"
+        with open(bloccata.primavera, "w", encoding="utf-8") as f:
+            json.dump(copia, f, indent=1)
+
+        principale._dopo_il_ripristino(SimpleNamespace(riuscito=True, tipo="torneo", destinazione=bloccata.primavera))
+
+        assert self._domande_fatte(finestre) == []
+        assert principale._e_il_torneo_aperto(bloccata.primavera)
+        assert principale.current_tournament["site"] == "Firenze"
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Firenze"
 
     @pytest.mark.parametrize("strada", ["frecce", "invio"])
     def test_il_torneo_nuovo_lasciato_esce_dall_albero(self, principale, suoni, monkeypatch, strada):

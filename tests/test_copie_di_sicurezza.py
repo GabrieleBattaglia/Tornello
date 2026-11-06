@@ -2067,8 +2067,10 @@ class TestDopoIlRipristino:
             populate_tree=lambda: registro.append("albero"),
             _save_state=lambda: registro.append("salvato"),
             # Dalla 10.19.21 il ripristino di un altro torneo chiede prima se
-            # si puo' lasciare il torneo aperto: qui si puo'.
-            _si_puo_lasciare_il_torneo=lambda: True,
+            # si puo' lasciare il torneo aperto: qui si puo'. La chiamata si
+            # annota, perche' il ripristino del torneo aperto stesso non deve
+            # chiedere (revisione del nono giro).
+            _si_puo_lasciare_il_torneo=lambda: registro.append("chiesto") or True,
         )
 
         def carica(percorso):
@@ -2079,6 +2081,8 @@ class TestDopoIlRipristino:
         return telaio, registro
 
     def test_il_torneo_aperto_si_ricarica(self, tmp_path):
+        """Il torneo aperto si ricarica e si salva, senza chiedere prima se
+        si puo' lasciare: il ripristino lo sostituisce apposta."""
         from copie_di_sicurezza import Esito
         from gui import main_frame as mf
 
@@ -2111,7 +2115,7 @@ class TestDopoIlRipristino:
 
         mf.MainFrame._dopo_il_ripristino(telaio, Esito(True, tipo="finalizzato", destinazione=riaperto))
 
-        assert registro[0] == ("caricato", riaperto)
+        assert registro[:2] == ["chiesto", ("caricato", riaperto)]
 
     def test_un_ripristino_non_riuscito_rilegge_solo_l_albero(self, tmp_path):
         from copie_di_sicurezza import Esito
