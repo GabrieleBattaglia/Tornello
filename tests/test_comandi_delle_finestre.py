@@ -6575,7 +6575,10 @@ class TestTorneoCheNonSiSalva:
         quello aperto, con i quattro iscritti, il titolo e la barra di stato
         che lo dicono; la sua voce nell'albero viene dalla memoria, e dice
         fra parentesi la cartella del suo file, e il cursore sta sulla voce
-        Avvio torneo, come dopo una creazione riuscita."""
+        calcola il turno 1, nel ramo turni del torneo, come dopo una
+        creazione riuscita: fino alla correzione della revisione della
+        10.19.20 qui, nel manuale e nel ChangeLog c'era scritto Avvio
+        torneo, la voce con la stessa azione in fondo all'albero."""
         assert not os.path.exists(percorso)
         assert not principale.creation_mode
         assert principale._e_il_torneo_aperto(percorso)
@@ -6587,10 +6590,13 @@ class TestTorneoCheNonSiSalva:
         assert voce is not None
         cartella = os.path.basename(os.path.dirname(os.path.abspath(percorso)))
         assert principale.tree_ctrl.GetItemText(voce) == f"{nome} (dalla cartella {cartella})"
-        assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetSelection()) == {
+        scelta = principale.tree_ctrl.GetSelection()
+        assert principale.tree_ctrl.GetItemData(scelta) == {
             "action": "start_tournament_matchmaking_action",
             "filepath": principale.active_filename,
         }
+        assert principale.tree_ctrl.GetItemText(scelta) == "calcola il turno 1"
+        assert principale.tree_ctrl.GetItemText(principale.tree_ctrl.GetItemParent(scelta)) == "turni (0)"
 
     def test_la_procedura_guidata_che_non_salva_lo_dice_ogni_volta(self, principale, suoni, monkeypatch):
         """Correzione della revisione della 10.19.19. Il torneo nuovo della
@@ -7103,6 +7109,61 @@ class TestTorneoNonSalvatoDaLasciare:
             assert principale._e_il_torneo_aperto(user_data_path("Tornello - Nuovo_Sociale.json"))
         else:
             assert principale._e_il_torneo_aperto(estate)
+
+    @pytest.mark.parametrize("strada", ["frecce", "invio"])
+    def test_il_torneo_nuovo_lasciato_esce_dall_albero(self, principale, suoni, monkeypatch, strada):
+        """Correzione della revisione della 10.19.20. Il torneo nuovo della
+        procedura guidata che non si e' salvato resta aperto senza il suo
+        file; poi il cursore va con le frecce sulla voce di Estate 3, o INVIO
+        arriva sulla sua voce Dati, e con Si' alla domanda Estate 3 si apre.
+        Il torneo nuovo non ha piu' niente da cui riaprirsi: la sua voce, con
+        i suoi rami, e la voce Avvio torneo con il suo nome escono
+        dall'albero, e il ramo In Preparazione esce, perche' resta vuoto, o,
+        con Gamma in preparazione, conta un torneo in meno. Il cursore resta
+        sulla stessa voce di Estate 3, senza che l'albero si ricostruisca, e
+        senza messaggi. Fino alla revisione le voci restavano, e tornando
+        sulla voce del torneo nuovo si vedeva il messaggio Errore nel
+        caricamento del torneo, e nessun torneo restava aperto. La scrittura
+        del file e le finestre di messaggio sono finte."""
+        import wx
+
+        from config import user_data_path
+
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        if strada == "invio":
+            gamma = _torneo_in_corso("Gamma")
+            gamma["rounds"] = []
+            TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Gamma.json"), gamma)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = self._finestre(monkeypatch)
+        TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale")
+        nuovo = os.path.normcase(principale.active_filename)
+        estate = principale._percorso_come_nell_albero(estate)[0]
+        albero = TestAlberoETorneoAttivo
+        prima = "In Preparazione (2)" if strada == "invio" else "In Preparazione (1)"
+        assert prima in [testo for testo, _dati in albero._figlie(principale)]
+        assert albero._tutti_i_file(principale).count(nuovo) > 1
+
+        if strada == "frecce":
+            voce = albero._voce(principale, action="select_tournament", filepath=estate)
+            principale.tree_ctrl.SelectItem(voce)
+        else:
+            voce = albero._voce(principale, action="show_data", filepath=estate, field_active=None)
+            with principale._albero_senza_caricamenti():
+                principale.tree_ctrl.SelectItem(voce)
+            principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
+        _eventi_in_coda()
+
+        assert self._domande_fatte(finestre) == [(*self._domanda("Accesso negato", nome="Nuovo Sociale"), True)]
+        assert principale._e_il_torneo_aperto(estate)
+        assert nuovo not in albero._tutti_i_file(principale)
+        preparazione = [testo for testo, _dati in albero._figlie(principale) if testo.startswith("In Preparazione")]
+        assert preparazione == (["In Preparazione (1)"] if strada == "invio" else [])
+        assert principale.tree_ctrl.GetSelection() == voce
+        assert scatole == []
 
 
 class TestCancSuUnIscrittoDelTorneoAperto:

@@ -2705,7 +2705,15 @@ class MainFrame(wx.Frame):
             # 10.19.21 la domanda arriva prima che la selezione cambi, in
             # on_tree_selection_changing, che con No la ferma: qui si arriva
             # soltanto quando il torneo si puo' lasciare.
+            lasciato = self._file_del_torneo_senza_file()
             self.load_tournament(filepath, rebuild_tree=False)
+            # Dalla correzione della revisione della 10.19.20 la voce di un
+            # torneo lasciato senza il suo file sul disco esce dall'albero, a
+            # gestore della selezione finito: dentro, il controllo di Windows
+            # usa ancora la voce di partenza, che puo' essere proprio quella
+            # da togliere.
+            if lasciato:
+                wx.CallAfter(self._togli_le_voci_del_torneo_lasciato, lasciato)
             # Un file che non si e' aperto l'ha gia' detto il messaggio, e
             # quello che segue non vale per un altro torneo.
             if not self._e_il_torneo_aperto(filepath):
@@ -3322,7 +3330,15 @@ class MainFrame(wx.Frame):
             # non parte.
             if not self._si_puo_lasciare_il_torneo():
                 return
+            lasciato = self._file_del_torneo_senza_file()
             self.load_tournament(filepath, rebuild_tree=False)
+            # Come per le frecce, dalla correzione della revisione della
+            # 10.19.20 la voce di un torneo lasciato senza il suo file sul
+            # disco esce dall'albero; qui subito, perche' la voce scelta e'
+            # quella dell'altro torneo, e prima che l'azione apra le sue
+            # finestre.
+            if lasciato:
+                self._togli_le_voci_del_torneo_lasciato(lasciato)
             # Se il torneo della voce non si e' aperto, per esempio perche'
             # il suo file non c'e' piu', l'azione non parte: fino alla
             # 10.13.9 Avvio torneo proseguiva dopo il messaggio d'errore,
@@ -4436,6 +4452,72 @@ class MainFrame(wx.Frame):
         risposta = dlg.ShowModal()
         dlg.Destroy()
         return risposta == wx.ID_YES
+
+    def _file_del_torneo_senza_file(self):
+        """Il file del torneo aperto, se non e' sul disco, come per un torneo
+        nuovo che non si e' salvato; None se il file c'e' o se non c'e' un
+        torneo aperto."""
+        if not self.current_tournament:
+            return None
+        percorso = self._file_del_torneo_aperto()
+        return None if os.path.exists(percorso) else percorso
+
+    def _togli_le_voci_del_torneo_lasciato(self, percorso):
+        """Correzione della revisione della 10.19.20. Le frecce e INVIO
+        aprono un altro torneo senza ricostruire l'albero, e la voce del
+        torneo lasciato resta, per tornarci. Un torneo lasciato senza il suo
+        file sul disco, percorso, come un torneo nuovo che non si e' salvato,
+        non ha piu' niente da cui riaprirsi: la sua voce, con i suoi rami, e
+        la voce Avvio torneo con il suo nome escono dall'albero, e il ramo In
+        Preparazione, o Tornei Conclusi, conta un torneo in meno, o esce se
+        resta vuoto. Le altre voci non si toccano, e il cursore resta dov'e',
+        senza che NVDA senta un albero nuovo; se stesse in un ramo che esce,
+        l'albero si ricostruisce. Fino alla revisione le voci restavano, e
+        tornando sulla voce del torneo lasciato si vedeva il messaggio Errore
+        nel caricamento del torneo, con il testo intero dell'errore, e nessun
+        torneo restava aperto."""
+        if not self or not getattr(self, "tree_ctrl", None) or self.creation_mode:
+            return
+        if self._e_il_torneo_aperto(percorso) or os.path.exists(percorso):
+            return
+        radice = getattr(self, "tree_root", None)
+        if not (radice and radice.IsOk()):
+            return
+        chiave = _chiave_del_percorso(percorso)
+        da_togliere = []
+        da_guardare = [radice]
+        while da_guardare:
+            genitore = da_guardare.pop(0)
+            voce, cookie = self.tree_ctrl.GetFirstChild(genitore)
+            while voce.IsOk():
+                dati = self.tree_ctrl.GetItemData(voce)
+                azione = dati.get("action") if isinstance(dati, dict) else None
+                if azione in ("select_tournament", "start_tournament_matchmaking_action") and _chiave_del_percorso(dati.get("filepath")) == chiave:
+                    da_togliere.append(voce)
+                elif azione in ("category_prep", "category_closed"):
+                    da_guardare.append(voce)
+                voce, cookie = self.tree_ctrl.GetNextChild(genitore, cookie)
+        if not da_togliere:
+            return
+        scelta = self.tree_ctrl.GetSelection()
+        while scelta.IsOk() and scelta != radice:
+            if scelta in da_togliere:
+                self.populate_tree()
+                return
+            scelta = self.tree_ctrl.GetItemParent(scelta)
+        categorie = {"category_prep": _("In Preparazione"), "category_closed": _("Tornei Conclusi")}
+        with self._albero_senza_caricamenti():
+            for voce in da_togliere:
+                genitore = self.tree_ctrl.GetItemParent(voce)
+                self.tree_ctrl.Delete(voce)
+                dati = self.tree_ctrl.GetItemData(genitore) if genitore != radice else None
+                categoria = categorie.get(dati.get("action")) if isinstance(dati, dict) else None
+                if categoria:
+                    rimasti = self.tree_ctrl.GetChildrenCount(genitore, False)
+                    if rimasti:
+                        self.tree_ctrl.SetItemText(genitore, f"{categoria} ({rimasti})")
+                    else:
+                        self.tree_ctrl.Delete(genitore)
 
     def _salva_i_report(self, torneo_salvato=True):
         """I file che descrivono il torneo aperto: il turno corrente, la
