@@ -6510,6 +6510,63 @@ class TestTorneoCheNonSiSalva:
         assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(percorso, motivi[0])]
         assert suoni.count("errore") == 1
 
+    def test_un_errore_del_sistema_senza_descrizione(self, principale, suoni, monkeypatch, capsys):
+        """Revisione della 10.19.19. Un OSError senza descrizione, come
+        quello che una libreria solleva con il solo messaggio: per Gabriele,
+        senza strerror il motivo e' il testo intero, e il messaggio Torneo
+        non salvato dice disco pieno, come la riga in console. La scrittura
+        del file del torneo e' finta. Fino alla revisione del nono giro
+        nessuna prova guardava questo ripiego, e senza il ripiego
+        _save_state cadeva con TypeError."""
+        import tournament
+
+        percorso, _raccolta, finestre = self._aperto(principale, monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+
+        def senza_descrizione(file, dati, indent=1):
+            raise OSError("disco pieno")
+
+        monkeypatch.setattr(tournament, "scrivi_json_atomico", senza_descrizione)
+        principale._save_state()
+
+        errori, _della_raccolta = self._errori_in_console(capsys, percorso)
+        assert errori == ["disco pieno"]
+        assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio(percorso, "disco pieno")]
+        assert suoni.count("errore") == 1
+
+    def test_la_raccolta_con_un_errore_del_sistema_senza_descrizione(self, principale, suoni, monkeypatch, capsys):
+        """Revisione della 10.19.13. La scrittura della raccolta delle
+        partite di Primavera 2, che ha un PGN nuovo, solleva un OSError senza
+        descrizione: il torneo si salva, e il messaggio Raccolta delle
+        partite non scritta dice disco pieno, il testo intero, come la riga
+        in console. Fino alla revisione del nono giro nessuna prova guardava
+        questo ripiego, e senza il ripiego il messaggio non usciva."""
+        import builtins
+
+        import omonimi
+
+        percorso, raccolta, finestre = self._aperto(principale, monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+        vera = builtins.open
+
+        def apri(file, mode="r", *argomenti, **opzioni):
+            if "w" in mode and os.path.normcase(os.path.abspath(file)) == os.path.normcase(os.path.abspath(raccolta)):
+                raise OSError("disco pieno")
+            return vera(file, mode, *argomenti, **opzioni)
+
+        monkeypatch.setattr(omonimi, "open", apri, raising=False)
+        principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = PGN_VALIDO
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["rounds"][0]["matches"][1]["pgn"] == PGN_VALIDO
+        errori, della_raccolta = self._errori_in_console(capsys, percorso)
+        assert errori == []
+        assert della_raccolta == ["disco pieno"]
+        assert [(f.titolo, f.testo) for f in finestre] == [TestRaccoltaSenzaPartiteNelCestino._messaggio_della_raccolta_non_scritta("disco pieno")]
+        assert suoni.count("errore") == 1
+
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     def test_il_messaggio_torna_quando_il_torneo_si_riapre(self, principale, suoni, monkeypatch, capsys):
         """Correzione della revisione della 10.19.19. Primavera 2 cambia luogo
