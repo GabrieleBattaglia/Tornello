@@ -301,6 +301,7 @@ class MainFrame(wx.Frame):
             self.right_pane, style=wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT
         )
         self.tree_ctrl.SetName(_("Centro comandi"))
+        self.tree_ctrl.Bind(wx.EVT_TREE_SEL_CHANGING, self.on_tree_selection_changing)
         self.tree_ctrl.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_tree_selection_changed)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_item_activated)
         self.tree_ctrl.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
@@ -2548,6 +2549,42 @@ class MainFrame(wx.Frame):
 
         return t_node
 
+    def on_tree_selection_changing(self, event):
+        """Prima che il cursore passi sulla voce di un altro torneo, con le
+        frecce, con un clic o con SelectItem, il torneo aperto che ha le
+        ultime modifiche soltanto in memoria si riprova a salvare, e se non si
+        salva viene la domanda di _si_puo_lasciare_il_torneo. Con No la
+        selezione non cambia, perche' l'evento si ferma con Veto, e il cursore
+        resta sulla voce da cui partiva; con Si', o dopo un salvataggio
+        riuscito, la selezione cambia, e on_tree_selection_changed apre
+        l'altro torneo senza chiedere di nuovo. wxMSW manda questo evento
+        prima di ogni cambio di selezione, anche per SelectItem chiamato dal
+        codice. Correzione della revisione della 10.19.21: fino ad allora la
+        domanda arrivava in on_tree_selection_changed, a selezione gia'
+        cambiata, e con No il cursore tornava indietro con wx.CallAfter;
+        misurato sul desktop nascosto con SetWinEventHook, chiusa la domanda
+        il controllo di Windows mandava a NVDA il fuoco e la selezione sulla
+        voce dell'altro torneo, poi sulla voce di partenza, che riceveva il
+        fuoco due volte. Con il veto arrivano gli stessi eventi di un
+        messaggio qualunque: un fuoco solo, sulla voce di partenza."""
+        if (
+            not self
+            or not getattr(self, "tree_ctrl", None)
+            or getattr(self, "_albero_in_ricostruzione", False)
+            or self.creation_mode
+        ):
+            event.Skip()
+            return
+        voce = event.GetItem()
+        dati = self.tree_ctrl.GetItemData(voce) if voce and voce.IsOk() else None
+        filepath = dati.get("filepath") if isinstance(dati, dict) else None
+        if filepath and not self._e_il_torneo_aperto(filepath) and not self._si_puo_lasciare_il_torneo():
+            # Senza Skip: per SelectItem wxMSW guarda il veto soltanto se
+            # l'evento e' stato gestito.
+            event.Veto()
+            return
+        event.Skip()
+
     def on_tree_selection_changed(self, event):
         if not self or not getattr(self, "tree_ctrl", None) or not self.tree_ctrl:
             return
@@ -2664,11 +2701,10 @@ class MainFrame(wx.Frame):
         if filepath and not self._e_il_torneo_aperto(filepath):
             # Dalla 10.19.21 il torneo aperto con le ultime modifiche
             # soltanto in memoria si lascia dopo un salvataggio riuscito, o
-            # con Si' alla domanda; con No il cursore torna sulla voce da cui
-            # era partito, e niente cambia.
-            if not self._si_puo_lasciare_il_torneo():
-                self._torna_alla_voce_di_prima(event.GetOldItem())
-                return
+            # con Si' alla domanda. Dalla correzione della revisione della
+            # 10.19.21 la domanda arriva prima che la selezione cambi, in
+            # on_tree_selection_changing, che con No la ferma: qui si arriva
+            # soltanto quando il torneo si puo' lasciare.
             self.load_tournament(filepath, rebuild_tree=False)
             # Un file che non si e' aperto l'ha gia' detto il messaggio, e
             # quello che segue non vale per un altro torneo.
@@ -4400,35 +4436,6 @@ class MainFrame(wx.Frame):
         risposta = dlg.ShowModal()
         dlg.Destroy()
         return risposta == wx.ID_YES
-
-    def _torna_alla_voce_di_prima(self, voce):
-        """Dopo No alla domanda di _si_puo_lasciare_il_torneo, arrivata con
-        le frecce, il cursore torna sulla voce da cui era partito, o, se non
-        c'e', su quella del torneo aperto. Dentro _albero_senza_caricamenti la
-        selezione rimessa non fa partire un'altra domanda, e non riapre il
-        torneo dal suo file, che perderebbe le modifiche. Dentro il gestore
-        della selezione wxMSW non lascia cambiare la selezione, e lo dice con
-        un'asserzione: si rimette appena il gestore ha finito, con
-        wx.CallAfter, prima di ogni altro evento, cosi' il fuoco che torna
-        all'albero dalla domanda e la voce rimessa arrivano a NVDA quasi
-        insieme. La voce si ritrova dai suoi dati, perche' nel frattempo
-        l'albero potrebbe essersi ricostruito."""
-        dati = self.tree_ctrl.GetItemData(voce) if voce and voce.IsOk() else None
-        wx.CallAfter(self._rimetti_il_cursore, dati)
-
-    def _rimetti_il_cursore(self, dati):
-        """La seconda meta' di _torna_alla_voce_di_prima: il cursore sulla
-        voce con i dati dati, o su quella del torneo aperto, senza caricare
-        niente."""
-        if not self or not getattr(self, "tree_ctrl", None):
-            return
-        voce = self._find_matching_item(self.tree_root, dati) if isinstance(dati, dict) else None
-        if not (voce and voce.IsOk()):
-            voce = self._voce_del_torneo_aperto()
-        if voce and voce.IsOk():
-            with self._albero_senza_caricamenti():
-                self.tree_ctrl.SelectItem(voce)
-            self.tree_ctrl.EnsureVisible(voce)
 
     def _salva_i_report(self, torneo_salvato=True):
         """I file che descrivono il torneo aperto: il turno corrente, la

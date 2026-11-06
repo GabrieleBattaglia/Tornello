@@ -6833,10 +6833,12 @@ class TestTorneoNonSalvatoDaLasciare:
         """Il cursore scende con le frecce sulla voce di Estate 3: il
         salvataggio si riprova, non riesce, e la domanda esce una volta, con
         il suono dell'errore e la stessa descrizione del motivo. Con No
-        Primavera 2 resta aperta, con Roma in memoria, e il cursore torna
-        sulla voce Luogo, una volta, senza un'altra domanda e senza rileggere
-        il torneo dal file. Tolto il blocco, il salvataggio dopo scrive
-        Roma."""
+        Primavera 2 resta aperta, con Roma in memoria, e il cursore resta
+        sulla voce Luogo, senza un'altra domanda e senza rileggere il torneo
+        dal file. Dalla correzione della revisione della 10.19.21 la domanda
+        arriva prima che la selezione cambi, e con No la selezione non passa
+        mai su Estate 3: fino ad allora ci passava, e tornava sulla voce Luogo
+        con wx.CallAfter. Tolto il blocco, il salvataggio dopo scrive Roma."""
         import wx
 
         finestre = self._finestre(monkeypatch, wx.ID_NO)
@@ -6849,7 +6851,7 @@ class TestTorneoNonSalvatoDaLasciare:
         assert [f.titolo for f in finestre] == ["Torneo non salvato"]
         assert suoni.count("errore") == 2
         assert registro.caricati == []
-        assert registro.selezioni == [bloccata.estate, bloccata.primavera]
+        assert registro.selezioni == []
         assert principale.tree_ctrl.GetSelection() == bloccata.luogo
         self._primavera_com_era(principale, bloccata)
         errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
@@ -6859,6 +6861,71 @@ class TestTorneoNonSalvatoDaLasciare:
         principale._save_state()
 
         assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.finestre_vere
+    @pytest.mark.skipif(sys.platform != "win32", reason="il desktop nascosto e il blocco di un altro programma sono quelli di Windows")
+    @pytest.mark.parametrize("risposta", ["no", "si"])
+    def test_la_freccia_vera_e_gli_eventi_per_nvda(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """Correzione della revisione della 10.19.21. La finestra principale
+        si mostra sul desktop nascosto, il cursore sta sulla voce accanto a
+        quella di Estate 3, e la freccia arriva davvero all'albero, con
+        PostMessage, come dalla tastiera. La domanda arriva prima che la
+        selezione cambi. Con No il controllo di Windows non manda a NVDA ne'
+        il fuoco ne' la selezione su nessuna voce, annotati con
+        SetWinEventHook come li riceve uno screen reader, e il cursore resta
+        dov'era: fino alla revisione la selezione passava su Estate 3, che
+        riceveva fuoco e selezione, e tornava indietro, con la voce di
+        partenza che riceveva il fuoco un'altra volta. Con Si' la domanda
+        esce una volta sola, e il cursore passa su Estate 3, che si apre. La
+        domanda e' finta, come nelle altre prove."""
+        import ctypes
+        from ctypes import wintypes
+
+        import wx
+        from test_canc_nell_albero import _attiva, _premi
+        from test_fuoco_alla_chiusura import _attendi
+
+        albero = principale.tree_ctrl
+        estate = TestAlberoETorneoAttivo._voce(principale, action="select_tournament", filepath=bloccata.estate)
+        partenza, tasto = albero.GetPrevVisible(estate), (0x28, 0x50)
+        if not partenza.IsOk():
+            partenza, tasto = albero.GetNextVisible(estate), (0x26, 0x48)
+        assert albero.GetItemData(partenza).get("filepath") == bloccata.primavera
+        user32 = _attiva(principale)
+        with principale._albero_senza_caricamenti():
+            albero.SelectItem(partenza)
+        albero.SetFocus()
+        assert _attendi(lambda: wx.Window.FindFocus() is albero)
+        _attendi(lambda: False, 0.3)
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+        eventi = []
+        richiamo = ctypes.WINFUNCTYPE(None, wintypes.HANDLE, wintypes.DWORD, wintypes.HWND, wintypes.LONG, wintypes.LONG, wintypes.DWORD, wintypes.DWORD)(
+            lambda gancio, evento, finestra, oggetto, figlio, thread, tempo: eventi.append((evento, finestra, figlio))
+        )
+        ganci = ctypes.WinDLL("user32")
+        ganci.SetWinEventHook.restype = wintypes.HANDLE
+        ganci.SetWinEventHook.argtypes = [wintypes.DWORD, wintypes.DWORD, wintypes.HMODULE, type(richiamo), wintypes.DWORD, wintypes.DWORD, wintypes.DWORD]
+        ganci.UnhookWinEvent.argtypes = [wintypes.HANDLE]
+        # EVENT_OBJECT_FOCUS e EVENT_OBJECT_SELECTION, del solo processo
+        # delle prove, fuori contesto: arrivano fra gli eventi di wx.
+        gancio = ganci.SetWinEventHook(0x8005, 0x8006, None, richiamo, os.getpid(), 0, 0)
+        assert gancio
+        try:
+            _premi(user32, albero, *tasto)
+            _attendi(lambda: False, 0.3)
+        finally:
+            ganci.UnhookWinEvent(gancio)
+
+        sulle_voci = [e for e in eventi if e[1] == albero.GetHandle() and e[2] > 0]
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        if risposta == "no":
+            assert sulle_voci == []
+            assert albero.GetSelection() == partenza
+            self._primavera_com_era(principale, bloccata)
+        else:
+            assert sulle_voci
+            assert albero.GetSelection() == estate
+            assert principale._e_il_torneo_aperto(bloccata.estate)
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     def test_le_frecce_con_si_lasciano_il_torneo(self, principale, suoni, monkeypatch, capsys, bloccata):
