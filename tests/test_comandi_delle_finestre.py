@@ -1939,6 +1939,29 @@ class TestAlberoETorneoAttivo:
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
 
+    def test_un_json_troppo_annidato_e_un_file_che_non_si_legge(self, principale, suoni, monkeypatch):
+        """Correzione della 10.19.29. Alfa e' aperto, e il suo file diventa
+        un json annidato oltre il limite di Python, che json.load rifiuta
+        con RecursionError; poi Alfa si riapre, come all'avvio o dall'albero.
+        E' un file che non si legge, come in omonimi.py dalla 10.19.13: il
+        messaggio Errore nel caricamento del torneo lo dice, nessun torneo
+        resta aperto, e la barra di stato lo dice. Dalla 10.13.10 l'errore
+        usciva dall'apertura, senza messaggio, e Alfa restava in memoria."""
+        percorsi = self._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        messaggi = []
+        monkeypatch.setattr("wx.MessageBox", lambda testo, *a, **k: messaggi.append(testo))
+        with open(percorsi["Alfa"], "w", encoding="utf-8") as f:
+            f.write("[" * 200000 + "]" * 200000)
+
+        principale.load_tournament(percorsi["Alfa"])
+
+        assert len(messaggi) == 1
+        assert messaggi[0].startswith("Errore nel caricamento del torneo:")
+        assert "while decoding a JSON array" in messaggi[0]
+        self._nessun_torneo_aperto(principale)
+        assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
+
     def test_ctrl_o_sul_file_del_torneo_salvato_cambiato_da_fuori(self, principale, suoni, monkeypatch):
         """Correzione della proposta 7 del nono giro. Alfa e' aperta e
         salvata, senza modifiche soltanto in memoria, e da fuori il suo file
@@ -7649,7 +7672,7 @@ class TestTorneoNonSalvatoDaLasciare:
         assert errori == []
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    @pytest.mark.parametrize("contenuto", ["non torneo", "rovinato"])
+    @pytest.mark.parametrize("contenuto", ["non torneo", "rovinato", "troppo annidato"])
     def test_apri_torneo_su_un_file_che_non_si_apre(self, principale, suoni, monkeypatch, capsys, bloccata, tmp_path, contenuto):
         """10.19.29. Apri Torneo, e nella finestra Apri un file che non e' un
         torneo, o che e' rovinato: Tornello lo legge prima della domanda
@@ -7660,7 +7683,10 @@ class TestTorneoNonSalvatoDaLasciare:
         Luogo, e la barra di stato dice che il torneo non si e' aperto.
         Tolto il blocco, il salvataggio dopo scrive Roma. Fino alla 10.19.29
         la domanda usciva prima del messaggio, e con Si' Primavera 2 restava
-        aperta lo stesso, con le modifiche che la domanda aveva detto perse."""
+        aperta lo stesso, con le modifiche che la domanda aveva detto perse.
+        Dalla correzione della 10.19.29 vale anche per un json annidato oltre
+        il limite di Python, che json.load rifiuta con RecursionError: fino ad
+        allora Apri Torneo finiva senza messaggio, con l'errore in console."""
         import wx
 
         scatole = []
@@ -7670,7 +7696,7 @@ class TestTorneoNonSalvatoDaLasciare:
         scelto = str(tmp_path / "altrove" / "Tornello - Altro.json")
         os.makedirs(os.path.dirname(scelto))
         with open(scelto, "w", encoding="utf-8") as f:
-            f.write('{"schema_version": 2, "players": []}' if contenuto == "non torneo" else "{rotto")
+            f.write({"non torneo": '{"schema_version": 2, "players": []}', "rovinato": "{rotto", "troppo annidato": "[" * 200000 + "]" * 200000}[contenuto])
         mostrate = self._finestra_apri(monkeypatch, finestre, scelto)
         suoni.clear()
 

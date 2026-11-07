@@ -1275,9 +1275,13 @@ class MainFrame(wx.Frame):
         domanda Torneo non salvato."""
         try:
             data = self._leggi_il_torneo(filepath) if gia_letto is None else gia_letto
-        except (OSError, ValueError) as errore:
+        except (OSError, ValueError, RecursionError) as errore:
             # ValueError comprende il JSON rovinato, il testo che non e'
-            # UTF-8 e FileNonTorneo.
+            # UTF-8 e FileNonTorneo. Dalla correzione della 10.19.29 anche un
+            # json annidato oltre il limite di Python, che json.load rifiuta
+            # con RecursionError, e' un file che non si legge, come in
+            # omonimi.py dalla 10.19.13: dalla 10.13.10 l'errore usciva
+            # dall'apertura, e si vedeva soltanto in console.
             self._torneo_non_aperto(filepath, errore, rebuild_tree, tieni_il_precedente)
             return
         try:
@@ -6733,7 +6737,7 @@ class MainFrame(wx.Frame):
         # load_tournament: niente cambia.
         try:
             letto = self._leggi_il_torneo(scelto)
-        except (OSError, ValueError) as errore:
+        except (OSError, ValueError, RecursionError) as errore:
             # Se il file scelto non si apre, o non e' un torneo, resta aperto
             # il torneo di prima; se e' il file del torneo aperto, che si e'
             # salvato, nessun torneo resta aperto (vedi _torneo_non_aperto).
