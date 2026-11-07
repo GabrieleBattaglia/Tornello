@@ -442,6 +442,61 @@ class TestSaveTournament:
             in capsys.readouterr().out
         )
 
+    def test_un_ricalcolo_che_non_riesce_non_lascia_campi_nuovi(self, tmp_path, monkeypatch, capsys):
+        """Revisione della 10.19.31. Un torneo in preparazione appena nato,
+        come quello della procedura guidata, i cui giocatori non hanno
+        ancora i numeri della classifica, e che non ha players_dict. Il
+        calcolo scrive i primi numeri e poi solleva un errore: i giocatori
+        tornano come prima, senza i campi che il calcolo aveva aggiunto, in
+        memoria e nel file, e players_dict non resta nel torneo. Il file non
+        ha campi nuovi, come dice il ChangeLog. Fino alla revisione nessuna
+        prova lo guardava: il torneo della prova di prima ha gia' tutti i
+        campi."""
+        import reports
+        from tournament import save_tournament
+
+        torneo = {
+            "name": "Appena Nato",
+            "tournament_id": "APPENA",
+            "start_date": "2026-11-01",
+            "end_date": "2026-11-30",
+            "total_rounds": 5,
+            "current_round": 1,
+            "rounds": [],
+            "players": [
+                {"id": codice, "last_name": cognome, "first_name": nome_proprio, "initial_elo": elo, "current_elo": elo, "withdrawn": False, "results_history": []}
+                for codice, cognome, nome_proprio, elo in GIOCATORI
+            ],
+        }
+        chiavi_dei_giocatori = [set(g) for g in torneo["players"]]
+        chiavi_del_torneo = set(torneo)
+        aggiunte = []
+        vera = reports.aggiorna_i_numeri_in_corso
+
+        def calcola_e_annota(t, *a, **k):
+            vera(t, *a, **k)
+            aggiunte.append({campo for g in t["players"] for campo in g} - set.union(*chiavi_dei_giocatori))
+
+        def guasto(*a, **k):
+            raise RuntimeError("guasto di prova")
+
+        monkeypatch.setattr(reports, "aggiorna_i_numeri_in_corso", calcola_e_annota)
+        monkeypatch.setattr(reports, "ordina_la_classifica_in_corso", guasto)
+        percorso = str(tmp_path / "Tornello - Appena_Nato.json")
+        capsys.readouterr()
+
+        assert save_tournament(torneo, filepath=percorso)
+
+        assert aggiunte and aggiunte[0]
+        assert [set(g) for g in torneo["players"]] == chiavi_dei_giocatori
+        # Il file ha anche opponents, che save_tournament scrive sempre.
+        assert {campo for g in _dal_file(percorso)["players"] for campo in g} & set(CAMPI) == set()
+        assert set(torneo) == chiavi_del_torneo
+        assert (
+            "Avviso: i numeri della classifica del torneo Appena Nato non si sono potuti ricalcolare prima del salvataggio, e il file li salva come erano: guasto di prova"
+            in capsys.readouterr().out
+        )
+
     def test_un_torneo_concluso_tiene_i_numeri_della_finalizzazione(self, tmp_path):
         """Il torneo concluso non si ricalcola: i numeri sono quelli che la
         finalizzazione ha calcolato e salvato. E' il comportamento di prima,
