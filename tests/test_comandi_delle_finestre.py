@@ -6466,7 +6466,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert suoni.count("errore") == 3
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_la_finalizzazione_in_console_con_la_raccolta_che_non_si_legge(self, suoni):
+    def test_la_finalizzazione_in_console_con_la_raccolta_che_non_si_legge(self, suoni, capsys):
         """Correzione della revisione della 10.19.13. Lo stesso torneo
         normale si finalizza nella versione a riga di comando, mentre un
         altro programma tiene aperta la raccolta, senza lasciarla ne'
@@ -6474,7 +6474,9 @@ class TestRaccoltaSenzaPartiteNelCestino:
         nella cartella backup, e l'avviso dice che non si e' potuta
         scrivere, con l'errore. Fino alla correzione diceva che la raccolta
         aveva partite che il torneo non ha, e che la copia nella cartella
-        backup non era riuscita."""
+        backup non era riuscita. Dalla proposta 6 del nono giro l'avviso
+        dice dell'errore soltanto la descrizione, perche' nomina gia' il
+        file e la cartella; il testo intero resta in console."""
         import json
 
         import ui
@@ -6483,6 +6485,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         with open(percorso, encoding="utf-8") as f:
             torneo = json.load(f)
         avvisi = []
+        capsys.readouterr()
 
         sblocca = self._bloccata(raccolta, 0)
         try:
@@ -6492,8 +6495,13 @@ class TestRaccoltaSenzaPartiteNelCestino:
 
         assert scritta is False
         cartella = os.path.dirname(os.path.abspath(raccolta))
+        della_raccolta = self._errori_in_console(capsys)
+        assert len(della_raccolta) == 1
         assert len(avvisi) == 1
-        assert avvisi[0].startswith(f"La raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2 non si è potuta scrivere nella cartella {cartella}: ")
+        assert avvisi[0].split("\n")[0] == (
+            f"La raccolta delle partite Primavera_2 - raccolta partite.pgn del torneo Primavera 2 non si è potuta scrivere nella cartella {cartella}: "
+            f"{_descrizione_dell_errore(della_raccolta[0])}"
+        )
         assert avvisi[0].endswith(
             f"\nNon va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: "
             "se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."

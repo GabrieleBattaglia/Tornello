@@ -94,8 +94,10 @@ class RaccoltaAggiornata(NamedTuple):
     (decisione di Gabriele del 5 novembre 2026). Dalla revisione della
     10.19.19 e' soltanto la descrizione, strerror, per esempio Permission
     denied, perche' il messaggio dice gia' la cartella e il file; senza
-    descrizione e' il testo intero, come prima. La frase in non_scritta,
-    della finalizzazione, e la console tengono il testo intero."""
+    descrizione e' il testo intero, come prima. Dalla proposta 6 del nono
+    giro la dice cosi' anche la frase in non_scritta, della finalizzazione,
+    che nomina gia' il file e la cartella; la console tiene il testo
+    intero."""
 
     rimasta: str | None = None
     gia_detta: bool = False
@@ -776,11 +778,16 @@ def aggiorna_la_raccolta_pgn(torneo, file_del_torneo, cestino=None, rimaste=None
                 f.write(contenuto)
         except OSError as e:
             print(f"Errore durante il salvataggio della raccolta PGN: {e}")
+            # Dalla proposta 6 del nono giro anche la frase della
+            # finalizzazione dice soltanto la descrizione, perche' nomina gia'
+            # il file e la cartella: fino alla proposta diceva il testo
+            # intero, con il percorso, che resta in console.
+            descrizione = e.strerror or str(e)
             return RaccoltaAggiornata(
                 non_scritta=_("La raccolta delle partite {file} del torneo {nome} non si è potuta scrivere nella cartella {cartella}: {errore}").format(
-                    file=file, nome=torneo.get("name", ""), cartella=cartella, errore=e
+                    file=file, nome=torneo.get("name", ""), cartella=cartella, errore=descrizione
                 ),
-                errore=e.strerror or str(e),
+                errore=descrizione,
             )
         rimaste.discard(chiave)
         return RaccoltaAggiornata()

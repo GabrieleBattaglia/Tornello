@@ -2389,7 +2389,11 @@ class TestRaccoltaRimastaAllaFinalizzazione:
         """La raccolta vecchia, in sola lettura come un file tenuto aperto da
         un altro programma, non si riscrive: la finalizzazione va in fondo,
         la raccolta non va in archivio, e un avviso dice che non e' stata
-        scritta e dove resta quella vecchia."""
+        scritta e dove resta quella vecchia. Dalla proposta 6 del nono giro
+        l'avviso dice del motivo soltanto la descrizione, come Permission
+        denied, perche' nomina gia' il file e la cartella; la console tiene
+        il testo intero, con il numero dell'errore e il percorso."""
+        import re
         import stat
 
         import config
@@ -2416,11 +2420,53 @@ class TestRaccoltaRimastaAllaFinalizzazione:
             f"\nNon va in archivio con il torneo, e nella cartella {cartella} resta quella che c'era prima, che non ha le partite del torneo come sono alla fine: "
             "se non ti serve più, spostala o cancellala tu. Le partite del torneo restano nel suo file, in archivio."
         )
+        uscita = capsys.readouterr().out
+        righe = [r for r in uscita.splitlines() if r.startswith("Errore durante il salvataggio della raccolta PGN: ")]
+        assert len(righe) == 1
+        trovato = re.fullmatch(r"Errore durante il salvataggio della raccolta PGN: \[(?:WinError|Errno) \d+\] (.+?): '.*'", righe[0])
+        assert trovato, righe[0]
+        avviso = inizio + trovato.group(1) + fine
         if dove == "finestra":
-            detti = [a for a in avvisi if RACCOLTA in a]
-            assert len(detti) == 1
-            assert detti[0].startswith(inizio) and detti[0].endswith(fine)
+            assert [a for a in avvisi if RACCOLTA in a] == [avviso]
         else:
-            uscita = capsys.readouterr().out
-            assert uscita.count(inizio) == 1
-            assert fine in uscita
+            assert uscita.count(avviso) == 1
+
+    @pytest.mark.parametrize("dove", ["finestra", "console"])
+    def test_l_errore_senza_descrizione_lo_dice_intero(self, banco, capsys, monkeypatch, dove):
+        """Proposta 6 del nono giro. La scrittura della raccolta solleva un
+        OSError senza descrizione, come disco pieno: l'avviso della
+        finalizzazione dice il testo intero, disco pieno, come la console,
+        perche' non c'e' una descrizione da dire al suo posto. Senza il
+        ripiego direbbe None."""
+        import builtins
+
+        import config
+        import omonimi
+
+        banco.torneo["rounds"][0]["matches"][0]["pgn"] = PGN_DELLA_PROVA
+        _scrivi(banco.file_torneo, banco.torneo)
+        raccolta = config.user_data_path(RACCOLTA)
+        vera = builtins.open
+
+        def apri(file, mode="r", *argomenti, **opzioni):
+            if "w" in mode and os.path.basename(str(file)) == RACCOLTA:
+                raise OSError("disco pieno")
+            return vera(file, mode, *argomenti, **opzioni)
+
+        monkeypatch.setattr(omonimi, "open", apri, raising=False)
+        avvisi = []
+
+        assert (_finalizza(banco, avvisi) if dove == "finestra" else _finalizza_in_console(banco)) is True
+
+        assert RACCOLTA not in os.listdir(_cartella_archivio())
+        cartella = os.path.dirname(raccolta)
+        avviso = (
+            f"La raccolta delle partite {RACCOLTA} del torneo {NOME} non si è potuta scrivere nella cartella {cartella}: disco pieno"
+            "\nNon va in archivio con il torneo. Le partite del torneo restano nel suo file, in archivio."
+        )
+        uscita = capsys.readouterr().out
+        assert "Errore durante il salvataggio della raccolta PGN: disco pieno" in uscita.splitlines()
+        if dove == "finestra":
+            assert [a for a in avvisi if RACCOLTA in a] == [avviso]
+        else:
+            assert uscita.count(avviso) == 1
