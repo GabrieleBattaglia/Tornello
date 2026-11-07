@@ -2040,20 +2040,38 @@ class TestAlberoETorneoAttivo:
         guidata, e Ctrl+O sceglie il file di Alfa: Alfa si rilegge, come
         sulla base 98e4163, e l'area centrale la mostra. Fino alla correzione
         la barra di stato diceva che Alfa era gia' aperta, con l'area
-        centrale vuota e la procedura sullo schermo."""
+        centrale vuota e la procedura sullo schermo. Dalla 10.19.34
+        (decisione di Gabriele del 7 novembre 2026) la procedura si chiude:
+        l'albero torna con i tornei e prende il fuoco, con il cursore sulla
+        voce di Alfa, e l'area centrale mostra il suo turno corrente. Fino
+        alla 10.19.33 la procedura restava sullo schermo, e il cursore non
+        andava su nessuna voce."""
+        import wx
+
         percorsi = self._prepara("Alfa")
         principale.load_tournament(percorsi["Alfa"])
         alfa = principale.active_filename
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
         principale.start_new_tournament_wizard()
         assert principale.creation_mode
+        registro = self._sonde(principale)
+        suoni.clear()
 
         self._apri_con_ctrl_o(principale, monkeypatch, alfa)
 
         assert [f.titolo for f in finestre] == []
+        assert scatole == []
+        assert suoni == []
         assert principale._e_il_torneo_aperto(alfa)
+        assert registro.caricati == ["Tornello - Alfa.json"]
+        assert not principale.creation_mode
+        assert [testo for testo, _dati in self._voci_della_radice(principale)] == ["Alfa", "Nuovo torneo"]
+        assert self._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": alfa}
+        assert registro.fuoco[-1:] == ["tree_ctrl"]
         assert principale.last_status_msg == "Torneo 'Alfa' caricato con successo."
-        assert principale.main_text.GetValue().startswith("Torneo: Alfa")
+        assert principale.main_text.GetValue().startswith("Torneo: Alfa\nTurno Corrente: 1 di 3")
 
     def test_il_torneo_di_un_altra_cartella_si_distingue_da_quello_con_lo_stesso_nome(self, principale, suoni, monkeypatch, tmp_path):
         """Alfa nella cartella del programma, e un altro Alfa su una
@@ -8996,3 +9014,185 @@ class TestBarraDopoIndietro:
 
         assert principale._e_il_torneo_aperto(percorsi["Alfa"])
         assert principale.last_status_msg == "Attenzione: un file di torneo non leggibile, dettagli sotto."
+
+
+class TestApriTorneoNellaProceduraGuidata:
+    """10.19.34 (decisione di Gabriele del 7 novembre 2026). Ogni Apri
+    Torneo riuscito dentro la procedura guidata di un torneo nuovo la
+    chiude: l'albero torna con i tornei e prende il fuoco, con il cursore
+    sulla voce del torneo aperto, e l'area centrale mostra il suo turno
+    corrente, come dopo un caricamento. Fino alla 10.19.33 lo faceva
+    soltanto Apri Torneo sul file del torneo aperto con le modifiche
+    soltanto in memoria (10.19.29): con un altro torneo il torneo si apriva,
+    ma la procedura restava sullo schermo, e il cursore non andava su
+    nessuna voce. Un Apri Torneo che non riesce, o annullato, lascia la
+    procedura com'e'. Le finestre di messaggio e quella di Apri Torneo sono
+    finte."""
+
+    bloccata = TestTorneoNonSalvatoDaLasciare.bloccata
+
+    @staticmethod
+    def _nella_procedura(principale, monkeypatch, *risposte):
+        """Beta, salvata, nella cartella del programma accanto ad Alfa, che
+        e' aperta e salvata; poi Nuovo torneo dal menu File. Restituisce i
+        percorsi, le finestre di messaggio annotate, i wx.MessageBox e il
+        registro delle sonde."""
+        import wx
+
+        percorsi = TestAlberoETorneoAttivo()._prepara("Alfa", "Beta")
+        principale.load_tournament(percorsi["Alfa"])
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, risposte)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        return percorsi, finestre, scatole, registro
+
+    @staticmethod
+    def _procedura_com_era(principale):
+        """La procedura guidata e' ancora sullo schermo, con la voce
+        Indietro in cima."""
+        assert principale.creation_mode
+        assert [testo for testo, _dati in TestAlberoETorneoAttivo._figlie(principale)][:2] == ["Indietro", "Nome torneo *: Non impostato"]
+
+    @staticmethod
+    def _procedura_chiusa_sul_torneo(principale, registro, percorso, nome):
+        """La procedura si e' chiusa: l'albero ha i tornei, il cursore e'
+        sulla voce del torneo nome, nel file percorso, l'albero ha preso il
+        fuoco e l'area centrale mostra il turno corrente."""
+        assert not principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorso)
+        assert principale.current_tournament["name"] == nome
+        assert "Nuovo torneo" in [testo for testo, _dati in TestAlberoETorneoAttivo._figlie(principale)]
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": principale.active_filename}
+        assert registro.fuoco[-1:] == ["tree_ctrl"]
+        assert principale.main_text.GetValue().startswith(f"Torneo: {nome}\nTurno Corrente: ")
+
+    def test_su_un_altro_torneo(self, principale, suoni, monkeypatch):
+        """Alfa aperta e salvata, Nuovo torneo, poi Apri Torneo sul file di
+        Beta: Beta si apre, una volta, senza domande e senza suoni, e la
+        procedura si chiude sulla voce di Beta. La barra di stato dice che
+        Beta e' caricata."""
+        percorsi, finestre, scatole, registro = self._nella_procedura(principale, monkeypatch)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, percorsi["Beta"])
+
+        self._procedura_chiusa_sul_torneo(principale, registro, percorsi["Beta"], "Beta")
+        assert registro.caricati == ["Tornello - Beta.json"]
+        assert principale.GetTitle().endswith("[Beta]")
+        assert principale.last_status_msg == "Torneo 'Beta' caricato con successo."
+        assert finestre == []
+        assert scatole == []
+        assert suoni == []
+
+    def test_su_un_torneo_di_un_altra_cartella(self, principale, suoni, monkeypatch, tmp_path):
+        """Apri Torneo, dentro la procedura, su un torneo di una chiavetta:
+        la procedura si chiude sulla sua voce, che dice la cartella fra
+        parentesi."""
+        _percorsi, finestre, scatole, registro = self._nella_procedura(principale, monkeypatch)
+        chiavetta = str(tmp_path / "chiavetta" / "Tornello - Gamma.json")
+        TestAlberoETorneoAttivo._scrivi(chiavetta, _torneo_in_corso("Gamma"))
+        suoni.clear()
+
+        TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, chiavetta)
+
+        self._procedura_chiusa_sul_torneo(principale, registro, chiavetta, "Gamma")
+        assert "Gamma (dalla cartella chiavetta)" in [testo for testo, _dati in TestAlberoETorneoAttivo._figlie(principale)]
+        assert principale.last_status_msg == "Torneo 'Gamma' caricato con successo, dalla cartella chiavetta."
+        assert finestre == []
+        assert scatole == []
+        assert suoni == []
+
+    def test_su_un_file_che_non_si_apre(self, principale, suoni, monkeypatch, tmp_path):
+        """Apri Torneo, dentro la procedura, su un file rovinato: il
+        messaggio Apertura non riuscita, con il suono dell'errore, e la
+        procedura resta com'era, con Alfa aperta."""
+        _percorsi, finestre, scatole, registro = self._nella_procedura(principale, monkeypatch)
+        rotto = str(tmp_path / "altrove" / "Tornello - Rotto.json")
+        os.makedirs(os.path.dirname(rotto))
+        with open(rotto, "w", encoding="utf-8") as f:
+            f.write("{rotto")
+        suoni.clear()
+
+        TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, rotto)
+
+        self._procedura_com_era(principale)
+        assert principale.current_tournament["name"] == "Alfa"
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            _apertura_non_riuscita(rotto, "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)")
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        assert registro.fuoco == []
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Alfa'."
+
+    def test_annullato(self, principale, suoni, monkeypatch):
+        """Apri Torneo, dentro la procedura, con la finestra Apri annullata:
+        niente cambia, e la procedura resta com'era."""
+        import wx
+
+        _percorsi, finestre, scatole, registro = self._nella_procedura(principale, monkeypatch)
+
+        class FinestraAnnullata:
+            def __init__(self, *argomenti, **opzioni):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_CANCEL
+
+            def GetPath(self):
+                return ""
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "FileDialog", FinestraAnnullata)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        self._procedura_com_era(principale)
+        assert principale.current_tournament["name"] == "Alfa"
+        assert registro.caricati == []
+        assert registro.fuoco == []
+        assert principale.last_status_msg == barra
+        assert finestre == []
+        assert scatole == []
+        assert suoni == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("risposta", ["si", "no"])
+    def test_su_un_altro_torneo_con_le_modifiche_soltanto_in_memoria(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """Primavera 2 ha Roma soltanto in memoria: Nuovo torneo, con Si'
+        alla domanda Torneo non salvato, e poi Apri Torneo sul file di Estate
+        3. La domanda esce di nuovo, come fuori dalla procedura: con Si'
+        Estate 3 si apre, e la procedura si chiude sulla sua voce; con No
+        Primavera 2 resta aperta, con Roma, e la procedura resta com'era."""
+        import wx
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_YES, wx.ID_YES if risposta == "si" else wx.ID_NO])
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, bloccata.estate)
+
+        domanda = TestTorneoNonSalvatoDaLasciare._domanda(bloccata.descrizione)
+        assert [(f.titolo, f.testo) for f in finestre] == [domanda, domanda]
+        assert suoni == ["errore"]
+        assert scatole == []
+        if risposta == "si":
+            self._procedura_chiusa_sul_torneo(principale, registro, bloccata.estate, "Estate 3")
+            assert registro.caricati == ["Tornello - Estate_3.json"]
+            assert principale.last_status_msg == "Torneo 'Estate 3' caricato con successo."
+        else:
+            self._procedura_com_era(principale)
+            TestTorneoNonSalvatoDaLasciare._primavera_com_era(principale, bloccata)
+            assert registro.caricati == []
+            assert registro.fuoco == []

@@ -6800,7 +6800,34 @@ class MainFrame(wx.Frame):
         # lo stesso, senza il suo file.
         self.load_tournament(scelto, tieni_il_precedente=True, gia_letto=None if domanda_possibile else letto)
         if self._e_il_torneo_aperto(scelto):
+            # Dalla 10.19.34 (decisione di Gabriele del 7 novembre 2026) ogni
+            # Apri Torneo riuscito dentro la procedura guidata di un torneo
+            # nuovo la chiude, come la 10.19.29 per il torneo aperto con le
+            # modifiche soltanto in memoria. Fino alla 10.19.33, con il torneo
+            # aperto e salvato, che si rilegge, o con un altro torneo, il
+            # torneo si apriva, ma la procedura restava sullo schermo, gia'
+            # sulla base, e il cursore non andava su nessuna voce. Un Apri
+            # Torneo che non riesce, o annullato, lascia la procedura com'e'.
+            self._chiudi_la_procedura_guidata()
             self._cursore_sulla_voce_del_torneo_aperto()
+
+    def _chiudi_la_procedura_guidata(self):
+        """Se la procedura guidata di un torneo nuovo e' aperta, la chiude:
+        l'albero torna con i tornei e prende il fuoco, con il cursore sulla
+        voce del torneo aperto, e l'area centrale mostra il turno corrente,
+        come dopo un caricamento. Fuori dalla procedura non fa niente. La
+        usano Apri Torneo riuscito, dalla 10.19.34, e
+        _il_torneo_scelto_e_gia_aperto, dalla 10.19.29."""
+        if not self.creation_mode:
+            return
+        self.creation_mode = False
+        self.creation_data = {}
+        self._tree_restore_target = {"action": "select_tournament", "filepath": self.active_filename}
+        # La voce del torneo si sceglie senza mostrare i suoi dati: l'area
+        # centrale la riscrive subito dopo.
+        with self._albero_senza_caricamenti():
+            self.populate_tree()
+        self.show_current_round_report()
 
     def _cursore_sulla_voce_del_torneo_aperto(self):
         """Il cursore dell'albero passa sulla voce del torneo aperto, anche
@@ -6832,16 +6859,10 @@ class MainFrame(wx.Frame):
         il cursore non andava sulla voce, che nel suo albero non c'e'; dalla
         10.19.21 alla proposta la domanda usciva di nuovo, e con Si' il
         torneo si rileggeva, e le modifiche si perdevano (decisione di
-        Gabriele del 7 novembre 2026)."""
-        if self.creation_mode:
-            self.creation_mode = False
-            self.creation_data = {}
-            self._tree_restore_target = {"action": "select_tournament", "filepath": self.active_filename}
-            # La voce del torneo si sceglie senza mostrare i suoi dati: l'area
-            # centrale la riscrive subito dopo.
-            with self._albero_senza_caricamenti():
-                self.populate_tree()
-            self.show_current_round_report()
+        Gabriele del 7 novembre 2026). Dalla 10.19.34 la procedura la chiude
+        _chiudi_la_procedura_guidata, che chiude anche quella di ogni altro
+        Apri Torneo riuscito."""
+        self._chiudi_la_procedura_guidata()
         self._cursore_sulla_voce_del_torneo_aperto()
         self.set_status(
             _("Il torneo '{name}' è già aperto, e resta com'è: Tornello non lo rilegge dal suo file.").format(
