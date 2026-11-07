@@ -5016,9 +5016,32 @@ class MainFrame(wx.Frame):
         # alla 10.19.34, e gia' nella 10.0.0, usciva la domanda, e dopo il Si'
         # non succedeva niente, senza suono e senza messaggio.
         players = t_data.get("players", [])
-        to_remove = next(
-            (p for p in players if p.get("id") == player_data.get("id")), None
-        )
+        try:
+            to_remove = next(
+                (p for p in players if p.get("id") == player_data.get("id")), None
+            )
+        except AttributeError as e:
+            # Correzione della 10.19.35: un file con gli iscritti scritti
+            # male, per esempio una lista di numeri, lo dice il messaggio
+            # Giocatore non rimosso dell'errore imprevisto, con il suono
+            # dell'errore, subito e senza la domanda, come il file che non si
+            # legge. Nella 10.19.35, prima della correzione, la ricerca
+            # dell'iscritto, uscita dal try e messa prima della domanda,
+            # fermava CANC con un errore che si vedeva soltanto in console;
+            # fino alla 10.19.34 lo stesso messaggio usciva dopo il Si'.
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Giocatore non rimosso"),
+                _(
+                    "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, nel file {file}, per un errore imprevisto: {errore}. Il file del torneo e i suoi iscritti restano com'erano."
+                ).format(
+                    giocatore=p_name,
+                    nome=t_data.get("name", ""),
+                    file=filepath,
+                    errore=_descrizione_del_motivo(e),
+                ),
+            )
+            return
         if to_remove is None:
             self._voce_che_non_c_e_piu(
                 _("Giocatore non rimosso"),
