@@ -762,3 +762,187 @@ class TestIlFileDelTorneoInConsole:
         salvato = self._leggi(aperto)
         assert (salvato["name"], salvato["creation_suspended"], salvato["rounds"]) == ("Corona", True, [])
         assert sorted(p["id"] for p in salvato["players"]) == sorted(ELO)
+
+
+# I contenuti dei file che la console non apre, per TestIlFileCheNonSiApreInConsole.
+FILE_CHE_NON_SI_APRONO = {
+    "rovinato": b"{rotto",
+    "non UTF-8": '{"name": "Città"}'.encode("latin-1"),
+    "troppo annidato": b'{"name": "Rotto", "x": ' + b"[" * 200000 + b"]" * 200000 + b"}",
+    # Una cartella con il nome del file di un torneo: aprirla da' l'errore
+    # del sistema, PermissionError, di cui va soltanto la descrizione,
+    # Permission denied, senza il numero e il percorso.
+    "una cartella": None,
+}
+
+
+class TestIlFileCheNonSiApreInConsole:
+    """10.19.42 (decisione di Gabriele del 7 novembre 2026). Un file di
+    torneo che la console non apre, all'avvio, lo dice un messaggio, con il
+    file e del motivo la sola descrizione, come Apertura non riuscita nella
+    finestra: "Il file C:\\...\\Tornello - Rotto.json non si è potuto aprire:
+    ..." Poi la console continua come per gli altri file che non si aprono:
+    con il torneo che era l'unico, Errore fatale e la domanda Vuoi creare un
+    nuovo torneo; con il torneo scelto dall'elenco, Errore nel caricamento
+    del torneo e l'uscita; con la ripresa di una creazione sospesa, l'elenco
+    dei tornei, come dopo un No. Fino alla 10.19.41, e gia' nella 10.0.0, un
+    file che non e' UTF-8, o un json annidato oltre il limite di Python,
+    fermava la console con un errore, e la ripresa si fermava anche con un
+    file sparito mentre la domanda aspettava; per un json rovinato
+    load_tournament stampava il testo intero dell'errore."""
+
+    @staticmethod
+    def _motivo(percorso):
+        """Del motivo per cui il file non si apre la sola descrizione, come
+        la da' Python aprendolo con json; per il json troppo annidato None,
+        perche' il testo dice quanta memoria ha usato, e cambia."""
+        import json
+
+        try:
+            with open(percorso, encoding="utf-8") as f:
+                json.load(f)
+        except RecursionError:
+            return None
+        except (OSError, ValueError) as errore:
+            return (getattr(errore, "strerror", None) or str(errore)).rstrip(".")
+        raise AssertionError("il file si apre")
+
+    @staticmethod
+    def _controlla_il_messaggio(messaggio, percorso, motivo):
+        if motivo is None:
+            assert messaggio.startswith(f"Il file {percorso} non si è potuto aprire: Stack overflow")
+            assert messaggio.endswith(" while decoding a JSON array from a unicode string.")
+        else:
+            assert messaggio == f"Il file {percorso} non si è potuto aprire: {motivo}."
+
+    @pytest.mark.parametrize("contenuto", list(FILE_CHE_NON_SI_APRONO))
+    def test_l_unico_torneo_che_non_si_apre(self, monkeypatch, muto, tmp_path, capsys, contenuto):
+        """L'unico torneo della cartella del programma non si apre: dopo
+        INVIO il messaggio, poi Errore fatale e la domanda Vuoi creare un
+        nuovo torneo; con No la console esce. Il file resta com'era."""
+        import os
+
+        import config
+        from controller import TournamentController
+
+        percorso = config.user_data_path("Tornello - Rotto.json")
+        if FILE_CHE_NON_SI_APRONO[contenuto] is None:
+            os.mkdir(percorso)
+        else:
+            with open(percorso, "wb") as f:
+                f.write(FILE_CHE_NON_SI_APRONO[contenuto])
+        motivo = self._motivo(percorso)
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=[""], conferme=[False])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._select_or_create_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        assert copione.domande[-1] == "Vuoi creare un nuovo torneo?"
+        assert adattatore.messaggi[1:3] == ["\nTrovato un solo torneo esistente: 'Rotto' (File: Tornello - Rotto.json)", "Caricamento di 'Rotto'..."]
+        self._controlla_il_messaggio(adattatore.messaggi[3], percorso, motivo)
+        assert adattatore.messaggi[4:] == [f"Errore fatale nel caricamento del torneo '{percorso}'."]
+        assert guida.tournament is None
+        if FILE_CHE_NON_SI_APRONO[contenuto] is None:
+            assert motivo == "Permission denied"
+            assert os.listdir(percorso) == []
+        else:
+            with open(percorso, "rb") as f:
+                assert f.read() == FILE_CHE_NON_SI_APRONO[contenuto]
+        assert "Errore durante il caricamento del torneo" not in capsys.readouterr().out
+
+    @pytest.mark.parametrize("cambio", ["sparito", "non UTF-8"])
+    def test_la_ripresa_con_il_file_che_non_si_apre_piu(self, monkeypatch, muto, tmp_path, cambio):
+        """Console_Prova, in preparazione, e Altro, avviato: mentre la
+        domanda Vuoi riprendere la creazione aspetta, il file di
+        Console_Prova sparisce, o diventa un file che non e' UTF-8. Dopo il
+        Si' il messaggio, e poi l'elenco dei tornei, da cui si apre Altro."""
+        import json
+        import os
+
+        import config
+        from controller import TournamentController
+
+        sospeso = _torneo_al_primo_turno().to_dict()
+        sospeso.update(rounds=[], current_round=0, creation_suspended=True)
+        percorso = config.user_data_path("Tornello - Console_Prova.json")
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(sospeso, f)
+        altro = _torneo_al_primo_turno().to_dict()
+        altro["name"] = "Altro"
+        file_altro = config.user_data_path("Tornello - Altro.json")
+        with open(file_altro, "w", encoding="utf-8") as f:
+            json.dump(altro, f)
+        monkeypatch.chdir(tmp_path)
+        # Altro, scelto con il suo numero nell'elenco, nell'ordine della
+        # cartella.
+        import glob
+
+        nomi = [os.path.basename(f) for f in glob.glob(config.user_data_path("Tornello - *.json"))]
+        copione = Copione(monkeypatch, tasti=[str(nomi.index("Tornello - Altro.json") + 1)])
+        adattatore = _adattatore(copione)
+
+        def conferma(prompt, default=True):
+            copione.domande.append(prompt)
+            if cambio == "sparito":
+                os.remove(percorso)
+            else:
+                with open(percorso, "wb") as f:
+                    f.write(FILE_CHE_NON_SI_APRONO["non UTF-8"])
+            return True
+
+        adattatore.confirm = conferma
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        assert copione.domande == ["Vuoi riprendere la creazione di 'Console_Prova'?", "Scegli un torneo da caricare o creane uno nuovo (1-3): "]
+        motivo = "No such file or directory" if cambio == "sparito" else self._motivo(percorso)
+        indice = adattatore.messaggi.index(" - 'Console_Prova' (File: Tornello - Console_Prova.json)")
+        assert adattatore.messaggi[indice + 1 :] == [f"Il file {percorso} non si è potuto aprire: {motivo}.", "Caricamento di 'Altro'..."]
+        assert (guida.tournament.name, guida.active_filename) == ("Altro", file_altro)
+        assert not any("Ripresa" in m for m in adattatore.messaggi)
+
+    def test_il_torneo_scelto_che_non_si_apre_piu(self, monkeypatch, muto, tmp_path):
+        """Alfa e Beta nella cartella del programma: mentre l'elenco aspetta
+        la scelta, il file di Beta diventa un file che non e' UTF-8. Scelto
+        Beta, il messaggio, poi Errore nel caricamento del torneo, e la
+        console esce."""
+        import json
+
+        import config
+        from controller import TournamentController
+
+        percorsi = {}
+        for nome in ("Alfa", "Beta"):
+            torneo = _torneo_al_primo_turno().to_dict()
+            torneo["name"] = nome
+            percorsi[nome] = config.user_data_path(f"Tornello - {nome}.json")
+            with open(percorsi[nome], "w", encoding="utf-8") as f:
+                json.dump(torneo, f)
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=["2"])
+        adattatore = _adattatore(copione)
+        scelta = copione.input
+
+        def input_che_rovina_beta(domanda=""):
+            with open(percorsi["Beta"], "wb") as f:
+                f.write(FILE_CHE_NON_SI_APRONO["non UTF-8"])
+            return scelta(domanda)
+
+        monkeypatch.setattr("builtins.input", input_che_rovina_beta)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._select_or_create_tournament()
+
+        assert uscita.value.code == 1
+        assert copione.tasti == []
+        motivo = self._motivo(percorsi["Beta"])
+        assert adattatore.messaggi[-3:] == ["Caricamento di 'Beta'...", f"Il file {percorsi['Beta']} non si è potuto aprire: {motivo}.", "Errore nel caricamento del torneo. Riprova."]
+        assert guida.tournament is None

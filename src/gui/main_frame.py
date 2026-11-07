@@ -31,6 +31,11 @@ from omonimi import (
     stesso_nome_scritto,
 )
 
+# Del motivo di un errore la sola descrizione, nei messaggi che nominano gia'
+# il file, dalla 10.19.30: dalla 10.19.42 la funzione sta in utils.py, perche'
+# la usa anche la console.
+from utils import descrizione_del_motivo as _descrizione_del_motivo
+
 # Ogni quanto il pie' di pagina ricalcola le sue percentuali quando non ha il
 # focus. Il valore che si muove piu' in fretta, TT, con un decimale cambia
 # ogni 23 minuti circa in un turno di 16 giorni: un minuto basta e avanza.
@@ -74,15 +79,6 @@ def _nella_cartella_del_programma(percorso):
     dove l'albero cerca i tornei, anche scritto con altre maiuscole."""
     cartella = os.path.dirname(os.path.abspath(percorso))
     return os.path.normcase(cartella) == os.path.normcase(_cartella_predefinita_tornei())
-
-
-def _descrizione_del_motivo(errore):
-    """Del motivo di un errore, per i messaggi che nominano gia' il file,
-    soltanto la descrizione che da' il sistema, strerror, per esempio No
-    such file or directory, come in save_tournament; per un errore senza
-    descrizione, come un file che non e' JSON, il testo intero. Senza il
-    punto in fondo, che il messaggio mette da se'."""
-    return (getattr(errore, "strerror", None) or str(errore)).rstrip(".")
 
 
 class FileNonTorneo(ValueError):

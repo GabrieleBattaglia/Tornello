@@ -1,3 +1,4 @@
+import errno
 import glob
 import json
 import math
@@ -14,6 +15,7 @@ from engine import (
 from utils import (
     _ensure_players_dict,
     create_backup,
+    descrizione_del_motivo,
     format_date_locale,
     get_player_by_id,
     sanitize_filename,
@@ -437,8 +439,16 @@ def tornei_nella_cartella_del_programma():
     ]
 
 
-def load_tournament(filename_to_load):
-    """Carica lo stato del torneo corrente dal file JSON."""
+def load_tournament(filename_to_load, motivi=None):
+    """Carica lo stato del torneo corrente dal file JSON.
+    Un file che non c'e', o che non si apre, da' None. Dalla 10.19.42 non si
+    apre, come nella finestra, anche un file che non e' UTF-8 o un json
+    annidato oltre il limite di Python: fino alla 10.19.41, e gia' nella
+    10.0.0, l'errore usciva da qui, e fermava la console. Se motivi e' una
+    lista, riceve del motivo la sola descrizione, come in save_tournament, e
+    qui non si stampa niente, perche' il messaggio lo da' la console, con il
+    file (decisione di Gabriele del 7 novembre 2026); senza, il motivo si
+    stampa come prima."""
     if os.path.exists(filename_to_load):
         try:
             with open(filename_to_load, encoding="utf-8") as f:
@@ -477,13 +487,25 @@ def load_tournament(filename_to_load):
                     p["id"]: p for p in torneo_data.get("players", [])
                 }
                 return torneo_data
-        except (OSError, json.JSONDecodeError) as e:
-            print(
-                _(
-                    "Errore durante il caricamento del torneo ({filename}): {error}"
-                ).format(filename=filename_to_load, error=e)
-            )
+        except (OSError, ValueError, RecursionError) as e:
+            # ValueError comprende il JSON rovinato e il testo che non e'
+            # UTF-8; RecursionError e' il json annidato oltre il limite di
+            # Python. Sono gli errori che anche la finestra tratta come un
+            # file che non si apre, in MainFrame.load_tournament.
+            if motivi is None:
+                print(
+                    _(
+                        "Errore durante il caricamento del torneo ({filename}): {error}"
+                    ).format(filename=filename_to_load, error=e)
+                )
+            else:
+                motivi.append(descrizione_del_motivo(e))
             return None
+    if motivi is not None:
+        # Il file che non c'e', per esempio sparito dopo che la console lo
+        # aveva elencato: la descrizione e' quella che il sistema darebbe
+        # aprendolo.
+        motivi.append(os.strerror(errno.ENOENT))
     return None
 
 

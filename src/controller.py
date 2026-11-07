@@ -292,7 +292,7 @@ class TournamentController:
                         name=single_tournament_name_guess
                     )
                 )
-                torneo_dict = load_tournament(self.active_filename)
+                torneo_dict = self._torneo_dal_file(self.active_filename)
                 if torneo_dict:
                     self.tournament = Tournament.from_dict(torneo_dict)
                 else:
@@ -381,15 +381,26 @@ class TournamentController:
                                 name=suspended_tournaments[0]["name"]
                             )
                         ):
-                            self.active_filename = suspended_tournaments[0]["filepath"]
-                            torneo_dict = load_tournament(self.active_filename)
-                            self.tournament = Tournament.from_dict(torneo_dict)
-                            deve_creare_nuovo_torneo = False
-                            self.ui.show_message(
-                                _("Ripresa creazione torneo '{name}'...").format(
-                                    name=self.tournament.name
-                                )
+                            # Il file si rilegge dopo la domanda, che aspetta
+                            # un tasto: nel frattempo puo' essere sparito o
+                            # cambiato. Dalla 10.19.42 un file che non si apre
+                            # piu' lo dice il messaggio di _torneo_dal_file, e
+                            # la console continua con l'elenco dei tornei, come
+                            # dopo un No; fino alla 10.19.41, e gia' nella
+                            # 10.0.0, si fermava con un errore (decisione di
+                            # Gabriele del 7 novembre 2026).
+                            torneo_dict = self._torneo_dal_file(
+                                suspended_tournaments[0]["filepath"]
                             )
+                            if torneo_dict:
+                                self.active_filename = suspended_tournaments[0]["filepath"]
+                                self.tournament = Tournament.from_dict(torneo_dict)
+                                deve_creare_nuovo_torneo = False
+                                self.ui.show_message(
+                                    _("Ripresa creazione torneo '{name}'...").format(
+                                        name=self.tournament.name
+                                    )
+                                )
                     else:
                         self.ui.show_message(
                             _(
@@ -411,7 +422,7 @@ class TournamentController:
                         self.ui.show_message(
                             _("Caricamento di '{name}'...").format(name=chosen["name"])
                         )
-                        torneo_dict = load_tournament(self.active_filename)
+                        torneo_dict = self._torneo_dal_file(self.active_filename)
                         if torneo_dict:
                             self.tournament = Tournament.from_dict(torneo_dict)
                         else:
@@ -444,6 +455,30 @@ class TournamentController:
 
         if deve_creare_nuovo_torneo or self.tournament is None:
             self._create_new_tournament(nome_nuovo_torneo_suggerito)
+
+    def _torneo_dal_file(self, percorso: str) -> dict | None:
+        """I dati del torneo scritto nel file, letti da load_tournament, o
+        None se il file non si apre. Dalla 10.19.42 un file che non si apre
+        lo dice un messaggio, con il file e del motivo la sola descrizione,
+        come Apertura non riuscita nella finestra, per esempio No such file
+        or directory, il testo dell'errore di json per un file rovinato o
+        quello della decodifica per un file che non e' UTF-8; poi chi chiama
+        continua come ha sempre fatto con un file che non si apre. Fino alla
+        10.19.41, e gia' nella 10.0.0, un file che non e' UTF-8, o un json
+        annidato oltre il limite di Python, fermava la console con un
+        errore, e la ripresa di una creazione sospesa si fermava anche con un
+        file che non c'era piu'; per gli altri file load_tournament stampava
+        il testo intero dell'errore (decisione di Gabriele del 7 novembre
+        2026)."""
+        motivi = []
+        torneo_dict = load_tournament(percorso, motivi)
+        if torneo_dict is None:
+            self.ui.show_error(
+                _("Il file {file} non si è potuto aprire: {motivo}.").format(
+                    file=percorso, motivo="; ".join(motivi)
+                )
+            )
+        return torneo_dict
 
     def _resume_suspended_creation(self) -> None:
         self.ui.show_message(

@@ -211,6 +211,17 @@ def stessi_byte(primo, secondo):
         return False
 
 
+def descrizione_del_motivo(errore):
+    """Del motivo di un errore, per i messaggi che nominano gia' il file,
+    soltanto la descrizione che da' il sistema, strerror, per esempio No
+    such file or directory, come in save_tournament; per un errore senza
+    descrizione, come un file che non e' JSON, il testo intero. Senza il
+    punto in fondo, che il messaggio mette da se'. Nasce con la 10.19.30 in
+    gui/main_frame.py, come _descrizione_del_motivo, e dalla 10.19.42 sta
+    qui, perche' la usa anche la console, per i file che non si aprono."""
+    return (getattr(errore, "strerror", None) or str(errore)).rstrip(".")
+
+
 def copie_di_chiusura(percorso_torneo):
     """Le copie di sicurezza fatte alla chiusura del programma: il torneo
     aperto, se c'e', e l'archivio dei giocatori. Con quelle di ogni turno
