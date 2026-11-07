@@ -4917,6 +4917,21 @@ class MainFrame(wx.Frame):
             voce = albero.GetItemParent(voce)
         return None
 
+    def _voce_che_non_c_e_piu(self, titolo, testo, bersaglio):
+        """CANC su una voce dell'albero che non c'e' piu' nel torneo, per
+        esempio perche' il file del torneo e' cambiato dopo che l'albero lo
+        aveva letto, dalla 10.19.35 (decisione di Gabriele del 7 novembre
+        2026): il suono dell'errore, l'albero che si ridisegna, con il
+        cursore sulla voce bersaglio, come dopo un'azione riuscita, e poi il
+        messaggio titolo, con testo, che lo dice. Il torneo non cambia, e la
+        barra di stato resta com'era."""
+        from utils import play_sound
+
+        play_sound("errore", self.current_tournament)
+        self._tree_restore_target = bersaglio
+        self.populate_tree()
+        self._dialogo_informativo(titolo, testo)
+
     def delete_player_from_tournament(self, item, player_data):
         node_data = self.tree_ctrl.GetItemData(item)
         if not node_data:
@@ -4982,6 +4997,31 @@ class MainFrame(wx.Frame):
             self._proponi_ritiro_dal_torneo(item, player_data, filepath)
             return
 
+        # Dalla 10.19.35 (decisione di Gabriele del 7 novembre 2026) l'iscritto
+        # che non c'e' piu' nel torneo, per esempio perche' il file e' cambiato
+        # dopo che l'albero lo aveva letto, lo dice il messaggio Giocatore non
+        # rimosso, con il suono dell'errore e senza la domanda prima, come il
+        # file che non si legge, e l'albero si ridisegna, senza di lui. Fino
+        # alla 10.19.34, e gia' nella 10.0.0, usciva la domanda, e dopo il Si'
+        # non succedeva niente, senza suono e senza messaggio.
+        players = t_data.get("players", [])
+        to_remove = next(
+            (p for p in players if p.get("id") == player_data.get("id")), None
+        )
+        if to_remove is None:
+            self._voce_che_non_c_e_piu(
+                _("Giocatore non rimosso"),
+                _(
+                    "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, perché non è più fra i suoi iscritti: forse il file {file} è cambiato dopo che l'albero lo aveva letto. Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati."
+                ).format(
+                    giocatore=p_name,
+                    nome=t_data.get("name", ""),
+                    file=filepath,
+                ),
+                {"action": "show_players", "filepath": filepath},
+            )
+            return
+
         msg = _("Sei sicuro di voler rimuovere il giocatore {name} dal torneo?").format(
             name=p_name
         )
@@ -4994,74 +5034,69 @@ class MainFrame(wx.Frame):
             # Lo guarda il messaggio dell'errore imprevisto.
             rimosso = False
             try:
-                players = t_data.get("players", [])
-                to_remove = next(
-                    (p for p in players if p.get("id") == player_data.get("id")), None
-                )
-                if to_remove:
-                    players.remove(to_remove)
-                    if aperto:
-                        # L'iscritto esce dalla memoria, da players e da
-                        # players_dict, gli unici posti in cui un torneo in
-                        # preparazione lo tiene, e il torneo si salva come
-                        # dopo ogni altra modifica, con la scrittura atomica
-                        # e senza players_dict nel file. Un file bloccato lo
-                        # dice il messaggio Torneo non salvato, e la rimozione
-                        # resta in memoria. Fino alla 10.19.21 la scrittura
-                        # era json.dump, che non e' atomica e metteva nel file
-                        # anche players_dict, e con il file bloccato usciva
-                        # Impossibile rimuovere il giocatore.
-                        rimosso = True
-                        self.current_tournament["players_dict"] = {p["id"]: p for p in players}
-                        self._save_state()
-                    else:
-                        # Un torneo che non e' quello aperto si scrive con
-                        # save_tournament, senza players_dict: fino alla
-                        # 10.19.21 con json.dump, che ce lo metteva.
-                        from tournament import save_tournament
+                players.remove(to_remove)
+                if aperto:
+                    # L'iscritto esce dalla memoria, da players e da
+                    # players_dict, gli unici posti in cui un torneo in
+                    # preparazione lo tiene, e il torneo si salva come
+                    # dopo ogni altra modifica, con la scrittura atomica
+                    # e senza players_dict nel file. Un file bloccato lo
+                    # dice il messaggio Torneo non salvato, e la rimozione
+                    # resta in memoria. Fino alla 10.19.21 la scrittura
+                    # era json.dump, che non e' atomica e metteva nel file
+                    # anche players_dict, e con il file bloccato usciva
+                    # Impossibile rimuovere il giocatore.
+                    rimosso = True
+                    self.current_tournament["players_dict"] = {p["id"]: p for p in players}
+                    self._save_state()
+                else:
+                    # Un torneo che non e' quello aperto si scrive con
+                    # save_tournament, senza players_dict: fino alla
+                    # 10.19.21 con json.dump, che ce lo metteva.
+                    from tournament import save_tournament
 
-                        motivi = []
-                        if not save_tournament(t_data, filepath=filepath, motivi=motivi):
-                            # Dalla proposta 5 del nono giro il messaggio
-                            # nomina il giocatore, il torneo e il file, con
-                            # la descrizione del motivo, come Torneo non
-                            # salvato, nella finestra accessibile e con il
-                            # suono dell'errore: fino alla proposta, e gia'
-                            # nella 10.0.0, era un wx.MessageBox senza suono,
-                            # che dalla revisione della 10.19.19 diceva
-                            # soltanto la descrizione, senza il torneo e
-                            # senza il file.
-                            dlg.Destroy()
-                            play_sound("errore")
-                            self._dialogo_informativo(
-                                _("Giocatore non rimosso"),
-                                _(
-                                    "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, perché il file {file} non si è potuto salvare: {errore}. Il file del torneo e i suoi iscritti restano com'erano. Se un altro programma tiene aperto il file, chiudilo e riprova."
-                                ).format(
-                                    giocatore=p_name,
-                                    nome=t_data.get("name", ""),
-                                    file=filepath,
-                                    errore="; ".join(motivi).rstrip("."),
-                                ),
-                            )
-                            return
-                        rimosso = True
-
-                    self._tree_restore_target = {
-                        "action": "show_players",
-                        "filepath": filepath,
-                    }
-                    self.populate_tree()
-                    play_sound("rimozione_giocatore")
-
-                    if aperto:
-                        self.show_players_list_verbose()
-
-                    self.set_status(
-                        _("Giocatore '{name}' rimosso con successo.").format(
-                            name=p_name
+                    motivi = []
+                    if not save_tournament(t_data, filepath=filepath, motivi=motivi):
+                        # Dalla proposta 5 del nono giro il messaggio
+                        # nomina il giocatore, il torneo e il file, con
+                        # la descrizione del motivo, come Torneo non
+                        # salvato, nella finestra accessibile e con il
+                        # suono dell'errore: fino alla proposta, e gia'
+                        # nella 10.0.0, era un wx.MessageBox senza suono,
+                        # che dalla revisione della 10.19.19 diceva
+                        # soltanto la descrizione, senza il torneo e
+                        # senza il file.
+                        dlg.Destroy()
+                        play_sound("errore")
+                        self._dialogo_informativo(
+                            _("Giocatore non rimosso"),
+                            _(
+                                "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, perché il file {file} non si è potuto salvare: {errore}. Il file del torneo e i suoi iscritti restano com'erano. Se un altro programma tiene aperto il file, chiudilo e riprova."
+                            ).format(
+                                giocatore=p_name,
+                                nome=t_data.get("name", ""),
+                                file=filepath,
+                                errore="; ".join(motivi).rstrip("."),
+                            ),
                         )
+                        return
+                    rimosso = True
+
+                self._tree_restore_target = {
+                    "action": "show_players",
+                    "filepath": filepath,
+                }
+                self.populate_tree()
+                play_sound("rimozione_giocatore")
+
+                if aperto:
+                    self.show_players_list_verbose()
+
+                self.set_status(
+                    _("Giocatore '{name}' rimosso con successo.").format(
+                        name=p_name
                     )
+                )
             except Exception as e:
                 # Dalla 10.19.30 l'errore imprevisto lo dice la finestra
                 # accessibile, con il suono dell'errore e, del motivo, la sola

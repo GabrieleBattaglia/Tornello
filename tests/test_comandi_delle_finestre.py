@@ -9196,3 +9196,109 @@ class TestApriTorneoNellaProceduraGuidata:
             TestTorneoNonSalvatoDaLasciare._primavera_com_era(principale, bloccata)
             assert registro.caricati == []
             assert registro.fuoco == []
+
+
+class TestCancSuUnaVoceCheNonCePiu:
+    """10.19.35 (decisione di Gabriele del 7 novembre 2026). CANC sulla voce
+    di un iscritto che nel torneo non c'e' piu', perche' il file del torneo
+    e' cambiato dopo che l'albero lo aveva letto: si sente il suono
+    dell'errore, l'albero si ridisegna, e il messaggio Giocatore non rimosso
+    lo dice, senza la domanda prima. Fino alla 10.19.34 usciva la domanda
+    Conferma Rimozione Giocatore, e dopo il Si' non succedeva niente, senza
+    suono e senza messaggio. Le finestre di messaggio sono finte, e il fuoco
+    si annota."""
+
+    @staticmethod
+    def _gamma_cambiata(principale):
+        """Alfa, in corso, aperta, e Gamma, in preparazione, nell'albero; poi
+        il file di Gamma perde il primo iscritto, Bianchi Luca, come dopo un
+        cambio fatto da un altro programma. Restituisce il file di Alfa e
+        quello di Gamma come li scrive l'albero, la voce di Bianchi, che
+        l'albero mostra ancora, e il contenuto del file di Gamma."""
+        alfa, gamma, _nome = TestCancSuUnIscrittoDelTorneoAperto()._alfa_aperta_e_gamma(principale)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": gamma})
+        assert principale.tree_ctrl.GetItemData(voce)["player"]["id"] == "BIA"
+        dati = TestNomeEDataDiInizioDaDati._nel_file(gamma)
+        dati["players"] = dati["players"][1:]
+        TestNomeDelTorneoNuovo._scrivi(gamma, dati)
+        with open(gamma, "rb") as f:
+            contenuto = f.read()
+        return principale._percorso_come_nell_albero(alfa)[0], gamma, voce, contenuto
+
+    @staticmethod
+    def _iscritto_non_rimosso(gamma):
+        return (
+            "Giocatore non rimosso",
+            "Il giocatore Bianchi Luca non si è potuto rimuovere dal torneo Gamma, perché non è più fra i suoi iscritti: "
+            f"forse il file {gamma} è cambiato dopo che l'albero lo aveva letto. "
+            "Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati.",
+            False,
+        )
+
+    def test_l_iscritto_di_un_torneo_che_non_e_aperto(self, principale, suoni, monkeypatch):
+        """Il cursore e' sulla voce di Bianchi, che il file di Gamma non ha
+        piu', e Gamma non e' aperta: CANC dal menu. Il messaggio, il suono
+        dell'errore e basta; il file di Gamma resta com'era, l'albero mostra
+        i suoi tre iscritti, e il cursore, che non resta su un torneo
+        chiuso, va sulla voce di Alfa, con il fuoco all'albero. Alfa resta
+        aperta, e la barra di stato non cambia."""
+        import wx
+
+        alfa, gamma, voce, contenuto = self._gamma_cambiata(principale)
+        with principale._albero_senza_caricamenti():
+            principale.tree_ctrl.SelectItem(voce)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [self._iscritto_non_rimosso(gamma)]
+        assert scatole == []
+        assert suoni == ["errore"]
+        with open(gamma, "rb") as f:
+            assert f.read() == contenuto
+        assert TestCancSuUnIscrittoDelTorneoAperto._iscritti_nell_albero(principale, gamma) == ["VER", "NER", "RUS"]
+        assert principale._e_il_torneo_aperto(alfa)
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": alfa}
+        assert registro.fuoco == ["tree_ctrl"]
+        assert registro.caricati == []
+        assert principale.last_status_msg == barra
+
+    def test_l_iscritto_del_torneo_aperto_con_le_frecce(self, principale, suoni, monkeypatch):
+        """Le frecce sulla voce di Bianchi aprono Gamma dal suo file, che
+        non lo ha piu', senza ridisegnare l'albero: CANC dal menu. Il
+        messaggio, il suono dell'errore e basta; Gamma resta aperta con i
+        suoi tre iscritti, in memoria e nel file, l'albero ne mostra tre, e
+        il cursore va sulla voce iscritti di Gamma, con il fuoco
+        all'albero."""
+        import wx
+
+        _alfa, gamma, voce, contenuto = self._gamma_cambiata(principale)
+        principale.tree_ctrl.SelectItem(voce)
+        assert principale._e_il_torneo_aperto(gamma)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [self._iscritto_non_rimosso(gamma)]
+        assert scatole == []
+        assert suoni == ["errore"]
+        with open(gamma, "rb") as f:
+            assert f.read() == contenuto
+        assert [p["id"] for p in principale.current_tournament["players"]] == ["VER", "NER", "RUS"]
+        assert sorted(principale.current_tournament["players_dict"]) == ["NER", "RUS", "VER"]
+        assert TestCancSuUnIscrittoDelTorneoAperto._iscritti_nell_albero(principale, gamma) == ["VER", "NER", "RUS"]
+        assert principale._e_il_torneo_aperto(gamma)
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "show_players", "filepath": gamma}
+        assert registro.fuoco == ["tree_ctrl"]
+        assert registro.caricati == []
+        assert principale.last_status_msg == barra
