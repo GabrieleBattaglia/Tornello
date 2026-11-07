@@ -9534,6 +9534,81 @@ class TestRipristinoNellaProceduraGuidata:
         assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
         assert scatole == []
 
+    def test_senza_torneo_aperto(self, principale, suoni, monkeypatch, tmp_path):
+        """Nessun torneo e' aperto: Nuovo torneo, e poi, dal menu File, il
+        ripristino della copia di Beta, nel file di Beta. La copia e' di un
+        torneo che non e' aperto, e la procedura resta com'era, senza
+        caricare Beta e senza spostare il fuoco; fuori dalla procedura Beta
+        si caricherebbe."""
+        import wx
+
+        from config import user_data_path
+
+        beta = user_data_path("Tornello - Beta.json")
+        TestNomeDelTorneoNuovo._scrivi(beta, dict(_torneo_in_corso("Beta"), site="Napoli"))
+        principale.populate_tree()
+        assert principale.current_tournament is None
+        copia = self._copia("Beta", "Firenze")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, "menu", copia)
+
+        TestApriTorneoNellaProceduraGuidata._procedura_com_era(principale)
+        assert principale.current_tournament is None
+        assert TestNomeEDataDiInizioDaDati._nel_file(beta)["site"] == "Firenze"
+        assert registro.caricati == []
+        assert registro.fuoco == []
+        assert finestre == []
+        assert suoni == []
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert scatole == []
+
+    def test_il_torneo_ripristinato_che_non_si_apre(self, principale, suoni, monkeypatch, tmp_path):
+        """Alfa e' aperta; Nuovo torneo, e poi, dal menu File, il ripristino
+        della copia di Alfa, che subito dopo non si legge, per esempio
+        perche' un altro programma ha preso il file. Come fuori dalla
+        procedura, il messaggio Apertura non riuscita, con il suono
+        dell'errore, e nessun torneo resta aperto; la procedura resta
+        com'era, come dopo un Apri Torneo che non riesce."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, dict(_torneo_in_corso("Alfa"), site="Roma"))
+        principale.load_tournament(alfa)
+        copia = self._copia("Alfa", "Firenze")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+
+        def illeggibile(percorso):
+            raise PermissionError(13, "Permission denied", percorso)
+
+        monkeypatch.setattr(principale, "_leggi_il_torneo", illeggibile)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, "menu", copia)
+
+        TestApriTorneoNellaProceduraGuidata._procedura_com_era(principale)
+        assert principale.current_tournament is None
+        assert registro.caricati == ["Tornello - Alfa.json"]
+        assert registro.fuoco == []
+        assert [(f.titolo, f.testo) for f in finestre] == [_apertura_non_riuscita(alfa, "Permission denied")]
+        assert suoni == ["errore"]
+        assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert scatole == []
+
     def test_il_torneo_concluso_aperto_si_riapre(self, principale, suoni, monkeypatch, tmp_path):
         """Coppa_Prova e' finalizzata, e aperta dal suo file archiviato;
         Nuovo torneo, e poi, dal menu File, il ripristino della sua copia di
