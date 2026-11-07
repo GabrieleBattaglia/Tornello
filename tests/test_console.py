@@ -664,6 +664,7 @@ class TestIlFileDelTorneoInConsole:
         alla 10.19.40, avviata dalla cartella del programma, il torneo lo
         trovava; l'albero non lo trovava gia' prima."""
         import percorsi
+
         from controller import TournamentController
         from tournament import tornei_nella_cartella_del_programma
 
@@ -702,11 +703,12 @@ class TestIlFileDelTorneoInConsole:
         a ogni corsa delle prove."""
         import os
 
+        from test_copie_di_sicurezza import CestinoFinto
+
         import config
         import controller
         import utils
         from controller import TournamentController
-        from test_copie_di_sicurezza import CestinoFinto
 
         cestino = CestinoFinto(str(tmp_path / "cestino"))
         monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
