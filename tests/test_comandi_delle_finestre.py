@@ -9653,6 +9653,56 @@ class TestRipristinoNellaProceduraGuidata:
         assert not os.path.exists(archiviato)
         assert not TestNomeEDataDiInizioDaDati._nel_file(banco.file_torneo).get("concluded")
 
+    def test_il_torneo_concluso_aperto_dalla_cartella_esterna_si_riapre(self, principale, suoni, monkeypatch, tmp_path):
+        """Coppa_Prova ha una cartella di lavoro esterna, dove la
+        finalizzazione lascia una copia del json concluso, ed e' aperta da
+        quel file; Nuovo torneo, e poi, dal menu File, il ripristino della
+        sua copia di prima della finalizzazione, che la riapre nella
+        cartella del programma e manda nel cestino il file aperto, da solo,
+        e poi la cartella d'archivio, che non lo contiene. Come con il file
+        archiviato, la procedura si chiude sulla voce di Coppa_Prova,
+        riaperta e caricata dal file nuovo, e il salvataggio dopo non rimette
+        il file concluso nella cartella esterna. Senza il confronto con i
+        file tolti uno per uno, la procedura restava aperta, con in memoria
+        il torneo concluso del file finito nel cestino."""
+        import wx
+        from test_finalizzazione import NOME, _cartella_archivio, _copie, _finalizza, _scrivi, prepara_il_banco
+
+        banco = prepara_il_banco(tmp_path, monkeypatch)
+        esterna = tmp_path / "esterna"
+        esterna.mkdir()
+        banco.torneo["custom_save_path"] = str(esterna)
+        _scrivi(banco.file_torneo, banco.torneo)
+        assert _finalizza(banco) is True
+        aperto = str(esterna / f"Tornello - {NOME}.json")
+        principale.load_tournament(aperto)
+        assert principale._e_il_torneo_aperto(aperto)
+        assert principale.current_tournament.get("concluded")
+        copia = _copie(banco.backup, "pre_finalize_torneo")[0]
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, "menu", copia)
+
+        assert copie.cestino.ricevuti == [os.path.abspath(aperto), os.path.abspath(_cartella_archivio())]
+        self._procedura_chiusa_sul_torneo(principale, registro, banco.file_torneo, NOME)
+        assert registro.caricati == [os.path.basename(banco.file_torneo)]
+        assert not principale.current_tournament.get("concluded")
+        assert not any(testo.startswith("Tornei Conclusi") for testo, _dati in TestAlberoETorneoAttivo._figlie(principale))
+        assert finestre == []
+        assert suoni == []
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert scatole == []
+        principale._save_state()
+        assert not os.path.exists(aperto)
+        assert not TestNomeEDataDiInizioDaDati._nel_file(banco.file_torneo).get("concluded")
+
 
 class TestCancSuUnaVoceCheNonCePiu:
     """10.19.35 (decisione di Gabriele del 7 novembre 2026). CANC sulla voce
