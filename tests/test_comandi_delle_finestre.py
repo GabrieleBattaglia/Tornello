@@ -63,6 +63,39 @@ def _apertura_non_riuscita(percorso, motivo):
     return ("Apertura non riuscita", f"Il file {percorso} non si è potuto aprire: {motivo}.")
 
 
+# I guasti del file di un torneo che l'albero ha gia' elencato, con la
+# descrizione del motivo che dicono i messaggi Giocatore non rimosso e Torneo
+# non eliminato: il file che manca e quello rovinato dalla 10.19.30; dalla
+# 10.19.36 il file che e' una lista e quello con i turni che non sono una
+# lista, che non hanno la forma di un torneo, come per l'albero.
+GUASTI_DEL_FILE = [
+    ("manca", "No such file or directory"),
+    ("rovinato", "Expecting value: line 1 column 1 (char 0)"),
+    ("lista", "non ha la forma di un torneo di Tornello"),
+    ("senza_forma", "non ha la forma di un torneo di Tornello"),
+]
+
+
+def _guasta_il_file(percorso, guasto):
+    """Il guasto di GUASTI_DEL_FILE sul file del torneo percorso."""
+    import json
+
+    if guasto == "manca":
+        os.remove(percorso)
+        return
+    if guasto == "rovinato":
+        testo = "non è un torneo"
+    elif guasto == "lista":
+        testo = json.dumps([1, 2, 3])
+    else:
+        with open(percorso, encoding="utf-8") as f:
+            dati = json.load(f)
+        dati["rounds"] = 5
+        testo = json.dumps(dati)
+    with open(percorso, "w", encoding="utf-8") as f:
+        f.write(testo)
+
+
 def _eventi_in_coda():
     """Esegue le chiamate lasciate a wx.CallAfter, come fa il ciclo degli
     eventi quando l'azione e' finita."""
@@ -1240,10 +1273,7 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == "Errore durante l'eliminazione del torneo: guasto finto"
         assert "errore" in suoni
 
-    @pytest.mark.parametrize(
-        ("guasto", "motivo"),
-        [("manca", "No such file or directory"), ("rovinato", "Expecting value: line 1 column 1 (char 0)")],
-    )
+    @pytest.mark.parametrize(("guasto", "motivo"), GUASTI_DEL_FILE)
     def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, tmp_path, guasto, motivo):
         """Correzione della proposta 3, rilievo 7 della revisione. Alfa e'
         il torneo aperto, con un suo report nella cartella del programma;
@@ -1258,7 +1288,10 @@ class TestEliminazioneDelTorneoSenzaFile:
         dice che il torneo e i suoi file restano com'erano: nel cestino non
         va niente, e la voce di Gamma resta nell'albero. Fino alla 10.19.29
         usciva un wx.MessageBox senza suono, Impossibile leggere il file del
-        torneo, con il testo intero dell'errore."""
+        torneo, con il testo intero dell'errore. Dalla 10.19.36 lo stesso
+        vale per un file che non ha la forma di un torneo, come una lista:
+        fino alla 10.19.35 CANC si fermava con un errore che si vedeva
+        soltanto in console. Nessun controllo chiede il fuoco."""
         import wx
 
         from config import user_data_path
@@ -1272,22 +1305,20 @@ class TestEliminazioneDelTorneoSenzaFile:
         gamma = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale, aperta=False)
         voce = principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": gamma})
         assert voce and voce.IsOk()
-        if guasto == "manca":
-            os.remove(gamma)
-        else:
-            with open(gamma, "w", encoding="utf-8") as f:
-                f.write("non è un torneo")
+        _guasta_il_file(gamma, guasto)
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         with principale._albero_senza_caricamenti():
             principale.tree_ctrl.SelectItem(voce)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
         suoni.clear()
 
         TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
 
         assert principale._e_il_torneo_aperto(alfa)
+        assert registro.fuoco == []
         assert scatole == []
         assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
             (
@@ -8742,10 +8773,7 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         giocatore = principale.tree_ctrl.GetItemData(voce)["player"]
         return alfa, percorso, f"{giocatore['last_name']} {giocatore['first_name']}"
 
-    @pytest.mark.parametrize(
-        ("guasto", "motivo"),
-        [("manca", "No such file or directory"), ("rovinato", "Expecting value: line 1 column 1 (char 0)")],
-    )
+    @pytest.mark.parametrize(("guasto", "motivo"), GUASTI_DEL_FILE)
     def test_l_iscritto_di_un_torneo_non_aperto_con_il_file_che_non_si_legge(self, principale, suoni, monkeypatch, guasto, motivo):
         """Alfa e' il torneo aperto, e Gamma, che non e' aperta, ha le sue
         voci nell'albero, poi il suo file sparisce, o si rovina. CANC sul
@@ -8757,23 +8785,24 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         restano com'erano. L'albero ha ancora i quattro iscritti di Gamma, e
         la barra di stato e Alfa restano com'erano. Fino alla 10.19.29 usciva
         un wx.MessageBox senza suono, Impossibile leggere il file del torneo,
-        con il testo intero dell'errore."""
+        con il testo intero dell'errore. Dalla 10.19.36 lo stesso vale per un
+        file che non ha la forma di un torneo, come una lista: fino alla
+        10.19.35 CANC si fermava con un errore che si vedeva soltanto in
+        console. Nessun controllo chiede il fuoco."""
         import wx
 
         alfa, percorso, nome_del_giocatore = self._alfa_aperta_e_gamma(principale)
-        if guasto == "manca":
-            os.remove(percorso)
-        else:
-            with open(percorso, "w", encoding="utf-8") as f:
-                f.write("non è un torneo")
+        _guasta_il_file(percorso, guasto)
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
         suoni.clear()
         barra = principale.last_status_msg
 
         self._canc_sul_primo_iscritto(principale, percorso)
 
+        assert registro.fuoco == []
         assert scatole == []
         assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
             (

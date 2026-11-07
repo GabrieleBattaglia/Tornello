@@ -90,6 +90,21 @@ class FileNonTorneo(ValueError):
     dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
 
 
+def _dati_del_file_di_un_torneo(percorso):
+    """I dati scritti nel file di un torneo, letti come li legge l'albero.
+    Un JSON che non ha la forma di un torneo, per esempio una lista, solleva
+    FileNonTorneo, con il motivo da dire, come un file che non si legge.
+    Dalla 10.19.36 la usano anche CANC su un iscritto e CANC su un torneo,
+    che fino alla 10.19.35 leggevano il file con json.load e basta: un file
+    che era una lista li fermava con un errore che si vedeva soltanto in
+    console."""
+    with open(percorso, encoding="utf-8") as f:
+        dati = json.load(f)
+    if not _ha_la_forma_di_un_torneo(dati):
+        raise FileNonTorneo(_("non ha la forma di un torneo di Tornello"))
+    return dati
+
+
 class _SenzaLAvvisoSulTasto(wx.Log):
     """Il bersaglio dei messaggi di wx che li passa tutti a quello di prima,
     precedente, come fa wx.LogChain, tranne uno: l'avviso di debug che wx
@@ -1964,13 +1979,9 @@ class MainFrame(wx.Frame):
         def leggi(f):
             if chiave_dell_aperto and _chiave_del_percorso(f) == chiave_dell_aperto:
                 return self.current_tournament
-            with open(f, encoding="utf-8") as f_in:
-                data = json.load(f_in)
             # Un JSON che non e' un torneo non ha una voce: scelta, non si
             # aprirebbe, perche' load_tournament lo rifiuta.
-            if not _ha_la_forma_di_un_torneo(data):
-                raise FileNonTorneo(_("non ha la forma di un torneo di Tornello"))
-            return data
+            return _dati_del_file_di_un_torneo(f)
 
         for f in active_files:
             try:
@@ -4940,8 +4951,6 @@ class MainFrame(wx.Frame):
         if not filepath:
             return
 
-        import json
-
         from utils import play_sound
 
         # Dalla 10.19.22 il torneo aperto si legge dalla memoria, e non dal
@@ -4956,8 +4965,7 @@ class MainFrame(wx.Frame):
             t_data = self.current_tournament
         else:
             try:
-                with open(filepath, encoding="utf-8") as f_in:
-                    t_data = json.load(f_in)
+                t_data = _dati_del_file_di_un_torneo(filepath)
             except Exception as e:
                 # Dalla 10.19.30 il file che manca, per esempio sparito dopo
                 # che l'albero l'aveva elencato, o che non si legge, lo dice
@@ -4967,6 +4975,9 @@ class MainFrame(wx.Frame):
                 # del motivo la sola descrizione: fino alla 10.19.29, e gia'
                 # nella 10.0.0, era un wx.MessageBox senza suono, Impossibile
                 # leggere il file del torneo, con il testo intero dell'errore.
+                # Dalla 10.19.36 vale anche per un file senza la forma di un
+                # torneo, per esempio una lista: fino alla 10.19.35 CANC si
+                # fermava con un errore che si vedeva soltanto in console.
                 play_sound("errore")
                 self._dialogo_informativo(
                     _("Giocatore non rimosso"),
@@ -5631,7 +5642,9 @@ class MainFrame(wx.Frame):
         alla conferma, che lo dice, esce dalla memoria e dall'albero, e nel
         cestino vanno soltanto i suoi file correlati. Dalla 10.19.30 il file
         di un torneo che manca, o che non si legge, lo dice il messaggio
-        Torneo non eliminato, con il suono dell'errore."""
+        Torneo non eliminato, con il suono dell'errore, e dalla 10.19.36
+        anche il file che non ha la forma di un torneo, per esempio una
+        lista."""
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -5666,8 +5679,11 @@ class MainFrame(wx.Frame):
             data = self.current_tournament
         else:
             try:
-                with open(filepath, encoding="utf-8") as f_in:
-                    data = json.load(f_in)
+                # Dalla 10.19.36 un file che non ha la forma di un torneo, per
+                # esempio una lista, e' un file che non si legge, come per
+                # l'albero: fino alla 10.19.35 CANC si fermava con un errore
+                # che si vedeva soltanto in console.
+                data = _dati_del_file_di_un_torneo(filepath)
             except Exception as e:
                 # Dalla 10.19.30 il file di un torneo che non e' quello
                 # aperto, che manca, per esempio sparito dopo che l'albero
