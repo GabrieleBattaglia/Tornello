@@ -5370,6 +5370,38 @@ class MainFrame(wx.Frame):
             righe.extend(nomi)
         return righe
 
+    def _righe_della_conferma_senza_file(self, t_type, t_name, correlati):
+        """Le righe della conferma dell'eliminazione per il torneo aperto
+        che non ha ancora il suo file sul disco, dalla proposta 3 del nono
+        giro: la domanda, la frase che dice che il torneo si perde, e i file
+        che vanno nel cestino, cioe' soltanto quelli che ci sono davvero,
+        come i report che il torneo ha gia' scritto, cartella per
+        cartella."""
+        righe = [
+            _("Vuoi eliminare il torneo {t_type} '{t_name}'?").format(
+                t_type=t_type, t_name=t_name
+            ),
+            _(
+                "Il suo file non c'è ancora: se lo elimini, il torneo e i suoi iscritti si perdono, e dal cestino non si possono recuperare."
+            ),
+        ]
+        if len(correlati) == 1:
+            righe.append(
+                _(
+                    "Nel cestino di Windows va un file che porta il suo nome intero, e dal cestino si può recuperare:"
+                )
+            )
+        elif correlati:
+            righe.append(
+                _(
+                    "Nel cestino di Windows vanno {count} file che portano il suo nome intero, e dal cestino si possono recuperare:"
+                ).format(count=len(correlati))
+            )
+        else:
+            righe.append(_("Nel cestino di Windows non va nessun file."))
+        righe.extend(self._righe_per_cartella(correlati))
+        return righe
+
     def delete_tournament_completely(self, item, filepath):
         """Manda nel cestino di Windows un torneo (attivo, concluso o in
         preparazione) e i suoi file correlati, quelli di
@@ -5383,7 +5415,10 @@ class MainFrame(wx.Frame):
         dall'albero e dalla memoria, e un file correlato rimasto fuori, o una
         cartella che non si legge, li nomina il messaggio finale, con il suono
         dell'errore. Un errore a meta' dice anche che il file del torneo e'
-        gia' nel cestino."""
+        gia' nel cestino. Dalla proposta 3 del nono giro il torneo aperto che
+        non ha ancora il suo file sul disco si prende dalla memoria: con Si'
+        alla conferma, che lo dice, esce dalla memoria e dall'albero, e nel
+        cestino vanno soltanto i suoi file correlati."""
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -5404,16 +5439,29 @@ class MainFrame(wx.Frame):
         else:
             t_type = _("attivo")
 
-        try:
-            with open(filepath, encoding="utf-8") as f_in:
-                data = json.load(f_in)
-        except Exception as e:
-            wx.MessageBox(
-                _("Impossibile leggere il file del torneo: {}").format(e),
-                _("Errore"),
-                wx.ICON_ERROR,
-            )
-            return
+        # Il torneo aperto che non ha ancora il suo file sul disco, come il
+        # torneo nuovo che non si e' salvato, aperto dalla memoria dalla
+        # 10.19.20, si prende dalla memoria, e la conferma lo dice: il torneo
+        # non va nel cestino, ma si perde, e nel cestino vanno soltanto i
+        # file che ci sono davvero. Fino alla proposta 3 del nono giro la
+        # lettura del file, che non c'era, dava il messaggio Impossibile
+        # leggere il file del torneo, con il testo intero dell'errore e senza
+        # suono, e il torneo restava aperto, senza modo di toglierlo
+        # dall'albero.
+        senza_file = self._e_il_torneo_aperto(filepath) and not os.path.exists(filepath)
+        if senza_file:
+            data = self.current_tournament
+        else:
+            try:
+                with open(filepath, encoding="utf-8") as f_in:
+                    data = json.load(f_in)
+            except Exception as e:
+                wx.MessageBox(
+                    _("Impossibile leggere il file del torneo: {}").format(e),
+                    _("Errore"),
+                    wx.ICON_ERROR,
+                )
+                return
 
         t_name = data.get("name", t_label)
         if not t_name:
@@ -5433,24 +5481,27 @@ class MainFrame(wx.Frame):
 
         # La conferma elenca i file che vanno nel cestino, un nome per riga
         # sotto la sua cartella, da leggere con le frecce.
-        righe = [
-            _("Vuoi mandare nel cestino di Windows il torneo {t_type} '{t_name}'?").format(
-                t_type=t_type, t_name=t_name
-            )
-        ]
-        if correlati:
-            righe.append(
-                _(
-                    "Ci vanno {count} file, quello del torneo e quelli che portano il suo nome intero, e dal cestino si possono recuperare:"
-                ).format(count=len(correlati) + 1)
-            )
+        if senza_file:
+            righe = self._righe_della_conferma_senza_file(t_type, t_name, correlati)
         else:
-            righe.append(
-                _("Ci va il file del torneo, e dal cestino si può recuperare:")
+            righe = [
+                _("Vuoi mandare nel cestino di Windows il torneo {t_type} '{t_name}'?").format(
+                    t_type=t_type, t_name=t_name
+                )
+            ]
+            if correlati:
+                righe.append(
+                    _(
+                        "Ci vanno {count} file, quello del torneo e quelli che portano il suo nome intero, e dal cestino si possono recuperare:"
+                    ).format(count=len(correlati) + 1)
+                )
+            else:
+                righe.append(
+                    _("Ci va il file del torneo, e dal cestino si può recuperare:")
+                )
+            righe.extend(
+                self._righe_per_cartella([os.path.abspath(filepath), *correlati])
             )
-        righe.extend(
-            self._righe_per_cartella([os.path.abspath(filepath), *correlati])
-        )
         if illeggibili:
             righe.append(frase_illeggibili)
             righe.extend(illeggibili)
@@ -5475,7 +5526,9 @@ class MainFrame(wx.Frame):
                 print(err_msg)
                 self._dialogo_informativo(_("Eliminazione non riuscita"), err_msg)
                 return
-            torneo_nel_cestino = True
+            # Un torneo senza il suo file non ha niente da mandare nel
+            # cestino: un errore a meta' non dice che il file ci e' gia'.
+            torneo_nel_cestino = not senza_file
 
             # 2. Il torneo non c'e' piu': esce subito dall'albero e, se era
             # quello aperto, dalla memoria, prima dei file correlati. Cosi' un
@@ -5508,7 +5561,19 @@ class MainFrame(wx.Frame):
                 else:
                     non_andati.append(f_path)
 
-            if deleted_count == 0:
+            if senza_file:
+                # Il torneo senza il suo file e' uscito dalla memoria, e nel
+                # cestino ci sono andati soltanto i suoi file correlati.
+                info_msg = _(
+                    "Torneo '{t_name}' eliminato: il suo file non c'era ancora."
+                ).format(t_name=t_name)
+                if deleted_count == 1:
+                    info_msg += " " + _("Un file correlato è andato nel cestino di Windows.")
+                elif deleted_count:
+                    info_msg += " " + _(
+                        "{deleted_count} file correlati sono andati nel cestino di Windows."
+                    ).format(deleted_count=deleted_count)
+            elif deleted_count == 0:
                 info_msg = _(
                     "Torneo '{t_name}' mandato nel cestino di Windows."
                 ).format(t_name=t_name)

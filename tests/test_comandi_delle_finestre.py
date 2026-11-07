@@ -1033,6 +1033,243 @@ class TestEliminazioneDelTorneo:
         assert suoni == ["errore"]
 
 
+class TestEliminazioneDelTorneoSenzaFile:
+    """Proposta 3 del nono giro. Il torneo nuovo della procedura guidata
+    che non si e' salvato resta aperto dalla memoria, senza il suo file sul
+    disco, come dalla 10.19.20. CANC sulla sua voce, che arriva come la voce
+    Elimina o annulla la voce scelta del menu File, lo prende dalla memoria:
+    la conferma, la stessa finestra accessibile dell'eliminazione, dice che
+    il suo file non c'e' ancora, ed elenca soltanto i file che ci sono
+    davvero, i report che il torneo ha gia' scritto nella sua cartella di
+    salvataggio. Con Si' il torneo esce dalla memoria e dall'albero, l'area
+    centrale torna alla schermata iniziale, il ricordo del messaggio Torneo
+    non salvato si perde, i report vanno nel cestino e la barra di stato lo
+    dice; con No niente cambia. Fino alla proposta la lettura del file, che
+    non c'era, dava il messaggio Impossibile leggere il file del torneo, con
+    il testo intero dell'errore in inglese e senza suono, e il torneo
+    restava aperto. La scrittura del file del torneo, il cestino e le
+    finestre di messaggio sono finti."""
+
+    DOMANDA = "Vuoi eliminare il torneo in preparazione 'Nuovo Sociale'?"
+    SI_PERDE = "Il suo file non c'è ancora: se lo elimini, il torneo e i suoi iscritti si perdono, e dal cestino non si possono recuperare."
+    ELIMINATO = "Torneo 'Nuovo Sociale' eliminato: il suo file non c'era ancora."
+
+    @staticmethod
+    def _creato(principale, monkeypatch, tmp_path, risposte=()):
+        """Il torneo nuovo Nuovo Sociale, con la cartella di salvataggio
+        esterna, creato dalla procedura guidata con la scrittura del suo file
+        negata: e' aperto senza il suo file, e i report li ha scritti lo
+        stesso nella cartella esterna. Restituisce il file del torneo, la
+        cartella esterna, i report, le finestre annotate, che alle domande
+        rispondono con risposte e poi con Si', i messaggi di wx.MessageBox,
+        le volte che l'area centrale torna alla schermata iniziale e il
+        cestino finto."""
+        import wx
+
+        from config import user_data_path
+
+        esterna = tmp_path / "esterna"
+        esterna.mkdir()
+        scatole, iniziale = [], []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, risposte)
+        TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        principale.start_new_tournament_wizard()
+        principale.creation_data["name"] = "Nuovo Sociale"
+        principale.creation_data["save_path"] = str(esterna)
+        principale.create_tournament_from_wizard(TestNomeDelTorneoNuovo._iscritti())
+        percorso = user_data_path("Tornello - Nuovo_Sociale.json")
+        assert not os.path.exists(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        report = sorted(str(f) for f in esterna.iterdir())
+        assert len(report) > 1
+        monkeypatch.setattr(principale, "show_intro_message", lambda: iniziale.append(True))
+        ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
+        return SimpleNamespace(
+            percorso=principale.active_filename,
+            esterna=esterna,
+            report=report,
+            finestre=finestre,
+            scatole=scatole,
+            iniziale=iniziale,
+            ricevuti=ricevuti,
+        )
+
+    @staticmethod
+    def _canc(principale):
+        """CANC sulla voce del torneo aperto: il tasto e' l'acceleratore della
+        voce Elimina o annulla la voce scelta del menu File."""
+        voce = principale._voce_del_torneo_aperto()
+        assert voce is not None
+        with principale._albero_senza_caricamenti():
+            principale.tree_ctrl.SelectItem(voce)
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+    @staticmethod
+    def _domande_fatte(creato):
+        return [(f.titolo, f.testo) for f in creato.finestre if f.domanda]
+
+    def test_con_si_il_torneo_esce_e_i_report_vanno_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+        """La conferma elenca i report, sotto la cartella esterna, e con Si'
+        il torneo esce dalla memoria e dall'albero, con la voce Avvio torneo
+        e il ramo In Preparazione, che resta vuoto; i report vanno nel
+        cestino, il file del torneo non nasce, e la barra di stato lo dice,
+        con il suono della cancellazione."""
+        creato = self._creato(principale, monkeypatch, tmp_path)
+        suoni.clear()
+
+        self._canc(principale)
+
+        conferma = [
+            self.DOMANDA,
+            self.SI_PERDE,
+            f"Nel cestino di Windows vanno {len(creato.report)} file che portano il suo nome intero, e dal cestino si possono recuperare:",
+            f"Nella cartella {creato.esterna}:",
+            *[os.path.basename(r) for r in creato.report],
+        ]
+        assert self._domande_fatte(creato) == [("Conferma Eliminazione Torneo", "\n".join(conferma))]
+        assert [f.titolo for f in creato.finestre] == ["Torneo non salvato", "Conferma Eliminazione Torneo"]
+        assert creato.scatole == []
+        assert principale.current_tournament is None
+        assert principale.active_filename is None
+        assert principale._tornei_non_salvati == set()
+        assert creato.iniziale == [True]
+        albero = TestAlberoETorneoAttivo
+        assert os.path.normcase(creato.percorso) not in albero._tutti_i_file(principale)
+        assert not [testo for testo, _dati in albero._figlie(principale) if "Nuovo Sociale" in testo or testo.startswith("In Preparazione")]
+        assert sorted(creato.ricevuti) == creato.report
+        assert not any(os.path.exists(r) for r in creato.report)
+        assert not os.path.exists(creato.percorso)
+        assert principale.last_status_msg == f"{self.ELIMINATO} {len(creato.report)} file correlati sono andati nel cestino di Windows."
+        assert suoni == ["cancellato"]
+
+    def test_senza_report_nel_cestino_non_va_niente(self, principale, suoni, monkeypatch, tmp_path):
+        """Tolti i report dalla cartella esterna, la conferma dice che nel
+        cestino non va nessun file, e con Si' il torneo esce, senza niente
+        nel cestino."""
+        creato = self._creato(principale, monkeypatch, tmp_path)
+        for report in creato.report:
+            os.remove(report)
+        suoni.clear()
+
+        self._canc(principale)
+
+        conferma = [self.DOMANDA, self.SI_PERDE, "Nel cestino di Windows non va nessun file."]
+        assert self._domande_fatte(creato) == [("Conferma Eliminazione Torneo", "\n".join(conferma))]
+        assert creato.scatole == []
+        assert principale.current_tournament is None
+        assert creato.iniziale == [True]
+        assert creato.ricevuti == []
+        assert principale.last_status_msg == self.ELIMINATO
+        assert suoni == ["cancellato"]
+
+    def test_con_no_niente_cambia(self, principale, suoni, monkeypatch, tmp_path):
+        """Con No alla conferma il torneo nuovo resta aperto, con la sua voce
+        nell'albero, e i report restano dove sono."""
+        import wx
+
+        creato = self._creato(principale, monkeypatch, tmp_path, risposte=(wx.ID_NO,))
+        stato = principale.last_status_msg
+        suoni.clear()
+
+        self._canc(principale)
+
+        assert [titolo for titolo, _testo in self._domande_fatte(creato)] == ["Conferma Eliminazione Torneo"]
+        assert creato.scatole == []
+        assert principale._e_il_torneo_aperto(creato.percorso)
+        assert principale._voce_del_torneo_aperto() is not None
+        assert creato.iniziale == []
+        assert creato.ricevuti == []
+        assert all(os.path.exists(r) for r in creato.report)
+        assert principale.last_status_msg == stato
+        assert suoni == []
+
+    def test_con_un_report_solo(self, principale, suoni, monkeypatch, tmp_path):
+        """Correzione della proposta 3, rilievo 8 della revisione. Con un
+        report solo nella cartella esterna la conferma dice che nel cestino
+        va un file, al singolare, e con Si' la barra di stato dice che un
+        file correlato e' andato nel cestino."""
+        creato = self._creato(principale, monkeypatch, tmp_path)
+        for report in creato.report[1:]:
+            os.remove(report)
+        suoni.clear()
+
+        self._canc(principale)
+
+        conferma = [
+            self.DOMANDA,
+            self.SI_PERDE,
+            "Nel cestino di Windows va un file che porta il suo nome intero, e dal cestino si può recuperare:",
+            f"Nella cartella {creato.esterna}:",
+            os.path.basename(creato.report[0]),
+        ]
+        assert self._domande_fatte(creato) == [("Conferma Eliminazione Torneo", "\n".join(conferma))]
+        assert principale.current_tournament is None
+        assert creato.ricevuti == creato.report[:1]
+        assert principale.last_status_msg == f"{self.ELIMINATO} Un file correlato è andato nel cestino di Windows."
+        assert suoni == ["cancellato"]
+
+    def test_un_errore_a_meta_non_dice_che_il_file_e_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+        """Correzione della proposta 3, rilievo 8 della revisione. Dopo il
+        Si' alla conferma un errore a meta', qui nella ricostruzione
+        dell'albero, lo dice il messaggio Eliminazione non riuscita, con il
+        suono dell'errore; non dice che il file del torneo e' gia' nel
+        cestino, perche' il file non c'era."""
+        creato = self._creato(principale, monkeypatch, tmp_path)
+
+        def guasto(*argomenti, **opzioni):
+            raise RuntimeError("guasto finto")
+
+        monkeypatch.setattr(principale, "populate_tree", guasto)
+        suoni.clear()
+
+        self._canc(principale)
+
+        messaggi = [(f.titolo, f.testo) for f in creato.finestre if not f.domanda]
+        assert messaggi[-1] == ("Eliminazione non riuscita", "Errore durante l'eliminazione del torneo: guasto finto")
+        assert principale.last_status_msg == "Errore durante l'eliminazione del torneo: guasto finto"
+        assert "errore" in suoni
+
+    def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, tmp_path):
+        """Correzione della proposta 3, rilievo 7 della revisione. Alfa e'
+        il torneo aperto, con un suo report nella cartella del programma;
+        Gamma, che non e' aperta, ha la sua voce nell'albero, poi il suo
+        file sparisce. CANC sulla voce di Gamma non prende i dati dalla
+        memoria, che sono quelli di Alfa: esce il messaggio di prima,
+        Impossibile leggere il file del torneo, e i file di Alfa restano
+        dove sono. Senza la guardia sul torneo aperto la conferma nominava
+        Alfa, e con Si' il suo report andava nel cestino."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        principale.load_tournament(alfa)
+        report = user_data_path("Tornello - Alfa - classifica.txt")
+        with open(report, "w", encoding="utf-8") as f:
+            f.write("classifica di Alfa")
+        gamma = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale, aperta=False)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": gamma})
+        assert voce and voce.IsOk()
+        os.remove(gamma)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
+        with principale._albero_senza_caricamenti():
+            principale.tree_ctrl.SelectItem(voce)
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert principale._e_il_torneo_aperto(alfa)
+        assert [f.titolo for f in finestre] == []
+        assert len(scatole) == 1 and scatole[0][0].startswith("Impossibile leggere il file del torneo: ")
+        assert ricevuti == []
+        assert os.path.exists(report)
+
+
 GIOCATORI_DEI_TORNEI = (
     ("BIA", "Bianchi", "Luca"),
     ("VER", "Verdi", "Anna"),
