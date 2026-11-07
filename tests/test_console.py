@@ -543,6 +543,12 @@ class TestCartellaDellaCreazioneInConsole:
         assert suoni == ["nuovo_turno"]
 
 
+# La pianificazione che la partita della scacchiera 1 ha gia', e quella che
+# si scrive, per TestIlFileDelTorneoInConsole.
+PIANIFICAZIONE_DI_PRIMA = {"date": "2026-09-10", "time": "18:00", "channel": "", "arbiter": ""}
+PIANIFICAZIONE_NUOVA = {"date": "2026-09-11", "time": "20:30", "channel": "Lichess", "arbiter": "Verdi"}
+
+
 class TestIlFileDelTorneoInConsole:
     """10.19.41 (decisione di Gabriele del 7 novembre 2026). La console
     cerca i tornei nella cartella del programma, come l'albero della
@@ -733,6 +739,80 @@ class TestIlFileDelTorneoInConsole:
             assert len(self._copie("Tornello - Prova_stessa_data_pre_timemachine_*.json")) == 1
             assert f"Backup di sicurezza creato: {aperto}" in stampato.splitlines()
             assert "Impossibile creare il backup" not in stampato
+
+    @pytest.mark.parametrize(
+        "azione", ["ritiro", "cancellazione", "pianificazione creata", "pianificazione modificata", "pianificazione rimossa"]
+    )
+    def test_le_altre_azioni_fra_i_risultati_salvano_nel_file_aperto(self, monkeypatch, muto, tmp_path, azione):
+        """Corona, rinominato dalla finestra, si apre dalla console, e fra i
+        risultati si ritira il primo giocatore, si cancella il risultato
+        della scacchiera 1, o la si pianifica, se ne cambia la
+        pianificazione o la si toglie. Il salvataggio di
+        ui.update_match_result scrive il cambio nel file aperto, prima di
+        quello del controller, e un file con il nome nuovo non nasce. Le
+        cinque azioni salvano ciascuna per conto suo: senza il file aperto,
+        quel salvataggio andava nel file che nasce dal nome, Tornello -
+        Corona.json, come fino alla 10.19.40."""
+        import ui
+        from controller import TournamentController
+
+        torneo = _torneo_al_primo_turno().to_dict()
+        partita = torneo["rounds"][0]["matches"][0]
+        if azione == "cancellazione":
+            partita["result"] = "1-0"
+        elif azione != "pianificazione creata":
+            partita.update(is_scheduled=True, schedule_info=dict(PIANIFICAZIONE_DI_PRIMA))
+        aperto = self._rinominato(rounds=torneo["rounds"])
+        chieste = []
+
+        def dettagli(existing_details=None):
+            chieste.append(existing_details)
+            return dict(PIANIFICAZIONE_NUOVA)
+
+        monkeypatch.setattr(ui, "input_schedule_details", dettagli)
+        # INVIO apre il torneo; poi l'azione, con la sua conferma se la
+        # chiede; INVIO vuoto chiude i risultati, e No a continuare.
+        tasti, conferme = {
+            "ritiro": (["", "r", "1", ""], [True, False]),
+            "cancellazione": (["", "cancella", "1", ""], [True, False]),
+            "pianificazione creata": (["", "1", "p", ""], [False]),
+            "pianificazione modificata": (["", "1", "p", "m", ""], [False]),
+            "pianificazione rimossa": (["", "1", "p", "r", ""], [True, False]),
+        }[azione]
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=tasti, conferme=conferme)
+        guida = TournamentController(_adattatore(copione))
+        guida._select_or_create_tournament()
+        # Il file aperto com'e' quando il controller salva la prima volta,
+        # cioe' come lo ha lasciato ui.update_match_result.
+        prima_del_controller = []
+        salva = guida._save_state
+
+        def save_state(*a, **k):
+            if not prima_del_controller:
+                prima_del_controller.append(self._leggi(aperto))
+            return salva(*a, **k)
+
+        monkeypatch.setattr(guida, "_save_state", save_state)
+
+        guida._main_loop()
+
+        assert copione.tasti == [] and copione.conferme == []
+        assert guida.active_filename == aperto
+        assert self._tornei() == ["Tornello - Prova_stessa_data.json"]
+        for salvato in (prima_del_controller[0], self._leggi(aperto)):
+            assert salvato["name"] == "Corona"
+            scacchiera_1 = salvato["rounds"][0]["matches"][0]
+            if azione == "ritiro":
+                assert [p["id"] for p in salvato["players"] if p.get("withdrawn")] == ["G1"]
+            elif azione == "cancellazione":
+                assert scacchiera_1["result"] is None
+            elif azione == "pianificazione rimossa":
+                assert scacchiera_1["is_scheduled"] is False and "schedule_info" not in scacchiera_1
+            else:
+                assert (scacchiera_1["is_scheduled"], scacchiera_1["schedule_info"]) == (True, PIANIFICAZIONE_NUOVA)
+        attese = {"pianificazione creata": [None], "pianificazione modificata": [PIANIFICAZIONE_DI_PRIMA]}
+        assert chieste == attese.get(azione, [])
 
     def test_la_ripresa_di_un_torneo_rinominato_resta_nel_suo_file(self, monkeypatch, muto, tmp_path):
         """Corona, in preparazione, rinominato dalla finestra, riprende la
