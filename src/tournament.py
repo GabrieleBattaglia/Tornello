@@ -427,12 +427,17 @@ def tornei_nella_cartella_del_programma():
     e dalla 10.19.41 anche quelli che la versione a riga di comando propone
     all'avvio: fino alla 10.19.40, e gia' nella 10.0.0, la console li
     cercava nella cartella da cui Tornello era avviato (decisione di
-    Gabriele del 7 novembre 2026)."""
+    Gabriele del 7 novembre 2026).
+    La cartella passa da glob.escape, come in omonimi.py: le parentesi
+    quadre di un nome come Tornello [prova] sono lettere, e non un insieme
+    di caratteri. Senza, nella prima stesura della 10.19.41, la console
+    avviata da quella cartella non trovava piu' i suoi tornei, che fino
+    alla 10.19.40 trovava, e l'albero non li trovava gia' prima."""
     from config import PLAYER_DB_FILE
 
     return [
         f
-        for f in glob.glob(user_data_path("Tornello - *.json"))
+        for f in glob.glob(os.path.join(glob.escape(user_data_path("")), "Tornello - *.json"))
         if "- concluso_" not in os.path.basename(f).lower()
         and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
         and os.path.basename(f) != "Tornello - Settings.json"

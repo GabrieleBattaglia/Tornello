@@ -648,6 +648,40 @@ class TestIlFileDelTorneoInConsole:
         assert copia.read_bytes() == prima
         assert os.listdir(lavoro) == ["Tornello - Console_Prova.json"]
 
+    def test_la_cartella_del_programma_con_le_parentesi_quadre(self, monkeypatch, muto, tmp_path):
+        """La cartella del programma si chiama Tornello [prova], con le
+        parentesi quadre, e la console e' avviata da li'. INVIO apre il suo
+        torneo, con il percorso intero, e lo stesso elenco lo legge l'albero
+        della finestra. Nella prima stesura della 10.19.41 glob leggeva le
+        parentesi come un insieme di caratteri: la console diceva Nessun
+        torneo esistente trovato, e chiedeva se crearne uno, mentre fino
+        alla 10.19.40, avviata dalla cartella del programma, il torneo lo
+        trovava; l'albero non lo trovava gia' prima."""
+        import percorsi
+        from controller import TournamentController
+        from tournament import tornei_nella_cartella_del_programma
+
+        programma = tmp_path / "Tornello [prova]"
+        programma.mkdir()
+        monkeypatch.setattr(percorsi, "cartella_applicazione", lambda: str(programma))
+        file_del_torneo = str(programma / "Tornello - Console_Prova.json")
+        self._scrivi(file_del_torneo, _torneo_al_primo_turno().to_dict())
+        monkeypatch.chdir(programma)
+        copione = Copione(monkeypatch, tasti=[""])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert tornei_nella_cartella_del_programma() == [file_del_torneo]
+        assert copione.tasti == []
+        assert adattatore.messaggi == [
+            "\nTrovato un solo torneo esistente: 'Console_Prova' (File: Tornello - Console_Prova.json)",
+            "Caricamento di 'Console_Prova'...",
+        ]
+        assert guida.active_filename == file_del_torneo
+        assert guida.tournament.name == "Console_Prova"
+
     @pytest.mark.parametrize("strada", ["risultato", "time machine", "abbinamento non riuscito"])
     def test_un_torneo_rinominato_resta_nel_suo_file(self, monkeypatch, muto, tmp_path, capsys, strada):
         """Corona, rinominato dalla finestra, si apre dalla console e si
