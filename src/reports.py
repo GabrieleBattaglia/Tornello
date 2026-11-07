@@ -936,6 +936,206 @@ def posizioni_con_i_pari_merito(ordinati, chiave_di, e_ritirato):
     return posizioni
 
 
+def _ordine_di_partenza(players):
+    """I giocatori nell'ordine di partenza, il tabellone: Elo iniziale
+    decrescente, con l'Elo di ripiego per chi non lo ha, poi cognome e nome.
+    Da' la colonna Tab della classifica e l'ordine dell'elenco iniziale."""
+
+    def get_effective_elo(p):
+        elo = float(p.get("initial_elo", DEFAULT_ELO))
+        return elo if elo > 0 else DEFAULT_ELO
+
+    return sorted(
+        players,
+        key=lambda p: (
+            -get_effective_elo(p),
+            p.get("last_name", "").lower(),
+            p.get("first_name", "").lower(),
+        ),
+    )
+
+
+def _ha_risultati_veri(players):
+    """Vero se un giocatore ha nello storico un risultato che non e' un bye."""
+    return any(
+        res.get("result") not in [None, "BYE"]
+        for p in players
+        for res in p.get("results_history", [])
+    )
+
+
+def _e_l_elenco_iniziale(torneo, players, final=False):
+    """Vero se la classifica in corso e' l'elenco iniziale dei partecipanti,
+    prima del turno 1: nessun risultato che non sia un bye, e il turno
+    corrente non oltre il primo."""
+    return (
+        not final
+        and not _ha_risultati_veri(players)
+        and torneo.get("current_round", 0) <= 1
+    )
+
+
+def _chiave_della_classifica(player_item, torneo, criteri):
+    """La chiave di ordinamento della classifica con le regole di oggi:
+    punti, giocatori in gioco prima dei ritirati, e poi i criteri di
+    spareggio, tutti decrescenti. torneo e' il torneo su cui calcolare gli
+    spareggi: per un torneo concluso e' una sua copia, che il calcolo puo'
+    toccare."""
+    # Criteri impliciti sempre attivi: punti (decrescente) e stato attivo/ritirato
+    try:
+        pts = float(player_item.get("points", 0.0))
+    except (ValueError, TypeError):
+        pts = 0.0
+    withdrawn_val = 1 if not player_item.get("withdrawn", False) else 0
+    sort_tuple = [-pts, -withdrawn_val]
+
+    # Criteri di spareggio configurati
+    for criterion in criteri:
+        val = get_criterion_value(player_item, criterion, torneo)
+        # Aggiunge il valore invertito per l'ordinamento decrescente
+        sort_tuple.append(-val)
+    return tuple(sort_tuple)
+
+
+def _posizioni_dall_ordine(ordinati, chiave_di):
+    """Le posizioni di una lista ordinata con _chiave_della_classifica, per
+    identificativo: a parita' di tutti i criteri la stessa posizione, RIT ai
+    ritirati. chiave_di da' la chiave di un giocatore. La regola e' quella
+    della finalizzazione, posizioni_con_i_pari_merito."""
+    calcolate = posizioni_con_i_pari_merito(ordinati, chiave_di, _e_ritirato)
+    return {
+        p_item.get("id"): "RIT" if posizione is None else posizione
+        for p_item, posizione in zip(ordinati, calcolate, strict=True)
+    }
+
+
+def aggiorna_i_numeri_in_corso(torneo, players_db=None):
+    """Scrive nei giocatori di un torneo in corso, o in preparazione, i
+    numeri della sua classifica: i punti, ricalcolati dallo storico,
+    Buchholz, Buchholz Cut-1, ARO, performance, fattore K e variazione
+    Elo, e RIT in final_rank per un ritirato. players_dict si rifa' se manca
+    o se non ha tutti i giocatori. players_db e' il database dei giocatori,
+    che serve al K; senza, lo si legge dal disco. Risponde vero se il
+    database non si e' potuto leggere. Gli errori salgono.
+    Nata con la 10.19.31 dalla parte di get_standings_text che calcola: la
+    usano la classifica e save_tournament, che prima di scrivere il file del
+    torneo ci mette gli stessi numeri della classifica scritta subito dopo."""
+    from db_players import database_non_letto, fattore_k_della_finalizzazione
+    from stats import calculate_elo_change, calculate_performance_rating
+    from tournament import ricalcola_punti_tutti_giocatori
+
+    ricalcola_punti_tutti_giocatori(torneo)
+    players = torneo.get("players", [])
+    if "players_dict" not in torneo or len(torneo["players_dict"]) != len(players):
+        torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
+
+    if players_db is None:
+        from db_players import load_players_db
+
+        players_db = load_players_db()
+    # Senza le schede del database il K della finalizzazione non si
+    # conosce: la colonna Elo Var. dice n.d., e una riga in fondo lo
+    # spiega. Con il database letto vuoto direbbe per tutti la variazione
+    # di un giocatore nuovo, con K 40.
+    database_illeggibile = database_non_letto(players_db)
+    for p in players:
+        p_id = p.get("id")
+        if not p_id:
+            continue
+        p["buchholz"] = compute_buchholz(p_id, torneo)
+        p["buchholz_cut1"] = compute_buchholz_cut1(p_id, torneo)
+        p["aro"] = compute_aro(p_id, torneo)
+        if p.get("withdrawn", False):
+            p["final_rank"] = "RIT"
+            p["performance_rating"] = None
+        else:
+            p["performance_rating"] = calculate_performance_rating(
+                p, torneo["players_dict"]
+            )
+        # Il K e' quello della finalizzazione, ricalcolato ogni volta:
+        # fino alla 10.13.16 veniva dal giocatore del torneo, che non
+        # ha experienced, partite giocate e data di nascita del
+        # database, e poi restava salvato nel torneo. Per chi non li
+        # ha la regola dava 40 dove la finalizzazione dava 20.
+        # Dalla 10.19.5 (issue 73) anche un ritirato ha la variazione
+        # delle partite giocate prima del ritiro, come alla
+        # finalizzazione; fino alla 10.19.0 la colonna diceva n.d.
+        if database_illeggibile:
+            p["k_factor"] = None
+            p["elo_change"] = None
+        else:
+            categoria = torneo.get("tournament_category", "standard")
+            p["k_factor"] = fattore_k_della_finalizzazione(
+                p,
+                players_db,
+                torneo.get("start_date"),
+                categoria,
+            )
+            p["elo_change"] = calculate_elo_change(
+                p, torneo["players_dict"], categoria
+            )
+    return database_illeggibile
+
+
+def ordina_la_classifica_in_corso(torneo, final=False, criteri=None):
+    """L'ordine della classifica di un torneo in corso, o in preparazione,
+    con la posizione di ogni giocatore scritta in display_rank, come la
+    classifica ha sempre fatto: nell'elenco iniziale l'ordine di partenza;
+    poi punti e criteri di spareggio, con i pari merito e RIT ai ritirati.
+    criteri sono i criteri di spareggio; senza, quelli del torneo. Risponde
+    la lista ordinata. Gli errori salgono.
+    Nata con la 10.19.31 dalla parte di get_standings_text che ordina, per
+    save_tournament: vedi aggiorna_i_numeri_in_corso."""
+    players = torneo.get("players", [])
+    if criteri is None:
+        criteri = criteri_di_spareggio(torneo)
+    if _e_l_elenco_iniziale(torneo, players, final):
+        players_sorted = _ordine_di_partenza(players)
+        for i, p_item in enumerate(players_sorted):
+            p_item["display_rank"] = i + 1
+        return players_sorted
+
+    def chiave(p_item):
+        return _chiave_della_classifica(p_item, torneo, criteri)
+
+    players_sorted = sorted(players, key=chiave)
+    if not final or (
+        players_sorted
+        and players_sorted[0].get("final_rank") is None
+        and not players_sorted[0].get("withdrawn")
+    ):
+        calcolate = _posizioni_dall_ordine(players_sorted, chiave)
+        for p_item in players_sorted:
+            p_item["display_rank"] = calcolate[p_item.get("id")]
+    elif final:
+        for i, p_item in enumerate(players_sorted):
+            if p_item.get("final_rank") is not None:
+                p_item["display_rank"] = p_item["final_rank"]
+            elif p_item.get("withdrawn", False):
+                p_item["display_rank"] = "RIT"
+            else:
+                p_item["display_rank"] = i + 1
+    return players_sorted
+
+
+def aggiorna_la_classifica_in_corso(torneo, players_db=None):
+    """I numeri della classifica scritti nei giocatori di un torneo in
+    corso, o in preparazione, come li scrive la classifica parziale:
+    aggiorna_i_numeri_in_corso e poi ordina_la_classifica_in_corso, per
+    display_rank. Un torneo concluso, che tiene i valori della
+    finalizzazione, e un torneo senza giocatori restano come sono, e la
+    risposta e' falso. Gli errori salgono.
+    La chiama save_tournament prima di scrivere il file del torneo, dalla
+    10.19.31: fino ad allora quei numeri li ricalcolava soltanto la
+    classifica, scritta dopo il salvataggio, e nel file restavano quelli del
+    salvataggio prima."""
+    if torneo.get("concluded", False) or not torneo.get("players"):
+        return False
+    aggiorna_i_numeri_in_corso(torneo, players_db)
+    ordina_la_classifica_in_corso(torneo)
+    return True
+
+
 def get_standings_text(torneo, final=False, players_db=None):
     """
     Genera la classifica (parziale o finale) del torneo come stringa.
@@ -962,6 +1162,11 @@ def get_standings_text(torneo, final=False, players_db=None):
     il database non ha (10.13.17); se il database non si legge, n.d., con una
     riga in fondo. players_db e' il database dei giocatori; senza, lo si
     legge dal disco.
+    I numeri di un torneo in corso, scritti nei suoi giocatori, e la loro
+    posizione in display_rank, dalla 10.19.31 li calcolano
+    aggiorna_i_numeri_in_corso e ordina_la_classifica_in_corso, le stesse
+    funzioni che save_tournament chiama prima di scrivere il file del
+    torneo: il testo della classifica non cambia.
     """
     import copy
     import io
@@ -972,146 +1177,36 @@ def get_standings_text(torneo, final=False, players_db=None):
     concluso = bool(torneo.get("concluded", False))
     if concluso:
         final = True
-    else:
-        from tournament import ricalcola_punti_tutti_giocatori
-
-        ricalcola_punti_tutti_giocatori(torneo)
     players = torneo.get("players", [])
     if not players:
         return _("Attenzione: Nessun giocatore per generare la classifica.")
 
-    if not concluso and (
-        "players_dict" not in torneo or len(torneo["players_dict"]) != len(players)
-    ):
-        torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
-
     # --- CALCOLO SEEDING (ORDINE DI PARTENZA) ---
-    def get_effective_elo(p):
-        elo = float(p.get("initial_elo", DEFAULT_ELO))
-        return elo if elo > 0 else DEFAULT_ELO
-
-    players_for_seeding = sorted(
-        players,
-        key=lambda p: (
-            -get_effective_elo(p),
-            p.get("last_name", "").lower(),
-            p.get("first_name", "").lower(),
-        ),
-    )
+    players_for_seeding = _ordine_di_partenza(players)
     seeding_map = {p["id"]: i + 1 for i, p in enumerate(players_for_seeding)}
     # --------------------------------------------
 
     # Vero se il database dei giocatori, che serve alla colonna Elo Var. di
-    # un torneo in corso, non si e' potuto leggere.
+    # un torneo in corso, non si e' potuto leggere. I numeri di un torneo in
+    # corso li calcola aggiorna_i_numeri_in_corso, la stessa funzione che
+    # dalla 10.19.31 save_tournament chiama prima di scrivere il file.
     database_illeggibile = False
     if not concluso:
-        from db_players import database_non_letto, fattore_k_della_finalizzazione
-        from stats import calculate_elo_change, calculate_performance_rating
-
-        if players_db is None:
-            from db_players import load_players_db
-
-            players_db = load_players_db()
-        # Senza le schede del database il K della finalizzazione non si
-        # conosce: la colonna Elo Var. dice n.d., e una riga in fondo lo
-        # spiega. Con il database letto vuoto direbbe per tutti la variazione
-        # di un giocatore nuovo, con K 40.
-        database_illeggibile = database_non_letto(players_db)
-        for p in players:
-            p_id = p.get("id")
-            if not p_id:
-                continue
-            p["buchholz"] = compute_buchholz(p_id, torneo)
-            p["buchholz_cut1"] = compute_buchholz_cut1(p_id, torneo)
-            p["aro"] = compute_aro(p_id, torneo)
-            if p.get("withdrawn", False):
-                p["final_rank"] = "RIT"
-                p["performance_rating"] = None
-            else:
-                p["performance_rating"] = calculate_performance_rating(
-                    p, torneo["players_dict"]
-                )
-            # Il K e' quello della finalizzazione, ricalcolato ogni volta:
-            # fino alla 10.13.16 veniva dal giocatore del torneo, che non
-            # ha experienced, partite giocate e data di nascita del
-            # database, e poi restava salvato nel torneo. Per chi non li
-            # ha la regola dava 40 dove la finalizzazione dava 20.
-            # Dalla 10.19.5 (issue 73) anche un ritirato ha la variazione
-            # delle partite giocate prima del ritiro, come alla
-            # finalizzazione; fino alla 10.19.0 la colonna diceva n.d.
-            if database_illeggibile:
-                p["k_factor"] = None
-                p["elo_change"] = None
-            else:
-                categoria = torneo.get("tournament_category", "standard")
-                p["k_factor"] = fattore_k_della_finalizzazione(
-                    p,
-                    players_db,
-                    torneo.get("start_date"),
-                    categoria,
-                )
-                p["elo_change"] = calculate_elo_change(
-                    p, torneo["players_dict"], categoria
-                )
+        database_illeggibile = aggiorna_i_numeri_in_corso(torneo, players_db)
 
     tiebreak_order = criteri_di_spareggio(torneo)
 
-    def sort_key_standings(player_item, torneo_del_calcolo=None):
-        """La chiave di ordinamento con le regole di oggi. torneo_del_calcolo
-        e' il torneo su cui calcolare gli spareggi, se non e' quello mostrato:
-        per un torneo concluso e' una sua copia, che il calcolo puo' toccare."""
-        if torneo_del_calcolo is None:
-            torneo_del_calcolo = torneo
-        # Criteri impliciti sempre attivi: punti (decrescente) e stato attivo/ritirato
-        try:
-            pts = float(player_item.get("points", 0.0))
-        except (ValueError, TypeError):
-            pts = 0.0
-        withdrawn_val = 1 if not player_item.get("withdrawn", False) else 0
-        sort_tuple = [-pts, -withdrawn_val]
-
-        # Criteri di spareggio configurati
-        for criterion in tiebreak_order:
-            val = get_criterion_value(player_item, criterion, torneo_del_calcolo)
-            # Aggiunge il valore invertito per l'ordinamento decrescente
-            sort_tuple.append(-val)
-        return tuple(sort_tuple)
-
-    def posizioni_dall_ordine(ordinati, chiavi=None):
-        """Le posizioni di una lista ordinata con sort_key_standings: a
-        parita' di tutti i criteri la stessa posizione, RIT ai ritirati.
-        chiavi, se c'e', ha le chiavi gia' calcolate, per identificativo.
-        La regola e' quella della finalizzazione, posizioni_con_i_pari_merito."""
-
-        def chiave_di(p_item):
-            return chiavi[p_item.get("id")] if chiavi is not None else sort_key_standings(p_item)
-
-        calcolate = posizioni_con_i_pari_merito(ordinati, chiave_di, _e_ritirato)
-        return {
-            p_item.get("id"): "RIT" if posizione is None else posizione
-            for p_item, posizione in zip(ordinati, calcolate, strict=True)
-        }
-
     # --- DETERMINAZIONE STATO E TITOLO REPORT ---
     current_round_in_state = torneo.get("current_round", 0)
-    has_real_results = False
-    for p in players:
-        if any(
-            res.get("result") not in [None, "BYE"]
-            for res in p.get("results_history", [])
-        ):
-            has_real_results = True
-            break
+    has_real_results = _ha_risultati_veri(players)
 
     show_ratings = final or has_real_results
     status_line = ""
-    is_initial_list = False
     if final:
         status_line = _("CLASSIFICA FINALE")
     else:
         if not has_real_results and current_round_in_state <= 1:
             status_line = _("Elenco Iniziale Partecipanti (Prima del Turno 1)")
-            is_initial_list = True
         else:
             all_matches_for_current_round_done = True
             if current_round_in_state > 0 and current_round_in_state <= torneo.get(
@@ -1247,10 +1342,13 @@ def get_standings_text(torneo, final=False, players_db=None):
                 copia = copy.deepcopy(torneo)
                 copia["players_dict"] = {g.get("id"): g for g in copia.get("players", [])}
                 chiavi_di_oggi = {
-                    g.get("id"): sort_key_standings(g, copia) for g in copia.get("players", [])
+                    g.get("id"): _chiave_della_classifica(g, copia, tiebreak_order)
+                    for g in copia.get("players", [])
                 }
                 players_sorted = sorted(players, key=lambda g: chiavi_di_oggi[g.get("id")])
-                posizioni = posizioni_dall_ordine(players_sorted, chiavi_di_oggi)
+                posizioni = _posizioni_dall_ordine(
+                    players_sorted, lambda g: chiavi_di_oggi[g.get("id")]
+                )
             else:
                 posizioni = salvate
                 players_sorted = sorted(players, key=ordine_salvato)
@@ -1261,28 +1359,11 @@ def get_standings_text(torneo, final=False, players_db=None):
                     if p.get("id") in dallo_storico
                     and posizioni.get(p.get("id")) != dallo_storico[p.get("id")]
                 ]
-        elif is_initial_list:
-            players_sorted = players_for_seeding
-            for i, p_item in enumerate(players_sorted):
-                p_item["display_rank"] = i + 1
         else:
-            players_sorted = sorted(players, key=sort_key_standings)
-            if not final or (
-                players_sorted
-                and players_sorted[0].get("final_rank") is None
-                and not players_sorted[0].get("withdrawn")
-            ):
-                calcolate = posizioni_dall_ordine(players_sorted)
-                for p_item in players_sorted:
-                    p_item["display_rank"] = calcolate[p_item.get("id")]
-            elif final:
-                for i, p_item in enumerate(players_sorted):
-                    if p_item.get("final_rank") is not None:
-                        p_item["display_rank"] = p_item["final_rank"]
-                    elif p_item.get("withdrawn", False):
-                        p_item["display_rank"] = "RIT"
-                    else:
-                        p_item["display_rank"] = i + 1
+            # L'ordine e le posizioni di un torneo in corso, scritte nei
+            # giocatori in display_rank: dalla 10.19.31 le calcola
+            # ordina_la_classifica_in_corso, che usa anche save_tournament.
+            players_sorted = ordina_la_classifica_in_corso(torneo, final, tiebreak_order)
     except Exception as e:
         print(f"Errore durante l'ordinamento dei giocatori per la classifica: {e}")
         traceback.print_exc()

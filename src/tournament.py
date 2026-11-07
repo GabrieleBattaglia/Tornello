@@ -487,6 +487,75 @@ def _copia_se_torneo_avanza(percorso, turni_prima, turni_ora):
         create_backup(percorso, f"turno_{turni_ora}")
 
 
+# I numeri della classifica che il ricalcolo prima del salvataggio scrive
+# nei giocatori di un torneo in corso: i punti, che vengono dallo storico,
+# gli spareggi, la performance, il fattore K, la variazione Elo, RIT in
+# final_rank per un ritirato e la posizione in display_rank.
+CAMPI_DELLA_CLASSIFICA = (
+    "points",
+    "buchholz",
+    "buchholz_cut1",
+    "aro",
+    "final_rank",
+    "performance_rating",
+    "k_factor",
+    "elo_change",
+    "display_rank",
+)
+# Il segno di un campo che il giocatore non aveva.
+_CAMPO_ASSENTE = object()
+
+
+def _numeri_della_classifica_aggiornati(torneo):
+    """Prima della scrittura del file, nei giocatori di un torneo in corso,
+    o in preparazione, i numeri della classifica che la classifica del turno
+    scritta subito dopo mostra: Buchholz, Buchholz Cut-1, ARO, performance,
+    fattore K, variazione Elo, RIT in final_rank per un ritirato e la
+    posizione in display_rank, con i punti ricalcolati dallo storico. Li
+    calcola aggiorna_la_classifica_in_corso di reports.py, la stessa strada
+    della classifica, e il torneo in memoria li riceve come li riceveva
+    dalla classifica. Un torneo concluso tiene i valori della
+    finalizzazione, e un torneo senza giocatori non ha niente da calcolare.
+    Fino alla 10.19.30, e gia' nella 10.0.0, li ricalcolava soltanto la
+    classifica, scritta dopo il salvataggio: nel file restavano quelli del
+    salvataggio prima, e nella console, che scrive la classifica su una
+    copia del torneo, quelli letti all'apertura (decisione di Gabriele del
+    7 novembre 2026).
+    Il ricalcolo non impedisce mai il salvataggio: se solleva un errore, i
+    giocatori riprendono i numeri di prima, tutti, il torneo si salva con
+    quelli, e la console lo dice."""
+    if not isinstance(torneo, dict) or torneo.get("concluded", False) or not torneo.get("players"):
+        return
+    fotografia = None
+    try:
+        from reports import aggiorna_la_classifica_in_corso
+
+        fotografia = (
+            [(g, {campo: g.get(campo, _CAMPO_ASSENTE) for campo in CAMPI_DELLA_CLASSIFICA}) for g in torneo["players"]],
+            torneo.get("players_dict", _CAMPO_ASSENTE),
+        )
+        aggiorna_la_classifica_in_corso(torneo)
+    except Exception as e:  # noqa: BLE001 - un ricalcolo guasto non deve impedire il salvataggio
+        if fotografia is not None:
+            giocatori, players_dict = fotografia
+            for giocatore, valori in giocatori:
+                for campo, valore in valori.items():
+                    if valore is _CAMPO_ASSENTE:
+                        giocatore.pop(campo, None)
+                    else:
+                        giocatore[campo] = valore
+            if players_dict is _CAMPO_ASSENTE:
+                torneo.pop("players_dict", None)
+            else:
+                torneo["players_dict"] = players_dict
+        print(
+            _(
+                "Avviso: i numeri della classifica del torneo {name} non si sono potuti ricalcolare prima del salvataggio, e il file li salva come erano: {error}"
+            ).format(name=torneo.get("name", ""), error=e)
+        )
+        traceback.print_exc()
+
+
 def save_tournament(torneo, filepath=None, motivi=None):
     """Salva lo stato corrente del torneo nel file JSON.
     Risponde vero se il file e' stato scritto. Gli errori restano stampati e
@@ -504,7 +573,10 @@ def save_tournament(torneo, filepath=None, motivi=None):
     che non viene dal sistema, il testo intero. Fino alla revisione della
     10.19.19 c'era sempre il testo intero, che per un file bloccato alla
     sostituzione ha due percorsi con le barre doppie (decisione di Gabriele
-    del 5 novembre 2026). La console stampa il testo intero, come prima."""
+    del 5 novembre 2026). La console stampa il testo intero, come prima.
+    Dalla 10.19.31, prima di scrivere, un torneo in corso o in preparazione
+    riceve i numeri della sua classifica, in memoria e nel file: vedi
+    _numeri_della_classifica_aggiornati."""
     if motivi is None:
         motivi = []
     tournament_name_for_file = None  # Inizializza a None
@@ -523,6 +595,11 @@ def save_tournament(torneo, filepath=None, motivi=None):
             dynamic_tournament_filename = user_data_path(
                 f"Tornello - {sanitized_name}.json"
             )
+        # Dalla 10.19.31 il file riceve i numeri della classifica del torneo
+        # che salva, gli stessi della classifica scritta subito dopo; fino ad
+        # allora aveva quelli del salvataggio prima. Il ricalcolo non
+        # solleva errori: se non riesce, i numeri restano quelli di prima.
+        _numeri_della_classifica_aggiornati(torneo)
         torneo_to_save = torneo.copy()
         # L'esito dell'ultimo abbinamento fallito vale solo finche' il
         # programma e' aperto: fino alla 10.13.1 finiva nel json al primo
