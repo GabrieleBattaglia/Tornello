@@ -6562,14 +6562,23 @@ class MainFrame(wx.Frame):
         carica: tenuto in memoria quello di prima, il primo salvataggio lo
         riscriverebbe sul disco al posto della copia. Poi _save_state
         rigenera classifica, turno e raccolta delle partite. Con un altro
-        torneo aperto basta rileggere l'albero, e durante la creazione di un
-        torneo nuovo nemmeno quello: la procedura guidata resta com'e'.
+        torneo aperto basta rileggere l'albero.
+        Dalla 10.19.43 (decisione di Gabriele del 7 novembre 2026) dentro la
+        procedura guidata di un torneo nuovo il ripristino di una copia del
+        torneo aperto, nel suo file, o con il suo file nel cestino insieme
+        all'archivio, chiude la procedura, con _chiudi_la_procedura_guidata,
+        come Apri Torneo dalla 10.19.34, e il torneo ripristinato si carica,
+        come fuori dalla procedura. Con la copia di un altro torneo, o senza
+        un torneo aperto, la procedura resta com'e', e l'albero dei tornei si
+        rilegge quando la procedura si chiude. Fino alla 10.19.42, e gia'
+        dalla 10.11.0, durante la creazione non si faceva niente: il file
+        tornava com'era nella copia, ma in memoria restava il torneo di
+        prima, e dopo Indietro il primo salvataggio lo riscriveva sul disco
+        al posto della copia, senza avviso.
         Una raccolta delle partite con partite che il torneo ripristinato non
         ha la ritrova load_tournament, qui o quando il torneo si apre dopo,
         anche dopo una chiusura di Tornello, e va nella cartella backup prima
         di essere sostituita (revisione della 10.19.13)."""
-        if getattr(self, "creation_mode", False):
-            return
         if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
             self.populate_tree()
             return
@@ -6577,6 +6586,9 @@ class MainFrame(wx.Frame):
         stesso = bool(aperto) and os.path.normcase(os.path.abspath(aperto)) == os.path.normcase(
             os.path.abspath(esito.destinazione)
         )
+        procedura = getattr(self, "creation_mode", False)
+        if procedura and not (stesso or self._il_file_aperto_e_nel_cestino(esito)):
+            return
         if stesso or not self.current_tournament or not (aperto and os.path.exists(aperto)):
             # Il torneo ripristinato prende il posto di un altro torneo
             # aperto, che non ha il suo file sul disco, come un torneo nuovo
@@ -6590,10 +6602,29 @@ class MainFrame(wx.Frame):
                 self.populate_tree()
                 return
             self.load_tournament(esito.destinazione)
+            # Un torneo ripristinato che non si apre lascia la procedura
+            # com'e', come Apri Torneo che non riesce.
+            if procedura and self._e_il_torneo_aperto(esito.destinazione):
+                self._chiudi_la_procedura_guidata()
             if self.current_tournament:
                 self._save_state()
             return
         self.populate_tree()
+
+    def _il_file_aperto_e_nel_cestino(self, esito):
+        """Vero se il ripristino di esito ha mandato nel cestino il file del
+        torneo aperto, da solo o con la cartella d'archivio che lo contiene:
+        succede riaprendo il torneo concluso aperto con una sua copia di
+        prima della finalizzazione (10.19.43)."""
+        from utils import dentro_la_cartella
+
+        aperto = self.active_filename
+        if not aperto:
+            return False
+        return any(
+            _chiave_del_percorso(aperto) == _chiave_del_percorso(tolto) or dentro_la_cartella(aperto, tolto)
+            for tolto in esito.tolti
+        )
 
     def on_fide_update(self, event):
         import os

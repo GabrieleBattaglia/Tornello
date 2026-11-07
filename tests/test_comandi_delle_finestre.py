@@ -9283,6 +9283,233 @@ class TestApriTorneoNellaProceduraGuidata:
         assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
 
 
+class TestRipristinoNellaProceduraGuidata:
+    """10.19.43 (decisione di Gabriele del 7 novembre 2026). Dentro la
+    procedura guidata di un torneo nuovo, il ripristino di una copia del
+    torneo aperto dalla finestra Copie di sicurezza, aperta dal menu File o
+    da Apri Torneo su una copia, chiude la procedura, come Apri Torneo dalla
+    10.19.34, e il torneo ripristinato si carica, come fuori dalla
+    procedura. Con la copia di un altro torneo la procedura resta com'e'.
+    Fino alla 10.19.42, e gia' dalla 10.11.0, la procedura restava, e in
+    memoria restava il torneo di prima: dopo Indietro il primo salvataggio
+    lo riscriveva sul disco al posto della copia, senza avviso. La finestra
+    Copie di sicurezza non si mostra: al posto di aspettare, seleziona la
+    copia e preme Ripristina, con Si' alla conferma, poi si chiude. Le
+    finestre di messaggio sono finte, e il cestino pure."""
+
+    @staticmethod
+    def _copia(nome, luogo):
+        """Una copia di sicurezza del torneo nome, al turno 1, con il luogo
+        luogo, nella cartella backup."""
+        from config import user_data_path
+
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", f"Tornello - {nome}_turno_1_20261107_100000.json"))
+        TestNomeDelTorneoNuovo._scrivi(copia, dict(_torneo_in_corso(nome), site=luogo))
+        return copia
+
+    @staticmethod
+    def _finestra_delle_copie(monkeypatch, copia, tmp_path):
+        """La finestra Copie di sicurezza finta descritta sopra. Restituisce
+        le sue finestre di messaggio, con titolo e testo, i suoi suoni e il
+        cestino."""
+        import wx
+        from test_copie_di_sicurezza import CestinoFinto
+
+        from gui.dialogs import backup_cleanup_dialog as bcd
+
+        registro = SimpleNamespace(finestre=[], suoni=[], cestino=CestinoFinto(str(tmp_path / "cestino")))
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, messaggio, style=wx.OK, **opzioni):
+                self.domanda = bool(style & wx.YES_NO)
+                registro.finestre.append(titolo)
+
+            def ShowModal(self):
+                return wx.ID_YES if self.domanda else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        def mostra(finestra):
+            indice = [os.path.normcase(c.percorso) for c in finestra.visibili].index(os.path.normcase(copia))
+            for vecchio in finestra.indici_selezionati():
+                finestra.list_ctrl.Select(vecchio, False)
+            finestra.list_ctrl.Select(indice, True)
+            finestra.on_ripristina(None)
+            return wx.ID_CANCEL
+
+        monkeypatch.setattr(bcd, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(bcd, "play_sound", lambda nome, *a, **k: registro.suoni.append(nome))
+        monkeypatch.setattr(bcd, "delete_file_to_trash", registro.cestino)
+        monkeypatch.setattr(bcd.BackupCleanupDialog, "ShowModal", mostra)
+        return registro
+
+    @staticmethod
+    def _ripristina(principale, monkeypatch, strada, copia):
+        """La finestra Copie di sicurezza dal menu File, o da Apri Torneo
+        sulla copia, con Si' alla domanda Copia di sicurezza."""
+        if strada == "menu":
+            TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
+        else:
+            TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, copia)
+
+    @staticmethod
+    def _domande_di_apri_torneo(strada, copia):
+        """Le finestre di messaggio della finestra principale: Apri Torneo
+        su una copia fa la domanda Copia di sicurezza, con il suono
+        dell'errore."""
+        if strada == "menu":
+            return [], []
+        testo = (
+            f"Il file {os.path.basename(copia)} è una copia di sicurezza: sta nella cartella backup, e Tornello non lo apre come torneo.\n"
+            "Aperto così, verrebbe modificato a ogni salvataggio, e classifica, turni e raccolta delle partite del torneo verrebbero riscritti con lo stato vecchio della copia.\n"
+            "Vuoi aprire la finestra delle copie di sicurezza, con questa copia già selezionata? Da lì puoi leggerla, confrontarla con lo stato attuale e ripristinarla."
+        )
+        return [("Copia di sicurezza", testo)], ["errore"]
+
+    @staticmethod
+    def _procedura_chiusa_sul_torneo(principale, registro, percorso, nome):
+        """La procedura si e' chiusa: l'albero ha i tornei, il cursore e'
+        sulla voce del torneo nome, nel file percorso, e l'albero ha chiesto
+        il fuoco. L'area centrale mostra i dati del torneo, perche' alla
+        chiusura della finestra Copie di sicurezza l'albero si rilegge, e
+        rimette il cursore sulla sua voce, come dopo lo stesso ripristino
+        fuori dalla procedura."""
+        assert not principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorso)
+        assert principale.current_tournament["name"] == nome
+        assert "Nuovo torneo" in [testo for testo, _dati in TestAlberoETorneoAttivo._figlie(principale)]
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": principale.active_filename}
+        assert registro.fuoco == ["tree_ctrl"]
+        assert principale.main_text.GetValue().startswith(f"INFORMAZIONI DETTAGLIATE DEL TORNEO\nNome Torneo: {nome}\n")
+
+    @pytest.mark.parametrize("strada", ["menu", "apri"], ids=["dal menu File", "da Apri Torneo su una copia"])
+    def test_la_copia_del_torneo_aperto(self, principale, suoni, monkeypatch, tmp_path, strada):
+        """Alfa e' aperta e salvata, con il luogo Roma; Nuovo torneo dal menu
+        File, e poi il ripristino della copia di Alfa con il luogo Firenze.
+        La procedura si chiude sulla voce di Alfa, con il fuoco all'albero e
+        i dati di Alfa nell'area centrale, e Alfa si carica dal suo file,
+        con Firenze, una volta; il salvataggio dopo tiene Firenze. Escono
+        soltanto la conferma e l'esito del ripristino, e, da Apri Torneo, la
+        domanda Copia di sicurezza."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, dict(_torneo_in_corso("Alfa"), site="Roma"))
+        principale.load_tournament(alfa)
+        copia = self._copia("Alfa", "Firenze")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, strada, copia)
+
+        self._procedura_chiusa_sul_torneo(principale, registro, alfa, "Alfa")
+        assert registro.caricati == ["Tornello - Alfa.json"]
+        assert principale.current_tournament["site"] == "Firenze"
+        assert TestNomeEDataDiInizioDaDati._nel_file(alfa)["site"] == "Firenze"
+        assert principale.GetTitle().endswith("[Alfa]")
+        assert principale.last_status_msg == "Torneo 'Alfa' caricato con successo."
+        domande, suoni_di_apri = self._domande_di_apri_torneo(strada, copia)
+        assert [(f.titolo, f.testo) for f in finestre] == domande
+        assert suoni == suoni_di_apri
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert copie.suoni == ["ripristino"]
+        assert scatole == []
+        principale._save_state()
+        assert TestNomeEDataDiInizioDaDati._nel_file(alfa)["site"] == "Firenze"
+
+    @pytest.mark.parametrize("strada", ["menu", "apri"], ids=["dal menu File", "da Apri Torneo su una copia"])
+    def test_la_copia_di_un_altro_torneo(self, principale, suoni, monkeypatch, tmp_path, strada):
+        """Alfa e' aperta, con il luogo Roma; Nuovo torneo, e poi il
+        ripristino della copia di Beta, che non e' aperta, con il luogo
+        Firenze, nel file di Beta. La procedura resta com'era, con Alfa
+        aperta e Roma, senza caricamenti e senza spostare il fuoco, come
+        prima della 10.19.43."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        beta = user_data_path("Tornello - Beta.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, dict(_torneo_in_corso("Alfa"), site="Roma"))
+        TestNomeDelTorneoNuovo._scrivi(beta, dict(_torneo_in_corso("Beta"), site="Napoli"))
+        principale.load_tournament(alfa)
+        copia = self._copia("Beta", "Firenze")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, strada, copia)
+
+        TestApriTorneoNellaProceduraGuidata._procedura_com_era(principale)
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale.current_tournament["site"] == "Roma"
+        assert TestNomeEDataDiInizioDaDati._nel_file(beta)["site"] == "Firenze"
+        assert registro.caricati == []
+        assert registro.fuoco == []
+        domande, suoni_di_apri = self._domande_di_apri_torneo(strada, copia)
+        assert [(f.titolo, f.testo) for f in finestre] == domande
+        assert suoni == suoni_di_apri
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert scatole == []
+
+    def test_il_torneo_concluso_aperto_si_riapre(self, principale, suoni, monkeypatch, tmp_path):
+        """Coppa_Prova e' finalizzata, e aperta dal suo file archiviato;
+        Nuovo torneo, e poi, dal menu File, il ripristino della sua copia di
+        prima della finalizzazione, che la riapre nella cartella del
+        programma e manda nel cestino la cartella d'archivio, con il file
+        aperto. La procedura si chiude sulla voce di Coppa_Prova, riaperta e
+        caricata dal file nuovo; l'albero non ha piu' i Tornei Conclusi, e il
+        salvataggio dopo non rimette il file archiviato. Fino alla 10.19.42
+        in memoria restava il torneo concluso, con il file nel cestino:
+        l'albero lo mostrava ancora fra i Tornei Conclusi, e il primo
+        salvataggio lo riscriveva in archivio."""
+        import wx
+        from test_finalizzazione import NOME, _cartella_archivio, _copie, _finalizza, prepara_il_banco
+
+        banco = prepara_il_banco(tmp_path, monkeypatch)
+        assert _finalizza(banco) is True
+        archiviato = os.path.join(_cartella_archivio(), f"Tornello - {NOME}.json")
+        principale.load_tournament(archiviato)
+        assert principale.current_tournament.get("concluded")
+        copia = _copie(banco.backup, "pre_finalize_torneo")[0]
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        copie = self._finestra_delle_copie(monkeypatch, copia, tmp_path)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._ripristina(principale, monkeypatch, "menu", copia)
+
+        assert copie.cestino.ricevuti == [os.path.abspath(_cartella_archivio())]
+        self._procedura_chiusa_sul_torneo(principale, registro, banco.file_torneo, NOME)
+        assert registro.caricati == [os.path.basename(banco.file_torneo)]
+        assert not principale.current_tournament.get("concluded")
+        assert not any(testo.startswith("Tornei Conclusi") for testo, _dati in TestAlberoETorneoAttivo._figlie(principale))
+        assert finestre == []
+        assert suoni == []
+        assert copie.finestre == ["Conferma ripristino", "Ripristino riuscito"]
+        assert scatole == []
+        principale._save_state()
+        assert not os.path.exists(archiviato)
+        assert not TestNomeEDataDiInizioDaDati._nel_file(banco.file_torneo).get("concluded")
+
+
 class TestCancSuUnaVoceCheNonCePiu:
     """10.19.35 (decisione di Gabriele del 7 novembre 2026). CANC sulla voce
     di un iscritto che nel torneo non c'e' piu', perche' il file del torneo
