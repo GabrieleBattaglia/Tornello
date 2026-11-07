@@ -770,10 +770,14 @@ class TournamentController:
         # vanno davvero i report: fino alla 10.19.39, e gia' nella 10.0.0, era
         # la cartella da cui Tornello era stato avviato, che coincide con
         # quella del programma soltanto se lo si avvia da li' (decisione di
-        # Gabriele del 7 novembre 2026).
+        # Gabriele del 7 novembre 2026). Dalla correzione della 10.19.40 la
+        # domanda dice che cosa ci va, i report e la raccolta delle partite:
+        # fino ad allora diceva i dati, e il file del torneo non ci va mai.
         default_path = os.path.abspath(user_data_path(""))
         if not self.ui.confirm(
-            _("Vuoi che i dati vengano salvati in {}?").format(default_path)
+            _(
+                "Vuoi che i report e la raccolta delle partite vengano salvati in {}?"
+            ).format(default_path)
         ):
             while True:
                 custom_path = self.ui.input_text(

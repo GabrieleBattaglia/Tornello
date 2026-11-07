@@ -399,8 +399,10 @@ class TestRipresaDellaCreazioneSospesa:
 
 class TestCartellaDellaCreazioneInConsole:
     """10.19.40 (decisione di Gabriele del 7 novembre 2026). Alla fine della
-    creazione la console chiede dove salvare i dati, come la procedura
-    guidata della finestra con la sua Cartella Salvataggio: la cartella
+    creazione la console chiede dove salvare i report e la raccolta delle
+    partite, come la procedura guidata della finestra con la sua Cartella
+    Salvataggio, e dalla correzione della 10.19.40 la domanda lo dice:
+    fino ad allora diceva i dati. La cartella
     scelta riceve i report e la raccolta delle partite, e il file del
     torneo resta nella cartella del programma, dove save_tournament lo
     scrive (manuale, sezione 4.1). Il messaggio Torneo creato e
@@ -460,7 +462,7 @@ class TestCartellaDellaCreazioneInConsole:
         import config
 
         programma = os.path.abspath(config.user_data_path(""))
-        return ["Accetti il valore suggerito? (No = usa 1.0)", f"Vuoi che i dati vengano salvati in {programma}?", *altre]
+        return ["Accetti il valore suggerito? (No = usa 1.0)", f"Vuoi che i report e la raccolta delle partite vengano salvati in {programma}?", *altre]
 
     @staticmethod
     def _copie_di_chiusura():
