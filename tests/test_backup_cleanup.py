@@ -931,8 +931,9 @@ class TestAperturaDentroBackup:
             load_tournament=lambda percorso, **opzioni: registro.update(caricato=percorso),
             on_backup_cleanup=lambda evento, seleziona=None: registro.update(finestra=seleziona),
             _e_il_torneo_aperto=lambda percorso: False,
-            # Dalla 10.19.21 Apri Torneo chiede prima se si puo' lasciare il
-            # torneo aperto: qui non ci sono modifiche soltanto in memoria.
+            # Dalla 10.19.21 Apri Torneo chiede se si puo' lasciare il torneo
+            # aperto, dalla proposta 7 del nono giro dopo la scelta di un
+            # altro file: qui non ci sono modifiche soltanto in memoria.
             _si_puo_lasciare_il_torneo=lambda: True,
         )
         mf.MainFrame.on_open_tournament(telaio, None)

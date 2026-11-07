@@ -1885,7 +1885,9 @@ class TestAlberoETorneoAttivo:
         messaggio lo dice, Alfa resta aperto e la barra di stato lo dice.
         Se invece non si rilegge il file del torneo aperto, nessun torneo
         resta aperto: la versione in memoria, forse vecchia, il primo
-        salvataggio la riscriverebbe sul file."""
+        salvataggio la riscriverebbe sul file. Dalla correzione della
+        proposta 7 del nono giro e' di nuovo cosi' per il torneo salvato,
+        che non ha modifiche soltanto in memoria."""
         percorsi = self._prepara("Alfa")
         rotto = str(tmp_path / "altrove" / "Tornello - Rotto.json")
         os.makedirs(os.path.dirname(rotto))
@@ -1912,6 +1914,58 @@ class TestAlberoETorneoAttivo:
         assert len(messaggi) == 2
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
+
+    def test_ctrl_o_sul_file_del_torneo_salvato_cambiato_da_fuori(self, principale, suoni, monkeypatch):
+        """Correzione della proposta 7 del nono giro. Alfa e' aperta e
+        salvata, senza modifiche soltanto in memoria, e da fuori il suo file
+        cambia, per esempio rimesso da git com'era ieri sera. Ctrl+O sullo
+        stesso file lo rilegge, senza domande: la barra di stato dice
+        caricato con successo, e il salvataggio dopo tiene la versione
+        rimessa. Fino alla correzione il torneo non si rileggeva, e il
+        salvataggio riscriveva sopra la versione vecchia della memoria."""
+        import json
+
+        percorsi = self._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        alfa = principale.active_filename
+        assert not principale._ha_modifiche_soltanto_in_memoria()
+        with open(alfa, encoding="utf-8") as f:
+            da_fuori = json.load(f)
+        da_fuori["site"] = "Versione di ieri sera"
+        with open(alfa, "w", encoding="utf-8") as f:
+            json.dump(da_fuori, f)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+
+        self._apri_con_ctrl_o(principale, monkeypatch, alfa)
+
+        assert [f.titolo for f in finestre] == []
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale.current_tournament.get("site") == "Versione di ieri sera"
+        assert principale.last_status_msg == "Torneo 'Alfa' caricato con successo."
+        assert principale._voce_del_torneo_aperto() == principale.tree_ctrl.GetSelection()
+        principale._save_state()
+        assert TestNomeEDataDiInizioDaDati._nel_file(alfa).get("site") == "Versione di ieri sera"
+
+    def test_ctrl_o_nella_procedura_guidata_sul_torneo_salvato(self, principale, suoni, monkeypatch):
+        """Correzione della proposta 7 del nono giro, rilievo 3 della
+        revisione. Alfa e' aperta e salvata, poi Ctrl+N apre la procedura
+        guidata, e Ctrl+O sceglie il file di Alfa: Alfa si rilegge, come
+        sulla base 98e4163, e l'area centrale la mostra. Fino alla correzione
+        la barra di stato diceva che Alfa era gia' aperta, con l'area
+        centrale vuota e la procedura sullo schermo."""
+        percorsi = self._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        alfa = principale.active_filename
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.start_new_tournament_wizard()
+        assert principale.creation_mode
+
+        self._apri_con_ctrl_o(principale, monkeypatch, alfa)
+
+        assert [f.titolo for f in finestre] == []
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale.last_status_msg == "Torneo 'Alfa' caricato con successo."
+        assert principale.main_text.GetValue().startswith("Torneo: Alfa")
 
     def test_il_torneo_di_un_altra_cartella_si_distingue_da_quello_con_lo_stesso_nome(self, principale, suoni, monkeypatch, tmp_path):
         """Alfa nella cartella del programma, e un altro Alfa su una
@@ -7457,40 +7511,122 @@ class TestTorneoNonSalvatoDaLasciare:
             assert "chiusura" in suoni
         self._primavera_com_era(principale, bloccata)
 
-    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    @pytest.mark.parametrize("risposta", ["no", "si"])
-    def test_apri_torneo(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
-        """Apri Torneo dal menu File. Con No la finestra Apri non si apre, e
-        Primavera 2 resta com'era; con Si' si apre, ed Estate 3, scelto li',
-        diventa il torneo aperto."""
+    @staticmethod
+    def _finestra_apri(monkeypatch, finestre, percorso, esito=None):
+        """La finestra Apri finta, che sceglie percorso, oppure, con esito
+        wx.ID_CANCEL, si annulla. Restituisce l'elenco che annota, per ogni
+        volta che si mostra, quante domande, fra le finestre annotate, erano
+        gia' state fatte."""
         import wx
 
-        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
-        aperte = []
+        esito = wx.ID_OK if esito is None else esito
+        mostrate = []
 
         class FinestraApri:
             def __init__(self, *argomenti, **opzioni):
-                aperte.append(argomenti)
+                pass
 
             def ShowModal(self):
-                return wx.ID_OK
+                mostrate.append(len([f for f in finestre if f.domanda]))
+                return esito
 
             def GetPath(self):
-                return bloccata.estate
+                return percorso
 
             def Destroy(self):
                 pass
 
         monkeypatch.setattr(wx, "FileDialog", FinestraApri)
+        return mostrate
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("scritto", ["come nell'albero", "in minuscolo"])
+    def test_apri_torneo_sul_torneo_aperto(self, principale, suoni, monkeypatch, capsys, bloccata, scritto):
+        """Proposta 7 del nono giro. Apri Torneo, e nella finestra Apri lo
+        stesso file di Primavera 2, anche scritto in minuscolo, come puo'
+        restituirlo la finestra: nessuna domanda, nessun suono, e il torneo
+        non si rilegge. Primavera 2 resta com'e' in memoria, con Roma, il
+        cursore passa dalla voce Luogo a quella del torneo, e la barra di
+        stato dice che il torneo e' gia' aperto. Tolto il blocco, il
+        salvataggio dopo scrive Roma. Fino alla proposta la domanda arrivava
+        prima della finestra Apri, e con Si' il torneo si rileggeva dal suo
+        file: Roma si perdeva."""
+        import wx
+
+        finestre = self._finestre(monkeypatch)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        scelto = bloccata.primavera.lower() if scritto == "in minuscolo" else bloccata.primavera
+        assert os.path.exists(scelto)
+        mostrate = self._finestra_apri(monkeypatch, finestre, scelto)
+        suoni.clear()
 
         TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
 
+        assert mostrate == [0]
+        assert finestre == []
+        assert suoni == []
+        assert registro.caricati == []
+        self._primavera_com_era(principale, bloccata)
+        assert principale.active_filename == bloccata.primavera
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": bloccata.primavera}
+        assert principale.last_status_msg == "Il torneo 'Primavera 2' è già aperto, e resta com'è: Tornello non lo rilegge dal suo file."
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert errori == []
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_apri_torneo_annullato(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """Proposta 7 del nono giro. Apri Torneo, e la finestra Apri si
+        annulla: nessuna domanda, nessun suono, nessun salvataggio riprovato,
+        e Primavera 2 resta com'era, con Roma in memoria e il cursore sulla
+        voce Luogo. Fino alla proposta la domanda arrivava prima della
+        finestra Apri, con il salvataggio riprovato e il suono dell'errore,
+        anche se poi la finestra si annullava."""
+        import wx
+
+        finestre = self._finestre(monkeypatch)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        mostrate = self._finestra_apri(monkeypatch, finestre, bloccata.estate, wx.ID_CANCEL)
+        suoni.clear()
+        barra = principale.last_status_msg
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert mostrate == [0]
+        assert finestre == []
+        assert suoni == []
+        assert registro.caricati == []
+        self._primavera_com_era(principale, bloccata)
+        assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+        assert principale.last_status_msg == barra
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert errori == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("risposta", ["no", "si"])
+    def test_apri_torneo(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
+        """Apri Torneo dal menu File, con Estate 3 scelto nella finestra
+        Apri. Dalla proposta 7 del nono giro la finestra Apri si apre senza
+        domande, e la domanda arriva dopo la scelta, prima di aprire Estate
+        3. Con No Primavera 2 resta com'era; con Si' Estate 3 diventa il
+        torneo aperto. Fino alla proposta la domanda arrivava prima della
+        finestra Apri, e con No la finestra non si apriva."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
+        mostrate = self._finestra_apri(monkeypatch, finestre, bloccata.estate)
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert mostrate == [0]
         assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
         if risposta == "no":
-            assert aperte == []
             self._primavera_com_era(principale, bloccata)
         else:
-            assert len(aperte) == 1
             assert principale._e_il_torneo_aperto(bloccata.estate)
 
     @pytest.mark.parametrize("strada", ["apri", "chiusura"])

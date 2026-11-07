@@ -6532,12 +6532,16 @@ class MainFrame(wx.Frame):
         self.start_new_tournament_wizard()
 
     def on_open_tournament(self, event):
-        # Dalla 10.19.21 Apri Torneo, che lascia il torneo aperto o lo
-        # rilegge dal suo file, non parte se il torneo ha le ultime modifiche
-        # soltanto in memoria e alla domanda di _si_puo_lasciare_il_torneo si
-        # risponde No.
-        if not self._si_puo_lasciare_il_torneo():
-            return
+        # Dalla proposta 7 del nono giro la finestra Apri si apre senza
+        # domande, e annullarla non chiede niente. La domanda di
+        # _si_puo_lasciare_il_torneo arriva dopo la scelta, e prima di aprire
+        # il file, soltanto se il file scelto non e' quello del torneo
+        # aperto, che con le modifiche soltanto in memoria non si rilegge
+        # (vedi _il_torneo_scelto_e_gia_aperto). Dalla
+        # 10.19.21 fino alla proposta la domanda arrivava prima della
+        # finestra Apri, perche' il file scelto non si conosceva ancora, e
+        # scegliendo lo stesso file il torneo si rileggeva, e le modifiche
+        # soltanto in memoria si perdevano.
         dlg = wx.FileDialog(
             self,
             _("Apri Torneo"),
@@ -6577,17 +6581,49 @@ class MainFrame(wx.Frame):
             if risposta == wx.ID_YES:
                 self.on_backup_cleanup(None, seleziona=[scelto])
             return
+        # Dalla correzione della proposta 7 il torneo aperto non si rilegge
+        # soltanto se ha le ultime modifiche soltanto in memoria. Un torneo
+        # salvato si rilegge come sempre: il suo file puo' essere cambiato
+        # da fuori, per esempio rimesso da git o da un'altra macchina, e la
+        # versione in memoria, vecchia, il primo salvataggio la riscriverebbe
+        # sopra quella nuova. Fino alla correzione non si rileggeva mai.
+        if self._e_il_torneo_aperto(scelto) and self._ha_modifiche_soltanto_in_memoria():
+            self._il_torneo_scelto_e_gia_aperto()
+            return
+        if not self._si_puo_lasciare_il_torneo():
+            return
         # Se il file scelto non si apre, o non e' un torneo, resta aperto il
         # torneo di prima.
         self.load_tournament(scelto, tieni_il_precedente=True)
-        # Il cursore dell'albero passa sulla voce del torneo aperto, anche
-        # se stava su una voce che non e' di un torneo, come Nuovo torneo;
-        # senza caricare di nuovo e senza cambiare l'area centrale.
         if self._e_il_torneo_aperto(scelto):
-            voce = self._voce_del_torneo_aperto()
-            if voce and voce.IsOk():
-                with self._albero_senza_caricamenti():
-                    self.tree_ctrl.SelectItem(voce)
+            self._cursore_sulla_voce_del_torneo_aperto()
+
+    def _cursore_sulla_voce_del_torneo_aperto(self):
+        """Il cursore dell'albero passa sulla voce del torneo aperto, anche
+        se stava su una voce che non e' di un torneo, come Nuovo torneo;
+        senza caricare di nuovo e senza cambiare l'area centrale."""
+        voce = self._voce_del_torneo_aperto()
+        if voce and voce.IsOk():
+            with self._albero_senza_caricamenti():
+                self.tree_ctrl.SelectItem(voce)
+
+    def _il_torneo_scelto_e_gia_aperto(self):
+        """Dalla proposta 7 del nono giro, Apri Torneo sul file del torneo
+        aperto, anche scritto con altre maiuscole, quando il torneo ha le
+        ultime modifiche soltanto in memoria, non rilegge il torneo e non
+        chiede niente: il torneo resta com'e' in memoria, con le modifiche che
+        un salvataggio non riuscito ha lasciato soltanto li', il cursore
+        dell'albero passa sulla sua voce, e la barra di stato dice che il
+        torneo e' gia' aperto. Fino alla proposta la domanda di
+        _si_puo_lasciare_il_torneo arrivava prima della finestra Apri, e il
+        torneo si rileggeva dal suo file: le modifiche soltanto in memoria si
+        perdevano, e un file che non si rileggeva chiudeva il torneo."""
+        self._cursore_sulla_voce_del_torneo_aperto()
+        self.set_status(
+            _("Il torneo '{name}' è già aperto, e resta com'è: Tornello non lo rilegge dal suo file.").format(
+                name=self.current_tournament.get("name", _("Torneo Sconosciuto"))
+            )
+        )
 
     def on_enroll_players(self, event):
         if not self.current_tournament:
