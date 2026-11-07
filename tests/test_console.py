@@ -694,10 +694,22 @@ class TestIlFileDelTorneoInConsole:
         gioca: un risultato registrato, una Time Machine chiesta con t fra i
         risultati, o la Time Machine dopo un abbinamento non riuscito. Ogni
         salvataggio scrive nel file aperto, la copia di sicurezza della
-        Time Machine si fa da li', e un file con il nome nuovo non nasce."""
-        import controller
-        from controller import TournamentController
+        Time Machine si fa da li', e un file con il nome nuovo non nasce.
+        Il cestino e' finto: la Time Machine dopo l'abbinamento non riuscito
+        toglie il turno 1, concluso, e il suo file dei dettagli, che la
+        conclusione del turno ha appena scritto, va nel cestino. Nella prima
+        stesura della 10.19.41 quel file finiva nel cestino vero di Windows,
+        a ogni corsa delle prove."""
+        import os
 
+        import config
+        import controller
+        import utils
+        from controller import TournamentController
+        from test_copie_di_sicurezza import CestinoFinto
+
+        cestino = CestinoFinto(str(tmp_path / "cestino"))
+        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
         if strada == "abbinamento non riuscito":
             torneo = _torneo_al_primo_turno().to_dict()
             for partita, risultato in zip(torneo["rounds"][0]["matches"], ("1-0", "0-1"), strict=True):
@@ -739,6 +751,8 @@ class TestIlFileDelTorneoInConsole:
             assert len(self._copie("Tornello - Prova_stessa_data_pre_timemachine_*.json")) == 1
             assert f"Backup di sicurezza creato: {aperto}" in stampato.splitlines()
             assert "Impossibile creare il backup" not in stampato
+        dettagli = [os.path.abspath(config.user_data_path("Tornello - Corona - Turno 1 Dettagli.txt"))]
+        assert cestino.ricevuti == (dettagli if strada == "abbinamento non riuscito" else [])
 
     @pytest.mark.parametrize(
         "azione", ["ritiro", "cancellazione", "pianificazione creata", "pianificazione modificata", "pianificazione rimossa"]
