@@ -1272,7 +1272,8 @@ class MainFrame(wx.Frame):
         resta aperto, se e' un altro file (vedi _torneo_non_aperto). Con
         gia_letto, i dati che _leggi_il_torneo ha gia' letto dal file, il file
         non si rilegge: dalla 10.19.29 Apri Torneo lo legge prima della
-        domanda Torneo non salvato."""
+        domanda Torneo non salvato, e dalla correzione della 10.19.29 passa
+        quei dati soltanto se la domanda non puo' essere uscita."""
         try:
             data = self._leggi_il_torneo(filepath) if gia_letto is None else gia_letto
         except (OSError, ValueError, RecursionError) as errore:
@@ -6724,17 +6725,18 @@ class MainFrame(wx.Frame):
             self._il_torneo_scelto_e_gia_aperto()
             return
         # Dalla 10.19.29 il file scelto si legge prima della domanda di
-        # _si_puo_lasciare_il_torneo, e una volta sola: un file che non e' un
-        # torneo, o che non si legge, da' subito il suo messaggio, senza la
-        # domanda e senza riprovare il salvataggio, perche' il torneo aperto
-        # non si lascia, e resta com'e', anche con le modifiche soltanto in
-        # memoria; con Si' il torneo scelto si apre da quella lettura. Dalla
+        # _si_puo_lasciare_il_torneo: un file che non e' un torneo, o che non
+        # si legge, da' subito il suo messaggio, senza la domanda e senza
+        # riprovare il salvataggio, perche' il torneo aperto non si lascia, e
+        # resta com'e', anche con le modifiche soltanto in memoria; con Si'
+        # il torneo scelto si apre, e il suo file si rilegge (vedi sotto). Dalla
         # 10.19.21 fino ad allora la domanda usciva anche per quel file, e con
         # Si' usciva poi il messaggio, con il torneo aperto che restava,
         # insieme alle modifiche che la domanda aveva detto perse (decisione
         # di Gabriele del 7 novembre 2026). Per un torneo che si e' salvato
         # la domanda non esce, e la lettura e' quella che faceva
         # load_tournament: niente cambia.
+        domanda_possibile = self._ha_modifiche_soltanto_in_memoria()
         try:
             letto = self._leggi_il_torneo(scelto)
         except (OSError, ValueError, RecursionError) as errore:
@@ -6755,7 +6757,16 @@ class MainFrame(wx.Frame):
             return
         if not self._si_puo_lasciare_il_torneo():
             return
-        self.load_tournament(scelto, tieni_il_precedente=True, gia_letto=letto)
+        # Dalla correzione della 10.19.29, se la domanda puo' essere uscita,
+        # il file scelto si rilegge: la domanda puo' restare sullo schermo a
+        # lungo, e intanto il file puo' cambiare, per esempio rimesso da git
+        # o da un'altra macchina, o sparire. Il torneo si apre com'e' adesso
+        # nel suo file, e un file che ora non si apre lascia aperto il torneo
+        # di prima, con il messaggio. Fino alla correzione si apriva dalla
+        # lettura di prima della domanda: il primo salvataggio riscriveva la
+        # versione vecchia sopra quella nuova, e un file sparito si apriva
+        # lo stesso, senza il suo file.
+        self.load_tournament(scelto, tieni_il_precedente=True, gia_letto=None if domanda_possibile else letto)
         if self._e_il_torneo_aperto(scelto):
             self._cursore_sulla_voce_del_torneo_aperto()
 

@@ -7865,9 +7865,10 @@ class TestTorneoNonSalvatoDaLasciare:
         3. Con No Primavera 2 resta com'era; con Si' Estate 3 diventa il
         torneo aperto. Fino alla proposta la domanda arrivava prima della
         finestra Apri, e con No la finestra non si apriva. Dalla 10.19.29 il
-        file di Estate 3 si legge una volta sola, prima della domanda, e con
-        Si' Estate 3 si apre da quella lettura: fino ad allora si leggeva
-        dopo la domanda, e soltanto con Si'."""
+        file di Estate 3 si legge prima della domanda, e dalla correzione
+        della 10.19.29 con Si' si rilegge, perche' intanto puo' essere
+        cambiato: fino ad allora si leggeva soltanto dopo la domanda, con
+        Si', e dalla 10.19.29 alla correzione soltanto prima."""
         import wx
 
         finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
@@ -7885,12 +7886,83 @@ class TestTorneoNonSalvatoDaLasciare:
         TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
 
         assert mostrate == [0]
-        assert letture == [0]
+        assert letture == ([0] if risposta == "no" else [0, 1])
         assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
         if risposta == "no":
             self._primavera_com_era(principale, bloccata)
         else:
             assert principale._e_il_torneo_aperto(bloccata.estate)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("cambio", ["luogo nuovo", "sparito", "rovinato", "iscritto senza identificativo"])
+    def test_apri_torneo_con_il_file_che_cambia_durante_la_domanda(self, principale, suoni, monkeypatch, capsys, bloccata, cambio):
+        """Correzione della 10.19.29. Apri Torneo su Estate 3, e mentre la
+        domanda Torneo non salvato aspetta la risposta il file di Estate 3
+        cambia, per esempio rimesso da git o da un'altra macchina: con il
+        luogo Napoli, sparito, rovinato o con un iscritto senza il suo
+        identificativo. Con Si' il file si rilegge. Estate 3 si apre con
+        Napoli, e il salvataggio dopo lo tiene; negli altri casi esce il
+        messaggio Errore nel caricamento del torneo, e Primavera 2 resta
+        aperta, com'e' in memoria, con Roma. Fino alla correzione Estate 3 si
+        apriva dalla lettura di prima della domanda: senza luogo, e il primo
+        salvataggio cancellava Napoli dal file; sparito, si apriva lo stesso,
+        senza il suo file; rovinato, si apriva com'era."""
+        import json
+
+        import wx
+
+        import gui.main_frame as mf
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: scatole.append(testo))
+        finestre = self._finestre(monkeypatch, wx.ID_YES)
+        Finto = mf.AccessibleMsgDialog
+        estate = bloccata.estate
+
+        def cambia():
+            if cambio == "sparito":
+                os.remove(estate)
+                return
+            with open(estate, encoding="utf-8") as f:
+                dati = json.load(f)
+            if cambio == "luogo nuovo":
+                dati["site"] = "Napoli"
+            elif cambio == "iscritto senza identificativo":
+                del dati["players"][0]["id"]
+            with open(estate, "w", encoding="utf-8") as f:
+                if cambio == "rovinato":
+                    f.write("{rotto")
+                else:
+                    json.dump(dati, f)
+
+        class CambiaDuranteLaDomanda(Finto):
+            def ShowModal(self):
+                if self.domanda:
+                    cambia()
+                return super().ShowModal()
+
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", CambiaDuranteLaDomanda)
+        self._finestra_apri(monkeypatch, finestre, estate)
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        if cambio == "luogo nuovo":
+            assert scatole == []
+            assert principale._e_il_torneo_aperto(estate)
+            assert principale.current_tournament["site"] == "Napoli"
+            principale._save_state()
+            assert TestNomeEDataDiInizioDaDati._nel_file(estate)["site"] == "Napoli"
+            return
+        assert len(scatole) == 1
+        assert scatole[0].startswith("Errore nel caricamento del torneo:")
+        self._primavera_com_era(principale, bloccata)
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
 
     @pytest.mark.parametrize("strada", ["apri", "chiusura"])
     def test_il_torneo_nuovo_senza_file_con_apri_torneo_e_la_chiusura(self, principale, suoni, monkeypatch, strada):

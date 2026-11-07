@@ -942,6 +942,9 @@ class TestAperturaDentroBackup:
             # Dalla correzione della 10.19.29 fa anche i conti dell'apertura
             # sui dati letti, finti anche loro.
             _conti_dell_apertura=lambda dati: {},
+            # E guarda se la domanda puo' uscire, per rileggere il file dopo:
+            # qui no.
+            _ha_modifiche_soltanto_in_memoria=lambda: False,
         )
         mf.MainFrame.on_open_tournament(telaio, None)
         return registro
