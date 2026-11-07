@@ -5183,9 +5183,32 @@ class MainFrame(wx.Frame):
             player_data.get("id")
         )
         if not giocatore:
+            # Dalla 10.19.37 (decisione di Gabriele del 7 novembre 2026)
+            # l'iscritto che nel torneo aperto non c'e' piu', per esempio
+            # perche' le frecce hanno aperto il torneo dal suo file, cambiato
+            # dopo che l'albero lo aveva letto, lo dice il messaggio Giocatore
+            # non ritirato, con il suono dell'errore, e l'albero si ridisegna,
+            # come per l'iscritto di un torneo in preparazione dalla 10.19.35.
+            # Fino alla 10.19.36, e gia' nella 10.0.0, CANC usciva in
+            # silenzio.
+            self._voce_che_non_c_e_piu(
+                _("Giocatore non ritirato"),
+                _(
+                    "Il giocatore {giocatore} non si è potuto ritirare dal torneo {nome}, perché non è più fra i suoi iscritti: forse il file {file} è cambiato dopo che l'albero lo aveva letto. Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati."
+                ).format(
+                    giocatore=p_name,
+                    nome=self.current_tournament.get("name", ""),
+                    file=filepath,
+                ),
+                {"action": "show_players", "filepath": filepath},
+            )
             return
 
         if giocatore.get("withdrawn"):
+            # Dalla 10.19.37 con il suono dell'errore, come gli altri messaggi
+            # di CANC che lasciano il torneo com'e': fino alla 10.19.36, e gia'
+            # nella 10.0.0, il messaggio usciva senza suono.
+            play_sound("errore")
             self._dialogo_informativo(
                 _("Giocatore già ritirato"),
                 _("{name} risulta già ritirato dal torneo.").format(name=p_name),

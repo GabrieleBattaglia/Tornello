@@ -9234,8 +9234,11 @@ class TestCancSuUnaVoceCheNonCePiu:
     dell'errore, l'albero si ridisegna, e il messaggio Giocatore non rimosso
     lo dice, senza la domanda prima. Fino alla 10.19.34 usciva la domanda
     Conferma Rimozione Giocatore, e dopo il Si' non succedeva niente, senza
-    suono e senza messaggio. Le finestre di messaggio sono finte, e il fuoco
-    si annota."""
+    suono e senza messaggio. Dalla 10.19.37 lo stesso per l'iscritto di un
+    torneo iniziato, con il messaggio Giocatore non ritirato, dove CANC
+    usciva in silenzio, e il messaggio Giocatore gia' ritirato ha il suono
+    dell'errore. Le finestre di messaggio sono finte, e il fuoco si
+    annota."""
 
     @staticmethod
     def _gamma_cambiata(principale):
@@ -9330,4 +9333,105 @@ class TestCancSuUnaVoceCheNonCePiu:
         assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "show_players", "filepath": gamma}
         assert registro.fuoco == ["tree_ctrl"]
         assert registro.caricati == []
+        assert principale.last_status_msg == barra
+
+    @staticmethod
+    def _gamma_iniziata_e_cambiata(principale):
+        """Alfa e Gamma, in corso, nell'albero, con Alfa aperta; poi nel file
+        di Gamma Russo Marco cambia identificativo, da RUS a ROS, negli
+        iscritti e nelle partite, come dopo un cambio fatto da un altro
+        programma. Restituisce il file di Gamma come lo scrive l'albero, la
+        voce di Russo, che l'albero mostra ancora con RUS, e il contenuto del
+        file di Gamma."""
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Gamma.json"), _torneo_in_corso("Gamma"))
+        principale.load_tournament(alfa)
+        gamma = principale._percorso_come_nell_albero(user_data_path("Tornello - Gamma.json"))[0]
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": gamma, "player": {"id": "RUS"}})
+        assert voce and voce.IsOk()
+        with open(gamma, encoding="utf-8") as f:
+            testo = f.read()
+        with open(gamma, "w", encoding="utf-8") as f:
+            f.write(testo.replace('"RUS"', '"ROS"'))
+        with open(gamma, "rb") as f:
+            contenuto = f.read()
+        return gamma, voce, contenuto
+
+    def test_l_iscritto_che_non_c_e_piu_in_un_torneo_iniziato(self, principale, suoni, monkeypatch):
+        """10.19.37. Le frecce sulla voce di Russo aprono Gamma dal suo file,
+        dove Russo ha un altro identificativo, senza ridisegnare l'albero:
+        CANC dal menu, che a torneo iniziato propone il ritiro. Il suono
+        dell'errore, l'albero ridisegnato, con il cursore sulla voce
+        iscritti di Gamma e il fuoco all'albero, e il messaggio Giocatore
+        non ritirato; nessun giocatore si ritira, e il file di Gamma resta
+        com'era. Fino alla 10.19.36 CANC usciva in silenzio."""
+        import wx
+
+        gamma, voce, contenuto = self._gamma_iniziata_e_cambiata(principale)
+        principale.tree_ctrl.SelectItem(voce)
+        assert principale._e_il_torneo_aperto(gamma)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Giocatore non ritirato",
+                "Il giocatore Russo Marco non si è potuto ritirare dal torneo Gamma, perché non è più fra i suoi iscritti: "
+                f"forse il file {gamma} è cambiato dopo che l'albero lo aveva letto. "
+                "Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati.",
+                False,
+            )
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        with open(gamma, "rb") as f:
+            assert f.read() == contenuto
+        assert not any(g.get("withdrawn") for g in principale.current_tournament["players"])
+        assert TestCancSuUnIscrittoDelTorneoAperto._iscritti_nell_albero(principale, gamma) == ["BIA", "VER", "NER", "ROS"]
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "show_players", "filepath": gamma}
+        assert registro.fuoco == ["tree_ctrl"]
+        assert registro.caricati == []
+        assert principale.last_status_msg == barra
+
+    def test_il_giocatore_gia_ritirato(self, principale, suoni, monkeypatch):
+        """10.19.37. Alfa, in corso, aperta, con Russo Marco ritirato: CANC
+        sulla sua voce dal menu. Il messaggio Giocatore gia' ritirato, con il
+        suono dell'errore, e nient'altro: fino alla 10.19.36 il messaggio
+        usciva senza suono."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        dati = _torneo_in_corso("Alfa")
+        dati["players"][3]["withdrawn"] = True
+        TestNomeDelTorneoNuovo._scrivi(alfa, dati)
+        principale.load_tournament(alfa)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": principale.active_filename, "player": {"id": "RUS"}})
+        assert voce and voce.IsOk()
+        principale.tree_ctrl.SelectItem(voce)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            ("Giocatore già ritirato", "Russo Marco risulta già ritirato dal torneo.", False)
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        assert registro.fuoco == []
         assert principale.last_status_msg == barra
