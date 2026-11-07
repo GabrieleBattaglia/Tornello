@@ -11,7 +11,7 @@ Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\ba
 Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove dalla 16 alla 23.
 Prima: Tornello resta aperto fino alla prova 15. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
 Passo 1: con il fuoco nell'albero premi NVDA+T.
-Domanda 1: il titolo dice Tornello - Versione 10.19.40 - Data Rilascio 2026.11.07 - [Nessun Torneo Caricato]?
+Domanda 1: il titolo dice Tornello - Versione 10.19.45 - Data Rilascio 2026.11.07 - [Nessun Torneo Caricato]?
 Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
 Passo 3: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
 Domanda 2: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima, il giorno e l'ora delle 18:00, e il PGN che resta con la partita?
@@ -55,7 +55,7 @@ Passo 5: premi ESC, poi torna sulla Scacchiera 2, premi INVIO, scegli F - 1 e pr
 Domanda 6: il risultato si registra senza chiederti di nuovo se Neri Nadia si ritira?
 Esito: 
 
-PROVA 5: Time Machine, l'esempio del capitolo 8 del manuale
+PROVA 5: Time Machine, l'esempio del capitolo 8 del manuale, e il ripristino nella procedura guidata
 Prima: nell'albero scegli Prova time machine: i turni da 1 a 3 sono completi, e sotto turni (3) c'è calcola il turno successivo.
 Passo 1: premi Ctrl+Z e alla domanda Annulla Turno premi INVIO.
 Domanda 1: si sente la Time Machine, e sotto turni (2) ci sono Completati (2), con il Turno 1 e il Turno 2, e calcola il turno successivo?
@@ -65,6 +65,18 @@ Passo 3: torna in Tornello, apri Completati (2), Turno 2, giocate (3/3, 100.0%),
 Domanda 3: il turno diventa Turno corrente (2/5) e il cursore resta sulla partita, fra le da programmare?
 Passo 4: premi INVIO, scegli 1 - 0 e premi INVIO.
 Domanda 4: si sente la fine del turno e il cursore passa su calcola il turno successivo?
+Passo 5: premi Ctrl+N; con la procedura guidata sullo schermo e il cursore su Nome torneo *: Non impostato, premi ALT, poi F, poi C, Copie di sicurezza.
+Domanda 5: la finestra Copie di sicurezza mostra le copie di Prova time machine, e nell'elenco è già scelta l'ultima, la più recente, prima dell'annullamento del turno, con T3/5 e 9/9 ris.?
+Passo 6: premi ALT+R, Ripristina.
+Domanda 6: arriva la domanda Conferma ripristino, con No predefinito, che dice "Turni che tornerebbero: 3" e "T2, Rinaldi-Pellegrini: 1-0 diventa 1/2-1/2"?
+Passo 7: premi TAB fino a Sì e poi INVIO.
+Domanda 7: si sente il suono del ripristino, ed esce il messaggio Ripristino riuscito, che comincia con "Ripristino riuscito: Tornello - Prova_time_machine.json è com'era nella copia."?
+Passo 8: chiudi il messaggio con INVIO, poi chiudi la finestra Copie di sicurezza con ESC.
+Domanda 8: la procedura guidata si è chiusa: l'albero mostra di nuovo i tornei, il cursore è sulla voce Prova time machine, e la barra di stato dice "Torneo 'Prova time machine' caricato con successo."?
+Passo 9: apri il ramo con freccia destra, scendi su turni e aprilo, poi apri Completati.
+Domanda 9: la voce dice turni (3), e in Completati (3) c'è di nuovo il Turno 3, dopo il Turno 1 e il Turno 2, com'era prima di Ctrl+Z, perché in memoria c'è il torneo ripristinato?
+Passo 10: apri il Turno 2 e giocate (3/3, 100.0%), e scendi sulla Scacchiera 1.
+Domanda 10: la partita dice Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], il risultato della copia, e non più [1-0], quello del passo 4?
 Esito: 
 
 PROVA 6: CANC sul turno corrente, un turno alla volta
@@ -134,10 +146,12 @@ Domanda 9: la domanda sulla nuova edizione non torna, e si apre subito la finest
 Passo 10: chiudi la finestra con ESC, senza iscrivere nessuno, poi sali su Indietro e premi INVIO.
 Domanda 10: la procedura si chiude senza creare niente: nell'albero non c'è un torneo nuovo coppa fantasia, né al primo livello né nel ramo In Preparazione (2), e Coppa Fantasia c'è soltanto fra i Tornei Conclusi (3), come prima?
 Domanda 11: il cursore è sulla voce Prova voci, e la barra di stato dice "Pronto. Torneo aperto: Prova voci.", perché Prova voci, aperto alla prova 8, resta aperto?
-Passo 11: premi di nuovo Ctrl+N; con la procedura guidata sullo schermo premi Ctrl+O, nel campo Nome file scrivi E:\git\tmp\banco-tornello\Tornello - Prova_canc.json e premi INVIO.
-Domanda 12: senza domande la procedura guidata si chiude, l'albero torna con i tornei, il cursore va sulla voce Prova canc, e la barra di stato dice "Torneo 'Prova canc' caricato con successo."?
-Passo 12: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
-Domanda 13: l'area centrale dice Torneo: Prova canc e Turno Corrente: 2 di 4, come quando si apre il torneo dall'albero?
+Passo 11: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
+Domanda 12: l'area centrale dice Torneo: Prova voci e Turno Corrente: 1 di 3, con Alberti Anna vs Conti Carla [1-0] e De Santis Dario vs Bruni Bruno, ancora da giocare, e non più il benvenuto, che comincia con Ciao! Benvenuto, sono Tornello?
+Passo 12: premi di nuovo Ctrl+N; con la procedura guidata sullo schermo premi Ctrl+O, nel campo Nome file scrivi E:\git\tmp\banco-tornello\Tornello - Prova_canc.json e premi INVIO.
+Domanda 13: senza domande la procedura guidata si chiude, l'albero torna con i tornei, il cursore va sulla voce Prova canc, e la barra di stato dice "Torneo 'Prova canc' caricato con successo."?
+Passo 13: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
+Domanda 14: l'area centrale dice Torneo: Prova canc e Turno Corrente: 2 di 4, come quando si apre il torneo dall'albero?
 Esito: 
 
 PROVA 10: Nomi e data di inizio cambiati da Dati
@@ -158,7 +172,7 @@ Domanda 7: si sente l'errore, e il messaggio Nome del torneo mancante dice "Il n
 Passo 7: chiudi il messaggio.
 Domanda 8: il cursore è rimasto su Nome torneo: Prova voci, e NVDA te l'ha detta senza che ti muovessi?
 Passo 8: premi NVDA+T.
-Domanda 9: il titolo dice ancora Tornello - Versione 10.19.40 - Data Rilascio 2026.11.07 - [Prova voci]?
+Domanda 9: il titolo dice ancora Tornello - Versione 10.19.45 - Data Rilascio 2026.11.07 - [Prova voci]?
 Passo 9: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
 Domanda 10: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
 Domanda 11: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
@@ -190,7 +204,7 @@ Domanda 9: il cursore è rimasto su quella voce, nel ramo Dati, e NVDA te l'ha d
 Passo 7: premi F7 e leggi la barra di stato, poi torna all'albero con F6.
 Domanda 10: la barra di stato dice "Nome del torneo cambiato in 'Corona'.", e non più "Torneo 'Prova stessa data' caricato con successo.", come prima del cambio?
 Passo 8: premi NVDA+T.
-Domanda 11: il titolo dice subito Tornello - Versione 10.19.40 - Data Rilascio 2026.11.07 - [Corona]?
+Domanda 11: il titolo dice subito Tornello - Versione 10.19.45 - Data Rilascio 2026.11.07 - [Corona]?
 Passo 9: premi due volte freccia su.
 Domanda 12: NVDA legge prima Dati, poi Corona, la voce del torneo, che prima diceva Prova stessa data?
 Passo 10: premi due volte freccia giù, per tornare su Nome torneo: Corona.
@@ -242,7 +256,7 @@ Passo 1: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello, scegli i
 Passo 2: torna in Tornello e, con le frecce nell'albero, scegli Prova senza cartella, al primo livello.
 Domanda 1: appena il cursore arriva su Prova senza cartella si sente l'errore, ed esce il messaggio Apertura non riuscita, che dice "Il file E:\git\tmp\banco-tornello\Tornello - Prova_senza_cartella.json non si è potuto aprire: No such file or directory."?
 Passo 3: chiudi il messaggio con INVIO e premi NVDA+T.
-Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.40 - Data Rilascio 2026.11.07 - [Nessun Torneo Caricato]?
+Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.45 - Data Rilascio 2026.11.07 - [Nessun Torneo Caricato]?
 Passo 4: apri il ramo con freccia destra e scendi su Dati, poi apri Dati con freccia destra e scendi su Nome torneo: Prova senza cartella; ogni volta che arriva il messaggio Apertura non riuscita, chiudilo con INVIO.
 Domanda 3: lo stesso messaggio Apertura non riuscita, con il suono dell'errore, arriva sia su Dati sia su Nome torneo, e mai con la freccia destra?
 Passo 5: su Nome torneo: Prova senza cartella premi INVIO.
@@ -274,9 +288,9 @@ Domanda 5: appena scegli la voce si sente il suono della domanda, diverso dal ca
 Passo 7: se la finestra mostra la spiegazione, premi ALT+P, Passo per passo, e non INVIO, che lì sceglie Apri nel programma di posta; se mostra già il passo 1 di 4, vai avanti.
 Domanda 6: il passo 1 di 4 dice che l'indirizzo è gabriele.battaglia@gmail.com, il tuo Gmail?
 Passo 8: premi INVIO, per il passo 2 di 4.
-Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.40?
+Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.45?
 Passo 9: aspetta un secondo e premi INVIO, per il passo 3 di 4.
-Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.40, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
+Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.45, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
 Passo 10: premi ESC, senza spedire niente.
 Passo 11: chiudi Tornello con ALT+F4.
 Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
@@ -385,18 +399,20 @@ Domanda 17: l'area centrale dice Torneo: Prova ritiri e Turno Corrente: 2 di 5, 
 Passo 18: premi di nuovo Ctrl+N, e alla domanda Torneo non salvato, la stessa della domanda 14, premi TAB fino a Sì e poi INVIO.
 Passo 19: con il cursore su Nome torneo *: Non impostato, sali su Indietro e premi INVIO.
 Domanda 18: la procedura guidata si chiude, il cursore è sulla voce Prova ritiri, e la barra di stato dice "Pronto. Torneo aperto: Prova ritiri.", anche se le ultime modifiche di Prova ritiri sono soltanto in memoria?
-Passo 20: chiudi Tornello con ALT+F4.
-Domanda 19: si sente l'errore, ed esce di nuovo la domanda Torneo non salvato, che dice che il torneo Prova ritiri non si è potuto salvare, Accesso negato, e chiede se lasciarlo lo stesso, con No predefinito?
-Passo 21: premi INVIO, poi NVDA+T.
-Domanda 20: INVIO risponde No, Tornello resta aperto, e il titolo finisce ancora con [Prova ritiri]?
-Passo 22: chiudi di nuovo Tornello con ALT+F4, e alla stessa domanda premi TAB fino a Sì e poi INVIO.
-Domanda 21: Tornello si chiude, e nel prompt dei comandi, sopra le due righe di chiusura del banco, la riga che comincia con "Errore durante il salvataggio del torneo (E:\git\tmp\banco-tornello\Tornello - Prova_ritiri.json): [WinError 5] Accesso negato" c'è otto volte, una per ogni risultato, una per le frecce, una per Apri Torneo su Prova ritorno, una per ogni Ctrl+N e una per ogni chiusura?
-Domanda 22: le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
-Passo 23: con Sì i due risultati, che erano soltanto in memoria, si sono persi, e il file del torneo è rimasto com'era. Per sentirlo, nello stesso prompt dei comandi avvia di nuovo Tornello del banco, senza l'argomento, con: python E:\git\tmp\banco-tornello\banco.py
-Passo 24: nell'albero scegli Prova ritiri, poi turni (2) e Turno corrente (2/5).
-Domanda 23: il ramo giocate dice (0/2, 0.0%), e da giocare (2) ha ancora le due partite, Iori Ivo vs Galli Giulia e Marini Marco vs Longo Lucia?
-Passo 25: chiudi Tornello con ALT+F4.
-Domanda 24: Tornello si chiude subito, senza la domanda Torneo non salvato, perché il torneo non ha modifiche soltanto in memoria?
+Passo 20: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
+Domanda 19: l'area centrale dice di nuovo Torneo: Prova ritiri e Turno Corrente: 2 di 5, con Iori Ivo vs Galli Giulia [1-0] e Marini Marco vs Longo Lucia [1-0], come alla domanda 17, e non il benvenuto, che comincia con Ciao! Benvenuto, sono Tornello?
+Passo 21: chiudi Tornello con ALT+F4.
+Domanda 20: si sente l'errore, ed esce di nuovo la domanda Torneo non salvato, che dice che il torneo Prova ritiri non si è potuto salvare, Accesso negato, e chiede se lasciarlo lo stesso, con No predefinito?
+Passo 22: premi INVIO, poi NVDA+T.
+Domanda 21: INVIO risponde No, Tornello resta aperto, e il titolo finisce ancora con [Prova ritiri]?
+Passo 23: chiudi di nuovo Tornello con ALT+F4, e alla stessa domanda premi TAB fino a Sì e poi INVIO.
+Domanda 22: Tornello si chiude, e nel prompt dei comandi, sopra le due righe di chiusura del banco, la riga che comincia con "Errore durante il salvataggio del torneo (E:\git\tmp\banco-tornello\Tornello - Prova_ritiri.json): [WinError 5] Accesso negato" c'è otto volte, una per ogni risultato, una per le frecce, una per Apri Torneo su Prova ritorno, una per ogni Ctrl+N e una per ogni chiusura?
+Domanda 23: le ultime due righe dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
+Passo 24: con Sì i due risultati, che erano soltanto in memoria, si sono persi, e il file del torneo è rimasto com'era. Per sentirlo, nello stesso prompt dei comandi avvia di nuovo Tornello del banco, senza l'argomento, con: python E:\git\tmp\banco-tornello\banco.py
+Passo 25: nell'albero scegli Prova ritiri, poi turni (2) e Turno corrente (2/5).
+Domanda 24: il ramo giocate dice (0/2, 0.0%), e da giocare (2) ha ancora le due partite, Iori Ivo vs Galli Giulia e Marini Marco vs Longo Lucia?
+Passo 26: chiudi Tornello con ALT+F4.
+Domanda 25: Tornello si chiude subito, senza la domanda Torneo non salvato, perché il torneo non ha modifiche soltanto in memoria?
 Esito: 
 
 PROVA 20: CANC su un iscritto del torneo che non si salva
@@ -482,11 +498,11 @@ Esito:
 
 PROVA 23: CANC sulle voci che nel file del torneo non ci sono più
 Prima: Tornello del banco chiuso alla prova 22, e il prompt dei comandi della prova 2 ancora aperto.
-Prima: in questa prova il banco cambia il file di quattro tornei, come farebbe un altro programma, per esempio git o una copia da un'altra macchina, la prima volta che Tornello apre quel torneo, cioè dopo che l'albero lo ha già letto: lo accende l'argomento --file-cambiati di banco.py, soltanto per quell'avvio del banco. Finché non si ridisegna, l'albero mostra i quattro tornei come erano prima.
-Prima: nel file di Prova bivio Alberti Anna prende un altro identificativo; in quello di Prova copie lo prende la partita di Sala Sergio e Testa Teresa del Turno 2; il file di Prova turno manuale diventa una lista, che non ha la forma di un torneo; da quello di Prova spareggi sparisce Ferri Fabio.
-Prima: Tornello apre un torneo appena il cursore arriva sulla sua voce, e all'avvio il cursore è su Nuovo torneo, in fondo all'albero: salendo da lì verso Prova bivio passeresti su Prova turno manuale e su Prova copie, e il banco cambierebbe i loro file troppo presto. Per questo si comincia dalla prima voce dell'albero, con HOME, e i quattro tornei si visitano scendendo, nell'ordine dei passi. Se il messaggio Non è un torneo arriva prima del passo 6, la prova non è più vera: chiudi Tornello, ricostruisci il banco con la prova 1 e rifai questa prova dal passo 1.
+Prima: in questa prova il banco cambia il file di cinque tornei, come farebbe un altro programma, per esempio git o una copia da un'altra macchina, la prima volta che Tornello apre quel torneo, cioè dopo che l'albero lo ha già letto: lo accende l'argomento --file-cambiati di banco.py, soltanto per quell'avvio del banco. Finché non si ridisegna, l'albero mostra i cinque tornei come erano prima.
+Prima: nel file di Prova bivio Alberti Anna prende un altro identificativo; in quello di Prova copie lo prende la partita di Sala Sergio e Testa Teresa del Turno 2; da quello di Prova time machine sparisce il Turno 3, l'ultimo; il file di Prova turno manuale diventa una lista, che non ha la forma di un torneo; da quello di Prova spareggi sparisce Ferri Fabio.
+Prima: Tornello apre un torneo appena il cursore arriva sulla sua voce, e all'avvio il cursore è su Nuovo torneo, in fondo all'albero: salendo da lì verso Prova bivio passeresti su Prova turno manuale, su Prova time machine e su Prova copie, e il banco cambierebbe i loro file troppo presto. Per questo si comincia dalla prima voce dell'albero, con HOME, e i cinque tornei si visitano scendendo, nell'ordine dei passi. Se al passo 6 sotto turni di Prova time machine non c'è il Turno 3, o se il messaggio Non è un torneo arriva prima del passo 9, la prova non è più vera: chiudi Tornello, ricostruisci il banco con la prova 1 e rifai questa prova dal passo 1.
 Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py --file-cambiati
-Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il banco cambia il file di Prova bivio, Prova copie, Prova turno manuale e Prova spareggi la prima volta che Tornello apre quel torneo, dopo che l'albero lo ha letto, come farebbe un altro programma."?
+Domanda 1: prima delle due righe del banco la console dice "Banco di collaudo: il banco cambia il file di Prova bivio, Prova copie, Prova time machine, Prova turno manuale e Prova spareggi la prima volta che Tornello apre quel torneo, dopo che l'albero lo ha letto, come farebbe un altro programma."?
 Passo 2: premi HOME, che porta il cursore su Beta, la prima voce dell'albero, poi scendi con freccia giù fino a Prova bivio, apri iscritti (4), scendi su Alberti Anna, la prima, e premi CANC.
 Domanda 2: si sente l'errore, ed esce il messaggio Giocatore non ritirato, che dice "Il giocatore Alberti Anna non si è potuto ritirare dal torneo Prova bivio, perché non è più fra i suoi iscritti: forse il file E:\git\tmp\banco-tornello\Tornello - Prova_bivio.json è cambiato dopo che l'albero lo aveva letto. Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati."?
 Passo 3: chiudi il messaggio con INVIO.
@@ -495,25 +511,31 @@ Passo 4: nell'albero scegli Prova copie, poi turni (2), Completati (2), Turno 2,
 Domanda 4: si sente l'errore, ed esce il messaggio Partita non cambiata, che dice "La partita della scacchiera 2 del turno 2 non è più nel torneo Prova copie: forse il file E:\git\tmp\banco-tornello\Tornello - Prova_copie.json è cambiato dopo che l'albero lo aveva letto. Il torneo resta com'era, e l'albero adesso mostra le sue partite aggiornate."?
 Passo 5: chiudi il messaggio con INVIO.
 Domanda 5: il cursore è sulla voce Turno 2, nel ramo Completati (2) di Prova copie?
-Passo 6: nell'albero scegli Prova turno manuale, al primo livello.
-Domanda 6: appena il cursore arriva su Prova turno manuale si sente l'errore, ed esce il messaggio Non è un torneo, che dice "Il file Tornello - Prova_turno_manuale.json non è un torneo di Tornello, e non si apre."?
-Passo 7: chiudi il messaggio con INVIO; apri il ramo con freccia destra, scendi su Dati e poi su iscritti (6), apri iscritti con freccia destra e scendi su Alberti Anna, la prima; ogni volta che arriva il messaggio Non è un torneo, chiudilo con INVIO.
-Domanda 7: lo stesso messaggio Non è un torneo, con il suono dell'errore, arriva su Dati, su iscritti (6) e su Alberti Anna, e mai con la freccia destra?
-Passo 8: su Alberti Anna premi CANC.
-Domanda 8: si sente l'errore, ed esce il messaggio Giocatore non rimosso, che dice "Il giocatore Alberti Anna non si è potuto rimuovere dal torneo Prova turno manuale, perché il file E:\git\tmp\banco-tornello\Tornello - Prova_turno_manuale.json non si è potuto leggere: non ha la forma di un torneo di Tornello. Il torneo e i suoi iscritti restano com'erano."?
-Passo 9: chiudi il messaggio con INVIO, poi premi tre volte freccia sinistra, fino alla voce Prova turno manuale, e chiudi con INVIO il messaggio Non è un torneo ogni volta che arriva.
-Passo 10: sulla voce Prova turno manuale premi CANC.
-Domanda 9: si sente l'errore, ed esce il messaggio Torneo non eliminato, che dice "Il torneo Prova turno manuale non si è potuto eliminare, perché il file E:\git\tmp\banco-tornello\Tornello - Prova_turno_manuale.json non si è potuto leggere: non ha la forma di un torneo di Tornello. Il torneo e i suoi file restano com'erano, e nel cestino di Windows non va niente."?
-Passo 11: chiudi il messaggio con INVIO.
-Domanda 10: non arriva nessun altro messaggio, e il cursore resta su Prova turno manuale?
-Passo 12: chiudi il ramo con freccia sinistra; poi apri il ramo In Preparazione, scegli Prova spareggi, apri iscritti (5), scendi su Ferri Fabio, l'ultimo, e premi CANC.
-Domanda 11: senza la domanda Conferma Rimozione Giocatore si sente l'errore, ed esce il messaggio Giocatore non rimosso, che dice "Il giocatore Ferri Fabio non si è potuto rimuovere dal torneo Prova spareggi, perché non è più fra i suoi iscritti: forse il file E:\git\tmp\banco-tornello\Tornello - Prova_spareggi.json è cambiato dopo che l'albero lo aveva letto. Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati."?
-Passo 13: chiudi il messaggio con INVIO.
-Domanda 12: il cursore è sulla voce iscritti (4) di Prova spareggi, e la barra di stato dice "Torneo 'Prova spareggi' caricato con successo. Attenzione: un file di torneo non leggibile, dettagli sotto."?
-Passo 14: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
-Domanda 13: l'area centrale elenca i GIOCATORI ISCRITTI (4), Bruni Bruno, Iori Ivo, De Santis Dario e Marini Marco, senza Ferri Fabio, e l'ultima riga dice "Torneo non leggibile: Tornello - Prova_turno_manuale.json. Motivo: non ha la forma di un torneo di Tornello", perché l'albero, ridisegnato, adesso ha letto anche il file di Prova turno manuale?
-Passo 15: chiudi Tornello con ALT+F4.
-Domanda 14: Tornello si chiude senza domande, e le ultime due righe del prompt dei comandi dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
+Passo 6: nell'albero scegli Prova time machine, poi turni (3), Completati (3), scendi su Turno 3, l'ultimo, e premi CANC.
+Domanda 6: si sente l'errore, ed esce il messaggio Turno non trovato, che dice "Il turno 3 non è più nel torneo Prova time machine: forse il file E:\git\tmp\banco-tornello\Tornello - Prova_time_machine.json è cambiato dopo che l'albero lo aveva letto. Il torneo resta com'era, e l'albero adesso mostra i suoi turni aggiornati."?
+Passo 7: chiudi il messaggio con INVIO.
+Domanda 7: il cursore è sulla voce Prova time machine?
+Passo 8: se il ramo di Prova time machine è chiuso, aprilo con freccia destra; poi scendi con freccia giù fino a turni.
+Domanda 8: la voce dice turni (2), e non più turni (3), perché l'albero, ridisegnato, ha letto il file cambiato, senza il Turno 3?
+Passo 9: nell'albero scegli Prova turno manuale, al primo livello.
+Domanda 9: appena il cursore arriva su Prova turno manuale si sente l'errore, ed esce il messaggio Non è un torneo, che dice "Il file Tornello - Prova_turno_manuale.json non è un torneo di Tornello, e non si apre."?
+Passo 10: chiudi il messaggio con INVIO; apri il ramo con freccia destra, scendi su Dati e poi su iscritti (6), apri iscritti con freccia destra e scendi su Alberti Anna, la prima; ogni volta che arriva il messaggio Non è un torneo, chiudilo con INVIO.
+Domanda 10: lo stesso messaggio Non è un torneo, con il suono dell'errore, arriva su Dati, su iscritti (6) e su Alberti Anna, e mai con la freccia destra?
+Passo 11: su Alberti Anna premi CANC.
+Domanda 11: si sente l'errore, ed esce il messaggio Giocatore non rimosso, che dice "Il giocatore Alberti Anna non si è potuto rimuovere dal torneo Prova turno manuale, perché il file E:\git\tmp\banco-tornello\Tornello - Prova_turno_manuale.json non si è potuto leggere: non ha la forma di un torneo di Tornello. Il torneo e i suoi iscritti restano com'erano."?
+Passo 12: chiudi il messaggio con INVIO, poi premi tre volte freccia sinistra, fino alla voce Prova turno manuale, e chiudi con INVIO il messaggio Non è un torneo ogni volta che arriva.
+Passo 13: sulla voce Prova turno manuale premi CANC.
+Domanda 12: si sente l'errore, ed esce il messaggio Torneo non eliminato, che dice "Il torneo Prova turno manuale non si è potuto eliminare, perché il file E:\git\tmp\banco-tornello\Tornello - Prova_turno_manuale.json non si è potuto leggere: non ha la forma di un torneo di Tornello. Il torneo e i suoi file restano com'erano, e nel cestino di Windows non va niente."?
+Passo 14: chiudi il messaggio con INVIO.
+Domanda 13: non arriva nessun altro messaggio, e il cursore resta su Prova turno manuale?
+Passo 15: chiudi il ramo con freccia sinistra; poi apri il ramo In Preparazione, scegli Prova spareggi, apri iscritti (5), scendi su Ferri Fabio, l'ultimo, e premi CANC.
+Domanda 14: senza la domanda Conferma Rimozione Giocatore si sente l'errore, ed esce il messaggio Giocatore non rimosso, che dice "Il giocatore Ferri Fabio non si è potuto rimuovere dal torneo Prova spareggi, perché non è più fra i suoi iscritti: forse il file E:\git\tmp\banco-tornello\Tornello - Prova_spareggi.json è cambiato dopo che l'albero lo aveva letto. Il torneo e i suoi iscritti restano com'erano, e l'albero adesso li mostra aggiornati."?
+Passo 16: chiudi il messaggio con INVIO.
+Domanda 15: il cursore è sulla voce iscritti (4) di Prova spareggi, e la barra di stato dice "Torneo 'Prova spareggi' caricato con successo. Attenzione: un file di torneo non leggibile, dettagli sotto."?
+Passo 17: premi F5 e leggi l'area centrale con le frecce, poi torna all'albero con F6.
+Domanda 16: l'area centrale elenca i GIOCATORI ISCRITTI (4), Bruni Bruno, Iori Ivo, De Santis Dario e Marini Marco, senza Ferri Fabio, e l'ultima riga dice "Torneo non leggibile: Tornello - Prova_turno_manuale.json. Motivo: non ha la forma di un torneo di Tornello", perché l'albero, ridisegnato, adesso ha letto anche il file di Prova turno manuale?
+Passo 18: chiudi Tornello con ALT+F4.
+Domanda 17: Tornello si chiude senza domande, e le ultime due righe del prompt dei comandi dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
 Esito: 
 
 PROVA 24: Ascolto dei tre suoni al posto della campanella
