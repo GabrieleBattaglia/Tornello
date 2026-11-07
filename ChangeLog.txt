@@ -1,5 +1,8 @@
 CHANGELOG DI TORNELLO
 
+10.19.39 (in lavorazione, non ancora pubblicata)
+	+ Fix: Il nome del torneo aperto, cambiato dalla voce Nome torneo del suo ramo Dati, per esempio da Prova stessa data a Corona, lo dice anche la barra di stato, come già il titolo della finestra e l'albero: "Nome del torneo cambiato in 'Corona'." Vale per un torneo in corso e per uno in preparazione, anche quando le frecce lo hanno appena aperto, e per un torneo aperto da un'altra cartella. Un nome che resta lo stesso, o che non si accetta, per esempio vuoto o già in uso, lascia la barra com'era. Fino alla 10.19.38, e già nella 10.0.0, la barra teneva il messaggio di prima, per esempio "Torneo 'Prova stessa data' caricato con successo.", con il nome vecchio (decisione di Gabriele del 7 novembre 2026). Il manuale lo dice nella sezione 4.1 (issue 66).
+
 10.19.38 (in lavorazione, non ancora pubblicata)
 	+ Fix: CANC su una partita del torneo aperto che nel torneo non c'è più, per esempio perché le frecce hanno aperto il torneo dal suo file, cambiato dopo che l'albero lo aveva letto, fa sentire il suono dell'errore, ridisegna l'albero, con il cursore sulla voce del turno della partita, o sulla voce del torneo se quel turno non c'è più, e fa uscire il messaggio Partita non cambiata, nella finestra accessibile: "La partita della scacchiera 2 del turno 1 non è più nel torneo Gamma: forse il file C:\...\Tornello - Gamma.json è cambiato dopo che l'albero lo aveva letto. Il torneo resta com'era, e l'albero adesso mostra le sue partite aggiornate." Fino alla 10.19.37, e già dalla 10.14.0, quando CANC sulle partite è nato, si sentiva soltanto il suono dell'errore, senza messaggio (decisione di Gabriele del 7 novembre 2026). Il manuale lo dice nella sezione 6.2 (issue 66).
 

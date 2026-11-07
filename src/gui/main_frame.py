@@ -7410,6 +7410,14 @@ class MainFrame(wx.Frame):
                     )
                     self._nome_nuovo_nel_titolo_e_nell_albero(vecchio, new_val)
                     self._save_state()
+                    # Dalla 10.19.39 anche la barra di stato dice il nome
+                    # nuovo, come il titolo e l'albero: fino alla 10.19.38, e
+                    # gia' nella 10.0.0, teneva il messaggio di prima, per
+                    # esempio quello dell'apertura del torneo, con il nome
+                    # vecchio (decisione di Gabriele del 7 novembre 2026).
+                    self.set_status(
+                        _("Nome del torneo cambiato in '{name}'.").format(name=new_val)
+                    )
                 play_sound("conferma")
             dlg.Destroy()
         elif field_active == "site":

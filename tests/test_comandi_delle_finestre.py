@@ -9508,3 +9508,156 @@ class TestCancSuUnaVoceCheNonCePiu:
             assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 1}) is None
             assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": gamma}
             assert registro.fuoco == []
+
+
+class TestBarraDopoIlNomeNuovo:
+    """10.19.39 (decisione di Gabriele del 7 novembre 2026). Il nome del
+    torneo aperto cambia dalla voce Nome torneo del ramo Dati, per esempio
+    da Prova stessa data a Corona: la barra di stato lo dice, Nome del
+    torneo cambiato in 'Corona'., come gia' il titolo della finestra e
+    l'albero. Fino alla 10.19.38, e gia' nella 10.0.0, teneva il messaggio
+    di prima, per esempio Torneo 'Prova stessa data' caricato con successo.
+    Un nome che non cambia, o che non si accetta, lascia la barra com'era.
+    Le finestre del campo e dei messaggi sono finte."""
+
+    BARRA = "Nome del torneo cambiato in 'Corona'."
+
+    @staticmethod
+    def _prima_riga_della_barra(principale):
+        return principale.status_text.GetValue().replace("\r", "\n").split("\n")[0]
+
+    @staticmethod
+    def _apri(principale, tmp_path, dove):
+        """Prova stessa data, in corso, in preparazione o in corso da
+        un'altra cartella, aperta nella finestra; restituisce il suo file e
+        il messaggio che l'apertura ha scritto nella barra."""
+        nome = "Prova stessa data"
+        if dove != "da un'altra cartella":
+            percorso = TestNomeEDataDiInizioDaDati._apri(principale, nome, **({"rounds": []} if dove == "in preparazione" else {}))
+            return percorso, f"Torneo '{nome}' caricato con successo."
+        # tmp_path e' la cartella del programma, nelle prove.
+        altrove = tmp_path / "chiavetta"
+        altrove.mkdir()
+        percorso = str(altrove / "Tornello - Prova_stessa_data.json")
+        dati = _torneo_in_corso(nome)
+        dati.update(start_date="2026-11-02", end_date="2026-11-20")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.load_tournament(percorso)
+        return principale.active_filename, f"Torneo '{nome}' caricato con successo, dalla cartella chiavetta."
+
+    @pytest.mark.parametrize("dove", ["in corso", "in preparazione", "da un'altra cartella"])
+    def test_la_barra_dice_il_nome_nuovo(self, principale, suoni, monkeypatch, tmp_path, dove):
+        """Il cursore sta sulla voce Nome torneo, e il nome diventa Corona:
+        il nome cambia in memoria e nel file, e la barra di stato dice il
+        nome nuovo, con i suoni di sempre, senza messaggi; il cursore resta
+        sulla voce Nome torneo, e nessuno sposta il fuoco."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        percorso, aperto = self._apri(principale, tmp_path, dove)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": "name"})
+        with principale._albero_senza_caricamenti():
+            principale.tree_ctrl.SelectItem(voce)
+        assert principale.last_status_msg == aperto
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, percorso, "name", "Corona")
+
+        assert principale.current_tournament["name"] == "Corona"
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["name"] == "Corona"
+        assert principale.GetTitle().endswith(" - [Corona]")
+        assert principale.last_status_msg == self.BARRA
+        assert self._prima_riga_della_barra(principale) == self.BARRA
+        assert suoni == ["apertura", "conferma"]
+        assert finestre == []
+        assert scatole == []
+        assert principale.tree_ctrl.GetSelection() == voce
+        assert registro.caricati == []
+        assert registro.fuoco == []
+
+    def test_con_le_frecce_e_invio_su_un_altro_torneo(self, principale, suoni, monkeypatch):
+        """Alfa e' aperta. Le frecce portano il cursore sulla voce Nome
+        torneo di Prova stessa data, che si apre e lo dice nella barra, e
+        INVIO cambia il nome in Corona: la barra dice il nome nuovo."""
+        import wx
+
+        from config import user_data_path
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeEDataDiInizioDaDati._apri(principale, "Alfa")
+        percorso = user_data_path("Tornello - Prova_stessa_data.json")
+        dati = _torneo_in_corso("Prova stessa data")
+        dati.update(start_date="2026-11-02", end_date="2026-11-20")
+        TestNomeDelTorneoNuovo._scrivi(percorso, dati)
+        principale.populate_tree()
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": "name"})
+        principale.tree_ctrl.SelectItem(voce)
+        _eventi_in_coda()
+        assert principale._e_il_torneo_aperto(percorso)
+        assert principale.last_status_msg == "Torneo 'Prova stessa data' caricato con successo."
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        class CampoFinto:
+            def __init__(self, *a, **k):
+                pass
+
+            def ShowModal(self):
+                return wx.ID_OK
+
+            def GetValue(self):
+                return "Corona"
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(wx, "TextEntryDialog", CampoFinto)
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
+        _eventi_in_coda()
+
+        assert principale.current_tournament["name"] == "Corona"
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["name"] == "Corona"
+        assert principale.last_status_msg == self.BARRA
+        assert self._prima_riga_della_barra(principale) == self.BARRA
+        assert suoni == ["apertura", "conferma"]
+        assert finestre == []
+        assert scatole == []
+        assert principale.tree_ctrl.GetSelection() == voce
+        assert registro.caricati == []
+        assert registro.fuoco == []
+
+    @pytest.mark.parametrize("scritto", ["Prova stessa data", "", "Alfa"], ids=["lo stesso nome", "vuoto", "di un altro torneo"])
+    def test_il_nome_che_non_cambia_lascia_la_barra(self, principale, suoni, monkeypatch, scritto):
+        """Lo stesso nome non cambia niente, e un nome vuoto, o quello di
+        un altro torneo della cartella, non si accetta: il nome resta
+        quello di prima, e la barra dice ancora il messaggio dell'apertura,
+        come prima della 10.19.39."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestNomeDelTorneoNuovo()._torneo_nella_cartella("Alfa")
+        percorso = TestNomeEDataDiInizioDaDati._apri(principale, "Prova stessa data")
+        aperto = "Torneo 'Prova stessa data' caricato con successo."
+        assert principale.last_status_msg == aperto
+        suoni.clear()
+
+        TestNomeEDataDiInizioDaDati._campo(principale, monkeypatch, percorso, "name", scritto)
+
+        assert principale.current_tournament["name"] == "Prova stessa data"
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso)["name"] == "Prova stessa data"
+        assert principale.last_status_msg == aperto
+        assert self._prima_riga_della_barra(principale) == aperto
+        assert scatole == []
+        if scritto == "Prova stessa data":
+            assert finestre == []
+            assert suoni == ["apertura", "conferma"]
+        else:
+            assert [f.titolo for f in finestre] == ["Nome del torneo mancante" if scritto == "" else "Nome del torneo già in uso"]
+            assert suoni == ["apertura", "errore"]
