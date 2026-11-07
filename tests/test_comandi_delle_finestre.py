@@ -6903,7 +6903,9 @@ class TestTorneoCheNonSiSalva:
         messaggio restava, e il secondo tentativo non lo diceva. Dalla
         10.19.21 il secondo tentativo comincia con la domanda di
         TestTorneoNonSalvatoDaLasciare, perche' il primo torneo nuovo ha le
-        ultime modifiche soltanto in memoria, e con Si' parte. La scrittura
+        ultime modifiche soltanto in memoria, e con Si' parte; dalla proposta
+        4 del nono giro la domanda dice che il suo file non c'e' ancora, e
+        che lasciandolo si perdono il torneo e i suoi iscritti. La scrittura
         del file e le finestre di messaggio sono finte."""
         import wx
 
@@ -6920,7 +6922,7 @@ class TestTorneoCheNonSiSalva:
 
         percorso = user_data_path("Tornello - Nuovo_Sociale.json")
         messaggio = self._messaggio(percorso, "Accesso negato", nome="Nuovo Sociale")
-        domanda = TestTorneoNonSalvatoDaLasciare._domanda("Accesso negato", nome="Nuovo Sociale")
+        domanda = TestTorneoNonSalvatoDaLasciare._domanda_senza_file("Accesso negato", nome="Nuovo Sociale")
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio, domanda, messaggio]
         assert suoni.count("errore") == 3
         assert scatole == []
@@ -7183,6 +7185,18 @@ class TestTorneoNonSalvatoDaLasciare:
         return (
             "Torneo non salvato",
             f"Il torneo {nome} non si è potuto salvare: {errore}. Se lo lasci, le ultime modifiche si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No.",
+        )
+
+    @staticmethod
+    def _domanda_senza_file(errore, nome):
+        """Il titolo e il testo della domanda per il torneo nome che non ha
+        ancora il suo file sul disco, come il torneo nuovo che non si e'
+        salvato, con errore, la descrizione del motivo: dalla proposta 4 del
+        nono giro dice che lasciandolo si perdono il torneo e i suoi
+        iscritti, e non piu' le ultime modifiche."""
+        return (
+            "Torneo non salvato",
+            f"Il torneo {nome} non si è potuto salvare: {errore}. Il suo file non c'è ancora: se lo lasci, il torneo e i suoi iscritti si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No.",
         )
 
     @pytest.fixture
@@ -7471,6 +7485,53 @@ class TestTorneoNonSalvatoDaLasciare:
             assert len(aperte) == 1
             assert principale._e_il_torneo_aperto(bloccata.estate)
 
+    @pytest.mark.parametrize("strada", ["apri", "chiusura"])
+    def test_il_torneo_nuovo_senza_file_con_apri_torneo_e_la_chiusura(self, principale, suoni, monkeypatch, strada):
+        """Proposta 4 del nono giro. Il torneo nuovo della procedura guidata
+        che non si e' salvato resta aperto senza il suo file. Apri Torneo,
+        con Estate 3 scelto nella finestra Apri, e la chiusura di Tornello
+        riprovano il salvataggio, che non riesce: con il suono dell'errore e
+        No predefinito, la domanda dice che il suo file non c'e' ancora, e
+        che lasciandolo si perdono il torneo e i suoi iscritti. Con Si' ad
+        Apri Torneo si apre Estate 3; con No alla chiusura la finestra resta
+        aperta, senza le copie della chiusura, e il torneo nuovo resta
+        aperto. Fino alla proposta la domanda diceva che si perdevano le
+        ultime modifiche, mentre con Si' si perdeva tutto il torneo. La
+        scrittura del file, le finestre di messaggio, quella di Apri Torneo e
+        le copie della chiusura sono finte."""
+        import wx
+
+        import utils
+        from config import user_data_path
+
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
+        estate = user_data_path("Tornello - Estate_3.json")
+        TestNomeDelTorneoNuovo._scrivi(estate, _torneo_in_corso("Estate 3"))
+        finestre = self._finestre(monkeypatch, wx.ID_YES if strada == "apri" else wx.ID_NO)
+        TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale")
+        nuovo = principale.active_filename
+        assert not os.path.exists(nuovo)
+        suoni.clear()
+
+        if strada == "apri":
+            TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, estate)
+        else:
+            copie = []
+            monkeypatch.setattr(utils, "copie_di_chiusura", lambda percorso: copie.append(percorso))
+            evento = wx.CloseEvent(wx.wxEVT_CLOSE_WINDOW, principale.GetId())
+            evento.SetCanVeto(True)
+            principale.on_close(evento)
+
+        assert self._domande_fatte(finestre) == [(*self._domanda_senza_file("Accesso negato", nome="Nuovo Sociale"), True)]
+        assert suoni.count("errore") == 1
+        if strada == "apri":
+            assert principale._e_il_torneo_aperto(estate)
+        else:
+            assert evento.GetVeto()
+            assert copie == []
+            assert principale._e_il_torneo_aperto(nuovo)
+
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     @pytest.mark.parametrize("risposta", ["no", "si"])
     def test_la_procedura_guidata(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
@@ -7499,7 +7560,9 @@ class TestTorneoNonSalvatoDaLasciare:
         resta aperto senza il suo file, come dalla 10.19.20; poi dalla
         finestra Copie di sicurezza si ripristina un altro torneo, Estate 3,
         che di solito prende il suo posto. Il salvataggio si riprova, non
-        riesce, e con No il torneo nuovo resta aperto, mentre con Si' si apre
+        riesce, e la domanda dice che il file del torneo nuovo non c'e'
+        ancora, dalla proposta 4 del nono giro; con No il torneo nuovo resta
+        aperto, mentre con Si' si apre
         Estate 3. Estate 3 entra nella cartella soltanto con il ripristino,
         e in tutti e due i casi l'albero ha la sua voce: con No perche'
         l'albero si ricostruisce, e fino alla revisione del nono giro nessuna
@@ -7519,7 +7582,7 @@ class TestTorneoNonSalvatoDaLasciare:
 
         principale._dopo_il_ripristino(SimpleNamespace(riuscito=True, tipo="torneo", destinazione=estate))
 
-        assert self._domande_fatte(finestre) == [(*self._domanda("Accesso negato", nome="Nuovo Sociale"), True)]
+        assert self._domande_fatte(finestre) == [(*self._domanda_senza_file("Accesso negato", nome="Nuovo Sociale"), True)]
         if risposta == "no":
             assert principale._e_il_torneo_aperto(user_data_path("Tornello - Nuovo_Sociale.json"))
         else:
@@ -7559,7 +7622,9 @@ class TestTorneoNonSalvatoDaLasciare:
         """Correzione della revisione della 10.19.20. Il torneo nuovo della
         procedura guidata che non si e' salvato resta aperto senza il suo
         file; poi il cursore va con le frecce sulla voce di Estate 3, o INVIO
-        arriva sulla sua voce Dati, e con Si' alla domanda Estate 3 si apre.
+        arriva sulla sua voce Dati, e con Si' alla domanda Estate 3 si apre;
+        dalla proposta 4 del nono giro la domanda dice che il suo file non
+        c'e' ancora, e che lasciandolo si perdono il torneo e i suoi iscritti.
         Il torneo nuovo non ha piu' niente da cui riaprirsi: la sua voce, con
         i suoi rami, e la voce Avvio torneo con il suo nome escono
         dall'albero, e il ramo In Preparazione esce, perche' resta vuoto, o,
@@ -7601,7 +7666,7 @@ class TestTorneoNonSalvatoDaLasciare:
             principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
         _eventi_in_coda()
 
-        assert self._domande_fatte(finestre) == [(*self._domanda("Accesso negato", nome="Nuovo Sociale"), True)]
+        assert self._domande_fatte(finestre) == [(*self._domanda_senza_file("Accesso negato", nome="Nuovo Sociale"), True)]
         assert principale._e_il_torneo_aperto(estate)
         assert nuovo not in albero._tutti_i_file(principale)
         preparazione = [testo for testo, _dati in albero._figlie(principale) if testo.startswith("In Preparazione")]

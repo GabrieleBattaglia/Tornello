@@ -4479,7 +4479,13 @@ class MainFrame(wx.Frame):
         con Si'. Fino alla 10.19.20, e gia' nella 10.0.0, le modifiche si
         perdevano senza avviso: con le frecce su un altro torneo, con Apri
         Torneo, con una procedura guidata, alla chiusura di Tornello e dopo
-        il ripristino di un altro torneo dalla finestra Copie di sicurezza."""
+        il ripristino di un altro torneo dalla finestra Copie di sicurezza.
+        Dalla proposta 4 del nono giro, per un torneo che non ha ancora il
+        suo file sul disco, come il torneo nuovo che non si e' salvato, la
+        domanda dice che il suo file non c'e' ancora, e che lasciandolo si
+        perdono il torneo e i suoi iscritti: fino alla proposta diceva che si
+        perdevano le ultime modifiche, mentre con Si' si perdeva tutto il
+        torneo."""
         if not self._ha_modifiche_soltanto_in_memoria():
             return True
         from utils import play_sound
@@ -4488,12 +4494,18 @@ class MainFrame(wx.Frame):
         if self._save_state(motivi):
             return True
         play_sound("errore")
+        if self._file_del_torneo_senza_file():
+            testo = _(
+                "Il torneo {nome} non si è potuto salvare: {errore}. Il suo file non c'è ancora: se lo lasci, il torneo e i suoi iscritti si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No."
+            )
+        else:
+            testo = _(
+                "Il torneo {nome} non si è potuto salvare: {errore}. Se lo lasci, le ultime modifiche si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No."
+            )
         dlg = AccessibleMsgDialog(
             self,
             _("Torneo non salvato"),
-            _(
-                "Il torneo {nome} non si è potuto salvare: {errore}. Se lo lasci, le ultime modifiche si perdono. Vuoi lasciarlo lo stesso? Il pulsante predefinito è No."
-            ).format(
+            testo.format(
                 nome=self.current_tournament.get("name", ""),
                 errore="; ".join(motivi).rstrip("."),
             ),
