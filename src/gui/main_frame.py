@@ -4900,12 +4900,28 @@ class MainFrame(wx.Frame):
 
                         motivi = []
                         if not save_tournament(t_data, filepath=filepath, motivi=motivi):
-                            wx.MessageBox(
-                                _("Impossibile rimuovere il giocatore: {}").format("; ".join(motivi)),
-                                _("Errore"),
-                                wx.ICON_ERROR,
-                            )
+                            # Dalla proposta 5 del nono giro il messaggio
+                            # nomina il giocatore, il torneo e il file, con
+                            # la descrizione del motivo, come Torneo non
+                            # salvato, nella finestra accessibile e con il
+                            # suono dell'errore: fino alla proposta, e gia'
+                            # nella 10.0.0, era un wx.MessageBox senza suono,
+                            # che dalla revisione della 10.19.19 diceva
+                            # soltanto la descrizione, senza il torneo e
+                            # senza il file.
                             dlg.Destroy()
+                            play_sound("errore")
+                            self._dialogo_informativo(
+                                _("Giocatore non rimosso"),
+                                _(
+                                    "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, perché il file {file} non si è potuto salvare: {errore}. Il file del torneo e i suoi iscritti restano com'erano. Se un altro programma tiene aperto il file, chiudilo e riprova."
+                                ).format(
+                                    giocatore=p_name,
+                                    nome=t_data.get("name", ""),
+                                    file=filepath,
+                                    errore="; ".join(motivi).rstrip("."),
+                                ),
+                            )
                             return
 
                     self._tree_restore_target = {

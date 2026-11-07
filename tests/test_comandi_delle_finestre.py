@@ -8085,13 +8085,17 @@ class TestCancSuUnIscrittoDelTorneoAperto:
     def test_l_iscritto_di_un_torneo_che_non_e_aperto_con_il_file_bloccato(self, principale, suoni, monkeypatch, capsys):
         """Alfa e' il torneo aperto, e un altro programma tiene bloccato il
         file di Gamma, che non e' aperta: CANC sul primo iscritto di Gamma,
-        con Si', non riesce a scriverne il file. Esce il messaggio
-        Impossibile rimuovere il giocatore, con la descrizione del motivo
-        che save_tournament da' dalla revisione della 10.19.19, e niente
-        altro: il file di Gamma ha ancora i quattro iscritti, non si sente il
+        con Si', non riesce a scriverne il file. Dalla proposta 5 del nono
+        giro esce, con il suono dell'errore, il messaggio Giocatore non
+        rimosso, nella finestra accessibile, che nomina il giocatore, il
+        torneo e il file, con la descrizione del motivo che save_tournament
+        da' dalla revisione della 10.19.19, e niente altro: il file di Gamma
+        ha ancora i quattro iscritti, anche nell'albero, non si sente il
         suono della rimozione, e la barra di stato non la dice riuscita.
-        Fino alla revisione del nono giro nessuna prova guardava questo
-        ramo."""
+        Fino alla proposta usciva un wx.MessageBox senza suono, Impossibile
+        rimuovere il giocatore, con la sola descrizione, senza il torneo e
+        senza il file; fino alla revisione del nono giro nessuna prova
+        guardava questo ramo."""
         import wx
 
         from config import user_data_path
@@ -8100,6 +8104,9 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
         principale.load_tournament(alfa)
         percorso = self._gamma(principale, aperta=False)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
+        giocatore = principale.tree_ctrl.GetItemData(voce)["player"]
+        nome_del_giocatore = f"{giocatore['last_name']} {giocatore['first_name']}"
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
@@ -8115,10 +8122,19 @@ class TestCancSuUnIscrittoDelTorneoAperto:
 
         errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, percorso)
         assert len(errori) == 1
-        assert [f.titolo for f in finestre] == ["Conferma Rimozione Giocatore"]
-        assert scatole == [(f"Impossibile rimuovere il giocatore: {_descrizione_dell_errore(errori[0])}", "Errore", wx.ICON_ERROR)]
+        assert scatole == []
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            ("Conferma Rimozione Giocatore", f"Sei sicuro di voler rimuovere il giocatore {nome_del_giocatore} dal torneo?"),
+            (
+                "Giocatore non rimosso",
+                f"Il giocatore {nome_del_giocatore} non si è potuto rimuovere dal torneo Gamma, perché il file {percorso} non si è potuto salvare: "
+                f"{_descrizione_dell_errore(errori[0])}. Il file del torneo e i suoi iscritti restano com'erano. "
+                "Se un altro programma tiene aperto il file, chiudilo e riprova.",
+            ),
+        ]
+        assert suoni == ["errore"]
         assert len(TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]) == len(GIOCATORI_DEI_TORNEI)
-        assert "rimozione_giocatore" not in suoni
+        assert len(self._iscritti_nell_albero(principale, percorso)) == len(GIOCATORI_DEI_TORNEI)
         assert principale.last_status_msg == barra
         assert principale._e_il_torneo_aperto(alfa)
 
