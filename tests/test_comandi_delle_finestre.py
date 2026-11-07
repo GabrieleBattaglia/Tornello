@@ -9045,6 +9045,75 @@ class TestBarraDopoIndietro:
         assert principale.last_status_msg == "Attenzione: un file di torneo non leggibile, dettagli sotto."
 
 
+class TestAreaCentraleDopoIndietro:
+    """10.19.45 (decisione di Gabriele del 7 novembre 2026). Nuovo torneo
+    dal menu File, e poi INVIO sulla voce Indietro della procedura guidata:
+    con un torneo aperto l'area centrale mostra il suo turno corrente, come
+    dopo Apri Torneo dentro la procedura dalla 10.19.34; senza un torneo
+    aperto mostra il benvenuto, come prima. Fino alla 10.19.44, e gia' nella
+    10.0.0, mostrava sempre il benvenuto, anche con il torneo aperto, che
+    la barra di stato nominava dalla 10.19.32. La barra, il cursore e il
+    fuoco restano quelli della 10.19.32. Le finestre di messaggio sono
+    finte."""
+
+    BENVENUTO = "Ciao! Benvenuto, sono Tornello"
+
+    def test_con_un_torneo_aperto(self, principale, suoni, monkeypatch):
+        """Alfa e' aperta e salvata, al turno 1: dopo Indietro l'area
+        centrale mostra il turno corrente di Alfa, lo stesso testo di prima
+        di Nuovo torneo, senza il benvenuto, e la barra di stato dice Pronto.
+        Torneo aperto: Alfa., senza suoni, senza messaggi e senza spostare il
+        fuoco."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        percorsi = TestAlberoETorneoAttivo()._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        turno_corrente = principale.main_text.GetValue()
+        assert turno_corrente.startswith("Torneo: Alfa\nTurno Corrente: 1 di 3\nAbbinamenti Turno 1:\n")
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestBarraDopoIndietro._indietro(principale)
+
+        assert not principale.creation_mode
+        assert principale.main_text.GetValue() == turno_corrente
+        assert self.BENVENUTO not in principale.main_text.GetValue()
+        assert principale.last_status_msg == "Pronto. Torneo aperto: Alfa."
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": principale.active_filename}
+        assert registro.caricati == []
+        assert registro.fuoco == []
+        assert suoni == []
+        assert finestre == []
+        assert scatole == []
+
+    def test_senza_torneo_aperto(self, principale, suoni, monkeypatch):
+        """Senza un torneo aperto l'area centrale mostra il benvenuto, come
+        prima, e la barra di stato dice Pronto. Nessun torneo caricato."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo()._prepara("Alfa")
+        principale.populate_tree()
+        assert principale.current_tournament is None
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        suoni.clear()
+
+        TestBarraDopoIndietro._indietro(principale)
+
+        assert principale.current_tournament is None
+        assert principale.main_text.GetValue().startswith(self.BENVENUTO)
+        assert principale.last_status_msg == "Pronto. Nessun torneo caricato."
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "start_new_tournament"}
+        assert suoni == []
+        assert scatole == []
+
+
 class TestApriTorneoNellaProceduraGuidata:
     """10.19.34 (decisione di Gabriele del 7 novembre 2026). Ogni Apri
     Torneo riuscito dentro la procedura guidata di un torneo nuovo la

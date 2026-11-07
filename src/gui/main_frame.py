@@ -899,12 +899,19 @@ class MainFrame(wx.Frame):
             " - Canc: nell'albero, elimina o annulla la voce scelta (torneo, giocatore, turno, partita giocata o programmata)\n"
         )
         self.append_log(intro)
-        # Dalla 10.19.32 (decisione di Gabriele del 7 novembre 2026), con un
-        # torneo aperto, la barra di stato lo nomina, anche quando ha le
-        # ultime modifiche soltanto in memoria: succede con Indietro nella
-        # procedura guidata di un torneo nuovo, che lascia aperto il torneo
-        # di prima. Fino alla 10.19.31 diceva sempre Nessun torneo caricato,
-        # mentre il torneo era aperto, e il titolo della finestra lo diceva.
+        self._barra_di_riposo()
+
+    def _barra_di_riposo(self):
+        """La barra di stato a riposo, dopo il benvenuto e dopo Indietro
+        nella procedura guidata, che dalla 10.19.45 con un torneo aperto
+        mostra il suo turno corrente al posto del benvenuto. Dalla 10.19.32
+        (decisione di Gabriele del 7 novembre 2026), con un torneo aperto, la
+        barra lo nomina, anche quando ha le ultime modifiche soltanto in
+        memoria: succede con Indietro, che lascia aperto il torneo di prima.
+        Fino alla 10.19.31 diceva sempre Nessun torneo caricato, mentre il
+        torneo era aperto, e il titolo della finestra lo diceva. La frase si
+        ricorda in _frase_di_riposo, perche' non e' un esito da conservare
+        (vedi _mostra_i_file_non_leggibili)."""
         if self.current_tournament:
             self._frase_di_riposo = _("Pronto. Torneo aperto: {nome}.").format(
                 nome=self.current_tournament.get("name", _("Torneo Sconosciuto"))
@@ -4332,10 +4339,26 @@ class MainFrame(wx.Frame):
         dlg.Destroy()
 
     def on_wizard_back(self):
+        """Indietro nella procedura guidata di un torneo nuovo: la procedura
+        si chiude, l'albero torna con i tornei, con il cursore sulla voce del
+        torneo aperto o, senza un torneo aperto, su Nuovo torneo, e il fuoco
+        resta sull'albero, dove era arrivato INVIO. Dalla 10.19.45
+        (decisione di Gabriele del 7 novembre 2026) con un torneo aperto
+        l'area centrale mostra il suo turno corrente, con
+        show_current_round_report, come dopo Apri Torneo dentro la procedura
+        dalla 10.19.34 (vedi _chiudi_la_procedura_guidata); senza un torneo
+        aperto mostra il benvenuto. La barra di stato e' quella a riposo
+        della 10.19.32, in tutti e due i casi (vedi _barra_di_riposo). Fino
+        alla 10.19.44, e gia' nella 10.0.0, l'area centrale mostrava sempre il
+        benvenuto, anche con il torneo aperto."""
         self.creation_mode = False
         self.creation_data = {}
         self.populate_tree()
-        self.show_intro_message()
+        if self.current_tournament:
+            self.show_current_round_report()
+            self._barra_di_riposo()
+        else:
+            self.show_intro_message()
 
     def create_tournament_from_wizard(self, enrolled):
         from models import Player, RoundDate, Tournament
