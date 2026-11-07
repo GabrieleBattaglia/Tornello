@@ -1340,6 +1340,13 @@
      "color": "white",
      "result": "0-1",
      "score": 0.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "PAGVI001",
+     "color": "black",
+     "result": "1-0",
+     "score": 0.0
     }
    ],
    "opponents": [
@@ -1690,7 +1697,7 @@
    "federation": "ITA",
    "fide_id_num_str": "23470763",
    "birth_date": "1981-01-01",
-   "points": 0.0,
+   "points": 1.0,
    "results_history": [
     {
      "round": 1,
@@ -1712,6 +1719,13 @@
      "color": "black",
      "result": "1-0",
      "score": 0.0
+    },
+    {
+     "round": 4,
+     "opponent_id": "ROSMI001",
+     "color": "white",
+     "result": "1-0",
+     "score": 1.0
     }
    ],
    "opponents": [
@@ -2868,15 +2882,16 @@
      "round": 4,
      "white_player_id": "PAGVI001",
      "black_player_id": "ROSMI001",
-     "result": null,
-     "is_scheduled": true,
+     "result": "1-0",
+     "is_scheduled": false,
      "schedule_info": {
       "date": "2026-11-07",
       "time": "15:00",
       "channel": "WA",
       "arbiter": "Gabry",
       "arbiter_not_needed": false
-     }
+     },
+     "pgn": "[Event \"Autunneo2\"]\n[Site \"Online\"]\n[Date \"2026.11.02\"]\n[Round \"4\"]\n[White \"Paglia, Virginio\"]\n[Black \"Rossi, Milena\"]\n[Result \"1-0\"]\n[WhiteElo \"1346\"]\n[BlackElo \"1399\"]\n[TimeControl \"2700+15\"]\n[Annotator \"Orologic V8.32.2 by Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)\"]\n[ECO \"C20\"]\n[Opening \"KP\"]\n[Variation \"Indian opening\"]\n\n1. e4 e5 2. d3 Nf6 3. Nf3 Nc6 4. Nc3 Bb4 5. a3 Bd6 6. Be3 b6 7. Be2 O-O 8. Bg5\nBb7 9. Nd5 Qe8 { grave errore } 10. O-O { andava preso il cavallo in f6 } 10...\nNxd5 11. exd5 Ne7 12. Qd2 Nf5\n{ grave errore, bisognava prendere il pedone gratuito in d5 } 13. Rae1 c5 14.\nNh4 Nxh4 15. Bxh4 Bxd5 16. c4 Be6 17. Bf3 Rb8 18. Qe3 h6 19. Qe4 Qc8 20. Bg4\nBxg4 21. Qxg4 g5 22. Qf5 Qd8 23. Bg3 b5 24. Bxe5 Bxe5 25. Rxe5 bxc4 26. Rxc5\nRxb2 27. Rxc4 Qb8 28. Qxd7 Rb1 29. f3 Rxf1+ 30. Kxf1 Qb3 31. Rc8 Rxc8 32. Qxc8+\nKg7 33. g4 { Mosse annullate: f4 } 33... Qxd3+ 34. Kg2 1-0"
     }
    ]
   }
