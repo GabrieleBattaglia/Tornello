@@ -137,7 +137,7 @@ Vogliamo organizzare il "Torneo Sociale di Primavera" del nostro club.
 - Luogo: Milano
 - Turni: 5
 - Tempo: 15+10 (Tornello calcolerà 15 min + (10 sec * 60 mosse) = 25 minuti. Il torneo verrà classificato come RAPID).
-- Cartella Salvataggio: Lasciamo il valore predefinito (verrà creata una cartella sul computer dell'utente).
+- Cartella Salvataggio: Lasciamo il valore predefinito, la cartella del programma, dove vanno i report e la raccolta delle partite.
 - Colore al più forte: Casuale.
 - Valore BYE: 1.0.
 Dopo aver inserito questi dati nell'albero di destra, scendiamo con le frecce fino alla voce "Iscrizione Giocatori" e premiamo INVIO. Il torneo è pronto per ricevere gli iscritti.
