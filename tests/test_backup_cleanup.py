@@ -935,6 +935,10 @@ class TestAperturaDentroBackup:
             # aperto, dalla proposta 7 del nono giro dopo la scelta di un
             # altro file: qui non ci sono modifiche soltanto in memoria.
             _si_puo_lasciare_il_torneo=lambda: True,
+            # Dalla 10.19.29 Apri Torneo legge il file scelto prima della
+            # domanda, e passa a load_tournament i dati letti: qui la lettura
+            # e' finta, e il file scelto non si guarda.
+            _leggi_il_torneo=lambda percorso: {},
         )
         mf.MainFrame.on_open_tournament(telaio, None)
         return registro

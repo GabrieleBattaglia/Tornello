@@ -7607,6 +7607,100 @@ class TestTorneoNonSalvatoDaLasciare:
         assert errori == []
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("contenuto", ["non torneo", "rovinato"])
+    def test_apri_torneo_su_un_file_che_non_si_apre(self, principale, suoni, monkeypatch, capsys, bloccata, tmp_path, contenuto):
+        """10.19.29. Apri Torneo, e nella finestra Apri un file che non e' un
+        torneo, o che e' rovinato: Tornello lo legge prima della domanda
+        Torneo non salvato, e il suo messaggio esce subito, Non e' un torneo
+        con il suono dell'errore, o Errore nel caricamento del torneo, senza
+        la domanda e senza riprovare il salvataggio. Primavera 2 resta
+        aperta, com'e' in memoria, con Roma, il cursore resta sulla voce
+        Luogo, e la barra di stato dice che il torneo non si e' aperto.
+        Tolto il blocco, il salvataggio dopo scrive Roma. Fino alla 10.19.29
+        la domanda usciva prima del messaggio, e con Si' Primavera 2 restava
+        aperta lo stesso, con le modifiche che la domanda aveva detto perse."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: scatole.append(testo))
+        finestre = self._finestre(monkeypatch)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        scelto = str(tmp_path / "altrove" / "Tornello - Altro.json")
+        os.makedirs(os.path.dirname(scelto))
+        with open(scelto, "w", encoding="utf-8") as f:
+            f.write('{"schema_version": 2, "players": []}' if contenuto == "non torneo" else "{rotto")
+        mostrate = self._finestra_apri(monkeypatch, finestre, scelto)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert mostrate == [0]
+        assert self._domande_fatte(finestre) == []
+        if contenuto == "non torneo":
+            assert [(f.titolo, f.testo) for f in finestre] == [("Non è un torneo", "Il file Tornello - Altro.json non è un torneo di Tornello, e non si apre.")]
+            assert suoni == ["errore"]
+            assert scatole == []
+        else:
+            assert finestre == []
+            assert len(scatole) == 1
+            assert scatole[0].startswith("Errore nel caricamento del torneo:")
+            assert suoni == []
+        assert registro.caricati == []
+        self._primavera_com_era(principale, bloccata)
+        assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert errori == []
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_apri_torneo_nella_procedura_guidata_sul_torneo_aperto(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """10.19.29. Nuovo torneo dal menu File, con Si' alla domanda Torneo
+        non salvato: la procedura guidata parte, e Primavera 2 resta in
+        memoria, con Roma, finche' il torneo nuovo non nasce. Poi, dentro la
+        procedura, Apri Torneo sul file di Primavera 2: nessuna domanda,
+        nessun suono, e il torneo non si rilegge; la procedura si chiude,
+        l'albero torna con i tornei e prende il fuoco, con il cursore sulla
+        voce di Primavera 2, l'area centrale mostra il torneo, e la barra di
+        stato dice che e' gia' aperto. Tolto il blocco, il salvataggio dopo
+        scrive Roma. Fino alla 10.19.29 la procedura restava sullo schermo,
+        e il cursore non andava sulla voce."""
+        import wx
+
+        finestre = self._finestre(monkeypatch, wx.ID_YES)
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        mostrate = self._finestra_apri(monkeypatch, finestre, bloccata.primavera)
+        suoni.clear()
+        capsys.readouterr()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert mostrate == [1]
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        assert suoni == []
+        assert registro.caricati == []
+        assert not principale.creation_mode
+        self._primavera_com_era(principale, bloccata)
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": bloccata.primavera}
+        assert registro.fuoco[-1:] == ["tree_ctrl"]
+        assert principale.main_text.GetValue().startswith("Torneo: Primavera 2")
+        assert principale.last_status_msg == "Il torneo 'Primavera 2' è già aperto, e resta com'è: Tornello non lo rilegge dal suo file."
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert errori == []
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
     @pytest.mark.parametrize("risposta", ["no", "si"])
     def test_apri_torneo(self, principale, suoni, monkeypatch, capsys, bloccata, risposta):
         """Apri Torneo dal menu File, con Estate 3 scelto nella finestra
@@ -7614,15 +7708,28 @@ class TestTorneoNonSalvatoDaLasciare:
         domande, e la domanda arriva dopo la scelta, prima di aprire Estate
         3. Con No Primavera 2 resta com'era; con Si' Estate 3 diventa il
         torneo aperto. Fino alla proposta la domanda arrivava prima della
-        finestra Apri, e con No la finestra non si apriva."""
+        finestra Apri, e con No la finestra non si apriva. Dalla 10.19.29 il
+        file di Estate 3 si legge una volta sola, prima della domanda, e con
+        Si' Estate 3 si apre da quella lettura: fino ad allora si leggeva
+        dopo la domanda, e soltanto con Si'."""
         import wx
 
         finestre = self._finestre(monkeypatch, wx.ID_NO if risposta == "no" else wx.ID_YES)
         mostrate = self._finestra_apri(monkeypatch, finestre, bloccata.estate)
+        letture = []
+        leggi = principale._leggi_il_torneo
+
+        def conta(percorso):
+            if os.path.normcase(percorso) == os.path.normcase(bloccata.estate):
+                letture.append(len(self._domande_fatte(finestre)))
+            return leggi(percorso)
+
+        principale._leggi_il_torneo = conta
 
         TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
 
         assert mostrate == [0]
+        assert letture == [0]
         assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
         if risposta == "no":
             self._primavera_com_era(principale, bloccata)

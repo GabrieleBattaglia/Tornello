@@ -1256,13 +1256,16 @@ class MainFrame(wx.Frame):
         else:
             self.populate_tree()
 
-    def load_tournament(self, filepath, rebuild_tree=True, tieni_il_precedente=False):
+    def load_tournament(self, filepath, rebuild_tree=True, tieni_il_precedente=False, gia_letto=None):
         """Carica un torneo dal file JSON. Se il file non si legge, o non e'
         un torneo, lo dicono un messaggio e la barra di stato. Con
         tieni_il_precedente, che passa Apri Torneo, il torneo aperto prima
-        resta aperto, se e' un altro file (vedi _torneo_non_aperto)."""
+        resta aperto, se e' un altro file (vedi _torneo_non_aperto). Con
+        gia_letto, i dati che _leggi_il_torneo ha gia' letto dal file, il file
+        non si rilegge: dalla 10.19.29 Apri Torneo lo legge prima della
+        domanda Torneo non salvato."""
         try:
-            data = self._leggi_il_torneo(filepath)
+            data = self._leggi_il_torneo(filepath) if gia_letto is None else gia_letto
         except (OSError, ValueError) as errore:
             # ValueError comprende il JSON rovinato, il testo che non e'
             # UTF-8 e FileNonTorneo.
@@ -6537,11 +6540,11 @@ class MainFrame(wx.Frame):
         # _si_puo_lasciare_il_torneo arriva dopo la scelta, e prima di aprire
         # il file, soltanto se il file scelto non e' quello del torneo
         # aperto, che con le modifiche soltanto in memoria non si rilegge
-        # (vedi _il_torneo_scelto_e_gia_aperto). Dalla
-        # 10.19.21 fino alla proposta la domanda arrivava prima della
-        # finestra Apri, perche' il file scelto non si conosceva ancora, e
-        # scegliendo lo stesso file il torneo si rileggeva, e le modifiche
-        # soltanto in memoria si perdevano.
+        # (vedi _il_torneo_scelto_e_gia_aperto), e se e' un torneo che si
+        # legge. Dalla 10.19.21 fino alla proposta la domanda arrivava prima
+        # della finestra Apri, perche' il file scelto non si conosceva
+        # ancora, e scegliendo lo stesso file il torneo si rileggeva, e le
+        # modifiche soltanto in memoria si perdevano.
         dlg = wx.FileDialog(
             self,
             _("Apri Torneo"),
@@ -6590,11 +6593,29 @@ class MainFrame(wx.Frame):
         if self._e_il_torneo_aperto(scelto) and self._ha_modifiche_soltanto_in_memoria():
             self._il_torneo_scelto_e_gia_aperto()
             return
+        # Dalla 10.19.29 il file scelto si legge prima della domanda di
+        # _si_puo_lasciare_il_torneo, e una volta sola: un file che non e' un
+        # torneo, o che non si legge, da' subito il suo messaggio, senza la
+        # domanda e senza riprovare il salvataggio, perche' il torneo aperto
+        # non si lascia, e resta com'e', anche con le modifiche soltanto in
+        # memoria; con Si' il torneo scelto si apre da quella lettura. Dalla
+        # 10.19.21 fino ad allora la domanda usciva anche per quel file, e con
+        # Si' usciva poi il messaggio, con il torneo aperto che restava,
+        # insieme alle modifiche che la domanda aveva detto perse (decisione
+        # di Gabriele del 7 novembre 2026). Per un torneo che si e' salvato
+        # la domanda non esce, e la lettura e' quella che faceva
+        # load_tournament: niente cambia.
+        try:
+            letto = self._leggi_il_torneo(scelto)
+        except (OSError, ValueError) as errore:
+            # Se il file scelto non si apre, o non e' un torneo, resta aperto
+            # il torneo di prima; se e' il file del torneo aperto, che si e'
+            # salvato, nessun torneo resta aperto (vedi _torneo_non_aperto).
+            self._torneo_non_aperto(scelto, errore, True, True)
+            return
         if not self._si_puo_lasciare_il_torneo():
             return
-        # Se il file scelto non si apre, o non e' un torneo, resta aperto il
-        # torneo di prima.
-        self.load_tournament(scelto, tieni_il_precedente=True)
+        self.load_tournament(scelto, tieni_il_precedente=True, gia_letto=letto)
         if self._e_il_torneo_aperto(scelto):
             self._cursore_sulla_voce_del_torneo_aperto()
 
@@ -6617,7 +6638,27 @@ class MainFrame(wx.Frame):
         torneo e' gia' aperto. Fino alla proposta la domanda di
         _si_puo_lasciare_il_torneo arrivava prima della finestra Apri, e il
         torneo si rileggeva dal suo file: le modifiche soltanto in memoria si
-        perdevano, e un file che non si rileggeva chiudeva il torneo."""
+        perdevano, e un file che non si rileggeva chiudeva il torneo.
+        Dalla 10.19.29 vale anche dentro la procedura guidata di un torneo
+        nuovo, dove si arriva con Si' alla domanda di
+        _si_puo_lasciare_il_torneo, che lascia il torneo in memoria, con le
+        sue modifiche, finche' il torneo nuovo non nasce: la procedura si
+        chiude, l'albero torna con i tornei e prende il fuoco, con il cursore
+        sulla voce del torneo, e l'area centrale mostra il torneo, come dopo
+        un caricamento. Fino ad allora la procedura restava sullo schermo, e
+        il cursore non andava sulla voce, che nel suo albero non c'e'; dalla
+        10.19.21 alla proposta la domanda usciva di nuovo, e con Si' il
+        torneo si rileggeva, e le modifiche si perdevano (decisione di
+        Gabriele del 7 novembre 2026)."""
+        if self.creation_mode:
+            self.creation_mode = False
+            self.creation_data = {}
+            self._tree_restore_target = {"action": "select_tournament", "filepath": self.active_filename}
+            # La voce del torneo si sceglie senza mostrare i suoi dati: l'area
+            # centrale la riscrive subito dopo.
+            with self._albero_senza_caricamenti():
+                self.populate_tree()
+            self.show_current_round_report()
         self._cursore_sulla_voce_del_torneo_aperto()
         self.set_status(
             _("Il torneo '{name}' è già aperto, e resta com'è: Tornello non lo rilegge dal suo file.").format(
