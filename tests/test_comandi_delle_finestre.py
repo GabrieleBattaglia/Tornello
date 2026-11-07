@@ -7256,6 +7256,258 @@ class TestTorneoNonSalvatoDaLasciare:
         assert scatole == []
 
 
+class TestAlberoDalTorneoInMemoria:
+    """Proposta 1 del nono giro. L'albero prende sempre dalla memoria le
+    voci del torneo aperto, anche quando il suo file c'e', e la
+    ricostruzione non legge quel file: dopo una modifica che non si e'
+    salvata, l'albero mostra quello su cui si lavora. Gli altri tornei si
+    leggono dai loro file. Fino a questa proposta, e gia' nella 10.0.0, le
+    voci del torneo aperto venivano dal file: dopo CANC su un iscritto con
+    il file bloccato l'iscritto tolto restava nell'albero, e un secondo CANC
+    sulla sua voce, con Si', non faceva niente, in silenzio. I blocchi sono
+    veri, con CreateFileW; le finestre di messaggio sono finte."""
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_doppio_canc_con_il_file_bloccato(self, principale, suoni, monkeypatch, capsys):
+        """Gamma e' aperta, in preparazione, e un altro programma tiene
+        bloccato il suo file. CANC sul primo iscritto, con Si', lo toglie
+        dalla memoria, e il messaggio Torneo non salvato lo dice. L'albero
+        ricostruito ha tre iscritti, e la voce dell'iscritto tolto non c'e'
+        piu': il secondo CANC su di lei non si puo' fare. Il file ha ancora
+        i quattro iscritti."""
+        canc = TestCancSuUnIscrittoDelTorneoAperto
+        percorso = canc._gamma(principale)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        sblocca = raccolte._bloccata(percorso, raccolte.FILE_SHARE_READ)
+        try:
+            tolto = canc._canc_sul_primo_iscritto(principale, percorso)
+            nel_file = TestNomeEDataDiInizioDaDati._nel_file(percorso)
+        finally:
+            sblocca()
+
+        rimasti = [g[0] for g in GIOCATORI_DEI_TORNEI if g[0] != tolto]
+        assert [f.titolo for f in finestre] == ["Conferma Rimozione Giocatore", "Torneo non salvato"]
+        assert len(nel_file["players"]) == len(GIOCATORI_DEI_TORNEI)
+        assert canc._iscritti_nell_albero(principale, percorso) == rimasti
+        assert tolto not in canc._iscritti_nell_albero(principale, percorso)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_players", "filepath": percorso})
+        assert principale.tree_ctrl.GetItemText(voce) == f"iscritti ({len(rimasti)})"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_luogo_non_salvato_si_vede_nell_albero(self, principale, suoni, monkeypatch, capsys):
+        """Gamma cambia luogo, Roma, con il suo file bloccato, e il messaggio
+        Torneo non salvato esce. L'albero ricostruito dice Roma nel ramo
+        Dati, mentre il file ha ancora il luogo di prima."""
+        percorso = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.current_tournament["site"] = "Roma"
+        TestTorneoCheNonSiSalva._salvataggi_bloccati(principale, percorso, volte=1)
+
+        principale.populate_tree()
+
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso).get("site") != "Roma"
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_data", "filepath": percorso, "field_active": "site"})
+        assert voce and voce.IsOk()
+        assert principale.tree_ctrl.GetItemText(voce) == "Luogo (Site): Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_luogo_non_salvato_con_il_percorso_scritto_in_minuscolo(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della proposta 1. Come la prova del luogo, con il file
+        del torneo aperto scritto in minuscolo, un'altra forma dello stesso
+        file su Windows: la ricostruzione riconosce lo stesso il torneo
+        aperto, non legge il suo file, e dice Roma, in una voce sola."""
+        from gui.main_frame import _chiave_del_percorso
+
+        percorso = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale)
+        principale.active_filename = percorso.lower()
+        assert principale.active_filename != percorso
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.current_tournament["site"] = "Roma"
+        TestTorneoCheNonSiSalva._salvataggi_bloccati(principale, percorso, volte=1)
+
+        principale.populate_tree()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(percorso).get("site") != "Roma"
+        prep = principale._find_matching_item(principale.tree_root, {"action": "category_prep"})
+        assert [t for t, _d in TestAlberoETorneoAttivo._figlie(principale, prep)] == ["Gamma"]
+        voce = principale._voce_del_torneo_aperto()
+        assert _chiave_del_percorso(principale.tree_ctrl.GetItemData(voce)["filepath"]) == _chiave_del_percorso(percorso)
+        luogo = principale._find_matching_item(voce, {"action": "show_data", "filepath": percorso, "field_active": "site"})
+        assert luogo and luogo.IsOk()
+        assert principale.tree_ctrl.GetItemText(luogo) == "Luogo (Site): Roma"
+
+    def test_il_torneo_concluso_aperto_dalla_memoria(self, principale, suoni, monkeypatch):
+        """Correzione della proposta 1. Delta, concluso, sta nell'archivio
+        ed e' aperto, con un luogo nuovo, Roma, che non si e' salvato. La
+        ricostruzione prende dalla memoria anche il torneo concluso: il ramo
+        Tornei Conclusi lo conta una volta, e la sua voce Luogo dice Roma."""
+        import json
+
+        from config import ARCHIVED_TOURNAMENTS_DIR
+
+        percorso = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2026", "10 Ottobre", "Delta", "Tornello - Delta.json")
+        concluso = _torneo_in_corso("Delta", finito=True)
+        concluso["concluded"] = True
+        TestNomeDelTorneoNuovo._scrivi(percorso, concluso)
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        percorso = principale.active_filename
+        principale.current_tournament["site"] = "Roma"
+
+        principale.populate_tree()
+
+        with open(percorso, encoding="utf-8") as f:
+            assert json.load(f).get("site") != "Roma"
+        voce = principale._voce_del_torneo_aperto()
+        assert principale.tree_ctrl.GetItemText(voce).startswith("Delta")
+        assert principale.tree_ctrl.GetItemText(principale.tree_ctrl.GetItemParent(voce)) == "Tornei Conclusi (1)"
+        luogo = principale._find_matching_item(voce, {"action": "show_data", "filepath": percorso, "field_active": "site"})
+        assert luogo and luogo.IsOk()
+        assert principale.tree_ctrl.GetItemText(luogo) == "Luogo (Site): Roma"
+
+    @staticmethod
+    def _gamma_e_alfa(principale):
+        """Alfa, in corso, e Gamma, aperta, in preparazione, nella cartella
+        del programma. Restituisce i due file come li scrive l'albero."""
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        gamma = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale)
+        return gamma, principale._percorso_come_nell_albero(alfa)[0]
+
+    @staticmethod
+    def _etichette_dei_tornei(principale):
+        """Le etichette delle voci di primo livello e di quelle del ramo In
+        Preparazione, in ordine."""
+        figlie = TestAlberoETorneoAttivo._figlie
+        etichette = []
+        for testo, dati in figlie(principale):
+            etichette.append(testo)
+            if (dati or {}).get("action") == "category_prep":
+                voce = principale._find_matching_item(principale.tree_root, {"action": "category_prep"})
+                etichette.append([t for t, _d in figlie(principale, voce)])
+        return etichette
+
+    @staticmethod
+    def _lascia_gamma(principale, strada, alfa):
+        """Da Gamma su Alfa, con le frecce sulla voce di Alfa o con INVIO
+        sulla sua voce Dati, dove c'e' il cursore; poi le chiamate lasciate a
+        wx.CallAfter."""
+        import wx
+
+        if strada == "frecce":
+            TestAlberoETorneoAttivo()._scegli_torneo(principale, alfa)
+        else:
+            voce = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=alfa)
+            with principale._albero_senza_caricamenti():
+                principale.tree_ctrl.SelectItem(voce)
+            principale.on_tree_item_activated(wx.TreeEvent(wx.wxEVT_TREE_ITEM_ACTIVATED, principale.tree_ctrl, voce))
+        _eventi_in_coda()
+        assert principale._e_il_torneo_aperto(alfa)
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("strada", ["frecce", "invio"])
+    def test_il_torneo_lasciato_con_si_torna_com_e_nel_file(self, principale, suoni, monkeypatch, capsys, strada):
+        """Correzione della proposta 1. Gamma e' aperta, con il file
+        bloccato: CANC sul primo iscritto, con Si', lo toglie dalla memoria e
+        dall'albero. Con le frecce o con INVIO su Alfa, e Si' alla domanda
+        Torneo non salvato, la rimozione si perde: la voce di Gamma si rifa'
+        dal file, con i quattro iscritti, nello stesso posto, mentre il
+        cursore resta su Alfa. Tornando su Gamma, che si riapre dal file,
+        l'albero dice ancora quattro iscritti, come la memoria. Fino alla
+        correzione la voce mostrava tre iscritti, anche dopo la riapertura."""
+        canc = TestCancSuUnIscrittoDelTorneoAperto
+        gamma, alfa = self._gamma_e_alfa(principale)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        sblocca = raccolte._bloccata(gamma, raccolte.FILE_SHARE_READ)
+        tutti = [g[0] for g in GIOCATORI_DEI_TORNEI]
+        try:
+            tolto = canc._canc_sul_primo_iscritto(principale, gamma)
+            assert tolto not in canc._iscritti_nell_albero(principale, gamma)
+            voci_prima = self._etichette_dei_tornei(principale)
+            self._lascia_gamma(principale, strada, alfa)
+            scelta = principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetSelection())
+
+            assert [f.titolo for f in finestre] == ["Conferma Rimozione Giocatore", "Torneo non salvato", "Torneo non salvato"]
+            assert canc._iscritti_nell_albero(principale, gamma) == tutti
+            voce = principale._find_matching_item(principale.tree_root, {"action": "show_players", "filepath": gamma})
+            assert principale.tree_ctrl.GetItemText(voce) == f"iscritti ({len(tutti)})"
+            assert self._etichette_dei_tornei(principale) == voci_prima
+            assert scelta["filepath"] == alfa
+
+            TestAlberoETorneoAttivo()._scegli_torneo(principale, gamma)
+            _eventi_in_coda()
+        finally:
+            sblocca()
+        assert principale._e_il_torneo_aperto(gamma)
+        assert [p["id"] for p in principale.current_tournament["players"]] == tutti
+        assert canc._iscritti_nell_albero(principale, gamma) == tutti
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_il_luogo_perso_non_resta_nella_voce_del_torneo_lasciato(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della proposta 1. Gamma ha il luogo Roma, che non si e'
+        salvato, e il ramo Dati aperto. Con le frecce su Alfa, e Si' alla
+        domanda, la voce Luogo di Gamma dice il luogo del file, e il ramo
+        Dati resta aperto. Fino alla correzione diceva Roma, anche dopo che
+        Gamma si riapriva dal suo file."""
+        gamma, alfa = self._gamma_e_alfa(principale)
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        principale.current_tournament["site"] = "Roma"
+        raccolte = TestRaccoltaSenzaPartiteNelCestino
+        sblocca = raccolte._bloccata(gamma, raccolte.FILE_SHARE_READ)
+        try:
+            principale._save_state()
+            principale.populate_tree()
+            dati = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=gamma)
+            principale.tree_ctrl.Expand(dati)
+            luogo = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=gamma, field_active="site")
+            assert principale.tree_ctrl.GetItemText(luogo) == "Luogo (Site): Roma"
+            self._lascia_gamma(principale, "frecce", alfa)
+        finally:
+            sblocca()
+
+        nel_file = TestNomeEDataDiInizioDaDati._nel_file(gamma).get("site", "N/D")
+        assert nel_file != "Roma"
+        luogo = TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=gamma, field_active="site")
+        assert principale.tree_ctrl.GetItemText(luogo) == f"Luogo (Site): {nel_file}"
+        assert principale.tree_ctrl.IsExpanded(TestAlberoETorneoAttivo._voce(principale, action="show_data", filepath=gamma))
+
+    def test_la_ricostruzione_non_legge_il_file_del_torneo_aperto(self, principale, suoni, monkeypatch):
+        """Alfa, in corso, e Gamma, in preparazione, sono nella cartella del
+        programma, e Gamma e' aperta. La ricostruzione dell'albero legge il
+        file di Alfa e non quello di Gamma, che ha la sua voce, con il nome
+        di sempre, nel ramo In Preparazione, che la conta, e la voce Avvio
+        torneo."""
+        import builtins
+
+        import gui.main_frame as mf
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        percorso = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale)
+        letti = []
+
+        def annota(file, *a, **k):
+            letti.append(mf._chiave_del_percorso(file))
+            return builtins.open(file, *a, **k)
+
+        with monkeypatch.context() as m:
+            m.setattr(mf, "open", annota, raising=False)
+            principale.populate_tree()
+
+        assert mf._chiave_del_percorso(alfa) in letti
+        assert mf._chiave_del_percorso(percorso) not in letti
+        voce = principale._voce_del_torneo_aperto()
+        assert principale.tree_ctrl.GetItemText(voce) == "Gamma"
+        assert principale.tree_ctrl.GetItemText(principale.tree_ctrl.GetItemParent(voce)) == "In Preparazione (1)"
+        assert principale._find_matching_item(principale.tree_root, {"action": "start_tournament_matchmaking_action", "filepath": percorso}) is not None
+
+
 class TestCancSuUnIscrittoDelTorneoAperto:
     """Dalla 10.19.22 (decisione di Gabriele del 5 novembre 2026) CANC su un
     iscritto del torneo aperto, in preparazione, con Si', lo toglie dalla
