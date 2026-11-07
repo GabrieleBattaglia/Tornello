@@ -758,8 +758,17 @@ class TournamentController:
 
         self.tournament.rounds.append(Round(round=1, matches=matches_r1))
 
-        # Percorso di salvataggio
-        default_path = os.path.abspath(".")
+        # La cartella di salvataggio, come nella procedura guidata della
+        # finestra (manuale, sezione 4.1): quella dei report e della raccolta
+        # delle partite, mentre il file del torneo sta sempre nella cartella
+        # del programma, dove save_tournament lo scrive e dove la console e
+        # l'albero lo cercano. Dalla 10.19.40 la cartella proposta e' quella
+        # del programma, come nella finestra, dove con Si' vanno davvero i
+        # report: fino alla 10.19.39, e gia' nella 10.0.0, era la cartella da
+        # cui Tornello era stato avviato, che coincide con quella del
+        # programma soltanto se lo si avvia da li' (decisione di Gabriele
+        # del 7 novembre 2026).
+        default_path = os.path.abspath(user_data_path(""))
         if not self.ui.confirm(
             _("Vuoi che i dati vengano salvati in {}?").format(default_path)
         ):
@@ -777,12 +786,22 @@ class TournamentController:
                     with open(test_file, "w") as f:
                         f.write("test")
                     os.remove(test_file)
-                    # Aggiorniamo la destinazione
-                    sanitized_name = sanitize_filename(self.tournament.name)
-                    self.active_filename = os.path.join(
-                        custom_path, f"Tornello - {sanitized_name}.json"
-                    )
-                    # Rimuoviamo il vecchio se presente
+                    # Dalla 10.19.40 la cartella scelta riceve i report e la
+                    # raccolta delle partite, come nella finestra, che la
+                    # mette in custom_save_path e in save_path; il file del
+                    # torneo, e con lui active_filename e il messaggio qui
+                    # sotto, resta nella cartella del programma. Fino alla
+                    # 10.19.39, e gia' nella 10.0.0, active_filename
+                    # diventava un file nella cartella scelta, che non
+                    # nasceva mai, perche' _save_state scrive sempre nella
+                    # cartella del programma: il messaggio Torneo creato
+                    # diceva un file che non c'era, la copia di sicurezza
+                    # della chiusura non si faceva, e i report andavano nella
+                    # cartella del programma (decisione di Gabriele del 7
+                    # novembre 2026).
+                    cartella = os.path.abspath(custom_path)
+                    self.tournament.custom_save_path = cartella
+                    self.tournament.save_path = cartella
                     break
                 except Exception as e:
                     self.ui.show_error(

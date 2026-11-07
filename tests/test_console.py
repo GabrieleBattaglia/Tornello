@@ -395,3 +395,147 @@ class TestRipresaDellaCreazioneSospesa:
 
         assert "creation_suspended" not in torneo
         assert [r["round"] for r in torneo["rounds"]] == [1]
+
+
+class TestCartellaDellaCreazioneInConsole:
+    """10.19.40 (decisione di Gabriele del 7 novembre 2026). Alla fine della
+    creazione la console chiede dove salvare i dati, come la procedura
+    guidata della finestra con la sua Cartella Salvataggio: la cartella
+    scelta riceve i report e la raccolta delle partite, e il file del
+    torneo resta nella cartella del programma, dove save_tournament lo
+    scrive (manuale, sezione 4.1). Il messaggio Torneo creato e
+    active_filename dicono quel file, e la domanda propone la cartella del
+    programma. Fino alla 10.19.39, e gia' nella 10.0.0, con una cartella
+    scelta active_filename e il messaggio dicevano un file nella cartella
+    scelta, che non nasceva mai, la copia di sicurezza della chiusura non
+    si faceva, e i report andavano nella cartella del programma; la domanda
+    proponeva la cartella da cui Tornello era stato avviato. Tornello si
+    avvia qui da un'altra cartella, lavoro."""
+
+    REPORT = ("Tornello - Console_Prova - Classifica.txt", "Tornello - Console_Prova - Turno corrente.txt")
+
+    @staticmethod
+    def _suoni(monkeypatch):
+        """I suoni chiesti da tutti i moduli, annotati per nome."""
+        import cli_adapter
+        import controller
+        import tournament
+        import ui
+        import utils
+
+        suoni = []
+        for modulo in (utils, ui, cli_adapter, tournament, controller):
+            if hasattr(modulo, "play_sound"):
+                monkeypatch.setattr(modulo, "play_sound", lambda nome, *a, **k: suoni.append(nome) or True)
+        return suoni
+
+    @staticmethod
+    def _creazione(monkeypatch, tmp_path, tasti, conferme):
+        """Console_Prova, con i quattro iscritti e senza turni, arriva alla
+        fine della creazione con le risposte date, avviata dalla cartella
+        lavoro."""
+        import config
+        from controller import TournamentController
+
+        lavoro = tmp_path / "lavoro"
+        lavoro.mkdir()
+        monkeypatch.chdir(lavoro)
+        copione = Copione(monkeypatch, tasti=tasti, conferme=conferme)
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+        torneo = _torneo_al_primo_turno()
+        torneo.rounds = []
+        torneo.current_round = 0
+        torneo.next_match_id = 1
+        guida.tournament = torneo
+        guida.active_filename = config.user_data_path("Tornello - Console_Prova.json")
+        guida._completa_la_creazione()
+        assert copione.tasti == [] and copione.conferme == []
+        return types.SimpleNamespace(guida=guida, copione=copione, adattatore=adattatore, lavoro=lavoro)
+
+    @staticmethod
+    def _domande_attese(*altre):
+        import os
+
+        import config
+
+        programma = os.path.abspath(config.user_data_path(""))
+        return ["Accetti il valore suggerito? (No = usa 1.0)", f"Vuoi che i dati vengano salvati in {programma}?", *altre]
+
+    @staticmethod
+    def _copie_di_chiusura():
+        import glob
+        import os
+
+        import config
+
+        return glob.glob(os.path.join(config.user_data_path("backup"), "**", "Tornello - Console_Prova_chiusura_torneo_*.json"), recursive=True)
+
+    @pytest.mark.parametrize("scritta", ["per intero", "relativa"])
+    def test_la_cartella_scelta_riceve_i_report(self, monkeypatch, muto, tmp_path, scritta):
+        """No alla cartella proposta, e la cartella report, scritta per
+        intero o relativa alla cartella da cui Tornello e' avviato: il file
+        del torneo nasce nella cartella del programma, e il messaggio e
+        active_filename dicono quello; il torneo ha la cartella scelta, per
+        intero, per i report, che nascono li', e la cartella del programma
+        non ne ha. All'uscita, dopo una modifica del torneo, la copia di
+        sicurezza della chiusura si fa."""
+        import os
+
+        import config
+        from tournament import load_tournament
+
+        suoni = self._suoni(monkeypatch)
+        scelta = tmp_path / "lavoro" / "report"
+        creato = self._creazione(monkeypatch, tmp_path, [str(scelta) if scritta == "per intero" else "report"], [True, False])
+        file_del_torneo = config.user_data_path("Tornello - Console_Prova.json")
+
+        assert creato.copione.domande == self._domande_attese("Inserisci il percorso di salvataggio desiderato: ")
+        assert creato.guida.active_filename == file_del_torneo
+        assert os.path.isfile(file_del_torneo)
+        assert creato.adattatore.messaggi[-1] == f"\nTorneo 'Console_Prova' creato e Turno 1 generato. File: '{file_del_torneo}'"
+        assert (creato.guida.tournament.custom_save_path, creato.guida.tournament.save_path) == (str(scelta), str(scelta))
+        salvato = load_tournament(file_del_torneo)
+        assert (salvato["custom_save_path"], salvato["save_path"]) == (str(scelta), str(scelta))
+        assert [r["round"] for r in salvato["rounds"]] == [1]
+        assert tuple(sorted(os.listdir(scelta))) == self.REPORT
+        assert not [n for n in os.listdir(config.user_data_path("")) if n.startswith("Tornello - Console_Prova - ")]
+        assert os.listdir(creato.lavoro) == ["report"]
+        assert suoni == ["nuovo_turno"]
+        # Il torneo cambia dopo la copia della creazione, e all'uscita la
+        # copia della chiusura nasce dal suo file.
+        creato.guida.tournament.site = "Altrove"
+        creato.guida._save_state()
+        assert self._copie_di_chiusura() == []
+
+        with pytest.raises(SystemExit):
+            creato.guida._exit_program(0)
+
+        copie = self._copie_di_chiusura()
+        assert len(copie) == 1
+        assert load_tournament(copie[0])["site"] == "Altrove"
+        assert suoni == ["nuovo_turno", "chiusura"]
+
+    def test_con_si_tutto_resta_nella_cartella_del_programma(self, monkeypatch, muto, tmp_path):
+        """Si' alla cartella proposta, che e' quella del programma, e non
+        quella da cui Tornello e' avviato: il file del torneo e i report
+        nascono nella cartella del programma, il torneo non ha una cartella
+        sua, come prima, e la cartella di avvio resta vuota."""
+        import os
+
+        import config
+        from tournament import load_tournament
+
+        suoni = self._suoni(monkeypatch)
+        creato = self._creazione(monkeypatch, tmp_path, [], [True, True])
+        file_del_torneo = config.user_data_path("Tornello - Console_Prova.json")
+
+        assert creato.copione.domande == self._domande_attese()
+        assert creato.guida.active_filename == file_del_torneo
+        assert creato.adattatore.messaggi[-1] == f"\nTorneo 'Console_Prova' creato e Turno 1 generato. File: '{file_del_torneo}'"
+        salvato = load_tournament(file_del_torneo)
+        assert (salvato["custom_save_path"], salvato["save_path"]) == ("", "")
+        nel_programma = os.listdir(config.user_data_path(""))
+        assert tuple(sorted(n for n in nel_programma if n.startswith("Tornello - Console_Prova - "))) == self.REPORT
+        assert os.listdir(creato.lavoro) == []
+        assert suoni == ["nuovo_turno"]
