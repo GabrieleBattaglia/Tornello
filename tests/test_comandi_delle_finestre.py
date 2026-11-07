@@ -1911,7 +1911,10 @@ class TestAlberoETorneoAttivo:
         resta aperto: la versione in memoria, forse vecchia, il primo
         salvataggio la riscriverebbe sul file. Dalla correzione della
         proposta 7 del nono giro e' di nuovo cosi' per il torneo salvato,
-        che non ha modifiche soltanto in memoria."""
+        che non ha modifiche soltanto in memoria. Dalla revisione della
+        10.19.29 la prova guarda anche l'albero, che si ricostruisce senza
+        la voce di Alfa, che non si legge: le voci di Alfa prese dalla
+        memoria, con i suoi rami, non restano."""
         percorsi = self._prepara("Alfa")
         rotto = str(tmp_path / "altrove" / "Tornello - Rotto.json")
         os.makedirs(os.path.dirname(rotto))
@@ -1938,6 +1941,8 @@ class TestAlberoETorneoAttivo:
         assert len(messaggi) == 2
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
+        assert self._tutti_i_file(principale) == []
+        assert [(dati or {}).get("action") for _testo, dati in self._figlie(principale)] == ["start_new_tournament"]
 
     def test_un_json_troppo_annidato_e_un_file_che_non_si_legge(self, principale, suoni, monkeypatch):
         """Correzione della 10.19.29. Alfa e' aperto, e il suo file diventa
