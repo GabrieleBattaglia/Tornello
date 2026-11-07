@@ -6631,7 +6631,9 @@ class TestTorneoCheNonSiSalva:
         """Il torneo nuovo nome, che non si e' salvato nel file percorso, e'
         quello aperto, con i quattro iscritti, il titolo e la barra di stato
         che lo dicono; la sua voce nell'albero viene dalla memoria, e dice
-        fra parentesi la cartella del suo file, e il cursore sta sulla voce
+        soltanto il nome, perche' il suo file va nella cartella del
+        programma: fino alla proposta 2 del nono giro diceva fra parentesi
+        la cartella del suo file. Il cursore sta sulla voce
         calcola il turno 1, nel ramo turni del torneo, come dopo una
         creazione riuscita: fino alla correzione della revisione della
         10.19.20 qui, nel manuale e nel ChangeLog c'era scritto Avvio
@@ -6645,8 +6647,7 @@ class TestTorneoCheNonSiSalva:
         assert principale.last_status_msg == "Torneo creato, ma non ancora salvato nel suo file."
         voce = principale._voce_del_torneo_aperto()
         assert voce is not None
-        cartella = os.path.basename(os.path.dirname(os.path.abspath(percorso)))
-        assert principale.tree_ctrl.GetItemText(voce) == f"{nome} (dalla cartella {cartella})"
+        assert principale.tree_ctrl.GetItemText(voce) == nome
         scelta = principale.tree_ctrl.GetSelection()
         assert principale.tree_ctrl.GetItemData(scelta) == {
             "action": "start_tournament_matchmaking_action",
@@ -6807,6 +6808,122 @@ class TestTorneoCheNonSiSalva:
         non_salvato = [(f.titolo, f.testo) for f in finestre if f.titolo == "Torneo non salvato"]
         assert non_salvato == [self._messaggio(percorso, _descrizione_dell_errore(errori[0]), nome="Gamma"), self._messaggio(percorso, _descrizione_dell_errore(errori[1]), nome="Gamma")]
         assert suoni.count("errore") == 2
+
+
+class TestVoceDelTorneoNuovoNonSalvato:
+    """Proposta 2 del nono giro. La voce del torneo nuovo che non si e'
+    salvato, presa dalla memoria, dice soltanto il nome del torneo: il suo
+    file va nella cartella del programma, e la cartella fra parentesi non
+    serve. Dopo il primo salvataggio riuscito la voce e' quella di ogni
+    torneo sul disco, anche senza ricostruire l'albero. Fino alla proposta
+    diceva per esempio Nuovo Sociale (dalla cartella Tornello), e dopo il
+    primo salvataggio la parentesi restava finche' l'albero non si
+    ricostruiva. Un torneo aperto da un'altra cartella dice sempre la sua
+    cartella. La scrittura del file e le finestre di messaggio sono finte."""
+
+    @staticmethod
+    def _voci_con_il_nome(principale, nome):
+        """I testi delle voci dei tornei che cominciano con nome, in tutto
+        l'albero."""
+        albero = principale.tree_ctrl
+        trovate = []
+        da_guardare = [principale.tree_root]
+        while da_guardare:
+            genitore = da_guardare.pop(0)
+            voce, cookie = albero.GetFirstChild(genitore)
+            while voce.IsOk():
+                dati = albero.GetItemData(voce) or {}
+                if dati.get("action") == "select_tournament" and albero.GetItemText(voce).startswith(nome):
+                    trovate.append(albero.GetItemText(voce))
+                da_guardare.append(voce)
+                voce, cookie = albero.GetNextChild(genitore, cookie)
+        return trovate
+
+    def test_la_voce_dice_il_nome_prima_e_dopo_il_salvataggio(self, principale, suoni, monkeypatch, capsys):
+        """Il primo salvataggio di Nuovo Sociale non riesce, e la sua voce
+        dice Nuovo Sociale, senza parentesi. Con la scrittura vera il
+        salvataggio dopo riesce, e la voce, che l'albero non ha rifatto, dice
+        ancora Nuovo Sociale; lo stesso dopo la ricostruzione dell'albero, e
+        dopo che il torneo si riapre dal suo file. In tutto l'albero c'e' una
+        voce sola con quel nome."""
+        import tournament
+        from config import user_data_path
+
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        vera = TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale", "Bologna")
+        percorso = user_data_path("Tornello - Nuovo_Sociale.json")
+        assert not os.path.exists(percorso)
+        albero = principale.tree_ctrl
+        voce = principale._voce_del_torneo_aperto()
+        assert albero.GetItemText(voce) == "Nuovo Sociale"
+
+        monkeypatch.setattr(tournament, "scrivi_json_atomico", vera)
+        principale._save_state()
+
+        assert os.path.exists(percorso)
+        assert albero.GetItemText(voce) == "Nuovo Sociale"
+        principale.populate_tree()
+        assert albero.GetItemText(principale._voce_del_torneo_aperto()) == "Nuovo Sociale"
+        assert self._voci_con_il_nome(principale, "Nuovo Sociale") == ["Nuovo Sociale"]
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+        assert albero.GetItemText(principale._voce_del_torneo_aperto()) == "Nuovo Sociale"
+        assert self._voci_con_il_nome(principale, "Nuovo Sociale") == ["Nuovo Sociale"]
+
+    def test_da_un_altra_cartella_la_parentesi_resta(self, principale, suoni, monkeypatch, tmp_path):
+        """Alfa, aperto da una chiavetta, non e' piu' sul disco: la sua voce,
+        presa dalla memoria, dice ancora la cartella fra parentesi, perche' il
+        suo file non va nella cartella del programma. E' la regola di prima,
+        che la proposta non cambia."""
+        chiavetta = str(tmp_path / "chiavetta" / "Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(chiavetta, _torneo_in_corso("Alfa"))
+        principale.load_tournament(chiavetta)
+        assert principale._e_il_torneo_aperto(chiavetta)
+        os.remove(chiavetta)
+
+        principale.populate_tree()
+
+        assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == "Alfa (dalla cartella chiavetta)"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="i percorsi senza badare alle maiuscole sono quelli di Windows")
+    def test_con_il_percorso_scritto_con_altre_maiuscole_la_parentesi_non_c_e(self, principale, suoni, monkeypatch, capsys):
+        """Correzione della proposta 2, rilievo 9 della revisione. Il primo
+        salvataggio di Nuovo Sociale non riesce, e il suo file, nella
+        cartella del programma, e' scritto con la cartella in altre
+        maiuscole, un'altra forma dello stesso file su Windows: la voce,
+        presa dalla memoria, dice soltanto il nome, senza parentesi."""
+        TestNomeDelTorneoNuovo._domande(monkeypatch)
+        TestTorneoCheNonSiSalva._scrittura_negata(monkeypatch)
+        TestTorneoCheNonSiSalva._creato(principale, "Nuovo Sociale", "Bologna")
+        cartella, nome = os.path.split(principale.active_filename)
+        principale.active_filename = os.path.join(cartella.swapcase(), nome)
+        assert not os.path.exists(principale.active_filename)
+
+        principale.populate_tree()
+
+        assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == "Nuovo Sociale"
+
+    def test_il_torneo_concluso_rimasto_nella_cartella_tiene_la_parentesi(self, principale, suoni, monkeypatch):
+        """Correzione della proposta 2, rilievo 9 della revisione. Omega,
+        concluso, ha il suo file nella cartella del programma, dove l'albero
+        non elenca i tornei conclusi, ed e' aperto: la sua voce, presa dalla
+        memoria, tiene la cartella fra parentesi, perche' il file c'e', come
+        per ogni torneo aperto che l'albero non trova da se'."""
+        import gui.main_frame as mf
+        from config import user_data_path
+
+        percorso = user_data_path("Tornello - Omega.json")
+        concluso = _torneo_in_corso("Omega", finito=True)
+        concluso["concluded"] = True
+        TestNomeDelTorneoNuovo._scrivi(percorso, concluso)
+        principale.load_tournament(percorso)
+        assert principale._e_il_torneo_aperto(percorso)
+
+        principale.populate_tree()
+
+        cartella = mf._nome_della_cartella(percorso)
+        assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == f"Omega (Ottobre 2026, dalla cartella {cartella})"
 
 
 class TestTorneoNonSalvatoDaLasciare:

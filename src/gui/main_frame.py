@@ -69,6 +69,13 @@ def _nome_della_cartella(percorso):
     return os.path.basename(cartella) or cartella
 
 
+def _nella_cartella_del_programma(percorso):
+    """Vero se il file percorso sta nella cartella del programma, quella
+    dove l'albero cerca i tornei, anche scritto con altre maiuscole."""
+    cartella = os.path.dirname(os.path.abspath(percorso))
+    return os.path.normcase(cartella) == os.path.normcase(_cartella_predefinita_tornei())
+
+
 class FileNonTorneo(ValueError):
     """Un file JSON che non e' un torneo di Tornello, per esempio il database
     dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
@@ -1910,7 +1917,17 @@ class MainFrame(wx.Frame):
                 for f, _data in started_files + in_prep_files + concluded_files
             }
             if _chiave_del_percorso(self.active_filename) not in elencati:
-                dalla_memoria = _chiave_del_percorso(self.active_filename)
+                # Un torneo nuovo che non si e' ancora salvato ha il suo file
+                # nella cartella del programma, dove l'albero lo trovera'
+                # dopo il primo salvataggio riuscito: la cartella fra
+                # parentesi non serve, e la sua voce e' fin da subito quella
+                # che avra' sul disco. Fino alla proposta 2 del nono giro
+                # diceva per esempio Nuovo Sociale (dalla cartella Tornello),
+                # e dopo il primo salvataggio la parentesi restava finche'
+                # l'albero non si ricostruiva. Un torneo aperto da un'altra
+                # cartella la dice sempre, sul disco o no.
+                if os.path.exists(self.active_filename) or not _nella_cartella_del_programma(self.active_filename):
+                    dalla_memoria = _chiave_del_percorso(self.active_filename)
                 aperto = (self.active_filename, self.current_tournament)
                 if self.current_tournament.get("concluded"):
                     concluded_files.append(aperto)
