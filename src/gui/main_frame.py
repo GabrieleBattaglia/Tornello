@@ -6014,9 +6014,10 @@ class MainFrame(wx.Frame):
         giocare programmata perde la programmazione, dopo una domanda (issue
         58). Su una partita da giocare non programmata suona l'errore, e
         dalla 10.19.0 un messaggio dice che non c'e' niente da togliere; lo
-        stesso per una partita di un torneo che non e' quello aperto."""
+        stesso per una partita di un torneo che non e' quello aperto. Dalla
+        10.19.38 una partita che nel torneo aperto non c'e' piu' lo dice il
+        messaggio Partita non cambiata, e l'albero si ridisegna."""
         from tournament import e_un_riposo
-        from utils import play_sound
 
         partita, turno = self._partita_della_voce(dati)
         if partita is None:
@@ -6028,7 +6029,25 @@ class MainFrame(wx.Frame):
                     _("Torneo non aperto"),
                 )
                 return
-            play_sound("errore", self.current_tournament)
+            # Dalla 10.19.38 (decisione di Gabriele del 7 novembre 2026) la
+            # partita che nel torneo aperto non c'e' piu', per esempio perche'
+            # le frecce hanno aperto il torneo dal suo file, cambiato dopo
+            # che l'albero lo aveva letto, lo dice il messaggio Partita non
+            # cambiata, con il suono dell'errore, e l'albero si ridisegna, con
+            # il cursore sul turno della partita. Fino alla 10.19.37, e gia'
+            # dalla 10.14.0, si sentiva soltanto il suono dell'errore.
+            self._voce_che_non_c_e_piu(
+                _("Partita non cambiata"),
+                _(
+                    "La partita della scacchiera {board} del turno {round} non è più nel torneo {nome}: forse il file {file} è cambiato dopo che l'albero lo aveva letto. Il torneo resta com'era, e l'albero adesso mostra le sue partite aggiornate."
+                ).format(
+                    board=dati.get("board_num"),
+                    round=dati.get("round"),
+                    nome=self.current_tournament.get("name", ""),
+                    file=self.active_filename,
+                ),
+                {"action": "show_round_report", "filepath": self.active_filename, "round": dati.get("round")},
+            )
             return
         if partita.get("result") is not None or e_un_riposo(partita):
             self._cancella_risultato(partita, turno)

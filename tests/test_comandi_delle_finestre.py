@@ -9237,8 +9237,9 @@ class TestCancSuUnaVoceCheNonCePiu:
     suono e senza messaggio. Dalla 10.19.37 lo stesso per l'iscritto di un
     torneo iniziato, con il messaggio Giocatore non ritirato, dove CANC
     usciva in silenzio, e il messaggio Giocatore gia' ritirato ha il suono
-    dell'errore. Le finestre di messaggio sono finte, e il fuoco si
-    annota."""
+    dell'errore. Dalla 10.19.38 lo stesso per una partita, con il messaggio
+    Partita non cambiata, dove si sentiva soltanto il suono dell'errore. Le
+    finestre di messaggio sono finte, e il fuoco si annota."""
 
     @staticmethod
     def _gamma_cambiata(principale):
@@ -9435,3 +9436,75 @@ class TestCancSuUnaVoceCheNonCePiu:
         assert suoni == ["errore"]
         assert registro.fuoco == []
         assert principale.last_status_msg == barra
+
+    @pytest.mark.parametrize("cambio", ["partita", "turno"])
+    def test_la_partita_che_non_c_e_piu(self, principale, suoni, monkeypatch, cambio):
+        """10.19.38. Alfa e Gamma, in corso, nell'albero, con Alfa aperta;
+        poi nel file di Gamma la partita della scacchiera 2 del turno 1
+        cambia identificativo, o il turno 1 sparisce e Gamma torna in
+        preparazione, come dopo un cambio fatto da un altro programma. Le
+        frecce sulla voce della partita aprono Gamma dal suo file, senza
+        ridisegnare l'albero, e CANC dal menu: il suono dell'errore, l'albero
+        ridisegnato e il messaggio Partita non cambiata; il file di Gamma
+        resta com'era. Il cursore va sulla voce del turno, con il fuoco
+        all'albero, o, se il turno non c'e' piu', sulla voce di Gamma. Fino
+        alla 10.19.37 si sentiva soltanto il suono dell'errore."""
+        import wx
+
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Gamma.json"), _torneo_in_corso("Gamma"))
+        principale.load_tournament(alfa)
+        gamma = principale._percorso_come_nell_albero(user_data_path("Tornello - Gamma.json"))[0]
+        voce = principale._find_matching_item(
+            principale.tree_root, {"action": "activate_match", "filepath": gamma, "round": 1, "board_num": 2, "match": {"id": 2}}
+        )
+        assert voce and voce.IsOk()
+        dati = TestNomeEDataDiInizioDaDati._nel_file(gamma)
+        if cambio == "partita":
+            dati["rounds"][0]["matches"][1]["id"] = 7
+        else:
+            dati["rounds"] = []
+        TestNomeDelTorneoNuovo._scrivi(gamma, dati)
+        with open(gamma, "rb") as f:
+            contenuto = f.read()
+        principale.tree_ctrl.SelectItem(voce)
+        assert principale._e_il_torneo_aperto(gamma)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Partita non cambiata",
+                f"La partita della scacchiera 2 del turno 1 non è più nel torneo Gamma: forse il file {gamma} è cambiato dopo che l'albero lo aveva letto. "
+                "Il torneo resta com'era, e l'albero adesso mostra le sue partite aggiornate.",
+                False,
+            )
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        with open(gamma, "rb") as f:
+            assert f.read() == contenuto
+        assert principale._e_il_torneo_aperto(gamma)
+        assert registro.caricati == []
+        assert principale.last_status_msg == barra
+        if cambio == "partita":
+            assert principale.current_tournament["rounds"][0]["matches"][1] == dati["rounds"][0]["matches"][1]
+            assert principale._find_matching_item(
+                principale.tree_root, {"action": "activate_match", "filepath": gamma, "round": 1, "board_num": 2, "match": {"id": 7}}
+            )
+            assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "show_round_report", "filepath": gamma, "round": 1}
+            assert registro.fuoco == ["tree_ctrl"]
+        else:
+            assert principale.current_tournament["rounds"] == []
+            assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 1}) is None
+            assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": gamma}
+            assert registro.fuoco == []
