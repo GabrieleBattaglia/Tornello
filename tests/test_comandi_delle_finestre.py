@@ -54,6 +54,15 @@ def _descrizione_dell_errore(testo):
     return trovato.group(1)
 
 
+def _apertura_non_riuscita(percorso, motivo):
+    """Il titolo e il testo del messaggio Apertura non riuscita, per il file
+    percorso che non si apre, con motivo, la descrizione: dalla 10.19.33
+    (decisione di Gabriele del 7 novembre 2026) prende il posto del
+    wx.MessageBox senza suono Errore nel caricamento del torneo, con il
+    testo intero dell'errore."""
+    return ("Apertura non riuscita", f"Il file {percorso} non si è potuto aprire: {motivo}.")
+
+
 def _eventi_in_coda():
     """Esegue le chiamate lasciate a wx.CallAfter, come fa il ciclo degli
     eventi quando l'azione e' finita."""
@@ -1914,31 +1923,49 @@ class TestAlberoETorneoAttivo:
         che non ha modifiche soltanto in memoria. Dalla revisione della
         10.19.29 la prova guarda anche l'albero, che si ricostruisce senza
         la voce di Alfa, che non si legge: le voci di Alfa prese dalla
-        memoria, con i suoi rami, non restano."""
+        memoria, con i suoi rami, non restano. Dalla 10.19.33 il messaggio
+        e' Apertura non riuscita, nella finestra accessibile e con il suono
+        dell'errore, con il file e il testo dell'errore di json: fino alla
+        10.19.32 era un wx.MessageBox senza suono, Errore nel caricamento del
+        torneo."""
         percorsi = self._prepara("Alfa")
         rotto = str(tmp_path / "altrove" / "Tornello - Rotto.json")
         os.makedirs(os.path.dirname(rotto))
         with open(rotto, "w", encoding="utf-8") as f:
             f.write("{rotto")
-        self._sonde(principale)
+        registro = self._sonde(principale)
         principale.populate_tree()
         self._scegli_torneo(principale, percorsi["Alfa"])
         messaggi = []
         monkeypatch.setattr("wx.MessageBox", lambda testo, *a, **k: messaggi.append(testo))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        registro.fuoco.clear()
+        suoni.clear()
 
         self._apri_con_ctrl_o(principale, monkeypatch, rotto)
 
-        assert len(messaggi) == 1
-        assert messaggi[0].startswith("Errore nel caricamento del torneo:")
+        assert messaggi == []
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (*_apertura_non_riuscita(rotto, "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"), False)
+        ]
+        assert suoni == ["errore"]
         assert principale.active_filename == percorsi["Alfa"]
         assert principale.GetTitle().endswith("[Alfa]")
         assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Alfa'."
+        assert self._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": percorsi["Alfa"]}
+        assert registro.fuoco == []
 
         with open(percorsi["Alfa"], "w", encoding="utf-8") as f:
             f.write("{rovinato")
+        finestre.clear()
+        suoni.clear()
         self._apri_con_ctrl_o(principale, monkeypatch, percorsi["Alfa"])
 
-        assert len(messaggi) == 2
+        assert messaggi == []
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            _apertura_non_riuscita(percorsi["Alfa"], "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)")
+        ]
+        assert suoni == ["errore"]
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
         assert self._tutti_i_file(principale) == []
@@ -1951,19 +1978,28 @@ class TestAlberoETorneoAttivo:
         E' un file che non si legge, come in omonimi.py dalla 10.19.13: il
         messaggio Errore nel caricamento del torneo lo dice, nessun torneo
         resta aperto, e la barra di stato lo dice. Dalla 10.13.10 l'errore
-        usciva dall'apertura, senza messaggio, e Alfa restava in memoria."""
+        usciva dall'apertura, senza messaggio, e Alfa restava in memoria.
+        Dalla 10.19.33 il messaggio e' Apertura non riuscita, con il suono
+        dell'errore e il testo dell'errore, che dice quanta pila e' servita:
+        fino alla 10.19.32 era un wx.MessageBox senza suono."""
         percorsi = self._prepara("Alfa")
         principale.load_tournament(percorsi["Alfa"])
         messaggi = []
         monkeypatch.setattr("wx.MessageBox", lambda testo, *a, **k: messaggi.append(testo))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         with open(percorsi["Alfa"], "w", encoding="utf-8") as f:
             f.write("[" * 200000 + "]" * 200000)
+        suoni.clear()
 
         principale.load_tournament(percorsi["Alfa"])
 
-        assert len(messaggi) == 1
-        assert messaggi[0].startswith("Errore nel caricamento del torneo:")
-        assert "while decoding a JSON array" in messaggi[0]
+        assert messaggi == []
+        assert [f.titolo for f in finestre] == ["Apertura non riuscita"]
+        inizio = f"Il file {percorsi['Alfa']} non si è potuto aprire: "
+        assert finestre[0].testo.startswith(inizio)
+        assert finestre[0].testo.endswith(" while decoding a JSON array from a unicode string.")
+        assert "Errore" not in finestre[0].testo
+        assert suoni == ["errore"]
         self._nessun_torneo_aperto(principale)
         assert principale.last_status_msg == "Il torneo non si è aperto: nessun torneo aperto."
 
@@ -2115,7 +2151,12 @@ class TestAlberoETorneoAttivo:
     def test_invio_su_un_torneo_che_non_si_apre_non_fa_partire_l_azione(self, principale, suoni, monkeypatch):
         """INVIO su calcola il turno 1 di Beta, il cui file non c'e' piu':
         il messaggio d'errore, e il turno non parte. Fino alla 10.13.9
-        l'avvio proseguiva, senza un torneo da avviare."""
+        l'avvio proseguiva, senza un torneo da avviare. Dalla 10.19.33 il
+        messaggio e' Apertura non riuscita, nella finestra accessibile, con
+        il suono dell'errore, il file e la sola descrizione del motivo: fino
+        alla 10.19.32 era un wx.MessageBox senza suono, Errore nel
+        caricamento del torneo, con il testo intero dell'errore, che aveva il
+        percorso con le barre doppie."""
         from config import user_data_path
 
         percorsi = self._prepara("Alfa")
@@ -2123,19 +2164,27 @@ class TestAlberoETorneoAttivo:
         torneo = _torneo_in_corso("Beta")
         torneo["rounds"] = []
         self._scrivi(beta, torneo)
-        self._sonde(principale)
+        registro = self._sonde(principale)
         principale.populate_tree()
         self._scegli_torneo(principale, percorsi["Alfa"])
         voce = self._voce(principale, action="start_tournament_matchmaking_action", filepath=beta)
+        della_voce = principale.tree_ctrl.GetItemData(voce)["filepath"]
         os.remove(beta)
         messaggi, avviati = [], []
         monkeypatch.setattr("wx.MessageBox", lambda testo, *a, **k: messaggi.append(testo))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale.start_tournament_matchmaking = lambda *a, **k: avviati.append(principale.active_filename)
+        registro.fuoco.clear()
+        suoni.clear()
 
         principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
 
-        assert len(messaggi) == 1
+        assert messaggi == []
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*_apertura_non_riuscita(della_voce, "No such file or directory"), False)]
+        assert suoni == ["errore"]
         assert avviati == []
+        assert principale.current_tournament is None
+        assert registro.fuoco == []
 
     CAMPI_DEL_RAMO_DATI = (
         ("name", "Nome Torneo"),
@@ -2161,7 +2210,11 @@ class TestAlberoETorneoAttivo:
         campo non si apre. Tornato il file, INVIO apre Beta, e il campo si
         apre con la sua finestra. Fino alla 10.19.17, e gia' nella 10.0.0,
         INVIO sui campi del ramo Dati leggeva il torneo aperto, None, e
-        sollevava AttributeError: si vedeva la finestra Errore Imprevisto."""
+        sollevava AttributeError: si vedeva la finestra Errore Imprevisto.
+        Dalla 10.19.33 il messaggio e' Apertura non riuscita, nella finestra
+        accessibile, con il suono dell'errore, il file e la sola descrizione
+        del motivo, alle frecce e a INVIO: fino alla 10.19.32 era un
+        wx.MessageBox senza suono, Errore nel caricamento del torneo."""
         import wx
 
         from config import user_data_path
@@ -2173,6 +2226,7 @@ class TestAlberoETorneoAttivo:
         self._scrivi(beta, torneo)
         principale.load_tournament(percorsi["Alfa"])
         voce = self._voce(principale, action="show_data", filepath=beta, field_active=campo)
+        atteso = _apertura_non_riuscita(principale.tree_ctrl.GetItemData(voce)["filepath"], "No such file or directory")
         messaggi, aperti = [], []
         monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: messaggi.append(testo))
 
@@ -2193,26 +2247,29 @@ class TestAlberoETorneoAttivo:
         monkeypatch.setattr(wx, "SingleChoiceDialog", CampoFinto)
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         os.remove(beta)
+        suoni.clear()
         principale.tree_ctrl.SelectItem(voce)
         _eventi_in_coda()
         assert principale.current_tournament is None
         assert principale.tree_ctrl.GetSelection() == voce
-        assert len(messaggi) == 1
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*atteso, False)]
+        assert suoni == ["errore"]
         suoni.clear()
 
         principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
 
-        assert messaggi == [messaggi[0]] * 2
+        assert [(f.titolo, f.testo) for f in finestre] == [atteso] * 2
+        assert messaggi == []
         assert aperti == []
-        assert finestre == []
-        assert "apertura" not in suoni
+        assert suoni == ["errore"]
         assert principale.current_tournament is None
         assert principale.tree_ctrl.GetSelection() == voce
+        finestre.clear()
 
         self._scrivi(beta, torneo)
         principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
 
-        assert len(messaggi) == 2
+        assert messaggi == []
         assert principale._e_il_torneo_aperto(beta)
         assert aperti == [(titolo, principale.active_filename)]
         assert finestre == []
@@ -7691,7 +7748,12 @@ class TestTorneoNonSalvatoDaLasciare:
         aperta lo stesso, con le modifiche che la domanda aveva detto perse.
         Dalla correzione della 10.19.29 vale anche per un json annidato oltre
         il limite di Python, che json.load rifiuta con RecursionError: fino ad
-        allora Apri Torneo finiva senza messaggio, con l'errore in console."""
+        allora Apri Torneo finiva senza messaggio, con l'errore in console.
+        Dalla 10.19.33 il file rovinato e quello troppo annidato li dice il
+        messaggio Apertura non riuscita, nella finestra accessibile e con il
+        suono dell'errore, con il file e il testo dell'errore: fino alla
+        10.19.32 era un wx.MessageBox senza suono, Errore nel caricamento del
+        torneo."""
         import wx
 
         scatole = []
@@ -7713,11 +7775,18 @@ class TestTorneoNonSalvatoDaLasciare:
             assert [(f.titolo, f.testo) for f in finestre] == [("Non è un torneo", "Il file Tornello - Altro.json non è un torneo di Tornello, e non si apre.")]
             assert suoni == ["errore"]
             assert scatole == []
+        elif contenuto == "rovinato":
+            assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+                (*_apertura_non_riuscita(scelto, "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"), False)
+            ]
+            assert suoni == ["errore"]
+            assert scatole == []
         else:
-            assert finestre == []
-            assert len(scatole) == 1
-            assert scatole[0].startswith("Errore nel caricamento del torneo:")
-            assert suoni == []
+            assert [(f.titolo, f.domanda) for f in finestre] == [("Apertura non riuscita", False)]
+            assert finestre[0].testo.startswith(f"Il file {scelto} non si è potuto aprire: ")
+            assert finestre[0].testo.endswith(" while decoding a JSON array from a unicode string.")
+            assert suoni == ["errore"]
+            assert scatole == []
         assert registro.caricati == []
         self._primavera_com_era(principale, bloccata)
         assert principale.tree_ctrl.GetSelection() == bloccata.luogo
@@ -7755,7 +7824,10 @@ class TestTorneoNonSalvatoDaLasciare:
         memoria, con Roma, con il cursore sulla voce Luogo. Tolto il blocco,
         il salvataggio dopo scrive Roma. Fino alla correzione la domanda
         usciva, e con Si' l'errore arrivava dopo e chiudeva Primavera 2:
-        Roma non arrivava piu' nel file."""
+        Roma non arrivava piu' nel file. Dalla 10.19.33 il messaggio e'
+        Apertura non riuscita, nella finestra accessibile e con il suono
+        dell'errore, con il file e lo stesso errore, per esempio 'id': fino
+        alla 10.19.32 era un wx.MessageBox senza suono."""
         import wx
 
         dati, errore = FILE_CHE_NON_SI_APRONO[forma]
@@ -7770,9 +7842,9 @@ class TestTorneoNonSalvatoDaLasciare:
         TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
 
         assert mostrate == [0]
-        assert finestre == []
-        assert scatole == [f"Errore nel caricamento del torneo: {errore}"]
-        assert suoni == []
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [(*_apertura_non_riuscita(scelto, errore), False)]
+        assert scatole == []
+        assert suoni == ["errore"]
         assert registro.caricati == []
         self._primavera_com_era(principale, bloccata)
         assert principale.tree_ctrl.GetSelection() == bloccata.luogo
@@ -7794,19 +7866,24 @@ class TestTorneoNonSalvatoDaLasciare:
         il titolo, l'area centrale e il cursore di prima. Tolto il blocco, il
         salvataggio dopo scrive Roma. Fino alla correzione l'errore arrivava
         con il torneo gia' al posto di Primavera 2, e nessun torneo restava
-        aperto."""
+        aperto. Dalla 10.19.33 il messaggio di sempre e' Apertura non
+        riuscita, con il suono dell'errore."""
         import wx
 
         dati, errore = FILE_CHE_NON_SI_APRONO["iscritto senza identificativo"]
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: scatole.append(testo))
+        finestre = self._finestre(monkeypatch)
         scelto = self._scrivi_strano(tmp_path, dati)
         titolo = principale.GetTitle()
         area = principale.main_text.GetValue()
+        suoni.clear()
 
         principale.load_tournament(scelto, tieni_il_precedente=True)
 
-        assert scatole == [f"Errore nel caricamento del torneo: {errore}"]
+        assert [(f.titolo, f.testo) for f in finestre] == [_apertura_non_riuscita(scelto, errore)]
+        assert scatole == []
+        assert suoni == ["errore"]
         self._primavera_com_era(principale, bloccata)
         assert principale.GetTitle() == titolo
         assert principale.main_text.GetValue() == area
@@ -7911,7 +7988,11 @@ class TestTorneoNonSalvatoDaLasciare:
         aperta, com'e' in memoria, con Roma. Fino alla correzione Estate 3 si
         apriva dalla lettura di prima della domanda: senza luogo, e il primo
         salvataggio cancellava Napoli dal file; sparito, si apriva lo stesso,
-        senza il suo file; rovinato, si apriva com'era."""
+        senza il suo file; rovinato, si apriva com'era. Dalla 10.19.33 il
+        messaggio e' Apertura non riuscita, nella finestra accessibile e con
+        il suono dell'errore, dopo quello della domanda, con il file e la
+        sola descrizione del motivo: fino alla 10.19.32 era un wx.MessageBox
+        senza suono, Errore nel caricamento del torneo."""
         import json
 
         import wx
@@ -7948,19 +8029,25 @@ class TestTorneoNonSalvatoDaLasciare:
 
         monkeypatch.setattr(mf, "AccessibleMsgDialog", CambiaDuranteLaDomanda)
         self._finestra_apri(monkeypatch, finestre, estate)
+        suoni.clear()
 
         TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
 
         assert self._domande_fatte(finestre) == [(*self._domanda(bloccata.descrizione), True)]
+        assert scatole == []
         if cambio == "luogo nuovo":
-            assert scatole == []
             assert principale._e_il_torneo_aperto(estate)
             assert principale.current_tournament["site"] == "Napoli"
             principale._save_state()
             assert TestNomeEDataDiInizioDaDati._nel_file(estate)["site"] == "Napoli"
             return
-        assert len(scatole) == 1
-        assert scatole[0].startswith("Errore nel caricamento del torneo:")
+        motivo = {
+            "sparito": "No such file or directory",
+            "rovinato": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+            "iscritto senza identificativo": "'id'",
+        }[cambio]
+        assert [(f.titolo, f.testo) for f in finestre] == [self._domanda(bloccata.descrizione), _apertura_non_riuscita(estate, motivo)]
+        assert suoni == ["errore", "errore"]
         self._primavera_com_era(principale, bloccata)
         assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
 

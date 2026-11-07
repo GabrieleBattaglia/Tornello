@@ -1453,14 +1453,26 @@ class MainFrame(wx.Frame):
         versione vecchia, che il primo salvataggio riscriverebbe sul file."""
         from utils import play_sound
 
+        play_sound("errore")
         if isinstance(errore, FileNonTorneo):
-            play_sound("errore")
             self._dialogo_informativo(_("Non è un torneo"), str(errore))
         else:
-            wx.MessageBox(
-                _("Errore nel caricamento del torneo: {}").format(errore),
-                _("Errore"),
-                wx.ICON_ERROR,
+            # Dalla 10.19.33 (decisione di Gabriele del 7 novembre 2026) il
+            # file che non si apre lo dice il messaggio Apertura non
+            # riuscita, nella finestra accessibile e con il suono
+            # dell'errore, con il file e del motivo la sola descrizione: per
+            # un file sparito No such file or directory, per un json rovinato
+            # il testo dell'errore di json. Vale per ogni strada che apre un
+            # torneo: Apri Torneo, le frecce e INVIO sulla voce di un torneo,
+            # l'avvio con un torneo solo nella cartella. Fino alla 10.19.32,
+            # e gia' nella 10.0.0, era un wx.MessageBox senza suono, Errore
+            # nel caricamento del torneo, con il testo intero dell'errore,
+            # che per un file sparito aveva il percorso con le barre doppie.
+            self._dialogo_informativo(
+                _("Apertura non riuscita"),
+                _("Il file {file} non si è potuto aprire: {motivo}.").format(
+                    file=filepath, motivo=_descrizione_del_motivo(errore)
+                ),
             )
         if (
             tieni_il_precedente
