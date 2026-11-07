@@ -9226,6 +9226,62 @@ class TestApriTorneoNellaProceduraGuidata:
             assert registro.caricati == []
             assert registro.fuoco == []
 
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("cambio", ["sparito", "rovinato"])
+    def test_su_un_altro_torneo_che_si_guasta_durante_la_domanda(self, principale, suoni, monkeypatch, capsys, bloccata, cambio):
+        """Correzione della 10.19.34. Primavera 2 ha Roma soltanto in
+        memoria: Nuovo torneo, con Si' alla domanda Torneo non salvato, e poi
+        Apri Torneo sul file di Estate 3, che prima della domanda si legge e
+        si apre. La domanda esce di nuovo, e mentre aspetta la risposta il
+        file di Estate 3 sparisce, o si rovina: con Si' il file si rilegge, e
+        non si apre. Esce il messaggio Apertura non riuscita, con il suono
+        dell'errore dopo quello della domanda, Primavera 2 resta aperta, con
+        Roma, e la procedura resta com'era, come per ogni Apri Torneo che non
+        riesce. Fino alla correzione nessuna prova guardava questo caso: una
+        chiusura della procedura anche dopo un Apri Torneo che non riesce
+        passava tutte le prove della 10.19.34."""
+        import wx
+
+        import gui.main_frame as mf
+
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_YES, wx.ID_YES])
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        Finto = mf.AccessibleMsgDialog
+        estate = bloccata.estate
+
+        class GuastaDuranteLaDomanda(Finto):
+            def ShowModal(self):
+                if self.domanda:
+                    if cambio == "sparito":
+                        os.remove(estate)
+                    else:
+                        with open(estate, "w", encoding="utf-8") as f:
+                            f.write("{rotto")
+                return super().ShowModal()
+
+        monkeypatch.setattr(mf, "AccessibleMsgDialog", GuastaDuranteLaDomanda)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo()._apri_con_ctrl_o(principale, monkeypatch, estate)
+
+        motivo = {
+            "sparito": "No such file or directory",
+            "rovinato": "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
+        }[cambio]
+        domanda = TestTorneoNonSalvatoDaLasciare._domanda(bloccata.descrizione)
+        assert [(f.titolo, f.testo) for f in finestre] == [domanda, domanda, _apertura_non_riuscita(estate, motivo)]
+        assert suoni == ["errore", "errore"]
+        assert scatole == []
+        self._procedura_com_era(principale)
+        TestTorneoNonSalvatoDaLasciare._primavera_com_era(principale, bloccata)
+        assert registro.caricati == ["Tornello - Estate_3.json"]
+        assert registro.fuoco == []
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
+
 
 class TestCancSuUnaVoceCheNonCePiu:
     """10.19.35 (decisione di Gabriele del 7 novembre 2026). CANC sulla voce
