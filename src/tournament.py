@@ -1,3 +1,4 @@
+import glob
 import json
 import math
 import os
@@ -73,12 +74,18 @@ def _ricalcola_stato_giocatore_da_storico(player_obj):
             player_obj["consecutive_white"] = 0
 
 
-def time_machine_torneo(torneo):
+def time_machine_torneo(torneo, percorso=None):
     """
     Permette di riavvolgere il torneo a uno stato precedente, cancellando
     i risultati dei turni successivi a quello scelto.
     ORA CORREGGE ANCHE next_match_id e ricalcola i punti dei BYE.
     Restituisce True se il riavvolgimento è stato effettuato, False altrimenti.
+    percorso e' il file del torneo, quello che la console ha aperto: la
+    copia di sicurezza di prima del riavvolgimento si fa da li', come nella
+    finestra. Dalla 10.19.41 la console lo passa sempre; senza, il file e'
+    quello che nasce dal nome, come fino alla 10.19.40, quando per un torneo
+    rinominato dal ramo Dati della finestra, che tiene il file di prima, la
+    copia non si faceva (decisione di Gabriele del 7 novembre 2026).
     """
     current_round = torneo.get("current_round", 1)
     print(_("Time Machine"))
@@ -127,8 +134,8 @@ def time_machine_torneo(torneo):
     print(prompt_template_4.format(target_round=target_round))
 
     # Crea un backup del file torneo corrente prima dell'operazione
-    if "name" in torneo:
-        current_filename = user_data_path(
+    if percorso or "name" in torneo:
+        current_filename = percorso or user_data_path(
             f"Tornello - {sanitize_filename(torneo['name'])}.json"
         )
         if create_backup(current_filename, "pre_timemachine"):
@@ -408,6 +415,26 @@ def _togli_l_ultimo_turno(torneo):
     # Ricostruisci il dizionario cache per coerenza
     torneo["players_dict"] = {p["id"]: p for p in torneo.get("players", [])}
     return last_round_num
+
+
+def tornei_nella_cartella_del_programma():
+    """I file dei tornei della cartella del programma, con il percorso
+    intero: quelli in corso e in preparazione, senza i tornei conclusi non
+    ancora archiviati, il database dei giocatori e le impostazioni. Sono i
+    tornei che l'albero della finestra elenca da se', fuori dall'archivio,
+    e dalla 10.19.41 anche quelli che la versione a riga di comando propone
+    all'avvio: fino alla 10.19.40, e gia' nella 10.0.0, la console li
+    cercava nella cartella da cui Tornello era avviato (decisione di
+    Gabriele del 7 novembre 2026)."""
+    from config import PLAYER_DB_FILE
+
+    return [
+        f
+        for f in glob.glob(user_data_path("Tornello - *.json"))
+        if "- concluso_" not in os.path.basename(f).lower()
+        and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
+        and os.path.basename(f) != "Tornello - Settings.json"
+    ]
 
 
 def load_tournament(filename_to_load):

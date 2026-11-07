@@ -1508,16 +1508,12 @@ class MainFrame(wx.Frame):
     def _file_dei_tornei(self):
         """I file che l'albero legge da se': i tornei della cartella del
         programma, senza il database dei giocatori e le impostazioni, e
-        quelli dell'archivio dei tornei conclusi. Due elenchi, in quest'ordine."""
-        from config import PLAYER_DB_FILE
+        quelli dell'archivio dei tornei conclusi. Due elenchi, in quest'ordine.
+        I primi li cerca tornei_nella_cartella_del_programma di tournament.py,
+        che dalla 10.19.41 usa anche la console."""
+        from tournament import tornei_nella_cartella_del_programma
 
-        in_cartella = [
-            f
-            for f in glob.glob(user_data_path("Tornello - *.json"))
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        in_cartella = tornei_nella_cartella_del_programma()
         in_archivio = glob.glob(
             os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
             recursive=True,

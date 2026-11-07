@@ -541,3 +541,224 @@ class TestCartellaDellaCreazioneInConsole:
         assert tuple(sorted(n for n in nel_programma if n.startswith("Tornello - Console_Prova - "))) == self.REPORT
         assert os.listdir(creato.lavoro) == []
         assert suoni == ["nuovo_turno"]
+
+
+class TestIlFileDelTorneoInConsole:
+    """10.19.41 (decisione di Gabriele del 7 novembre 2026). La console
+    cerca i tornei nella cartella del programma, come l'albero della
+    finestra, da qualunque cartella sia avviata, e tiene il file del torneo
+    con il percorso intero; il torneo aperto si salva sempre nel suo file,
+    come nella finestra: i salvataggi del controller, quelli di
+    ui.update_match_result, la sospensione dell'iscrizione e la copia di
+    sicurezza della Time Machine. Fino alla 10.19.40, e gia' nella 10.0.0,
+    la console cercava i tornei nella cartella di avvio, e li salvava nel
+    file che nasce dal nome, nella cartella del programma: avviata da
+    un'altra cartella con una copia del torneo, apriva la copia e la
+    scriveva sopra il torneo vero; un torneo rinominato dal ramo Dati della
+    finestra, che tiene il file di prima, finiva in un file nuovo, e quello
+    aperto restava com'era, anche con la creazione sospesa, che all'avvio
+    dopo tornava e riscriveva il turno 1 del torneo gia' avviato."""
+
+    @staticmethod
+    def _scrivi(percorso, torneo):
+        import json
+
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(torneo, f)
+
+    @staticmethod
+    def _leggi(percorso):
+        import json
+
+        with open(percorso, encoding="utf-8") as f:
+            return json.load(f)
+
+    @staticmethod
+    def _tornei():
+        """I file dei tornei nella cartella del programma, per nome."""
+        import os
+
+        import config
+
+        return sorted(
+            n
+            for n in os.listdir(config.user_data_path(""))
+            if n.startswith("Tornello - ") and n.endswith(".json") and n not in ("Tornello - Players_db.json", "Tornello - Settings.json")
+        )
+
+    @staticmethod
+    def _copie(nome):
+        import glob
+        import os
+
+        import config
+
+        return glob.glob(os.path.join(config.user_data_path("backup"), "**", nome), recursive=True)
+
+    def _rinominato(self, **altro):
+        """Il torneo Corona nel file Tornello - Prova_stessa_data.json, come
+        lo lascia un cambio del nome dal ramo Dati della finestra."""
+        import config
+
+        torneo = _torneo_al_primo_turno().to_dict()
+        torneo["name"] = "Corona"
+        torneo.update(altro)
+        percorso = config.user_data_path("Tornello - Prova_stessa_data.json")
+        self._scrivi(percorso, torneo)
+        return percorso
+
+    def test_avviata_da_un_altra_cartella_apre_e_salva_il_torneo_del_programma(self, monkeypatch, muto, tmp_path):
+        """Nella cartella del programma Console_Prova ha il risultato della
+        prima partita; nella cartella di avvio, lavoro, c'e' una sua copia
+        vecchia, senza risultati. INVIO apre il torneo della cartella del
+        programma, con il percorso intero, e il salvataggio lo scrive li':
+        la copia resta com'era."""
+        import os
+
+        import config
+        from controller import TournamentController
+
+        vero = _torneo_al_primo_turno().to_dict()
+        vero["rounds"][0]["matches"][0]["result"] = "1-0"
+        file_vero = config.user_data_path("Tornello - Console_Prova.json")
+        self._scrivi(file_vero, vero)
+        lavoro = tmp_path / "lavoro"
+        lavoro.mkdir()
+        copia = lavoro / "Tornello - Console_Prova.json"
+        self._scrivi(copia, _torneo_al_primo_turno().to_dict())
+        prima = copia.read_bytes()
+        monkeypatch.chdir(lavoro)
+        copione = Copione(monkeypatch, tasti=[""])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        assert adattatore.messaggi == [
+            "\nTrovato un solo torneo esistente: 'Console_Prova' (File: Tornello - Console_Prova.json)",
+            "Caricamento di 'Console_Prova'...",
+        ]
+        assert guida.active_filename == file_vero
+        assert guida.tournament.rounds[0].matches[0].result == "1-0"
+        guida.tournament.site = "Altrove"
+        guida._save_state()
+        salvato = self._leggi(file_vero)
+        assert (salvato["site"], salvato["rounds"][0]["matches"][0]["result"]) == ("Altrove", "1-0")
+        assert copia.read_bytes() == prima
+        assert os.listdir(lavoro) == ["Tornello - Console_Prova.json"]
+
+    @pytest.mark.parametrize("strada", ["risultato", "time machine", "abbinamento non riuscito"])
+    def test_un_torneo_rinominato_resta_nel_suo_file(self, monkeypatch, muto, tmp_path, capsys, strada):
+        """Corona, rinominato dalla finestra, si apre dalla console e si
+        gioca: un risultato registrato, una Time Machine chiesta con t fra i
+        risultati, o la Time Machine dopo un abbinamento non riuscito. Ogni
+        salvataggio scrive nel file aperto, la copia di sicurezza della
+        Time Machine si fa da li', e un file con il nome nuovo non nasce."""
+        import controller
+        from controller import TournamentController
+
+        if strada == "abbinamento non riuscito":
+            torneo = _torneo_al_primo_turno().to_dict()
+            for partita, risultato in zip(torneo["rounds"][0]["matches"], ("1-0", "0-1"), strict=True):
+                partita["result"] = risultato
+            aperto = self._rinominato(rounds=torneo["rounds"])
+            monkeypatch.setattr(controller, "generate_pairings_for_round", lambda *a, **k: None)
+            monkeypatch.setattr(controller, "handle_bbpairings_failure", lambda *a, **k: "time_machine")
+            # INVIO apre il torneo; Si' all'abbinamento del turno 2, che non
+            # riesce; la Time Machine al turno 1, si; poi INVIO vuoto fra i
+            # risultati e No a continuare.
+            tasti, conferme = ["", "1", "si", ""], [True, False]
+        else:
+            aperto = self._rinominato()
+            if strada == "risultato":
+                # INVIO apre il torneo; 1-0 sulla scacchiera 1, confermato;
+                # INVIO vuoto e No a continuare.
+                tasti, conferme = ["", "1", "1-0", ""], [True, False]
+            else:
+                # INVIO apre il torneo; t, il turno 1, si; INVIO vuoto e No a
+                # continuare.
+                tasti, conferme = ["", "t", "1", "si", ""], [False]
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=tasti, conferme=conferme)
+        guida = TournamentController(_adattatore(copione))
+
+        guida._select_or_create_tournament()
+        guida._main_loop()
+
+        assert copione.tasti == [] and copione.conferme == []
+        assert guida.active_filename == aperto
+        assert self._tornei() == ["Tornello - Prova_stessa_data.json"]
+        salvato = self._leggi(aperto)
+        assert salvato["name"] == "Corona"
+        stampato = capsys.readouterr().out
+        if strada == "risultato":
+            assert [m["result"] for m in salvato["rounds"][0]["matches"]] == ["1-0", None]
+        else:
+            assert [m["result"] for m in salvato["rounds"][0]["matches"]] == [None, None]
+            assert len(self._copie("Tornello - Prova_stessa_data_pre_timemachine_*.json")) == 1
+            assert f"Backup di sicurezza creato: {aperto}" in stampato.splitlines()
+            assert "Impossibile creare il backup" not in stampato
+
+    def test_la_ripresa_di_un_torneo_rinominato_resta_nel_suo_file(self, monkeypatch, muto, tmp_path):
+        """Corona, in preparazione, rinominato dalla finestra, riprende la
+        creazione in console: il turno 1 va nel file aperto, che il messaggio
+        Torneo creato nomina con il percorso intero, e la sospensione se ne
+        va. All'avvio dopo la console apre il torneo com'e', senza
+        riprendere la creazione."""
+        import ui
+        from controller import TournamentController
+
+        aperto = self._rinominato(rounds=[], current_round=0, creation_suspended=True)
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(ui, "_conferma_lista_giocatori_torneo", lambda torneo, db: True)
+        # INVIO apre il torneo; INVIO vuoto e c chiudono l'iscrizione
+        # ripresa; poi il bye suggerito e la cartella proposta.
+        copione = Copione(monkeypatch, tasti=["", "", "c"], conferme=[True, True])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == [] and copione.conferme == []
+        assert any("Ripresa inserimento giocatori per 'Corona'" in m for m in adattatore.messaggi)
+        assert guida.active_filename == aperto
+        assert adattatore.messaggi[-1] == f"\nTorneo 'Corona' creato e Turno 1 generato. File: '{aperto}'"
+        assert self._tornei() == ["Tornello - Prova_stessa_data.json"]
+        salvato = self._leggi(aperto)
+        assert "creation_suspended" not in salvato
+        assert [r["round"] for r in salvato["rounds"]] == [1]
+        prima = self._leggi(aperto)
+
+        copione = Copione(monkeypatch, tasti=[""])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+        guida._select_or_create_tournament()
+
+        assert copione.domande == ["Vuoi caricare 'Corona'? (Premi INVIO per sì, o inserisci il nome di un NUOVO torneo da creare): : "]
+        assert not any("Ripresa" in m or "sospesa" in m for m in adattatore.messaggi)
+        assert [r.round for r in guida.tournament.rounds] == [1]
+        assert self._leggi(aperto) == prima
+
+    def test_la_sospensione_di_un_torneo_rinominato_resta_nel_suo_file(self, monkeypatch, muto, tmp_path, capsys):
+        """Corona, in preparazione, rinominato dalla finestra, riprende la
+        creazione in console e si sospende di nuovo con s: il torneo resta
+        nel suo file, sospeso, e il messaggio lo nomina con il percorso
+        intero."""
+        from controller import TournamentController
+
+        aperto = self._rinominato(rounds=[], current_round=0, creation_suspended=True, site="Prima")
+        monkeypatch.chdir(tmp_path)
+        # INVIO apre il torneo; INVIO vuoto e s sospendono l'iscrizione.
+        copione = Copione(monkeypatch, tasti=["", "", "s"])
+        guida = TournamentController(_adattatore(copione))
+
+        with pytest.raises(SystemExit):
+            guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        assert f"Torneo sospeso salvato in: '{aperto}'" in capsys.readouterr().out.splitlines()
+        assert self._tornei() == ["Tornello - Prova_stessa_data.json"]
+        salvato = self._leggi(aperto)
+        assert (salvato["name"], salvato["creation_suspended"], salvato["rounds"]) == ("Corona", True, [])
+        assert sorted(p["id"] for p in salvato["players"]) == sorted(ELO)

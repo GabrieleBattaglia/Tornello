@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 from abc import ABC, abstractmethod
@@ -8,7 +7,6 @@ from config import (
     DATE_FORMAT_ISO,
     FIDE_DB_JSON_LEGACY,
     FIDE_DB_LOCAL_FILE,
-    PLAYER_DB_FILE,
     user_data_path,
 )
 from db_players import (
@@ -49,6 +47,7 @@ from tournament import (
     motivo_ultimo_fallimento,
     save_tournament,
     time_machine_torneo,
+    tornei_nella_cartella_del_programma,
 )
 from utils import (
     format_date_locale,
@@ -99,7 +98,9 @@ class UIAdapter(ABC):
         pass
 
     @abstractmethod
-    def update_match_results(self, tournament: Tournament) -> bool:
+    def update_match_results(
+        self, tournament: Tournament, tournament_filename: str | None = None
+    ) -> bool:
         pass
 
     @abstractmethod
@@ -218,14 +219,20 @@ class TournamentController:
                     sincronizza_db_personale()
 
     def _select_or_create_tournament(self) -> None:
-        tournament_files_pattern = "Tornello - *.json"
-        potential_tournament_files = [
-            f
-            for f in glob.glob(tournament_files_pattern)
-            if "- concluso_" not in os.path.basename(f).lower()
-            and os.path.basename(f) != os.path.basename(PLAYER_DB_FILE)
-            and os.path.basename(f) != "Tornello - Settings.json"
-        ]
+        # Dalla 10.19.41 i tornei si cercano nella cartella del programma,
+        # con il percorso intero, come l'albero della finestra, da qualunque
+        # cartella Tornello sia avviato, e il torneo aperto si salva sempre
+        # nel suo file, active_filename (vedi _save_state). Fino alla
+        # 10.19.40, e gia' nella 10.0.0, si cercavano con glob nella cartella
+        # di avvio, e si salvavano nel file che nasce dal nome, nella
+        # cartella del programma: avviata da un'altra cartella, la console
+        # apriva la copia che trovava li' e la scriveva sopra il torneo
+        # della cartella del programma; un torneo rinominato dal ramo Dati
+        # della finestra, che tiene il file di prima, finiva in un file
+        # nuovo, e quello aperto restava com'era, anche con la creazione
+        # sospesa, che tornava a ogni avvio (decisione di Gabriele del 7
+        # novembre 2026).
+        potential_tournament_files = tornei_nella_cartella_del_programma()
 
         deve_creare_nuovo_torneo = False
         nome_nuovo_torneo_suggerito = None
@@ -761,11 +768,12 @@ class TournamentController:
         # La cartella di salvataggio, come nella procedura guidata della
         # finestra (manuale, sezione 4.1): quella dei report e della raccolta
         # delle partite, mentre il file del torneo sta sempre nella cartella
-        # del programma, dove save_tournament lo scrive e dove l'albero della
-        # finestra lo cerca. La console, invece, all'avvio cerca i tornei
-        # nella cartella da cui Tornello e' avviato, con glob in
-        # _select_or_create_tournament: le due coincidono soltanto se lo si
-        # avvia dalla cartella del programma. Dalla 10.19.40 la cartella
+        # del programma: e' active_filename, dove _save_state lo scrive, e
+        # all'avvio ce lo cercano l'albero della finestra e, dalla 10.19.41,
+        # anche la console (vedi _select_or_create_tournament). Fino alla
+        # 10.19.40 la console cercava i tornei nella cartella da cui Tornello
+        # era avviato, che coincide con quella del programma soltanto se lo
+        # si avvia da li'. Dalla 10.19.40 la cartella
         # proposta e' quella del programma, come nella finestra, dove con Si'
         # vanno davvero i report: fino alla 10.19.39, e gia' nella 10.0.0, era
         # la cartella da cui Tornello era stato avviato, che coincide con
@@ -800,7 +808,7 @@ class TournamentController:
                     # sotto, resta nella cartella del programma. Fino alla
                     # 10.19.39, e gia' nella 10.0.0, active_filename
                     # diventava un file nella cartella scelta, che non
-                    # nasceva mai, perche' _save_state scrive sempre nella
+                    # nasceva mai, perche' _save_state scriveva sempre nella
                     # cartella del programma: il messaggio Torneo creato
                     # diceva un file che non c'era, la copia di sicurezza
                     # della chiusura non si faceva, e i report andavano nella
@@ -823,9 +831,14 @@ class TournamentController:
         )
 
     def _save_state(self) -> None:
+        # Il torneo si salva nel file che la console ha aperto, o creato,
+        # come nella finestra: dalla 10.19.41. Fino alla 10.19.40, e gia'
+        # nella 10.0.0, save_tournament riceveva soltanto il torneo, e lo
+        # scriveva nel file che nasce dal nome, nella cartella del programma
+        # (vedi _select_or_create_tournament).
         if self.tournament and self.active_filename:
             dict_to_save = self.tournament.to_dict()
-            save_tournament(dict_to_save)
+            save_tournament(dict_to_save, filepath=self.active_filename)
             save_current_tournament_round_file(dict_to_save)
             save_standings_text(dict_to_save, final=False)
 
@@ -876,7 +889,9 @@ class TournamentController:
                 )
 
                 if not round_completed:
-                    modifications = self.ui.update_match_results(self.tournament)
+                    modifications = self.ui.update_match_results(
+                        self.tournament, self.active_filename
+                    )
                     self.ui.show_message(
                         _("\nSessione di inserimento/modifica risultati terminata.")
                     )
@@ -950,7 +965,9 @@ class TournamentController:
                             if user_action == "time_machine":
                                 self.tournament.current_round = curr_round
                                 torneo_dict = self.tournament.to_dict()
-                                if time_machine_torneo(torneo_dict):
+                                if time_machine_torneo(
+                                    torneo_dict, self.active_filename
+                                ):
                                     self.tournament = Tournament.from_dict(
                                         torneo_dict
                                     )

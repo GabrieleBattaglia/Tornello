@@ -27,8 +27,10 @@ def test_user_data_path_va_nella_cartella_temporanea(tmp_path):
 
 
 def test_le_costanti_di_percorso_vanno_nella_cartella_temporanea(tmp_path, tmp_path_factory):
+    # Dalla 10.19.41 controller non importa piu' PLAYER_DB_FILE: i tornei
+    # della cartella del programma li cerca per lui tournament.py, con
+    # tornei_nella_cartella_del_programma, che lo chiede a config.
     import config
-    import controller
     import db_players
     import engine
     import fide_db
@@ -38,7 +40,6 @@ def test_le_costanti_di_percorso_vanno_nella_cartella_temporanea(tmp_path, tmp_p
         (config, "PLAYER_DB_FILE"),
         (db_players, "PLAYER_DB_FILE"),
         (ui, "PLAYER_DB_FILE"),
-        (controller, "PLAYER_DB_FILE"),
         (config, "ARCHIVED_TOURNAMENTS_DIR"),
         (ui, "ARCHIVED_TOURNAMENTS_DIR"),
         (fide_db, "FIDE_DB_LOCAL_FILE"),

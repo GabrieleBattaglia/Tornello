@@ -400,7 +400,13 @@ def input_players(
                     }
                     # Aggiungiamo un flag esplicito per indicare che la creazione è sospesa
                     torneo_obj["creation_suspended"] = True
-                    save_tournament(torneo_obj)
+                    # Nel file del torneo, quello che il messaggio qui sotto
+                    # nomina: dalla 10.19.41. Fino alla 10.19.40 save_tournament
+                    # scriveva nel file che nasce dal nome, e un torneo
+                    # rinominato dal ramo Dati della finestra, ripreso e
+                    # sospeso di nuovo, finiva in un file nuovo (decisione di
+                    # Gabriele del 7 novembre 2026).
+                    save_tournament(torneo_obj, filepath=torneo_filename)
                     print(
                         _("Torneo sospeso salvato in: '{filename}'").format(
                             filename=torneo_filename
@@ -830,10 +836,17 @@ def input_players(
     return players_in_tournament
 
 
-def update_match_result(torneo):
+def update_match_result(torneo, percorso=None):
     """
     Gestisce l'interfaccia utente per l'inserimento dei risultati,
     usando una funzione di supporto per l'applicazione dei dati.
+    percorso e' il file del torneo, quello che la console ha aperto: dalla
+    10.19.41 ogni salvataggio di qui, e la copia di sicurezza della Time
+    Machine, lo usano, come la finestra. Fino alla 10.19.40, e gia' nella
+    10.0.0, scrivevano nel file che nasce dal nome, e un torneo rinominato
+    dal ramo Dati della finestra, che tiene il file di prima, finiva in un
+    file nuovo (decisione di Gabriele del 7 novembre 2026). Senza percorso,
+    il file e' ancora quello che nasce dal nome.
     """
     any_changes_made_in_this_session = False
     while True:
@@ -1025,9 +1038,9 @@ def update_match_result(torneo):
         if not user_input_str:
             break
         if user_input_str == "t":
-            if time_machine_torneo(torneo):
+            if time_machine_torneo(torneo, percorso):
                 any_changes_made_in_this_session = True
-                save_tournament(torneo)
+                save_tournament(torneo, filepath=percorso)
                 print(_("Stato del torneo ripristinato e salvato."))
             continue
         if user_input_str.lower() == "r":
@@ -1076,7 +1089,7 @@ def update_match_result(torneo):
                         )
                     )
                     any_changes_made_in_this_session = True
-                    save_tournament(torneo)
+                    save_tournament(torneo, filepath=percorso)
                 else:
                     print(_("Ritiro annullato."))
             else:
@@ -1189,7 +1202,7 @@ def update_match_result(torneo):
 
                 ricalcola_punti_tutti_giocatori(torneo)
                 any_changes_made_in_this_session = True
-                save_tournament(torneo)
+                save_tournament(torneo, filepath=percorso)
                 play_sound("cancellato", torneo)
                 print(_("Risultato cancellato e punteggi ricalcolati."))
             else:
@@ -1360,7 +1373,7 @@ def update_match_result(torneo):
                                 updated_schedule_data
                             )
                             any_changes_made_in_this_session = True
-                            save_tournament(torneo)
+                            save_tournament(torneo, filepath=percorso)
                             play_sound("pianifica_modifica", torneo)
                             print(_("Pianificazione modificata."))
                     elif sub_action == "r":
@@ -1371,7 +1384,7 @@ def update_match_result(torneo):
                             if "schedule_info" in selected_match_obj_for_processing:
                                 del selected_match_obj_for_processing["schedule_info"]
                             any_changes_made_in_this_session = True
-                            save_tournament(torneo)
+                            save_tournament(torneo, filepath=percorso)
                             play_sound("pianifica_rimuovi", torneo)
                             print(_("Pianificazione rimossa."))
                 else:
@@ -1382,7 +1395,7 @@ def update_match_result(torneo):
                         )
                         selected_match_obj_for_processing["is_scheduled"] = True
                         any_changes_made_in_this_session = True
-                        save_tournament(torneo)
+                        save_tournament(torneo, filepath=percorso)
                         play_sound("pianifica_crea", torneo)
                         print(_("Partita pianificata con successo."))
                 continue
@@ -1439,7 +1452,7 @@ def update_match_result(torneo):
                         b_score,
                     )
                     any_changes_made_in_this_session = True
-                    save_tournament(torneo)
+                    save_tournament(torneo, filepath=percorso)
                     play_sound(f"risultato_{res_str}", torneo)
                     if "F" in res_str:
                         forfeiting_players = []

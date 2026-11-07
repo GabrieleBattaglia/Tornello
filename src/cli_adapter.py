@@ -110,7 +110,12 @@ class CLIAdapter(UIAdapter):
             tournament.update_players_dict()
         return res
 
-    def update_match_results(self, tournament: Tournament) -> bool:
+    def update_match_results(
+        self, tournament: Tournament, tournament_filename: str | None = None
+    ) -> bool:
+        # tournament_filename e' il file aperto dalla console: dalla 10.19.41
+        # i salvataggi di ui.update_match_result scrivono li', come quelli
+        # del controller (vedi TournamentController._save_state).
         torneo_dict = tournament.to_dict()
         # players_dict deve riferirsi agli stessi dizionari di players:
         # ui.update_match_result scrive punti e storico del risultato, e il
@@ -122,7 +127,7 @@ class CLIAdapter(UIAdapter):
         # fosse stato giocato.
         torneo_dict["players_dict"] = _players_dict_condiviso(torneo_dict)
 
-        res = ui.update_match_result(torneo_dict)
+        res = ui.update_match_result(torneo_dict, tournament_filename)
         if res:
             # Sync back round/match results and withdrawn players
             tournament.players = [Player.from_dict(p) for p in torneo_dict["players"]]
