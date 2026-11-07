@@ -73,7 +73,7 @@ Passo 7: premi TAB fino a Sì e poi INVIO.
 Domanda 7: si sente il suono del ripristino, ed esce il messaggio Ripristino riuscito, che comincia con "Ripristino riuscito: Tornello - Prova_time_machine.json è com'era nella copia."?
 Passo 8: chiudi il messaggio con INVIO, poi chiudi la finestra Copie di sicurezza con ESC.
 Domanda 8: la procedura guidata si è chiusa: l'albero mostra di nuovo i tornei, il cursore è sulla voce Prova time machine, e la barra di stato dice "Torneo 'Prova time machine' caricato con successo."?
-Passo 9: apri il ramo con freccia destra, scendi su turni e aprilo, poi apri Completati.
+Passo 9: se il ramo di Prova time machine è chiuso, aprilo con freccia destra; poi scendi con freccia giù su turni e aprilo con freccia destra, poi scendi su Completati e aprilo.
 Domanda 9: la voce dice turni (3), e in Completati (3) c'è di nuovo il Turno 3, dopo il Turno 1 e il Turno 2, com'era prima di Ctrl+Z, perché in memoria c'è il torneo ripristinato?
 Passo 10: apri il Turno 2 e giocate (3/3, 100.0%), e scendi sulla Scacchiera 1.
 Domanda 10: la partita dice Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], il risultato della copia, e non più [1-0], quello del passo 4?
