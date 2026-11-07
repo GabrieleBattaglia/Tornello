@@ -76,6 +76,15 @@ def _nella_cartella_del_programma(percorso):
     return os.path.normcase(cartella) == os.path.normcase(_cartella_predefinita_tornei())
 
 
+def _descrizione_del_motivo(errore):
+    """Del motivo di un errore, per i messaggi che nominano gia' il file,
+    soltanto la descrizione che da' il sistema, strerror, per esempio No
+    such file or directory, come in save_tournament; per un errore senza
+    descrizione, come un file che non e' JSON, il testo intero. Senza il
+    punto in fondo, che il messaggio mette da se'."""
+    return (getattr(errore, "strerror", None) or str(errore)).rstrip(".")
+
+
 class FileNonTorneo(ValueError):
     """Un file JSON che non e' un torneo di Tornello, per esempio il database
     dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
@@ -4818,6 +4827,19 @@ class MainFrame(wx.Frame):
 
         event.Skip()
 
+    def _etichetta_del_torneo_della_voce(self, voce):
+        """L'etichetta della voce del torneo che contiene voce, o di voce
+        stessa se e' la voce di un torneo, com'e' scritta nell'albero: il nome
+        di un torneo il cui file non si legge, per i messaggi. None se voce
+        non sta sotto la voce di un torneo."""
+        albero = self.tree_ctrl
+        while voce and voce.IsOk():
+            dati = albero.GetItemData(voce)
+            if isinstance(dati, dict) and dati.get("action") == "select_tournament":
+                return albero.GetItemText(voce)
+            voce = albero.GetItemParent(voce)
+        return None
+
     def delete_player_from_tournament(self, item, player_data):
         node_data = self.tree_ctrl.GetItemData(item)
         if not node_data:
@@ -4836,6 +4858,7 @@ class MainFrame(wx.Frame):
         # rimozione (decisione di Gabriele del 5 novembre 2026). Fino alla
         # 10.19.21, e gia' nella 10.0.0, CANC rileggeva il file e lo rimetteva
         # in memoria, e le modifiche si perdevano senza avviso.
+        p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
         aperto = self._e_il_torneo_aperto(filepath)
         if aperto:
             t_data = self.current_tournament
@@ -4844,10 +4867,25 @@ class MainFrame(wx.Frame):
                 with open(filepath, encoding="utf-8") as f_in:
                     t_data = json.load(f_in)
             except Exception as e:
-                wx.MessageBox(
-                    _("Impossibile leggere il file del torneo: {}").format(e),
-                    _("Errore"),
-                    wx.ICON_ERROR,
+                # Dalla 10.19.30 il file che manca, per esempio sparito dopo
+                # che l'albero l'aveva elencato, o che non si legge, lo dice
+                # il messaggio Giocatore non rimosso, nella finestra
+                # accessibile e con il suono dell'errore, con il giocatore, il
+                # torneo, come lo dice la sua voce nell'albero, e il file, e
+                # del motivo la sola descrizione: fino alla 10.19.29, e gia'
+                # nella 10.0.0, era un wx.MessageBox senza suono, Impossibile
+                # leggere il file del torneo, con il testo intero dell'errore.
+                play_sound("errore")
+                self._dialogo_informativo(
+                    _("Giocatore non rimosso"),
+                    _(
+                        "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, perché il file {file} non si è potuto leggere: {errore}. Il torneo e i suoi iscritti restano com'erano."
+                    ).format(
+                        giocatore=p_name,
+                        nome=self._etichetta_del_torneo_della_voce(item) or os.path.basename(filepath),
+                        file=filepath,
+                        errore=_descrizione_del_motivo(e),
+                    ),
                 )
                 return
 
@@ -4867,7 +4905,6 @@ class MainFrame(wx.Frame):
             self._proponi_ritiro_dal_torneo(item, player_data, filepath)
             return
 
-        p_name = f"{player_data.get('last_name', '')} {player_data.get('first_name', '')}".strip()
         msg = _("Sei sicuro di voler rimuovere il giocatore {name} dal torneo?").format(
             name=p_name
         )
@@ -4875,6 +4912,10 @@ class MainFrame(wx.Frame):
             self, _("Conferma Rimozione Giocatore"), msg, style=wx.YES_NO
         )
         if dlg.ShowModal() == wx.ID_YES:
+            # Vero da quando il giocatore e' uscito dal torneo: dalla memoria,
+            # per il torneo aperto, o dal file scritto, per un altro torneo.
+            # Lo guarda il messaggio dell'errore imprevisto.
+            rimosso = False
             try:
                 players = t_data.get("players", [])
                 to_remove = next(
@@ -4893,6 +4934,7 @@ class MainFrame(wx.Frame):
                         # era json.dump, che non e' atomica e metteva nel file
                         # anche players_dict, e con il file bloccato usciva
                         # Impossibile rimuovere il giocatore.
+                        rimosso = True
                         self.current_tournament["players_dict"] = {p["id"]: p for p in players}
                         self._save_state()
                     else:
@@ -4926,6 +4968,7 @@ class MainFrame(wx.Frame):
                                 ),
                             )
                             return
+                        rimosso = True
 
                     self._tree_restore_target = {
                         "action": "show_players",
@@ -4943,11 +4986,36 @@ class MainFrame(wx.Frame):
                         )
                     )
             except Exception as e:
-                wx.MessageBox(
-                    _("Impossibile rimuovere il giocatore: {}").format(e),
-                    _("Errore"),
-                    wx.ICON_ERROR,
+                # Dalla 10.19.30 l'errore imprevisto lo dice la finestra
+                # accessibile, con il suono dell'errore e, del motivo, la sola
+                # descrizione: Giocatore non rimosso finche' il giocatore e'
+                # ancora nel torneo, e Rimozione non conclusa quando ne e' gia'
+                # uscito, perche' l'albero puo' non essersi ridisegnato. Fino
+                # alla 10.19.29, e gia' nella 10.0.0, era un wx.MessageBox
+                # senza suono, Impossibile rimuovere il giocatore, con il testo
+                # intero dell'errore, anche a giocatore gia' uscito.
+                dlg.Destroy()
+                play_sound("errore")
+                if rimosso:
+                    titolo = _("Rimozione non conclusa")
+                    testo = _(
+                        "Il giocatore {giocatore} è uscito dal torneo {nome}, ma poi un errore imprevisto ha interrotto l'operazione: {errore}. L'albero potrebbe mostrarlo ancora fra gli iscritti."
+                    )
+                else:
+                    titolo = _("Giocatore non rimosso")
+                    testo = _(
+                        "Il giocatore {giocatore} non si è potuto rimuovere dal torneo {nome}, nel file {file}, per un errore imprevisto: {errore}. Il file del torneo e i suoi iscritti restano com'erano."
+                    )
+                self._dialogo_informativo(
+                    titolo,
+                    testo.format(
+                        giocatore=p_name,
+                        nome=t_data.get("name", ""),
+                        file=filepath,
+                        errore=_descrizione_del_motivo(e),
+                    ),
                 )
+                return
         else:
             parent_item = self.tree_ctrl.GetItemParent(item)
             if parent_item and parent_item.IsOk():
@@ -5449,7 +5517,9 @@ class MainFrame(wx.Frame):
         gia' nel cestino. Dalla proposta 3 del nono giro il torneo aperto che
         non ha ancora il suo file sul disco si prende dalla memoria: con Si'
         alla conferma, che lo dice, esce dalla memoria e dall'albero, e nel
-        cestino vanno soltanto i suoi file correlati."""
+        cestino vanno soltanto i suoi file correlati. Dalla 10.19.30 il file
+        di un torneo che manca, o che non si legge, lo dice il messaggio
+        Torneo non eliminato, con il suono dell'errore."""
         from utils import play_sound
 
         t_label = self.tree_ctrl.GetItemText(item)
@@ -5487,10 +5557,26 @@ class MainFrame(wx.Frame):
                 with open(filepath, encoding="utf-8") as f_in:
                     data = json.load(f_in)
             except Exception as e:
-                wx.MessageBox(
-                    _("Impossibile leggere il file del torneo: {}").format(e),
-                    _("Errore"),
-                    wx.ICON_ERROR,
+                # Dalla 10.19.30 il file di un torneo che non e' quello
+                # aperto, che manca, per esempio sparito dopo che l'albero
+                # l'aveva elencato, o che non si legge, lo dice il messaggio
+                # Torneo non eliminato, nella finestra accessibile e con il
+                # suono dell'errore, con il torneo, come lo dice la sua voce,
+                # e il file, e del motivo la sola descrizione: la conferma
+                # non esce, e nel cestino non va niente. Fino alla 10.19.29, e
+                # gia' nella 10.0.0, era un wx.MessageBox senza suono,
+                # Impossibile leggere il file del torneo, con il testo intero
+                # dell'errore.
+                play_sound("errore", self.current_tournament)
+                self._dialogo_informativo(
+                    _("Torneo non eliminato"),
+                    _(
+                        "Il torneo {nome} non si è potuto eliminare, perché il file {file} non si è potuto leggere: {errore}. Il torneo e i suoi file restano com'erano, e nel cestino di Windows non va niente."
+                    ).format(
+                        nome=t_label,
+                        file=filepath,
+                        errore=_descrizione_del_motivo(e),
+                    ),
                 )
                 return
 

@@ -1231,15 +1231,25 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == "Errore durante l'eliminazione del torneo: guasto finto"
         assert "errore" in suoni
 
-    def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, tmp_path):
+    @pytest.mark.parametrize(
+        ("guasto", "motivo"),
+        [("manca", "No such file or directory"), ("rovinato", "Expecting value: line 1 column 1 (char 0)")],
+    )
+    def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, tmp_path, guasto, motivo):
         """Correzione della proposta 3, rilievo 7 della revisione. Alfa e'
         il torneo aperto, con un suo report nella cartella del programma;
         Gamma, che non e' aperta, ha la sua voce nell'albero, poi il suo
-        file sparisce. CANC sulla voce di Gamma non prende i dati dalla
-        memoria, che sono quelli di Alfa: esce il messaggio di prima,
-        Impossibile leggere il file del torneo, e i file di Alfa restano
-        dove sono. Senza la guardia sul torneo aperto la conferma nominava
-        Alfa, e con Si' il suo report andava nel cestino."""
+        file sparisce, o si rovina. CANC sulla voce di Gamma non prende i
+        dati dalla memoria, che sono quelli di Alfa, e i file di Alfa
+        restano dove sono: senza la guardia sul torneo aperto la conferma
+        nominava Alfa, e con Si' il suo report andava nel cestino. Dalla
+        10.19.30 si sente il suono dell'errore, ed esce, senza la conferma,
+        il messaggio Torneo non eliminato, nella finestra accessibile, che
+        nomina il torneo e il file, con la sola descrizione del motivo, e
+        dice che il torneo e i suoi file restano com'erano: nel cestino non
+        va niente, e la voce di Gamma resta nell'albero. Fino alla 10.19.29
+        usciva un wx.MessageBox senza suono, Impossibile leggere il file del
+        torneo, con il testo intero dell'errore."""
         import wx
 
         from config import user_data_path
@@ -1253,21 +1263,35 @@ class TestEliminazioneDelTorneoSenzaFile:
         gamma = TestCancSuUnIscrittoDelTorneoAperto._gamma(principale, aperta=False)
         voce = principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": gamma})
         assert voce and voce.IsOk()
-        os.remove(gamma)
+        if guasto == "manca":
+            os.remove(gamma)
+        else:
+            with open(gamma, "w", encoding="utf-8") as f:
+                f.write("non è un torneo")
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         with principale._albero_senza_caricamenti():
             principale.tree_ctrl.SelectItem(voce)
+        suoni.clear()
 
         TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
 
         assert principale._e_il_torneo_aperto(alfa)
-        assert [f.titolo for f in finestre] == []
-        assert len(scatole) == 1 and scatole[0][0].startswith("Impossibile leggere il file del torneo: ")
+        assert scatole == []
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Torneo non eliminato",
+                f"Il torneo Gamma non si è potuto eliminare, perché il file {gamma} non si è potuto leggere: {motivo}. "
+                "Il torneo e i suoi file restano com'erano, e nel cestino di Windows non va niente.",
+                False,
+            )
+        ]
+        assert suoni == ["errore"]
         assert ricevuti == []
         assert os.path.exists(report)
+        assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": gamma}) is not None
 
 
 GIOCATORI_DEI_TORNEI = (
@@ -8388,4 +8412,158 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         assert len(self._iscritti_nell_albero(principale, percorso)) == len(GIOCATORI_DEI_TORNEI)
         assert principale.last_status_msg == barra
         assert principale._e_il_torneo_aperto(alfa)
+
+    def _alfa_aperta_e_gamma(self, principale):
+        """Alfa, in corso, aperta, e Gamma, in preparazione, non aperta, con
+        l'albero che le mostra. Restituisce il file di Alfa, quello di Gamma
+        come lo scrive l'albero, e il nome del primo iscritto di Gamma come
+        lo dicono i messaggi."""
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        principale.load_tournament(alfa)
+        percorso = self._gamma(principale, aperta=False)
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
+        giocatore = principale.tree_ctrl.GetItemData(voce)["player"]
+        return alfa, percorso, f"{giocatore['last_name']} {giocatore['first_name']}"
+
+    @pytest.mark.parametrize(
+        ("guasto", "motivo"),
+        [("manca", "No such file or directory"), ("rovinato", "Expecting value: line 1 column 1 (char 0)")],
+    )
+    def test_l_iscritto_di_un_torneo_non_aperto_con_il_file_che_non_si_legge(self, principale, suoni, monkeypatch, guasto, motivo):
+        """Alfa e' il torneo aperto, e Gamma, che non e' aperta, ha le sue
+        voci nell'albero, poi il suo file sparisce, o si rovina. CANC sul
+        primo iscritto di Gamma: dalla 10.19.30 si sente il suono
+        dell'errore, ed esce subito, senza la domanda Conferma Rimozione
+        Giocatore, il messaggio Giocatore non rimosso, nella finestra
+        accessibile, che nomina il giocatore, il torneo e il file, con la
+        sola descrizione del motivo, e dice che il torneo e i suoi iscritti
+        restano com'erano. L'albero ha ancora i quattro iscritti di Gamma, e
+        la barra di stato e Alfa restano com'erano. Fino alla 10.19.29 usciva
+        un wx.MessageBox senza suono, Impossibile leggere il file del torneo,
+        con il testo intero dell'errore."""
+        import wx
+
+        alfa, percorso, nome_del_giocatore = self._alfa_aperta_e_gamma(principale)
+        if guasto == "manca":
+            os.remove(percorso)
+        else:
+            with open(percorso, "w", encoding="utf-8") as f:
+                f.write("non è un torneo")
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+        barra = principale.last_status_msg
+
+        self._canc_sul_primo_iscritto(principale, percorso)
+
+        assert scatole == []
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Giocatore non rimosso",
+                f"Il giocatore {nome_del_giocatore} non si è potuto rimuovere dal torneo Gamma, perché il file {percorso} non si è potuto leggere: "
+                f"{motivo}. Il torneo e i suoi iscritti restano com'erano.",
+                False,
+            )
+        ]
+        assert suoni == ["errore"]
+        assert len(self._iscritti_nell_albero(principale, percorso)) == len(GIOCATORI_DEI_TORNEI)
+        assert principale.last_status_msg == barra
+        assert principale._e_il_torneo_aperto(alfa)
+
+    def test_l_iscritto_di_un_torneo_non_aperto_con_un_errore_imprevisto(self, principale, suoni, monkeypatch):
+        """Alfa e' il torneo aperto, e CANC arriva sul primo iscritto di
+        Gamma, che non e' aperta; con Si', un errore imprevisto, qui finto,
+        nella scrittura del file di Gamma. Dalla 10.19.30 si sente il suono
+        dell'errore, ed esce il messaggio Giocatore non rimosso, nella
+        finestra accessibile, che nomina il giocatore, il torneo e il file,
+        con la descrizione del motivo, e dice che il file e gli iscritti
+        restano com'erano: il file di Gamma ne ha ancora quattro, come
+        l'albero, non si sente il suono della rimozione, e la barra di stato
+        resta com'era. Fino alla 10.19.29 usciva un wx.MessageBox senza
+        suono, Impossibile rimuovere il giocatore, con il testo intero
+        dell'errore."""
+        import wx
+
+        import tournament
+
+        alfa, percorso, nome_del_giocatore = self._alfa_aperta_e_gamma(principale)
+
+        def guasto(*argomenti, **opzioni):
+            raise RuntimeError("guasto finto")
+
+        monkeypatch.setattr(tournament, "save_tournament", guasto)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+        barra = principale.last_status_msg
+
+        self._canc_sul_primo_iscritto(principale, percorso)
+
+        assert scatole == []
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            ("Conferma Rimozione Giocatore", f"Sei sicuro di voler rimuovere il giocatore {nome_del_giocatore} dal torneo?"),
+            (
+                "Giocatore non rimosso",
+                f"Il giocatore {nome_del_giocatore} non si è potuto rimuovere dal torneo Gamma, nel file {percorso}, per un errore imprevisto: "
+                "guasto finto. Il file del torneo e i suoi iscritti restano com'erano.",
+            ),
+        ]
+        assert suoni == ["errore"]
+        assert len(TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]) == len(GIOCATORI_DEI_TORNEI)
+        assert len(self._iscritti_nell_albero(principale, percorso)) == len(GIOCATORI_DEI_TORNEI)
+        assert principale.last_status_msg == barra
+        assert principale._e_il_torneo_aperto(alfa)
+
+    @pytest.mark.parametrize("aperta", [False, True])
+    def test_un_errore_imprevisto_dopo_che_il_giocatore_e_uscito(self, principale, suoni, monkeypatch, aperta):
+        """CANC sul primo iscritto di Gamma, aperta o no, con Si': il
+        giocatore esce dal torneo, e il file di Gamma si scrive con tre
+        iscritti, poi un errore imprevisto, qui finto, nel ridisegno
+        dell'albero. Dalla 10.19.30 si sente il suono dell'errore, e non
+        quello della rimozione, ed esce il messaggio Rimozione non conclusa,
+        nella finestra accessibile, che dice che il giocatore e' uscito dal
+        torneo, con la descrizione del motivo, e che l'albero potrebbe
+        mostrarlo ancora. Fino alla 10.19.29 usciva un wx.MessageBox senza
+        suono, Impossibile rimuovere il giocatore, anche se il giocatore
+        era gia' uscito."""
+        import wx
+
+        if aperta:
+            percorso = self._gamma(principale)
+            voce = principale._find_matching_item(principale.tree_root, {"action": "show_player_detail", "filepath": percorso})
+            giocatore = principale.tree_ctrl.GetItemData(voce)["player"]
+            nome_del_giocatore = f"{giocatore['last_name']} {giocatore['first_name']}"
+        else:
+            _alfa, percorso, nome_del_giocatore = self._alfa_aperta_e_gamma(principale)
+
+        def guasto(*argomenti, **opzioni):
+            raise RuntimeError("guasto finto")
+
+        monkeypatch.setattr(principale, "populate_tree", guasto)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+
+        tolto = self._canc_sul_primo_iscritto(principale, percorso)
+
+        assert scatole == []
+        assert [(f.titolo, f.testo) for f in finestre] == [
+            ("Conferma Rimozione Giocatore", f"Sei sicuro di voler rimuovere il giocatore {nome_del_giocatore} dal torneo?"),
+            (
+                "Rimozione non conclusa",
+                f"Il giocatore {nome_del_giocatore} è uscito dal torneo Gamma, ma poi un errore imprevisto ha interrotto l'operazione: "
+                "guasto finto. L'albero potrebbe mostrarlo ancora fra gli iscritti.",
+            ),
+        ]
+        assert suoni == ["errore"]
+        rimasti = [g[0] for g in GIOCATORI_DEI_TORNEI if g[0] != tolto]
+        assert [p["id"] for p in TestNomeEDataDiInizioDaDati._nel_file(percorso)["players"]] == rimasti
+        if aperta:
+            assert [p["id"] for p in principale.current_tournament["players"]] == rimasti
 
