@@ -7251,6 +7251,24 @@ class TestVoceDelTorneoNuovoNonSalvato:
         assert principale.tree_ctrl.GetItemText(principale._voce_del_torneo_aperto()) == f"Omega (Ottobre 2026, dalla cartella {cartella})"
 
 
+# I file con la forma di un torneo, cioe' con il nome, gli iscritti e i turni,
+# che l'apertura non apre, con il testo dell'errore che da': dalla correzione
+# della 10.19.29 Apri Torneo lo sa prima della domanda Torneo non salvato.
+FILE_CHE_NON_SI_APRONO = {
+    "iscritto senza identificativo": ({"name": "Strano", "players": [{"first_name": "Mario"}], "rounds": []}, "'id'"),
+    "iscritto scritto come testo": ({"name": "Strano", "players": ["Mario Rossi"], "rounds": []}, "string indices must be integers, not 'str'"),
+    "turno scritto come numero": ({"name": "Strano", "players": [{"id": "A"}], "rounds": [1]}, "'int' object has no attribute 'get'"),
+    "Bianco del turno corrente scritto come elenco": (
+        {"name": "Strano", "players": [{"id": "A"}], "current_round": 1, "rounds": [{"round": 1, "matches": [{"white_player_id": ["A"], "black_player_id": None}]}]},
+        "cannot use 'list' as a dict key (unhashable type: 'list')",
+    ),
+    "partita di un turno passato scritta come numero": (
+        {"name": "Strano", "players": [{"id": "A"}], "current_round": 2, "rounds": [{"round": 1, "matches": [5]}, {"round": 2, "matches": []}]},
+        "'int' object has no attribute 'get'",
+    ),
+}
+
+
 class TestTorneoNonSalvatoDaLasciare:
     """Dalla 10.19.21 (decisione di Gabriele del 5 novembre 2026) un torneo
     che ha le ultime modifiche soltanto in memoria, perche' il suo ultimo
@@ -7675,6 +7693,94 @@ class TestTorneoNonSalvatoDaLasciare:
         assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
         errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
         assert errori == []
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @staticmethod
+    def _scrivi_strano(tmp_path, dati):
+        """Il file Tornello - Strano.json, con dati, in una cartella che
+        l'albero non legge."""
+        import json
+
+        scelto = str(tmp_path / "altrove" / "Tornello - Strano.json")
+        os.makedirs(os.path.dirname(scelto))
+        with open(scelto, "w", encoding="utf-8") as f:
+            json.dump(dati, f)
+        return scelto
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    @pytest.mark.parametrize("forma", list(FILE_CHE_NON_SI_APRONO))
+    def test_apri_torneo_su_un_file_con_la_forma_di_un_torneo_che_non_si_apre(self, principale, suoni, monkeypatch, capsys, bloccata, tmp_path, forma):
+        """Correzione della 10.19.29. Apri Torneo, e nella finestra Apri un
+        file con il nome, gli iscritti e i turni, ma con un iscritto senza il
+        suo identificativo, o con un turno o una partita che non sono un
+        dizionario: l'apertura non lo aprirebbe, e Tornello lo sa prima della
+        domanda Torneo non salvato. Il messaggio Errore nel caricamento del
+        torneo esce subito, con l'errore di sempre, senza la domanda e senza
+        riprovare il salvataggio, e Primavera 2 resta aperta, com'e' in
+        memoria, con Roma, con il cursore sulla voce Luogo. Tolto il blocco,
+        il salvataggio dopo scrive Roma. Fino alla correzione la domanda
+        usciva, e con Si' l'errore arrivava dopo e chiudeva Primavera 2:
+        Roma non arrivava piu' nel file."""
+        import wx
+
+        dati, errore = FILE_CHE_NON_SI_APRONO[forma]
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: scatole.append(testo))
+        finestre = self._finestre(monkeypatch, wx.ID_YES)
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        scelto = self._scrivi_strano(tmp_path, dati)
+        mostrate = self._finestra_apri(monkeypatch, finestre, scelto)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_OPEN)
+
+        assert mostrate == [0]
+        assert finestre == []
+        assert scatole == [f"Errore nel caricamento del torneo: {errore}"]
+        assert suoni == []
+        assert registro.caricati == []
+        self._primavera_com_era(principale, bloccata)
+        assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
+        errori, _della_raccolta = TestTorneoCheNonSiSalva._errori_in_console(capsys, bloccata.primavera)
+        assert errori == []
+
+        bloccata.sblocca()
+        principale._save_state()
+
+        assert TestNomeEDataDiInizioDaDati._nel_file(bloccata.primavera)["site"] == "Roma"
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_l_apertura_che_non_riesce_lascia_aperto_il_torneo_di_prima(self, principale, suoni, monkeypatch, capsys, bloccata, tmp_path):
+        """Correzione della 10.19.29. load_tournament con
+        tieni_il_precedente, come lo chiama Apri Torneo dopo la domanda, su
+        un file con un iscritto senza il suo identificativo: il messaggio di
+        sempre, e Primavera 2 resta aperta, com'e' in memoria, con Roma, con
+        il titolo, l'area centrale e il cursore di prima. Tolto il blocco, il
+        salvataggio dopo scrive Roma. Fino alla correzione l'errore arrivava
+        con il torneo gia' al posto di Primavera 2, e nessun torneo restava
+        aperto."""
+        import wx
+
+        dati, errore = FILE_CHE_NON_SI_APRONO["iscritto senza identificativo"]
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda testo, *a, **k: scatole.append(testo))
+        scelto = self._scrivi_strano(tmp_path, dati)
+        titolo = principale.GetTitle()
+        area = principale.main_text.GetValue()
+
+        principale.load_tournament(scelto, tieni_il_precedente=True)
+
+        assert scatole == [f"Errore nel caricamento del torneo: {errore}"]
+        self._primavera_com_era(principale, bloccata)
+        assert principale.GetTitle() == titolo
+        assert principale.main_text.GetValue() == area
+        assert principale.tree_ctrl.GetSelection() == bloccata.luogo
+        assert principale.last_status_msg == "Il torneo non si è aperto: resta aperto 'Primavera 2'."
 
         bloccata.sblocca()
         principale._save_state()

@@ -939,6 +939,9 @@ class TestAperturaDentroBackup:
             # domanda, e passa a load_tournament i dati letti: qui la lettura
             # e' finta, e il file scelto non si guarda.
             _leggi_il_torneo=lambda percorso: {},
+            # Dalla correzione della 10.19.29 fa anche i conti dell'apertura
+            # sui dati letti, finti anche loro.
+            _conti_dell_apertura=lambda dati: {},
         )
         mf.MainFrame.on_open_tournament(telaio, None)
         return registro

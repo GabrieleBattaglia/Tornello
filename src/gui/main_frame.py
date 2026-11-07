@@ -1281,6 +1281,19 @@ class MainFrame(wx.Frame):
             self._torneo_non_aperto(filepath, errore, rebuild_tree, tieni_il_precedente)
             return
         try:
+            iscritti = self._conti_dell_apertura(data)
+        except Exception as errore:  # noqa: BLE001 - qualunque errore dei conti e' un file che non si apre
+            # Dalla correzione della 10.19.29 i conti sui dati si fanno prima
+            # che il torneo prenda il posto di quello aperto: con
+            # tieni_il_precedente un file con la forma di un torneo, ma con un
+            # iscritto senza il suo identificativo, lascia aperto il torneo di
+            # prima, come un file che non si legge. Fino ad allora l'errore
+            # arrivava con il torneo gia' al suo posto, e nessun torneo
+            # restava aperto: quello di prima perdeva le modifiche soltanto
+            # in memoria.
+            self._torneo_non_aperto(filepath, errore, rebuild_tree, tieni_il_precedente)
+            return
+        try:
             self.current_tournament = data
             # Il percorso si tiene nella forma in cui lo scrive l'albero:
             # Apri Torneo puo' restituire lo stesso file con altre maiuscole,
@@ -1298,9 +1311,7 @@ class MainFrame(wx.Frame):
             self._tornei_non_salvati.clear()
 
             # Ricostruisce players_dict per l'interfaccia grafica
-            self.current_tournament["players_dict"] = {
-                p["id"]: p for p in self.current_tournament.get("players", [])
-            }
+            self.current_tournament["players_dict"] = iscritti
             self._ricorda_la_raccolta_rimasta()
 
             t_name = data.get("name", _("Torneo Sconosciuto"))
@@ -1388,6 +1399,27 @@ class MainFrame(wx.Frame):
                 )
             )
         return data
+
+    def _conti_dell_apertura(self, data):
+        """Correzione della 10.19.29. I conti che l'apertura fa sui dati del
+        torneo letti dal file, prima di mostrarlo: players_dict, che
+        restituisce, il testo dell'area centrale e il giro dell'albero sui
+        turni e sulle loro partite. Non cambiano niente: sollevano l'errore
+        che l'apertura darebbe, per esempio per un file che ha il nome, gli
+        iscritti e i turni, ma un iscritto senza il suo identificativo, o un
+        turno o una partita che non sono un dizionario. Li fanno
+        load_tournament, prima che il torneo prenda il posto di quello
+        aperto, e Apri Torneo, prima della domanda Torneo non salvato: fino
+        ad allora quel file faceva uscire la domanda, e con Si' l'errore
+        arrivava dopo, e chiudeva il torneo di prima con le sue modifiche
+        soltanto in memoria. _ha_la_forma_di_un_torneo, che usano anche
+        l'albero e omonimi.py, resta com'e'."""
+        iscritti = {p["id"]: p for p in data.get("players", [])}
+        self._resoconto_del_turno_corrente({**data, "players_dict": iscritti})
+        for turno in data.get("rounds", []):
+            for partita in turno.get("matches", []):
+                partita.get("result")
+        return iscritti
 
     def _torneo_non_aperto(self, filepath, errore, rebuild_tree, tieni_il_precedente):
         """Dice perche' il file non si e' aperto, e lascia il torneo aperto
@@ -1549,18 +1581,27 @@ class MainFrame(wx.Frame):
         """Visualizza l'abbinamento del turno corrente o lo stato del torneo concluso."""
         if not self.current_tournament:
             return
-
+        report = self._resoconto_del_turno_corrente(self.current_tournament)
         self.main_text.Clear()
-        t_name = self.current_tournament.get("name", _("Torneo Sconosciuto"))
-        curr_round = self.current_tournament.get("current_round", 1)
-        tot_rounds = self.current_tournament.get("total_rounds", 5)
+        self.append_log(report)
+
+    @staticmethod
+    def _resoconto_del_turno_corrente(torneo):
+        """Il testo che show_current_round_report mostra nell'area centrale
+        per torneo, che ha gia' players_dict. Dalla correzione della 10.19.29
+        lo calcola anche _conti_dell_apertura, prima che il torneo si apra:
+        fino ad allora si calcolava soltanto con l'area centrale gia'
+        svuotata."""
+        t_name = torneo.get("name", _("Torneo Sconosciuto"))
+        curr_round = torneo.get("current_round", 1)
+        tot_rounds = torneo.get("total_rounds", 5)
 
         report = _("Torneo: {name}\nTurno Corrente: {curr} di {total}\n").format(
             name=t_name, curr=curr_round, total=tot_rounds
         )
 
         # Mostra abbinamenti se presenti
-        rounds = self.current_tournament.get("rounds", [])
+        rounds = torneo.get("rounds", [])
         active_round_data = next(
             (r for r in rounds if r.get("round") == curr_round), None
         )
@@ -1574,7 +1615,7 @@ class MainFrame(wx.Frame):
                 b_id = m.get("black_player_id")
                 res = m.get("result")
                 # Recupera nomi
-                players_dict = self.current_tournament.get("players_dict", {})
+                players_dict = torneo.get("players_dict", {})
                 w_player = players_dict.get(w_id, {})
                 b_player = players_dict.get(b_id, {}) if b_id else None
 
@@ -1592,7 +1633,7 @@ class MainFrame(wx.Frame):
                     from turno_manuale import testo_punti
 
                     report += _("  {name} - BYE ({punti})\n").format(
-                        name=w_name, punti=testo_punti(self.current_tournament.get("bye_value", 0.5))
+                        name=w_name, punti=testo_punti(torneo.get("bye_value", 0.5))
                     )
         else:
             report += _("Nessun abbinamento generato per questo turno.\n")
@@ -1602,8 +1643,7 @@ class MainFrame(wx.Frame):
                     "Puoi iscrivere altri giocatori premendo Ctrl+I (o dal menù Torneo -> Iscrizioni).\n"
                     "Quando sei pronto ad iniziare il torneo, seleziona 'Inizia torneo' dall'albero a destra.\n"
                 )
-
-        self.append_log(report)
+        return report
 
     def _get_tree_expansion_state(self, parent_node, expanded_actions):
         if not parent_node.IsOk():
@@ -6697,6 +6737,16 @@ class MainFrame(wx.Frame):
             # Se il file scelto non si apre, o non e' un torneo, resta aperto
             # il torneo di prima; se e' il file del torneo aperto, che si e'
             # salvato, nessun torneo resta aperto (vedi _torneo_non_aperto).
+            self._torneo_non_aperto(scelto, errore, True, True)
+            return
+        # Dalla correzione della 10.19.29 prima della domanda si fanno anche i
+        # conti che l'apertura fa sui dati, con lo stesso errore e lo stesso
+        # messaggio: un file con la forma di un torneo, ma con un iscritto
+        # senza il suo identificativo, non fa uscire la domanda (vedi
+        # _conti_dell_apertura).
+        try:
+            self._conti_dell_apertura(letto)
+        except Exception as errore:  # noqa: BLE001 - qualunque errore dei conti e' un file che non si apre
             self._torneo_non_aperto(scelto, errore, True, True)
             return
         if not self._si_puo_lasciare_il_torneo():
