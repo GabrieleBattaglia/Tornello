@@ -5980,15 +5980,36 @@ class MainFrame(wx.Frame):
         come tanti Ctrl+Z quanti sono quei turni. Il cursore dell'albero va
         sul turno che torna corrente. Su un torneo concluso, dove Ctrl+Z e'
         spento, e su un turno che non e' del torneo aperto suona l'errore, e
-        un messaggio dice perche'."""
+        un messaggio dice perche'. Dalla 10.19.44 un turno del torneo aperto
+        che nel torneo non c'e' piu' lo dice il messaggio Turno non trovato,
+        e l'albero si ridisegna."""
         numero = dati.get("round")
         turni = [r.get("round") for r in (self.current_tournament or {}).get("rounds", [])]
-        if not self._e_il_torneo_aperto(dati.get("filepath")) or numero not in turni:
+        if not self._e_il_torneo_aperto(dati.get("filepath")):
             self._canc_non_lavora_qui(
                 _(
                     "Il turno {round} non è del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione."
                 ).format(round=numero),
                 _("Torneo non aperto"),
+            )
+            return
+        if numero not in turni:
+            # Dalla 10.19.44 (decisione di Gabriele del 7 novembre 2026) il
+            # turno che nel torneo aperto non c'e' piu', per esempio perche'
+            # le frecce hanno aperto il torneo dal suo file, cambiato dopo
+            # che l'albero lo aveva letto, lo dice il messaggio Turno non
+            # trovato, con il suono dell'errore, come la partita della
+            # 10.19.38, e l'albero si ridisegna, con il cursore sulla voce del
+            # torneo. Fino alla 10.19.43, e gia' dalla 10.19.0, usciva il
+            # messaggio Torneo non aperto, che diceva di spostarsi sul suo
+            # torneo, anche se era proprio quello aperto; l'albero non si
+            # ridisegnava, e ogni CANC lo ripeteva.
+            self._voce_che_non_c_e_piu(
+                _("Turno non trovato"),
+                _(
+                    "Il turno {round} non è più nel torneo {nome}: forse il file {file} è cambiato dopo che l'albero lo aveva letto. Il torneo resta com'era, e l'albero adesso mostra i suoi turni aggiornati."
+                ).format(round=numero, nome=self.current_tournament.get("name", ""), file=self.active_filename),
+                {"action": "select_tournament", "filepath": self.active_filename},
             )
             return
         if self.current_tournament.get("concluded"):

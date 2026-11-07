@@ -9521,8 +9521,10 @@ class TestCancSuUnaVoceCheNonCePiu:
     torneo iniziato, con il messaggio Giocatore non ritirato, dove CANC
     usciva in silenzio, e il messaggio Giocatore gia' ritirato ha il suono
     dell'errore. Dalla 10.19.38 lo stesso per una partita, con il messaggio
-    Partita non cambiata, dove si sentiva soltanto il suono dell'errore. Le
-    finestre di messaggio sono finte, e il fuoco si annota."""
+    Partita non cambiata, dove si sentiva soltanto il suono dell'errore.
+    Dalla 10.19.44 lo stesso per un turno, con il messaggio Turno non
+    trovato, dove usciva Torneo non aperto. Le finestre di messaggio sono
+    finte, e il fuoco si annota."""
 
     @staticmethod
     def _gamma_cambiata(principale):
@@ -9843,6 +9845,119 @@ class TestCancSuUnaVoceCheNonCePiu:
             assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 1}) is None
             assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": gamma}
             assert registro.fuoco == []
+
+    @staticmethod
+    def _gamma_con_due_turni_e_poi_uno(principale):
+        """Alfa, aperta, e Gamma, in corso con due turni, nell'albero; poi il
+        file di Gamma perde il turno 2, come dopo una Time Machine fatta da
+        un'altra macchina. Restituisce il file di Alfa e quello di Gamma
+        come li scrive l'albero, la voce del turno 2, che l'albero mostra
+        ancora, e il contenuto del file di Gamma."""
+        from config import user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        TestNomeDelTorneoNuovo._scrivi(alfa, _torneo_in_corso("Alfa"))
+        dati = _torneo_in_corso("Gamma")
+        dati["rounds"].append(
+            {
+                "round": 2,
+                "matches": [
+                    {"id": 3, "white_player_id": "VER", "black_player_id": "NER", "result": None},
+                    {"id": 4, "white_player_id": "RUS", "black_player_id": "BIA", "result": None},
+                ],
+            }
+        )
+        dati["current_round"] = 2
+        TestNomeDelTorneoNuovo._scrivi(user_data_path("Tornello - Gamma.json"), dati)
+        principale.load_tournament(alfa)
+        gamma = principale._percorso_come_nell_albero(user_data_path("Tornello - Gamma.json"))[0]
+        voce = principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 2})
+        assert voce and voce.IsOk()
+        dati["rounds"] = dati["rounds"][:1]
+        dati["current_round"] = 1
+        TestNomeDelTorneoNuovo._scrivi(gamma, dati)
+        with open(gamma, "rb") as f:
+            contenuto = f.read()
+        return principale._percorso_come_nell_albero(alfa)[0], gamma, voce, contenuto
+
+    def test_il_turno_che_non_c_e_piu(self, principale, suoni, monkeypatch):
+        """10.19.44 (decisione di Gabriele del 7 novembre 2026). Le frecce
+        sulla voce del turno 2 di Gamma aprono Gamma dal suo file, che il
+        turno 2 non lo ha piu', senza ridisegnare l'albero: CANC dal menu.
+        Il suono dell'errore, l'albero ridisegnato, senza la voce del turno
+        2, con il cursore sulla voce di Gamma e il fuoco all'albero, e il
+        messaggio Turno non trovato; Gamma resta aperta con il suo turno 1,
+        il file resta com'era, e la barra di stato non cambia. Fino alla
+        10.19.43, e gia' dalla 10.19.0, usciva il messaggio Torneo non
+        aperto, che diceva di spostarsi sul torneo, l'albero non si
+        ridisegnava, e ogni CANC lo ripeteva."""
+        import wx
+
+        _alfa, gamma, voce, contenuto = self._gamma_con_due_turni_e_poi_uno(principale)
+        principale.tree_ctrl.SelectItem(voce)
+        assert principale._e_il_torneo_aperto(gamma)
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        barra = principale.last_status_msg
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_canc.GetId())
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Turno non trovato",
+                f"Il turno 2 non è più nel torneo Gamma: forse il file {gamma} è cambiato dopo che l'albero lo aveva letto. "
+                "Il torneo resta com'era, e l'albero adesso mostra i suoi turni aggiornati.",
+                False,
+            )
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        with open(gamma, "rb") as f:
+            assert f.read() == contenuto
+        assert principale._e_il_torneo_aperto(gamma)
+        assert [r["round"] for r in principale.current_tournament["rounds"]] == [1]
+        assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 2}) is None
+        assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 1})
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": gamma}
+        assert registro.fuoco == ["tree_ctrl"]
+        assert registro.caricati == []
+        assert principale.last_status_msg == barra
+
+    def test_il_turno_di_un_altro_torneo(self, principale, suoni, monkeypatch):
+        """Il turno 2 di Gamma, che non e' aperta, con Alfa aperta: CANC
+        sulla sua voce, senza sceglierla, perche' scelta aprirebbe Gamma. Il
+        messaggio Torneo non aperto di prima, con il suono dell'errore, e
+        l'albero non si ridisegna: il cursore resta dov'era, e il fuoco
+        pure."""
+        import wx
+
+        alfa, gamma, voce, _contenuto = self._gamma_con_due_turni_e_poi_uno(principale)
+        selezione = principale.tree_ctrl.GetSelection()
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        principale._canc_sulla_voce(voce, principale.tree_ctrl.GetItemData(voce))
+
+        assert [(f.titolo, f.testo, f.domanda) for f in finestre] == [
+            (
+                "Torneo non aperto",
+                "Il turno 2 non è del torneo aperto: spostati prima sul suo torneo, nell'albero, poi ripeti l'operazione.",
+                False,
+            )
+        ]
+        assert scatole == []
+        assert suoni == ["errore"]
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale._find_matching_item(principale.tree_root, {"action": "show_round_report", "filepath": gamma, "round": 2})
+        assert principale.tree_ctrl.GetSelection() == selezione
+        assert registro.fuoco == []
+        assert registro.caricati == []
 
 
 class TestBarraDopoIlNomeNuovo:
