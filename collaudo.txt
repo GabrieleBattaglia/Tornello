@@ -130,7 +130,7 @@ Domanda 8: il messaggio finisce con "Cambia la data di inizio, oppure scegli un 
 Passo 9: chiudi il messaggio, sali su Data inizio, premi INVIO, scrivi 2026-12-01 e premi INVIO; poi scendi su Iscrizione Giocatori e premi INVIO.
 Domanda 9: la domanda sulla nuova edizione non torna, e si apre subito la finestra Iscrizione Giocatori?
 Passo 10: chiudi la finestra con ESC, senza iscrivere nessuno, poi sali su Indietro e premi INVIO.
-Domanda 10: la procedura si chiude senza creare niente, e nell'albero non c'è un torneo coppa fantasia?
+Domanda 10: la procedura si chiude senza creare niente: nell'albero non c'è un torneo nuovo coppa fantasia, né al primo livello né nel ramo In Preparazione (2), e Coppa Fantasia c'è soltanto fra i Tornei Conclusi (3), come prima?
 Esito: 
 
 PROVA 10: Nomi e data di inizio cambiati da Dati
