@@ -191,6 +191,11 @@ class MainFrame(wx.Frame):
             False  # True se stiamo compilando l'albero per il Nuovo Torneo
         )
         self.last_status_msg = _("Pronto.")
+        # La frase di riposo che show_intro_message ha scritto per ultima
+        # nella barra di stato: dalla 10.19.32 puo' nominare il torneo
+        # aperto, e non e' un esito da conservare (vedi
+        # _mostra_i_file_non_leggibili).
+        self._frase_di_riposo = None
         # L'ultimo testo scritto nel pie' di pagina, per non riscriverlo se
         # non cambia (vedi update_status_display).
         self._testo_pie_di_pagina = None
@@ -883,7 +888,19 @@ class MainFrame(wx.Frame):
             " - Canc: nell'albero, elimina o annulla la voce scelta (torneo, giocatore, turno, partita giocata o programmata)\n"
         )
         self.append_log(intro)
-        self.set_status(_("Pronto. Nessun torneo caricato."))
+        # Dalla 10.19.32 (decisione di Gabriele del 7 novembre 2026), con un
+        # torneo aperto, la barra di stato lo nomina, anche quando ha le
+        # ultime modifiche soltanto in memoria: succede con Indietro nella
+        # procedura guidata di un torneo nuovo, che lascia aperto il torneo
+        # di prima. Fino alla 10.19.31 diceva sempre Nessun torneo caricato,
+        # mentre il torneo era aperto, e il titolo della finestra lo diceva.
+        if self.current_tournament:
+            self._frase_di_riposo = _("Pronto. Torneo aperto: {nome}.").format(
+                nome=self.current_tournament.get("name", _("Torneo Sconosciuto"))
+            )
+        else:
+            self._frase_di_riposo = _("Pronto. Nessun torneo caricato.")
+        self.set_status(self._frase_di_riposo)
 
     def _check_fide_db_on_startup(self):
         """Verifica se il DB FIDE locale ha più di 30 giorni e propone l'aggiornamento."""
@@ -1880,9 +1897,12 @@ class MainFrame(wx.Frame):
                 "Attenzione: {n} file di torneo non leggibili, dettagli sotto."
             ).format(n=len(nuovi))
         )
-        # Il messaggio di riposo non e' un esito da conservare.
+        # Il messaggio di riposo non e' un esito da conservare: dalla 10.19.32
+        # nemmeno quello che nomina il torneo aperto, che show_intro_message
+        # ricorda in _frase_di_riposo.
         esito = getattr(self, "last_status_msg", "")
-        if esito and esito not in (_("Pronto."), _("Pronto. Nessun torneo caricato.")):
+        riposo = (_("Pronto."), _("Pronto. Nessun torneo caricato."), getattr(self, "_frase_di_riposo", None))
+        if esito and esito not in riposo:
             avviso = f"{esito} {avviso}"
         self.set_status(avviso)
         for percorso, errore in nuovi:

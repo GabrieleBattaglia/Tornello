@@ -8776,3 +8776,136 @@ class TestCancSuUnIscrittoDelTorneoAperto:
         if aperta:
             assert [p["id"] for p in principale.current_tournament["players"]] == rimasti
 
+
+
+class TestBarraDopoIndietro:
+    """10.19.32 (decisione di Gabriele del 7 novembre 2026). Nuovo torneo
+    dal menu File con un torneo aperto, e poi INVIO sulla voce Indietro
+    della procedura guidata: il torneo resta aperto, e la barra di stato lo
+    nomina, Pronto. Torneo aperto:, con il suo nome, anche quando ha le
+    ultime modifiche soltanto in memoria. Senza un torneo aperto dice
+    Pronto. Nessun torneo caricato., come prima. Fino alla 10.19.31 diceva
+    sempre cosi', anche con il torneo aperto, e il titolo della finestra lo
+    nominava. Le finestre di messaggio sono finte."""
+
+    bloccata = TestTorneoNonSalvatoDaLasciare.bloccata
+
+    @staticmethod
+    def _indietro(principale):
+        """INVIO sulla voce Indietro della procedura guidata."""
+        voce = TestAlberoETorneoAttivo._voce(principale, action="wizard_back")
+        principale.on_tree_item_activated(SimpleNamespace(GetItem=lambda: voce))
+        _eventi_in_coda()
+
+    @staticmethod
+    def _prima_riga_della_barra(principale):
+        return principale.status_text.GetValue().replace("\r", "\n").split("\n")[0]
+
+    def test_con_il_torneo_salvato(self, principale, suoni, monkeypatch):
+        """Alfa e' aperta e salvata: dopo Indietro Alfa resta aperta, con
+        il titolo e il cursore sulla sua voce, e la barra di stato dice
+        Pronto. Torneo aperto: Alfa., senza suoni e senza messaggi."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        percorsi = TestAlberoETorneoAttivo()._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._indietro(principale)
+
+        assert not principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorsi["Alfa"])
+        assert principale.GetTitle().endswith("[Alfa]")
+        assert principale.last_status_msg == "Pronto. Torneo aperto: Alfa."
+        assert self._prima_riga_della_barra(principale) == "Pronto. Torneo aperto: Alfa."
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": principale.active_filename}
+        assert registro.caricati == []
+        # Il fuoco resta sull'albero, dove era arrivato INVIO: nessuno lo
+        # sposta.
+        assert registro.fuoco == []
+        assert suoni == []
+        assert finestre == []
+        assert scatole == []
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_con_il_torneo_che_ha_le_modifiche_soltanto_in_memoria(self, principale, suoni, monkeypatch, capsys, bloccata):
+        """Primavera 2 ha Roma soltanto in memoria: Nuovo torneo, Si' alla
+        domanda Torneo non salvato, e Indietro. Primavera 2 resta aperta,
+        con Roma, e la barra di stato dice Pronto. Torneo aperto: Primavera
+        2., senza altre domande, suoni o messaggi."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch, [wx.ID_YES])
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        self._indietro(principale)
+
+        assert not principale.creation_mode
+        TestTorneoNonSalvatoDaLasciare._primavera_com_era(principale, bloccata)
+        assert principale.GetTitle().endswith("[Primavera 2]")
+        assert principale.last_status_msg == "Pronto. Torneo aperto: Primavera 2."
+        assert self._prima_riga_della_barra(principale) == "Pronto. Torneo aperto: Primavera 2."
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "select_tournament", "filepath": bloccata.primavera}
+        assert registro.caricati == []
+        # Il fuoco resta sull'albero, dove era arrivato INVIO: nessuno lo
+        # sposta.
+        assert registro.fuoco == []
+        assert suoni == []
+        assert [f.titolo for f in finestre] == ["Torneo non salvato"]
+        assert scatole == []
+
+    def test_senza_torneo_aperto(self, principale, suoni, monkeypatch):
+        """Senza un torneo aperto la barra di stato dice, come prima,
+        Pronto. Nessun torneo caricato., e il cursore va su Nuovo torneo."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        TestAlberoETorneoAttivo()._prepara("Alfa", "Beta")
+        principale.populate_tree()
+        assert principale.current_tournament is None
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        suoni.clear()
+
+        self._indietro(principale)
+
+        assert principale.current_tournament is None
+        assert principale.last_status_msg == "Pronto. Nessun torneo caricato."
+        assert TestAlberoETorneoAttivo._dati_della_selezione(principale) == {"action": "start_new_tournament"}
+        assert suoni == []
+        assert scatole == []
+
+    def test_l_avviso_di_un_file_che_non_si_legge_non_tiene_la_frase(self, principale, suoni, monkeypatch):
+        """Mentre la procedura guidata e' aperta, un file di torneo della
+        cartella del programma si rovina: Indietro ridisegna l'albero, che lo
+        scopre, e la barra di stato dice soltanto l'avviso, senza la frase
+        Pronto. Torneo aperto: Alfa. davanti, come prima senza la frase
+        Pronto. Nessun torneo caricato.: la frase di riposo non e' un esito
+        da conservare."""
+        import wx
+
+        from config import user_data_path
+
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: None)
+        percorsi = TestAlberoETorneoAttivo()._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        with open(user_data_path("Tornello - Rotto.json"), "w", encoding="utf-8") as f:
+            f.write("{rotto")
+
+        self._indietro(principale)
+
+        assert principale._e_il_torneo_aperto(percorsi["Alfa"])
+        assert principale.last_status_msg == "Attenzione: un file di torneo non leggibile, dettagli sotto."
