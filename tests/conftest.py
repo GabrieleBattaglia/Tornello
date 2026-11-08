@@ -3,8 +3,10 @@ import importlib
 import inspect
 import json
 import os
+import shutil
 import sys
 import tempfile
+from types import SimpleNamespace
 
 import pytest
 
@@ -36,8 +38,11 @@ CARTELLA_SRC = os.path.join(RADICE, "src")
 # chi lancia le prove. Nelle esecuzioni del 26 settembre 2026, sorvegliate
 # con un aggancio degli eventi di Windows sul desktop Default, l'unico a
 # crearci qualcosa e' stato un thread della Shell, in una delle prove che
-# mandano file nel cestino: una finestra di soli messaggi di COM
-# (OLEChannelWnd), che non si mostra, non si attiva e non riceve il fuoco.
+# allora mandavano file nel cestino di Windows: una finestra di soli
+# messaggi di COM (OLEChannelWnd), che non si mostra, non si attiva e non
+# riceve il fuoco. Dall'8 novembre 2026 nessuna prova manda piu' file nel
+# cestino di Windows: la guardia del cestino, piu' sotto, fa cadere la prova
+# che ci arriva, e alla Shell non arriva niente.
 NOME_DEL_DESKTOP = f"tornello_prove_{os.getpid()}"
 GENERIC_ALL = 0x10000000
 # Il desktop di partenza, per nome, e la maniglia del desktop nascosto, che
@@ -402,24 +407,38 @@ def _classi_con_metodo_nativo(radice, nome):
             yield classe
 
 
-class GuardiaDelleFinestre:
-    """Sostituisce cio' che aprirebbe una finestra vera e annota ogni
-    chiamata. La chiamata fa fallire la prova subito, con un'eccezione che il
-    codice di Tornello non puo' ingoiare, perche' non deriva da Exception; se
-    la fa comunque sparire qualcun altro, per esempio wx, che stampa l'errore
-    di un gestore di eventi e prosegue, la prova fallisce alla fine."""
+class Guardia:
+    """Cio' che le guardie hanno in comune: annotano ogni chiamata a cio' che
+    una prova non deve raggiungere, e la chiamata fa fallire la prova subito,
+    con un'eccezione che il codice di Tornello non puo' ingoiare, perche' non
+    deriva da Exception; se la fa comunque sparire qualcun altro, per esempio
+    wx, che stampa l'errore di un gestore di eventi e prosegue, la prova
+    fallisce alla fine."""
 
     def __init__(self):
         self.chiamate = []
 
+    def ferma(self, messaggio):
+        self.chiamate.append(messaggio)
+        pytest.fail(messaggio, pytrace=True)
+
+    def verifica(self, esito_della_prova):
+        """A prova finita: se c'e' stata una chiamata vietata e la prova non
+        e' gia' fallita per questo, fallisce adesso."""
+        if self.chiamate and not (esito_della_prova is not None and esito_della_prova.failed):
+            pytest.fail("\n".join(self.chiamate), pytrace=False)
+
+
+class GuardiaDelleFinestre(Guardia):
+    """Sostituisce cio' che aprirebbe una finestra vera e annota ogni
+    chiamata, che fa fallire la prova."""
+
     def vieta(self, descrizione):
-        messaggio = (
+        self.ferma(
             f"La prova ha chiamato {descrizione} vero, che aprirebbe una finestra "
             "sullo schermo. Va sostituito con monkeypatch prima di arrivarci, per "
             "esempio con una classe finta che risponde, come fanno le altre prove."
         )
-        self.chiamate.append(messaggio)
-        pytest.fail(messaggio, pytrace=True)
 
     def funzione(self, descrizione):
         def vietata(*_argomenti, **_opzioni):
@@ -467,17 +486,11 @@ class GuardiaDelleFinestre:
         mostra.guardia_delle_finestre = True
         return mostra
 
-    def verifica(self, esito_della_prova):
-        """A prova finita: se una finestra vera e' stata chiesta e la prova
-        non e' gia' fallita per questo, fallisce adesso."""
-        if self.chiamate and not (esito_della_prova is not None and esito_della_prova.failed):
-            pytest.fail("\n".join(self.chiamate), pytrace=False)
-
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):
-    """Annota sulla prova l'esito di ogni fase: alla guardia serve sapere se
-    la prova e' gia' fallita per una finestra vera."""
+    """Annota sulla prova l'esito di ogni fase: alle guardie serve sapere se
+    la prova e' gia' fallita per una finestra vera o per il cestino."""
     rapporto = yield
     setattr(item, f"esito_{rapporto.when}", rapporto)
     return rapporto
@@ -527,6 +540,160 @@ def nessuna_finestra_vera(request, monkeypatch):
         for nome in nomi:
             if hasattr(moduli[nome_modulo], nome):
                 monkeypatch.setattr(moduli[nome_modulo], nome, guardia.classe_vietata(f"{nome_modulo}.{nome}"))
+    yield guardia
+    guardia.verifica(getattr(request.node, "esito_call", None))
+
+
+# Il cestino finto e la guardia del cestino, dall'8 novembre 2026. Fino ad
+# allora tre prove mandavano file veri nel cestino di Windows, a ogni corsa
+# della suite: test_delete_file_to_trash un file temporaneo,
+# test_dalla_copia_alla_pulizia e test_elimina_tutti_i_file_selezionati le
+# copie di sicurezza che avevano appena creato. Nel cestino di Gabriele se ne
+# erano accumulate migliaia. Una prova che manda file nel cestino usa il
+# cestino finto, la fixture cestino_finto, che prende il posto di
+# delete_file_to_trash; una prova di delete_file_to_trash in se' sostituisce
+# la chiamata di Windows con il metodo shell di CestinoFinto, e guarda che
+# cosa le arriva. La guardia sta al punto piu' in basso, la chiamata alla
+# Shell di Windows, SHFileOperationW, e send2trash, che fuori da Windows ne
+# fa le veci: cosi' una prova che sostituisce delete_file_to_trash, o che
+# risponde da se' a cestino_disponibile, continua a fare quello che fa, e si
+# ferma soltanto una chiamata che arriverebbe davvero al cestino. La prova
+# cade, e il file resta dov'e'.
+
+
+class CestinoFinto:
+    """Al posto del cestino di Windows: sposta file e cartelle in una
+    cartella della prova e annota che cosa ha ricevuto, e da quale finestra.
+    rifiuta contiene i percorsi che non accetta, come un cestino che non si
+    raggiunge. Si chiama come delete_file_to_trash; il metodo shell prende
+    invece il posto della chiamata di Windows, nelle prove di
+    delete_file_to_trash in se'. Fino all'8 novembre 2026 stava in
+    test_copie_di_sicurezza.py."""
+
+    def __init__(self, cartella):
+        self.cartella = cartella
+        self.ricevuti = []
+        self.finestre = []
+        self.richieste = []
+        self.rifiuta = set()
+
+    def __call__(self, percorso, finestra=None):
+        self.finestre.append(finestra)
+        if os.path.abspath(percorso) in self.rifiuta:
+            return False
+        self._sposta(percorso)
+        return True
+
+    def shell(self, richiesta):
+        """Al posto di ctypes.windll.shell32.SHFileOperationW: annota che
+        cosa le arriva, cioe' la finestra, l'operazione, l'elenco dei percorsi
+        fino ai due caratteri nulli che lo chiudono, la destinazione e le
+        opzioni, e sposta il file come un cestino. Risponde 0, come la Shell
+        quando riesce; con un percorso di rifiuta il file resta dov'e', e la
+        risposta e' un codice d'errore."""
+        import ctypes
+
+        struttura = richiesta._obj
+        percorso = struttura.pFrom
+        inizio = ctypes.c_void_p.from_buffer(struttura, type(struttura).pFrom.offset).value
+        self.richieste.append(
+            SimpleNamespace(
+                finestra=struttura.hwnd,
+                operazione=struttura.wFunc,
+                elenco=ctypes.wstring_at(inizio, len(percorso) + 2),
+                destinazione=struttura.pTo,
+                opzioni=struttura.fFlags,
+            )
+        )
+        if os.path.abspath(percorso) in self.rifiuta:
+            return 2
+        self._sposta(percorso)
+        return 0
+
+    def _sposta(self, percorso):
+        os.makedirs(self.cartella, exist_ok=True)
+        destinazione = os.path.join(self.cartella, f"{len(self.ricevuti)}_{os.path.basename(percorso)}")
+        shutil.move(percorso, destinazione)
+        self.ricevuti.append(os.path.abspath(percorso))
+
+
+@pytest.fixture
+def cestino_finto(tmp_path, monkeypatch):
+    """Il cestino finto, per le prove che mandano file nel cestino: prende il
+    posto di delete_file_to_trash in utils e in ogni modulo di Tornello che
+    se l'e' importata, e sposta i file nella cartella cestino della prova.
+    Restituisce il CestinoFinto, con i file ricevuti e le finestre da cui
+    sono partiti. ripristina di copie_di_sicurezza lo riceve come argomento
+    cestino, come fa la finestra Copie di sicurezza: il suo valore
+    predefinito e' il cestino vero, e la guardia fermerebbe la prova."""
+    # copie_di_sicurezza si importa prima della sostituzione: importato dopo,
+    # il valore predefinito di ripristina resterebbe il cestino finto anche
+    # nelle prove che vengono dopo.
+    importlib.import_module("copie_di_sicurezza")
+    import utils
+
+    vero = utils.delete_file_to_trash
+    cestino = CestinoFinto(str(tmp_path / "cestino"))
+    for modulo in list(moduli_di_tornello()):
+        if getattr(modulo, "delete_file_to_trash", None) is vero:
+            monkeypatch.setattr(modulo, "delete_file_to_trash", cestino)
+    yield cestino
+    # Un modulo importato per la prima volta durante la prova si e' copiato
+    # il cestino finto: torna quello vero, come negli altri.
+    for modulo in list(moduli_di_tornello()):
+        if getattr(modulo, "delete_file_to_trash", None) is cestino:
+            modulo.delete_file_to_trash = vero
+
+
+class GuardiaDelCestino(Guardia):
+    """Al posto del cestino vero: la chiamata alla Shell di Windows, e
+    send2trash. Il file resta dov'e', e la prova cade."""
+
+    def vieta(self, via, percorso):
+        self.ferma(
+            f"La prova ha raggiunto il cestino di Windows, con {via}, e voleva "
+            f"mandarci {percorso}. Va sostituito prima di arrivarci: una prova che "
+            "manda file nel cestino usa la fixture cestino_finto, al posto di "
+            "delete_file_to_trash; una prova di delete_file_to_trash in se' "
+            "sostituisce la chiamata di Windows con il metodo shell di "
+            "CestinoFinto, come test_delete_file_to_trash."
+        )
+
+    def shell(self):
+        def shfileoperation(richiesta, *_argomenti):
+            struttura = getattr(richiesta, "_obj", richiesta)
+            self.vieta("SHFileOperationW", getattr(struttura, "pFrom", richiesta))
+
+        shfileoperation.guardia_del_cestino = True
+        return shfileoperation
+
+    def send2trash(self):
+        def send2trash(percorso, *_argomenti, **_opzioni):
+            self.vieta("send2trash", percorso)
+
+        send2trash.guardia_del_cestino = True
+        return send2trash
+
+
+def metti_la_guardia_del_cestino(monkeypatch, guardia):
+    """La guardia al posto della chiamata alla Shell di Windows, e di
+    send2trash, se c'e'."""
+    if sys.platform == "win32":
+        import ctypes
+
+        monkeypatch.setattr(ctypes.windll.shell32, "SHFileOperationW", guardia.shell())
+    try:
+        import send2trash
+    except ImportError:
+        return
+    monkeypatch.setattr(send2trash, "send2trash", guardia.send2trash())
+
+
+@pytest.fixture(autouse=True)
+def nessun_cestino_vero(request, monkeypatch):
+    """La guardia del cestino, su ogni prova."""
+    guardia = GuardiaDelCestino()
+    metti_la_guardia_del_cestino(monkeypatch, guardia)
     yield guardia
     guardia.verifica(getattr(request.node, "esito_call", None))
 

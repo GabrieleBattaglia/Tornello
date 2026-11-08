@@ -1,6 +1,5 @@
 import os
 import sys
-import tempfile
 from datetime import datetime
 
 # Add src folder to path just in case
@@ -33,17 +32,45 @@ def test_calculate_age():
     assert days == 0
 
 
-def test_delete_file_to_trash():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        tmp.write(b"test content")
-        tmp_path = tmp.name
+def test_delete_file_to_trash(tmp_path, monkeypatch):
+    """La funzione vera, fino alla chiamata di Windows, che e' finta: fino
+    all'8 novembre 2026 la prova mandava nel cestino di Windows un file
+    temporaneo vero, a ogni corsa. La Shell finta guarda che cosa le arriva,
+    cioe' una cancellazione che si puo' annullare, quindi verso il cestino,
+    senza domande e senza avanzamento, con la finestra a cui appartiene la
+    domanda, e sposta il file in una cartella della prova."""
+    import ctypes
 
-    assert os.path.exists(tmp_path)
+    import pytest
+    from conftest import CestinoFinto
+
+    if sys.platform != "win32":
+        pytest.skip("il cestino di Windows c'e' solo su Windows")
+    cestino = CestinoFinto(str(tmp_path / "cestino"))
+    monkeypatch.setattr(ctypes.windll.shell32, "SHFileOperationW", cestino.shell)
+    primo = tmp_path / "copia.json"
+    secondo = tmp_path / "altra copia.json"
+    for percorso in (primo, secondo):
+        percorso.write_bytes(b"test content")
+
+    assert os.path.exists(primo)
 
     # Delete it using our helper
-    success = delete_file_to_trash(tmp_path)
+    success = delete_file_to_trash(str(primo))
     assert success
-    assert not os.path.exists(tmp_path)
+    assert not os.path.exists(primo)
+    assert delete_file_to_trash(str(secondo), finestra=4242) is True
+    assert not os.path.exists(secondo)
+    assert cestino.ricevuti == [str(primo), str(secondo)]
+    for richiesta, percorso in zip(cestino.richieste, (primo, secondo), strict=True):
+        # FO_DELETE, e l'elenco chiuso da due caratteri nulli.
+        assert richiesta.operazione == 3
+        assert richiesta.elenco == f"{percorso}\0\0"
+        assert richiesta.destinazione is None
+        # FOF_ALLOWUNDO, FOF_NOCONFIRMATION, FOF_NOERRORUI, FOF_SILENT e
+        # FOF_WANTNUKEWARNING.
+        assert richiesta.opzioni == 0x0040 | 0x0010 | 0x0400 | 0x0004 | 0x4000
+    assert [richiesta.finestra for richiesta in cestino.richieste] == [None, 4242]
 
 
 def test_senza_cestino_il_file_resta(tmp_path, monkeypatch):
@@ -186,9 +213,11 @@ class TestCartelleVuote:
 class TestCicloCompletoDeiBackup:
     """La prova che tiene insieme i pezzi: si crea una copia di sicurezza, la
     si ritrova nella sottocartella del mese, la si cancella e la cartella
-    rimasta vuota sparisce."""
+    rimasta vuota sparisce. Il cestino e' quello finto delle prove: fino
+    all'8 novembre 2026 la copia finiva nel cestino di Windows, a ogni
+    corsa."""
 
-    def test_dalla_copia_alla_pulizia(self, tmp_path, monkeypatch):
+    def test_dalla_copia_alla_pulizia(self, tmp_path, monkeypatch, cestino_finto):
         import config
         import utils
         from gui.dialogs.backup_cleanup_dialog import delete_file_to_trash
@@ -214,6 +243,7 @@ class TestCicloCompletoDeiBackup:
         assert "pre_prova" in tutti[0]["name"]
 
         assert delete_file_to_trash(tutti[0]["path"]) is True
+        assert cestino_finto.ricevuti == [os.path.abspath(tutti[0]["path"])]
         assert rimuovi_cartelle_vuote(cartella_backup) == 2
         assert not os.path.isdir(attesa)
         assert os.path.isdir(cartella_backup)
@@ -690,7 +720,9 @@ class TestSelezioneMultipla:
             finestra.Destroy()
             telaio.Destroy()
 
-    def test_elimina_tutti_i_file_selezionati(self, tmp_path, monkeypatch, app_grafica):
+    def test_elimina_tutti_i_file_selezionati(self, tmp_path, monkeypatch, app_grafica, cestino_finto):
+        """I file vanno nel cestino finto delle prove: fino all'8 novembre
+        2026 finivano nel cestino di Windows, a ogni corsa."""
         import os
 
         from gui.dialogs import backup_cleanup_dialog as modulo
@@ -724,6 +756,8 @@ class TestSelezioneMultipla:
                 len(files) for _r, _d, files in os.walk(str(tmp_path / "backup"))
             )
             assert rimasti == 3
+            assert [os.path.basename(p) for p in cestino_finto.ricevuti] == [f"Tornello - Prova{n}_pre_prova.json" for n in (0, 1, 2)]
+            assert cestino_finto.finestre == [finestra.GetHandle()] * 3
             # Il fuoco non deve restare nel vuoto dopo la cancellazione.
             assert finestra.list_ctrl.GetFocusedItem() == 0
         finally:

@@ -9382,7 +9382,7 @@ class TestRipristinoNellaProceduraGuidata:
         le sue finestre di messaggio, con titolo e testo, i suoi suoni e il
         cestino."""
         import wx
-        from test_copie_di_sicurezza import CestinoFinto
+        from conftest import CestinoFinto
 
         from gui.dialogs import backup_cleanup_dialog as bcd
 

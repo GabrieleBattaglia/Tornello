@@ -16,6 +16,7 @@ import types
 from datetime import datetime
 
 import pytest
+from conftest import CestinoFinto
 from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _g3_vince_a_forfait, _torneo_finito
 
 MESE = os.path.join("2026", "09 Settembre")
@@ -42,29 +43,6 @@ def _copie(cartella, contesto):
     for radice, _cartelle, files in os.walk(cartella):
         trovate += [os.path.join(radice, n) for n in files if f"_{contesto}_" in n]
     return sorted(trovate)
-
-
-class CestinoFinto:
-    """Al posto del cestino di Windows: sposta file e cartelle in una
-    cartella della prova e annota che cosa ha ricevuto, e da quale finestra.
-    rifiuta contiene i percorsi che non accetta, come un cestino che non si
-    raggiunge."""
-
-    def __init__(self, cartella):
-        self.cartella = cartella
-        self.ricevuti = []
-        self.finestre = []
-        self.rifiuta = set()
-
-    def __call__(self, percorso, finestra=None):
-        self.finestre.append(finestra)
-        if os.path.abspath(percorso) in self.rifiuta:
-            return False
-        os.makedirs(self.cartella, exist_ok=True)
-        destinazione = os.path.join(self.cartella, f"{len(self.ricevuti)}_{os.path.basename(percorso)}")
-        shutil.move(percorso, destinazione)
-        self.ricevuti.append(os.path.abspath(percorso))
-        return True
 
 
 def _giocatore(pid, cognome, **altro):

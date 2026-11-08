@@ -703,7 +703,7 @@ class TestIlFileDelTorneoInConsole:
         a ogni corsa delle prove."""
         import os
 
-        from test_copie_di_sicurezza import CestinoFinto
+        from conftest import CestinoFinto
 
         import config
         import controller
