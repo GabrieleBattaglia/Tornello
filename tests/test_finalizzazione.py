@@ -611,6 +611,58 @@ class TestCartellaDiLavoroEsterna:
         assert _nella_radice(tmp_path) == []
 
 
+class TestCartelleConLeParentesiQuadre:
+    """10.19.46 (decisione di Gabriele dell'8 novembre 2026). La cartella
+    del programma, o la cartella di lavoro scelta, ha le parentesi quadre
+    nel nome, come Tornello [prova]: la finalizzazione, dalla finestra e
+    dalla console, trova i report del torneo, e li porta in archivio con il
+    json. Fino alla 10.19.45, e gia' nella 10.0.0, glob leggeva le parentesi
+    come un insieme di caratteri, e non trovava niente: i report restavano
+    dov'erano, e in archivio andava soltanto il json."""
+
+    DETTAGLI = f"Tornello - {NOME} - Turno 1 Dettagli.txt"
+    CLASSIFICA = f"Tornello - {NOME} - Classifica.txt"
+
+    @staticmethod
+    def _finalizza_dalla(strada, banco):
+        if strada == "finestra":
+            return _finalizza(banco)
+        return _finalizza_in_console(banco)
+
+    @pytest.mark.parametrize("strada", ["finestra", "console"])
+    def test_la_cartella_del_programma(self, programma_con_le_parentesi, tmp_path, monkeypatch, cestino_finto, strada):
+        banco = prepara_il_banco(tmp_path, monkeypatch)
+        assert banco.file_torneo.startswith(str(programma_con_le_parentesi))
+        (programma_con_le_parentesi / self.DETTAGLI).write_text("dettagli", encoding="utf-8")
+
+        assert self._finalizza_dalla(strada, banco) is True
+
+        assert _nella_radice(programma_con_le_parentesi) == []
+        assert sorted(os.listdir(_cartella_archivio())) == [self.CLASSIFICA, self.DETTAGLI, f"Tornello - {NOME}.json"]
+        with open(os.path.join(_cartella_archivio(), self.DETTAGLI), encoding="utf-8") as f:
+            assert f.read() == "dettagli"
+        assert cestino_finto.ricevuti == []
+
+    @pytest.mark.parametrize("strada", ["finestra", "console"])
+    def test_la_cartella_di_lavoro_scelta(self, banco, tmp_path, cestino_finto, strada):
+        """La cartella di lavoro esterna tiene i report, e l'archivio ne ha
+        una copia."""
+        esterna = tmp_path / "Lavoro [sociale]"
+        esterna.mkdir()
+        banco.torneo["custom_save_path"] = str(esterna)
+        _scrivi(banco.file_torneo, banco.torneo)
+        (esterna / self.DETTAGLI).write_text("dettagli", encoding="utf-8")
+
+        assert self._finalizza_dalla(strada, banco) is True
+
+        assert sorted(os.listdir(_cartella_archivio())) == [self.CLASSIFICA, self.DETTAGLI, f"Tornello - {NOME}.json"]
+        assert sorted(os.listdir(esterna)) == [self.CLASSIFICA, self.DETTAGLI, f"Tornello - {NOME}.json"]
+        with open(os.path.join(_cartella_archivio(), self.DETTAGLI), encoding="utf-8") as f:
+            assert f.read() == "dettagli"
+        assert _nella_radice(tmp_path) == []
+        assert cestino_finto.ricevuti == []
+
+
 class TestScrittureNonRiuscite:
     """save_players_db e save_tournament stampavano l'errore e basta, e la
     finalizzazione andava avanti: il json attivo spariva e la finestra diceva

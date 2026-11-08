@@ -2135,6 +2135,32 @@ class TestAlberoETorneoAttivo:
         assert self._voci_dei_conclusi(principale) == ["Delta (Ottobre 2026)", "Delta (Ottobre 2026, dalla cartella Lavoro)"]
         assert "Alfa (dalla cartella chiavetta)" not in [testo for testo, _dati in self._voci_della_radice(principale)]
 
+    def test_la_cartella_del_programma_con_le_parentesi_quadre(self, principale, suoni, programma_con_le_parentesi):
+        """10.19.46 (decisione di Gabriele dell'8 novembre 2026). La
+        cartella del programma si chiama Tornello [prova], con le parentesi
+        quadre: l'albero mostra Alfa, in corso, e Delta, concluso e
+        archiviato, fra i Tornei Conclusi. Fino alla 10.19.45, e gia' nella
+        10.0.0, glob leggeva le parentesi della cartella dell'archivio come
+        un insieme di caratteri, e i Tornei Conclusi non c'erano; i tornei in
+        corso li trova dalla 10.19.41."""
+        from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
+
+        alfa = user_data_path("Tornello - Alfa.json")
+        self._scrivi(alfa, _torneo_in_corso("Alfa"))
+        concluso = _torneo_in_corso("Delta", finito=True)
+        concluso["concluded"] = True
+        delta = os.path.join(ARCHIVED_TOURNAMENTS_DIR, "2026", "10 Ottobre", "Delta", "Tornello - Delta.json")
+        self._scrivi(delta, concluso)
+        assert "[prova]" in alfa and "[prova]" in delta
+        suoni.clear()
+
+        principale.populate_tree()
+
+        assert [testo for testo, _dati in self._voci_della_radice(principale)] == ["Alfa", "Tornei Conclusi (1)", "Nuovo torneo"]
+        assert self._voci_dei_conclusi(principale) == ["Delta (Ottobre 2026)"]
+        assert set(self._tutti_i_file(principale)) == {os.path.normcase(alfa), os.path.normcase(delta)}
+        assert suoni == []
+
     def test_un_file_rovinato_durante_un_azione_si_segnala_dopo_il_suo_esito(self, principale, suoni, monkeypatch):
         """Un file di torneo che si rovina a sessione avviata, scoperto dal
         ridisegno dell'albero dentro la finalizzazione: ad azione finita la

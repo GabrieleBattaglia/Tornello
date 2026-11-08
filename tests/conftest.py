@@ -222,30 +222,58 @@ def dati_in_cartella_temporanea(tmp_path, tmp_path_factory, monkeypatch):
     all'importazione.
     """
     import config
-    import percorsi
 
-    veri = percorsi_veri()
-    monkeypatch.setattr(percorsi, "cartella_applicazione", lambda: str(tmp_path))
     # I file di lavoro del motore vanno in una cartella a parte, fuori da
     # quella della prova: diverse prove elencano cio' che trovano nella loro
     # cartella, e una sottocartella in piu' le farebbe fallire.
     motore = tmp_path_factory.mktemp("motore")
+    devia_la_cartella_del_programma(monkeypatch, tmp_path, motore)
+    # config e' sempre fra i moduli caricati: lo importa questa stessa
+    # fixture, cosi' anche un modulo importato per la prima volta dentro una
+    # prova si copia i valori gia' deviati.
+    assert config.PLAYER_DB_FILE.startswith(str(tmp_path))
+
+
+def devia_la_cartella_del_programma(monkeypatch, radice, motore=None):
+    """La cartella del programma diventa radice, per tutti i moduli, con le
+    costanti di dati calcolate all'importazione. Quelle del motore vanno in
+    motore; senza, restano dove sono."""
+    import percorsi
+
+    veri = percorsi_veri()
+    monkeypatch.setattr(percorsi, "cartella_applicazione", lambda: str(radice))
     deviati = {}
     for nome, vero in veri.items():
         if nome in COSTANTI_DEL_MOTORE:
-            deviati[nome] = str(motore / os.path.basename(vero))
+            if motore is not None:
+                deviati[nome] = str(motore / os.path.basename(vero))
         else:
             relativo = os.path.relpath(vero, RADICE)
-            deviati[nome] = str(tmp_path) if relativo == "." else str(tmp_path / relativo)
+            deviati[nome] = str(radice) if relativo == "." else str(radice / relativo)
 
     for modulo in moduli_di_tornello():
         for nome, nuovo in deviati.items():
             if isinstance(getattr(modulo, nome, None), str):
                 monkeypatch.setattr(modulo, nome, nuovo)
-    # config e' sempre fra i moduli caricati: lo importa questa stessa
-    # fixture, cosi' anche un modulo importato per la prima volta dentro una
-    # prova si copia i valori gia' deviati.
-    assert config.PLAYER_DB_FILE.startswith(str(tmp_path))
+
+
+@pytest.fixture
+def programma_con_le_parentesi(tmp_path, monkeypatch):
+    """La cartella del programma con le parentesi quadre nel nome, Tornello
+    [prova], dentro la cartella temporanea della prova: ci vanno i tornei,
+    l'archivio, il database dei giocatori e le copie di sicurezza, come con
+    dati_in_cartella_temporanea. Serve alle prove delle ricerche con glob,
+    che dalla 10.19.41 e dalla 10.19.46 passano da glob.escape: senza, glob
+    legge le parentesi come un insieme di caratteri. Restituisce la
+    cartella."""
+    import config
+
+    radice = tmp_path / "Tornello [prova]"
+    radice.mkdir()
+    devia_la_cartella_del_programma(monkeypatch, radice)
+    assert config.user_data_path("").startswith(str(radice))
+    assert config.ARCHIVED_TOURNAMENTS_DIR.startswith(str(radice))
+    return radice
 
 
 # La sentinella. Qualunque cosa sfugga alla deviazione qui sopra, oggi o con

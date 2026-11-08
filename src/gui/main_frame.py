@@ -1513,12 +1513,18 @@ class MainFrame(wx.Frame):
         programma, senza il database dei giocatori e le impostazioni, e
         quelli dell'archivio dei tornei conclusi. Due elenchi, in quest'ordine.
         I primi li cerca tornei_nella_cartella_del_programma di tournament.py,
-        che dalla 10.19.41 usa anche la console."""
+        che dalla 10.19.41 usa anche la console.
+        Dalla 10.19.46 anche la cartella dell'archivio passa da glob.escape,
+        come in omonimi.py: in una cartella del programma con le parentesi
+        quadre nel nome, come Tornello [prova], glob le leggeva come un
+        insieme di caratteri, e fino alla 10.19.45, e gia' nella 10.0.0,
+        l'albero non trovava i Tornei Conclusi (decisione di Gabriele dell'8
+        novembre 2026)."""
         from tournament import tornei_nella_cartella_del_programma
 
         in_cartella = tornei_nella_cartella_del_programma()
         in_archivio = glob.glob(
-            os.path.join(ARCHIVED_TOURNAMENTS_DIR, "**", "Tornello - *.json"),
+            os.path.join(glob.escape(ARCHIVED_TOURNAMENTS_DIR), "**", "Tornello - *.json"),
             recursive=True,
         )
         return in_cartella, in_archivio

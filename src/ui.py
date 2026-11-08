@@ -2346,7 +2346,15 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     else:
         file_pattern_prefix = user_data_path(f"Tornello - {sanitized_tournament_name}")
 
-    for file_in_dir in glob.glob(f"{file_pattern_prefix}*.*"):
+    # Dalla 10.19.46 la cartella e il nome passano da glob.escape, come in
+    # omonimi.py: le parentesi quadre di una cartella come Tornello [prova],
+    # quella del programma o la cartella di lavoro scelta, sono lettere, e
+    # non un insieme di caratteri. Fino alla 10.19.45, e gia' nella 10.0.0,
+    # in una cartella cosi' il glob non trovava i report, che restavano
+    # dov'erano, e in archivio andava soltanto il json del torneo (decisione
+    # di Gabriele dell'8 novembre 2026). Il nome del torneo, ripulito da
+    # sanitize_filename, le parentesi non le ha mai.
+    for file_in_dir in glob.glob(f"{glob.escape(file_pattern_prefix)}*.*"):
         # Il glob prende tutto cio' che comincia con il nome del torneo,
         # quindi anche i file di Autunneo2 finalizzando Autunneo: si tengono
         # solo quelli che portano il nome per intero. Il json del torneo non
