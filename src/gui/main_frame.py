@@ -6481,9 +6481,10 @@ class MainFrame(wx.Frame):
         ha la ritrova load_tournament, qui o quando il torneo si apre dopo,
         anche dopo una chiusura di Tornello, e va nella cartella backup prima
         di essere sostituita (revisione della 10.19.13).
-        Dalla 10.19.52 un torneo ripristinato che la finestra non carica, per
-        esempio con un altro torneo aperto, ha il turno corrente e la
-        classifica scritti da _report_del_torneo_ripristinato."""
+        Dalla 10.19.52 un torneo ripristinato che la finestra non carica, con
+        un altro torneo aperto o dentro la procedura senza un torneo aperto,
+        ha il turno corrente e la classifica scritti da
+        _report_del_torneo_ripristinato."""
         if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
             self.populate_tree()
             return
@@ -6530,14 +6531,15 @@ class MainFrame(wx.Frame):
         load_tournament, con _leggi_il_torneo e _conti_dell_apertura: i file
         sono quelli che la finestra scriverebbe aprendo il torneo ripristinato
         e salvandolo. Succede con un altro torneo aperto, dentro e fuori
-        dalla procedura guidata, e quando, alla domanda di
-        _si_puo_lasciare_il_torneo, resta aperto il torneo di prima. Il
-        torneo che la finestra carica li ha da _save_state, come prima; la
-        raccolta delle partite resta a load_tournament, quando il torneo si
-        apre. Fino alla 10.19.51, e gia' dalla 10.10.0, quando e' nato il
-        ripristino, restavano quelli di prima del ripristino, e per un torneo
-        riaperto mancavano, andati nel cestino con la cartella d'archivio
-        della finalizzazione. Un file che non si legge non scrive niente."""
+        dalla procedura guidata, dentro la procedura senza un torneo aperto,
+        e quando, alla domanda di _si_puo_lasciare_il_torneo, resta aperto il
+        torneo di prima. Il torneo che la finestra carica li ha da
+        _save_state, come prima; la raccolta delle partite resta a
+        load_tournament, quando il torneo si apre. Fino alla 10.19.51, e
+        gia' dalla 10.10.0, quando e' nato il ripristino, restavano quelli di
+        prima del ripristino, e per un torneo riaperto mancavano, andati nel
+        cestino con la cartella d'archivio della finalizzazione. Un file che
+        non si legge non scrive niente."""
         from reports import save_current_tournament_round_file, save_standings_text
 
         try:
