@@ -865,7 +865,7 @@ class TestIlFileDelTorneoInConsole:
         guida = TournamentController(adattatore)
         guida._select_or_create_tournament()
 
-        assert copione.domande == ["Vuoi caricare 'Corona'? (Premi INVIO per sì, o inserisci il nome di un NUOVO torneo da creare): : "]
+        assert copione.domande == ["Vuoi caricare 'Corona'? (Premi INVIO per sì, o inserisci il nome di un NUOVO torneo da creare): "]
         assert not any("Ripresa" in m or "sospesa" in m for m in adattatore.messaggi)
         assert [r.round for r in guida.tournament.rounds] == [1]
         assert self._leggi(aperto) == prima

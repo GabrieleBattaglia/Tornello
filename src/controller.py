@@ -286,9 +286,12 @@ class TournamentController:
                 )
             )
 
+            # Senza i due punti in fondo, che input_text aggiunge da se',
+            # dalla 10.19.56: fino alla 10.19.55 la domanda finiva con due
+            # volte i due punti (decisione di Gabriele dell'8 novembre 2026).
             choice_str = self.ui.input_text(
                 _(
-                    "Vuoi caricare '{name}'? (Premi INVIO per sì, o inserisci il nome di un NUOVO torneo da creare): "
+                    "Vuoi caricare '{name}'? (Premi INVIO per sì, o inserisci il nome di un NUOVO torneo da creare)"
                 ).format(name=single_tournament_name_guess)
             ).strip()
 
@@ -571,14 +574,19 @@ class TournamentController:
         """La data di inizio di un torneo nuovo, nel formato AAAA-MM-GG,
         chiesta finche' non se ne scrive una valida; con INVIO e' quella di
         oggi."""
+        # Dalla 10.19.56 il formato si dice a parole, AAAA-MM-GG, come nella
+        # finestra, nella domanda e nel messaggio della data sbagliata: fino
+        # alla 10.19.55 mostravano %Y-%m-%d, il formato grezzo di strftime
+        # (decisione di Gabriele dell'8 novembre 2026). Le date che si
+        # accettano sono le stesse.
         start_date = ""
         while not start_date:
             oggi_str_iso = datetime.now().strftime(DATE_FORMAT_ISO)
             oggi_str_locale = format_date_locale(oggi_str_iso)
             inp_date = self.ui.input_text(
                 _(
-                    "Inserisci data inizio ({date_format}) [Default: {default_date}]"
-                ).format(date_format=DATE_FORMAT_ISO, default_date=oggi_str_locale)
+                    "Inserisci data inizio (AAAA-MM-GG) [Default: {default_date}]"
+                ).format(default_date=oggi_str_locale)
             ).strip()
             if not inp_date:
                 inp_date = oggi_str_iso
@@ -587,9 +595,7 @@ class TournamentController:
                 start_date = dt.strftime(DATE_FORMAT_ISO)
             except ValueError:
                 self.ui.show_error(
-                    _("Formato data non valido. Usa {date_format} o AAAAMMGG.").format(
-                        date_format=DATE_FORMAT_ISO
-                    )
+                    _("Formato data non valido. Usa AAAA-MM-GG o AAAAMMGG.")
                 )
         return start_date
 
@@ -649,7 +655,9 @@ class TournamentController:
         sanitized = sanitize_filename(new_name)
         self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
-        # Date fine
+        # Date fine. Il formato a parole, come per la data di inizio, dalla
+        # 10.19.56; il messaggio della data sbagliata e' quello della
+        # finestra.
         end_date = ""
         while not end_date:
             start_dt = datetime.strptime(start_date, DATE_FORMAT_ISO)
@@ -658,8 +666,8 @@ class TournamentController:
             default_end_locale = format_date_locale(future_dt)
             inp_date = self.ui.input_text(
                 _(
-                    "Inserisci data fine ({date_format}) [Default: {default_date}]"
-                ).format(date_format=DATE_FORMAT_ISO, default_date=default_end_locale)
+                    "Inserisci data fine (AAAA-MM-GG) [Default: {default_date}]"
+                ).format(default_date=default_end_locale)
             ).strip()
             if not inp_date:
                 inp_date = default_end_iso
@@ -674,11 +682,7 @@ class TournamentController:
                     continue
                 end_date = inp_date
             except ValueError:
-                self.ui.show_error(
-                    _("Formato data non valido. Usa {date_format}.").format(
-                        date_format=DATE_FORMAT_ISO
-                    )
-                )
+                self.ui.show_error(_("Formato data non valido. Usa AAAA-MM-GG."))
             except OverflowError:
                 self.ui.show_error(
                     _("La data calcolata risulta troppo lontana nel futuro.")

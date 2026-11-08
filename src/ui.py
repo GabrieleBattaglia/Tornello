@@ -210,16 +210,20 @@ def input_schedule_details(existing_details=None):
     print(_("Dettagli Pianificazione Partita"))
     if is_modifying:
         print(_("Lasciare il campo vuoto per mantenere il valore attuale."))
+    # Dalla 10.19.56 il formato della data si dice a parole, AAAA-MM-GG, come
+    # nella finestra, e le parti fra parentesi quadre finiscono senza i due
+    # punti, che get_input_with_default aggiunge da se'. Fino alla 10.19.55
+    # la domanda della data e il messaggio della data sbagliata mostravano
+    # %Y-%m-%d, il formato grezzo di strftime, e le quattro domande finivano
+    # con due volte i due punti (decisione di Gabriele dell'8 novembre 2026).
     while True:
-        prompt_date = _("Data partita (formati: GG, GG-MM, {iso_format})").format(
-            iso_format=DATE_FORMAT_ISO
-        )
+        prompt_date = _("Data partita (formati: GG, GG-MM, AAAA-MM-GG)")
         default_date_val_for_input = ""
         current_display = "N/D"
         if is_modifying and existing_details and existing_details.get("date"):
             default_date_val_for_input = existing_details["date"]
             current_display = format_date_locale(default_date_val_for_input)
-        prompt_date += _(" [Attuale: {current}]: ").format(current=current_display)
+        prompt_date += _(" [Attuale: {current}]").format(current=current_display)
         date_input_str = get_input_with_default(
             prompt_date, default_date_val_for_input
         ).strip()
@@ -257,8 +261,8 @@ def input_schedule_details(existing_details=None):
         except ValueError:
             print(
                 _(
-                    "Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, {iso_format} o AAAAMMGG."
-                ).format(input=date_input_str, iso_format=DATE_FORMAT_ISO)
+                    "Formato data '{input}' non valido o data inesistente. Usa GG, GG-MM, AAAA-MM-GG o AAAAMMGG."
+                ).format(input=date_input_str)
             )
         except TypeError:
             print(
@@ -274,7 +278,7 @@ def input_schedule_details(existing_details=None):
         if is_modifying and existing_details and existing_details.get("time"):
             default_time_val_for_input = existing_details["time"]
             current_display_time = default_time_val_for_input
-        prompt_time += _(" [Attuale: {current}]: ").format(current=current_display_time)
+        prompt_time += _(" [Attuale: {current}]").format(current=current_display_time)
         time_input_str = get_input_with_default(
             prompt_time, default_time_val_for_input
         ).strip()
@@ -306,7 +310,7 @@ def input_schedule_details(existing_details=None):
         "" if not is_modifying else existing_details.get("channel", "")
     )
     details["channel"] = get_input_with_default(
-        _("Canale/Link partita [Attuale: {current}]: ").format(
+        _("Canale/Link partita [Attuale: {current}]").format(
             current=default_channel_val
         ),
         default_channel_val,
@@ -315,7 +319,7 @@ def input_schedule_details(existing_details=None):
         "" if not is_modifying else existing_details.get("arbiter", "")
     )
     details["arbiter"] = get_input_with_default(
-        _("Arbitro assegnato [Attuale: {current}]: ").format(
+        _("Arbitro assegnato [Attuale: {current}]").format(
             current=default_arbiter_val
         ),
         default_arbiter_val,
@@ -696,14 +700,20 @@ def input_players(
             print(
                 _("Nessuna corrispondenza trovata. Procedi con l'inserimento manuale.")
             )
+            # Nome e cognome senza i due punti, che get_input_with_default
+            # aggiunge da se', e la data di nascita con il formato a parole,
+            # dalla 10.19.56: fino alla 10.19.55 le due domande avevano i
+            # due punti due volte, prima e dopo le parentesi quadre vuote, e
+            # quella della data di nascita mostrava %Y-%m-%d, il formato
+            # grezzo di strftime (decisione di Gabriele dell'8 novembre 2026).
             first_name_new_db = (
-                get_input_with_default(_("  Nome del nuovo giocatore: "))
+                get_input_with_default(_("  Nome del nuovo giocatore"))
                 .strip()
                 .title()
             )
             if not first_name_new_db:
                 continue
-            last_name_new_db = get_input_with_default(_("  Cognome: ")).strip().title()
+            last_name_new_db = get_input_with_default(_("  Cognome")).strip().title()
             if not last_name_new_db:
                 continue
             elo_new_db = dgt(
@@ -731,9 +741,7 @@ def input_players(
 
             while True:
                 bdate_input = get_input_with_default(
-                    _("  Data Nascita ({date_format} o vuoto o AAAAMMGG)").format(
-                        date_format=DATE_FORMAT_ISO
-                    ),
+                    _("  Data Nascita (AAAA-MM-GG o vuoto o AAAAMMGG)"),
                     "",
                 )
                 if bdate_input:
