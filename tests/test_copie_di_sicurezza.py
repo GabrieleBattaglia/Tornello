@@ -2501,6 +2501,30 @@ class TestDettagliDeiTurniCheNonCiSonoPiu:
         assert len(esito.righe) == 2 and esito.righe[1].startswith("Lo stato di prima è nella copia Tornello - Turni_pre_ripristino_")
         assert capsys.readouterr().out == ""
 
+    def test_con_la_cartella_esterna_i_file_accanto_al_programma_restano(self, tmp_path, cestino_finto):
+        """Revisione del quattordicesimo giro. La cartella di lavoro scelta
+        per il torneo si raggiunge, ed e' la sua cartella dei report: nel
+        cestino vanno soltanto i file dei turni 3 e 2 che stanno li'. Nella
+        cartella del programma c'e' anche il file del turno 3 del torneo, con
+        la sua intestazione, come uno scritto alla conclusione del turno con
+        la chiavetta staccata: non e' nella cartella dei report, e resta
+        dov'e', byte per byte, come vuole la risposta di Gabriele alla
+        domanda 1 del tredicesimo giro."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path, esterna=True)
+        terzo = "Tornello - Turni - Turno 3 Dettagli.txt"
+        (tmp_path / terzo).write_bytes(oggi[terzo])
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert cestino_finto.tentativi == [os.path.abspath(cartella / f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (3, 2)]
+        assert cestino_finto.ricevuti == cestino_finto.tentativi
+        assert self._dettagli_nella(tmp_path) == {terzo: oggi[terzo]}
+        assert list(self._dettagli_nella(cartella)) == ["Tornello - Turni - Turno 1 Dettagli.txt"]
+        assert esito.dettagli_rimasti == []
+
     def test_la_copia_del_torneo_appena_nato(self, tmp_path, cestino_finto):
         """La copia del torneo senza turni: vanno nel cestino tutti e tre i
         file, dall'ultimo."""
