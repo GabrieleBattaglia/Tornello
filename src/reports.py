@@ -718,6 +718,7 @@ def allinea_i_dettagli_dei_turni(torneo):
         scritti.append(percorso)
     return scritti
 
+
 def get_criterion_value(player_item, criterion, torneo):
     """Calcola il valore di un criterio per l'ordinamento della classifica.
 
