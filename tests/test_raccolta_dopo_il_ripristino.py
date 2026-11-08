@@ -28,6 +28,7 @@ nella cartella temporanea della prova."""
 import copy
 import json
 import os
+import sys
 
 import pytest
 import test_canc_sui_turni as turni
@@ -280,6 +281,59 @@ class TestIlTorneoInCorso:
         _apri_e_salva(principale, monkeypatch, ripristinato)
 
         assert _byte(raccolta) == prima
+        assert len(copie.finestre) == 3
+        assert suoni == ["errore"]
+
+    @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
+    def test_la_raccolta_che_non_si_scrive(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, capsys):
+        """Correzione della 10.19.58. Fuori dalla procedura guidata, con
+        Alfa aperta, la copia del turno 2 con i PGN del turno 1, e la
+        raccolta del torneo ripristinato che un altro programma tiene aperta,
+        e lascia leggere ma non scrivere, come un visualizzatore di PGN: la
+        raccolta di prima va nella cartella backup, resta com'era, e dopo il
+        suono del ripristino il messaggio Raccolta delle partite non scritta
+        lo dice, con il motivo che da' il sistema e con il suono dell'errore,
+        come a un salvataggio, prima del messaggio Ripristino riuscito. Tolto
+        il blocco, aprendo e salvando il torneo ripristinato la raccolta
+        diventa la sua, senza un'altra copia e senza altri messaggi."""
+        from test_comandi_delle_finestre import TestRaccoltaSenzaPartiteNelCestino, _descrizione_dell_errore
+
+        from reports import byte_della_raccolta_pgn
+
+        ripristinato, copia, raccolta, prima = _torneo_in_corso_con_la_copia(principale, tmp_path, "programma", True)
+        alfa = _prepara_la_situazione(principale, monkeypatch, SITUAZIONI[0])
+        suoni.clear()
+        capsys.readouterr()
+
+        sblocca = TestRaccoltaSenzaPartiteNelCestino._bloccata(raccolta, TestRaccoltaSenzaPartiteNelCestino.FILE_SHARE_READ)
+        try:
+            copie, scatole, registro = _ripristina(principale, monkeypatch, copia, cestino_finto)
+            ancora = _byte(raccolta)
+        finally:
+            sblocca()
+
+        assert ancora == prima
+        assert list(_copie_della_raccolta().values()) == [prima]
+        assert _raccolte_nel_cestino(cestino_finto) == []
+        (errore,) = TestRaccoltaSenzaPartiteNelCestino._errori_in_console(capsys)
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Raccolta delle partite non scritta", "Ripristino riuscito"]
+        assert copie.finestre[1][1] == (
+            f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, non si è potuta scrivere: "
+            f"{_descrizione_dell_errore(errore)}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
+        )
+        assert copie.suoni == ["ripristino"]
+        assert suoni == ["errore"]
+        assert scatole == []
+        assert registro.fuoco == ["tree_ctrl"]
+        assert principale._e_il_torneo_aperto(alfa)
+
+        _apri_e_salva(principale, monkeypatch, ripristinato)
+
+        with open(ripristinato, encoding="utf-8") as f:
+            propria = byte_della_raccolta_pgn(json.load(f))
+        assert propria.count(b"[Event ") == 4
+        assert _byte(raccolta) == propria
+        assert list(_copie_della_raccolta().values()) == [prima]
         assert len(copie.finestre) == 3
         assert suoni == ["errore"]
 
