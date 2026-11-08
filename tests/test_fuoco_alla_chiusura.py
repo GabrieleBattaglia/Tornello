@@ -575,11 +575,12 @@ class TestNessunFuocoConLeCopieAperte:
     300 millisecondi. Adesso l'albero, con un dialogo modale aperto, non
     chiede il fuoco, e il fuoco, quando la finestra delle copie si chiude,
     torna dove tornava: sull'albero, da cui la finestra si e' aperta, con il
-    cursore sulla voce del torneo. Fino alla 10.19.48, e gia' nella 10.0.0,
-    le righe erano 23 con la procedura guidata e 11 fuori, sul desktop
-    nascosto con il banco. La finestra delle copie e' vera; le sue finestre
-    di messaggio sono finte, e rispondono Si' alla conferma, e il cestino
-    pure."""
+    cursore sulla voce del torneo. Fino alla 10.19.48, fuori dalla
+    procedura dalla 10.10.0, quando e' nato il ripristino, e dentro dalla
+    10.19.43, le righe erano 23 con la procedura guidata e 11 fuori, sul
+    desktop nascosto con il banco. La finestra delle copie e' vera; le sue
+    finestre di messaggio sono finte, e rispondono Si' alla conferma, e il
+    cestino pure."""
 
     @staticmethod
     def _messaggi_di_wx():
