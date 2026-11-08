@@ -642,12 +642,11 @@ class TestTimeMachineDellaConsole:
         assert {p["id"]: p["points"] for p in torneo["players"]} == punti_prima
         assert {p["id"]: p["results_history"] for p in torneo["players"]} == storici_prima
 
-    def test_i_file_dei_dettagli_dei_turni_tolti_vanno_nel_cestino(self, monkeypatch):
+    def test_i_file_dei_dettagli_dei_turni_tolti_vanno_nel_cestino(self, monkeypatch, cestino_finto):
         """Dalla 10.13.60 (issue 68): tornando al turno 3, se ne vanno il 3,
         che rinasce senza risultati, e il 4, e i loro file dei dettagli
         vanno nel cestino, che qui e' finto. Restano quelli dei turni 1 e 2,
         e un file che il cestino non prende, che la console nomina."""
-        import utils
         from config import user_data_path
 
         torneo = _torneo_saturo(turni=5)
@@ -657,21 +656,12 @@ class TestTimeMachineDellaConsole:
         for percorso in dettagli.values():
             with open(percorso, "w", encoding="utf-8") as f:
                 f.write("dettagli")
-        ricevuti = []
-
-        def cestino(percorso, finestra=None):
-            ricevuti.append(percorso)
-            if percorso == dettagli[4]:
-                return False
-            os.remove(percorso)
-            return True
-
-        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
+        cestino_finto.rifiuta.add(dettagli[4])
 
         esito, detto = self._riavvolgi(monkeypatch, torneo, 3)
 
         assert esito is True
-        assert ricevuti == [dettagli[3], dettagli[4]]
+        assert cestino_finto.tentativi == [dettagli[3], dettagli[4]]
         assert [numero for numero, percorso in dettagli.items() if os.path.exists(percorso)] == [1, 2, 4]
         assert f"Il file {dettagli[4]} del turno tolto non è andato nel cestino, e resta dov'è." in detto
 

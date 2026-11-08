@@ -763,41 +763,18 @@ class TestEliminazioneDelTorneo:
         nodo = self._nodo(principale, file_torneo)
         return nodo, file_torneo, esterna, self._dialoghi_finti(monkeypatch)
 
-    def _cestino_finto(self, monkeypatch, cartella, rifiuta=()):
-        """Al posto di delete_file_to_trash: sposta i file in una cartella
-        della prova e annota la finestra che li manda; i percorsi di rifiuta
-        restano dove sono, come su un disco senza cestino."""
-        import shutil
-
-        import utils
-
-        ricevuti, finestre = [], []
-
-        def cestino(percorso, finestra=None):
-            finestre.append(finestra)
-            if percorso in rifiuta:
-                return False
-            cartella.mkdir(exist_ok=True)
-            shutil.move(percorso, str(cartella / f"{len(ricevuti)}_{os.path.basename(percorso)}"))
-            ricevuti.append(percorso)
-            return True
-
-        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
-        return ricevuti, finestre
-
-    def test_i_file_del_torneo_vanno_nel_cestino_e_gli_altri_restano(self, principale, suoni, monkeypatch, tmp_path):
+    def test_i_file_del_torneo_vanno_nel_cestino_e_gli_altri_restano(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         from config import user_data_path
 
         nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
-        ricevuti, proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
         suoni.clear()
 
         principale.delete_tournament_completely(nodo, file_torneo)
 
         attesi = [user_data_path(n) for n in self.DEL_TORNEO] + [str(esterna / "Tornello - Autunneo - Classifica.txt")]
-        assert sorted(ricevuti) == sorted(attesi)
-        assert ricevuti[0] == file_torneo
-        assert proprietarie == [principale.GetHandle()] * len(attesi)
+        assert sorted(cestino_finto.ricevuti) == sorted(attesi)
+        assert cestino_finto.ricevuti[0] == file_torneo
+        assert cestino_finto.finestre == [principale.GetHandle()] * len(attesi)
         assert not any(os.path.exists(p) for p in attesi)
         for nome in self.DEGLI_ALTRI:
             assert os.path.exists(user_data_path(nome)), nome
@@ -846,7 +823,7 @@ class TestEliminazioneDelTorneo:
         assert suoni == ["errore"]
 
     @pytest.mark.parametrize("quanti", [1, 2])
-    def test_i_file_rimasti_fuori_dal_cestino_si_nominano(self, principale, suoni, monkeypatch, tmp_path, quanti):
+    def test_i_file_rimasti_fuori_dal_cestino_si_nominano(self, principale, suoni, monkeypatch, tmp_path, cestino_finto, quanti):
         """Il torneo va nel cestino, ma un report, o due, no: restano dove
         sono, e il messaggio finale li nomina, uno per riga nella finestra,
         con il suono dell'errore invece di quello del successo pieno."""
@@ -854,12 +831,12 @@ class TestEliminazioneDelTorneo:
 
         nodo, file_torneo, esterna, finestre = self._prepara(principale, monkeypatch, tmp_path)
         fuori = [str(esterna / "Tornello - Autunneo - Classifica.txt"), user_data_path("Tornello - Autunneo_sospeso.txt")][:quanti]
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino", rifiuta=fuori)
+        cestino_finto.rifiuta.update(fuori)
         suoni.clear()
 
         principale.delete_tournament_completely(nodo, file_torneo)
 
-        assert file_torneo in ricevuti
+        assert file_torneo in cestino_finto.ricevuti
         assert all(os.path.exists(p) for p in fuori)
         titolo, testo = finestre[-1]
         assert titolo == "File rimasti fuori dal cestino"
@@ -879,7 +856,7 @@ class TestEliminazioneDelTorneo:
         assert suoni == ["errore"]
 
     @pytest.mark.parametrize("cartella", ["programma", "assente"])
-    def test_un_torneo_in_archivio_non_porta_via_l_edizione_in_corso(self, principale, suoni, monkeypatch, tmp_path, cartella):
+    def test_un_torneo_in_archivio_non_porta_via_l_edizione_in_corso(self, principale, suoni, monkeypatch, tmp_path, cestino_finto, cartella):
         """L'edizione 2025 di Sociale, conclusa e in archivio, con la cartella
         di salvataggio del programma, che la procedura guidata propone, o con
         una cartella che non c'e' piu', come una chiavetta non inserita: fino
@@ -901,12 +878,11 @@ class TestEliminazioneDelTorneo:
         self._report(report_in_corso)
         nodo = self._nodo(principale, archiviato)
         finestre = self._dialoghi_finti(monkeypatch)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
         suoni.clear()
 
         principale.delete_tournament_completely(nodo, archiviato)
 
-        assert ricevuti == [archiviato, os.path.join(in_archivio, "Tornello - Sociale - Classifica.txt")]
+        assert cestino_finto.ricevuti == [archiviato, os.path.join(in_archivio, "Tornello - Sociale - Classifica.txt")]
         assert os.path.exists(in_corso)
         assert os.path.exists(report_in_corso)
         assert not (tmp_path / "chiavetta").exists()
@@ -914,7 +890,7 @@ class TestEliminazioneDelTorneo:
         assert suoni == ["cancellato"]
 
     @pytest.mark.parametrize(("nome", "file_del_programma"), [("Players db", "Tornello - Players_db.json"), ("Settings", "Tornello - Settings.json")])
-    def test_i_file_del_programma_restano(self, principale, suoni, monkeypatch, tmp_path, nome, file_del_programma):
+    def test_i_file_del_programma_restano(self, principale, suoni, monkeypatch, cestino_finto, nome, file_del_programma):
         """Un torneo concluso di nome Players db o Settings, con la cartella di
         salvataggio del programma: il database dei giocatori e le impostazioni
         portano il suo nome intero, e fino alla 10.13.7 andavano con lui."""
@@ -928,15 +904,14 @@ class TestEliminazioneDelTorneo:
             f.write('{"players": []}')
         nodo = self._nodo(principale, archiviato)
         self._dialoghi_finti(monkeypatch)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
 
         principale.delete_tournament_completely(nodo, archiviato)
 
-        assert ricevuti == [archiviato]
+        assert cestino_finto.ricevuti == [archiviato]
         assert os.path.exists(del_programma)
 
     @pytest.mark.parametrize(("inizio", "va_nel_cestino"), [("2026-09-01", True), ("2027-09-01", False)])
-    def test_la_copia_conclusa_nella_cartella_esterna(self, principale, suoni, monkeypatch, tmp_path, inizio, va_nel_cestino):
+    def test_la_copia_conclusa_nella_cartella_esterna(self, principale, suoni, monkeypatch, tmp_path, cestino_finto, inizio, va_nel_cestino):
         """Un torneo in archivio con una cartella di lavoro esterna: la
         finalizzazione vi ha lasciato i report e la copia del torneo
         concluso, che vanno nel cestino con lui. Un json con lo stesso nome
@@ -956,16 +931,15 @@ class TestEliminazioneDelTorneo:
         self._report(report)
         nodo = self._nodo(principale, archiviato)
         self._dialoghi_finti(monkeypatch)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
 
         principale.delete_tournament_completely(nodo, archiviato)
 
         attesi = [archiviato, report, nell_esterna] if va_nel_cestino else [archiviato, report]
-        assert ricevuti == attesi
+        assert cestino_finto.ricevuti == attesi
         assert os.path.exists(nell_esterna) is not va_nel_cestino
         assert os.path.exists(copia)
 
-    def test_gli_altri_json_con_il_nome_del_torneo_restano(self, principale, suoni, monkeypatch, tmp_path):
+    def test_gli_altri_json_con_il_nome_del_torneo_restano(self, principale, suoni, monkeypatch, cestino_finto):
         """Un file aperto con un nome diverso da quello del torneo, Autunneo
         in Tornello - Autunneo_copia.json: il torneo vero con quel nome resta,
         e resta anche la copia che Esplora risorse chiama "- Copia"."""
@@ -979,15 +953,14 @@ class TestEliminazioneDelTorneo:
         self._json(aperto, name="Autunneo")
         nodo = self._nodo(principale, aperto)
         self._dialoghi_finti(monkeypatch)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
 
         principale.delete_tournament_completely(nodo, aperto)
 
-        assert ricevuti == [aperto]
+        assert cestino_finto.ricevuti == [aperto]
         assert os.path.exists(vero)
         assert os.path.exists(di_esplora_risorse)
 
-    def test_una_cartella_scritta_con_altre_maiuscole_si_legge_una_volta(self, principale, suoni, monkeypatch, tmp_path):
+    def test_una_cartella_scritta_con_altre_maiuscole_si_legge_una_volta(self, principale, suoni, monkeypatch, cestino_finto):
         """La cartella di salvataggio e' quella del programma scritta in
         minuscolo: si legge una volta sola, e un report che il cestino
         rifiuta si prova una volta e si nomina una volta."""
@@ -999,12 +972,12 @@ class TestEliminazioneDelTorneo:
         self._report(report)
         nodo = self._nodo(principale, file_torneo)
         finestre = self._dialoghi_finti(monkeypatch)
-        ricevuti, proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino", rifiuta=(report,))
+        cestino_finto.rifiuta.add(report)
 
         principale.delete_tournament_completely(nodo, file_torneo)
 
-        assert ricevuti == [file_torneo]
-        assert len(proprietarie) == 2
+        assert cestino_finto.ricevuti == [file_torneo]
+        assert len(cestino_finto.finestre) == 2
         assert os.path.exists(report)
         assert finestre[-1][1].split("\n") == [
             "Torneo 'Autunneo' mandato nel cestino di Windows.",
@@ -1012,7 +985,7 @@ class TestEliminazioneDelTorneo:
             report,
         ]
 
-    def test_una_cartella_che_non_si_legge_si_nomina(self, principale, suoni, monkeypatch, tmp_path):
+    def test_una_cartella_che_non_si_legge_si_nomina(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """La cartella di salvataggio non si legge, per esempio una cartella
         di rete sparita: il torneo va nel cestino con i file della cartella
         del programma, esce dall'albero e dalla memoria, e la conferma e il
@@ -1028,13 +1001,12 @@ class TestEliminazioneDelTorneo:
             return vero(percorso)
 
         monkeypatch.setattr(os, "listdir", listdir)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
         suoni.clear()
 
         principale.delete_tournament_completely(nodo, file_torneo)
 
-        assert ricevuti[0] == file_torneo
-        assert len(ricevuti) == 3
+        assert cestino_finto.ricevuti[0] == file_torneo
+        assert len(cestino_finto.ricevuti) == 3
         for nome in self.NELLA_CARTELLA_ESTERNA:
             assert (esterna / nome).exists(), nome
         assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": file_torneo}) is None
@@ -1048,7 +1020,7 @@ class TestEliminazioneDelTorneo:
         )
         assert suoni == ["errore"]
 
-    def test_un_errore_a_meta_dice_che_il_torneo_e_gia_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+    def test_un_errore_a_meta_dice_che_il_torneo_e_gia_nel_cestino(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """Un errore dopo che il file del torneo e' andato nel cestino: il
         torneo e' gia' fuori dalla memoria, e non rinasce al primo
         salvataggio; il messaggio dice dov'e' il file, nella finestra
@@ -1061,12 +1033,11 @@ class TestEliminazioneDelTorneo:
             raise RuntimeError("guasto finto")
 
         monkeypatch.setattr(principale, "show_intro_message", guasto)
-        ricevuti, _proprietarie = self._cestino_finto(monkeypatch, tmp_path / "cestino")
         suoni.clear()
 
         principale.delete_tournament_completely(nodo, file_torneo)
 
-        assert ricevuti == [file_torneo]
+        assert cestino_finto.ricevuti == [file_torneo]
         assert principale.active_filename is None
         assert principale.current_tournament is None
         testo = f"Errore durante l'eliminazione del torneo: guasto finto Il file del torneo {file_torneo} è già nel cestino di Windows, e da lì si può recuperare."
@@ -1097,15 +1068,15 @@ class TestEliminazioneDelTorneoSenzaFile:
     ELIMINATO = "Torneo 'Nuovo Sociale' eliminato: il suo file non c'era ancora."
 
     @staticmethod
-    def _creato(principale, monkeypatch, tmp_path, risposte=()):
+    def _creato(principale, monkeypatch, tmp_path, cestino, risposte=()):
         """Il torneo nuovo Nuovo Sociale, con la cartella di salvataggio
         esterna, creato dalla procedura guidata con la scrittura del suo file
         negata: e' aperto senza il suo file, e i report li ha scritti lo
         stesso nella cartella esterna. Restituisce il file del torneo, la
         cartella esterna, i report, le finestre annotate, che alle domande
         rispondono con risposte e poi con Si', i messaggi di wx.MessageBox,
-        le volte che l'area centrale torna alla schermata iniziale e il
-        cestino finto."""
+        le volte che l'area centrale torna alla schermata iniziale e i file
+        ricevuti da cestino, il cestino finto della prova."""
         import wx
 
         from config import user_data_path
@@ -1127,7 +1098,6 @@ class TestEliminazioneDelTorneoSenzaFile:
         report = sorted(str(f) for f in esterna.iterdir())
         assert len(report) > 1
         monkeypatch.setattr(principale, "show_intro_message", lambda: iniziale.append(True))
-        ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         return SimpleNamespace(
             percorso=principale.active_filename,
             esterna=esterna,
@@ -1135,7 +1105,7 @@ class TestEliminazioneDelTorneoSenzaFile:
             finestre=finestre,
             scatole=scatole,
             iniziale=iniziale,
-            ricevuti=ricevuti,
+            ricevuti=cestino.ricevuti,
         )
 
     @staticmethod
@@ -1152,13 +1122,13 @@ class TestEliminazioneDelTorneoSenzaFile:
     def _domande_fatte(creato):
         return [(f.titolo, f.testo) for f in creato.finestre if f.domanda]
 
-    def test_con_si_il_torneo_esce_e_i_report_vanno_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+    def test_con_si_il_torneo_esce_e_i_report_vanno_nel_cestino(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """La conferma elenca i report, sotto la cartella esterna, e con Si'
         il torneo esce dalla memoria e dall'albero, con la voce Avvio torneo
         e il ramo In Preparazione, che resta vuoto; i report vanno nel
         cestino, il file del torneo non nasce, e la barra di stato lo dice,
         con il suono della cancellazione."""
-        creato = self._creato(principale, monkeypatch, tmp_path)
+        creato = self._creato(principale, monkeypatch, tmp_path, cestino_finto)
         suoni.clear()
 
         self._canc(principale)
@@ -1186,11 +1156,11 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == f"{self.ELIMINATO} {len(creato.report)} file correlati sono andati nel cestino di Windows."
         assert suoni == ["cancellato"]
 
-    def test_senza_report_nel_cestino_non_va_niente(self, principale, suoni, monkeypatch, tmp_path):
+    def test_senza_report_nel_cestino_non_va_niente(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """Tolti i report dalla cartella esterna, la conferma dice che nel
         cestino non va nessun file, e con Si' il torneo esce, senza niente
         nel cestino."""
-        creato = self._creato(principale, monkeypatch, tmp_path)
+        creato = self._creato(principale, monkeypatch, tmp_path, cestino_finto)
         for report in creato.report:
             os.remove(report)
         suoni.clear()
@@ -1206,12 +1176,12 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == self.ELIMINATO
         assert suoni == ["cancellato"]
 
-    def test_con_no_niente_cambia(self, principale, suoni, monkeypatch, tmp_path):
+    def test_con_no_niente_cambia(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """Con No alla conferma il torneo nuovo resta aperto, con la sua voce
         nell'albero, e i report restano dove sono."""
         import wx
 
-        creato = self._creato(principale, monkeypatch, tmp_path, risposte=(wx.ID_NO,))
+        creato = self._creato(principale, monkeypatch, tmp_path, cestino_finto, risposte=(wx.ID_NO,))
         stato = principale.last_status_msg
         suoni.clear()
 
@@ -1227,12 +1197,12 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == stato
         assert suoni == []
 
-    def test_con_un_report_solo(self, principale, suoni, monkeypatch, tmp_path):
+    def test_con_un_report_solo(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """Correzione della proposta 3, rilievo 8 della revisione. Con un
         report solo nella cartella esterna la conferma dice che nel cestino
         va un file, al singolare, e con Si' la barra di stato dice che un
         file correlato e' andato nel cestino."""
-        creato = self._creato(principale, monkeypatch, tmp_path)
+        creato = self._creato(principale, monkeypatch, tmp_path, cestino_finto)
         for report in creato.report[1:]:
             os.remove(report)
         suoni.clear()
@@ -1252,13 +1222,13 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert principale.last_status_msg == f"{self.ELIMINATO} Un file correlato è andato nel cestino di Windows."
         assert suoni == ["cancellato"]
 
-    def test_un_errore_a_meta_non_dice_che_il_file_e_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+    def test_un_errore_a_meta_non_dice_che_il_file_e_nel_cestino(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         """Correzione della proposta 3, rilievo 8 della revisione. Dopo il
         Si' alla conferma un errore a meta', qui nella ricostruzione
         dell'albero, lo dice il messaggio Eliminazione non riuscita, con il
         suono dell'errore; non dice che il file del torneo e' gia' nel
         cestino, perche' il file non c'era."""
-        creato = self._creato(principale, monkeypatch, tmp_path)
+        creato = self._creato(principale, monkeypatch, tmp_path, cestino_finto)
 
         def guasto(*argomenti, **opzioni):
             raise RuntimeError("guasto finto")
@@ -1274,7 +1244,7 @@ class TestEliminazioneDelTorneoSenzaFile:
         assert "errore" in suoni
 
     @pytest.mark.parametrize(("guasto", "motivo"), GUASTI_DEL_FILE)
-    def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, tmp_path, guasto, motivo):
+    def test_canc_su_un_torneo_non_aperto_senza_file(self, principale, suoni, monkeypatch, cestino_finto, guasto, motivo):
         """Correzione della proposta 3, rilievo 7 della revisione. Alfa e'
         il torneo aperto, con un suo report nella cartella del programma;
         Gamma, che non e' aperta, ha la sua voce nell'albero, poi il suo
@@ -1309,7 +1279,6 @@ class TestEliminazioneDelTorneoSenzaFile:
         scatole = []
         monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
-        ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         with principale._albero_senza_caricamenti():
             principale.tree_ctrl.SelectItem(voce)
         registro = TestAlberoETorneoAttivo._sonde(principale)
@@ -1329,7 +1298,7 @@ class TestEliminazioneDelTorneoSenzaFile:
             )
         ]
         assert suoni == ["errore"]
-        assert ricevuti == []
+        assert cestino_finto.ricevuti == []
         assert os.path.exists(report)
         assert principale._find_matching_item(principale.tree_root, {"action": "select_tournament", "filepath": gamma}) is not None
 
@@ -1627,7 +1596,7 @@ class TestAlberoETorneoAttivo:
         assert principale.active_filename == percorsi["Alfa"]
         assert principale.item_finalize.IsEnabled()
 
-    def test_dopo_l_eliminazione_nessun_torneo_resta_aperto(self, principale, suoni, monkeypatch, tmp_path):
+    def test_dopo_l_eliminazione_nessun_torneo_resta_aperto(self, principale, suoni, monkeypatch, cestino_finto):
         """Eliminato Beta con il cursore sulla sua voce, la selezione passa a
         un altro torneo senza caricarlo: nessun torneo e' aperto, il titolo
         e il menu lo dicono, e l'albero ridisegnato non ha piu' Beta."""
@@ -1636,13 +1605,12 @@ class TestAlberoETorneoAttivo:
         principale.populate_tree()
         self._scegli_torneo(principale, percorsi["Beta"])
         TestEliminazioneDelTorneo._dialoghi_finti(monkeypatch)
-        ricevuti, _proprietarie = TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         registro.caricati.clear()
         registro.selezioni.clear()
 
         principale.delete_tournament_completely(principale.tree_ctrl.GetSelection(), percorsi["Beta"])
 
-        assert ricevuti == [percorsi["Beta"]]
+        assert cestino_finto.ricevuti == [percorsi["Beta"]]
         assert set(registro.selezioni) - {None}
         assert registro.caricati == []
         self._nessun_torneo_aperto(principale)
@@ -2194,7 +2162,7 @@ class TestAlberoETorneoAttivo:
         assert principale.last_status_msg == "Torneo concluso e archiviato. Attenzione: un file di torneo non leggibile, dettagli sotto."
         assert principale.main_text.GetValue().count("Torneo non leggibile: Tornello - Rovinato.json") == 1
 
-    def test_dopo_l_eliminazione_l_albero_non_ha_piu_le_voci_del_torneo(self, principale, suoni, monkeypatch, tmp_path):
+    def test_dopo_l_eliminazione_l_albero_non_ha_piu_le_voci_del_torneo(self, principale, suoni, monkeypatch, cestino_finto):
         """Eliminato Beta, in preparazione e aperto: nell'albero non restano
         la categoria In Preparazione, ormai vuota, ne' la voce Avvio torneo,
         che con INVIO dava un errore; il cursore sta su una voce che c'e', e
@@ -2212,7 +2180,6 @@ class TestAlberoETorneoAttivo:
         principale.populate_tree()
         assert "Avvio torneo: Beta" in [testo for testo, _dati in self._voci_della_radice(principale)]
         TestEliminazioneDelTorneo._dialoghi_finti(monkeypatch)
-        TestEliminazioneDelTorneo()._cestino_finto(monkeypatch, tmp_path / "cestino")
         registro.caricati.clear()
 
         principale.delete_tournament_completely(principale.tree_ctrl.GetSelection(), beta)
@@ -2382,7 +2349,7 @@ class TestAlberoETorneoAttivo:
         assert not principale.current_tournament.get("concluded")
 
     @pytest.mark.parametrize("prende", (True, False))
-    def test_la_time_machine_manda_nel_cestino_i_dettagli_del_turno_tolto(self, principale, suoni, monkeypatch, prende):
+    def test_la_time_machine_manda_nel_cestino_i_dettagli_del_turno_tolto(self, principale, suoni, monkeypatch, cestino_finto, prende):
         """Dalla 10.13.60 (issue 68): annullato il turno 2, gia' concluso,
         il suo file dei dettagli va nel cestino, con la finestra principale
         come proprietaria della domanda di Windows, e quello del turno 1
@@ -2392,7 +2359,6 @@ class TestAlberoETorneoAttivo:
         import wx
 
         import gui.main_frame as mf
-        import utils
         from config import user_data_path
 
         torneo = _torneo_in_corso("Alfa", finito=True)
@@ -2410,14 +2376,8 @@ class TestAlberoETorneoAttivo:
         principale.populate_tree()
         self._scegli_torneo(principale, percorso)
         assert len(principale.current_tournament["rounds"]) == 2
-        ricevuti, finestre = [], []
-
-        def cestino(file, finestra=None):
-            ricevuti.append((file, finestra))
-            if not prende:
-                return False
-            os.remove(file)
-            return True
+        cestino_finto.prende = prende
+        finestre = []
 
         class DialogoFinto:
             def __init__(self, genitore, titolo, messaggio, style=wx.OK, **altro):
@@ -2430,14 +2390,14 @@ class TestAlberoETorneoAttivo:
             def Destroy(self):
                 pass
 
-        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
         monkeypatch.setattr(mf, "AccessibleMsgDialog", DialogoFinto)
         suoni.clear()
 
         self._dal_menu(principale, principale.item_rollback.GetId())
 
         assert len(principale.current_tournament["rounds"]) == 1
-        assert ricevuti == [(dettagli[1], principale.GetHandle())]
+        assert cestino_finto.tentativi == [dettagli[1]]
+        assert cestino_finto.finestre == [principale.GetHandle()]
         assert os.path.exists(dettagli[0])
         assert os.path.exists(dettagli[1]) is not prende
         if prende:
@@ -3656,28 +3616,6 @@ class TestRaccoltaDellePartiteDelleEdizioni:
     di messaggio sono finti."""
 
     @staticmethod
-    def _cestino(monkeypatch, cartella, prende=True):
-        """Al posto di delete_file_to_trash: sposta i file in cartella e li
-        annota; con prende falso li lascia dove sono, come un disco senza
-        cestino."""
-        import shutil
-
-        import utils
-
-        ricevuti = []
-
-        def cestino(percorso, finestra=None):
-            if not prende:
-                return False
-            os.makedirs(cartella, exist_ok=True)
-            shutil.move(percorso, os.path.join(cartella, f"{len(ricevuti)}_{os.path.basename(percorso)}"))
-            ricevuti.append(os.path.normcase(os.path.abspath(percorso)))
-            return True
-
-        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
-        return ricevuti
-
-    @staticmethod
     def _database_dei_giocatori():
         """Il database con le schede dei giocatori dei tornei delle prove."""
         from config import PLAYER_DB_FILE
@@ -3743,7 +3681,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         assert [f.titolo for f in finestre if f.domanda] == ["Finalizza Torneo", "Nuova edizione di un torneo concluso"]
         assert not any(f.titolo == "Raccolta delle partite di un altro torneo" for f in finestre)
 
-    def test_la_raccolta_lasciata_da_un_edizione_archiviata_va_nella_sua_cartella(self, principale, suoni, monkeypatch, tmp_path):
+    def test_la_raccolta_lasciata_da_un_edizione_archiviata_va_nella_sua_cartella(self, principale, suoni, monkeypatch, cestino_finto):
         """Primavera 2, archiviata prima della 10.19.7, ha lasciato la sua
         raccolta nella cartella del programma. La nuova edizione la trova,
         identica a quella che scriverebbe il file archiviato: va nella sua
@@ -3760,7 +3698,6 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         contenuto = _raccolta_come_la_scrive_la_finestra(PGN_VALIDO)
         with open(lasciata, "wb") as f:
             f.write(contenuto)
-        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
 
@@ -3769,7 +3706,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         assert principale.active_filename == user_data_path("Tornello - Primavera_2.json")
         with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
             assert f.read() == contenuto
-        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
         assert not os.path.exists(lasciata)
         assert "errore" not in suoni
         cartella = os.path.abspath(user_data_path(""))
@@ -3783,7 +3720,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         ]
 
     @pytest.mark.parametrize("prende", [True, False])
-    def test_una_raccolta_di_nessuna_edizione_archiviata(self, principale, suoni, monkeypatch, tmp_path, prende):
+    def test_una_raccolta_di_nessuna_edizione_archiviata(self, principale, suoni, monkeypatch, cestino_finto, prende):
         """Una raccolta con il nome di quella del torneo nuovo, che nessuna
         edizione archiviata scriverebbe, per esempio di un torneo eliminato,
         va nel cestino, e il torneo nasce. Se il cestino non la prende si
@@ -3794,7 +3731,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         lasciata = user_data_path("Gamma - raccolta partite.pgn")
         with open(lasciata, "wb") as f:
             f.write(b"partite di un torneo eliminato")
-        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        cestino_finto.prende = prende
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
 
@@ -3803,7 +3740,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         cartella = os.path.abspath(user_data_path(""))
         nuovo = user_data_path("Tornello - Gamma.json")
         if prende:
-            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
             assert principale.active_filename == nuovo
             assert "errore" not in suoni
             assert [(f.titolo, f.testo) for f in finestre] == [
@@ -3832,7 +3769,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
 
 
     @pytest.mark.parametrize("prende", [True, False])
-    def test_la_raccolta_si_mette_in_salvo_prima_dell_iscrizione(self, principale, suoni, monkeypatch, tmp_path, prende):
+    def test_la_raccolta_si_mette_in_salvo_prima_dell_iscrizione(self, principale, suoni, monkeypatch, cestino_finto, prende):
         """La guardia sta anche prima dell'iscrizione dei giocatori, come
         quella del nome: la raccolta va nel cestino prima che la finestra di
         iscrizione si apra, e se il cestino non la prende la finestra non si
@@ -3857,7 +3794,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
         lasciata = user_data_path("Gamma - raccolta partite.pgn")
         with open(lasciata, "wb") as f:
             f.write(b"partite di un torneo eliminato")
-        ricevuti = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        cestino_finto.prende = prende
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale.start_new_tournament_wizard()
         TestNomeDelTorneoNuovo._nome_scritto(principale, monkeypatch, "Gamma")
@@ -3871,7 +3808,7 @@ class TestRaccoltaDellePartiteDelleEdizioni:
             # La finestra di iscrizione si apre con la raccolta gia' nel
             # cestino.
             assert aperte == [False]
-            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
             assert suoni == ["conferma"]
         else:
             assert aperte == []
@@ -3944,12 +3881,11 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         return rimossi
 
     @pytest.mark.parametrize("con_pgn", [False, True], ids=["senza PGN", "con un PGN"])
-    def test_la_raccolta_lasciata_va_nella_sua_cartella_d_archivio(self, principale, suoni, monkeypatch, tmp_path, con_pgn):
+    def test_la_raccolta_lasciata_va_nella_sua_cartella_d_archivio(self, principale, suoni, monkeypatch, tmp_path, cestino_finto, con_pgn):
         from config import user_data_path
 
         archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
         self._nata_in_console(principale, con_pgn)
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
         rimossi = self._rimozioni(monkeypatch)
@@ -3958,7 +3894,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
             assert f.read() == contenuto
-        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
         with open(tmp_path / "cestino" / "0_Primavera_2 - raccolta partite.pgn", "rb") as f:
             assert f.read() == contenuto
         assert os.path.normcase(os.path.abspath(lasciata)) not in rimossi
@@ -3982,9 +3918,9 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         finestre.clear()
         principale._save_state()
         assert finestre == []
-        assert len(ricevuti) == 1
+        assert len(cestino_finto.ricevuti) == 1
 
-    def test_se_non_si_mette_in_salvo_resta_e_la_raccolta_non_si_scrive(self, principale, suoni, monkeypatch, tmp_path):
+    def test_se_non_si_mette_in_salvo_resta_e_la_raccolta_non_si_scrive(self, principale, suoni, monkeypatch, cestino_finto):
         """La copia nella cartella d'archivio non riesce e il cestino non la
         prende: si sente l'errore, un messaggio lo dice, la raccolta lasciata
         resta com'era, e quella del torneo non si scrive. Il file del torneo
@@ -3997,7 +3933,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
         percorso = self._nata_in_console(principale, con_pgn=True)
         monkeypatch.setattr(ui, "_copia_verificata", lambda *a, **k: False)
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
         principale.current_tournament["rounds"][0]["matches"][0]["result"] = "1-0"
@@ -4007,7 +3943,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         with open(lasciata, "rb") as f:
             assert f.read() == contenuto
         assert not os.path.exists(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"))
-        assert ricevuti == []
+        assert cestino_finto.ricevuti == []
         with open(percorso, encoding="utf-8") as f:
             assert json.load(f)["rounds"][0]["matches"][0]["result"] == "1-0"
         assert "errore" in suoni
@@ -4021,7 +3957,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
             )
         ]
 
-    def test_la_raccolta_del_torneo_stesso_si_sostituisce_senza_messaggi(self, principale, suoni, monkeypatch, tmp_path):
+    def test_la_raccolta_del_torneo_stesso_si_sostituisce_senza_messaggi(self, principale, suoni, monkeypatch, cestino_finto):
         """Dopo un PGN nuovo la raccolta sul disco e' quella del torneo,
         scritta dal salvataggio di prima: si sostituisce, senza cestino e
         senza messaggi, anche con un'edizione archiviata con lo stesso nome.
@@ -4032,7 +3968,6 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         self._archiviata_con_la_raccolta_lasciata()
         os.remove(user_data_path("Primavera_2 - raccolta partite.pgn"))
         self._nata_in_console(principale, con_pgn=True)
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         raccolta = user_data_path("Primavera_2 - raccolta partite.pgn")
@@ -4044,10 +3979,10 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         with open(raccolta, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO, self.PGN_NUOVO)
-        assert ricevuti == []
+        assert cestino_finto.ricevuti == []
         assert finestre == []
 
-    def test_l_edizione_stessa_nell_archivio_non_conta(self, principale, suoni, monkeypatch, tmp_path):
+    def test_l_edizione_stessa_nell_archivio_non_conta(self, principale, suoni, monkeypatch, cestino_finto):
         """Il torneo concluso e archiviato, aperto da una sua copia fuori
         dall'archivio, come quella che resta nella cartella di lavoro
         esterna: la raccolta accanto e' identica a quella dell'archivio,
@@ -4063,7 +3998,6 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
         with open(archiviato, encoding="utf-8") as f:
             TestNomeDelTorneoNuovo._scrivi(copia, json.load(f))
         principale.load_tournament(copia)
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale.current_tournament["rounds"][0]["matches"][1]["pgn"] = self.PGN_NUOVO
 
@@ -4071,11 +4005,11 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         with open(lasciata, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(PGN_VALIDO, self.PGN_NUOVO)
-        assert ricevuti == []
+        assert cestino_finto.ricevuti == []
         assert finestre == []
 
     @pytest.mark.parametrize("con_pgn", [False, True], ids=["senza PGN", "con un PGN"])
-    def test_se_il_cestino_non_la_prende_non_ci_riprova(self, principale, suoni, monkeypatch, tmp_path, con_pgn):
+    def test_se_il_cestino_non_la_prende_non_ci_riprova(self, principale, suoni, monkeypatch, cestino_finto, con_pgn):
         """Revisione della 10.19.13. La copia va nella cartella d'archivio
         della prima edizione, e il cestino non prende l'originale, per
         esempio su un disco senza cestino: il messaggio lo dice una volta, e
@@ -4090,7 +4024,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         archiviato, lasciata, contenuto = self._archiviata_con_la_raccolta_lasciata()
         self._nata_in_console(principale, con_pgn)
-        tentativi = TestRaccoltaSenzaPartiteNelCestino._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
 
         for _volta in range(3):
@@ -4098,7 +4032,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         with open(os.path.join(os.path.dirname(archiviato), "Primavera_2 - raccolta partite.pgn"), "rb") as f:
             assert f.read() == contenuto
-        assert tentativi == [os.path.normcase(os.path.abspath(lasciata))]
+        assert cestino_finto.tentativi == [os.path.abspath(lasciata)]
         cartella = os.path.abspath(user_data_path(""))
         archivio = os.path.join("Closed Tournaments", "2026", "06 Giugno", "Primavera_2")
         prima_riga = (
@@ -4118,7 +4052,7 @@ class TestRaccoltaAlSalvataggioNellaFinestra:
 
         with open(lasciata, "rb") as f:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.PGN_NUOVO)
-        assert len(tentativi) == 1
+        assert len(cestino_finto.tentativi) == 1
         assert len(finestre) == 1
         # La raccolta dell'altra edizione non e' una raccolta rimasta del
         # torneo, nemmeno nella stessa sessione: la sua copia identica e' gia'
@@ -4453,7 +4387,7 @@ class TestNomeEDataDiInizioDaDati:
         assert finestre == []
 
     @pytest.mark.parametrize("prende", [True, False])
-    def test_la_raccolta_di_un_altro_torneo_con_il_nome_nuovo(self, principale, suoni, monkeypatch, tmp_path, prende):
+    def test_la_raccolta_di_un_altro_torneo_con_il_nome_nuovo(self, principale, suoni, monkeypatch, cestino_finto, prende):
         """Il nome nuovo ha gia' la raccolta delle partite di un altro
         torneo: va nel cestino prima del salvataggio, e il nome cambia; se il
         cestino non la prende, si sente l'errore, la raccolta resta com'era
@@ -4465,14 +4399,14 @@ class TestNomeEDataDiInizioDaDati:
         lasciata = user_data_path("Beta - raccolta partite.pgn")
         with open(lasciata, "wb") as f:
             f.write(b"partite di un altro torneo")
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"), prende)
+        cestino_finto.prende = prende
         suoni.clear()
 
         self._campo(principale, monkeypatch, percorso, "name", "Beta")
 
         assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
         if prende:
-            assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+            assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
             assert self._nel_file(percorso)["name"] == "Beta"
             assert suoni == ["apertura", "conferma"]
         else:
@@ -5368,7 +5302,7 @@ class TestNomeScrittoNelJson:
             )
         ]
 
-    def test_la_guardia_riconosce_la_raccolta_dell_edizione_rinominata(self, principale, suoni, monkeypatch, tmp_path):
+    def test_la_guardia_riconosce_la_raccolta_dell_edizione_rinominata(self, principale, suoni, monkeypatch, cestino_finto):
         """L'edizione archiviata nel file di Alfa, prima della 10.19.7, ha
         lasciato la sua raccolta nella cartella del programma; la nuova Coppa
         Prova, nata in console, la trova al primo salvataggio nella finestra:
@@ -5386,14 +5320,13 @@ class TestNomeScrittoNelJson:
         percorso = user_data_path("Tornello - Coppa_Prova.json")
         TestNomeDelTorneoNuovo._scrivi(percorso, nuovo)
         principale.load_tournament(percorso)
-        ricevuti = TestRaccoltaDellePartiteDelleEdizioni._cestino(monkeypatch, str(tmp_path / "cestino"))
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
 
         principale._save_state()
 
         with open(os.path.join(os.path.dirname(archiviato), "Coppa_Prova - raccolta partite.pgn"), "rb") as f:
             assert f.read() == contenuto
-        assert ricevuti == [os.path.normcase(os.path.abspath(lasciata))]
+        assert cestino_finto.ricevuti == [os.path.abspath(lasciata)]
         assert not os.path.exists(lasciata)
         assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
         assert os.path.join("Closed Tournaments", "2026", "06 Giugno", "Coppa_Prova") in finestre[0].testo
@@ -5523,40 +5456,17 @@ class TestRaccoltaSenzaPartiteNelCestino:
         principale.current_tournament["rounds"][0]["matches"][1].pop("pgn")
         return raccolta, contenuto
 
-    @staticmethod
-    def _cestino(monkeypatch, cartella, prende=True):
-        """Al posto di delete_file_to_trash: annota ogni tentativo, e con
-        prende sposta il file in cartella; senza lo lascia dov'e', come un
-        disco senza cestino."""
-        import shutil
-
-        import utils
-
-        tentativi = []
-
-        def cestino(percorso, finestra=None):
-            tentativi.append(os.path.normcase(os.path.abspath(percorso)))
-            if not prende:
-                return False
-            os.makedirs(cartella, exist_ok=True)
-            shutil.move(percorso, os.path.join(cartella, os.path.basename(percorso)))
-            return True
-
-        monkeypatch.setattr(utils, "delete_file_to_trash", cestino)
-        return tentativi
-
-    def test_va_nel_cestino(self, principale, suoni, monkeypatch, tmp_path):
+    def test_va_nel_cestino(self, principale, suoni, monkeypatch, tmp_path, cestino_finto):
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"))
         rimossi = TestRaccoltaAlSalvataggioNellaFinestra._rimozioni(monkeypatch)
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
 
         principale._save_state()
 
-        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        assert cestino_finto.tentativi == [os.path.abspath(raccolta)]
         assert not os.path.exists(raccolta)
-        with open(tmp_path / "cestino" / os.path.basename(raccolta), "rb") as f:
+        with open(tmp_path / "cestino" / f"0_{os.path.basename(raccolta)}", "rb") as f:
             assert f.read() == contenuto
         assert os.path.normcase(os.path.abspath(raccolta)) not in rimossi
         assert finestre == []
@@ -5592,13 +5502,13 @@ class TestRaccoltaSenzaPartiteNelCestino:
             "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova.",
         )
 
-    def test_se_il_cestino_non_la_prende_resta_e_lo_dice_una_volta(self, principale, suoni, monkeypatch, tmp_path):
+    def test_se_il_cestino_non_la_prende_resta_e_lo_dice_una_volta(self, principale, suoni, monkeypatch, cestino_finto):
         """Resta com'era, con il suono dell'errore e un messaggio; il
         salvataggio dopo non riprova e non ripete il messaggio. Quando il
         torneo ha di nuovo il PGN la raccolta si scrive, e quando lo perde di
         nuovo si riprova, e il messaggio torna."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         rimossi = TestRaccoltaAlSalvataggioNellaFinestra._rimozioni(monkeypatch)
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
@@ -5608,7 +5518,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
 
         with open(raccolta, "rb") as f:
             assert f.read() == contenuto
-        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        assert cestino_finto.tentativi == [os.path.abspath(raccolta)]
         assert rimossi == []
         assert suoni.count("errore") == 1
         messaggio = self._messaggio_della_raccolta_rimasta()
@@ -5619,7 +5529,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         principale.current_tournament["rounds"][0]["matches"][1].pop("pgn")
         principale._save_state()
 
-        assert len(tentativi) == 2
+        assert len(cestino_finto.tentativi) == 2
         assert [(f.titolo, f.testo) for f in finestre] == [messaggio] * 2
 
     ALTRO_PGN = '[Event "Turno nuovo"]\n\n1. d4 d5 2. c4 e6 0-1'
@@ -5635,7 +5545,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
             trovate += [os.path.join(radice, n) for n in files if n.startswith("Primavera_2 - raccolta partite_pre_sostituzione_raccolta_")]
         return sorted(trovate)
 
-    def test_la_raccolta_rimasta_va_nella_cartella_backup_prima_della_nuova(self, principale, suoni, monkeypatch, tmp_path):
+    def test_la_raccolta_rimasta_va_nella_cartella_backup_prima_della_nuova(self, principale, suoni, monkeypatch, cestino_finto):
         """Revisione della 10.19.13. Il cestino non prende la raccolta del
         torneo senza piu' PGN, e resta. Al primo PGN nuovo, prima di
         scrivere la raccolta nuova, quella di prima va nella cartella
@@ -5644,7 +5554,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         la raccolta nuova la sostituiva subito, e le partite di prima non
         c'erano piu' in nessun file."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         assert [f.titolo for f in finestre] == ["Raccolta delle partite rimasta"]
@@ -5684,7 +5594,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         monkeypatch.setattr(utils, "copia_di_sicurezza", senza_copie_delle_raccolte)
         return vera
 
-    def test_se_la_copia_non_riesce_la_raccolta_resta(self, principale, suoni, monkeypatch, tmp_path):
+    def test_se_la_copia_non_riesce_la_raccolta_resta(self, principale, suoni, monkeypatch, cestino_finto):
         """La copia nella cartella backup della raccolta rimasta non riesce:
         la raccolta resta com'e', la nuova non si scrive, e un messaggio lo
         dice una volta, con il suono dell'errore. Quando la copia riesce, la
@@ -5692,7 +5602,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         import utils
 
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         vera = self._senza_copie_delle_raccolte(monkeypatch)
@@ -5736,7 +5646,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         for finestra in nuove:
             finestra.Destroy()
 
-    def test_dopo_una_chiusura_la_raccolta_rimasta_va_nella_cartella_backup(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura):
+    def test_dopo_una_chiusura_la_raccolta_rimasta_va_nella_cartella_backup(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Il cestino non prende la raccolta di Primavera 2, che non ha
         piu' PGN, e il messaggio lo dice. Tornello si chiude e si riapre: la
@@ -5749,7 +5659,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         soltanto una raccolta rimasta nella stessa sessione, e dopo una
         chiusura le partite di prima si perdevano."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         assert [f.titolo for f in finestre] == ["Raccolta delle partite rimasta"]
@@ -5809,7 +5719,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert finestre == []
 
     @pytest.mark.parametrize("prende", [False, True], ids=["il cestino non la prende", "il cestino la prende"])
-    def test_dopo_una_chiusura_il_primo_salvataggio_senza_pgn_riprova_il_cestino(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, prende):
+    def test_dopo_una_chiusura_il_primo_salvataggio_senza_pgn_riprova_il_cestino(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, cestino_finto, prende):
         """Revisione della 10.19.13. Dopo una chiusura di Tornello la raccolta
         rimasta ritrovata all'apertura non cambia quello che si vede senza
         PGN: il primo salvataggio riprova il cestino, come prima. Se il
@@ -5817,24 +5727,25 @@ class TestRaccoltaSenzaPartiteNelCestino:
         delle partite rimasta lo dice una volta, e il salvataggio dopo non
         riprova; se la prende, la raccolta va nel cestino, senza messaggi."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         assert [(f.titolo, f.testo) for f in finestre] == [self._messaggio_della_raccolta_rimasta()]
 
         seconda = dopo_una_chiusura()
         seconda.load_tournament(principale.active_filename)
-        tentativi = self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=prende)
+        cestino_finto.prende = prende
+        cestino_finto.tentativi.clear()
         finestre.clear()
         suoni.clear()
 
         seconda._save_state()
         seconda._save_state()
 
-        assert tentativi == [os.path.normcase(os.path.abspath(raccolta))]
+        assert cestino_finto.tentativi == [os.path.abspath(raccolta)]
         if prende:
             assert not os.path.exists(raccolta)
-            with open(tmp_path / "cestino" / os.path.basename(raccolta), "rb") as f:
+            with open(tmp_path / "cestino" / f"0_{os.path.basename(raccolta)}", "rb") as f:
                 assert f.read() == contenuto
             assert finestre == []
             assert "errore" not in suoni
@@ -5845,7 +5756,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
             assert suoni.count("errore") == 1
         assert self._copie_della_raccolta() == []
 
-    def test_dopo_una_chiusura_la_raccolta_di_un_altra_edizione_segue_la_guardia(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura):
+    def test_dopo_una_chiusura_la_raccolta_di_un_altra_edizione_segue_la_guardia(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto):
         """Revisione della 10.19.13. Al posto della raccolta della nuova
         edizione di Primavera 2, nata in console e senza partite in PGN, c'e'
         quella lasciata da Primavera 2 archiviata, identica a quella che il
@@ -5861,7 +5772,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         T = TestRaccoltaAlSalvataggioNellaFinestra
         archiviato, lasciata, contenuto = T._archiviata_con_la_raccolta_lasciata()
         percorso = T._nata_in_console(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         assert [f.titolo for f in finestre] == ["Raccolta delle partite di un altro torneo"]
@@ -5918,7 +5829,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         finestra._dopo_il_ripristino(Esito(True, tipo="torneo", destinazione=percorso))
 
     @pytest.mark.parametrize("con_un_altro_torneo", [False, True], ids=["nessun torneo aperto", "un altro torneo aperto"])
-    def test_dopo_una_chiusura_il_ripristino_con_partite_in_pgn_fa_la_copia(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, con_un_altro_torneo):
+    def test_dopo_una_chiusura_il_ripristino_con_partite_in_pgn_fa_la_copia(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto, con_un_altro_torneo):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Il cestino non prende la raccolta di Primavera 2, che non ha
         piu' PGN, e il messaggio lo dice. Tornello si chiude e si riapre, e
@@ -5934,7 +5845,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         un torneo senza partite in PGN, e il primo salvataggio la sostituiva
         senza copia."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         percorso = principale.active_filename
@@ -5962,7 +5873,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert len(self._copie_della_raccolta()) == 1
 
     @pytest.mark.parametrize("strada", ["copia non riuscita dopo il ripristino", "ripristino con un altro torneo aperto"])
-    def test_dopo_due_chiusure_la_raccolta_rimasta_va_ancora_nella_cartella_backup(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura, strada):
+    def test_dopo_due_chiusure_la_raccolta_rimasta_va_ancora_nella_cartella_backup(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto, strada):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Come sopra, ma la raccolta resta com'era anche dopo la
         seconda sessione: o perche' la copia nella cartella backup non
@@ -5975,7 +5886,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         import utils
 
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         percorso = principale.active_filename
@@ -6006,7 +5917,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
         assert [(f.titolo, f.testo) for f in finestre] == attesi
 
-    def test_dopo_una_chiusura_la_copia_non_riuscita_si_riprova(self, principale, suoni, monkeypatch, tmp_path, dopo_una_chiusura):
+    def test_dopo_una_chiusura_la_copia_non_riuscita_si_riprova(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Il cestino non prende la raccolta di Primavera 2, che non ha
         piu' PGN; poi la prima partita riceve un PGN nuovo, la copia della
@@ -6021,7 +5932,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         import utils
 
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         vera = self._senza_copie_delle_raccolte(monkeypatch)
@@ -6045,7 +5956,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
             assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
         assert [(f.titolo, f.testo) for f in finestre] == attesi
 
-    def test_la_finalizzazione_in_console_dopo_una_copia_non_riuscita_fa_la_copia(self, principale, suoni, monkeypatch, tmp_path):
+    def test_la_finalizzazione_in_console_dopo_una_copia_non_riuscita_fa_la_copia(self, principale, suoni, monkeypatch, cestino_finto):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Come sopra, ma dopo la chiusura il torneo si finalizza nella
         versione a riga di comando, che non ha raccolte rimaste da
@@ -6059,7 +5970,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         import utils
 
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
         vera = self._senza_copie_delle_raccolte(monkeypatch)
@@ -6081,7 +5992,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert avvisi == []
 
     @pytest.mark.parametrize("di_nuovo", [PGN_VALIDO, PGN_VALIDO.replace("1/2-1/2", "*")], ids=["lo stesso PGN", "senza il risultato"])
-    def test_la_raccolta_rimasta_con_le_partite_che_il_torneo_ha_di_nuovo_non_fa_copie(self, principale, suoni, monkeypatch, tmp_path, di_nuovo):
+    def test_la_raccolta_rimasta_con_le_partite_che_il_torneo_ha_di_nuovo_non_fa_copie(self, principale, suoni, monkeypatch, cestino_finto, di_nuovo):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Il cestino non prende la raccolta di Primavera 2, che non ha
         piu' PGN, e resta. Poi la seconda partita riceve di nuovo il suo
@@ -6091,7 +6002,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         perche' non c'e' niente da perdere. Fino ad allora ogni raccolta
         rimasta diversa da quella nuova andava nella cartella backup."""
         raccolta, _contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         principale._save_state()
 
@@ -6662,7 +6573,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         assert suoni.count("errore") == 2
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_la_copia_non_riuscita_non_torna_dopo_la_raccolta_non_scritta(self, principale, suoni, monkeypatch, tmp_path, capsys):
+    def test_la_copia_non_riuscita_non_torna_dopo_la_raccolta_non_scritta(self, principale, suoni, monkeypatch, capsys, cestino_finto):
         """Correzione della revisione della 10.19.13. Il cestino non prende
         la raccolta di Primavera 2, che resta, e il torneo ha un PGN nuovo: la
         copia nella cartella backup non riesce, e il messaggio dice che fino
@@ -6673,7 +6584,7 @@ class TestRaccoltaSenzaPartiteNelCestino:
         correzione il salvataggio che non scriveva la raccolta svuotava la
         memoria della copia non riuscita, e il suo messaggio tornava."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
-        self._cestino(monkeypatch, str(tmp_path / "cestino"), prende=False)
+        cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
         suoni.clear()
         principale._save_state()
@@ -6894,14 +6805,13 @@ class TestTorneoCheNonSiSalva:
         assert suoni.count("errore") == 2
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_dopo_una_time_machine_riuscita_il_messaggio_torna(self, principale, suoni, monkeypatch, capsys, tmp_path):
+    def test_dopo_una_time_machine_riuscita_il_messaggio_torna(self, principale, suoni, monkeypatch, capsys, cestino_finto):
         """Anche la Time Machine che scrive il file del torneo e' un
         salvataggio riuscito. Il file di Primavera 2 bloccato non si salva, e
         il messaggio esce; tolto il blocco, Ctrl+Z, con Si', riporta il torneo
         in preparazione e lo salva. Bloccato di nuovo, il primo salvataggio
         dice di nuovo il messaggio. Il cestino e' finto."""
         percorso, _raccolta, finestre = self._aperto(principale, monkeypatch)
-        TestRaccoltaSenzaPartiteNelCestino._cestino(monkeypatch, str(tmp_path / "cestino"))
         capsys.readouterr()
 
         self._salvataggi_bloccati(principale, percorso, volte=1)

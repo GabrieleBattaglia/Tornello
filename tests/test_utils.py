@@ -258,73 +258,55 @@ class TestDettagliDelTurnoToltoNelCestino:
             (cartella / f"Tornello - Coppa_dAutunno - {nome}").write_text("report", encoding="utf-8")
         return torneo, cartella
 
-    @staticmethod
-    def _cestino(rifiuta=False):
-        ricevuti = []
-
-        def cestino(percorso):
-            ricevuti.append(percorso)
-            if rifiuta:
-                return False
-            os.remove(percorso)
-            return True
-
-        return cestino, ricevuti
-
-    def test_il_file_del_turno_tolto_va_nel_cestino(self, tmp_path, monkeypatch):
+    def test_il_file_del_turno_tolto_va_nel_cestino(self, tmp_path, monkeypatch, cestino_finto):
         from tournament import rollback_to_previous_round
 
         torneo, cartella = self._torneo(tmp_path, monkeypatch)
-        cestino, ricevuti = self._cestino()
 
-        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+        assert rollback_to_previous_round(torneo, cestino=cestino_finto) is True
 
-        assert ricevuti == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
+        assert cestino_finto.tentativi == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
         restano = sorted(p.name.removeprefix("Tornello - Coppa_dAutunno - ") for p in cartella.iterdir())
         assert restano == sorted(set(self.NOMI) - {"Turno 3 Dettagli.txt"})
         # Il secondo annullamento toglie il turno 2, con il suo file.
-        assert rollback_to_previous_round(torneo, cestino=cestino) is True
-        assert ricevuti[1:] == [str(cartella / "Tornello - Coppa_dAutunno - Turno 2 Dettagli.txt")]
+        assert rollback_to_previous_round(torneo, cestino=cestino_finto) is True
+        assert cestino_finto.tentativi[1:] == [str(cartella / "Tornello - Coppa_dAutunno - Turno 2 Dettagli.txt")]
 
-    def test_senza_il_file_il_cestino_non_si_chiama(self, tmp_path, monkeypatch):
+    def test_senza_il_file_il_cestino_non_si_chiama(self, tmp_path, monkeypatch, cestino_finto):
         """Il turno tolto di solito e' quello appena abbinato, ancora in
         corso, e il suo file non c'e'."""
         from tournament import rollback_to_previous_round
 
         torneo, cartella = self._torneo(tmp_path, monkeypatch)
         (cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt").unlink()
-        cestino, ricevuti = self._cestino()
 
-        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+        assert rollback_to_previous_round(torneo, cestino=cestino_finto) is True
 
-        assert ricevuti == []
+        assert cestino_finto.tentativi == []
         assert len(list(cartella.iterdir())) == len(self.NOMI) - 1
 
-    def test_il_file_che_il_cestino_non_prende_resta(self, tmp_path, monkeypatch, capsys):
+    def test_il_file_che_il_cestino_non_prende_resta(self, tmp_path, monkeypatch, capsys, cestino_finto):
         from tournament import rollback_to_previous_round
 
         torneo, cartella = self._torneo(tmp_path, monkeypatch)
-        cestino, ricevuti = self._cestino(rifiuta=True)
+        cestino_finto.prende = False
 
-        assert rollback_to_previous_round(torneo, cestino=cestino) is True
+        assert rollback_to_previous_round(torneo, cestino=cestino_finto) is True
 
         dettagli = cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt"
-        assert ricevuti == [str(dettagli)]
+        assert cestino_finto.tentativi == [str(dettagli)]
         assert dettagli.exists()
         assert len(torneo["rounds"]) == 2
         assert f"Il file {dettagli} del turno tolto non è andato nel cestino, e resta dov'è." in capsys.readouterr().out
 
-    def test_senza_cestino_usa_quello_del_programma(self, tmp_path, monkeypatch):
-        import utils
+    def test_senza_cestino_usa_quello_del_programma(self, tmp_path, monkeypatch, cestino_finto):
         from tournament import rollback_to_previous_round
 
         torneo, cartella = self._torneo(tmp_path, monkeypatch)
-        ricevuti = []
-        monkeypatch.setattr(utils, "delete_file_to_trash", lambda percorso, finestra=None: ricevuti.append(percorso) or True)
 
         assert rollback_to_previous_round(torneo) is True
 
-        assert ricevuti == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
+        assert cestino_finto.tentativi == [str(cartella / "Tornello - Coppa_dAutunno - Turno 3 Dettagli.txt")]
 
     def test_il_nome_e_quello_che_scrive_la_conclusione_del_turno(self, tmp_path, monkeypatch):
         """Il file che la Time Machine cerca e' proprio quello che scrive

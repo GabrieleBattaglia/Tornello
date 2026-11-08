@@ -581,7 +581,9 @@ def nessuna_finestra_vera(request, monkeypatch):
 # cestino finto, la fixture cestino_finto, che prende il posto di
 # delete_file_to_trash; una prova di delete_file_to_trash in se' sostituisce
 # la chiamata di Windows con il metodo shell di CestinoFinto, e guarda che
-# cosa le arriva. La guardia sta al punto piu' in basso, la chiamata alla
+# cosa le arriva. Il cestino che non prende, o che rifiuta certi percorsi, e'
+# lo stesso cestino finto, con prende e rifiuta: una prova non se ne scrive
+# uno suo. La guardia sta al punto piu' in basso, la chiamata alla
 # Shell di Windows, SHFileOperationW, e send2trash, che fuori da Windows ne
 # fa le veci: cosi' una prova che sostituisce delete_file_to_trash, o che
 # risponde da se' a cestino_disponibile, continua a fare quello che fa, e si
@@ -592,14 +594,23 @@ def nessuna_finestra_vera(request, monkeypatch):
 class CestinoFinto:
     """Al posto del cestino di Windows: sposta file e cartelle in una
     cartella della prova e annota che cosa ha ricevuto, e da quale finestra.
-    rifiuta contiene i percorsi che non accetta, come un cestino che non si
-    raggiunge. Si chiama come delete_file_to_trash; il metodo shell prende
-    invece il posto della chiamata di Windows, nelle prove di
-    delete_file_to_trash in se'. Fino all'8 novembre 2026 stava in
-    test_copie_di_sicurezza.py."""
+    tentativi annota ogni percorso che gli arriva, prima di decidere se lo
+    prende; ricevuti soltanto quelli che ha preso. rifiuta contiene i
+    percorsi che non accetta, e con prende falso non ne accetta nessuno,
+    come un cestino che non si raggiunge, per esempio su un disco senza
+    cestino: il file resta dov'e', e la risposta e' falso. Si chiama come
+    delete_file_to_trash; il metodo shell prende invece il posto della
+    chiamata di Windows, nelle prove di delete_file_to_trash in se'. Fino
+    all'8 novembre 2026 stava in test_copie_di_sicurezza.py; dallo stesso
+    giorno prende anche il posto dei cestini finti che alcune prove si
+    scrivevano da se', ognuno con la sua variante: il cestino che non
+    prende, i percorsi rifiutati e i tentativi annotati prima del rifiuto
+    sono diventati prende, rifiuta e tentativi."""
 
     def __init__(self, cartella):
         self.cartella = cartella
+        self.prende = True
+        self.tentativi = []
         self.ricevuti = []
         self.finestre = []
         self.richieste = []
@@ -607,7 +618,7 @@ class CestinoFinto:
 
     def __call__(self, percorso, finestra=None):
         self.finestre.append(finestra)
-        if os.path.abspath(percorso) in self.rifiuta:
+        if not self._accetta(percorso):
             return False
         self._sposta(percorso)
         return True
@@ -617,8 +628,8 @@ class CestinoFinto:
         cosa le arriva, cioe' la finestra, l'operazione, l'elenco dei percorsi
         fino ai due caratteri nulli che lo chiudono, la destinazione e le
         opzioni, e sposta il file come un cestino. Risponde 0, come la Shell
-        quando riesce; con un percorso di rifiuta il file resta dov'e', e la
-        risposta e' un codice d'errore."""
+        quando riesce; con un percorso di rifiuta, o con prende falso, il file
+        resta dov'e', e la risposta e' un codice d'errore."""
         import ctypes
 
         struttura = richiesta._obj
@@ -633,10 +644,16 @@ class CestinoFinto:
                 opzioni=struttura.fFlags,
             )
         )
-        if os.path.abspath(percorso) in self.rifiuta:
+        if not self._accetta(percorso):
             return 2
         self._sposta(percorso)
         return 0
+
+    def _accetta(self, percorso):
+        """Annota il tentativo, e dice se il cestino prende il percorso."""
+        percorso = os.path.abspath(percorso)
+        self.tentativi.append(percorso)
+        return self.prende and percorso not in {os.path.abspath(p) for p in self.rifiuta}
 
     def _sposta(self, percorso):
         os.makedirs(self.cartella, exist_ok=True)
@@ -650,10 +667,12 @@ def cestino_finto(tmp_path, monkeypatch):
     """Il cestino finto, per le prove che mandano file nel cestino: prende il
     posto di delete_file_to_trash in utils e in ogni modulo di Tornello che
     se l'e' importata, e sposta i file nella cartella cestino della prova.
-    Restituisce il CestinoFinto, con i file ricevuti e le finestre da cui
-    sono partiti. ripristina di copie_di_sicurezza lo riceve come argomento
-    cestino, come fa la finestra Copie di sicurezza: il suo valore
-    predefinito e' il cestino vero, e la guardia fermerebbe la prova."""
+    Restituisce il CestinoFinto, con i tentativi, i file ricevuti e le
+    finestre da cui sono partiti; la prova sceglie con prende e rifiuta il
+    cestino che non prende, o che rifiuta certi percorsi. ripristina di
+    copie_di_sicurezza lo riceve come argomento cestino, come fa la finestra
+    Copie di sicurezza: il suo valore predefinito e' il cestino vero, e la
+    guardia fermerebbe la prova."""
     # copie_di_sicurezza si importa prima della sostituzione: importato dopo,
     # il valore predefinito di ripristina resterebbe il cestino finto anche
     # nelle prove che vengono dopo.

@@ -201,22 +201,6 @@ def _dettagli(torneo, numero):
     return file_dei_dettagli_del_turno(torneo, numero)
 
 
-def _cestino(principale, monkeypatch, rifiuta=()):
-    """Il cestino finto della finestra: annota i file e li toglie, tranne
-    quelli da rifiutare, che restano, come su un disco senza cestino."""
-    ricevuti = []
-
-    def nel_cestino(percorso):
-        ricevuti.append(percorso)
-        if percorso in rifiuta:
-            return False
-        os.remove(percorso)
-        return True
-
-    monkeypatch.setattr(principale, "_nel_cestino", nel_cestino)
-    return ricevuti
-
-
 def _copie(contesto):
     from config import user_data_path
 
@@ -265,12 +249,11 @@ class TestLaFunzioneDiTournament:
 class TestSulTurnoCorrente:
     """Sul turno corrente CANC fa quello che fa Ctrl+Z."""
 
-    def test_la_domanda_e_il_risultato_di_ctrl_z(self, principale, suoni, monkeypatch):
+    def test_la_domanda_e_il_risultato_di_ctrl_z(self, principale, suoni, monkeypatch, cestino_finto):
         import wx
 
         torneo, fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, torneo)
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         albero = principale.tree_ctrl
         voce = _turno(principale, percorso, 4)
@@ -285,7 +268,7 @@ class TestSulTurnoCorrente:
         assert suoni == ["time_machine"]
         assert principale.last_status_msg == "Time Machine attivata: tornati al turno precedente."
         # Il turno 4, appena abbinato, non aveva il file dei dettagli.
-        assert ricevuti == []
+        assert cestino_finto.tentativi == []
         assert len(_copie("pre_rollback")) == 1
         assert _copie("pre_timemachine") == []
         # Il cursore sul turno 3, che torna corrente, fra i Completati.
@@ -296,14 +279,13 @@ class TestSulTurnoCorrente:
         assert albero.GetItemText(albero.GetItemParent(scelta)) == "Completati (3)"
         assert "Turno Corrente: 3 di 5" in principale.main_text.GetValue()
 
-    def test_e_proprio_ctrl_z(self, principale, suoni, monkeypatch):
+    def test_e_proprio_ctrl_z(self, principale, suoni, monkeypatch, cestino_finto):
         """Lo stesso torneo, una volta con CANC sul turno corrente e una con
         Ctrl+Z: i due file sono identici."""
         import wx
 
         torneo, _fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, copy.deepcopy(torneo))
-        _cestino(principale, monkeypatch)
         _domande(monkeypatch, wx.ID_YES, wx.ID_YES)
         _canc(principale, _turno(principale, percorso, 4))
         con_canc = _dal_file(percorso)
@@ -313,13 +295,12 @@ class TestSulTurnoCorrente:
 
         assert _dal_file(percorso) == con_canc
 
-    def test_con_no_non_cambia_niente(self, principale, suoni, monkeypatch):
+    def test_con_no_non_cambia_niente(self, principale, suoni, monkeypatch, cestino_finto):
         import wx
 
         torneo, _fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, torneo)
         prima = _dal_file(percorso)
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_NO)
         suoni.clear()
 
@@ -328,10 +309,10 @@ class TestSulTurnoCorrente:
         assert len(domande.aperte) == 1
         assert _dal_file(percorso) == prima
         assert len(principale.current_tournament["rounds"]) == 4
-        assert ricevuti == [] and suoni == []
+        assert cestino_finto.tentativi == [] and suoni == []
         assert _copie("pre_rollback") == []
 
-    def test_il_turno_corrente_completo_fra_i_completati(self, principale, suoni, monkeypatch):
+    def test_il_turno_corrente_completo_fra_i_completati(self, principale, suoni, monkeypatch, cestino_finto):
         """Con tutti i risultati il turno 4 sta fra i Completati, sotto c'e'
         la voce calcola il turno successivo, ed e' ancora il turno corrente:
         CANC lo toglie, come Ctrl+Z, con il suo file dei dettagli."""
@@ -340,7 +321,6 @@ class TestSulTurnoCorrente:
         torneo, fotografie, _ritirato = _torneo_vero(ultimo_completo=True)
         percorso = _apri(principale, torneo)
         dettagli_4 = _dettagli(principale.current_tournament, 4)
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         albero = principale.tree_ctrl
         voce = _turno(principale, percorso, 4)
@@ -351,17 +331,16 @@ class TestSulTurnoCorrente:
 
         assert [d.titolo for d in domande.aperte] == ["Annulla Turno"]
         assert _stato(_dal_file(percorso)) == fotografie[3]
-        assert ricevuti == [dettagli_4]
+        assert cestino_finto.tentativi == [dettagli_4]
         assert albero.GetItemData(albero.GetSelection())["round"] == 3
 
-    def test_il_turno_1_riporta_il_torneo_in_preparazione(self, principale, suoni, monkeypatch):
+    def test_il_turno_1_riporta_il_torneo_in_preparazione(self, principale, suoni, monkeypatch, cestino_finto):
         """Il turno 1 corrente, tolto, lascia il torneo In Preparazione, con
         il cursore sulla voce calcola il turno 1, sotto turni."""
         import wx
 
         torneo, _fotografie, _ritirato = _torneo_vero(abbinati=1)
         percorso = _apri(principale, torneo)
-        _cestino(principale, monkeypatch)
         _domande(monkeypatch, wx.ID_YES)
         albero = principale.tree_ctrl
 
@@ -379,14 +358,13 @@ class TestSulTurnoCorrente:
 class TestSuUnTurnoCompletato:
     """Su un turno dei Completati CANC torna a quel turno."""
 
-    def test_un_turno_solo_e_la_domanda_di_ctrl_z(self, principale, suoni, monkeypatch):
+    def test_un_turno_solo_e_la_domanda_di_ctrl_z(self, principale, suoni, monkeypatch, cestino_finto):
         """Il turno 3 viene subito prima del corrente: sparisce il solo turno
         4, e la domanda e' quella di Ctrl+Z, con Si' predefinito."""
         import wx
 
         torneo, fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, torneo)
-        _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         albero = principale.tree_ctrl
 
@@ -397,7 +375,7 @@ class TestSuUnTurnoCompletato:
         assert principale.last_status_msg == "Time Machine attivata: tornati al turno precedente."
         assert albero.GetItemData(albero.GetSelection())["round"] == 3
 
-    def test_due_turni_con_la_domanda_che_li_nomina(self, principale, suoni, monkeypatch):
+    def test_due_turni_con_la_domanda_che_li_nomina(self, principale, suoni, monkeypatch, cestino_finto):
         """Il turno 2: spariscono il 3, con il suo file dei dettagli, e il 4.
         La domanda li nomina, dice chi torna in gioco, cioe' chi si e'
         ritirato nel turno 3 e non chi si e' ritirato dopo il turno 1, e ha
@@ -410,7 +388,6 @@ class TestSuUnTurnoCompletato:
         percorso = _apri(principale, torneo)
         turno_3_di_allora = [(m["id"], m["white_player_id"], m["black_player_id"]) for m in principale.current_tournament["rounds"][2]["matches"]]
         dettagli = {numero: _dettagli(principale.current_tournament, numero) for numero in (1, 2, 3)}
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         albero = principale.tree_ctrl
         nome = principale._nome_del_giocatore(ritirato)
@@ -433,7 +410,7 @@ class TestSuUnTurnoCompletato:
         assert ritiri[ritirato] is False and ritiri[RITIRATO_PRESTO] is True
         assert suoni == ["time_machine"]
         assert principale.last_status_msg == "Time Machine attivata: tornati al turno 2, tolti 2 turni."
-        assert ricevuti == [dettagli[3]]
+        assert cestino_finto.tentativi == [dettagli[3]]
         assert os.path.exists(dettagli[1]) and os.path.exists(dettagli[2])
         assert len(_copie("pre_timemachine")) == 1
         assert _copie("pre_rollback") == []
@@ -447,14 +424,13 @@ class TestSuUnTurnoCompletato:
         rifatto = principale.current_tournament["rounds"][2]
         assert [(m["id"], m["white_player_id"], m["black_player_id"]) for m in rifatto["matches"]] == turno_3_di_allora
 
-    def test_tre_turni_come_tre_ctrl_z(self, principale, suoni, monkeypatch):
+    def test_tre_turni_come_tre_ctrl_z(self, principale, suoni, monkeypatch, cestino_finto):
         """Il turno 1: spariscono il 2, il 3 e il 4, e il file e' identico a
         quello di tre Ctrl+Z di fila sullo stesso torneo."""
         import wx
 
         torneo, fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, copy.deepcopy(torneo))
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, *[wx.ID_YES] * 4)
 
         _canc(principale, _turno(principale, percorso, 1))
@@ -463,7 +439,7 @@ class TestSuUnTurnoCompletato:
         assert "Spariscono 3 turni, dal turno 2 al turno 4, con i loro abbinamenti e i loro risultati" in domande.aperte[0].testo
         con_canc = _dal_file(percorso)
         assert _stato(con_canc) == fotografie[1]
-        assert len(ricevuti) == 2
+        assert len(cestino_finto.tentativi) == 2
         assert principale.last_status_msg == "Time Machine attivata: tornati al turno 1, tolti 3 turni."
 
         from reports import append_completed_round_to_history_file
@@ -476,9 +452,9 @@ class TestSuUnTurnoCompletato:
             principale.on_rollback_round(None)
 
         assert _senza_i_valori_della_classifica(_dal_file(percorso), con_canc) == con_canc
-        assert len(ricevuti) == 4
+        assert len(cestino_finto.tentativi) == 4
 
-    def test_con_no_non_cambia_niente(self, principale, suoni, monkeypatch):
+    def test_con_no_non_cambia_niente(self, principale, suoni, monkeypatch, cestino_finto):
         """Senza risposta Si' niente cambia, niente va nel cestino e non
         nasce nessuna copia: INVIO nel testo, con No predefinito, risponde
         No."""
@@ -488,7 +464,6 @@ class TestSuUnTurnoCompletato:
         percorso = _apri(principale, torneo)
         prima = _dal_file(percorso)
         in_memoria = copy.deepcopy(principale.current_tournament)
-        ricevuti = _cestino(principale, monkeypatch)
         _domande(monkeypatch, wx.ID_NO)
         suoni.clear()
 
@@ -496,16 +471,16 @@ class TestSuUnTurnoCompletato:
 
         assert _dal_file(percorso) == prima
         assert principale.current_tournament == in_memoria
-        assert ricevuti == [] and suoni == []
+        assert cestino_finto.tentativi == [] and suoni == []
         assert _copie("pre_timemachine") == []
 
-    def test_il_file_che_il_cestino_non_prende_resta_e_lo_si_dice(self, principale, suoni, monkeypatch):
+    def test_il_file_che_il_cestino_non_prende_resta_e_lo_si_dice(self, principale, suoni, monkeypatch, cestino_finto):
         import wx
 
         torneo, fotografie, _ritirato = _torneo_vero()
         percorso = _apri(principale, torneo)
         dettagli = [_dettagli(principale.current_tournament, numero) for numero in (3, 2)]
-        _cestino(principale, monkeypatch, rifiuta=dettagli)
+        cestino_finto.rifiuta.update(dettagli)
         domande = _domande(monkeypatch, wx.ID_YES)
 
         _canc(principale, _turno(principale, percorso, 1))
@@ -521,7 +496,7 @@ class TestSuUnTurnoCompletato:
 
 
 class TestNessunoStatoAMeta:
-    def test_se_il_file_non_si_scrive_il_torneo_resta_com_era(self, principale, suoni, monkeypatch):
+    def test_se_il_file_non_si_scrive_il_torneo_resta_com_era(self, principale, suoni, monkeypatch, cestino_finto):
         """Il salvataggio non riesce, per esempio perche' un altro programma
         tiene bloccato il file: il torneo resta quello di prima, in memoria e
         sul disco, i file dei dettagli restano, e un messaggio lo dice."""
@@ -534,7 +509,6 @@ class TestNessunoStatoAMeta:
         prima = _dal_file(percorso)
         aperto = principale.current_tournament
         in_memoria = copy.deepcopy(aperto)
-        ricevuti = _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         monkeypatch.setattr(tournament, "save_tournament", lambda *a, **k: False)
         suoni.clear()
@@ -544,14 +518,14 @@ class TestNessunoStatoAMeta:
         assert principale.current_tournament is aperto
         assert aperto == in_memoria
         assert _dal_file(percorso) == prima
-        assert ricevuti == []
+        assert cestino_finto.tentativi == []
         assert suoni == ["errore"]
         messaggio = domande.aperte[1]
         assert messaggio.titolo == "Time Machine non riuscita"
         assert messaggio.testo.startswith(f"Il file del torneo {percorso} non si è potuto scrivere, e la Time Machine si è fermata: il torneo Turni resta com'era, con tutti i suoi turni.")
         assert principale.last_status_msg == messaggio.testo
 
-    def test_lo_stesso_per_ctrl_z(self, principale, suoni, monkeypatch):
+    def test_lo_stesso_per_ctrl_z(self, principale, suoni, monkeypatch, cestino_finto):
         """Fino alla 10.18.1 Ctrl+Z cambiava il torneo in memoria prima di
         salvarlo, e un salvataggio mancato non si sapeva."""
         import wx
@@ -562,7 +536,6 @@ class TestNessunoStatoAMeta:
         percorso = _apri(principale, torneo)
         prima = _dal_file(percorso)
         in_memoria = copy.deepcopy(principale.current_tournament)
-        _cestino(principale, monkeypatch)
         domande = _domande(monkeypatch, wx.ID_YES)
         monkeypatch.setattr(tournament, "save_tournament", lambda *a, **k: False)
 
