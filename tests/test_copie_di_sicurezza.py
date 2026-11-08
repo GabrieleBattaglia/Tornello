@@ -2132,9 +2132,9 @@ class TestDettagliDeiTurniDopoIlRipristino:
         scritti = []
         vera = reports.append_completed_round_to_history_file
 
-        def annota(torneo, numero):
+        def annota(torneo, numero, *altri):
             scritti.append(numero)
-            return vera(torneo, numero)
+            return vera(torneo, numero, *altri)
 
         monkeypatch.setattr(reports, "append_completed_round_to_history_file", annota)
         return scritti
@@ -2250,6 +2250,47 @@ class TestDettagliDeiTurniDopoIlRipristino:
         assert esito.riuscito, esito.righe
         assert ambiente.cestino.ricevuti == [os.path.abspath(cartella)]
         assert self._dettagli_nella(ambiente.tmp) == allora
+
+    def test_la_cartella_dei_report_che_non_si_raggiunge(self, tmp_path, capsys, cestino_finto):
+        """La cartella di lavoro scelta per il torneo sta su un'unita' che
+        oggi non c'e', come la chiavetta staccata della sezione 4.1 del
+        manuale, e i file dei dettagli non ci sono: vanno nella cartella del
+        programma, come alla conclusione di un turno, e l'avviso dell'unita'
+        che manca esce nel prompt dei comandi una volta sola, prima dei tre
+        file. Fino alla correzione della 10.19.50 la cartella si cercava due
+        volte per ogni turno, e l'avviso, con la sua riga LOG, usciva due
+        volte per turno: quindici righe al posto di cinque (revisione del
+        tredicesimo giro)."""
+        from test_canc_sui_turni import _torneo_vero
+        from test_utils import _unita_che_non_esiste
+
+        from config import user_data_path
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        for nome in self._dettagli_nella(tmp_path):
+            (tmp_path / nome).unlink()
+        unita = _unita_che_non_esiste()
+        torneo["custom_save_path"] = unita + "\\Report Tornello"
+        dati = {k: v for k, v in torneo.items() if k != "players_dict"}
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_pre_rollback_20261108_100000.json"))
+        self._scrivi_il_torneo(copia, dati)
+        self._scrivi_il_torneo(user_data_path("Tornello - Turni.json"), dati)
+        programma = os.path.abspath(user_data_path(""))
+        assert programma == os.path.abspath(tmp_path)
+        capsys.readouterr()
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        avviso = f"L'unità '{unita}' non è disponibile. Uso la cartella di default: '{programma}'."
+        salvati = [
+            f"Dettaglio Turno Concluso {n} salvato nel file separato '{os.path.join(programma, f'Tornello - Turni - Turno {n} Dettagli.txt')}'"
+            for n in (3, 2, 1)
+        ]
+        assert capsys.readouterr().out.splitlines() == [f"LOG: {avviso}", avviso, *salvati]
+        assert [n.split(" - ")[-1] for n in self._dettagli_nella(tmp_path)] == ["Turno 1 Dettagli.txt", "Turno 2 Dettagli.txt", "Turno 3 Dettagli.txt"]
+        assert cestino_finto.ricevuti == []
 
 
 class TestManuale:

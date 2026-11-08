@@ -312,18 +312,27 @@ def get_current_round_report_text(torneo, round_num=None):
     return out.getvalue()
 
 
+def _cartella_dei_report(torneo):
+    """La cartella dei report del torneo: quella scelta per il torneo, e
+    senza una cartella scelta quella del programma. Una cartella scelta che
+    non si raggiunge, per esempio su una chiavetta staccata, la sostituisce
+    resolve_and_verify_save_path con quella del programma, e l'avviso esce
+    nel prompt dei comandi."""
+    from utils import resolve_and_verify_save_path
+
+    cartella, avviso = resolve_and_verify_save_path(torneo.get("custom_save_path"))
+    if avviso:
+        print(avviso)
+    return cartella
+
+
 def _nella_cartella_dei_report(torneo, nome_file):
     """Il percorso completo di un report del torneo: nella cartella scelta
     per il torneo, e senza una cartella scelta accanto al programma. Fino
     alla 10.3.2 in quel caso restava il solo nome del file, e il report
     finiva nella cartella da cui Tornello era stato avviato, dove la
     finalizzazione non lo trovava piu' per archiviarlo."""
-    from utils import resolve_and_verify_save_path
-
-    cartella, avviso = resolve_and_verify_save_path(torneo.get("custom_save_path"))
-    if avviso:
-        print(avviso)
-    return os.path.join(cartella, nome_file)
+    return os.path.join(_cartella_dei_report(torneo), nome_file)
 
 
 def save_current_tournament_round_file(torneo):
@@ -362,18 +371,22 @@ def save_current_tournament_round_file(torneo):
         traceback.print_exc()
 
 
-def file_dei_dettagli_del_turno(torneo, numero):
+def file_dei_dettagli_del_turno(torneo, numero, cartella=None):
     """Il percorso del file con i dettagli di un turno concluso, Tornello -
     nome - Turno N Dettagli.txt, nella cartella dei report del torneo. Lo
     scrive append_completed_round_to_history_file quando il turno si
     conclude, e dalla 10.13.60 la Time Machine lo manda nel cestino quando
     toglie il turno (issue 68): il nome si fa in un posto solo, perche' le
-    due strade trovino lo stesso file."""
+    due strade trovino lo stesso file. Con cartella il file sta li', in una
+    cartella dei report gia' cercata con _cartella_dei_report:
+    allinea_i_dettagli_dei_turni la cerca una volta per tutti i turni."""
     nome = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
         name=sanitize_filename(torneo.get("name", "Torneo_Senza_Nome")),
         round_num=numero,
     )
-    return _nella_cartella_dei_report(torneo, nome)
+    if cartella is None:
+        return _nella_cartella_dei_report(torneo, nome)
+    return os.path.join(cartella, nome)
 
 
 def nome_della_raccolta_pgn(nome_sanitizzato):
@@ -581,14 +594,14 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
             yield f"\t{line}\n"
 
 
-def append_completed_round_to_history_file(torneo, completed_round_number):
+def append_completed_round_to_history_file(torneo, completed_round_number, cartella=None):
     """
     Salva i dettagli di un turno concluso in un FILE SEPARATO per quel turno.
     Il file viene creato o sovrascritto. Le righe le da'
     _righe_dei_dettagli_del_turno, e in fondo va la riga con la versione di
-    Tornello.
+    Tornello. cartella e' quella di file_dei_dettagli_del_turno.
     """
-    filename = file_dei_dettagli_del_turno(torneo, completed_round_number)
+    filename = file_dei_dettagli_del_turno(torneo, completed_round_number, cartella)
 
     round_data = _turno_del_torneo(torneo, completed_round_number)
 
@@ -672,19 +685,28 @@ def allinea_i_dettagli_dei_turni(torneo):
     della copia di prima, il file del turno tolto restava nel cestino, e
     quello di un turno cambiato diceva i risultati di prima. I file dei turni
     che il torneo ripristinato non ha, o non ha completati, restano dove
-    sono. Restituisce i file scritti."""
+    sono. La cartella dei report si cerca una volta sola, per tutti i
+    turni: se non si raggiunge, per esempio su una chiavetta staccata, i
+    file vanno nella cartella del programma, come alla conclusione di un
+    turno, e l'avviso esce una volta. Fino alla correzione della 10.19.50 la
+    cartella si cercava due volte per ogni turno, e nel prompt dei comandi
+    uscivano quattro righe d'avviso per turno. Restituisce i file scritti."""
     import copy
 
     from tournament import torna_al_turno
 
+    numeri = _numeri_dei_turni_completati(torneo)
+    if not numeri:
+        return []
+    cartella = _cartella_dei_report(torneo)
     al_turno = copy.deepcopy(torneo)
     al_turno.pop("players_dict", None)
     scritti = []
     # Dall'ultimo turno al primo: ogni torna_al_turno toglie soltanto i turni
     # dopo quello da scrivere, come se il turno si fosse appena concluso.
-    for numero in reversed(_numeri_dei_turni_completati(torneo)):
+    for numero in reversed(numeri):
         torna_al_turno(al_turno, numero)
-        percorso = file_dei_dettagli_del_turno(al_turno, numero)
+        percorso = file_dei_dettagli_del_turno(al_turno, numero, cartella)
         turno = _turno_del_torneo(al_turno, numero)
         try:
             testo = "".join(_righe_dei_dettagli_del_turno(al_turno, turno, numero, _partite_dei_dettagli(al_turno, turno)))
@@ -692,7 +714,7 @@ def allinea_i_dettagli_dei_turni(torneo):
             testo = None
         if testo is not None and _dettagli_scritti_nel_file(percorso) == testo:
             continue
-        append_completed_round_to_history_file(al_turno, numero)
+        append_completed_round_to_history_file(al_turno, numero, cartella)
         scritti.append(percorso)
     return scritti
 
