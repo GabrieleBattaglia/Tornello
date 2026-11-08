@@ -934,15 +934,17 @@ class TestClassificaETurnoCorrenteDopoIlRipristino:
     nella finestra Copie di sicurezza, si ripristina la copia di un torneo
     in corso, Turni al turno 1 appena abbinato, o di un torneo concluso, la
     copia di prima della finalizzazione, che lo riapre. La finestra non
-    carica il torneo ripristinato, e Alfa resta aperta. Nella cartella dei
-    report del torneo ripristinato il turno corrente e la classifica dicono
-    quello che dice il torneo ripristinato: sono quelli che la finestra
-    scrive aprendolo e salvandolo, tranne la data del report della
-    classifica e il tempo che manca alla fine del turno, che dipendono
-    dall'ora. Fino alla 10.19.51 si rileggeva soltanto l'albero: per Turni
-    restavano quelli del turno 3, e per il torneo riaperto mancavano,
-    andati nel cestino con la cartella d'archivio. Le finestre di messaggio
-    e il cestino sono finti."""
+    carica il torneo ripristinato, e Alfa resta aperta. Dalla revisione del
+    quattordicesimo giro c'e' anche il caso della procedura guidata senza un
+    torneo aperto, che la 10.19.52 corregge allo stesso modo: la procedura
+    resta, e nessun torneo si apre. Nella cartella dei report del torneo
+    ripristinato il turno corrente e la classifica dicono quello che dice il
+    torneo ripristinato: sono quelli che la finestra scrive aprendolo e
+    salvandolo, tranne la data del report della classifica e il tempo che
+    manca alla fine del turno, che dipendono dall'ora. Fino alla 10.19.51 si
+    rileggeva soltanto l'albero: per Turni restavano quelli del turno 3, e
+    per il torneo riaperto mancavano, andati nel cestino con la cartella
+    d'archivio. Le finestre di messaggio e il cestino sono finti."""
 
     @staticmethod
     def _report(cartella, nome):
@@ -959,9 +961,13 @@ class TestClassificaETurnoCorrenteDopoIlRipristino:
             uscita[quale] = [r for r in righe if not r.startswith("Data Report:") and "Mancano" not in r]
         return uscita
 
-    @pytest.mark.parametrize("procedura", [False, True], ids=["fuori dalla procedura guidata", "dentro la procedura guidata"])
+    @pytest.mark.parametrize(
+        ("procedura", "altro_aperto"),
+        [(False, True), (True, True), (True, False)],
+        ids=["fuori dalla procedura guidata, con Alfa aperta", "dentro la procedura guidata, con Alfa aperta", "dentro la procedura guidata, senza un torneo aperto"],
+    )
     @pytest.mark.parametrize("torneo", ["in corso", "riaperto"])
-    def test_con_un_altro_torneo_aperto(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, torneo, procedura):
+    def test_senza_caricare_il_torneo_ripristinato(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, torneo, procedura, altro_aperto):
         import wx
         from test_comandi_delle_finestre import TestAlberoETorneoAttivo, _torneo_in_corso
         from test_finalizzazione import NOME, _cartella_archivio, _copie, _finalizza, prepara_il_banco
@@ -994,9 +1000,12 @@ class TestClassificaETurnoCorrenteDopoIlRipristino:
             assert prima == {"Turno corrente": None, "Classifica": None}
             assert self._report(_cartella_archivio(), nome)["Classifica"] is not None
         alfa = user_data_path("Tornello - Alfa.json")
-        with open(alfa, "w", encoding="utf-8") as f:
-            json.dump(_torneo_in_corso("Alfa"), f)
-        principale.load_tournament(alfa)
+        if altro_aperto:
+            with open(alfa, "w", encoding="utf-8") as f:
+                json.dump(_torneo_in_corso("Alfa"), f)
+            principale.load_tournament(alfa)
+        else:
+            principale._nessun_torneo_aperto()
         if procedura:
             TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
             assert principale.creation_mode
@@ -1009,7 +1018,11 @@ class TestClassificaETurnoCorrenteDopoIlRipristino:
         TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
 
         dopo = self._report(cartella, nome)
-        assert principale._e_il_torneo_aperto(alfa)
+        if altro_aperto:
+            assert principale._e_il_torneo_aperto(alfa)
+        else:
+            assert principale.active_filename is None
+            assert principale.current_tournament is None
         assert principale.creation_mode is procedura
         assert registro.caricati == []
         assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
