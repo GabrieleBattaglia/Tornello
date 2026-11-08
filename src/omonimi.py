@@ -894,6 +894,31 @@ def raccolta_altrui_in_salvo(torneo, file_del_torneo, solo_archiviate=False, ces
     )
 
 
+def raccolta_di_un_altra_edizione(torneo, file_del_torneo):
+    """Vero se al percorso dove il torneo, con il file file_del_torneo,
+    scriverebbe la sua raccolta delle partite in PGN c'e' la raccolta di
+    un'altra edizione archiviata con lo stesso nome: quella che la guardia,
+    raccolta_altrui_in_salvo con solo_archiviate, mette nella cartella
+    d'archivio dell'edizione e poi nel cestino. La riconosce come la
+    guardia, con _edizioni_della_raccolta, e non lo e' la raccolta identica
+    a quella che il torneo scriverebbe. La chiede il ripristino di un
+    torneo che la finestra non carica, che dalla correzione della 10.19.58
+    la lascia com'e', senza cestino, senza copie e senza messaggi: e' di
+    un'altra edizione, e la mette in salvo il primo salvataggio del torneo
+    ripristinato, quando lo si apre, come ogni salvataggio della finestra
+    dalla correzione della revisione della 10.19.7 (decisione di Gabriele
+    dell'8 novembre 2026)."""
+    from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
+
+    percorso = file_della_raccolta_pgn(torneo, file_del_torneo)
+    if not os.path.isfile(percorso):
+        return False
+    proprio = byte_della_raccolta_pgn(torneo)
+    if proprio is not None and _contiene(percorso, proprio):
+        return False
+    return next(_edizioni_della_raccolta(torneo, file_del_torneo, percorso), None) is not None
+
+
 def raccolta_rimasta_all_apertura(torneo, file_del_torneo):
     """La chiave di percorso della raccolta delle partite del torneo, con
     il file file_del_torneo, se all'apertura del torneo e' una raccolta

@@ -6576,15 +6576,26 @@ class MainFrame(wx.Frame):
         la raccolta che ha partite che il torneo ripristinato non ha, e
         _scrivi_la_raccolta, come il salvataggio, la mette nella cartella
         backup prima di sostituirla, o la manda nel cestino se il torneo
-        ripristinato non ha partite in PGN, con la guardia della raccolta di
-        un'altra edizione archiviata e con gli stessi messaggi. Una raccolta
-        nello stesso file di quella del torneo aperto, per esempio di un
-        torneo con lo stesso nome preso da un'altra cartella e con la stessa
-        cartella di salvataggio, resta com'e': e' del torneo aperto. Fino
-        alla 10.19.57, e gia' dalla 10.10.0, restava quella di prima del
+        ripristinato non ha partite in PGN, con gli stessi messaggi. Una
+        raccolta nello stesso file di quella del torneo aperto, per esempio di
+        un torneo con lo stesso nome preso da un'altra cartella e con la
+        stessa cartella di salvataggio, resta com'e': e' del torneo aperto.
+        Fino alla 10.19.57, e gia' dalla 10.10.0, restava quella di prima del
         ripristino, finche' il torneo non si apriva e si salvava; per un
         torneo riaperto che teneva la raccolta accanto al programma mancava,
-        andata nel cestino con la cartella d'archivio."""
+        andata nel cestino con la cartella d'archivio.
+        Dalla correzione della 10.19.58 resta com'e' anche la raccolta di
+        un'altra edizione archiviata con lo stesso nome, che
+        raccolta_di_un_altra_edizione di omonimi.py riconosce come la
+        guardia: senza cestino, senza copie e senza messaggi, perche' non e'
+        del torneo ripristinato. La mette in salvo il primo salvataggio del
+        torneo ripristinato, quando lo si apre, come ogni salvataggio della
+        finestra. Nella prima stesura la guardia di _scrivi_la_raccolta la
+        mandava subito nel cestino, dopo la copia nella cartella d'archivio
+        di quell'edizione, con il messaggio Raccolta delle partite di un
+        altro torneo (decisione di Gabriele dell'8 novembre 2026: mai toccare
+        la raccolta di un'altra edizione con lo stesso nome)."""
+        from omonimi import raccolta_di_un_altra_edizione
         from reports import file_della_raccolta_pgn, save_current_tournament_round_file, save_standings_text
 
         try:
@@ -6597,6 +6608,8 @@ class MainFrame(wx.Frame):
         if self.current_tournament and _chiave_del_percorso(
             file_della_raccolta_pgn(self.current_tournament, self.active_filename)
         ) == _chiave_del_percorso(file_della_raccolta_pgn(torneo, esito.destinazione)):
+            return
+        if raccolta_di_un_altra_edizione(torneo, esito.destinazione):
             return
         self._ricorda_la_raccolta_rimasta(torneo, esito.destinazione)
         self._scrivi_la_raccolta(torneo, esito.destinazione)

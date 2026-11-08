@@ -13,7 +13,10 @@ nella cartella backup prima di essere sostituita, e va nel cestino se il
 torneo ripristinato non ha partite in PGN; un torneo riaperto che teneva la
 raccolta accanto al programma la ritrova, perche' la sua e' andata nel
 cestino con la cartella d'archivio. Aprendolo e salvandolo non cambia piu'
-niente. La raccolta del torneo aperto, nello stesso file, resta com'e'.
+niente. La raccolta del torneo aperto, nello stesso file, resta com'e', e
+dalla correzione della 10.19.58 anche quella di un'altra edizione
+archiviata con lo stesso nome, che mette in salvo il primo salvataggio del
+torneo ripristinato, quando lo si apre.
 Fino alla 10.19.57 la raccolta restava quella di prima del ripristino,
 finche' il torneo non si apriva e si salvava.
 I tornei sono quelli delle prove della 10.19.52, in test_canc_sui_turni.py,
@@ -391,3 +394,107 @@ def test_la_raccolta_del_torneo_aperto_resta(principale, suoni, monkeypatch, ces
 
     assert _byte(raccolta) == prima
     assert len(copie.finestre) == 2
+
+
+class TestLaRaccoltaDiUnAltraEdizione:
+    @pytest.mark.parametrize("copia_con_pgn", [True, False], ids=["copia del turno 2 con i PGN del turno 1", "copia del turno 1 senza PGN"])
+    @pytest.mark.parametrize("situazione", SITUAZIONI)
+    def test_la_raccolta_dell_edizione_archiviata_resta(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, situazione, copia_con_pgn):
+        """Correzione della 10.19.58 (decisione di Gabriele dell'8 novembre
+        2026: mai toccare la raccolta di un'altra edizione con lo stesso
+        nome). Turni del 2026, nato in console, non ha mai scritto la sua
+        raccolta, e tiene i report in una cartella di lavoro. L'edizione del
+        2025, conclusa e archiviata, con le partite del turno 2 in PGN, ha
+        lasciato la sua raccolta in quella cartella, al posto di quella di
+        Turni del 2026, e una copia identica nella sua cartella d'archivio.
+        Dopo il ripristino di una copia di Turni del 2026, che la finestra
+        non carica, la raccolta dell'edizione del 2025 resta com'e', senza
+        cestino, senza copie e senza messaggi. Nella prima stesura della
+        10.19.58 la guardia la mandava subito nel cestino, con il messaggio
+        Raccolta delle partite di un altro torneo. La mette in salvo, come
+        prima del ripristino, il primo salvataggio di Turni del 2026 aperto
+        nella finestra: nel cestino, con la copia nella cartella d'archivio
+        che c'e' gia', e con quel messaggio."""
+        import config
+        from reports import byte_della_raccolta_pgn, file_della_raccolta_pgn
+
+        assert config.user_data_path("").startswith(str(tmp_path))
+        assert config.ARCHIVED_TOURNAMENTS_DIR.startswith(str(tmp_path))
+        lavoro = str(tmp_path / "lavoro")
+        os.makedirs(lavoro)
+        if copia_con_pgn:
+            vecchio, _fotografie, _ritirato = turni._torneo_vero(abbinati=2, ultimo_completo=False)
+            _con_i_pgn(vecchio, {1})
+        else:
+            vecchio, _fotografie, _ritirato = turni._torneo_vero(abbinati=1, ultimo_completo=False)
+        vero, _fotografie, _ritirato = turni._torneo_vero(abbinati=3, ultimo_completo=True)
+        vecchio["custom_save_path"] = vero["custom_save_path"] = lavoro
+        ripristinato = turni._scrivi(vero)
+        copia = config.user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_turno_1_20261108_100000.json"))
+        os.makedirs(os.path.dirname(copia), exist_ok=True)
+        with open(copia, "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in vecchio.items() if k != "players_dict"}, f, default=sorted)
+        edizione = _con_i_pgn(copy.deepcopy(vero), {2})
+        edizione["start_date"], edizione["end_date"] = "2025-11-01", "2025-11-30"
+        edizione["concluded"] = True
+        archivio = os.path.join(config.ARCHIVED_TOURNAMENTS_DIR, "2025", "11 Novembre", "Turni")
+        os.makedirs(archivio)
+        with open(os.path.join(archivio, "Tornello - Turni.json"), "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in edizione.items() if k != "players_dict"}, f, default=sorted)
+        sua = byte_della_raccolta_pgn(edizione)
+        assert sua.count(b"[Event ") == 3
+        raccolta = file_della_raccolta_pgn(vero, ripristinato)
+        assert os.path.dirname(raccolta) == lavoro
+        in_archivio = os.path.join(archivio, os.path.basename(raccolta))
+        for percorso in (raccolta, in_archivio):
+            with open(percorso, "wb") as f:
+                f.write(sua)
+        _prepara_la_situazione(principale, monkeypatch, situazione)
+        procedura = situazione.startswith("dentro")
+        suoni.clear()
+
+        copie, scatole, registro = _ripristina(principale, monkeypatch, copia, cestino_finto)
+
+        with open(ripristinato, encoding="utf-8") as f:
+            dati = json.load(f)
+        assert len(dati["rounds"]) == (2 if copia_con_pgn else 1)
+        propria = byte_della_raccolta_pgn(dati)
+        assert _byte(raccolta) == sua
+        assert _byte(in_archivio) == sua
+        assert os.path.abspath(raccolta) not in cestino_finto.tentativi
+        assert _raccolte_nel_cestino(cestino_finto) == []
+        assert _copie_della_raccolta() == {}
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+        assert copie.suoni == ["ripristino"]
+        assert suoni == []
+        assert scatole == []
+        assert registro.caricati == []
+        assert registro.fuoco == ([] if procedura else ["tree_ctrl"])
+        assert principale.creation_mode is procedura
+
+        _apri_e_salva(principale, monkeypatch, ripristinato)
+
+        assert _byte(in_archivio) == sua
+        assert _raccolte_nel_cestino(cestino_finto) == [os.path.abspath(raccolta)]
+        (nel_cestino,) = [n for n in os.listdir(cestino_finto.cartella) if n.endswith(".pgn")]
+        assert _byte(os.path.join(cestino_finto.cartella, nel_cestino)) == sua
+        if copia_con_pgn:
+            assert propria.count(b"[Event ") == 4
+            assert _byte(raccolta) == propria
+        else:
+            assert propria is None
+            assert not os.path.exists(raccolta)
+        assert _copie_della_raccolta() == {}
+        assert [titolo for titolo, _testo in copie.finestre] == [
+            "Conferma ripristino",
+            "Ripristino riuscito",
+            "Raccolta delle partite di un altro torneo",
+        ]
+        assert copie.finestre[2][1] == (
+            f"Nella cartella {lavoro} c'era la raccolta delle partite Turni - raccolta partite.pgn del torneo Turni, "
+            f"concluso e archiviato nella cartella {os.path.join('Closed Tournaments', '2025', '11 Novembre', 'Turni')}: "
+            "il torneo Turni l'avrebbe sostituita con la sua raccolta, o cancellata.\n"
+            "Una copia identica, riletta, adesso è nella cartella d'archivio di quel torneo, "
+            f"e quella della cartella {lavoro} è andata nel cestino di Windows."
+        )
+        assert suoni == []
