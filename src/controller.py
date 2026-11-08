@@ -19,7 +19,7 @@ from db_players import (
 )
 from engine import handle_bbpairings_failure
 from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
-from omonimi import FileNonTorneo
+from omonimi import FileNonTorneo, coincidenza_del_nome, frase_del_nome_in_uso
 from reports import (
     append_completed_round_to_history_file,
     posizioni_con_i_pari_merito,
@@ -531,6 +531,35 @@ class TournamentController:
         self.tournament.creation_suspended = False
         self._completa_la_creazione()
 
+    def _nome_del_torneo_libero(self, nome: str) -> bool:
+        """Vero se un torneo nuovo creato in console puo' chiamarsi nome. Un
+        nome il cui file coinciderebbe con un file del programma, come il
+        database dei giocatori o le impostazioni, o con un torneo della
+        cartella del programma, per il nome del file o per il nome scritto
+        nel suo json, come un torneo rinominato dal ramo Dati della finestra,
+        non si accetta: coincidenza_del_nome di omonimi.py, la stessa della
+        procedura guidata, dice con che cosa coincide, e il messaggio, senza
+        suono come gli altri errori della console, e' il testo della
+        procedura guidata, da frase_del_nome_in_uso; poi la console chiede di
+        nuovo il nome. I tornei dell'archivio non contano qui.
+        Nata con la 10.19.48. Fino alla 10.19.47, e gia' nella 10.0.0, la
+        console guardava soltanto se il file che nasce dal nome c'era gia', e
+        chiedeva se sovrascriverlo: con Si' un torneo chiamato Players_db
+        prendeva il posto del database dei giocatori, e uno chiamato come un
+        torneo della cartella ne sovrascriveva il file, con i turni e i
+        risultati; un torneo chiamato Corona nasceva accanto al Corona
+        rinominato nel file Tornello - Prova_stessa_data.json, e i report e la
+        raccolta delle partite dei due tornei avevano lo stesso nome
+        (decisione di Gabriele dell'8 novembre 2026). La domanda
+        Sovrascriverlo non esce piu': ogni file che la faceva uscire e' un
+        file Tornello - *.json della cartella del programma, e
+        coincidenza_del_nome lo trova prima."""
+        coincidenza = coincidenza_del_nome(nome)
+        if coincidenza is None:
+            return True
+        self.ui.show_error(frase_del_nome_in_uso(nome, coincidenza))
+        return False
+
     def _create_new_tournament(self, suggested_name: str | None = None) -> None:
         self.ui.show_message(_("Creazione Nuovo Torneo"))
         new_name = ""
@@ -541,19 +570,10 @@ class TournamentController:
                     name=suggested_name
                 )
             )
-            sanitized = sanitize_filename(suggested_name)
-            prospective = user_data_path(f"Tornello - {sanitized}.json")
-            if os.path.exists(prospective):
-                if self.ui.confirm(
-                    _(
-                        "Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo?"
-                    ).format(filename=prospective)
-                ):
-                    new_name = suggested_name
-                    self.active_filename = prospective
-            else:
+            if self._nome_del_torneo_libero(suggested_name):
                 new_name = suggested_name
-                self.active_filename = prospective
+                sanitized = sanitize_filename(suggested_name)
+                self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
         while not new_name:
             input_name = self.ui.input_text(
@@ -562,17 +582,11 @@ class TournamentController:
             if not input_name:
                 self.ui.show_message(_("Il nome del torneo non può essere vuoto."))
                 continue
-            sanitized = sanitize_filename(input_name)
-            prospective = user_data_path(f"Tornello - {sanitized}.json")
-            if os.path.exists(prospective):
-                if not self.ui.confirm(
-                    _(
-                        "Un file torneo '{filename}' con questo nome esiste già. Sovrascriverlo?"
-                    ).format(filename=prospective)
-                ):
-                    continue
+            if not self._nome_del_torneo_libero(input_name):
+                continue
             new_name = input_name
-            self.active_filename = prospective
+            sanitized = sanitize_filename(input_name)
+            self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
         # Date inizio
         start_date = ""

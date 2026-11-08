@@ -1282,3 +1282,166 @@ class TestIlFileCheNonETorneoInConsole:
         assert suonati == ["chiusura"]
         with open(percorsi["Beta"], "rb") as f:
             assert f.read() == cambiato[0]
+
+
+# La seconda frase dei messaggi della procedura guidata sul nome di un torneo
+# nuovo che non si accetta: per il nome del file e per il nome scritto.
+SECONDA_FRASE_DEL_FILE = "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+SECONDA_FRASE_DEI_REPORT = "Nei nomi dei file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+NOMI_CHE_NON_SI_ACCETTANO = {
+    "Players_db": "Il nome Players_db non si può usare: il file del torneo si chiamerebbe Tornello - Players_db.json, come il database dei giocatori.\n" + SECONDA_FRASE_DEL_FILE,
+    "players db": "Il nome players db non si può usare: il file del torneo si chiamerebbe Tornello - players_db.json, come il database dei giocatori.\n" + SECONDA_FRASE_DEL_FILE,
+    "Settings": "Il nome Settings non si può usare: il file del torneo si chiamerebbe Tornello - Settings.json, come il file delle impostazioni del programma.\n" + SECONDA_FRASE_DEL_FILE,
+    "Alfa": "Il nome Alfa non si può usare: il file del torneo si chiamerebbe Tornello - Alfa.json, come il file del torneo Alfa, in corso nella cartella del programma.\n" + SECONDA_FRASE_DEL_FILE,
+    "Rotto": "Il nome Rotto non si può usare: il file del torneo si chiamerebbe Tornello - Rotto.json, come un altro file del programma, che c'è già nella sua cartella.\n" + SECONDA_FRASE_DEL_FILE,
+    "Corona": "Il nome Corona non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero come quelli del torneo Corona, in corso nella cartella del programma, nel file Tornello - Prova_stessa_data.json.\n"
+    + SECONDA_FRASE_DEI_REPORT,
+}
+
+
+class TestIlNomeDelTorneoNuovoInConsole:
+    """10.19.48 (decisione di Gabriele dell'8 novembre 2026). Il nome di un
+    torneo nuovo creato in console passa dagli stessi controlli della
+    procedura guidata, con coincidenza_del_nome: un nome il cui file
+    coinciderebbe con un file del programma, come il database dei giocatori
+    o le impostazioni, o con un torneo della cartella del programma, per il
+    nome del file o per il nome scritto nel suo json, non si accetta. Il
+    messaggio, senza il suono dell'errore, e' quello della procedura guidata, e la console
+    chiede di nuovo il nome; la domanda Sovrascriverlo non esce piu'. Fino
+    alla 10.19.47, e gia' nella 10.0.0, la console guardava soltanto se il
+    file che nasce dal nome c'era gia', e chiedeva se sovrascriverlo: con
+    Si' un torneo chiamato Players_db prendeva il posto del database dei
+    giocatori, e uno chiamato come un torneo della cartella ne sovrascriveva
+    il file; un torneo chiamato Corona nasceva accanto al Corona rinominato,
+    senza domande. Le prove creano il torneo Libero fino all'iscrizione, e
+    la sospendono con s."""
+
+    # Dopo il nome: la data di inizio e quella di fine, i turni, il luogo,
+    # la federazione, l'arbitro, i vice, la cadenza, poi nessun giocatore e
+    # s per sospendere l'iscrizione.
+    DOPO_IL_NOME = ("", "", "3", "", "", "", "", "", "", "s")
+
+    @staticmethod
+    def _scrivi(percorso, dati):
+        import json
+        import os
+
+        os.makedirs(os.path.dirname(percorso), exist_ok=True)
+        with open(percorso, "w", encoding="utf-8") as f:
+            if isinstance(dati, str):
+                f.write(dati)
+            else:
+                json.dump(dati, f)
+
+    def _cartella(self):
+        """Il database dei giocatori, Alfa in corso, un file Rotto che e' una
+        lista e Corona, rinominato dal ramo Dati, nel file Tornello -
+        Prova_stessa_data.json. Restituisce i file della cartella del
+        programma, con il loro contenuto."""
+        import config
+
+        self._scrivi(config.PLAYER_DB_FILE, {"schema_version": 2, "players": [{"id": "ROSMA001", "first_name": "Mario", "last_name": "Rossi", "current_elo": 1500}]})
+        alfa = _torneo_al_primo_turno().to_dict()
+        alfa["name"] = "Alfa"
+        self._scrivi(config.user_data_path("Tornello - Alfa.json"), alfa)
+        self._scrivi(config.user_data_path("Tornello - Rotto.json"), "[1, 2]")
+        corona = _torneo_al_primo_turno().to_dict()
+        corona["name"] = "Corona"
+        self._scrivi(config.user_data_path("Tornello - Prova_stessa_data.json"), corona)
+        return self._contenuti()
+
+    @staticmethod
+    def _contenuti():
+        import os
+
+        import config
+
+        cartella = config.user_data_path("")
+        contenuti = {}
+        for nome in sorted(os.listdir(cartella)):
+            percorso = os.path.join(cartella, nome)
+            if os.path.isfile(percorso):
+                with open(percorso, "rb") as f:
+                    contenuti[nome] = f.read()
+        return contenuti
+
+    def _controlla_il_torneo_nato(self, guida, prima):
+        """Libero e' nato, sospeso, nel suo file, con il riepilogo della
+        sospensione; gli altri file sono com'erano, e non ne nascono altri."""
+        import json
+
+        import config
+
+        libero = config.user_data_path("Tornello - Libero.json")
+        assert guida.active_filename == libero
+        dopo = self._contenuti()
+        nati = ["Tornello - Libero.json", "Tornello - Libero_sospeso.txt"]
+        assert sorted(dopo) == sorted([*prima, *nati])
+        assert {n: b for n, b in dopo.items() if n not in nati} == prima
+        nato = json.loads(dopo["Tornello - Libero.json"].decode("utf-8"))
+        assert (nato["name"], nato["creation_suspended"], nato["players"]) == ("Libero", True, [])
+
+    @pytest.mark.parametrize("nome", list(NOMI_CHE_NON_SI_ACCETTANO))
+    def test_il_nome_scritto_che_non_si_accetta(self, monkeypatch, tmp_path, nome):
+        """Il nome scritto alla domanda Inserisci il nome del nuovo torneo:
+        il messaggio della procedura guidata, poi la domanda di nuovo, e con
+        Libero la creazione va avanti."""
+        from controller import TournamentController
+
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        prima = self._cartella()
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=[nome, "Libero", *self.DOPO_IL_NOME], conferme=[True])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._create_new_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        assert copione.domande[:2] == ["Inserisci il nome del nuovo torneo: ", "Inserisci il nome del nuovo torneo: "]
+        assert copione.domande[2].startswith("Inserisci data inizio")
+        assert not any("Sovrascriverlo" in d for d in copione.domande)
+        assert adattatore.messaggi[:2] == ["Creazione Nuovo Torneo", NOMI_CHE_NON_SI_ACCETTANO[nome]]
+        assert sum(m == NOMI_CHE_NON_SI_ACCETTANO[nome] for m in adattatore.messaggi) == 1
+        self._controlla_il_torneo_nato(guida, prima)
+        assert "errore" not in suonati
+
+    @pytest.mark.parametrize("nome", ["Corona", "Players_db"])
+    def test_il_nome_suggerito_che_non_si_accetta(self, monkeypatch, tmp_path, nome):
+        """Corona, rinominato, e' l'unico torneo della cartella, con il
+        database dei giocatori: alla domanda Vuoi caricare 'Corona' si
+        scrive il nome del torneo nuovo, Corona o Players_db. Il messaggio
+        della procedura guidata, poi la domanda Inserisci il nome del nuovo
+        torneo, e con Libero la creazione va avanti."""
+        import config
+        from controller import TournamentController
+
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        self._scrivi(config.PLAYER_DB_FILE, {"schema_version": 2, "players": []})
+        corona = _torneo_al_primo_turno().to_dict()
+        corona["name"] = "Corona"
+        self._scrivi(config.user_data_path("Tornello - Prova_stessa_data.json"), corona)
+        prima = self._contenuti()
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=[nome, "Libero", *self.DOPO_IL_NOME], conferme=[True])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._select_or_create_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        assert copione.domande[1] == "Inserisci il nome del nuovo torneo: "
+        assert copione.domande[2].startswith("Inserisci data inizio")
+        assert not any("Sovrascriverlo" in d for d in copione.domande)
+        assert adattatore.messaggi[:4] == [
+            "\nTrovato un solo torneo esistente: 'Corona' (File: Tornello - Prova_stessa_data.json)",
+            "Creazione Nuovo Torneo",
+            f"Nome suggerito per il nuovo torneo: '{nome}'",
+            NOMI_CHE_NON_SI_ACCETTANO[nome],
+        ]
+        self._controlla_il_torneo_nato(guida, prima)
+        assert "errore" not in suonati

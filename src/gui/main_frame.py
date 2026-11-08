@@ -29,6 +29,7 @@ from omonimi import (
     con_la_forma_di_un_torneo,
     edizione_con_l_identita,
     edizioni_nell_archivio,
+    frase_del_nome_in_uso,
     stesso_nome_di_file,
     stesso_nome_scritto,
 )
@@ -3923,29 +3924,12 @@ class MainFrame(wx.Frame):
                 ),
             )
             return False
-        if coincidenza.del_file and da_dati:
-            testo = _(
-                "Il nome {nome} non si può usare: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe {file}, {coincidenza}.\n"
-                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
-            )
-        elif coincidenza.del_file:
-            testo = _(
-                "Il nome {nome} non si può usare: il file del torneo si chiamerebbe {file}, {coincidenza}.\n"
-                "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
-            )
-        else:
-            testo = _(
-                "Il nome {nome} non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero {coincidenza}.\n"
-                "Nei nomi dei file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
-            )
+        # I testi sono quelli di frase_del_nome_in_uso di omonimi.py dalla
+        # 10.19.48, perche' li usa anche la console.
         play_sound("errore")
         self._dialogo_informativo(
             _("Nome del torneo già in uso"),
-            testo.format(
-                nome=nome,
-                file=_file_del_torneo_nuovo(nome),
-                coincidenza=coincidenza.frase,
-            ),
+            frase_del_nome_in_uso(nome, coincidenza, da_dati=da_dati),
         )
         return False
 

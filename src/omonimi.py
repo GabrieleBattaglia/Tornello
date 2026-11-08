@@ -336,6 +336,38 @@ def coincidenza_del_nome(nome, escluso=None, da_dati=False):
     return _coincidenza_per_il_file(in_cartella, cercato) or _coincidenza_per_il_nome_scritto(in_cartella, ripulito, saltati)
 
 
+def frase_del_nome_in_uso(nome, coincidenza, da_dati=False):
+    """Il testo che dice perche' un torneo nuovo non puo' chiamarsi nome,
+    con la Coincidenza che coincidenza_del_nome ha trovato nella cartella
+    del programma, e che cosa fare. da_dati dice che il nome viene dal ramo
+    Dati, dove il file del torneo non cambia nome: un nome che coincide con
+    un file e' allora riservato (10.19.15). Fino alla 10.19.47 i testi
+    stavano in _nome_del_torneo_libero di gui/main_frame.py, che li mostra
+    nel messaggio Nome del torneo gia' in uso; dalla 10.19.48 li usa anche
+    la console, che rifiuta gli stessi nomi della procedura guidata
+    (decisione di Gabriele dell'8 novembre 2026)."""
+    if coincidenza.del_file and da_dati:
+        testo = _(
+            "Il nome {nome} non si può usare: è riservato, perché il file di un torneo nuovo con questo nome si chiamerebbe {file}, {coincidenza}.\n"
+            "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+        )
+    elif coincidenza.del_file:
+        testo = _(
+            "Il nome {nome} non si può usare: il file del torneo si chiamerebbe {file}, {coincidenza}.\n"
+            "Nel nome del file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+        )
+    else:
+        testo = _(
+            "Il nome {nome} non si può usare: i report e la raccolta delle partite del torneo si chiamerebbero {coincidenza}.\n"
+            "Nei nomi dei file gli spazi diventano trattini bassi, i simboli spariscono, e le maiuscole e le minuscole non fanno differenza. Scegli un altro nome per il torneo."
+        )
+    return testo.format(
+        nome=nome,
+        file=_file_del_torneo_nuovo(nome),
+        coincidenza=coincidenza.frase,
+    )
+
+
 def edizioni_nell_archivio(nome, escluso=None):
     """I tornei conclusi dell'archivio con lo stesso nome di un torneo nuovo
     chiamato nome: quelli il cui file coincide con il suo, confrontato come
