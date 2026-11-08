@@ -1349,7 +1349,7 @@ class MainFrame(wx.Frame):
 
             # Ricostruisce players_dict per l'interfaccia grafica
             self.current_tournament["players_dict"] = iscritti
-            self._ricorda_la_raccolta_rimasta()
+            self._ricorda_la_raccolta_rimasta(self.current_tournament, self.active_filename)
 
             t_name = data.get("name", _("Torneo Sconosciuto"))
             self._aggiorna_titolo()
@@ -1377,9 +1377,10 @@ class MainFrame(wx.Frame):
         except Exception as errore:
             self._torneo_non_aperto(filepath, errore, rebuild_tree, False)
 
-    def _ricorda_la_raccolta_rimasta(self):
-        """All'apertura del torneo, se la sua raccolta delle partite nella
-        cartella ha partite che il torneo non ha, e' una raccolta rimasta, e
+    def _ricorda_la_raccolta_rimasta(self, torneo, file_del_torneo):
+        """All'apertura del torneo, con il file file_del_torneo, se la sua
+        raccolta delle partite nella cartella ha partite che il torneo non
+        ha, e' una raccolta rimasta, e
         si ricorda in _raccolte_ritrovate: al primo salvataggio che scrive la
         raccolta nuova, che per un torneo senza partite in PGN e' quello del
         primo PGN nuovo, va nella cartella backup prima di essere sostituita,
@@ -1395,10 +1396,13 @@ class MainFrame(wx.Frame):
         ripristino dalla finestra Copie di sicurezza, che carica il torneo
         ripristinato: fino alla stessa revisione era rimasta soltanto la
         raccolta di un torneo senza partite in PGN, e un ripristino che gli
-        ridava partite in PGN lasciava sostituire la raccolta senza copia."""
+        ridava partite in PGN lasciava sostituire la raccolta senza copia.
+        Dalla 10.19.58 la chiede anche _report_del_torneo_ripristinato, per
+        il torneo ripristinato che la finestra non carica, prima di
+        scriverne la raccolta, come se lo aprisse e lo salvasse."""
         from omonimi import raccolta_rimasta_all_apertura
 
-        chiave = raccolta_rimasta_all_apertura(self.current_tournament, self.active_filename)
+        chiave = raccolta_rimasta_all_apertura(torneo, file_del_torneo)
         if chiave:
             self._raccolte_ritrovate.add(chiave)
 
@@ -4659,109 +4663,125 @@ class MainFrame(wx.Frame):
             save_current_tournament_round_file(self.current_tournament)
             save_standings_text(self.current_tournament, final=False)
 
-            # Accumula ed esporta il file PGN del torneo
+            # Accumula ed esporta il file PGN del torneo, con
+            # _scrivi_la_raccolta, che dalla 10.19.58 scrive anche quella
+            # del torneo ripristinato che la finestra non carica.
             if self.active_filename:
-                from omonimi import aggiorna_la_raccolta_pgn, raccolta_rimasta
-                from reports import file_della_raccolta_pgn
-                from utils import play_sound
+                self._scrivi_la_raccolta(self.current_tournament, self.active_filename, torneo_salvato)
 
-                # La raccolta partite e' un file che appartiene al torneo, non
-                # al programma: va nella cartella di lavoro scelta dall'arbitro,
-                # come i report di testo. Percorso e contenuto vengono da
-                # reports, come per la finalizzazione, che dalla 10.19.7 la
-                # porta in archivio (issue 66).
-                # La raccolta di un'edizione archiviata, al posto di quella
-                # del torneo, si mette in salvo prima di sostituirla o di
-                # cancellarla, in ogni salvataggio: un torneo nato in
-                # console, che non scrive la raccolta e non passa dalla
-                # procedura guidata, la trovava al primo salvataggio nella
-                # finestra (correzione della revisione della 10.19.7, issue
-                # 66). Se non si mette in salvo, resta com'e', e la raccolta
-                # del torneo non si scrive.
-                if not self._raccolta_altrui_in_salvo(
-                    self.current_tournament,
-                    self.active_filename,
-                    _("La raccolta delle partite del torneo non è stata scritta: sposta quel file in un'altra cartella, e la scriverà il prossimo salvataggio."),
-                    solo_archiviate=True,
-                ):
-                    return
-                # Scritta, o tolta se il torneo non ha piu' partite in PGN:
-                # dalla 10.19.13 va nel cestino, e fino alla 10.19.10 si
-                # cancellava per sempre con os.remove (decisione di Gabriele
-                # del 4 novembre 2026). Se il cestino non la prende resta
-                # dov'e', un messaggio lo dice una volta, e fino alla chiusura
-                # i salvataggi dopo non ci riprovano: niente messaggi e niente
-                # domande di Windows a ogni salvataggio. Dalla revisione della
-                # 10.19.13 una raccolta rimasta, prima di essere sostituita
-                # dalla raccolta nuova, va nella cartella backup: fino ad
-                # allora le partite di prima si perdevano al primo PGN nuovo.
-                # Lo stesso per una raccolta rimasta ritrovata all'apertura
-                # del torneo, dopo una chiusura di Tornello, che dalla stessa
-                # revisione sta in _raccolte_ritrovate: senza PGN il cestino
-                # si riprova, come per ogni raccolta. La copia si fa se la
-                # raccolta ha ancora partite che il torneo non ha, se non e'
-                # quella di un'altra edizione archiviata, e se la sua ultima
-                # copia nella cartella backup non le e' gia' identica.
-                aggiornata = aggiorna_la_raccolta_pgn(
-                    self.current_tournament,
-                    self.active_filename,
-                    self._nel_cestino,
-                    self._raccolte_rimaste,
-                    self._raccolte_ritrovate,
+    def _scrivi_la_raccolta(self, torneo, file_del_torneo, torneo_salvato=True):
+        """La raccolta delle partite in PGN del torneo, con il file
+        file_del_torneo, come la scrive ogni salvataggio della finestra: la
+        guardia della raccolta di un'altra edizione archiviata, poi
+        aggiorna_la_raccolta_pgn di omonimi.py, con le raccolte rimaste e
+        ritrovate della finestra, e i messaggi della raccolta rimasta e di
+        quella non scritta. Senza torneo_salvato il salvataggio del file del
+        torneo non e' riuscito, come in _salva_i_report. Fino alla 10.19.57
+        stava dentro _salva_i_report, per il solo torneo aperto; dalla
+        10.19.58 la chiama anche _report_del_torneo_ripristinato, per il
+        torneo ripristinato che la finestra non carica (decisione di
+        Gabriele dell'8 novembre 2026)."""
+        from omonimi import aggiorna_la_raccolta_pgn, raccolta_rimasta
+        from reports import file_della_raccolta_pgn
+        from utils import play_sound
+
+        # La raccolta partite e' un file che appartiene al torneo, non
+        # al programma: va nella cartella di lavoro scelta dall'arbitro,
+        # come i report di testo. Percorso e contenuto vengono da
+        # reports, come per la finalizzazione, che dalla 10.19.7 la
+        # porta in archivio (issue 66).
+        # La raccolta di un'edizione archiviata, al posto di quella
+        # del torneo, si mette in salvo prima di sostituirla o di
+        # cancellarla, in ogni salvataggio: un torneo nato in
+        # console, che non scrive la raccolta e non passa dalla
+        # procedura guidata, la trovava al primo salvataggio nella
+        # finestra (correzione della revisione della 10.19.7, issue
+        # 66). Se non si mette in salvo, resta com'e', e la raccolta
+        # del torneo non si scrive.
+        if not self._raccolta_altrui_in_salvo(
+            torneo,
+            file_del_torneo,
+            _("La raccolta delle partite del torneo non è stata scritta: sposta quel file in un'altra cartella, e la scriverà il prossimo salvataggio."),
+            solo_archiviate=True,
+        ):
+            return
+        # Scritta, o tolta se il torneo non ha piu' partite in PGN:
+        # dalla 10.19.13 va nel cestino, e fino alla 10.19.10 si
+        # cancellava per sempre con os.remove (decisione di Gabriele
+        # del 4 novembre 2026). Se il cestino non la prende resta
+        # dov'e', un messaggio lo dice una volta, e fino alla chiusura
+        # i salvataggi dopo non ci riprovano: niente messaggi e niente
+        # domande di Windows a ogni salvataggio. Dalla revisione della
+        # 10.19.13 una raccolta rimasta, prima di essere sostituita
+        # dalla raccolta nuova, va nella cartella backup: fino ad
+        # allora le partite di prima si perdevano al primo PGN nuovo.
+        # Lo stesso per una raccolta rimasta ritrovata all'apertura
+        # del torneo, dopo una chiusura di Tornello, che dalla stessa
+        # revisione sta in _raccolte_ritrovate: senza PGN il cestino
+        # si riprova, come per ogni raccolta. La copia si fa se la
+        # raccolta ha ancora partite che il torneo non ha, se non e'
+        # quella di un'altra edizione archiviata, e se la sua ultima
+        # copia nella cartella backup non le e' gia' identica.
+        aggiornata = aggiorna_la_raccolta_pgn(
+            torneo,
+            file_del_torneo,
+            self._nel_cestino,
+            self._raccolte_rimaste,
+            self._raccolte_ritrovate,
+        )
+        if aggiornata.rimasta and not aggiornata.gia_detta:
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Raccolta delle partite rimasta"),
+                raccolta_rimasta(aggiornata.rimasta, torneo.get("name", ""))
+                + "\n"
+                + _(
+                    "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Quando il torneo ha di nuovo una partita in PGN, se la raccolta ha ancora partite che il torneo non ha, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello. Se non ti serve più, spostala o cancellala tu."
+                ),
+            )
+        percorso_della_raccolta = file_della_raccolta_pgn(torneo, file_del_torneo)
+        chiave = _chiave_del_percorso(percorso_della_raccolta)
+        if not aggiornata.copia_non_riuscita:
+            # Il messaggio della copia non riuscita puo' tornare
+            # soltanto dopo un salvataggio che ha scritto la
+            # raccolta, o che non doveva scriverla: uno che non ha
+            # potuto scriverla, o leggerla, non ha nemmeno fatto la
+            # copia. Fino alla correzione della revisione della
+            # 10.19.13 la memoria si svuotava anche li', e il
+            # messaggio, che promette di non ripetersi fino alla
+            # chiusura, tornava.
+            if aggiornata.errore is None:
+                self._copie_non_riuscite.discard(chiave)
+            # La raccolta che non si e' potuta scrivere, o leggere
+            # prima di sostituirla: un messaggio, una volta per
+            # raccolta fino alla chiusura, e mai nello stesso
+            # salvataggio del messaggio della copia non riuscita, qui
+            # sotto (decisione di Gabriele del 5 novembre 2026).
+            # Dalla 10.19.19 non esce, e non si ricorda, quando il
+            # file del torneo non si e' salvato: direbbe che il torneo
+            # e' salvato, e lo dice gia' il messaggio Torneo non
+            # salvato.
+            if aggiornata.errore is not None and torneo_salvato and chiave not in self._raccolte_non_scritte:
+                self._raccolte_non_scritte.add(chiave)
+                cartella, file = os.path.split(percorso_della_raccolta)
+                play_sound("errore")
+                self._dialogo_informativo(
+                    _("Raccolta delle partite non scritta"),
+                    _(
+                        "La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
+                    ).format(file=file, cartella=cartella, errore=aggiornata.errore),
                 )
-                if aggiornata.rimasta and not aggiornata.gia_detta:
-                    play_sound("errore")
-                    self._dialogo_informativo(
-                        _("Raccolta delle partite rimasta"),
-                        raccolta_rimasta(aggiornata.rimasta, self.current_tournament.get("name", ""))
-                        + "\n"
-                        + _(
-                            "Fino alla chiusura di Tornello i salvataggi non ci riprovano, e questo messaggio non si ripete. Quando il torneo ha di nuovo una partita in PGN, se la raccolta ha ancora partite che il torneo non ha, prima di sostituirla con la raccolta nuova Tornello la mette nella cartella backup, anche dopo una chiusura di Tornello. Se non ti serve più, spostala o cancellala tu."
-                        ),
-                    )
-                percorso_della_raccolta = file_della_raccolta_pgn(self.current_tournament, self.active_filename)
-                chiave = _chiave_del_percorso(percorso_della_raccolta)
-                if not aggiornata.copia_non_riuscita:
-                    # Il messaggio della copia non riuscita puo' tornare
-                    # soltanto dopo un salvataggio che ha scritto la
-                    # raccolta, o che non doveva scriverla: uno che non ha
-                    # potuto scriverla, o leggerla, non ha nemmeno fatto la
-                    # copia. Fino alla correzione della revisione della
-                    # 10.19.13 la memoria si svuotava anche li', e il
-                    # messaggio, che promette di non ripetersi fino alla
-                    # chiusura, tornava.
-                    if aggiornata.errore is None:
-                        self._copie_non_riuscite.discard(chiave)
-                    # La raccolta che non si e' potuta scrivere, o leggere
-                    # prima di sostituirla: un messaggio, una volta per
-                    # raccolta fino alla chiusura, e mai nello stesso
-                    # salvataggio del messaggio della copia non riuscita, qui
-                    # sotto (decisione di Gabriele del 5 novembre 2026).
-                    # Dalla 10.19.19 non esce, e non si ricorda, quando il
-                    # file del torneo non si e' salvato: direbbe che il torneo
-                    # e' salvato, e lo dice gia' il messaggio Torneo non
-                    # salvato.
-                    if aggiornata.errore is not None and torneo_salvato and chiave not in self._raccolte_non_scritte:
-                        self._raccolte_non_scritte.add(chiave)
-                        cartella, file = os.path.split(percorso_della_raccolta)
-                        play_sound("errore")
-                        self._dialogo_informativo(
-                            _("Raccolta delle partite non scritta"),
-                            _(
-                                "La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
-                            ).format(file=file, cartella=cartella, errore=aggiornata.errore),
-                        )
-                elif chiave not in self._copie_non_riuscite:
-                    self._copie_non_riuscite.add(chiave)
-                    play_sound("errore")
-                    self._dialogo_informativo(
-                        _("Raccolta delle partite non scritta"),
-                        aggiornata.non_scritta
-                        + "\n"
-                        + _(
-                            "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova."
-                        ),
-                    )
+        elif chiave not in self._copie_non_riuscite:
+            self._copie_non_riuscite.add(chiave)
+            play_sound("errore")
+            self._dialogo_informativo(
+                _("Raccolta delle partite non scritta"),
+                aggiornata.non_scritta
+                + "\n"
+                + _(
+                    "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova."
+                ),
+            )
 
     def on_tree_key_down(self, event):
         if not self or not getattr(self, "tree_ctrl", None) or not self.tree_ctrl:
@@ -6492,7 +6512,9 @@ class MainFrame(wx.Frame):
         Dalla 10.19.52 un torneo ripristinato che la finestra non carica, con
         un altro torneo aperto o dentro la procedura senza un torneo aperto,
         ha il turno corrente e la classifica scritti da
-        _report_del_torneo_ripristinato."""
+        _report_del_torneo_ripristinato, e dalla 10.19.58 anche la raccolta
+        delle partite, con la raccolta di prima nella cartella backup se ha
+        partite che il torneo ripristinato non ha."""
         if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
             self.populate_tree()
             return
@@ -6542,13 +6564,28 @@ class MainFrame(wx.Frame):
         dalla procedura guidata, dentro la procedura senza un torneo aperto,
         e quando, alla domanda di _si_puo_lasciare_il_torneo, resta aperto il
         torneo di prima. Il torneo che la finestra carica li ha da
-        _save_state, come prima; la raccolta delle partite resta a
-        load_tournament, quando il torneo si apre. Fino alla 10.19.51, e
-        gia' dalla 10.10.0, quando e' nato il ripristino, restavano quelli di
-        prima del ripristino, e per un torneo riaperto mancavano, andati nel
-        cestino con la cartella d'archivio della finalizzazione. Un file che
-        non si legge non scrive niente."""
-        from reports import save_current_tournament_round_file, save_standings_text
+        _save_state, come prima. Fino alla 10.19.51, e gia' dalla 10.10.0,
+        quando e' nato il ripristino, restavano quelli di prima del
+        ripristino, e per un torneo riaperto mancavano, andati nel cestino
+        con la cartella d'archivio della finalizzazione. Un file che non si
+        legge non scrive niente.
+        Dalla 10.19.58 (decisione di Gabriele dell'8 novembre 2026) negli
+        stessi casi anche la raccolta delle partite in PGN del torneo
+        ripristinato e' quella che la finestra scriverebbe aprendolo e
+        salvandolo: _ricorda_la_raccolta_rimasta, come l'apertura, ricorda
+        la raccolta che ha partite che il torneo ripristinato non ha, e
+        _scrivi_la_raccolta, come il salvataggio, la mette nella cartella
+        backup prima di sostituirla, o la manda nel cestino se il torneo
+        ripristinato non ha partite in PGN, con la guardia della raccolta di
+        un'altra edizione archiviata e con gli stessi messaggi. Una raccolta
+        nello stesso file di quella del torneo aperto, per esempio di un
+        torneo con lo stesso nome preso da un'altra cartella e con la stessa
+        cartella di salvataggio, resta com'e': e' del torneo aperto. Fino
+        alla 10.19.57, e gia' dalla 10.10.0, restava quella di prima del
+        ripristino, finche' il torneo non si apriva e si salvava; per un
+        torneo riaperto che teneva la raccolta accanto al programma mancava,
+        andata nel cestino con la cartella d'archivio."""
+        from reports import file_della_raccolta_pgn, save_current_tournament_round_file, save_standings_text
 
         try:
             torneo = self._leggi_il_torneo(esito.destinazione)
@@ -6557,6 +6594,12 @@ class MainFrame(wx.Frame):
             return
         save_current_tournament_round_file(torneo)
         save_standings_text(torneo, final=False)
+        if self.current_tournament and _chiave_del_percorso(
+            file_della_raccolta_pgn(self.current_tournament, self.active_filename)
+        ) == _chiave_del_percorso(file_della_raccolta_pgn(torneo, esito.destinazione)):
+            return
+        self._ricorda_la_raccolta_rimasta(torneo, esito.destinazione)
+        self._scrivi_la_raccolta(torneo, esito.destinazione)
 
     def _il_file_aperto_e_nel_cestino(self, esito):
         """Vero se il ripristino di esito ha mandato nel cestino il file del

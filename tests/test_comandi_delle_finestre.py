@@ -5817,7 +5817,9 @@ class TestRaccoltaSenzaPartiteNelCestino:
         Copie di sicurezza della finestra principale finestra, e quello che
         la finestra fa subito dopo, con _dopo_il_ripristino: con nessun
         torneo aperto carica il torneo ripristinato e lo salva; con un altro
-        torneo aperto, Estate, aperto prima, rilegge soltanto l'albero."""
+        torneo aperto, Estate, aperto prima, rilegge l'albero, e dalla
+        10.19.58 scrive la raccolta del torneo ripristinato come la finestra
+        aprendolo e salvandolo."""
         from config import user_data_path
         from copie_di_sicurezza import Esito
 
@@ -5835,15 +5837,17 @@ class TestRaccoltaSenzaPartiteNelCestino:
         piu' PGN, e il messaggio lo dice. Tornello si chiude e si riapre, e
         dalla finestra Copie di sicurezza il torneo torna com'era in una
         copia, con il PGN di un'altra partita: con nessun torneo aperto la
-        finestra lo carica e lo salva; con un altro torneo aperto rilegge
-        soltanto l'albero, la raccolta resta com'era, e l'arbitro apre il
-        torneo e lo salva dopo. All'apertura il torneo ha partite in PGN, ma
-        la raccolta ha partite che il torneo non ha: e' una raccolta
-        rimasta, e prima di essere sostituita va nella cartella backup, con
-        una copia identica, senza altri messaggi; i salvataggi dopo non
-        fanno altre copie. Fino ad allora era rimasta soltanto la raccolta di
-        un torneo senza partite in PGN, e il primo salvataggio la sostituiva
-        senza copia."""
+        finestra lo carica e lo salva; con un altro torneo aperto non lo
+        carica, e dalla 10.19.58 ne scrive la raccolta come se lo aprisse e
+        lo salvasse, e l'arbitro apre il torneo e lo salva dopo. Il torneo
+        ripristinato ha partite in PGN, ma la raccolta ha partite che il
+        torneo non ha: e' una raccolta rimasta, e prima di essere sostituita
+        va nella cartella backup, con una copia identica, senza altri
+        messaggi; i salvataggi dopo non fanno altre copie. Fino ad allora era
+        rimasta soltanto la raccolta di un torneo senza partite in PGN, e il
+        primo salvataggio la sostituiva senza copia. Fino alla 10.19.57, con
+        un altro torneo aperto, la raccolta restava com'era fino
+        all'apertura del torneo, e la copia la faceva quel salvataggio."""
         raccolta, contenuto = self._senza_piu_pgn(principale)
         cestino_finto.prende = False
         finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
@@ -5854,9 +5858,11 @@ class TestRaccoltaSenzaPartiteNelCestino:
         seconda = dopo_una_chiusura()
         self._il_ripristino(seconda, percorso, con_un_altro_torneo)
         if con_un_altro_torneo:
+            # Dalla 10.19.58 la copia e la raccolta nuova ci sono gia', e
+            # l'apertura e il salvataggio dell'arbitro non cambiano niente.
+            assert len(self._copie_della_raccolta()) == 1
             with open(raccolta, "rb") as f:
-                assert f.read() == contenuto
-            assert self._copie_della_raccolta() == []
+                assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
             seconda.load_tournament(percorso)
             seconda._save_state()
 
@@ -5876,13 +5882,17 @@ class TestRaccoltaSenzaPartiteNelCestino:
     def test_dopo_due_chiusure_la_raccolta_rimasta_va_ancora_nella_cartella_backup(self, principale, suoni, monkeypatch, dopo_una_chiusura, cestino_finto, strada):
         """Revisione della 10.19.13 (decisione di Gabriele del 4 novembre
         2026). Come sopra, ma la raccolta resta com'era anche dopo la
-        seconda sessione: o perche' la copia nella cartella backup non
-        riesce, e il messaggio Raccolta delle partite non scritta lo dice, o
-        perche' il ripristino, con un altro torneo aperto, rilegge soltanto
-        l'albero, e il torneo ripristinato non si apre. Dopo una seconda
-        chiusura il torneo si apre e si salva: la raccolta ha ancora partite
-        che il torneo non ha, e va nella cartella backup prima di essere
-        sostituita, senza altri messaggi."""
+        seconda sessione, perche' la copia nella cartella backup non
+        riesce, e il messaggio Raccolta delle partite non scritta lo dice.
+        Dopo una seconda chiusura il torneo si apre e si salva: la raccolta
+        ha ancora partite che il torneo non ha, e va nella cartella backup
+        prima di essere sostituita, senza altri messaggi. Fino alla 10.19.57
+        restava com'era anche quando il ripristino, con un altro torneo
+        aperto, rileggeva soltanto l'albero, e il torneo ripristinato non si
+        apriva; dalla 10.19.58 quel ripristino scrive subito la raccolta del
+        torneo ripristinato, come la finestra aprendolo e salvandolo, e la
+        raccolta rimasta va gia' allora nella cartella backup, una volta
+        sola."""
         import utils
 
         raccolta, contenuto = self._senza_piu_pgn(principale)
@@ -5900,9 +5910,14 @@ class TestRaccoltaSenzaPartiteNelCestino:
         else:
             self._il_ripristino(seconda, percorso, con_un_altro_torneo=True)
             attesi = [self._messaggio_della_raccolta_rimasta()]
-        with open(raccolta, "rb") as f:
-            assert f.read() == contenuto
-        assert self._copie_della_raccolta() == []
+        if strada == "copia non riuscita dopo il ripristino":
+            with open(raccolta, "rb") as f:
+                assert f.read() == contenuto
+            assert self._copie_della_raccolta() == []
+        else:
+            assert len(self._copie_della_raccolta()) == 1
+            with open(raccolta, "rb") as f:
+                assert f.read() == _raccolta_come_la_scrive_la_finestra(self.ALTRO_PGN)
         assert [(f.titolo, f.testo) for f in finestre] == attesi
 
         terza = dopo_una_chiusura()
