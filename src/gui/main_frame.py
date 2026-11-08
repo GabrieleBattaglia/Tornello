@@ -2833,7 +2833,7 @@ class MainFrame(wx.Frame):
             elif action == "wizard_back":
                 self.append_log(
                     _(
-                        "Indietro\n\nSeleziona questa voce per annullare la creazione del torneo e tornare alla schermata iniziale."
+                        "Indietro\n\nSeleziona questa voce per annullare la creazione del torneo e tornare al torneo aperto, o, senza un torneo aperto, alla schermata iniziale."
                     )
                 )
             return

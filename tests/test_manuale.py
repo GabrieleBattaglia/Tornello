@@ -642,3 +642,20 @@ class TestSuoniDelMenuAiutoNellaSezione72:
         assert "donazione" not in EVENTI.values()
         sorgenti = [os.path.relpath(os.path.join(radice, nome), CARTELLA_SRC) for radice, _cartelle, nomi in os.walk(CARTELLA_SRC) for nome in nomi if nome.endswith(".py")]
         assert [s for s in sorgenti if "donazione" in stringhe_del_sorgente(s)] == [os.path.join("gui", "dialogs", "donation_dialog.py")]
+
+
+class TestIndietroNellaSezione42:
+    """Correzione della 10.19.45 (decisione di Gabriele dell'8 novembre
+    2026). Il passo 2 della sezione 4.2 dice che la voce Indietro della
+    procedura guidata annulla la creazione e torna al torneo aperto o, senza
+    un torneo aperto, alla schermata iniziale, come dice l'aiuto della voce
+    nella finestra. Fino alla 10.19.44 diceva che tornava alla schermata
+    iniziale, anche con il torneo aperto."""
+
+    def test_il_passo_2_dice_dove_torna_indietro(self):
+        sezione_4_2 = "\n".join(sezione(leggi("MANUALE.txt"), (4, 2)))
+        aiuto = "Seleziona questa voce per annullare la creazione del torneo e tornare al torneo aperto, o, senza un torneo aperto, alla schermata iniziale."
+
+        assert 'In cima c\'è la voce "Indietro", che annulla la creazione e torna al torneo aperto o, senza un torneo aperto, alla schermata iniziale.' in sezione_4_2
+        assert "che annulla la creazione e torna alla schermata iniziale." not in sezione_4_2
+        assert [s for s in stringhe_del_sorgente(os.path.join("gui", "main_frame.py")) if aiuto in s] == [f"Indietro\n\n{aiuto}"]

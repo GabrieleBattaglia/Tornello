@@ -9139,6 +9139,43 @@ class TestAreaCentraleDopoIndietro:
         assert suoni == []
         assert scatole == []
 
+    AIUTO_DI_INDIETRO = (
+        "Indietro\n\nSeleziona questa voce per annullare la creazione del torneo e tornare al torneo aperto, o, "
+        "senza un torneo aperto, alla schermata iniziale.\n"
+    )
+
+    def test_l_aiuto_della_voce_indietro(self, principale, suoni, monkeypatch):
+        """Correzione della 10.19.45 (decisione di Gabriele dell'8 novembre
+        2026). Alfa e' aperta, e dopo Nuovo torneo il cursore arriva sulla
+        voce Indietro: l'area centrale mostra il suo aiuto, che dice dove si
+        torna, al torneo aperto o, senza un torneo aperto, alla schermata
+        iniziale. Fino alla 10.19.44, e gia' nella 10.0.0, diceva di tornare
+        alla schermata iniziale anche con il torneo aperto. Nessun suono,
+        nessun messaggio, nessun caricamento, e il fuoco non si sposta."""
+        import wx
+
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        finestre = TestNomeDelTorneoNuovo._domande(monkeypatch)
+        percorsi = TestAlberoETorneoAttivo()._prepara("Alfa")
+        principale.load_tournament(percorsi["Alfa"])
+        TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+        assert principale.creation_mode
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+        voce = TestAlberoETorneoAttivo._voce(principale, action="wizard_back")
+
+        principale.on_tree_selection_changed(SimpleNamespace(GetItem=lambda: voce))
+
+        assert principale.main_text.GetValue() == self.AIUTO_DI_INDIETRO
+        assert principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorsi["Alfa"])
+        assert registro.caricati == []
+        assert registro.fuoco == []
+        assert suoni == []
+        assert finestre == []
+        assert scatole == []
+
 
 class TestApriTorneoNellaProceduraGuidata:
     """10.19.34 (decisione di Gabriele del 7 novembre 2026). Ogni Apri
