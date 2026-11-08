@@ -524,7 +524,16 @@ def numeri_delle_scacchiere(round_data):
     il riposo in fondo. Lo usa l'albero della finestra, e dalla 10.19.54 il
     file dei dettagli del turno (decisione di Gabriele dell'8 novembre
     2026): il numero si fa in un posto solo, perche' le due strade numerino
-    allo stesso modo."""
+    allo stesso modo. Dopo la 10.19.54, con un'altra decisione di Gabriele
+    dello stesso giorno, lo usano anche gli altri posti che numerano le
+    scacchiere, e che fino ad allora facevano lo stesso calcolo ognuno per
+    conto suo: get_board_num della finestra, per la finestra del risultato,
+    il dettaglio della partita e le domande di CANC e di Togli
+    programmazione, il ramo Partite PGN dell'albero, la raccolta delle
+    partite nell'area centrale, il cursore che dopo un risultato passa alla
+    partita successiva, il calendario ics e la console. Con due partite con
+    lo stesso identificativo, che i file del programma non hanno, vale
+    l'ultima, come nell'albero."""
     partite = sorted(round_data.get("matches", []), key=lambda m: m.get("id", 0))
     return {m.get("id"): numero for numero, m in enumerate(partite, 1)}
 
@@ -2072,7 +2081,9 @@ def generate_ics_content(torneo):
     for r in rounds:
         r_num = r.get("round", 1)
         matches = r.get("matches", [])
-        matches_sorted = sorted(matches, key=lambda x: x.get("id", 0))
+        # Il numero della scacchiera, come nell'albero e nel file dei
+        # dettagli, lo da' numeri_delle_scacchiere.
+        numeri = numeri_delle_scacchiere(r)
         for m in matches:
             if m.get("is_scheduled") and m.get("schedule_info"):
                 sched = m["schedule_info"]
@@ -2105,7 +2116,7 @@ def generate_ics_content(torneo):
                     partite_saltate.append((r_num, m.get("id")))
                     continue
 
-                board_num = matches_sorted.index(m) + 1
+                board_num = numeri.get(m.get("id"), 1)
                 uid = f"Tornello_{t_id}_R{r_num}_M{m.get('id', 0)}@tornello"
                 summary = (
                     f"Turno {r_num} - Scacchiera {board_num}: {w_name} vs {b_name}"

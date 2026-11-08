@@ -36,6 +36,7 @@ from db_players import voce_di_questo_torneo as _voce_di_questo_torneo
 from reports import (
     byte_della_raccolta_pgn,
     file_della_raccolta_pgn,
+    numeri_delle_scacchiere,
     save_standings_text,
     save_suspended_tournament_summary,
 )
@@ -876,9 +877,13 @@ def update_match_result(torneo, percorso=None):
         all_matches_this_round_sorted = sorted(
             all_matches_in_this_round, key=lambda m: m.get("id", 0)
         )
-        round_board_idx_counter = 0
+        # Il numero della scacchiera, come nell'albero della finestra, lo da'
+        # numeri_delle_scacchiere di reports, per una decisione di Gabriele
+        # dell'8 novembre 2026, presa dopo la 10.19.54: prima la console lo
+        # contava da se', con la stessa regola.
+        numeri_delle_partite = numeri_delle_scacchiere(current_round_data)
         for match_obj in all_matches_this_round_sorted:
-            round_board_idx_counter += 1
+            numero_della_scacchiera = numeri_delle_partite.get(match_obj.get("id"), 1)
             if (
                 match_obj.get("result") is None
                 and match_obj.get("black_player_id") is not None
@@ -896,7 +901,7 @@ def update_match_result(torneo, percorso=None):
                     else _("Giocatore Mancante")
                 )
                 pending_matches_info_list.append(
-                    (round_board_idx_counter, match_obj, wp_name_disp, bp_name_disp)
+                    (numero_della_scacchiera, match_obj, wp_name_disp, bp_name_disp)
                 )
         completed_matches_to_cancel = [
             m

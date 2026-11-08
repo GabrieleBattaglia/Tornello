@@ -2642,6 +2642,8 @@ class MainFrame(wx.Frame):
         self.tree_ctrl.SetItemData(
             partite_pgn_node, {"action": "show_pgn_matches_list", "filepath": filepath}
         )
+        from reports import numeri_delle_scacchiere
+
         for r in rounds:
             r_num = r.get("round")
             round_matches_sorted = sorted(
@@ -2666,9 +2668,9 @@ class MainFrame(wx.Frame):
                 },
             )
 
-            match_id_to_board = {
-                m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)
-            }
+            # Il numero della scacchiera, come nei rami del turno, lo da'
+            # numeri_delle_scacchiere di reports.
+            match_id_to_board = numeri_delle_scacchiere(r)
             for m in round_matches_sorted:
                 if m.get("pgn"):
                     w_id = m.get("white_player_id")
@@ -3259,6 +3261,8 @@ class MainFrame(wx.Frame):
     def show_pgn_matches_list_verbose(self, round_num=None):
         if not self.current_tournament:
             return
+        from reports import numeri_delle_scacchiere
+
         self.main_text.Clear()
         info = []
         if round_num is not None:
@@ -3271,12 +3275,9 @@ class MainFrame(wx.Frame):
             r_num = r.get("round")
             if round_num is not None and r_num != round_num:
                 continue
-            round_matches_sorted = sorted(
-                r.get("matches", []), key=lambda x: x.get("id", 0)
-            )
-            match_id_to_board = {
-                m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)
-            }
+            # Il numero della scacchiera, come nell'albero, lo da'
+            # numeri_delle_scacchiere di reports.
+            match_id_to_board = numeri_delle_scacchiere(r)
 
             for m in r.get("matches", []):
                 if m.get("pgn"):
@@ -3315,17 +3316,24 @@ class MainFrame(wx.Frame):
         self.append_log("\n".join(info))
 
     def get_board_num(self, match, round_num):
+        """Il numero della scacchiera di match nel turno round_num del torneo
+        aperto, 1 se il turno o la partita non ci sono. Serve alla finestra
+        del risultato, al dettaglio della partita e alle domande di CANC e di
+        Togli programmazione. Il numero lo da' numeri_delle_scacchiere di
+        reports, come all'albero e al file dei dettagli, per una decisione
+        di Gabriele dell'8 novembre 2026, presa dopo la 10.19.54: prima lo
+        calcolava da se', con la stessa regola, e con due partite con lo
+        stesso identificativo dava il numero della prima, l'albero quello
+        dell'ultima."""
         if not self.current_tournament or not match:
             return 1
         rounds = self.current_tournament.get("rounds", [])
         r_data = next((r for r in rounds if r.get("round") == round_num), None)
         if not r_data:
             return 1
-        round_matches = sorted(r_data.get("matches", []), key=lambda x: x.get("id", 0))
-        for idx, m in enumerate(round_matches, 1):
-            if m.get("id") == match.get("id"):
-                return idx
-        return 1
+        from reports import numeri_delle_scacchiere
+
+        return numeri_delle_scacchiere(r_data).get(match.get("id"), 1)
 
     def show_match_detail_verbose(self, m, round_num, board_num=None):
         if not m or not self.current_tournament:
@@ -7935,9 +7943,14 @@ class MainFrame(wx.Frame):
                                         ),
                                         remaining_unplayed[0],
                                     )
-                                    board_num_next = (
-                                        round_matches_sorted.index(next_match) + 1
-                                    )
+                                    # Il numero della voce su cui torna il
+                                    # cursore, come nell'albero, lo da'
+                                    # numeri_delle_scacchiere di reports.
+                                    from reports import numeri_delle_scacchiere
+
+                                    board_num_next = numeri_delle_scacchiere(
+                                        round_obj
+                                    ).get(next_match.get("id"), 1)
                                     self._tree_restore_target = {
                                         "action": "activate_match",
                                         "filepath": self.active_filename,
