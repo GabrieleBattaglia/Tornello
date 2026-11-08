@@ -2282,6 +2282,32 @@ class TestDettagliDeiTurniDopoIlRipristino:
         assert scritti == []
         assert cestino_finto.ricevuti == []
 
+    def test_un_ripristino_non_riuscito_non_tocca_i_dettagli(self, tmp_path, monkeypatch, cestino_finto):
+        """Lo stato di oggi della prova 5 del collaudo, con il turno 3 tolto,
+        il suo file sparito e il file del turno 2 con un altro risultato; il
+        ripristino della copia di prima della Time Machine non riesce,
+        perche' la scrittura del torneo non riesce. Il file del torneo resta
+        quello di oggi, e i file dei dettagli restano com'erano, byte per
+        byte: si allineano soltanto dopo un ripristino riuscito (revisione
+        del tredicesimo giro)."""
+        import copie_di_sicurezza
+        from config import user_data_path
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, _allora, copia = self._oggi_e_la_copia(tmp_path, False)
+        oggi = self._dettagli_nella(cartella)
+        torneo_di_oggi = _byte(user_data_path("Tornello - Turni.json"))
+        monkeypatch.setattr(copie_di_sicurezza, "_scrivi_e_rileggi", lambda *_argomenti, **_opzioni: False)
+        scritti = self._scritti(monkeypatch)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert not esito.riuscito
+        assert _byte(user_data_path("Tornello - Turni.json")) == torneo_di_oggi
+        assert self._dettagli_nella(cartella) == oggi
+        assert scritti == []
+        assert cestino_finto.ricevuti == []
+
     def test_la_cartella_dei_report_che_non_si_raggiunge(self, tmp_path, capsys, cestino_finto):
         """La cartella di lavoro scelta per il torneo sta su un'unita' che
         oggi non c'e', come la chiavetta staccata della sezione 4.1 del
