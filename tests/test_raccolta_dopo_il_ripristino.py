@@ -396,6 +396,72 @@ def test_la_raccolta_del_torneo_aperto_resta(principale, suoni, monkeypatch, ces
     assert len(copie.finestre) == 2
 
 
+def test_la_raccolta_di_un_altra_edizione_aperta_da_un_altra_cartella_resta(principale, suoni, monkeypatch, cestino_finto, tmp_path):
+    """Correzione della 10.19.58. Il torneo aperto e' un'altra edizione di
+    Turni, del 2025, con le partite del turno 2 in PGN, presa da un'altra
+    cartella e senza una cartella di lavoro: la sua raccolta sta accanto al
+    suo file, e non e' quella del torneo ripristinato, che sta accanto al
+    programma. Dopo il ripristino della copia del turno 1, senza PGN, la
+    raccolta del torneo ripristinato va nel cestino, intera, come con Alfa
+    aperta, e quella dell'altra edizione resta byte per byte, anche al
+    salvataggio del torneo aperto: il ripristino scrive la raccolta del file
+    ripristinato, non di quello aperto, e lascia stare soltanto la raccolta
+    che e' lo stesso file di quella del torneo aperto, non quella di un
+    torneo con lo stesso nome."""
+    from config import user_data_path
+    from reports import file_della_raccolta_pgn
+
+    assert user_data_path("").startswith(str(tmp_path))
+    ripristinato, copia, raccolta, prima = _torneo_in_corso_con_la_copia(principale, tmp_path, "programma", False)
+    with open(ripristinato, encoding="utf-8") as f:
+        vero = json.load(f)
+    altrove = tmp_path / "altrove"
+    altrove.mkdir()
+    aperto = str(altrove / "Tornello - Turni.json")
+    suo = copy.deepcopy(vero)
+    for turno in suo["rounds"]:
+        for partita in turno["matches"]:
+            partita.pop("pgn", None)
+    _con_i_pgn(suo, {2})
+    suo["start_date"], suo["end_date"] = "2025-11-01", "2025-11-30"
+    with open(aperto, "w", encoding="utf-8") as f:
+        json.dump({k: v for k, v in suo.items() if k != "players_dict"}, f, default=sorted)
+    principale.load_tournament(aperto)
+    assert principale._e_il_torneo_aperto(aperto)
+    principale._save_state()
+    raccolta_aperta = file_della_raccolta_pgn(suo, aperto)
+    assert os.path.dirname(raccolta_aperta) == str(altrove)
+    sua = _byte(raccolta_aperta)
+    assert sua.count(b"[Event ") == 3
+    assert _byte(raccolta) == prima
+    suoni.clear()
+
+    copie, scatole, registro = _ripristina(principale, monkeypatch, copia, cestino_finto)
+
+    assert _byte(raccolta_aperta) == sua
+    assert os.path.abspath(raccolta_aperta) not in cestino_finto.tentativi
+    assert not os.path.exists(raccolta)
+    assert _raccolte_nel_cestino(cestino_finto) == [os.path.abspath(raccolta)]
+    (nel_cestino,) = [n for n in os.listdir(cestino_finto.cartella) if n.endswith(".pgn")]
+    assert _byte(os.path.join(cestino_finto.cartella, nel_cestino)) == prima
+    assert _copie_della_raccolta() == {}
+    assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+    assert copie.suoni == ["ripristino"]
+    assert suoni == []
+    assert scatole == []
+    assert registro.fuoco == ["tree_ctrl"]
+    assert principale._e_il_torneo_aperto(aperto)
+    with open(aperto, encoding="utf-8") as f:
+        assert json.load(f)["start_date"] == "2025-11-01"
+
+    principale._save_state()
+
+    assert _byte(raccolta_aperta) == sua
+    assert not os.path.exists(raccolta)
+    assert len(copie.finestre) == 2
+    assert suoni == []
+
+
 class TestLaRaccoltaDiUnAltraEdizione:
     @pytest.mark.parametrize("copia_con_pgn", [True, False], ids=["copia del turno 2 con i PGN del turno 1", "copia del turno 1 senza PGN"])
     @pytest.mark.parametrize("situazione", SITUAZIONI)
