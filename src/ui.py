@@ -1108,12 +1108,20 @@ def update_match_result(torneo, percorso=None):
                     _("Nessuna partita completata in questo turno da poter cancellare.")
                 )
                 continue
+            # Dalla 10.19.55 (decisione di Gabriele dell'8 novembre 2026) la
+            # lista numera le partite con il numero della scacchiera, come
+            # l'elenco delle partite da registrare e l'albero della finestra,
+            # e la domanda accetta soltanto quel numero, come l'elenco: fino
+            # alla 10.19.54 le numerava 1, 2, 3 secondo la posizione nella
+            # lista, e accettava quel numero o l'IDG: nel turno 4 di Turni,
+            # con i risultati alle scacchiere 2 e 3, scrivendo 2 la conferma
+            # chiedeva di cancellare la Scacchiera 3.
             print(
-                _("\nPartite completate nel turno {round_num} (ID Globali):").format(
+                _("\nPartite completate nel turno {round_num} (N. Scacchiera del Turno):").format(
                     round_num=current_round_num
                 )
             )
-            for i, match in enumerate(completed_matches_to_cancel):
+            for match in completed_matches_to_cancel:
                 wp_data = players_dict.get(match.get("white_player_id"))
                 bp_data = players_dict.get(match.get("black_player_id"))
                 w_name = (
@@ -1128,9 +1136,9 @@ def update_match_result(torneo, percorso=None):
                 )
                 print(
                     _(
-                        "  {num}. IDG:{match_id} - {white} vs {black} | Risultato: {result}"
+                        "  Sc. {board:<2} (IDG:{match_id}) - {white} vs {black} | Risultato: {result}"
                     ).format(
-                        num=i + 1,
+                        board=numeri_delle_partite.get(match.get("id"), 1),
                         match_id=match.get("id"),
                         white=w_name,
                         black=b_name,
@@ -1140,26 +1148,25 @@ def update_match_result(torneo, percorso=None):
 
             cancel_choice = input(
                 _(
-                    "Inserisci il numero o l'ID Globale (IDG) della partita da cancellare (o vuoto per annullare): "
+                    "Inserisci il numero della scacchiera della partita da cancellare (o vuoto per annullare): "
                 )
             ).strip()
             if not cancel_choice:
                 continue
 
+            # Un numero che non e' quello di una scacchiera della lista si
+            # rifiuta, come prima: nessun'altra partita si cancella.
             match_to_cancel = None
             if cancel_choice.isdigit():
                 choice_num = int(cancel_choice)
-                if 1 <= choice_num <= len(completed_matches_to_cancel):
-                    match_to_cancel = completed_matches_to_cancel[choice_num - 1]
-                else:
-                    match_to_cancel = next(
-                        (
-                            m
-                            for m in completed_matches_to_cancel
-                            if m.get("id") == choice_num
-                        ),
-                        None,
-                    )
+                match_to_cancel = next(
+                    (
+                        m
+                        for m in completed_matches_to_cancel
+                        if numeri_delle_partite.get(m.get("id"), 1) == choice_num
+                    ),
+                    None,
+                )
 
             if not match_to_cancel:
                 print(_("Scelta non valida."))
