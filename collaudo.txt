@@ -8,10 +8,10 @@ Esito:
 
 PROVA 2: CANC su una partita giocata
 Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
-Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove dalla 16 alla 23.
+Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove dalla 16 alla 24.
 Prima: Tornello resta aperto fino alla prova 15. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
 Passo 1: con il fuoco nell'albero premi NVDA+T.
-Domanda 1: il titolo dice Tornello - Versione 10.19.50 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
+Domanda 1: il titolo dice Tornello - Versione 10.19.54 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
 Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
 Passo 3: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
 Domanda 2: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima, il giorno e l'ora delle 18:00, e il PGN che resta con la partita?
@@ -77,13 +77,15 @@ Passo 9: se il ramo di Prova time machine è chiuso, aprilo con freccia destra; 
 Domanda 9: la voce dice turni (3), e in Completati (3) c'è di nuovo il Turno 3, dopo il Turno 1 e il Turno 2, com'era prima di Ctrl+Z, perché in memoria c'è il torneo ripristinato?
 Passo 10: apri il Turno 2 e giocate (3/3, 100.0%), e scendi sulla Scacchiera 1.
 Domanda 10: la partita dice Rinaldi Rita vs Pellegrini Paolo [1/2-1/2], il risultato della copia, e non più [1-0], quello del passo 4?
-Passo 11: in Esplora risorse apri di nuovo la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova time machine.
-Domanda 11: c'è di nuovo il file Tornello - Prova_time_machine - Turno 3 Dettagli.txt, accanto a quelli del Turno 1 e del Turno 2, perché il ripristino lo ha scritto un'altra volta?
-Passo 12: apri con il Blocco note il file Tornello - Prova_time_machine - Turno 3 Dettagli.txt.
-Domanda 12: dopo la riga Dettaglio del turno 3 concluso, la scacchiera 1 dice Vera Valli contro Rita Rinaldi, 1-0, con Rita Rinaldi a 1.5 punti, come nel torneo ripristinato, dove al Turno 2 Rita Rinaldi ha pareggiato con Paolo Pellegrini?
-Passo 13: chiudi il Blocco note, poi apri con il Blocco note il file Tornello - Prova_time_machine - Turno 2 Dettagli.txt, nella stessa cartella.
-Domanda 13: la scacchiera 1 dice Rita Rinaldi contro Paolo Pellegrini, 1/2-1/2, con 1.5 punti a testa, il risultato della copia, e non più 1-0, quello del passo 4?
-Passo 14: chiudi il Blocco note e torna in Tornello.
+Passo 11: scendi con freccia giù, oltre le Scacchiere 2 e 3, fino al Turno 3; aprilo con freccia destra, apri giocate (3/3, 100.0%) e scendi sulla Scacchiera 1.
+Domanda 11: la partita dice Pellegrini Paolo vs Testa Teresa [0-1]?
+Passo 12: in Esplora risorse apri di nuovo la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova time machine.
+Domanda 12: c'è di nuovo il file Tornello - Prova_time_machine - Turno 3 Dettagli.txt, accanto a quelli del Turno 1 e del Turno 2, perché il ripristino lo ha scritto un'altra volta?
+Passo 13: apri con il Blocco note il file Tornello - Prova_time_machine - Turno 3 Dettagli.txt.
+Domanda 13: dopo la riga Dettaglio del turno 3 concluso, la scacchiera 1 dice Paolo Pellegrini contro Teresa Testa, 0-1, come la Scacchiera 1 del Turno 3 nell'albero, con Paolo Pellegrini a 1.5 punti e Teresa Testa a 2.5, come nel torneo ripristinato, dove al Turno 2 Paolo Pellegrini ha pareggiato con Rita Rinaldi?
+Passo 14: chiudi il Blocco note, poi apri con il Blocco note il file Tornello - Prova_time_machine - Turno 2 Dettagli.txt, nella stessa cartella.
+Domanda 14: la scacchiera 1 dice Rita Rinaldi contro Paolo Pellegrini, 1/2-1/2, come la Scacchiera 1 del Turno 2 nell'albero, con 1.5 punti a testa, il risultato della copia, e non più 1-0, quello del passo 4?
+Passo 15: chiudi il Blocco note e torna in Tornello.
 Esito: 
 
 PROVA 6: CANC sul turno corrente, un turno alla volta
@@ -181,7 +183,7 @@ Domanda 7: si sente l'errore, e il messaggio Nome del torneo mancante dice "Il n
 Passo 7: chiudi il messaggio.
 Domanda 8: il cursore è rimasto su Nome torneo: Prova voci, e NVDA te l'ha detta senza che ti muovessi?
 Passo 8: premi NVDA+T.
-Domanda 9: il titolo dice ancora Tornello - Versione 10.19.50 - Data Rilascio 2026.11.08 - [Prova voci]?
+Domanda 9: il titolo dice ancora Tornello - Versione 10.19.54 - Data Rilascio 2026.11.08 - [Prova voci]?
 Passo 9: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
 Domanda 10: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
 Domanda 11: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
@@ -213,7 +215,7 @@ Domanda 9: il cursore è rimasto su quella voce, nel ramo Dati, e NVDA te l'ha d
 Passo 7: premi F7 e leggi la barra di stato, poi torna all'albero con F6.
 Domanda 10: la barra di stato dice "Nome del torneo cambiato in 'Corona'.", e non più "Torneo 'Prova stessa data' caricato con successo.", come prima del cambio?
 Passo 8: premi NVDA+T.
-Domanda 11: il titolo dice subito Tornello - Versione 10.19.50 - Data Rilascio 2026.11.08 - [Corona]?
+Domanda 11: il titolo dice subito Tornello - Versione 10.19.54 - Data Rilascio 2026.11.08 - [Corona]?
 Passo 9: premi due volte freccia su.
 Domanda 12: NVDA legge prima Dati, poi Corona, la voce del torneo, che prima diceva Prova stessa data?
 Passo 10: premi due volte freccia giù, per tornare su Nome torneo: Corona.
@@ -265,7 +267,7 @@ Passo 1: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello, scegli i
 Passo 2: torna in Tornello e, con le frecce nell'albero, scegli Prova senza cartella, al primo livello.
 Domanda 1: appena il cursore arriva su Prova senza cartella si sente l'errore, ed esce il messaggio Apertura non riuscita, che dice "Il file E:\git\tmp\banco-tornello\Tornello - Prova_senza_cartella.json non si è potuto aprire: No such file or directory."?
 Passo 3: chiudi il messaggio con INVIO e premi NVDA+T.
-Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.50 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
+Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.54 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
 Passo 4: apri il ramo con freccia destra e scendi su Dati, poi apri Dati con freccia destra e scendi su Nome torneo: Prova senza cartella; ogni volta che arriva il messaggio Apertura non riuscita, chiudilo con INVIO.
 Domanda 3: lo stesso messaggio Apertura non riuscita, con il suono dell'errore, arriva sia su Dati sia su Nome torneo, e mai con la freccia destra?
 Passo 5: su Nome torneo: Prova senza cartella premi INVIO.
@@ -297,16 +299,16 @@ Domanda 5: appena scegli la voce si sente il suono della domanda, diverso dal ca
 Passo 7: se la finestra mostra la spiegazione, premi ALT+P, Passo per passo, e non INVIO, che lì sceglie Apri nel programma di posta; se mostra già il passo 1 di 4, vai avanti.
 Domanda 6: il passo 1 di 4 dice che l'indirizzo è gabriele.battaglia@gmail.com, il tuo Gmail?
 Passo 8: premi INVIO, per il passo 2 di 4.
-Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.50?
+Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.54?
 Passo 9: aspetta un secondo e premi INVIO, per il passo 3 di 4.
-Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.50, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
+Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.54, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
 Passo 10: premi ESC, senza spedire niente.
 Passo 11: chiudi Tornello con ALT+F4.
 Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
 Esito: 
 
 PROVA 16: La console del banco dopo la chiusura
-Prima: Tornello del banco chiuso alla prova 15. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
+Prima: Tornello del banco chiuso alla prova 15. Se nel frattempo Dropbox ha sincronizzato la cartella Scacchierando, o hai usato il Tornello vero, o è cambiato GBUtils, per esempio con un suono nuovo della collezione, la prima riga dice invece che i dati vivi sono cambiati, ed elenca i file.
 Passo 1: torna al prompt dei comandi da cui hai avviato banco.py e leggi le ultime righe.
 Domanda 1: c'è la riga "Banco di collaudo chiuso. Dati vivi invariati:", seguita da un numero e da "file controllati."?
 Domanda 2: subito dopo c'è la riga "Nessuna operazione rifiutata dal guardiano."?
@@ -549,7 +551,41 @@ Passo 18: chiudi Tornello con ALT+F4.
 Domanda 17: Tornello si chiude senza domande, e le ultime due righe del prompt dei comandi dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
 Esito: 
 
-PROVA 24: Ascolto dei tre suoni al posto della campanella
+PROVA 24: Il ripristino di una copia con meno turni, con un altro torneo aperto
+Prima: Tornello del banco chiuso alla prova 23, e il prompt dei comandi della prova 2 ancora aperto.
+Prima: alla prova 23 il banco ha tolto dal file di Prova time machine il Turno 3, e il torneo ha soltanto i turni 1 e 2, completi. Nella sua cartella dei report, E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova time machine, ci sono ancora i dettagli dei turni 1, 2 e 3, la classifica, che dice Classifica Parziale - Dopo Turno 3, e il turno corrente, che dice Turno: 3.
+Prima: in questa prova, con Prova copie aperta, si ripristina la copia di Prova time machine al turno 1 abbinato, senza risultati: il torneo ripristinato ha soltanto il turno 1, non completo, e Tornello non lo carica, perché è aperto un altro torneo.
+Passo 1: nel prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\banco-tornello\banco.py
+Passo 2: premi HOME, che porta il cursore su Beta, la prima voce dell'albero, poi scendi con freccia giù fino a Prova copie, e premi NVDA+T.
+Domanda 1: il titolo finisce con [Prova copie]?
+Passo 3: premi ALT, poi F, poi C, Copie di sicurezza; poi premi ALT+O, Origine delle copie.
+Domanda 2: la casella Origine delle copie dice Prova copie (3), le copie del torneo aperto?
+Passo 4: premi FINE, che sceglie l'ultima origine, Prova voci (2), e poi due volte freccia su, fino a Prova time machine (6).
+Passo 5: premi ALT+L, l'elenco delle copie, poi HOME, sulla prima copia, alla nascita del torneo, e una volta freccia giù.
+Domanda 3: la copia scelta dice al turno 1 abbinato, con T1/5, 0/3 ris., 6 gioc.?
+Passo 6: premi ALT+R, Ripristina.
+Domanda 4: arriva la domanda Conferma ripristino, con No predefinito, che dice "Il torneo Prova time machine, nel file Tornello - Prova_time_machine.json, tornerebbe com'era nella copia.", poi "Turni che si perderebbero: 2", cioè il turno 2, e "Risultati che si perderebbero: 6", i tre del turno 1 e i tre del turno 2?
+Passo 7: premi TAB fino a Sì e poi INVIO.
+Domanda 5: si sente il suono del ripristino, ed esce il messaggio Ripristino riuscito, che comincia con "Ripristino riuscito: Tornello - Prova_time_machine.json è com'era nella copia."?
+Passo 8: chiudi il messaggio con INVIO.
+Domanda 6: non arriva nessun altro messaggio, e il cursore torna nell'elenco delle copie, sulla copia al turno 1 abbinato?
+Passo 9: chiudi la finestra Copie di sicurezza con ESC, poi premi NVDA+T.
+Domanda 7: il cursore è ancora su Prova copie, e il titolo finisce ancora con [Prova copie], perché il torneo aperto resta aperto?
+Passo 10: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello\prova_cartella_esterna\Prova time machine.
+Domanda 8: c'è ancora il file Tornello - Prova_time_machine - Turno 1 Dettagli.txt, perché il turno 1 c'è anche nel torneo ripristinato, mentre i file del Turno 2 Dettagli e del Turno 3 Dettagli non ci sono più, perché quei turni nel torneo ripristinato non ci sono?
+Passo 11: apri la cartella E:\git\tmp\banco-tornello\cestino.
+Domanda 9: gli ultimi due file, quelli con i numeri più alti, sono Tornello - Prova_time_machine - Turno 3 Dettagli.txt e Tornello - Prova_time_machine - Turno 2 Dettagli.txt, con un numero e un trattino basso davanti, e Windows non ti ha chiesto niente?
+Passo 12: torna nella cartella di Prova time machine e apri con il Blocco note il file Tornello - Prova_time_machine - Classifica.txt.
+Domanda 10: dopo la riga Data Report c'è la riga Elenco Iniziale Partecipanti (Prima del Turno 1), con i sei giocatori a 0.0 punti, e non più Classifica Parziale - Dopo Turno 3, perché il ripristino ha scritto la classifica del torneo ripristinato anche con Prova copie aperta?
+Passo 13: chiudi il Blocco note, poi apri con il Blocco note il file Tornello - Prova_time_machine - Turno corrente.txt.
+Domanda 11: la prima riga dice Nome Torneo: Prova time machine - Turno: 1, e più sotto, in Ancora non pianificate (3), ci sono le tre partite del turno 1, dalla IDG:1 Paolo Pellegrini (1720) - Vera Valli (1600)?
+Passo 14: chiudi il Blocco note e torna in Tornello; scendi con freccia giù fino a Prova time machine, apri il ramo con freccia destra e scendi su turni; poi apri turni con freccia destra e scendi di una voce.
+Domanda 12: la voce dei turni dice turni (1), e la prima voce dentro il ramo è Turno corrente (1/5), senza i Completati, com'era nella copia?
+Passo 15: chiudi Tornello con ALT+F4.
+Domanda 13: Tornello si chiude senza domande, e le ultime due righe del prompt dei comandi dicono "Banco di collaudo chiuso. Dati vivi invariati:", con il numero dei file controllati, e "Nessuna operazione rifiutata dal guardiano."?
+Esito: 
+
+PROVA 25: Ascolto dei tre suoni al posto della campanella
 Prima: Tornello chiuso, con il volume che usi di solito.
 Passo 1: dal prompt dei comandi scrivi: python E:\git\Mine\Tornello-lavori\scratch\collaudo\ascolto_57.py
 Passo 2: segui lo script fino in fondo.
