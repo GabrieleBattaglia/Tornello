@@ -1445,3 +1445,235 @@ class TestIlNomeDelTorneoNuovoInConsole:
         ]
         self._controlla_il_torneo_nato(guida, prima)
         assert "errore" not in suonati
+
+
+# La cartella d'archivio di Coppa, il torneo concluso di TestLaNuovaEdizioneInConsole,
+# come la dicono i messaggi.
+CARTELLA_DI_COPPA = "Closed Tournaments\\2026\\09 Settembre\\Coppa"
+# La domanda sulla nuova edizione di Coppa, senza la domanda finale, che e' il
+# prompt della conferma.
+PREMESSA_DI_COPPA = (
+    f"Il file del torneo Coppa si chiamerebbe Tornello - Coppa.json, come quello di un torneo concluso e archiviato fra i Tornei Conclusi: Coppa, nella cartella {CARTELLA_DI_COPPA}.\n"
+    "Se il torneo nuovo è una nuova edizione dello stesso torneo, il nome si può usare: le edizioni restano distinte, nell'archivio e nello storico dei giocatori, perché hanno date di inizio diverse."
+)
+DOMANDA_DI_COPPA = "Vuoi creare una nuova edizione con il nome Coppa?"
+
+
+class TestLaNuovaEdizioneInConsole:
+    """10.19.53 (decisione di Gabriele dell'8 novembre 2026). Un nome che
+    coincide soltanto con un torneo dei Tornei Conclusi, dopo la data di
+    inizio, ha in console la domanda e il rifiuto della procedura guidata,
+    con i suoi testi, senza suono come gli altri errori della console: con
+    la stessa data di inizio di un'edizione archiviata il messaggio del
+    rifiuto, e poi di nuovo il nome, con quello di prima proposto, e la data;
+    con un'altra data la domanda sulla nuova edizione, e con Si' la
+    creazione va avanti, con No si chiede di nuovo soltanto il nome, e la
+    data resta. Fino alla 10.19.52, e gia' nella 10.0.0, il nome si
+    accettava senza domande, anche con la stessa data di inizio. Coppa,
+    concluso, con la data di inizio 2026-09-01, sta nella sua cartella
+    d'archivio; le prove creano il torneo fino all'iscrizione, e la
+    sospendono con s."""
+
+    # Dopo la data di inizio: la data di fine, i turni, il luogo, la
+    # federazione, l'arbitro, i vice, la cadenza, poi nessun giocatore e s
+    # per sospendere l'iscrizione.
+    DOPO_LA_DATA = ("", "3", "", "", "", "", "", "", "s")
+
+    @staticmethod
+    def _cartella():
+        """Il database dei giocatori e Coppa nell'archivio. Restituisce i
+        file della cartella del programma e quelli dell'archivio, con il loro
+        contenuto."""
+        import os
+
+        import config
+
+        TestIlNomeDelTorneoNuovoInConsole._scrivi(config.PLAYER_DB_FILE, {"schema_version": 2, "players": []})
+        coppa = _torneo_al_primo_turno().to_dict()
+        coppa.update(name="Coppa", tournament_id="COPPA", concluded=True)
+        TestIlNomeDelTorneoNuovoInConsole._scrivi(os.path.join(config.ARCHIVED_TOURNAMENTS_DIR, "2026", "09 Settembre", "Coppa", "Tornello - Coppa.json"), coppa)
+        return TestLaNuovaEdizioneInConsole._contenuti()
+
+    @staticmethod
+    def _contenuti():
+        """I file della cartella del programma, senza le sottocartelle, e
+        quelli dell'archivio, con il loro contenuto."""
+        import os
+
+        import config
+
+        contenuti = TestIlNomeDelTorneoNuovoInConsole._contenuti()
+        for radice, _cartelle, nomi in os.walk(config.ARCHIVED_TOURNAMENTS_DIR):
+            for nome in nomi:
+                percorso = os.path.join(radice, nome)
+                with open(percorso, "rb") as f:
+                    contenuti[os.path.relpath(percorso, config.user_data_path(""))] = f.read()
+        return contenuti
+
+    def _creazione(self, monkeypatch, tasti, conferme, suggerito=False):
+        """La creazione in console, dalla domanda del nome o, con suggerito,
+        dall'avvio con Alfa come unico torneo, con le risposte date, fino
+        alla sospensione dell'iscrizione."""
+        from controller import TournamentController
+
+        copione = Copione(monkeypatch, tasti=tasti, conferme=conferme)
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+        with pytest.raises(SystemExit) as uscita:
+            if suggerito:
+                guida._select_or_create_tournament()
+            else:
+                guida._create_new_tournament()
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        return types.SimpleNamespace(guida=guida, domande=copione.domande, messaggi=adattatore.messaggi)
+
+    def _controlla_il_torneo_nato(self, creato, prima, nome, inizio):
+        """Il torneo nome e' nato, sospeso, nel suo file, con la data di
+        inizio inizio e il riepilogo della sospensione; gli altri file, Coppa
+        nell'archivio compreso, sono com'erano, e non ne nascono altri.
+        Restituisce i dati scritti nel file."""
+        import json
+
+        import config
+
+        nato = f"Tornello - {nome}.json"
+        assert creato.guida.active_filename == config.user_data_path(nato)
+        dopo = self._contenuti()
+        nati = [nato, f"Tornello - {nome}_sospeso.txt"]
+        assert sorted(dopo) == sorted([*prima, *nati])
+        assert {n: b for n, b in dopo.items() if n not in nati} == prima
+        dati = json.loads(dopo[nato].decode("utf-8"))
+        assert (dati["name"], dati["start_date"], dati["creation_suspended"], dati["players"]) == (nome, inizio, True, [])
+        return dati
+
+    @staticmethod
+    def _rifiuto():
+        from utils import format_date_locale
+
+        return (
+            f"Il nome Coppa non si può usare con la data di inizio {format_date_locale('2026-09-01')}: il file del torneo si chiamerebbe Tornello - Coppa.json, come quello del torneo Coppa, concluso e archiviato nella cartella {CARTELLA_DI_COPPA}, che ha la stessa data di inizio.\n"
+            "Le edizioni di un torneo con lo stesso nome si distinguono, nell'archivio e nello storico dei giocatori, dalla data di inizio: con la stessa data la finalizzazione le confonderebbe. Cambia la data di inizio, oppure scegli un altro nome per il torneo."
+        )
+
+    def test_con_si_alla_domanda_nasce_la_nuova_edizione(self, monkeypatch, tmp_path):
+        """Coppa con un'altra data di inizio: dopo la data la domanda, con
+        il testo della procedura guidata, e con Si' la creazione va avanti
+        con la data di fine. Coppa nasce con la sua data, e nel suo file la
+        console non scrive niente di suo per la nuova edizione, come la
+        procedura guidata, che tiene il Si' soltanto in memoria: tolti il
+        nome e l'identificativo, che nasce dal nome, il file e' quello del
+        torneo Libero, il cui nome non coincide con niente, creato con le
+        stesse risposte."""
+        import json
+
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        prima = self._cartella()
+        monkeypatch.chdir(tmp_path)
+
+        creato = self._creazione(monkeypatch, ["Coppa", "2026-10-01", *self.DOPO_LA_DATA], [True, True])
+
+        assert creato.domande[0] == "Inserisci il nome del nuovo torneo: "
+        assert creato.domande[1].startswith("Inserisci data inizio")
+        assert creato.domande[2] == DOMANDA_DI_COPPA
+        assert creato.domande[3].startswith("Inserisci data fine")
+        assert creato.messaggi[:2] == ["Creazione Nuovo Torneo", PREMESSA_DI_COPPA]
+        assert sum(m == PREMESSA_DI_COPPA for m in creato.messaggi) == 1
+        coppa = self._controlla_il_torneo_nato(creato, prima, "Coppa", "2026-10-01")
+        assert "errore" not in suonati
+
+        libero = self._creazione(monkeypatch, ["Libero", "2026-10-01", *self.DOPO_LA_DATA], [True])
+        dati_di_libero = TestIlNomeDelTorneoNuovoInConsole._contenuti()["Tornello - Libero.json"]
+
+        assert DOMANDA_DI_COPPA not in libero.domande
+        # La chiave con cui la procedura guidata ricorda il Si', in
+        # creation_data, NUOVA_EDIZIONE_CONFERMATA di gui/main_frame.py.
+        assert "nuova_edizione_confermata" not in coppa
+        diversi = ("name", "tournament_id")
+        assert {k: v for k, v in coppa.items() if k not in diversi} == {k: v for k, v in json.loads(dati_di_libero.decode("utf-8")).items() if k not in diversi}
+
+    def test_con_no_alla_domanda_si_chiede_di_nuovo_il_nome(self, monkeypatch, tmp_path):
+        """No alla domanda: la console chiede di nuovo il nome, senza
+        proporre Coppa, e non la data di inizio, che resta; con Libero la
+        creazione va avanti con la data di fine, e Libero nasce con la data
+        scritta prima. Coppa non nasce."""
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        prima = self._cartella()
+        monkeypatch.chdir(tmp_path)
+
+        creato = self._creazione(monkeypatch, ["Coppa", "2026-10-01", "Libero", *self.DOPO_LA_DATA], [False, True])
+
+        assert creato.domande[0] == "Inserisci il nome del nuovo torneo: "
+        assert creato.domande[1].startswith("Inserisci data inizio")
+        assert creato.domande[2:4] == [DOMANDA_DI_COPPA, "Inserisci il nome del nuovo torneo: "]
+        assert creato.domande[4].startswith("Inserisci data fine")
+        assert sum(d.startswith("Inserisci data inizio") for d in creato.domande) == 1
+        assert creato.messaggi[:2] == ["Creazione Nuovo Torneo", PREMESSA_DI_COPPA]
+        assert sum(m == PREMESSA_DI_COPPA for m in creato.messaggi) == 1
+        self._controlla_il_torneo_nato(creato, prima, "Libero", "2026-10-01")
+        assert "errore" not in suonati
+
+    @pytest.mark.parametrize("strada", ["cambia la data", "cambia il nome"])
+    def test_con_la_stessa_data_il_nome_si_rifiuta(self, monkeypatch, tmp_path, strada):
+        """Coppa con la data di inizio di quella archiviata: il messaggio
+        della procedura guidata, senza suono, poi la domanda del nome, con
+        Coppa proposto, e la data di inizio. Con INVIO, cioe' Coppa, e
+        un'altra data viene la domanda, e con Si' nasce Coppa; con Libero e
+        la stessa data nasce Libero, senza domande."""
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        prima = self._cartella()
+        monkeypatch.chdir(tmp_path)
+        if strada == "cambia la data":
+            tasti, conferme, nome, inizio = ["Coppa", "2026-09-01", "", "2026-10-01"], [True, True], "Coppa", "2026-10-01"
+        else:
+            tasti, conferme, nome, inizio = ["Coppa", "2026-09-01", "Libero", "2026-09-01"], [True], "Libero", "2026-09-01"
+
+        creato = self._creazione(monkeypatch, [*tasti, *self.DOPO_LA_DATA], conferme)
+
+        assert creato.domande[0] == "Inserisci il nome del nuovo torneo: "
+        assert creato.domande[1].startswith("Inserisci data inizio")
+        assert creato.domande[2] == "Inserisci il nome del nuovo torneo [Coppa]: "
+        assert creato.domande[3].startswith("Inserisci data inizio")
+        dopo_la_data = [DOMANDA_DI_COPPA] if nome == "Coppa" else []
+        assert creato.domande[4 : 4 + len(dopo_la_data)] == dopo_la_data
+        assert creato.domande[4 + len(dopo_la_data)].startswith("Inserisci data fine")
+        assert creato.messaggi[:2] == ["Creazione Nuovo Torneo", self._rifiuto()]
+        if nome == "Coppa":
+            assert creato.messaggi[2] == PREMESSA_DI_COPPA
+        assert sum(m == self._rifiuto() for m in creato.messaggi) == 1
+        assert sum(m == PREMESSA_DI_COPPA for m in creato.messaggi) == (1 if nome == "Coppa" else 0)
+        self._controlla_il_torneo_nato(creato, prima, nome, inizio)
+        assert "errore" not in suonati
+
+    def test_il_nome_suggerito(self, monkeypatch, tmp_path):
+        """Alfa e' l'unico torneo della cartella: alla domanda Vuoi caricare
+        'Alfa' si scrive Coppa, e dopo la data di inizio di quella archiviata
+        il rifiuto, la domanda del nome con Coppa proposto e la data; con
+        INVIO, un'altra data e Si' alla domanda nasce Coppa, e Alfa resta
+        com'era."""
+        import config
+
+        suonati = TestIlFileCheNonETorneoInConsole._suoni(monkeypatch)
+        alfa = _torneo_al_primo_turno().to_dict()
+        alfa["name"] = "Alfa"
+        TestIlNomeDelTorneoNuovoInConsole._scrivi(config.user_data_path("Tornello - Alfa.json"), alfa)
+        prima = self._cartella()
+        monkeypatch.chdir(tmp_path)
+
+        creato = self._creazione(monkeypatch, ["Coppa", "2026-09-01", "", "2026-10-01", *self.DOPO_LA_DATA], [True, True], suggerito=True)
+
+        assert creato.domande[0].startswith("Vuoi caricare 'Alfa'?")
+        assert creato.domande[1].startswith("Inserisci data inizio")
+        assert creato.domande[2] == "Inserisci il nome del nuovo torneo [Coppa]: "
+        assert creato.domande[3].startswith("Inserisci data inizio")
+        assert creato.domande[4] == DOMANDA_DI_COPPA
+        assert creato.domande[5].startswith("Inserisci data fine")
+        assert creato.messaggi[:5] == [
+            "\nTrovato un solo torneo esistente: 'Alfa' (File: Tornello - Alfa.json)",
+            "Creazione Nuovo Torneo",
+            "Nome suggerito per il nuovo torneo: 'Coppa'",
+            self._rifiuto(),
+            PREMESSA_DI_COPPA,
+        ]
+        self._controlla_il_torneo_nato(creato, prima, "Coppa", "2026-10-01")
+        assert "errore" not in suonati

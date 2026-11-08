@@ -5199,7 +5199,7 @@ class TestNomeScrittoNelJson:
         """L'edizione archiviata nel file di Alfa e' un'edizione di Coppa
         Prova, per il nome scritto, e di Alfa, per il file; il file del
         torneo aperto non conta."""
-        from gui.main_frame import edizioni_nell_archivio, stesso_nome_di_file
+        from omonimi import edizioni_nell_archivio, stesso_nome_di_file
 
         percorso = self._coppa_nel_file_di_alfa()
 

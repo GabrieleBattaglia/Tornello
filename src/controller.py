@@ -19,7 +19,12 @@ from db_players import (
 )
 from engine import handle_bbpairings_failure
 from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
-from omonimi import FileNonTorneo, coincidenza_del_nome, frase_del_nome_in_uso
+from omonimi import (
+    FileNonTorneo,
+    coincidenza_del_nome,
+    frase_del_nome_in_uso,
+    nuova_edizione_nell_archivio,
+)
 from reports import (
     append_completed_round_to_history_file,
     posizioni_con_i_pari_merito,
@@ -541,7 +546,9 @@ class TournamentController:
         procedura guidata, dice con che cosa coincide, e il messaggio, senza
         suono come gli altri errori della console, e' il testo della
         procedura guidata, da frase_del_nome_in_uso; poi la console chiede di
-        nuovo il nome. I tornei dell'archivio non contano qui.
+        nuovo il nome. I tornei dell'archivio non contano qui: dalla
+        10.19.53 li guarda _create_new_tournament dopo la data di inizio, con
+        la domanda sulla nuova edizione e il rifiuto della stessa data.
         Nata con la 10.19.48. Fino alla 10.19.47, e gia' nella 10.0.0, la
         console guardava soltanto se il file che nasce dal nome c'era gia', e
         chiedeva se sovrascriverlo: con Si' un torneo chiamato Players_db
@@ -560,35 +567,10 @@ class TournamentController:
         self.ui.show_error(frase_del_nome_in_uso(nome, coincidenza))
         return False
 
-    def _create_new_tournament(self, suggested_name: str | None = None) -> None:
-        self.ui.show_message(_("Creazione Nuovo Torneo"))
-        new_name = ""
-
-        if suggested_name:
-            self.ui.show_message(
-                _("Nome suggerito per il nuovo torneo: '{name}'").format(
-                    name=suggested_name
-                )
-            )
-            if self._nome_del_torneo_libero(suggested_name):
-                new_name = suggested_name
-                sanitized = sanitize_filename(suggested_name)
-                self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
-
-        while not new_name:
-            input_name = self.ui.input_text(
-                _("Inserisci il nome del nuovo torneo")
-            ).strip()
-            if not input_name:
-                self.ui.show_message(_("Il nome del torneo non può essere vuoto."))
-                continue
-            if not self._nome_del_torneo_libero(input_name):
-                continue
-            new_name = input_name
-            sanitized = sanitize_filename(input_name)
-            self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
-
-        # Date inizio
+    def _data_di_inizio_chiesta(self) -> str:
+        """La data di inizio di un torneo nuovo, nel formato AAAA-MM-GG,
+        chiesta finche' non se ne scrive una valida; con INVIO e' quella di
+        oggi."""
         start_date = ""
         while not start_date:
             oggi_str_iso = datetime.now().strftime(DATE_FORMAT_ISO)
@@ -609,6 +591,63 @@ class TournamentController:
                         date_format=DATE_FORMAT_ISO
                     )
                 )
+        return start_date
+
+    def _create_new_tournament(self, suggested_name: str | None = None) -> None:
+        self.ui.show_message(_("Creazione Nuovo Torneo"))
+        new_name = ""
+        start_date = ""
+        # Il nome che la domanda del nome propone fra parentesi quadre, e che
+        # si tiene con INVIO, dopo il rifiuto della stessa data di inizio di
+        # un'edizione archiviata.
+        proposto = ""
+
+        if suggested_name:
+            self.ui.show_message(
+                _("Nome suggerito per il nuovo torneo: '{name}'").format(
+                    name=suggested_name
+                )
+            )
+            if self._nome_del_torneo_libero(suggested_name):
+                new_name = suggested_name
+
+        # Dalla 10.19.53 un nome che coincide soltanto con tornei dei Tornei
+        # Conclusi, dopo la data di inizio, passa dal controllo della
+        # procedura guidata, con i suoi testi, da nuova_edizione_nell_archivio
+        # di omonimi.py. Se un'edizione archiviata ha la stessa data di
+        # inizio, il messaggio del rifiuto, senza suono come gli altri errori
+        # della console, e poi di nuovo il nome, con quello di prima proposto,
+        # e la data di inizio. Altrimenti la domanda sulla nuova edizione: con
+        # Si' si va avanti, con No si chiede di nuovo soltanto il nome, e la
+        # data di inizio resta. Fino alla 10.19.52, e gia' nella 10.0.0, il
+        # nome si accettava senza domande, anche con la stessa data di inizio
+        # (decisione di Gabriele dell'8 novembre 2026).
+        while True:
+            while not new_name:
+                input_name = self.ui.input_text(
+                    _("Inserisci il nome del nuovo torneo"), proposto
+                ).strip()
+                if not input_name:
+                    self.ui.show_message(_("Il nome del torneo non può essere vuoto."))
+                    continue
+                if not self._nome_del_torneo_libero(input_name):
+                    continue
+                new_name = input_name
+            if not start_date:
+                start_date = self._data_di_inizio_chiesta()
+            edizione = nuova_edizione_nell_archivio(new_name, start_date)
+            if edizione is None:
+                break
+            if edizione.rifiuto:
+                self.ui.show_error(edizione.rifiuto)
+                proposto, new_name, start_date = new_name, "", ""
+                continue
+            self.ui.show_message("\n".join(t for t in (edizione.premessa, edizione.spiegazione) if t))
+            if self.ui.confirm(edizione.domanda):
+                break
+            proposto, new_name = "", ""
+        sanitized = sanitize_filename(new_name)
+        self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
         # Date fine
         end_date = ""
