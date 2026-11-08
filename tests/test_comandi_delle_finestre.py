@@ -9506,7 +9506,10 @@ class TestRipristinoNellaProceduraGuidata:
         il fuoco. L'area centrale mostra i dati del torneo, perche' alla
         chiusura della finestra Copie di sicurezza l'albero si rilegge, e
         rimette il cursore sulla sua voce, come dopo lo stesso ripristino
-        fuori dalla procedura."""
+        fuori dalla procedura. Il fuoco si chiede perche' la finestra delle
+        copie e' finta, e non spegne la finestra principale: con quella vera,
+        modale, dalla 10.19.49 l'albero non lo chiede, e lo guarda
+        TestNessunFuocoConLeCopieAperte in test_fuoco_alla_chiusura.py."""
         assert not principale.creation_mode
         assert principale._e_il_torneo_aperto(percorso)
         assert principale.current_tournament["name"] == nome

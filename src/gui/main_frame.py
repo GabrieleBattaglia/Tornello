@@ -1773,9 +1773,24 @@ class MainFrame(wx.Frame):
         l'albero non tocca il fuoco: serve dopo una finestra che si puo'
         aprire anche dalla barra di stato o dall'area centrale, come le copie
         di sicurezza, perche' il fuoco torni dove GBwx lo rimette quando la
-        finestra se ne va davvero, cioe' dopo, fra gli eventi successivi."""
+        finestra se ne va davvero, cioe' dopo, fra gli eventi successivi.
+        Dalla 10.19.49 (decisione di Gabriele dell'8 novembre 2026), con un
+        dialogo modale aperto sopra la finestra principale l'albero non tocca
+        il fuoco, come con prendi_il_fuoco falso: succede durante il
+        ripristino dalla finestra Copie di sicurezza, che ricarica il torneo
+        ripristinato, chiude la procedura guidata o rilegge l'albero mentre la
+        finestra delle copie e' ancora aperta. La finestra principale e'
+        spenta, Windows rifiuta il fuoco a un suo controllo, e wx scriveva nel
+        prompt dei comandi una riga 'SetFocus' failed with error 0x00000057
+        per ogni richiesta: per il SetFocus di _ripristina_la_selezione e per
+        ogni voce che DeleteAllItems toglieva sotto il cursore, 23 righe con
+        la procedura guidata e 11 fuori, misurate sul desktop nascosto. Il
+        fuoco, quando il dialogo se ne va, lo rimette GBwx sul controllo che
+        lo aveva alla sua apertura, come prima: le richieste non riuscivano
+        comunque."""
         if self.creation_mode:
             return
+        prendi_il_fuoco = prendi_il_fuoco and self._finestra_libera()
 
         expanded_actions = set()
         saved_data = None
@@ -6428,8 +6443,18 @@ class MainFrame(wx.Frame):
         return field_map.get(field_name)
 
     def _restore_tree_focus(self, item):
+        """Il cursore della procedura guidata torna sulla voce item, e
+        l'albero prende il fuoco, 300 millisecondi dopo che la procedura ha
+        ridisegnato le sue voci. Dalla 10.19.49 (decisione di Gabriele dell'8
+        novembre 2026), se nel frattempo si e' aperto un dialogo modale, per
+        esempio la finestra Copie di sicurezza subito dopo Nuovo torneo, il
+        cursore torna sulla voce, ma l'albero non chiede il fuoco, come in
+        populate_tree: Windows lo rifiutava, e wx scriveva nel prompt dei
+        comandi la riga 'SetFocus' failed. Il fuoco lo rimette GBwx quando il
+        dialogo se ne va."""
         if item and item.IsOk():
-            self.tree_ctrl.SetFocus()
+            if self._finestra_libera():
+                self.tree_ctrl.SetFocus()
             self.tree_ctrl.SelectItem(item)
             self.tree_ctrl.EnsureVisible(item)
 

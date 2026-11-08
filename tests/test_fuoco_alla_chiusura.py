@@ -25,11 +25,13 @@ il fuoco va al primo controllo della finestra principale.
 
 import ctypes
 import importlib
+import json
 import os
 import pkgutil
 import sys
 import time
 from ctypes import wintypes
+from types import SimpleNamespace
 
 import pytest
 from conftest import CARTELLA_SRC
@@ -559,3 +561,202 @@ def test_con_la_partenza_spenta_il_fuoco_va_al_primo_controllo(principale):
         partenza.Enable()
     assert codice == wx.ID_OK
     assert arrivato, f"con la partenza spenta il fuoco e' su {dove}"
+
+
+class TestNessunFuocoConLeCopieAperte:
+    """10.19.49 (decisione di Gabriele dell'8 novembre 2026). Mentre la
+    finestra Copie di sicurezza e' aperta, modale, la finestra principale e'
+    spenta, e Windows rifiuta il fuoco ai suoi controlli: ogni richiesta
+    faceva scrivere a wx, nel prompt dei comandi, la riga
+    ..\\..\\src\\msw\\window.cpp(557): 'SetFocus' failed with error 0x00000057.
+    Le richieste arrivavano dal ripristino, che ricarica il torneo
+    ripristinato, chiude la procedura guidata o rilegge l'albero con la
+    finestra ancora aperta, e dal fuoco che la procedura guidata rimanda di
+    300 millisecondi. Adesso l'albero, con un dialogo modale aperto, non
+    chiede il fuoco, e il fuoco, quando la finestra delle copie si chiude,
+    torna dove tornava: sull'albero, da cui la finestra si e' aperta, con il
+    cursore sulla voce del torneo. Fino alla 10.19.48, e gia' nella 10.0.0,
+    le righe erano 23 con la procedura guidata e 11 fuori, sul desktop
+    nascosto con il banco. La finestra delle copie e' vera; le sue finestre
+    di messaggio sono finte, e rispondono Si' alla conferma, e il cestino
+    pure."""
+
+    @staticmethod
+    def _messaggi_di_wx():
+        """Un bersaglio dei messaggi di wx che li annota tutti, testo per
+        testo, e restituisce l'elenco e il bersaglio di prima."""
+        import wx
+
+        messaggi = []
+
+        class Raccoglitore(wx.Log):
+            def DoLogRecord(self, livello, testo, informazioni):
+                messaggi.append(testo)
+
+        return messaggi, wx.Log.SetActiveTarget(Raccoglitore())
+
+    @staticmethod
+    def _tornei_e_copia(di_chi):
+        """Alfa e Beta, in corso, con il luogo Roma, nella cartella del
+        programma, e una copia di sicurezza di di_chi con il luogo Firenze."""
+        from test_comandi_delle_finestre import _torneo_in_corso
+
+        from config import user_data_path
+
+        percorsi = {}
+        for nome in ("Alfa", "Beta"):
+            percorsi[nome] = user_data_path(f"Tornello - {nome}.json")
+            with open(percorsi[nome], "w", encoding="utf-8") as f:
+                json.dump(dict(_torneo_in_corso(nome), site="Roma"), f)
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", f"Tornello - {di_chi}_turno_1_20261107_100000.json"))
+        os.makedirs(os.path.dirname(copia), exist_ok=True)
+        with open(copia, "w", encoding="utf-8") as f:
+            json.dump(dict(_torneo_in_corso(di_chi), site="Firenze"), f)
+        return percorsi, copia
+
+    @staticmethod
+    def _finestre_finte(monkeypatch, cestino):
+        """Le finestre di messaggio della finestra delle copie, finte, con
+        titolo e testo, i suoi suoni e i wx.MessageBox."""
+        import wx
+
+        from gui.dialogs import backup_cleanup_dialog as bcd
+
+        registro = SimpleNamespace(finestre=[], suoni=[], scatole=[])
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, testo, style=wx.OK, **opzioni):
+                self.domanda = bool(style & wx.YES_NO)
+                registro.finestre.append((titolo, testo))
+
+            def ShowModal(self):
+                return wx.ID_YES if self.domanda else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        monkeypatch.setattr(bcd, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(bcd, "play_sound", lambda nome, *a, **k: registro.suoni.append(nome))
+        monkeypatch.setattr(bcd, "delete_file_to_trash", cestino)
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: registro.scatole.append(a))
+        return registro
+
+    @pytest.mark.parametrize("caso", ["fuori", "dentro", "altro"], ids=["il torneo aperto", "il torneo aperto nella procedura guidata", "un altro torneo"])
+    def test_il_ripristino(self, principale, cestino_finto, monkeypatch, caso):
+        """Alfa e' aperta, con il cursore sulla sua voce e il fuoco
+        sull'albero; dentro la procedura guidata, dopo Nuovo torneo. Dal menu
+        File la finestra Copie di sicurezza, Ripristina sulla copia di Alfa,
+        o di Beta, Si' alla conferma, ESC. Nessun messaggio di wx; il fuoco
+        torna sull'albero, con il cursore sulla voce di Alfa, e la procedura
+        si e' chiusa. Alfa ha il luogo della copia, e con la copia di Beta
+        resta com'era, e Beta lo prende nel suo file. Escono soltanto la
+        conferma e l'esito, con il suono del ripristino, poi quello della
+        chiusura della finestra, e nessun wx.MessageBox."""
+        import re
+
+        import wx
+
+        from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+
+        di_chi = "Beta" if caso == "altro" else "Alfa"
+        percorsi, copia = self._tornei_e_copia(di_chi)
+        registro = self._finestre_finte(monkeypatch, cestino_finto)
+        principale.load_tournament(percorsi["Alfa"])
+        albero = principale.tree_ctrl
+        with principale._albero_senza_caricamenti():
+            albero.SelectItem(principale._voce_del_torneo_aperto())
+        if caso == "dentro":
+            principale.on_new_tournament(None)
+            # Il fuoco che la procedura rimanda di 300 millisecondi arriva
+            # prima della finestra delle copie.
+            _attendi(lambda: False, 0.6)
+            assert principale.creation_mode
+        partenza = _parti_da(principale, "tree_ctrl")
+
+        def ripristina(finestra, _fuoco):
+            if os.path.normcase(copia) not in [os.path.normcase(c.percorso) for c in finestra.visibili]:
+                finestra.populate_list(origine=None)
+            indice = [os.path.normcase(c.percorso) for c in finestra.visibili].index(os.path.normcase(copia))
+            for vecchio in finestra.indici_selezionati():
+                finestra.list_ctrl.Select(vecchio, False)
+            finestra.list_ctrl.Select(indice, True)
+            finestra.on_ripristina(None)
+            wx.CallLater(50, lambda: _premi("esc", wx.Window.FindFocus()))
+
+        _quando_aperta(BackupCleanupDialog, ripristina)
+        messaggi, vecchio = self._messaggi_di_wx()
+        rete = _rete_di_sicurezza()
+        try:
+            principale.on_backup_cleanup(None)
+            tornato, dove = _torna_su(partenza)
+        finally:
+            rete.Stop()
+            wx.Log.SetActiveTarget(vecchio)
+
+        assert messaggi == []
+        assert tornato, f"chiusa la finestra delle copie, il fuoco e' su {dove}"
+        assert albero.GetItemData(albero.GetSelection()) == {"action": "select_tournament", "filepath": principale.active_filename}
+        assert not principale.creation_mode
+        assert principale._e_il_torneo_aperto(percorsi["Alfa"])
+        assert principale.current_tournament["site"] == ("Roma" if caso == "altro" else "Firenze")
+        with open(percorsi[di_chi], encoding="utf-8") as f:
+            assert json.load(f)["site"] == "Firenze"
+        assert [titolo for titolo, _testo in registro.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+        assert re.fullmatch(
+            rf"Ripristino riuscito: Tornello - {di_chi}\.json è com'era nella copia\.\nLo stato di prima è nella copia Tornello - {di_chi}_pre_ripristino_\d{{8}}_\d{{6}}\.json\.",
+            registro.finestre[1][1],
+        ), registro.finestre[1][1]
+        assert registro.suoni == ["ripristino", "conferma"]
+        assert registro.scatole == []
+
+    def test_le_copie_subito_dopo_nuovo_torneo(self, principale, cestino_finto, monkeypatch):
+        """Nuovo torneo, e subito dopo, prima dei 300 millisecondi dopo i
+        quali la procedura guidata rimette il cursore sulla voce del nome e
+        chiede il fuoco, la finestra Copie di sicurezza, chiusa con ESC dopo
+        quei 300 millisecondi. Nessun messaggio di wx: il cursore va sulla
+        voce del nome con la finestra aperta, ma il fuoco non si chiede, e
+        quando la finestra si chiude torna sull'albero, sulla voce del nome.
+        Fino alla 10.19.48 la richiesta arrivava con la finestra aperta, e
+        wx scriveva la riga SetFocus failed. Nessun messaggio, soltanto il
+        suono della chiusura della finestra delle copie, e nessun
+        wx.MessageBox."""
+        import time
+
+        import wx
+
+        from gui.dialogs.backup_cleanup_dialog import BackupCleanupDialog
+
+        registro = self._finestre_finte(monkeypatch, cestino_finto)
+        albero = principale.tree_ctrl
+        partenza = _parti_da(principale, "tree_ctrl")
+        con_la_finestra_aperta = []
+        principale.on_new_tournament(None)
+        inizio = time.monotonic()
+
+        def chiudi_dopo_il_fuoco_rimandato(_finestra, _fuoco):
+            def esc():
+                voce = albero.GetSelection()
+                con_la_finestra_aperta.append(albero.GetItemData(voce) if voce.IsOk() else None)
+                _premi("esc", wx.Window.FindFocus())
+
+            attesa = 0.6 - (time.monotonic() - inizio)
+            wx.CallLater(max(1, int(attesa * 1000)), esc)
+
+        _quando_aperta(BackupCleanupDialog, chiudi_dopo_il_fuoco_rimandato)
+        messaggi, vecchio = self._messaggi_di_wx()
+        rete = _rete_di_sicurezza()
+        try:
+            principale.on_backup_cleanup(None)
+            tornato, dove = _torna_su(partenza)
+        finally:
+            rete.Stop()
+            wx.Log.SetActiveTarget(vecchio)
+
+        assert con_la_finestra_aperta == [{"field": "name"}], "il fuoco rimandato della procedura non e' arrivato con la finestra delle copie aperta"
+        assert messaggi == []
+        assert tornato, f"chiusa la finestra delle copie, il fuoco e' su {dove}"
+        assert albero.GetItemData(albero.GetSelection()) == {"field": "name"}
+        assert principale.creation_mode
+        assert registro.finestre == []
+        assert registro.suoni == ["conferma"]
+        assert registro.scatole == []
