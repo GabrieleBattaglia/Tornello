@@ -6623,7 +6623,7 @@ class MainFrame(wx.Frame):
         come fuori dalla procedura. Con la copia di un altro torneo, o senza
         un torneo aperto, la procedura resta com'e', e l'albero dei tornei si
         rilegge quando la procedura si chiude. Fino alla 10.19.42, e gia'
-        dalla 10.11.0, durante la creazione non si faceva niente: il file
+        dalla 10.10.0, durante la creazione non si faceva niente: il file
         tornava com'era nella copia, ma in memoria restava il torneo di
         prima, e dopo Indietro il primo salvataggio lo riscriveva sul disco
         al posto della copia, senza avviso.

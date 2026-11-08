@@ -9332,7 +9332,7 @@ class TestRipristinoNellaProceduraGuidata:
     da Apri Torneo su una copia, chiude la procedura, come Apri Torneo dalla
     10.19.34, e il torneo ripristinato si carica, come fuori dalla
     procedura. Con la copia di un altro torneo la procedura resta com'e'.
-    Fino alla 10.19.42, e gia' dalla 10.11.0, la procedura restava, e in
+    Fino alla 10.19.42, e gia' dalla 10.10.0, la procedura restava, e in
     memoria restava il torneo di prima: dopo Indietro il primo salvataggio
     lo riscriveva sul disco al posto della copia, senza avviso. La finestra
     Copie di sicurezza non si mostra: al posto di aspettare, seleziona la
