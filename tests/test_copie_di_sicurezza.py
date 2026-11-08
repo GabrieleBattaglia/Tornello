@@ -2106,6 +2106,152 @@ class TestDopoIlRipristino:
         assert registro == ["albero"]
 
 
+class TestDettagliDeiTurniDopoIlRipristino:
+    """10.19.50 (decisione di Gabriele dell'8 novembre 2026). Dopo il
+    ripristino riuscito di un torneo, nella cartella dei report i file dei
+    dettagli dei turni completati dicono quello che dice il torneo
+    ripristinato, come li scrive la conclusione del turno: quello che manca
+    si scrive, e quello che dice altro si riscrive. Fino alla 10.19.49
+    restavano com'erano: dopo la Time Machine e il ripristino della copia di
+    prima il file del turno tolto restava nel cestino, e quello di un turno
+    cambiato diceva il risultato di prima. Il torneo e' quello vero di
+    test_canc_sui_turni, con i turni abbinati da bbpPairings, un ritiro dopo
+    il turno 1 e un forfait nel turno 3, e i file scritti alla conclusione di
+    ogni turno, con i punti di allora."""
+
+    @staticmethod
+    def _dettagli_nella(cartella):
+        return {nome: (cartella / nome).read_bytes() for nome in sorted(os.listdir(cartella)) if nome.endswith(" Dettagli.txt")}
+
+    @staticmethod
+    def _scritti(monkeypatch):
+        """I turni di cui append_completed_round_to_history_file scrive il
+        file, uno per chiamata."""
+        import reports
+
+        scritti = []
+        vera = reports.append_completed_round_to_history_file
+
+        def annota(torneo, numero):
+            scritti.append(numero)
+            return vera(torneo, numero)
+
+        monkeypatch.setattr(reports, "append_completed_round_to_history_file", annota)
+        return scritti
+
+    @staticmethod
+    def _scrivi_il_torneo(percorso, dati):
+        os.makedirs(os.path.dirname(str(percorso)), exist_ok=True)
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(dati, f, default=sorted)
+
+    def _oggi_e_la_copia(self, tmp_path, esterna):
+        """Il torneo Turni con i turni da 1 a 3 completi e i loro file dei
+        dettagli, nella cartella del programma o, con esterna, nella cartella
+        di lavoro scelta per il torneo; la copia di sicurezza di quello
+        stato, come quella della Time Machine; poi lo stato di oggi, come
+        dopo la prova 5 del collaudo: il turno 3 tolto, il suo file sparito,
+        e il file del turno 2 con un altro risultato nella scacchiera 1.
+        Restituisce la cartella dei report, i file di allora e la copia."""
+        from test_canc_sui_turni import _torneo_vero
+
+        from config import user_data_path
+        from tournament import torna_al_turno
+
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        cartella = tmp_path
+        if esterna:
+            cartella = tmp_path / "esterna"
+            cartella.mkdir()
+            for nome in self._dettagli_nella(tmp_path):
+                shutil.move(tmp_path / nome, cartella / nome)
+            torneo["custom_save_path"] = str(cartella)
+        allora = self._dettagli_nella(cartella)
+        assert [n.split(" - ")[-1] for n in allora] == ["Turno 1 Dettagli.txt", "Turno 2 Dettagli.txt", "Turno 3 Dettagli.txt"]
+        dati = {k: v for k, v in torneo.items() if k != "players_dict"}
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_pre_rollback_20261108_100000.json"))
+        self._scrivi_il_torneo(copia, dati)
+        oggi = copy.deepcopy(dati)
+        torna_al_turno(oggi, 2)
+        oggi.pop("players_dict", None)
+        self._scrivi_il_torneo(user_data_path("Tornello - Turni.json"), oggi)
+        (cartella / "Tornello - Turni - Turno 3 Dettagli.txt").unlink()
+        turno_2 = cartella / "Tornello - Turni - Turno 2 Dettagli.txt"
+        righe = turno_2.read_bytes().split(b"\r\n")
+        prima = next(i for i, r in enumerate(righe) if r.startswith(b"\t1  |"))
+        risultato = righe[prima].rsplit(b"| ", 1)[1]
+        righe[prima] = righe[prima][: -len(risultato)] + (b"0-1" if risultato != b"0-1" else b"1-0")
+        turno_2.write_bytes(b"\r\n".join(righe))
+        assert turno_2.read_bytes() != allora["Tornello - Turni - Turno 2 Dettagli.txt"]
+        return cartella, allora, copia
+
+    @pytest.mark.parametrize("esterna", [False, True], ids=["nella cartella del programma", "nella cartella di lavoro esterna"])
+    def test_il_turno_che_manca_e_quello_che_dice_altro(self, tmp_path, monkeypatch, cestino_finto, esterna):
+        """Ripristinata la copia di prima della Time Machine, i tre file sono
+        di nuovo quelli scritti alla conclusione dei turni, byte per byte: il
+        turno 3 si scrive, il turno 2 si riscrive, il turno 1, che dice gia'
+        quello che dice il torneo, resta com'e'. Nel cestino non va niente, e
+        l'esito dice soltanto il ripristino, come prima."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, allora, copia = self._oggi_e_la_copia(tmp_path, esterna)
+        scritti = self._scritti(monkeypatch)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert self._dettagli_nella(cartella) == allora
+        assert scritti == [3, 2]
+        assert cestino_finto.ricevuti == []
+        assert esito.righe[0] == "Ripristino riuscito: Tornello - Turni.json è com'era nella copia."
+        assert len(esito.righe) == 2 and esito.righe[1].startswith("Lo stato di prima è nella copia Tornello - Turni_pre_ripristino_")
+        if esterna:
+            assert self._dettagli_nella(tmp_path) == {}
+
+    def test_la_riga_della_versione_non_conta(self, tmp_path, monkeypatch, cestino_finto):
+        """Il file del turno 1 scritto da un'altra versione di Tornello, con
+        la stessa descrizione del turno e un'altra riga della versione in
+        fondo, dice gia' quello che dice il torneo: resta com'e'."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, allora, copia = self._oggi_e_la_copia(tmp_path, False)
+        turno_1 = cartella / "Tornello - Turni - Turno 1 Dettagli.txt"
+        testo = turno_1.read_bytes()
+        piede = testo.rindex(b"\r\n\r\nTornello (")
+        vecchio = testo[:piede] + b"\r\n\r\nTornello (10.0.0, 2026.09.05 by Gabriele Battaglia (IZ4APU))\r\n"
+        turno_1.write_bytes(vecchio)
+        scritti = self._scritti(monkeypatch)
+
+        assert ripristina(copia, percorsi_del_programma(), cestino=cestino_finto).riuscito
+
+        assert turno_1.read_bytes() == vecchio
+        assert scritti == [3, 2]
+        assert {n: b for n, b in self._dettagli_nella(cartella).items() if "Turno 1" not in n} == {n: b for n, b in allora.items() if "Turno 1" not in n}
+
+    def test_il_torneo_riaperto(self, ambiente):
+        """La copia di prima della finalizzazione riapre il torneo: la
+        cartella d'archivio va nel cestino, con il file dei dettagli del
+        turno 1 che la finalizzazione ci aveva portato, e il file torna nella
+        cartella dei report, quello scritto alla conclusione del turno."""
+        from copie_di_sicurezza import ripristina
+        from reports import append_completed_round_to_history_file
+
+        append_completed_round_to_history_file(copy.deepcopy(ambiente.torneo), 1)
+        allora = self._dettagli_nella(ambiente.tmp)
+        assert list(allora) == [f"Tornello - {NOME} - Turno 1 Dettagli.txt"]
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        cartella = _cartella_d_archivio(ambiente)
+        assert self._dettagli_nella(ambiente.tmp) == {}
+        assert os.path.exists(os.path.join(cartella, f"Tornello - {NOME} - Turno 1 Dettagli.txt"))
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=ambiente.cestino)
+
+        assert esito.riuscito, esito.righe
+        assert ambiente.cestino.ricevuti == [os.path.abspath(cartella)]
+        assert self._dettagli_nella(ambiente.tmp) == allora
+
+
 class TestManuale:
     """La sezione 10.4 del manuale cita etichette e testi della finestra
     Copie di sicurezza: ognuno deve essere scritto dal programma, con i

@@ -22,6 +22,7 @@ import io
 import json
 import os
 from contextlib import redirect_stdout
+from types import SimpleNamespace
 
 import pytest
 import test_canc_nell_albero as canc
@@ -688,3 +689,130 @@ def test_il_torneo_di_prova_e_abbinato_dal_motore(abbinati):
         assert RITIRATO_PRESTO not in in_gioco
     if abbinati == 4:
         assert ritirato not in {chi for m in torneo["rounds"][3]["matches"] for chi in (m["white_player_id"], m["black_player_id"])}
+
+
+class TestIDettagliDopoIlRipristino:
+    """10.19.50 (decisione di Gabriele dell'8 novembre 2026). La prova 5 del
+    collaudo: Ctrl+Z sul torneo con i turni da 1 a 3 completi manda nel
+    cestino il file dei dettagli del turno 3, e il file del turno 2 dice un
+    altro risultato; poi, dal menu File, la finestra Copie di sicurezza e il
+    ripristino della copia di prima della Time Machine, fuori dalla procedura
+    guidata, dentro, dopo Nuovo torneo, e con un altro torneo aperto. Dopo il
+    ripristino, nella cartella dei report, i file dei tre turni sono quelli
+    scritti alla conclusione dei turni. Fino alla 10.19.49 il file del turno
+    3 restava nel cestino, e quello del turno 2 diceva il risultato di prima.
+    La finestra delle copie non si mostra: seleziona la copia e preme
+    Ripristina, con Si' alla conferma; le finestre di messaggio e il cestino
+    sono finti."""
+
+    @staticmethod
+    def _dettagli():
+        from config import user_data_path
+
+        cartella = user_data_path("")
+        dettagli = {}
+        for nome in sorted(os.listdir(cartella)):
+            if nome.endswith(" Dettagli.txt"):
+                with open(os.path.join(cartella, nome), "rb") as f:
+                    dettagli[nome] = f.read()
+        return dettagli
+
+    @staticmethod
+    def _finestra_delle_copie(monkeypatch, copia, cestino):
+        """La finestra Copie di sicurezza finta: seleziona la copia, anche
+        fra tutte se l'origine scelta non la mostra, e preme Ripristina.
+        Restituisce le sue finestre di messaggio, con titolo e testo, e i
+        suoi suoni."""
+        import wx
+
+        from gui.dialogs import backup_cleanup_dialog as bcd
+
+        registro = SimpleNamespace(finestre=[], suoni=[])
+
+        class Messaggio:
+            def __init__(self, genitore, titolo, testo, style=wx.OK, **opzioni):
+                self.domanda = bool(style & wx.YES_NO)
+                registro.finestre.append((titolo, testo))
+
+            def ShowModal(self):
+                return wx.ID_YES if self.domanda else wx.ID_OK
+
+            def Destroy(self):
+                pass
+
+        def mostra(finestra):
+            if os.path.normcase(copia) not in [os.path.normcase(c.percorso) for c in finestra.visibili]:
+                finestra.populate_list(origine=None)
+            indice = [os.path.normcase(c.percorso) for c in finestra.visibili].index(os.path.normcase(copia))
+            for vecchio in finestra.indici_selezionati():
+                finestra.list_ctrl.Select(vecchio, False)
+            finestra.list_ctrl.Select(indice, True)
+            finestra.on_ripristina(None)
+            return wx.ID_CANCEL
+
+        monkeypatch.setattr(bcd, "AccessibleMsgDialog", Messaggio)
+        monkeypatch.setattr(bcd, "play_sound", lambda nome, *a, **k: registro.suoni.append(nome))
+        monkeypatch.setattr(bcd, "delete_file_to_trash", cestino)
+        monkeypatch.setattr(bcd.BackupCleanupDialog, "ShowModal", mostra)
+        return registro
+
+    @pytest.mark.parametrize("caso", ["fuori", "dentro", "altro"], ids=["fuori dalla procedura guidata", "dentro la procedura guidata", "con un altro torneo aperto"])
+    def test_la_prova_5_del_collaudo(self, principale, suoni, monkeypatch, cestino_finto, caso):
+        import re
+
+        import wx
+        from test_comandi_delle_finestre import TestAlberoETorneoAttivo, _torneo_in_corso
+
+        from config import user_data_path
+
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        allora = self._dettagli()
+        assert len(allora) == 3
+        percorso = _apri(principale, copy.deepcopy(torneo))
+        domande = _domande(monkeypatch, wx.ID_YES)
+        principale.on_rollback_round(None)
+        assert [d.titolo for d in domande.aperte] == ["Annulla Turno"]
+        turno_3 = _dettagli(principale.current_tournament, 3)
+        assert cestino_finto.ricevuti == [os.path.abspath(turno_3)]
+        turno_2 = _dettagli(principale.current_tournament, 2)
+        with open(turno_2, "rb") as f:
+            righe = f.read().split(b"\r\n")
+        prima = next(i for i, r in enumerate(righe) if r.startswith(b"\t1  |"))
+        risultato = righe[prima].rsplit(b"| ", 1)[1]
+        righe[prima] = righe[prima][: -len(risultato)] + (b"0-1" if risultato != b"0-1" else b"1-0")
+        with open(turno_2, "wb") as f:
+            f.write(b"\r\n".join(righe))
+        (copia,) = [os.path.join(r, n) for r, _c, nomi in os.walk(user_data_path("backup")) for n in nomi if "_pre_rollback_" in n]
+        alfa = user_data_path("Tornello - Alfa.json")
+        if caso == "altro":
+            with open(alfa, "w", encoding="utf-8") as f:
+                json.dump(_torneo_in_corso("Alfa"), f)
+            principale.load_tournament(alfa)
+        if caso == "dentro":
+            TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+            assert principale.creation_mode
+        copie = self._finestra_delle_copie(monkeypatch, copia, cestino_finto)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
+
+        assert self._dettagli() == allora
+        assert cestino_finto.ricevuti == [os.path.abspath(turno_3)]
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+        assert re.fullmatch(
+            r"Ripristino riuscito: Tornello - Turni\.json è com'era nella copia\.\nLo stato di prima è nella copia Tornello - Turni_pre_ripristino_\d{8}_\d{6}\.json\.",
+            copie.finestre[1][1],
+        ), copie.finestre[1][1]
+        assert copie.suoni == ["ripristino"]
+        assert scatole == []
+        assert [d.titolo for d in domande.aperte] == ["Annulla Turno"]
+        assert suoni == []
+        assert registro.fuoco == ["tree_ctrl"]
+        assert not principale.creation_mode
+        assert len(_dal_file(percorso)["rounds"]) == 3
+        aperto = alfa if caso == "altro" else percorso
+        assert principale._e_il_torneo_aperto(aperto)
+        assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetSelection())["filepath"] == principale.active_filename

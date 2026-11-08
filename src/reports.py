@@ -1,4 +1,5 @@
 import os
+import re
 import traceback
 from datetime import datetime
 
@@ -427,27 +428,19 @@ def byte_della_raccolta_pgn(torneo):
     return testo.replace("\n", os.linesep).encode("utf-8")
 
 
-def append_completed_round_to_history_file(torneo, completed_round_number):
-    """
-    Salva i dettagli di un turno concluso in un FILE SEPARATO per quel turno.
-    Il file viene creato o sovrascritto.
-    """
-    filename = file_dei_dettagli_del_turno(torneo, completed_round_number)
-
-    round_data = None
+def _turno_del_torneo(torneo, numero):
+    """Il turno numero del torneo, None se non c'e'."""
     for rnd in torneo.get("rounds", []):
-        if rnd.get("round") == completed_round_number:
-            round_data = rnd
-            break
+        if rnd.get("round") == numero:
+            return rnd
+    return None
 
-    if round_data is None or "matches" not in round_data:
-        print(
-            _(
-                "Dati o partite del turno concluso {round_num} non trovati per il salvataggio."
-            ).format(round_num=completed_round_number)
-        )
-        return
 
+def _partite_dei_dettagli(torneo, round_data):
+    """I giocatori del torneo per identificativo, le partite del turno
+    round_data senza il riposo, in ordine di Elo medio dal piu' alto, e il
+    riposo, None se non c'e': quello che servira' alle righe del file dei
+    dettagli del turno."""
     # Assicura che il dizionario dei giocatori sia aggiornato
     _ensure_players_dict(torneo)
     players_dict = torneo["players_dict"]
@@ -480,106 +473,140 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
     playable_matches.sort(
         key=lambda m: get_average_elo_for_sort(m, players_dict), reverse=True
     )
+    return players_dict, playable_matches, bye_match
+
+
+def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, partite):
+    """Le righe del file dei dettagli del turno concluso round_data, una per
+    una, senza la riga in fondo con la versione di Tornello, che cambia a
+    ogni versione e non dice niente del turno. partite e' quello che
+    restituisce _partite_dei_dettagli. append_completed_round_to_history_file
+    le scrive nel file man mano, come quando le scriveva lei, e dalla 10.19.50
+    allinea_i_dettagli_dei_turni le confronta con il file che c'e' gia'."""
+    players_dict, playable_matches, bye_match = partite
+    # Scrivi sempre l'intestazione completa del torneo e del turno per questo file
+    yield (
+        _("Torneo: {name}\n").format(
+            name=torneo.get("name", _("Nome Mancante"))
+        )
+    )
+    yield (
+        _("Sito: {site}, Data Inizio Torneo: {start_date}\n").format(
+            site=torneo.get("site", "N/D"),
+            start_date=format_date_locale(torneo.get("start_date")),
+        )
+    )
+    yield (
+        _("Dettaglio del turno {round_num} concluso\n").format(
+            round_num=completed_round_number
+        )
+    )
+    if round_data.get("manual_pairing"):
+        yield _("\tAbbinamenti composti a mano dall'arbitro\n")
+    round_dates_list = torneo.get("round_dates", [])
+    current_round_dates = next(
+        (
+            rd
+            for rd in round_dates_list
+            if rd.get("round") == completed_round_number
+        ),
+        None,
+    )
+    if current_round_dates:
+        start_d_str = current_round_dates.get("start_date")
+        end_d_str = current_round_dates.get("end_date")
+        yield (
+            _("\tPeriodo del Turno: {start} - {end}\n").format(
+                start=format_date_locale(start_d_str),
+                end=format_date_locale(end_d_str),
+            )
+        )
+    else:
+        yield _("\tPeriodo del Turno: Date non trovate\n")
+    header_partite = _(
+        "Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato"
+    )
+    yield f"\t{header_partite}\n"
+    for board_num_idx, match in enumerate(playable_matches):
+        board_num = board_num_idx + 1
+        match_id = match.get("id", "?")
+        white_p_id = match.get("white_player_id")
+        black_p_id = match.get("black_player_id")
+        result_str = match.get("result", _("ERRORE_RISULTATO_MANCANTE"))
+        white_p = players_dict.get(white_p_id)
+        black_p = players_dict.get(black_p_id)
+        w_name = "? ?"
+        w_elo = "?"
+        w_pts = "?"
+        if white_p:
+            w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
+            w_elo = white_p.get("initial_elo", "?")
+            # Recupera i punti che il giocatore aveva *alla fine di quel turno*
+            # Questo è più complesso, per ora usiamo i punti correnti come approssimazione o li omettiamo se troppo difficile.
+            # Per semplicità, usiamo i punti totali correnti dal dizionario principale.
+            w_pts = format_points(white_p.get("points", 0.0))
+        b_name = "? ?"
+        b_elo = "?"
+        b_pts = "?"
+        if black_p:
+            b_name = f"{black_p.get('first_name', '?')} {black_p.get('last_name', '')}"
+            b_elo = black_p.get("initial_elo", "?")
+            b_pts = format_points(black_p.get("points", 0.0))
+        line = (
+            f"{board_num:<3}| "
+            f"{match_id:<4}| "
+            f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - "
+            f"{b_name:<24} [{b_elo:>4}] ({b_pts:<4}) | "
+            f"{result_str}"
+        )
+        yield f"\t{line}\n"
+    if bye_match:
+        match_id = bye_match.get("id", "?")
+        white_p_id = bye_match.get("white_player_id")
+        white_p = players_dict.get(white_p_id)
+        if white_p:
+            w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
+            w_elo = white_p.get("initial_elo", "?")
+            w_pts = format_points(white_p.get("points", 0.0))
+            line = (
+                f"{_('bye'):<3}| "
+                f"{match_id:<4}| "
+                f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE"
+            )
+            yield f"\t{line}\n"
+        else:
+            line = _(
+                "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
+            ).format(dashes=_("bye"), match_id=match_id, player_id=white_p_id)
+            yield f"\t{line}\n"
+
+
+def append_completed_round_to_history_file(torneo, completed_round_number):
+    """
+    Salva i dettagli di un turno concluso in un FILE SEPARATO per quel turno.
+    Il file viene creato o sovrascritto. Le righe le da'
+    _righe_dei_dettagli_del_turno, e in fondo va la riga con la versione di
+    Tornello.
+    """
+    filename = file_dei_dettagli_del_turno(torneo, completed_round_number)
+
+    round_data = _turno_del_torneo(torneo, completed_round_number)
+
+    if round_data is None or "matches" not in round_data:
+        print(
+            _(
+                "Dati o partite del turno concluso {round_num} non trovati per il salvataggio."
+            ).format(round_num=completed_round_number)
+        )
+        return
+
+    partite = _partite_dei_dettagli(torneo, round_data)
 
     try:
         # Apri in modalità "w" (scrittura) per creare/sovrascrivere il file specifico del turno
         with open(filename, "w", encoding="utf-8-sig") as f:
-            # Scrivi sempre l'intestazione completa del torneo e del turno per questo file
-            f.write(
-                _("Torneo: {name}\n").format(
-                    name=torneo.get("name", _("Nome Mancante"))
-                )
-            )
-            f.write(
-                _("Sito: {site}, Data Inizio Torneo: {start_date}\n").format(
-                    site=torneo.get("site", "N/D"),
-                    start_date=format_date_locale(torneo.get("start_date")),
-                )
-            )
-            f.write(
-                _("Dettaglio del turno {round_num} concluso\n").format(
-                    round_num=completed_round_number
-                )
-            )
-            if round_data.get("manual_pairing"):
-                f.write(_("\tAbbinamenti composti a mano dall'arbitro\n"))
-            round_dates_list = torneo.get("round_dates", [])
-            current_round_dates = next(
-                (
-                    rd
-                    for rd in round_dates_list
-                    if rd.get("round") == completed_round_number
-                ),
-                None,
-            )
-            if current_round_dates:
-                start_d_str = current_round_dates.get("start_date")
-                end_d_str = current_round_dates.get("end_date")
-                f.write(
-                    _("\tPeriodo del Turno: {start} - {end}\n").format(
-                        start=format_date_locale(start_d_str),
-                        end=format_date_locale(end_d_str),
-                    )
-                )
-            else:
-                f.write(_("\tPeriodo del Turno: Date non trovate\n"))
-            header_partite = _(
-                "Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato"
-            )
-            f.write(f"\t{header_partite}\n")
-            for board_num_idx, match in enumerate(playable_matches):
-                board_num = board_num_idx + 1
-                match_id = match.get("id", "?")
-                white_p_id = match.get("white_player_id")
-                black_p_id = match.get("black_player_id")
-                result_str = match.get("result", _("ERRORE_RISULTATO_MANCANTE"))
-                white_p = players_dict.get(white_p_id)
-                black_p = players_dict.get(black_p_id)
-                w_name = "? ?"
-                w_elo = "?"
-                w_pts = "?"
-                if white_p:
-                    w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-                    w_elo = white_p.get("initial_elo", "?")
-                    # Recupera i punti che il giocatore aveva *alla fine di quel turno*
-                    # Questo è più complesso, per ora usiamo i punti correnti come approssimazione o li omettiamo se troppo difficile.
-                    # Per semplicità, usiamo i punti totali correnti dal dizionario principale.
-                    w_pts = format_points(white_p.get("points", 0.0))
-                b_name = "? ?"
-                b_elo = "?"
-                b_pts = "?"
-                if black_p:
-                    b_name = f"{black_p.get('first_name', '?')} {black_p.get('last_name', '')}"
-                    b_elo = black_p.get("initial_elo", "?")
-                    b_pts = format_points(black_p.get("points", 0.0))
-                line = (
-                    f"{board_num:<3}| "
-                    f"{match_id:<4}| "
-                    f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - "
-                    f"{b_name:<24} [{b_elo:>4}] ({b_pts:<4}) | "
-                    f"{result_str}"
-                )
-                f.write(f"\t{line}\n")
-            if bye_match:
-                match_id = bye_match.get("id", "?")
-                white_p_id = bye_match.get("white_player_id")
-                white_p = players_dict.get(white_p_id)
-                if white_p:
-                    w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-                    w_elo = white_p.get("initial_elo", "?")
-                    w_pts = format_points(white_p.get("points", 0.0))
-                    line = (
-                        f"{_('bye'):<3}| "
-                        f"{match_id:<4}| "
-                        f"{w_name:<24} [{w_elo:>4}] ({w_pts:<4}) - {'BYE':<31} | BYE"
-                    )
-                    f.write(f"\t{line}\n")
-                else:
-                    line = _(
-                        "{dashes:<3}| {match_id:<4}| Errore Giocatore Bye ID: {player_id:<10} | BYE"
-                    ).format(dashes=_("bye"), match_id=match_id, player_id=white_p_id)
-                    f.write(f"\t{line}\n")
-
+            for riga in _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, partite):
+                f.write(riga)
             f.write(f"\n\nTornello ({VERSIONE})\n")
         print(
             _(
@@ -600,6 +627,74 @@ def append_completed_round_to_history_file(torneo, completed_round_number):
         )
         traceback.print_exc()
 
+
+def _numeri_dei_turni_completati(torneo):
+    """I numeri dei turni completati del torneo, dal primo: quelli che hanno
+    le partite, e in cui ogni partita, tranne il riposo, ha il risultato,
+    come i Completati dell'albero della finestra."""
+    return [
+        r.get("round")
+        for r in torneo.get("rounds", [])
+        if "matches" in r
+        and all(
+            m.get("result") is not None or m.get("black_player_id") is None
+            for m in r["matches"]
+        )
+    ]
+
+
+def _dettagli_scritti_nel_file(percorso):
+    """Il testo del file dei dettagli di un turno, senza la riga in fondo con
+    la versione di Tornello che lo ha scritto, come la scrive
+    append_completed_round_to_history_file; None se il file non c'e' o non
+    si legge. Un file che dopo quella riga ha altro testo resta intero."""
+    try:
+        with open(percorso, encoding="utf-8-sig") as f:
+            testo = f.read()
+    except (OSError, ValueError):
+        return None
+    piede = re.search(r"\n\nTornello \(.*\)\n\Z", testo, re.S)
+    return testo[: piede.start()] if piede else testo
+
+
+def allinea_i_dettagli_dei_turni(torneo):
+    """Dalla 10.19.50 (decisione di Gabriele dell'8 novembre 2026), dopo il
+    ripristino di una copia, nella cartella dei report i dettagli dei turni
+    completati del torneo ripristinato dicono quello che dice il torneo: il
+    file di un turno che manca si scrive, e quello che dice altro si
+    riscrive, con append_completed_round_to_history_file, come quando il
+    turno si conclude. Ogni turno si scrive com'era alla sua conclusione: su
+    una copia del torneo, torna_al_turno toglie i turni che vengono dopo, e
+    i punti dei giocatori sono quelli di allora. Un file che cambia soltanto
+    nella riga della versione resta com'e'. Il torneo non cambia. Fino alla
+    10.19.49 i file restavano come li avevano lasciati l'ultima conclusione
+    di un turno e l'ultima Time Machine: dopo la Time Machine e il ripristino
+    della copia di prima, il file del turno tolto restava nel cestino, e
+    quello di un turno cambiato diceva i risultati di prima. I file dei turni
+    che il torneo ripristinato non ha, o non ha completati, restano dove
+    sono. Restituisce i file scritti."""
+    import copy
+
+    from tournament import torna_al_turno
+
+    al_turno = copy.deepcopy(torneo)
+    al_turno.pop("players_dict", None)
+    scritti = []
+    # Dall'ultimo turno al primo: ogni torna_al_turno toglie soltanto i turni
+    # dopo quello da scrivere, come se il turno si fosse appena concluso.
+    for numero in reversed(_numeri_dei_turni_completati(torneo)):
+        torna_al_turno(al_turno, numero)
+        percorso = file_dei_dettagli_del_turno(al_turno, numero)
+        turno = _turno_del_torneo(al_turno, numero)
+        try:
+            testo = "".join(_righe_dei_dettagli_del_turno(al_turno, turno, numero, _partite_dei_dettagli(al_turno, turno)))
+        except Exception:  # noqa: BLE001 - l'errore lo dice la scrittura, come alla conclusione del turno
+            testo = None
+        if testo is not None and _dettagli_scritti_nel_file(percorso) == testo:
+            continue
+        append_completed_round_to_history_file(al_turno, numero)
+        scritti.append(percorso)
+    return scritti
 
 def get_criterion_value(player_item, criterion, torneo):
     """Calcola il valore di un criterio per l'ordinamento della classifica.

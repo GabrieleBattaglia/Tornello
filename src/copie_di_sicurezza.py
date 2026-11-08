@@ -1718,13 +1718,27 @@ def ripristina(percorso_copia, percorsi, destinazione=None, cestino=delete_file_
     """Ripristina una copia: prepara di nuovo il piano, sui file come sono in
     questo momento, e lo esegue. cestino e' la funzione che manda nel cestino
     un file o una cartella e risponde se ci e' riuscita: le prove ne passano
-    una finta. Restituisce un Esito."""
+    una finta. Restituisce un Esito.
+    Dalla 10.19.50 (decisione di Gabriele dell'8 novembre 2026), dopo il
+    ripristino riuscito di un torneo, in corso o riaperto, i dettagli dei
+    suoi turni completati, nella cartella dei report, si allineano al torneo
+    ripristinato con allinea_i_dettagli_dei_turni di reports: quelli che
+    mancano si scrivono, e quelli che dicono altro si riscrivono, per ogni
+    torneo, aperto o no, dentro e fuori dalla procedura guidata. Fino alla
+    10.19.49 restavano com'erano."""
     piano = prepara_ripristino(percorso_copia, percorsi, destinazione)
     if piano.rifiuto:
         return Esito(False, [piano.rifiuto], tipo=piano.tipo, destinazione=piano.destinazione)
-    if piano.tipo == "finalizzato":
-        return _ripristina_finalizzato(piano, percorsi, cestino)
-    return _ripristina_file(piano, percorsi, cestino)
+    esito = (
+        _ripristina_finalizzato(piano, percorsi, cestino)
+        if piano.tipo == "finalizzato"
+        else _ripristina_file(piano, percorsi, cestino)
+    )
+    if esito.riuscito and piano.tipo in ("torneo", "finalizzato"):
+        from reports import allinea_i_dettagli_dei_turni
+
+        allinea_i_dettagli_dei_turni(piano.dati)
+    return esito
 
 
 def _metti_in_salvo(percorsi_da_copiare, cartella_backup, esito):
