@@ -2351,7 +2351,8 @@ def finalize_tournament(torneo, players_db, current_tournament_filename, avvisi=
     # quella del programma o la cartella di lavoro scelta, sono lettere, e
     # non un insieme di caratteri. Fino alla 10.19.45, e gia' nella 10.0.0,
     # in una cartella cosi' il glob non trovava i report, che restavano
-    # dov'erano, e in archivio andava soltanto il json del torneo (decisione
+    # dov'erano, e in archivio andavano soltanto il json del torneo e, dalla
+    # 10.19.7, la raccolta delle partite, che non passa dal glob (decisione
     # di Gabriele dell'8 novembre 2026). Il nome del torneo, ripulito da
     # sanitize_filename, le parentesi non le ha mai.
     for file_in_dir in glob.glob(f"{glob.escape(file_pattern_prefix)}*.*"):

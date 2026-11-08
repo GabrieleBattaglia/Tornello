@@ -618,7 +618,8 @@ class TestCartelleConLeParentesiQuadre:
     dalla console, trova i report del torneo, e li porta in archivio con il
     json. Fino alla 10.19.45, e gia' nella 10.0.0, glob leggeva le parentesi
     come un insieme di caratteri, e non trovava niente: i report restavano
-    dov'erano, e in archivio andava soltanto il json."""
+    dov'erano, e in archivio andavano soltanto il json e, dalla 10.19.7, la
+    raccolta delle partite, che non passa dal glob."""
 
     DETTAGLI = f"Tornello - {NOME} - Turno 1 Dettagli.txt"
     CLASSIFICA = f"Tornello - {NOME} - Classifica.txt"
