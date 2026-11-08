@@ -2212,12 +2212,12 @@ class MainFrame(wx.Frame):
         giocate_label = f"{_('giocate')} ({played_count}/{total_count}, {pct:.1f}%)"
         self.tree_ctrl.SetItemText(giocate_parent, giocate_label)
 
-        round_matches_sorted = sorted(
-            r.get("matches", []), key=lambda x: x.get("id", 0)
-        )
-        match_id_to_board = {
-            m.get("id"): idx for idx, m in enumerate(round_matches_sorted, 1)
-        }
+        # Il numero della scacchiera lo da' numeri_delle_scacchiere di
+        # reports, che dalla 10.19.54 numera allo stesso modo il file dei
+        # dettagli del turno.
+        from reports import numeri_delle_scacchiere
+
+        match_id_to_board = numeri_delle_scacchiere(r)
 
         matches_played.sort(key=lambda x: match_id_to_board.get(x.get("id"), 0))
 

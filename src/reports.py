@@ -483,44 +483,46 @@ def _turno_del_torneo(torneo, numero):
     return None
 
 
+def numeri_delle_scacchiere(round_data):
+    """Il numero della scacchiera di ogni partita del turno round_data, come
+    dizionario per identificativo: le partite in ordine di identificativo,
+    numerate da 1, con il riposo. E' l'ordine in cui le danno bbpPairings,
+    con sortResults di common.cpp, e la composizione a mano, con
+    ordina_coppie di turno_manuale: quello dell'articolo 3.6 di C.04.2, con
+    il riposo in fondo. Lo usa l'albero della finestra, e dalla 10.19.54 il
+    file dei dettagli del turno (decisione di Gabriele dell'8 novembre
+    2026): il numero si fa in un posto solo, perche' le due strade numerino
+    allo stesso modo."""
+    partite = sorted(round_data.get("matches", []), key=lambda m: m.get("id", 0))
+    return {m.get("id"): numero for numero, m in enumerate(partite, 1)}
+
+
 def _partite_dei_dettagli(torneo, round_data):
     """I giocatori del torneo per identificativo, le partite del turno
-    round_data senza il riposo, in ordine di Elo medio dal piu' alto, e il
-    riposo, None se non c'e': quello che servira' alle righe del file dei
-    dettagli del turno."""
+    round_data senza il riposo, come coppie di numero della scacchiera e
+    partita, in ordine di scacchiera, e il riposo, None se non c'e': quello
+    che servira' alle righe del file dei dettagli del turno. Il numero lo da'
+    numeri_delle_scacchiere, lo stesso dell'albero. Fino alla 10.19.53 le
+    partite erano in ordine di Elo medio, dal piu' alto, e si numeravano da
+    1 in quell'ordine: nel Turno 3 di Prova time machine, sul banco del
+    collaudo, la scacchiera 1 del file era la Scacchiera 2 dell'albero."""
     # Assicura che il dizionario dei giocatori sia aggiornato
     _ensure_players_dict(torneo)
     players_dict = torneo["players_dict"]
     all_matches_in_round = round_data.get("matches", [])
-    playable_matches = [
-        m for m in all_matches_in_round if m.get("black_player_id") is not None
-    ]
+    numeri = numeri_delle_scacchiere(round_data)
+    scacchiere = sorted(
+        (
+            (numeri[m.get("id")], m)
+            for m in all_matches_in_round
+            if m.get("black_player_id") is not None
+        ),
+        key=lambda scacchiera: scacchiera[0],
+    )
     bye_match = next(
         (m for m in all_matches_in_round if m.get("black_player_id") is None), None
     )
-
-    def get_average_elo_for_sort(match, players_dict_local):
-        w_id = match.get("white_player_id")
-        b_id = match.get("black_player_id")
-        w_elo_str = players_dict_local.get(w_id, {}).get("initial_elo", "0")
-        b_elo_str = players_dict_local.get(b_id, {}).get("initial_elo", "0")
-        try:
-            w_elo = float(w_elo_str if w_elo_str is not None else 0.0)
-            b_elo = float(b_elo_str if b_elo_str is not None else 0.0)
-            if w_elo == 0.0 and b_elo == 0.0:
-                return 0.0
-            if w_elo == 0.0:
-                return b_elo
-            if b_elo == 0.0:
-                return w_elo
-            return (w_elo + b_elo) / 2.0
-        except (ValueError, TypeError):
-            return 0.0
-
-    playable_matches.sort(
-        key=lambda m: get_average_elo_for_sort(m, players_dict), reverse=True
-    )
-    return players_dict, playable_matches, bye_match
+    return players_dict, scacchiere, bye_match
 
 
 def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, partite):
@@ -574,8 +576,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         "Sc | ID  | Bianco                       [Elo] (Pt) - Nero                         [Elo] (Pt) | Risultato"
     )
     yield f"\t{header_partite}\n"
-    for board_num_idx, match in enumerate(playable_matches):
-        board_num = board_num_idx + 1
+    for board_num, match in playable_matches:
         match_id = match.get("id", "?")
         white_p_id = match.get("white_player_id")
         black_p_id = match.get("black_player_id")
