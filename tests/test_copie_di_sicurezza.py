@@ -17,7 +17,7 @@ from datetime import datetime
 
 import pytest
 from conftest import CestinoFinto
-from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _g3_vince_a_forfait, _torneo_finito
+from test_finalizzazione import ELO_INIZIALI, ELO_RAPID, INIZIO, NOME, _g3_vince_a_forfait, _torneo_finito, _voce
 
 MESE = os.path.join("2026", "09 Settembre")
 
@@ -2392,6 +2392,32 @@ class TestDettagliDeiTurniDopoIlRipristino:
         assert cestino_finto.ricevuti == []
 
 
+def _con_il_secondo_turno(torneo):
+    """Aggiunge al torneo finito di test_finalizzazione il turno 2, gia'
+    giocato: G1 batte G3, G4 batte G2."""
+    torneo["total_rounds"] = 2
+    torneo["current_round"] = 2
+    torneo["rounds"].append(
+        {
+            "round": 2,
+            "matches": [
+                {"id": 3, "round": 2, "white_player_id": "G1", "black_player_id": "G3", "result": "1-0", "is_scheduled": False},
+                {"id": 4, "round": 2, "white_player_id": "G4", "black_player_id": "G2", "result": "1-0", "is_scheduled": False},
+            ],
+        }
+    )
+    voci = {
+        "G1": _voce(2, "G3", "white", "1-0", 1.0),
+        "G3": _voce(2, "G1", "black", "1-0", 0.0),
+        "G4": _voce(2, "G2", "white", "1-0", 1.0),
+        "G2": _voce(2, "G4", "black", "1-0", 0.0),
+    }
+    for giocatore in torneo["players"]:
+        giocatore["results_history"].append(voci[giocatore["id"]])
+        giocatore["points"] = sum(v["score"] for v in giocatore["results_history"])
+        giocatore["opponents"] = [v["opponent_id"] for v in giocatore["results_history"]]
+
+
 class TestDettagliDeiTurniCheNonCiSonoPiu:
     """10.19.51 (decisione di Gabriele dell'8 novembre 2026). Dopo il
     ripristino riuscito di un torneo, i file dei dettagli dei turni che il
@@ -2518,10 +2544,14 @@ class TestDettagliDeiTurniCheNonCiSonoPiu:
         cominciano allo stesso modo, un Turno 3 bis, un Turno 02, una copia
         .bak e una cartella con il nome di un file dei dettagli. Restano
         tutti dove sono; il file del turno 4 scritto in minuscolo, che per
-        Windows e' il file del turno 4 del torneo Turni, va nel cestino."""
+        Windows e' il file del turno 4 del torneo Turni, va nel cestino. Dalla
+        correzione della 10.19.51 il file del turno 4 ha l'intestazione del
+        torneo, quella del file del turno 3, perche' un file senza
+        l'intestazione resta dov'e'."""
         from copie_di_sicurezza import percorsi_del_programma, ripristina
 
-        cartella, _oggi, copia = self._oggi_e_la_copia(tmp_path)
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path)
+        quarto = oggi["Tornello - Turni - Turno 3 Dettagli.txt"]
         estranei = [
             "Tornello - Turni2 - Turno 2 Dettagli.txt",
             "Tornello - Turni2 - Turno 3 Dettagli.txt",
@@ -2533,17 +2563,146 @@ class TestDettagliDeiTurniCheNonCiSonoPiu:
         for nome in estranei:
             (cartella / nome).write_bytes(b"Un altro file.\r\n")
         (cartella / "Tornello - Turni - Turno 5 Dettagli.txt").mkdir()
-        (cartella / "tornello - turni - turno 4 dettagli.txt").write_bytes(b"Il turno 4.\r\n")
+        (cartella / "tornello - turni - turno 4 dettagli.txt").write_bytes(quarto)
 
         esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
 
         assert esito.riuscito, esito.righe
         assert cestino_finto.ricevuti == [os.path.abspath(cartella / f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (4, 3, 2)]
-        assert (tmp_path / "cestino" / "0_Tornello - Turni - Turno 4 Dettagli.txt").read_bytes() == b"Il turno 4.\r\n"
+        assert (tmp_path / "cestino" / "0_Tornello - Turni - Turno 4 Dettagli.txt").read_bytes() == quarto
         for nome in estranei:
             assert (cartella / nome).read_bytes() == b"Un altro file.\r\n", nome
         assert (cartella / "Tornello - Turni - Turno 5 Dettagli.txt").is_dir()
         assert (cartella / "Tornello - Turni - Turno 1 Dettagli.txt").is_file()
+
+    @pytest.mark.parametrize(
+        ("caso", "nel_cestino"),
+        [
+            ("un altro sito", True),
+            ("il nome in minuscolo", True),
+            ("un'altra data di inizio", False),
+            ("un altro nome", False),
+            ("senza l'intestazione", False),
+            ("vuoto", False),
+            ("non in UTF-8", False),
+        ],
+    )
+    def test_l_intestazione_dice_di_chi_e_il_file(self, tmp_path, cestino_finto, caso, nel_cestino):
+        """Correzione della 10.19.51, revisione del quattordicesimo giro.
+        Nella cartella dei report c'e' il file del turno 4, che il torneo
+        Turni non ha, fatto dal file del turno 3. Va nel cestino soltanto se
+        le sue prime due righe dicono il nome del torneo, anche con altre
+        maiuscole, e la sua data di inizio, con qualunque sito. Con un'altra
+        data di inizio e' di un'altra edizione con lo stesso nome; con un
+        altro nome, senza l'intestazione, vuoto o non in UTF-8 non si sa di
+        chi sia: resta dov'e', byte per byte. I file dei turni 2 e 3 vanno
+        nel cestino come sempre. Fino alla correzione andava nel cestino in
+        tutti i casi."""
+        import re
+
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path)
+        nome, sito_e_data, *resto = oggi["Tornello - Turni - Turno 3 Dettagli.txt"].decode("utf-8-sig").split("\r\n")
+        assert nome == "Torneo: Turni"
+        trovati = re.fullmatch(r"Sito: (.*), Data Inizio Torneo: (.*)", sito_e_data)
+        assert trovati, sito_e_data
+        sito, data = trovati.groups()
+        assert data != "Venerdì 1 gennaio 2027"
+        intestazioni = {
+            "un altro sito": [nome, f"Sito: Altrove, Data Inizio Torneo: {data}"],
+            "il nome in minuscolo": ["torneo: turni", sito_e_data],
+            "un'altra data di inizio": [nome, f"Sito: {sito}, Data Inizio Torneo: Venerdì 1 gennaio 2027"],
+            "un altro nome": ["Torneo: Turni bis", sito_e_data],
+            "non in UTF-8": [nome, sito_e_data],
+        }
+        contenuti = {chi: "\r\n".join([*righe, *resto]).encode("utf-8-sig") for chi, righe in intestazioni.items()}
+        contenuti["non in UTF-8"] += b"\xff\r\n"
+        contenuti["senza l'intestazione"] = b"Il turno 4.\r\n"
+        contenuti["vuoto"] = b""
+        contenuto = contenuti[caso]
+        quarto = cartella / "Tornello - Turni - Turno 4 Dettagli.txt"
+        quarto.write_bytes(contenuto)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        nomi = [f"Tornello - Turni - Turno {n} Dettagli.txt" for n in ((4, 3, 2) if nel_cestino else (3, 2))]
+        assert cestino_finto.ricevuti == [os.path.abspath(cartella / n) for n in nomi]
+        if nel_cestino:
+            assert (tmp_path / "cestino" / f"0_{nomi[0]}").read_bytes() == contenuto
+            assert not quarto.exists()
+        else:
+            assert quarto.read_bytes() == contenuto
+        assert esito.dettagli_rimasti == []
+
+    @pytest.mark.parametrize("appena_nata", [False, True], ids=["la copia del turno 1", "la copia dell'edizione appena nata"])
+    def test_i_file_di_un_altra_edizione_restano(self, ambiente, cestino_finto, appena_nata):
+        """Correzione della 10.19.51, revisione del quattordicesimo giro, con
+        la strada della sonda. Coppa_Prova, iniziata il 1 luglio 2026, ha due
+        turni e la cartella di lavoro esterna Lavoro: la finalizzazione vi
+        lascia gli originali dei report, con i dettagli dei turni 1 e 2, e ne
+        mette una copia nell'archivio. Nasce la nuova edizione, con lo stesso
+        nome, iniziata il 1 luglio 2027, con la stessa cartella e il turno 1
+        concluso: il suo file del turno 1 prende il posto di quello della
+        prima edizione. Si ripristina la sua copia del turno 1, uguale al
+        torneo di oggi, o quella dell'edizione appena nata, senza turni. Il
+        file del turno 2 e' della prima edizione, e ne dice la data di
+        inizio: resta dov'e', byte per byte. Con la copia dell'edizione
+        appena nata va nel cestino soltanto il file del turno 1, che e' della
+        nuova edizione. Fino alla correzione andava nel cestino anche il
+        file del turno 2, che la nuova edizione non ha mai avuto."""
+        from copie_di_sicurezza import ripristina
+        from reports import append_completed_round_to_history_file
+
+        esterna = ambiente.tmp / "Lavoro"
+        esterna.mkdir()
+        prima = ambiente.torneo
+        prima["custom_save_path"] = str(esterna)
+        _con_il_secondo_turno(prima)
+        for numero in (1, 2):
+            append_completed_round_to_history_file(copy.deepcopy(prima), numero)
+        _scrivi(ambiente.file_torneo, prima)
+        assert _finalizza(prima, ambiente.file_torneo) is True
+        archiviati = os.listdir(_cartella_d_archivio(ambiente))
+        della_prima = self._dettagli_nella(esterna)
+        nomi = [f"Tornello - {NOME} - Turno {n} Dettagli.txt" for n in (1, 2)]
+        assert list(della_prima) == nomi
+        assert all(nome in archiviati for nome in nomi)
+        assert "Data Inizio Torneo: Mercoledì 1 luglio 2026\r\n" in della_prima[nomi[1]].decode("utf-8-sig")
+
+        nuova = copy.deepcopy(prima)
+        nuova.update({"start_date": "2027-07-01", "end_date": "2027-07-01", "current_round": 1})
+        nuova["rounds"] = nuova["rounds"][:1]
+        for giocatore in nuova["players"]:
+            giocatore["results_history"] = giocatore["results_history"][:1]
+            giocatore["points"] = sum(v["score"] for v in giocatore["results_history"])
+            giocatore["opponents"] = [v["opponent_id"] for v in giocatore["results_history"]]
+        append_completed_round_to_history_file(copy.deepcopy(nuova), 1)
+        _scrivi(ambiente.file_torneo, nuova)
+        dati_copia = copy.deepcopy(nuova)
+        if appena_nata:
+            dati_copia["rounds"] = []
+            for giocatore in dati_copia["players"]:
+                giocatore.update({"points": 0.0, "results_history": [], "opponents": []})
+        copia = os.path.join(ambiente.percorsi.backup, "2027", "07 Luglio", f"Tornello - {NOME}_turno_1_20270701_100000.json")
+        _scrivi(copia, dati_copia)
+        oggi = self._dettagli_nella(esterna)
+        assert list(oggi) == nomi
+        assert "Data Inizio Torneo: Giovedì 1 luglio 2027\r\n" in oggi[nomi[0]].decode("utf-8-sig")
+        assert oggi[nomi[1]] == della_prima[nomi[1]]
+        ricevuti_prima = list(cestino_finto.ricevuti)
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        if appena_nata:
+            assert cestino_finto.ricevuti[len(ricevuti_prima) :] == [os.path.abspath(esterna / nomi[0])]
+            assert self._dettagli_nella(esterna) == {nomi[1]: della_prima[nomi[1]]}
+        else:
+            assert cestino_finto.ricevuti[len(ricevuti_prima) :] == []
+            assert self._dettagli_nella(esterna) == oggi
+        assert esito.dettagli_rimasti == []
 
     def test_nella_cartella_con_le_parentesi(self, programma_con_le_parentesi, cestino_finto):
         """La cartella del programma si chiama Tornello [prova]: le
@@ -2595,8 +2754,10 @@ class TestDettagliDeiTurniCheNonCiSonoPiu:
     def test_il_torneo_riaperto(self, ambiente, cestino_finto):
         """La copia di prima della finalizzazione riapre il torneo, che ha
         il turno 1: nella cartella dei report c'e' anche il file del turno 2,
-        un turno che la copia non ha. Va nel cestino dopo la cartella
-        d'archivio, e il file del turno 1 torna nella cartella dei report."""
+        un turno che la copia non ha, con l'intestazione del torneo, come se
+        lo avesse scritto un turno 2 poi tolto. Va nel cestino dopo la
+        cartella d'archivio, e il file del turno 1 torna nella cartella dei
+        report."""
         from copie_di_sicurezza import ripristina
         from reports import append_completed_round_to_history_file
 
@@ -2606,7 +2767,9 @@ class TestDettagliDeiTurniCheNonCiSonoPiu:
         cartella = _cartella_d_archivio(ambiente)
         assert self._dettagli_nella(ambiente.tmp) == {}
         turno_2 = ambiente.tmp / f"Tornello - {NOME} - Turno 2 Dettagli.txt"
-        turno_2.write_bytes(b"Il turno 2 di un'altra storia.\r\n")
+        primo = allora[f"Tornello - {NOME} - Turno 1 Dettagli.txt"]
+        turno_2.write_bytes(primo.replace(b"Dettaglio del turno 1 concluso", b"Dettaglio del turno 2 concluso"))
+        assert turno_2.read_bytes() != primo
         copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
         ricevuti_prima = list(cestino_finto.ricevuti)
 

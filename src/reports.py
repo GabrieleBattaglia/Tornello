@@ -402,7 +402,15 @@ def turni_con_i_dettagli_nella_cartella(torneo, cartella):
     Dettagli.txt. La cartella si legge con os.listdir, senza glob: le
     parentesi quadre di una cartella come Tornello [prova] restano lettere.
     Una cartella che non si legge non ne ha. Dalla 10.19.51, per
-    allinea_i_dettagli_dei_turni."""
+    allinea_i_dettagli_dei_turni.
+    Dalla correzione della 10.19.51 il file deve essere anche di questa
+    edizione del torneo, con _dettagli_di_questa_edizione: il nome non
+    distingue le edizioni, che si distinguono dalla data di inizio. Con una
+    cartella di lavoro esterna la finalizzazione vi lascia gli originali dei
+    report, e una nuova edizione con lo stesso nome e la stessa cartella vi
+    trova i file dei turni della prima edizione: fino a quella correzione
+    erano suoi, e dopo un ripristino andavano nel cestino anche quelli dei
+    turni che la nuova edizione non ha mai avuto."""
     segnaposto = "\0"
     prima, dopo = os.path.basename(file_dei_dettagli_del_turno(torneo, segnaposto, cartella)).split(segnaposto)
     prima, dopo = os.path.normcase(prima), os.path.normcase(dopo)
@@ -418,9 +426,33 @@ def turni_con_i_dettagli_nella_cartella(torneo, cartella):
         numero = chiave[len(prima) : len(chiave) - len(dopo)]
         # Il numero come lo scrive la conclusione del turno: Turno 01 non e'
         # il file del turno 1.
-        if re.fullmatch(r"[1-9][0-9]*", numero) and os.path.isfile(os.path.join(cartella, nome)):
+        percorso = os.path.join(cartella, nome)
+        if re.fullmatch(r"[1-9][0-9]*", numero) and os.path.isfile(percorso) and _dettagli_di_questa_edizione(torneo, percorso):
             numeri.append(int(numero))
     return sorted(numeri)
+
+
+def _dettagli_di_questa_edizione(torneo, percorso):
+    """Vero se il file dei dettagli di un turno percorso e' di questa
+    edizione del torneo: le sue prime due righe sono l'intestazione che
+    scrive _righe_dei_dettagli_del_turno, con il nome del torneo, senza
+    badare alle maiuscole, come il nome del file, e la sua data di inizio,
+    con qualunque sito. Un file con un'altra data di inizio e' di un'altra
+    edizione con lo stesso nome; un file che non si legge, o senza
+    quell'intestazione, non si sa di chi sia. Le parole sono quelle della
+    lingua di oggi: un file scritto con Tornello in un'altra lingua, o prima
+    di cambiare la data di inizio del torneo dal ramo Dati, ha un'altra
+    intestazione, e non e' di questa edizione. Nata con la correzione della
+    10.19.51, per turni_con_i_dettagli_nella_cartella."""
+    try:
+        with open(percorso, encoding="utf-8-sig") as f:
+            nome, sito_e_data = f.readline(), f.readline()
+    except (OSError, ValueError):
+        return False
+    segnaposto = "\0"
+    suo_nome, sua_data = _intestazione_dei_dettagli(torneo, segnaposto)
+    prima, dopo = sua_data.split(segnaposto)
+    return nome.casefold() == suo_nome.casefold() and sito_e_data.startswith(prima) and sito_e_data.endswith(dopo)
 
 
 def nome_della_raccolta_pgn(nome_sanitizzato):
@@ -525,6 +557,21 @@ def _partite_dei_dettagli(torneo, round_data):
     return players_dict, scacchiere, bye_match
 
 
+def _intestazione_dei_dettagli(torneo, sito=None):
+    """Le prime due righe del file dei dettagli di un turno del torneo: il
+    nome, e il sito con la data di inizio, che distingue le edizioni con lo
+    stesso nome. Con sito, nella seconda riga c'e' quello al posto del sito
+    del torneo. Le parole stanno in un posto solo dalla correzione della
+    10.19.51: le scrive _righe_dei_dettagli_del_turno, e le riconosce
+    _dettagli_di_questa_edizione."""
+    nome = _("Torneo: {name}\n").format(name=torneo.get("name", _("Nome Mancante")))
+    sito_e_data = _("Sito: {site}, Data Inizio Torneo: {start_date}\n").format(
+        site=torneo.get("site", "N/D") if sito is None else sito,
+        start_date=format_date_locale(torneo.get("start_date")),
+    )
+    return nome, sito_e_data
+
+
 def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, partite):
     """Le righe del file dei dettagli del turno concluso round_data, una per
     una, senza la riga in fondo con la versione di Tornello, che cambia a
@@ -534,17 +581,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
     allinea_i_dettagli_dei_turni le confronta con il file che c'e' gia'."""
     players_dict, playable_matches, bye_match = partite
     # Scrivi sempre l'intestazione completa del torneo e del turno per questo file
-    yield (
-        _("Torneo: {name}\n").format(
-            name=torneo.get("name", _("Nome Mancante"))
-        )
-    )
-    yield (
-        _("Sito: {site}, Data Inizio Torneo: {start_date}\n").format(
-            site=torneo.get("site", "N/D"),
-            start_date=format_date_locale(torneo.get("start_date")),
-        )
-    )
+    yield from _intestazione_dei_dettagli(torneo)
     yield (
         _("Dettaglio del turno {round_num} concluso\n").format(
             round_num=completed_round_number
@@ -727,7 +764,12 @@ def allinea_i_dettagli_dei_turni(torneo, cestino=None):
     torneo ha, ma non completo, resta dov'e', come quello del turno che con
     la Time Machine torna in corso. Fino alla 10.19.50 restavano tutti: dopo
     il ripristino della copia di un turno appena abbinato, nella cartella
-    dei report restavano i dettagli dei turni che venivano dopo.
+    dei report restavano i dettagli dei turni che venivano dopo. Dalla
+    correzione della 10.19.51 vanno nel cestino soltanto i file di questa
+    edizione del torneo, che nell'intestazione hanno la sua data di inizio:
+    quelli di un'altra edizione con lo stesso nome, come quelli che la
+    finalizzazione lascia nella cartella di lavoro esterna, restano dove
+    sono, e cosi' un file che non si legge o senza l'intestazione.
     La cartella dei report si cerca una volta sola, per tutti i turni: se
     non si raggiunge, per esempio su una chiavetta staccata, i file vanno
     nella cartella del programma, come alla conclusione di un turno, l'avviso
