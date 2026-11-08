@@ -2035,9 +2035,12 @@ class TestNoPredefinito:
 
 class TestDopoIlRipristino:
     """La finestra principale dopo un ripristino: il torneo aperto si
-    ricarica subito, un altro torneo aperto resta dov'e'."""
+    ricarica subito, un altro torneo aperto resta dov'e'. Dalla 10.19.52 il
+    torneo ripristinato che la finestra non carica ha il turno corrente e la
+    classifica scritti da _report_del_torneo_ripristinato, che qui si
+    annota."""
 
-    def _telaio(self, aperto, in_memoria=True):
+    def _telaio(self, aperto, in_memoria=True, si_puo_lasciare=True):
         registro = []
         telaio = types.SimpleNamespace(
             active_filename=aperto,
@@ -2045,10 +2048,13 @@ class TestDopoIlRipristino:
             populate_tree=lambda: registro.append("albero"),
             _save_state=lambda: registro.append("salvato"),
             # Dalla 10.19.21 il ripristino di un altro torneo chiede prima se
-            # si puo' lasciare il torneo aperto: qui si puo'. La chiamata si
-            # annota, perche' il ripristino del torneo aperto stesso non deve
-            # chiedere (revisione del nono giro).
-            _si_puo_lasciare_il_torneo=lambda: registro.append("chiesto") or True,
+            # si puo' lasciare il torneo aperto: qui si puo', tranne con
+            # si_puo_lasciare falso. La chiamata si annota, perche' il
+            # ripristino del torneo aperto stesso non deve chiedere
+            # (revisione del nono giro).
+            _si_puo_lasciare_il_torneo=lambda: registro.append("chiesto") or si_puo_lasciare,
+            _report_del_torneo_ripristinato=lambda esito: registro.append(("report", esito.destinazione)),
+            _il_file_aperto_e_nel_cestino=lambda esito: False,
         )
 
         def carica(percorso):
@@ -2073,16 +2079,52 @@ class TestDopoIlRipristino:
         assert registro == [("caricato", str(aperto)), "salvato"]
 
     def test_un_altro_torneo_aperto_resta(self, tmp_path):
+        """Il torneo aperto resta, l'albero si rilegge, e dalla 10.19.52
+        il torneo ripristinato ha il turno corrente e la classifica scritti
+        prima: fino alla 10.19.51 si rileggeva soltanto l'albero."""
         from copie_di_sicurezza import Esito
         from gui import main_frame as mf
 
         aperto = tmp_path / "Tornello - X.json"
         aperto.write_text("{}", encoding="utf-8")
         telaio, registro = self._telaio(str(aperto))
+        ripristinato = str(tmp_path / "Tornello - Y.json")
 
-        mf.MainFrame._dopo_il_ripristino(telaio, Esito(True, tipo="torneo", destinazione=str(tmp_path / "Tornello - Y.json")))
+        mf.MainFrame._dopo_il_ripristino(telaio, Esito(True, tipo="torneo", destinazione=ripristinato))
 
-        assert registro == ["albero"]
+        assert registro == [("report", ripristinato), "albero"]
+
+    def test_un_altro_torneo_aperto_nella_procedura_guidata(self, tmp_path):
+        """Dentro la procedura guidata, con la copia di un altro torneo, la
+        procedura resta com'e', senza rileggere l'albero, e dalla 10.19.52 il
+        torneo ripristinato ha il turno corrente e la classifica scritti."""
+        from copie_di_sicurezza import Esito
+        from gui import main_frame as mf
+
+        aperto = tmp_path / "Tornello - X.json"
+        aperto.write_text("{}", encoding="utf-8")
+        telaio, registro = self._telaio(str(aperto))
+        telaio.creation_mode = True
+        ripristinato = str(tmp_path / "Tornello - Y.json")
+
+        mf.MainFrame._dopo_il_ripristino(telaio, Esito(True, tipo="torneo", destinazione=ripristinato))
+
+        assert registro == [("report", ripristinato)]
+
+    def test_con_no_alla_domanda_il_torneo_di_prima_resta(self, tmp_path):
+        """Il torneo aperto non ha il suo file sul disco, e alla domanda di
+        _si_puo_lasciare_il_torneo resta aperto: il torneo ripristinato non
+        si carica, e dalla 10.19.52 ha il turno corrente e la classifica
+        scritti, prima che l'albero si rilegga."""
+        from copie_di_sicurezza import Esito
+        from gui import main_frame as mf
+
+        telaio, registro = self._telaio(str(tmp_path / "Tornello - X.json"), si_puo_lasciare=False)
+        ripristinato = str(tmp_path / "Tornello - Y.json")
+
+        mf.MainFrame._dopo_il_ripristino(telaio, Esito(True, tipo="torneo", destinazione=ripristinato))
+
+        assert registro == ["chiesto", ("report", ripristinato), "albero"]
 
     def test_un_torneo_riaperto_senza_torneo_aperto_si_carica(self, tmp_path):
         from copie_di_sicurezza import Esito

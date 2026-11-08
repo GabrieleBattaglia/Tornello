@@ -926,3 +926,106 @@ class TestITurniToltiDopoIlRipristino:
         )
         assert copie.suoni == ["ripristino", "errore"]
         assert scatole == []
+
+
+class TestClassificaETurnoCorrenteDopoIlRipristino:
+    """10.19.52 (decisione di Gabriele dell'8 novembre 2026). Con un altro
+    torneo aperto, Alfa, fuori e dentro la procedura guidata, dal menu File,
+    nella finestra Copie di sicurezza, si ripristina la copia di un torneo
+    in corso, Turni al turno 1 appena abbinato, o di un torneo concluso, la
+    copia di prima della finalizzazione, che lo riapre. La finestra non
+    carica il torneo ripristinato, e Alfa resta aperta. Nella cartella dei
+    report del torneo ripristinato il turno corrente e la classifica dicono
+    quello che dice il torneo ripristinato: sono quelli che la finestra
+    scrive aprendolo e salvandolo, tranne la data del report della
+    classifica e il tempo che manca alla fine del turno, che dipendono
+    dall'ora. Fino alla 10.19.51 si rileggeva soltanto l'albero: per Turni
+    restavano quelli del turno 3, e per il torneo riaperto mancavano,
+    andati nel cestino con la cartella d'archivio. Le finestre di messaggio
+    e il cestino sono finti."""
+
+    @staticmethod
+    def _report(cartella, nome):
+        """Il turno corrente e la classifica del torneo nome, senza le righe
+        che dipendono dall'ora; None per un file che non c'e'."""
+        uscita = {}
+        for quale in ("Turno corrente", "Classifica"):
+            percorso = os.path.join(cartella, f"Tornello - {nome} - {quale}.txt")
+            if not os.path.exists(percorso):
+                uscita[quale] = None
+                continue
+            with open(percorso, encoding="utf-8-sig") as f:
+                righe = f.read().splitlines()
+            uscita[quale] = [r for r in righe if not r.startswith("Data Report:") and "Mancano" not in r]
+        return uscita
+
+    @pytest.mark.parametrize("procedura", [False, True], ids=["fuori dalla procedura guidata", "dentro la procedura guidata"])
+    @pytest.mark.parametrize("torneo", ["in corso", "riaperto"])
+    def test_con_un_altro_torneo_aperto(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, torneo, procedura):
+        import wx
+        from test_comandi_delle_finestre import TestAlberoETorneoAttivo, _torneo_in_corso
+        from test_finalizzazione import NOME, _cartella_archivio, _copie, _finalizza, prepara_il_banco
+
+        from config import user_data_path
+
+        cartella = user_data_path("")
+        if torneo == "in corso":
+            nome = "Turni"
+            primo, _fotografie, _ritirato = _torneo_vero(abbinati=1, ultimo_completo=False)
+            copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_turno_1_20261108_100000.json"))
+            os.makedirs(os.path.dirname(copia), exist_ok=True)
+            with open(copia, "w", encoding="utf-8") as f:
+                json.dump({k: v for k, v in primo.items() if k != "players_dict"}, f, default=sorted)
+            vero, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+            ripristinato = _apri(principale, copy.deepcopy(vero))
+            principale._save_state()
+            prima = self._report(cartella, nome)
+            assert "Classifica Parziale - Dopo Turno 3" in prima["Classifica"]
+            assert prima["Turno corrente"][0] == "Nome Torneo: Turni - Turno: 3"
+        else:
+            nome = NOME
+            banco = prepara_il_banco(tmp_path, monkeypatch)
+            ripristinato = banco.file_torneo
+            principale.load_tournament(ripristinato)
+            principale._save_state()
+            assert _finalizza(banco) is True
+            copia = _copie(banco.backup, "pre_finalize_torneo")[0]
+            prima = self._report(cartella, nome)
+            assert prima == {"Turno corrente": None, "Classifica": None}
+            assert self._report(_cartella_archivio(), nome)["Classifica"] is not None
+        alfa = user_data_path("Tornello - Alfa.json")
+        with open(alfa, "w", encoding="utf-8") as f:
+            json.dump(_torneo_in_corso("Alfa"), f)
+        principale.load_tournament(alfa)
+        if procedura:
+            TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+            assert principale.creation_mode
+        copie = TestIDettagliDopoIlRipristino._finestra_delle_copie(monkeypatch, copia, cestino_finto)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
+
+        dopo = self._report(cartella, nome)
+        assert principale._e_il_torneo_aperto(alfa)
+        assert principale.creation_mode is procedura
+        assert registro.caricati == []
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+        assert copie.suoni == ["ripristino"]
+        assert suoni == []
+        assert scatole == []
+        assert registro.fuoco == ([] if procedura else ["tree_ctrl"])
+        if torneo == "in corso":
+            assert dopo["Turno corrente"][0] == "Nome Torneo: Turni - Turno: 1"
+            assert "Classifica Parziale - Dopo Turno 3" not in dopo["Classifica"]
+        else:
+            assert cestino_finto.ricevuti == [os.path.abspath(_cartella_archivio())]
+        # Sono i file che la finestra scrive aprendo il torneo ripristinato e
+        # salvandolo.
+        if procedura:
+            principale._chiudi_la_procedura_guidata()
+        principale.load_tournament(ripristinato)
+        principale._save_state()
+        assert self._report(cartella, nome) == dopo

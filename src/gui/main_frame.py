@@ -6630,7 +6630,10 @@ class MainFrame(wx.Frame):
         Una raccolta delle partite con partite che il torneo ripristinato non
         ha la ritrova load_tournament, qui o quando il torneo si apre dopo,
         anche dopo una chiusura di Tornello, e va nella cartella backup prima
-        di essere sostituita (revisione della 10.19.13)."""
+        di essere sostituita (revisione della 10.19.13).
+        Dalla 10.19.52 un torneo ripristinato che la finestra non carica, per
+        esempio con un altro torneo aperto, ha il turno corrente e la
+        classifica scritti da _report_del_torneo_ripristinato."""
         if not esito.riuscito or esito.tipo not in ("torneo", "finalizzato") or not esito.destinazione:
             self.populate_tree()
             return
@@ -6640,6 +6643,7 @@ class MainFrame(wx.Frame):
         )
         procedura = getattr(self, "creation_mode", False)
         if procedura and not (stesso or self._il_file_aperto_e_nel_cestino(esito)):
+            self._report_del_torneo_ripristinato(esito)
             return
         if stesso or not self.current_tournament or not (aperto and os.path.exists(aperto)):
             # Il torneo ripristinato prende il posto di un altro torneo
@@ -6651,6 +6655,7 @@ class MainFrame(wx.Frame):
             # apposta: un salvataggio riscriverebbe sul disco lo stato di
             # prima al posto della copia.
             if not stesso and not self._si_puo_lasciare_il_torneo():
+                self._report_del_torneo_ripristinato(esito)
                 self.populate_tree()
                 return
             self.load_tournament(esito.destinazione)
@@ -6661,7 +6666,37 @@ class MainFrame(wx.Frame):
             if self.current_tournament:
                 self._save_state()
             return
+        self._report_del_torneo_ripristinato(esito)
         self.populate_tree()
+
+    def _report_del_torneo_ripristinato(self, esito):
+        """Dalla 10.19.52 (decisione di Gabriele dell'8 novembre 2026), dopo
+        il ripristino riuscito di un torneo che la finestra non carica, in
+        corso o riaperto, nella sua cartella dei report il turno corrente e
+        la classifica dicono quello che dice il torneo ripristinato: li
+        scrivono save_current_tournament_round_file e save_standings_text, le
+        funzioni che li scrivono a ogni salvataggio del torneo aperto, in
+        _salva_i_report, dal file appena ripristinato, letto come lo legge
+        load_tournament, con _leggi_il_torneo e _conti_dell_apertura: i file
+        sono quelli che la finestra scriverebbe aprendo il torneo ripristinato
+        e salvandolo. Succede con un altro torneo aperto, dentro e fuori
+        dalla procedura guidata, e quando, alla domanda di
+        _si_puo_lasciare_il_torneo, resta aperto il torneo di prima. Il
+        torneo che la finestra carica li ha da _save_state, come prima; la
+        raccolta delle partite resta a load_tournament, quando il torneo si
+        apre. Fino alla 10.19.51, e gia' dalla 10.10.0, quando e' nato il
+        ripristino, restavano quelli di prima del ripristino, e per un torneo
+        riaperto mancavano, andati nel cestino con la cartella d'archivio
+        della finalizzazione. Un file che non si legge non scrive niente."""
+        from reports import save_current_tournament_round_file, save_standings_text
+
+        try:
+            torneo = self._leggi_il_torneo(esito.destinazione)
+            torneo["players_dict"] = self._conti_dell_apertura(torneo)
+        except Exception:  # noqa: BLE001 - un file che non si apre, come in load_tournament
+            return
+        save_current_tournament_round_file(torneo)
+        save_standings_text(torneo, final=False)
 
     def _il_file_aperto_e_nel_cestino(self, esito):
         """Vero se il ripristino di esito ha mandato nel cestino il file del
