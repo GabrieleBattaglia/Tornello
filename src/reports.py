@@ -379,7 +379,9 @@ def file_dei_dettagli_del_turno(torneo, numero, cartella=None):
     toglie il turno (issue 68): il nome si fa in un posto solo, perche' le
     due strade trovino lo stesso file. Con cartella il file sta li', in una
     cartella dei report gia' cercata con _cartella_dei_report:
-    allinea_i_dettagli_dei_turni la cerca una volta per tutti i turni."""
+    allinea_i_dettagli_dei_turni la cerca una volta per tutti i turni, e
+    dalla 10.19.51 ci cerca anche i file dei turni che il torneo non ha, con
+    turni_con_i_dettagli_nella_cartella."""
     nome = _("Tornello - {name} - Turno {round_num} Dettagli.txt").format(
         name=sanitize_filename(torneo.get("name", "Torneo_Senza_Nome")),
         round_num=numero,
@@ -387,6 +389,38 @@ def file_dei_dettagli_del_turno(torneo, numero, cartella=None):
     if cartella is None:
         return _nella_cartella_dei_report(torneo, nome)
     return os.path.join(cartella, nome)
+
+
+def turni_con_i_dettagli_nella_cartella(torneo, cartella):
+    """I numeri dei turni di cui la cartella ha il file dei dettagli del
+    torneo, Tornello - nome - Turno N Dettagli.txt, dal primo. Il nome lo fa
+    file_dei_dettagli_del_turno, con un segnaposto al posto del numero, e
+    si confronta per intero, senza badare alle maiuscole, come fa Windows:
+    il file di un altro torneo con un nome che comincia allo stesso modo,
+    come Tornello - Prova2 - Turno 1 Dettagli.txt per il torneo Prova, non
+    e' suo, e nemmeno un file come Tornello - Prova - Turno 3 bis
+    Dettagli.txt. La cartella si legge con os.listdir, senza glob: le
+    parentesi quadre di una cartella come Tornello [prova] restano lettere.
+    Una cartella che non si legge non ne ha. Dalla 10.19.51, per
+    allinea_i_dettagli_dei_turni."""
+    segnaposto = "\0"
+    prima, dopo = os.path.basename(file_dei_dettagli_del_turno(torneo, segnaposto, cartella)).split(segnaposto)
+    prima, dopo = os.path.normcase(prima), os.path.normcase(dopo)
+    try:
+        nomi = os.listdir(cartella)
+    except OSError:
+        return []
+    numeri = []
+    for nome in nomi:
+        chiave = os.path.normcase(nome)
+        if len(chiave) <= len(prima) + len(dopo) or not (chiave.startswith(prima) and chiave.endswith(dopo)):
+            continue
+        numero = chiave[len(prima) : len(chiave) - len(dopo)]
+        # Il numero come lo scrive la conclusione del turno: Turno 01 non e'
+        # il file del turno 1.
+        if re.fullmatch(r"[1-9][0-9]*", numero) and os.path.isfile(os.path.join(cartella, nome)):
+            numeri.append(int(numero))
+    return sorted(numeri)
 
 
 def nome_della_raccolta_pgn(nome_sanitizzato):
@@ -670,7 +704,7 @@ def _dettagli_scritti_nel_file(percorso):
     return testo[: piede.start()] if piede else testo
 
 
-def allinea_i_dettagli_dei_turni(torneo):
+def allinea_i_dettagli_dei_turni(torneo, cestino=None):
     """Dalla 10.19.50 (decisione di Gabriele dell'8 novembre 2026), dopo il
     ripristino di una copia, nella cartella dei report i dettagli dei turni
     completati del torneo ripristinato dicono quello che dice il torneo: il
@@ -683,25 +717,35 @@ def allinea_i_dettagli_dei_turni(torneo):
     10.19.49 i file restavano come li avevano lasciati l'ultima conclusione
     di un turno e l'ultima Time Machine: dopo la Time Machine e il ripristino
     della copia di prima, il file del turno tolto restava nel cestino, e
-    quello di un turno cambiato diceva i risultati di prima. I file dei turni
-    che il torneo ripristinato non ha, o non ha completati, restano dove
-    sono. La cartella dei report si cerca una volta sola, per tutti i
-    turni: se non si raggiunge, per esempio su una chiavetta staccata, i
-    file vanno nella cartella del programma, come alla conclusione di un
-    turno, e l'avviso esce una volta. Fino alla correzione della 10.19.50 la
-    cartella si cercava due volte per ogni turno, e nel prompt dei comandi
-    uscivano quattro righe d'avviso per turno. Restituisce i file scritti."""
+    quello di un turno cambiato diceva i risultati di prima.
+    Dalla 10.19.51 (decisione di Gabriele dell'8 novembre 2026) i file dei
+    turni che il torneo ripristinato non ha piu' vanno nel cestino con
+    dettagli_dei_turni_nel_cestino di tournament, come quello del turno che
+    la Time Machine toglie, con cestino, la funzione che manda un percorso
+    nel cestino: senza, quella del programma. Il file di un turno che il
+    torneo ha, ma non completo, resta dov'e', come quello del turno che con
+    la Time Machine torna in corso. Fino alla 10.19.50 restavano tutti: dopo
+    il ripristino della copia di un turno appena abbinato, nella cartella
+    dei report restavano i dettagli dei turni che venivano dopo.
+    La cartella dei report si cerca una volta sola, per tutti i turni: se
+    non si raggiunge, per esempio su una chiavetta staccata, i file vanno
+    nella cartella del programma, come alla conclusione di un turno, l'avviso
+    esce una volta, e nel cestino vanno soltanto i file dei turni che il
+    torneo non ha che stanno nella cartella del programma, come con la Time
+    Machine: quelli della chiavetta restano dove sono. Fino alla correzione
+    della 10.19.50 la cartella si cercava due volte per ogni turno, e nel
+    prompt dei comandi uscivano quattro righe d'avviso per turno. Fino alla
+    10.19.50 la cartella si cercava soltanto per un torneo con turni
+    completati. Restituisce i file che il cestino non ha preso, e che restano
+    dove sono."""
     import copy
 
-    from tournament import torna_al_turno
+    from tournament import dettagli_dei_turni_nel_cestino, torna_al_turno
 
-    numeri = _numeri_dei_turni_completati(torneo)
-    if not numeri:
-        return []
     cartella = _cartella_dei_report(torneo)
+    numeri = _numeri_dei_turni_completati(torneo)
     al_turno = copy.deepcopy(torneo)
     al_turno.pop("players_dict", None)
-    scritti = []
     # Dall'ultimo turno al primo: ogni torna_al_turno toglie soltanto i turni
     # dopo quello da scrivere, come se il turno si fosse appena concluso.
     for numero in reversed(numeri):
@@ -715,8 +759,9 @@ def allinea_i_dettagli_dei_turni(torneo):
         if testo is not None and _dettagli_scritti_nel_file(percorso) == testo:
             continue
         append_completed_round_to_history_file(al_turno, numero, cartella)
-        scritti.append(percorso)
-    return scritti
+    del_torneo = {r.get("round") for r in torneo.get("rounds", [])}
+    tolti = [n for n in reversed(turni_con_i_dettagli_nella_cartella(torneo, cartella)) if n not in del_torneo]
+    return dettagli_dei_turni_nel_cestino(torneo, tolti, cestino, cartella)
 
 
 def get_criterion_value(player_item, criterion, torneo):

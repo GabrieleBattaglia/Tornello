@@ -7181,7 +7181,7 @@ class MainFrame(wx.Frame):
         nessuno; senza, resta dov'era, come dopo Ctrl+Z."""
         import copy
 
-        from tournament import dettagli_dei_turni_nel_cestino, save_tournament, torna_al_turno
+        from tournament import dettagli_dei_turni_nel_cestino, messaggio_dei_dettagli_rimasti, save_tournament, torna_al_turno
         from utils import create_backup, play_sound
 
         nome = self.current_tournament.get("name", _("Torneo Sconosciuto"))
@@ -7256,17 +7256,7 @@ class MainFrame(wx.Frame):
             )
         if rimasti:
             play_sound("errore", self.current_tournament)
-            if len(rimasti) == 1:
-                titolo = _("File rimasto fuori dal cestino")
-                frase = _(
-                    "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:"
-                )
-            else:
-                titolo = _("File rimasti fuori dal cestino")
-                frase = _(
-                    "I file dei dettagli dei turni tolti non sono andati nel cestino, e restano dove sono, anche se i turni non ci sono più:"
-                )
-            self._dialogo_informativo(titolo, "\n".join([frase, *rimasti]))
+            self._dialogo_informativo(*messaggio_dei_dettagli_rimasti(rimasti))
 
     def _domanda_del_ritorno(self, nuovo, tolti, arrivo):
         """Il testo della domanda di _time_machine quando i turni da togliere

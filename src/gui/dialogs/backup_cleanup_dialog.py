@@ -448,6 +448,16 @@ class BackupCleanupDialog(wx.Dialog):
             self.dopo_il_ripristino(esito)
         titolo = _("Ripristino riuscito") if esito.riuscito else _("Ripristino non riuscito")
         self._messaggio(titolo, "\n".join(esito.righe))
+        # Dalla 10.19.51 i file dei dettagli dei turni che il torneo
+        # ripristinato non ha piu' vanno nel cestino, come quello del turno
+        # che la Time Machine toglie; quelli che il cestino non prende, per
+        # esempio su un disco senza cestino, li dice il messaggio della Time
+        # Machine, con il suono dell'errore, dopo quello del ripristino.
+        if esito.dettagli_rimasti:
+            from tournament import messaggio_dei_dettagli_rimasti
+
+            play_sound("errore")
+            self._messaggio(*messaggio_dei_dettagli_rimasti(esito.dettagli_rimasti))
         self.populate_list(seleziona=[copia.percorso])
         self.list_ctrl.SetFocus()
 

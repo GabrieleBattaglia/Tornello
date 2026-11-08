@@ -2350,6 +2350,249 @@ class TestDettagliDeiTurniDopoIlRipristino:
         assert cestino_finto.ricevuti == []
 
 
+class TestDettagliDeiTurniCheNonCiSonoPiu:
+    """10.19.51 (decisione di Gabriele dell'8 novembre 2026). Dopo il
+    ripristino riuscito di un torneo, i file dei dettagli dei turni che il
+    torneo ripristinato non ha piu' vanno nel cestino, come quello del turno
+    che la Time Machine toglie; il file di un turno che il torneo ha, ma non
+    completo, resta dov'e', come quello del turno che con la Time Machine
+    torna in corso. Fino alla 10.19.50 restavano tutti: sul banco, con la
+    copia di Prova time machine al turno 1, abbinato e senza risultati,
+    restavano i dettagli dei turni 1, 2 e 3. Il torneo e' quello vero di
+    test_canc_sui_turni, con i file scritti alla conclusione di ogni turno,
+    e la copia e' quella del turno 1 appena abbinato da bbpPairings."""
+
+    _dettagli_nella = staticmethod(TestDettagliDeiTurniDopoIlRipristino._dettagli_nella)
+    _scritti = staticmethod(TestDettagliDeiTurniDopoIlRipristino._scritti)
+    _scrivi_il_torneo = staticmethod(TestDettagliDeiTurniDopoIlRipristino._scrivi_il_torneo)
+
+    def _oggi_e_la_copia(self, cartella_del_programma, esterna=False, preparazione=False):
+        """Il torneo Turni con i turni da 1 a 3 completi e i loro file dei
+        dettagli, nella cartella del programma o, con esterna, nella cartella
+        di lavoro scelta per il torneo; la copia del turno 1 appena abbinato,
+        senza risultati, come quella che Tornello fa quando abbina il turno,
+        o, con preparazione, quella del torneo appena nato, senza turni.
+        Restituisce la cartella dei report, i file di oggi e la copia."""
+        from test_canc_sui_turni import _torneo_vero
+
+        from config import user_data_path
+
+        primo, _fotografie, _ritirato = _torneo_vero(abbinati=1, ultimo_completo=False)
+        assert self._dettagli_nella(cartella_del_programma) == {}
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        # La copia ha gli stessi abbinamenti del turno 1 del torneo, senza i
+        # risultati.
+        coppie = [(p["white_player_id"], p["black_player_id"]) for p in primo["rounds"][0]["matches"]]
+        assert coppie == [(p["white_player_id"], p["black_player_id"]) for p in torneo["rounds"][0]["matches"]]
+        assert all(p["result"] is None for p in primo["rounds"][0]["matches"] if p["black_player_id"] is not None)
+        dati_copia = copy.deepcopy({k: v for k, v in primo.items() if k != "players_dict"})
+        if preparazione:
+            dati_copia["rounds"] = []
+            dati_copia["current_round"] = 1
+            for g in dati_copia["players"]:
+                g["points"] = 0.0
+                g["results_history"] = []
+        cartella = cartella_del_programma
+        if esterna:
+            cartella = cartella_del_programma / "esterna"
+            cartella.mkdir()
+            for nome in self._dettagli_nella(cartella_del_programma):
+                shutil.move(cartella_del_programma / nome, cartella / nome)
+            torneo["custom_save_path"] = dati_copia["custom_save_path"] = str(cartella)
+        oggi = self._dettagli_nella(cartella)
+        assert [n.split(" - ")[-1] for n in oggi] == ["Turno 1 Dettagli.txt", "Turno 2 Dettagli.txt", "Turno 3 Dettagli.txt"]
+        self._scrivi_il_torneo(user_data_path("Tornello - Turni.json"), {k: v for k, v in torneo.items() if k != "players_dict"})
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_turno_1_20261108_100000.json"))
+        self._scrivi_il_torneo(copia, dati_copia)
+        return cartella, oggi, copia
+
+    @pytest.mark.parametrize("esterna", [False, True], ids=["nella cartella del programma", "nella cartella di lavoro esterna"])
+    def test_i_turni_tolti_vanno_nel_cestino(self, tmp_path, monkeypatch, capsys, cestino_finto, esterna):
+        """La copia ha il turno 1 abbinato, senza risultati: i file dei
+        turni 2 e 3 vanno nel cestino, dall'ultimo, come con la Time
+        Machine, con il loro contenuto; quello del turno 1 resta, byte per
+        byte, e non si riscrive. L'esito dice soltanto il ripristino, come
+        prima, e il prompt dei comandi non ha righe nuove."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path, esterna)
+        scritti = self._scritti(monkeypatch)
+        capsys.readouterr()
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        nomi = [f"Tornello - Turni - Turno {n} Dettagli.txt" for n in (3, 2)]
+        assert cestino_finto.tentativi == [os.path.abspath(cartella / n) for n in nomi]
+        assert cestino_finto.ricevuti == cestino_finto.tentativi
+        assert [(tmp_path / "cestino" / f"{i}_{n}").read_bytes() for i, n in enumerate(nomi)] == [oggi[n] for n in nomi]
+        assert self._dettagli_nella(cartella) == {"Tornello - Turni - Turno 1 Dettagli.txt": oggi["Tornello - Turni - Turno 1 Dettagli.txt"]}
+        assert scritti == []
+        assert esito.dettagli_rimasti == []
+        assert esito.righe[0] == "Ripristino riuscito: Tornello - Turni.json è com'era nella copia."
+        assert len(esito.righe) == 2 and esito.righe[1].startswith("Lo stato di prima è nella copia Tornello - Turni_pre_ripristino_")
+        assert capsys.readouterr().out == ""
+
+    def test_la_copia_del_torneo_appena_nato(self, tmp_path, cestino_finto):
+        """La copia del torneo senza turni: vanno nel cestino tutti e tre i
+        file, dall'ultimo."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, _oggi, copia = self._oggi_e_la_copia(tmp_path, preparazione=True)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert cestino_finto.ricevuti == [os.path.abspath(cartella / f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (3, 2, 1)]
+        assert self._dettagli_nella(cartella) == {}
+        assert esito.dettagli_rimasti == []
+
+    def test_il_cestino_che_non_prende(self, tmp_path, capsys, cestino_finto):
+        """Su un disco senza cestino i file restano dove sono, byte per
+        byte: l'esito li ha in dettagli_rimasti, per il messaggio della
+        finestra, e il prompt dei comandi li dice con la riga della Time
+        Machine. Il ripristino resta riuscito."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path)
+        cestino_finto.prende = False
+        capsys.readouterr()
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        rimasti = [os.path.join(str(cartella), f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (3, 2)]
+        assert esito.dettagli_rimasti == rimasti
+        assert cestino_finto.tentativi == [os.path.abspath(p) for p in rimasti]
+        assert cestino_finto.ricevuti == []
+        assert self._dettagli_nella(cartella) == oggi
+        assert capsys.readouterr().out.splitlines() == [
+            f"Il file {p} del turno tolto non è andato nel cestino, e resta dov'è." for p in rimasti
+        ]
+
+    def test_soltanto_i_file_del_torneo(self, tmp_path, cestino_finto):
+        """Nella cartella dei report ci sono anche file che non sono i
+        dettagli di un turno del torneo Turni: quelli del torneo Turni2, che
+        cominciano allo stesso modo, un Turno 3 bis, un Turno 02, una copia
+        .bak e una cartella con il nome di un file dei dettagli. Restano
+        tutti dove sono; il file del turno 4 scritto in minuscolo, che per
+        Windows e' il file del turno 4 del torneo Turni, va nel cestino."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, _oggi, copia = self._oggi_e_la_copia(tmp_path)
+        estranei = [
+            "Tornello - Turni2 - Turno 2 Dettagli.txt",
+            "Tornello - Turni2 - Turno 3 Dettagli.txt",
+            "Tornello - Turni - Turno 3 bis Dettagli.txt",
+            "Tornello - Turni - Turno 02 Dettagli.txt",
+            "Tornello - Turni - Turno 2 Dettagli.txt.bak",
+            "Tornello - Turni - Turno  Dettagli.txt",
+        ]
+        for nome in estranei:
+            (cartella / nome).write_bytes(b"Un altro file.\r\n")
+        (cartella / "Tornello - Turni - Turno 5 Dettagli.txt").mkdir()
+        (cartella / "tornello - turni - turno 4 dettagli.txt").write_bytes(b"Il turno 4.\r\n")
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert cestino_finto.ricevuti == [os.path.abspath(cartella / f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (4, 3, 2)]
+        assert (tmp_path / "cestino" / "0_Tornello - Turni - Turno 4 Dettagli.txt").read_bytes() == b"Il turno 4.\r\n"
+        for nome in estranei:
+            assert (cartella / nome).read_bytes() == b"Un altro file.\r\n", nome
+        assert (cartella / "Tornello - Turni - Turno 5 Dettagli.txt").is_dir()
+        assert (cartella / "Tornello - Turni - Turno 1 Dettagli.txt").is_file()
+
+    def test_nella_cartella_con_le_parentesi(self, programma_con_le_parentesi, cestino_finto):
+        """La cartella del programma si chiama Tornello [prova]: le
+        parentesi quadre sono lettere, e i file dei turni 2 e 3 vanno nel
+        cestino come nelle altre cartelle."""
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, _oggi, copia = self._oggi_e_la_copia(programma_con_le_parentesi)
+        assert "[" in str(cartella)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert cestino_finto.ricevuti == [os.path.abspath(cartella / f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (3, 2)]
+        assert list(self._dettagli_nella(cartella)) == ["Tornello - Turni - Turno 1 Dettagli.txt"]
+
+    def test_la_cartella_dei_report_che_non_si_raggiunge(self, tmp_path, capsys, cestino_finto):
+        """La cartella di lavoro scelta per il torneo sta su un'unita' che
+        oggi non c'e', come la chiavetta staccata della sezione 4.1 del
+        manuale: i suoi file non si toccano. La cartella dei report e' allora
+        quella del programma, come alla conclusione di un turno e nella Time
+        Machine, e li' vanno nel cestino i file dei turni 2 e 3 che ci sono,
+        per esempio scritti alla conclusione dei turni con la chiavetta
+        staccata. L'avviso dell'unita' che manca esce una volta sola, e il
+        prompt non ha altre righe."""
+        from test_utils import _unita_che_non_esiste
+
+        from config import user_data_path
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        _cartella, _oggi, copia = self._oggi_e_la_copia(tmp_path)
+        unita = _unita_che_non_esiste()
+        with open(copia, encoding="utf-8") as f:
+            dati_copia = json.load(f)
+        dati_copia["custom_save_path"] = unita + "\\Report Tornello"
+        self._scrivi_il_torneo(copia, dati_copia)
+        programma = os.path.abspath(user_data_path(""))
+        assert programma == os.path.abspath(tmp_path)
+        capsys.readouterr()
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        avviso = f"L'unità '{unita}' non è disponibile. Uso la cartella di default: '{programma}'."
+        assert capsys.readouterr().out.splitlines() == [f"LOG: {avviso}", avviso]
+        assert cestino_finto.ricevuti == [os.path.join(programma, f"Tornello - Turni - Turno {n} Dettagli.txt") for n in (3, 2)]
+        assert list(self._dettagli_nella(tmp_path)) == ["Tornello - Turni - Turno 1 Dettagli.txt"]
+
+    def test_il_torneo_riaperto(self, ambiente, cestino_finto):
+        """La copia di prima della finalizzazione riapre il torneo, che ha
+        il turno 1: nella cartella dei report c'e' anche il file del turno 2,
+        un turno che la copia non ha. Va nel cestino dopo la cartella
+        d'archivio, e il file del turno 1 torna nella cartella dei report."""
+        from copie_di_sicurezza import ripristina
+        from reports import append_completed_round_to_history_file
+
+        append_completed_round_to_history_file(copy.deepcopy(ambiente.torneo), 1)
+        allora = self._dettagli_nella(ambiente.tmp)
+        assert _finalizza(ambiente.torneo, ambiente.file_torneo) is True
+        cartella = _cartella_d_archivio(ambiente)
+        assert self._dettagli_nella(ambiente.tmp) == {}
+        turno_2 = ambiente.tmp / f"Tornello - {NOME} - Turno 2 Dettagli.txt"
+        turno_2.write_bytes(b"Il turno 2 di un'altra storia.\r\n")
+        copia = _copie(ambiente.percorsi.backup, "pre_finalize_torneo")[0]
+        ricevuti_prima = list(cestino_finto.ricevuti)
+
+        esito = ripristina(copia, ambiente.percorsi, cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert cestino_finto.ricevuti[len(ricevuti_prima) :] == [os.path.abspath(cartella), os.path.abspath(turno_2)]
+        assert self._dettagli_nella(ambiente.tmp) == allora
+        assert esito.dettagli_rimasti == []
+
+    def test_un_ripristino_non_riuscito_non_manda_niente_nel_cestino(self, tmp_path, monkeypatch, cestino_finto):
+        """Il ripristino non riesce, perche' la scrittura del torneo non
+        riesce: i file dei turni 2 e 3 restano, e il cestino non riceve
+        niente."""
+        import copie_di_sicurezza
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        cartella, oggi, copia = self._oggi_e_la_copia(tmp_path)
+        monkeypatch.setattr(copie_di_sicurezza, "_scrivi_e_rileggi", lambda *_argomenti, **_opzioni: False)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert not esito.riuscito
+        assert cestino_finto.tentativi == []
+        assert self._dettagli_nella(cartella) == oggi
+        assert esito.dettagli_rimasti == []
+
+
 class TestManuale:
     """La sezione 10.4 del manuale cita etichette e testi della finestra
     Copie di sicurezza: ognuno deve essere scritto dal programma, con i

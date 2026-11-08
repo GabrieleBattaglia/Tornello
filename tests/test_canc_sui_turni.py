@@ -789,3 +789,140 @@ class TestIDettagliDopoIlRipristino:
         aperto = alfa if caso == "altro" else percorso
         assert principale._e_il_torneo_aperto(aperto)
         assert principale.tree_ctrl.GetItemData(principale.tree_ctrl.GetSelection())["filepath"] == principale.active_filename
+
+
+class TestITurniToltiDopoIlRipristino:
+    """10.19.51 (decisione di Gabriele dell'8 novembre 2026). Il caso
+    opposto della prova 5 del collaudo, misurato sul banco con Prova time
+    machine: il torneo ha i turni da 1 a 3 completi, con i loro file dei
+    dettagli, e dal menu File, nella finestra Copie di sicurezza, si
+    ripristina la copia del turno 1 appena abbinato, senza risultati, fuori
+    dalla procedura guidata, dentro, dopo Nuovo torneo, e con un altro
+    torneo aperto. I file dei turni 2 e 3, che il torneo ripristinato non ha
+    piu', vanno nel cestino, con la finestra delle copie come proprietaria
+    della domanda di Windows, come con la Time Machine; quello del turno 1,
+    che c'e' ma non e' completo, resta. Su un disco senza cestino i file
+    restano dove sono, e dopo il messaggio del ripristino un messaggio lo
+    dice, con il suono dell'errore e le parole della Time Machine; poi il
+    fuoco torna nell'elenco delle copie. Fino alla 10.19.50 i tre file
+    restavano tutti. La finestra delle copie non si mostra; le finestre di
+    messaggio e il cestino sono finti."""
+
+    @pytest.mark.parametrize("prende", [True, False], ids=["il cestino prende", "il cestino non prende"])
+    @pytest.mark.parametrize("caso", ["fuori", "dentro", "altro"], ids=["fuori dalla procedura guidata", "dentro la procedura guidata", "con un altro torneo aperto"])
+    def test_la_copia_del_turno_1(self, principale, suoni, monkeypatch, cestino_finto, caso, prende):
+        import re
+
+        import wx
+        from test_comandi_delle_finestre import TestAlberoETorneoAttivo, _torneo_in_corso
+
+        from config import user_data_path
+        from gui.dialogs import backup_cleanup_dialog as bcd
+
+        primo, _fotografie, _ritirato = _torneo_vero(abbinati=1, ultimo_completo=False)
+        assert TestIDettagliDopoIlRipristino._dettagli() == {}
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_turno_1_20261108_100000.json"))
+        os.makedirs(os.path.dirname(copia), exist_ok=True)
+        with open(copia, "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in primo.items() if k != "players_dict"}, f, default=sorted)
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        allora = TestIDettagliDopoIlRipristino._dettagli()
+        assert len(allora) == 3
+        percorso = _apri(principale, copy.deepcopy(torneo))
+        alfa = user_data_path("Tornello - Alfa.json")
+        if caso == "altro":
+            with open(alfa, "w", encoding="utf-8") as f:
+                json.dump(_torneo_in_corso("Alfa"), f)
+            principale.load_tournament(alfa)
+        if caso == "dentro":
+            TestAlberoETorneoAttivo._dal_menu(principale, wx.ID_NEW)
+            assert principale.creation_mode
+        cestino_finto.prende = prende
+        copie = TestIDettagliDopoIlRipristino._finestra_delle_copie(monkeypatch, copia, cestino_finto)
+        # La finestra delle copie finta annota anche la sua maniglia e il
+        # fuoco che chiede al suo elenco.
+        copie.fuoco, copie.maniglia = [], []
+        mostra = bcd.BackupCleanupDialog.ShowModal
+
+        def mostra_e_annota(finestra):
+            copie.maniglia.append(finestra.GetHandle())
+            finestra.list_ctrl.SetFocus = lambda: copie.fuoco.append(len(copie.finestre))
+            return mostra(finestra)
+
+        monkeypatch.setattr(bcd.BackupCleanupDialog, "ShowModal", mostra_e_annota)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        registro = TestAlberoETorneoAttivo._sonde(principale)
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
+
+        dettagli = [_dettagli(primo, n) for n in (3, 2)]
+        assert cestino_finto.tentativi == [os.path.abspath(p) for p in dettagli]
+        assert cestino_finto.finestre == copie.maniglia * 2
+        uno = "Tornello - Turni - Turno 1 Dettagli.txt"
+        if prende:
+            assert cestino_finto.ricevuti == cestino_finto.tentativi
+            assert TestIDettagliDopoIlRipristino._dettagli() == {uno: allora[uno]}
+            assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito"]
+            assert copie.suoni == ["ripristino"]
+        else:
+            assert cestino_finto.ricevuti == []
+            assert TestIDettagliDopoIlRipristino._dettagli() == allora
+            assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito", "File rimasti fuori dal cestino"]
+            assert copie.finestre[2][1] == "\n".join(
+                [
+                    "I file dei dettagli dei turni tolti non sono andati nel cestino, e restano dove sono, anche se i turni non ci sono più:",
+                    *dettagli,
+                ]
+            )
+            assert copie.suoni == ["ripristino", "errore"]
+        assert re.fullmatch(
+            r"Ripristino riuscito: Tornello - Turni\.json è com'era nella copia\.\nLo stato di prima è nella copia Tornello - Turni_pre_ripristino_\d{8}_\d{6}\.json\.",
+            copie.finestre[1][1],
+        ), copie.finestre[1][1]
+        # Il fuoco torna nell'elenco delle copie dopo l'ultimo messaggio, e
+        # alla chiusura della finestra delle copie sull'albero.
+        assert copie.fuoco == [len(copie.finestre)]
+        assert registro.fuoco == ["tree_ctrl"]
+        assert scatole == []
+        assert suoni == []
+        assert not principale.creation_mode
+        assert len(_dal_file(percorso)["rounds"]) == 1
+        aperto = alfa if caso == "altro" else percorso
+        assert principale._e_il_torneo_aperto(aperto)
+
+    def test_un_file_solo_rimasto(self, principale, suoni, monkeypatch, cestino_finto):
+        """Fuori dalla procedura guidata, con la copia del turno 2 appena
+        abbinato: il torneo non ha piu' il turno 3, e il cestino rifiuta il
+        suo file. Il messaggio e' quello della Time Machine per un file
+        solo."""
+        import wx
+        from test_comandi_delle_finestre import TestAlberoETorneoAttivo
+
+        from config import user_data_path
+
+        secondo, _fotografie, _ritirato = _torneo_vero(abbinati=2, ultimo_completo=False)
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_turno_2_20261108_100000.json"))
+        os.makedirs(os.path.dirname(copia), exist_ok=True)
+        with open(copia, "w", encoding="utf-8") as f:
+            json.dump({k: v for k, v in secondo.items() if k != "players_dict"}, f, default=sorted)
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=True)
+        _apri(principale, copy.deepcopy(torneo))
+        turno_3 = _dettagli(torneo, 3)
+        cestino_finto.rifiuta.add(turno_3)
+        copie = TestIDettagliDopoIlRipristino._finestra_delle_copie(monkeypatch, copia, cestino_finto)
+        scatole = []
+        monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+        suoni.clear()
+
+        TestAlberoETorneoAttivo._dal_menu(principale, principale.item_backup_cleanup.GetId())
+
+        assert cestino_finto.tentativi == [os.path.abspath(turno_3)]
+        assert os.path.isfile(turno_3)
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Ripristino riuscito", "File rimasto fuori dal cestino"]
+        assert copie.finestre[2][1] == (
+            "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:\n" + turno_3
+        )
+        assert copie.suoni == ["ripristino", "errore"]
+        assert scatole == []

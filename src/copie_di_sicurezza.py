@@ -1224,7 +1224,10 @@ class Piano:
 @dataclass
 class Esito:
     """Com'e' andato un ripristino: le righe da leggere, le copie
-    pre_ripristino nate, e cio' che e' andato nel cestino."""
+    pre_ripristino nate, e cio' che e' andato nel cestino. Dalla 10.19.51
+    dettagli_rimasti sono i file dei dettagli dei turni che il torneo
+    ripristinato non ha piu', e che il cestino non ha preso: la finestra lo
+    dice con il messaggio della Time Machine."""
 
     riuscito: bool
     righe: list = field(default_factory=list)
@@ -1232,6 +1235,7 @@ class Esito:
     destinazione: str | None = None
     copie: list = field(default_factory=list)
     tolti: list = field(default_factory=list)
+    dettagli_rimasti: list = field(default_factory=list)
 
 
 def _problema_del_torneo(dati):
@@ -1725,7 +1729,12 @@ def ripristina(percorso_copia, percorsi, destinazione=None, cestino=delete_file_
     ripristinato con allinea_i_dettagli_dei_turni di reports: quelli che
     mancano si scrivono, e quelli che dicono altro si riscrivono, per ogni
     torneo, aperto o no, dentro e fuori dalla procedura guidata. Fino alla
-    10.19.49 restavano com'erano."""
+    10.19.49 restavano com'erano.
+    Dalla 10.19.51 (decisione di Gabriele dell'8 novembre 2026) i file dei
+    turni che il torneo ripristinato non ha piu' vanno nel cestino, con
+    cestino, come quello del turno che la Time Machine toglie; quelli che il
+    cestino non prende sono in dettagli_rimasti dell'esito. Fino alla
+    10.19.50 restavano nella cartella dei report."""
     piano = prepara_ripristino(percorso_copia, percorsi, destinazione)
     if piano.rifiuto:
         return Esito(False, [piano.rifiuto], tipo=piano.tipo, destinazione=piano.destinazione)
@@ -1737,7 +1746,7 @@ def ripristina(percorso_copia, percorsi, destinazione=None, cestino=delete_file_
     if esito.riuscito and piano.tipo in ("torneo", "finalizzato"):
         from reports import allinea_i_dettagli_dei_turni
 
-        allinea_i_dettagli_dei_turni(piano.dati)
+        esito.dettagli_rimasti = allinea_i_dettagli_dei_turni(piano.dati, cestino)
     return esito
 
 

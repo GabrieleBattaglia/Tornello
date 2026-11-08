@@ -288,7 +288,7 @@ def time_machine_torneo(torneo, percorso=None):
     return True
 
 
-def dettagli_dei_turni_nel_cestino(torneo, turni, cestino=None):
+def dettagli_dei_turni_nel_cestino(torneo, turni, cestino=None, cartella=None):
     """Manda nel cestino di Windows il file dei dettagli di ciascuno dei
     turni che la Time Machine ha tolto, Tornello - nome - Turno N
     Dettagli.txt, se c'e': lo scrive la conclusione del turno, e un turno che
@@ -296,15 +296,19 @@ def dettagli_dei_turni_nel_cestino(torneo, turni, cestino=None):
     (issue 68), come i file di un torneo eliminato dalla 10.13.8: fino alla
     10.13.59 il file restava nella cartella del torneo. cestino e' la
     funzione che manda un percorso nel cestino e risponde vero se ci e'
-    riuscita; senza, quella del programma. Restituisce i file che restano,
-    per esempio su un disco senza cestino, e li dice."""
+    riuscita; senza, quella del programma. cartella e' quella di
+    file_dei_dettagli_del_turno: dalla 10.19.51 la passa
+    allinea_i_dettagli_dei_turni, che manda nel cestino i file dei turni che
+    il torneo ripristinato non ha piu'. Restituisce i file che restano, per
+    esempio su un disco senza cestino, e li dice; il messaggio della
+    finestra lo da' messaggio_dei_dettagli_rimasti."""
     from reports import file_dei_dettagli_del_turno
     from utils import delete_file_to_trash
 
     cestino = cestino or delete_file_to_trash
     rimasti = []
     for numero in turni:
-        percorso = file_dei_dettagli_del_turno(torneo, numero)
+        percorso = file_dei_dettagli_del_turno(torneo, numero, cartella)
         if os.path.isfile(percorso) and not cestino(percorso):
             rimasti.append(percorso)
             print(
@@ -313,6 +317,25 @@ def dettagli_dei_turni_nel_cestino(torneo, turni, cestino=None):
                 ).format(file=percorso)
             )
     return rimasti
+
+
+def messaggio_dei_dettagli_rimasti(rimasti):
+    """Il titolo e il testo del messaggio della finestra per i file dei
+    dettagli dei turni tolti che il cestino non ha preso, rimasti, uno per
+    riga: quello della Time Machine dalla 10.13.60, che dalla 10.19.51 esce
+    anche dopo il ripristino di una copia con meno turni, dalla finestra
+    Copie di sicurezza. Le parole stanno in un posto solo."""
+    if len(rimasti) == 1:
+        titolo = _("File rimasto fuori dal cestino")
+        frase = _(
+            "Il file dei dettagli del turno tolto non è andato nel cestino, e resta dov'è, anche se il turno non c'è più:"
+        )
+    else:
+        titolo = _("File rimasti fuori dal cestino")
+        frase = _(
+            "I file dei dettagli dei turni tolti non sono andati nel cestino, e restano dove sono, anche se i turni non ci sono più:"
+        )
+    return titolo, "\n".join([frase, *rimasti])
 
 
 def rollback_to_previous_round(torneo, cestino=None):
