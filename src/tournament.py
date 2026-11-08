@@ -453,11 +453,23 @@ def load_tournament(filename_to_load, motivi=None):
     lista, riceve del motivo la sola descrizione, come in save_tournament, e
     qui non si stampa niente, perche' il messaggio lo da' la console, con il
     file (decisione di Gabriele del 7 novembre 2026); senza, il motivo si
-    stampa come prima."""
+    stampa come prima.
+    Dalla 10.19.47 un file che si legge, ma non ha la forma di un torneo, per
+    esempio una lista, un oggetto senza il nome o con i turni che non sono
+    una lista, solleva FileNonTorneo, con la frase del messaggio Non è un
+    torneo della finestra, e un errore nei dati del torneo, per esempio un
+    iscritto senza il suo identificativo, esce com'e': li dice la console,
+    in _torneo_dal_file. La forma e' quella della finestra, di
+    con_la_forma_di_un_torneo di omonimi.py. Fino alla 10.19.46, e gia' nella
+    10.0.0, un oggetto senza il nome o senza gli iscritti si apriva, con il
+    nome Torneo Sconosciuto o senza iscritti, e gli altri fermavano la
+    console (decisione di Gabriele dell'8 novembre 2026)."""
+    from omonimi import FileNonTorneo, con_la_forma_di_un_torneo
+
     if os.path.exists(filename_to_load):
         try:
             with open(filename_to_load, encoding="utf-8") as f:
-                torneo_data = json.load(f)
+                torneo_data = con_la_forma_di_un_torneo(json.load(f), filename_to_load)
                 torneo_data.setdefault("name", _("Torneo Sconosciuto"))
                 torneo_data.setdefault(
                     "start_date", datetime.now().strftime(DATE_FORMAT_ISO)
@@ -492,6 +504,10 @@ def load_tournament(filename_to_load, motivi=None):
                     p["id"]: p for p in torneo_data.get("players", [])
                 }
                 return torneo_data
+        except FileNonTorneo:
+            # E' anche un ValueError, ma non e' un file che non si legge: il
+            # suo messaggio e' un altro.
+            raise
         except (OSError, ValueError, RecursionError) as e:
             # ValueError comprende il JSON rovinato e il testo che non e'
             # UTF-8; RecursionError e' il json annidato oltre il limite di

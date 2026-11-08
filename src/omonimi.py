@@ -127,6 +127,31 @@ def _ha_la_forma_di_un_torneo(dati):
     )
 
 
+class FileNonTorneo(ValueError):
+    """Un file JSON che non e' un torneo di Tornello, per esempio il database
+    dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare.
+    Fino alla 10.19.46 stava in gui/main_frame.py; dalla 10.19.47 la usa
+    anche la console, che la importa da qui."""
+
+
+def con_la_forma_di_un_torneo(dati, percorso):
+    """I dati letti dal file percorso, se hanno la forma di un torneo di
+    Tornello, come la chiede _ha_la_forma_di_un_torneo; altrimenti solleva
+    FileNonTorneo, con la frase del messaggio Non è un torneo, che nomina il
+    file senza la cartella. La chiedono l'apertura di un torneo nella
+    finestra, in _leggi_il_torneo, e dalla 10.19.47 quella della console, in
+    load_tournament di tournament.py: un solo controllo della forma, e una
+    sola frase, per tutte e due (decisione di Gabriele dell'8 novembre
+    2026)."""
+    if not _ha_la_forma_di_un_torneo(dati):
+        raise FileNonTorneo(
+            _("Il file {name} non è un torneo di Tornello, e non si apre.").format(
+                name=os.path.basename(percorso)
+            )
+        )
+    return dati
+
+
 def _file_del_torneo_nuovo(nome):
     """Il nome del file di un torneo nuovo chiamato nome, senza la cartella:
     Tornello - seguito dal nome ripulito da sanitize_filename, .json."""

@@ -19,6 +19,7 @@ from db_players import (
 )
 from engine import handle_bbpairings_failure
 from models import Match, Player, ResultEntry, Round, RoundDate, Tournament
+from omonimi import FileNonTorneo
 from reports import (
     append_completed_round_to_history_file,
     posizioni_con_i_pari_merito,
@@ -50,6 +51,7 @@ from tournament import (
     tornei_nella_cartella_del_programma,
 )
 from utils import (
+    descrizione_del_motivo,
     format_date_locale,
     parse_flexible_date,
     sanitize_filename,
@@ -292,10 +294,8 @@ class TournamentController:
                         name=single_tournament_name_guess
                     )
                 )
-                torneo_dict = self._torneo_dal_file(self.active_filename)
-                if torneo_dict:
-                    self.tournament = Tournament.from_dict(torneo_dict)
-                else:
+                self.tournament = self._torneo_dal_file(self.active_filename)
+                if not self.tournament:
                     self.ui.show_error(
                         _(
                             "Errore fatale nel caricamento del torneo '{filename}'."
@@ -388,13 +388,15 @@ class TournamentController:
                             # la console continua con l'elenco dei tornei, come
                             # dopo un No; fino alla 10.19.41, e gia' nella
                             # 10.0.0, si fermava con un errore (decisione di
-                            # Gabriele del 7 novembre 2026).
-                            torneo_dict = self._torneo_dal_file(
+                            # Gabriele del 7 novembre 2026). Dalla 10.19.47 vale
+                            # anche per un file diventato una lista, o un altro
+                            # file che non ha la forma di un torneo.
+                            ripreso = self._torneo_dal_file(
                                 suspended_tournaments[0]["filepath"]
                             )
-                            if torneo_dict:
+                            if ripreso:
                                 self.active_filename = suspended_tournaments[0]["filepath"]
-                                self.tournament = Tournament.from_dict(torneo_dict)
+                                self.tournament = ripreso
                                 deve_creare_nuovo_torneo = False
                                 self.ui.show_message(
                                     _("Ripresa creazione torneo '{name}'...").format(
@@ -422,10 +424,8 @@ class TournamentController:
                         self.ui.show_message(
                             _("Caricamento di '{name}'...").format(name=chosen["name"])
                         )
-                        torneo_dict = self._torneo_dal_file(self.active_filename)
-                        if torneo_dict:
-                            self.tournament = Tournament.from_dict(torneo_dict)
-                        else:
+                        self.tournament = self._torneo_dal_file(self.active_filename)
+                        if not self.tournament:
                             self.ui.show_error(
                                 _("Errore nel caricamento del torneo. Riprova.")
                             )
@@ -456,10 +456,10 @@ class TournamentController:
         if deve_creare_nuovo_torneo or self.tournament is None:
             self._create_new_tournament(nome_nuovo_torneo_suggerito)
 
-    def _torneo_dal_file(self, percorso: str) -> dict | None:
-        """I dati del torneo scritto nel file, letti da load_tournament, o
-        None se il file non si apre. Dalla 10.19.42 un file che non si apre
-        lo dice un messaggio, con il file e del motivo la sola descrizione,
+    def _torneo_dal_file(self, percorso: str) -> Tournament | None:
+        """Il torneo scritto nel file, letto da load_tournament, come
+        Tournament, o None se il file non si apre. Dalla 10.19.42 un file che
+        non si apre lo dice un messaggio, con il file e del motivo la sola descrizione,
         come Apertura non riuscita nella finestra, per esempio No such file
         or directory, il testo dell'errore di json per un file rovinato o
         quello della decodifica per un file che non e' UTF-8; poi chi chiama
@@ -469,16 +469,37 @@ class TournamentController:
         errore, e la ripresa di una creazione sospesa si fermava anche con un
         file che non c'era piu'; per gli altri file load_tournament stampava
         il testo intero dell'errore (decisione di Gabriele del 7 novembre
-        2026)."""
+        2026).
+        Dalla 10.19.47 la console fa come la finestra anche con un file che si
+        legge, ma non e' un torneo, o i cui dati non si aprono. Un file senza
+        la forma di un torneo, per esempio una lista, o un oggetto senza il
+        nome, con lo stesso controllo della finestra, ha la frase di Non è un
+        torneo: "Il file Tornello - Rotto.json non è un torneo di Tornello, e
+        non si apre."; un errore nei dati, che load_tournament o
+        Tournament.from_dict sollevano, per esempio per un iscritto senza il
+        suo identificativo, o per un turno che non e' un oggetto, ha il
+        messaggio di sopra, con la descrizione del motivo, come Apertura non
+        riuscita, per esempio 'id'. Poi chi chiama continua allo stesso modo.
+        Fino alla 10.19.46, e gia' nella 10.0.0, questi file fermavano la
+        console con un errore, anche quando lo diventavano mentre la console
+        aspettava una risposta; un oggetto senza il nome, o senza gli
+        iscritti, si apriva (decisione di Gabriele dell'8 novembre 2026)."""
         motivi = []
-        torneo_dict = load_tournament(percorso, motivi)
-        if torneo_dict is None:
-            self.ui.show_error(
-                _("Il file {file} non si è potuto aprire: {motivo}.").format(
-                    file=percorso, motivo="; ".join(motivi)
-                )
+        try:
+            torneo_dict = load_tournament(percorso, motivi)
+            if torneo_dict is not None:
+                return Tournament.from_dict(torneo_dict)
+        except FileNonTorneo as errore:
+            self.ui.show_error(str(errore))
+            return None
+        except Exception as errore:  # noqa: BLE001 - qualunque errore dei dati e' un file che non si apre, come nella finestra
+            motivi.append(descrizione_del_motivo(errore))
+        self.ui.show_error(
+            _("Il file {file} non si è potuto aprire: {motivo}.").format(
+                file=percorso, motivo="; ".join(motivi)
             )
-        return torneo_dict
+        )
+        return None
 
     def _resume_suspended_creation(self) -> None:
         self.ui.show_message(

@@ -1076,3 +1076,209 @@ class TestIlFileCheNonSiApreInConsole:
         motivo = self._motivo(percorsi["Beta"])
         assert adattatore.messaggi[-3:] == ["Caricamento di 'Beta'...", f"Il file {percorsi['Beta']} non si è potuto aprire: {motivo}.", "Errore nel caricamento del torneo. Riprova."]
         assert guida.tournament is None
+
+
+# I file che si leggono, ma non hanno la forma di un torneo, come la chiede
+# la finestra: Non è un torneo.
+FILE_CHE_NON_SONO_TORNEI = {
+    "una lista": [1, 2],
+    "senza il nome": {"players": [], "rounds": []},
+    "senza gli iscritti": {"name": "Rotto", "rounds": []},
+    "con i turni che non sono una lista": {"name": "Rotto", "players": [], "rounds": 5},
+}
+# I file con la forma di un torneo e i dati che non si aprono, con la
+# descrizione del motivo, come la dice Apertura non riuscita nella finestra.
+FILE_CON_I_DATI_CHE_NON_SI_APRONO = {
+    "un iscritto senza id": ({"name": "Rotto", "players": [{"first_name": "Anna", "last_name": "Neri"}], "rounds": []}, "'id'"),
+    "un turno che è un numero": ({"name": "Rotto", "players": [], "rounds": [5]}, "'int' object has no attribute 'get'"),
+}
+
+
+class TestIlFileCheNonETorneoInConsole:
+    """10.19.47 (decisione di Gabriele dell'8 novembre 2026). Un file che si
+    legge, ma che non ha la forma di un torneo, con lo stesso controllo
+    della finestra, ha il testo di Non è un torneo, con il nome del file:
+    "Il file Tornello - Rotto.json non è un torneo di Tornello, e non si
+    apre."; un file con la forma di un torneo, ma con i dati che non si
+    aprono, ha il messaggio della 10.19.42, con la descrizione del motivo.
+    Poi la console continua come per gli altri file che non si aprono, e il
+    file resta com'era. Fino alla 10.19.46, e gia' nella 10.0.0, una lista,
+    un iscritto senza id o i turni che non sono una lista fermavano la
+    console con un errore, anche quando il file lo diventava mentre la
+    console aspettava una risposta; un oggetto senza il nome si apriva come
+    Torneo Sconosciuto, e uno senza gli iscritti si apriva senza iscritti."""
+
+    CASI = (*FILE_CHE_NON_SONO_TORNEI, *FILE_CON_I_DATI_CHE_NON_SI_APRONO)
+
+    @staticmethod
+    def _contenuto(caso):
+        if caso in FILE_CHE_NON_SONO_TORNEI:
+            return FILE_CHE_NON_SONO_TORNEI[caso]
+        return FILE_CON_I_DATI_CHE_NON_SI_APRONO[caso][0]
+
+    @staticmethod
+    def _messaggio(caso, percorso):
+        import os
+
+        if caso in FILE_CHE_NON_SONO_TORNEI:
+            return f"Il file {os.path.basename(percorso)} non è un torneo di Tornello, e non si apre."
+        return f"Il file {percorso} non si è potuto aprire: {FILE_CON_I_DATI_CHE_NON_SI_APRONO[caso][1]}."
+
+    @staticmethod
+    def _scrivi(percorso, contenuto):
+        import json
+
+        with open(percorso, "w", encoding="utf-8") as f:
+            json.dump(contenuto, f)
+        with open(percorso, "rb") as f:
+            return f.read()
+
+    @staticmethod
+    def _suoni(monkeypatch):
+        """I suoni chiesti, al posto di quelli veri."""
+        import cli_adapter
+        import controller
+        import tournament
+        import ui
+        import utils
+
+        suonati = []
+        for modulo in (utils, ui, cli_adapter, tournament, controller):
+            if hasattr(modulo, "play_sound"):
+                monkeypatch.setattr(modulo, "play_sound", lambda nome, *a, **k: suonati.append(nome))
+        return suonati
+
+    @staticmethod
+    def _cartella():
+        import os
+
+        import config
+
+        return sorted(os.listdir(config.user_data_path("")))
+
+    @pytest.mark.parametrize("caso", CASI)
+    def test_l_unico_torneo(self, monkeypatch, tmp_path, caso):
+        """L'unico torneo della cartella del programma: dopo INVIO il
+        messaggio, poi Errore fatale e la domanda Vuoi creare un nuovo
+        torneo; con No la console esce, senza il suono dell'errore. Il file
+        resta com'era, e nella cartella del programma non nasce niente, tranne
+        la cartella backup della copia di chiusura."""
+        import config
+        from controller import TournamentController
+
+        suonati = self._suoni(monkeypatch)
+        percorso = config.user_data_path("Tornello - Rotto.json")
+        prima = self._scrivi(percorso, self._contenuto(caso))
+        cartella = self._cartella()
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=[""], conferme=[False])
+        adattatore = _adattatore(copione)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._select_or_create_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        assert copione.domande[-1] == "Vuoi creare un nuovo torneo?"
+        assert adattatore.messaggi[-4:] == [
+            "\nTrovato un solo torneo esistente: 'Rotto' (File: Tornello - Rotto.json)",
+            "Caricamento di 'Rotto'...",
+            self._messaggio(caso, percorso),
+            f"Errore fatale nel caricamento del torneo '{percorso}'.",
+        ]
+        assert guida.tournament is None
+        # Soltanto il suono della chiusura, all'uscita.
+        assert suonati == ["chiusura"]
+        with open(percorso, "rb") as f:
+            assert f.read() == prima
+        # All'uscita, come sempre, la copia di chiusura nella cartella backup.
+        assert [n for n in self._cartella() if n != "backup"] == cartella
+
+    @pytest.mark.parametrize("caso", ["una lista", "un iscritto senza id"])
+    def test_la_ripresa_con_il_file_cambiato(self, monkeypatch, tmp_path, caso):
+        """Console_Prova, in preparazione, e Altro, avviato: mentre la
+        domanda Vuoi riprendere la creazione aspetta, il file di
+        Console_Prova diventa una lista, o un torneo con un iscritto senza
+        id. Dopo il Si' il messaggio, e poi l'elenco dei tornei, da cui si
+        apre Altro."""
+        import glob
+        import os
+
+        import config
+        from controller import TournamentController
+
+        suonati = self._suoni(monkeypatch)
+        sospeso = _torneo_al_primo_turno().to_dict()
+        sospeso.update(rounds=[], current_round=0, creation_suspended=True)
+        percorso = config.user_data_path("Tornello - Console_Prova.json")
+        self._scrivi(percorso, sospeso)
+        altro = _torneo_al_primo_turno().to_dict()
+        altro["name"] = "Altro"
+        file_altro = config.user_data_path("Tornello - Altro.json")
+        self._scrivi(file_altro, altro)
+        monkeypatch.chdir(tmp_path)
+        nomi = [os.path.basename(f) for f in glob.glob(config.user_data_path("Tornello - *.json"))]
+        copione = Copione(monkeypatch, tasti=[str(nomi.index("Tornello - Altro.json") + 1)])
+        adattatore = _adattatore(copione)
+        cambiato = []
+
+        def conferma(prompt, default=True):
+            copione.domande.append(prompt)
+            cambiato.append(self._scrivi(percorso, self._contenuto(caso)))
+            return True
+
+        adattatore.confirm = conferma
+        guida = TournamentController(adattatore)
+
+        guida._select_or_create_tournament()
+
+        assert copione.tasti == []
+        assert copione.domande == ["Vuoi riprendere la creazione di 'Console_Prova'?", "Scegli un torneo da caricare o creane uno nuovo (1-3): "]
+        indice = adattatore.messaggi.index(" - 'Console_Prova' (File: Tornello - Console_Prova.json)")
+        assert adattatore.messaggi[indice + 1 :] == [self._messaggio(caso, percorso), "Caricamento di 'Altro'..."]
+        assert (guida.tournament.name, guida.active_filename) == ("Altro", file_altro)
+        assert not any("Ripresa" in m for m in adattatore.messaggi)
+        assert suonati == []
+        with open(percorso, "rb") as f:
+            assert f.read() == cambiato[0]
+
+    @pytest.mark.parametrize("caso", ["una lista", "un iscritto senza id"])
+    def test_il_torneo_scelto_dall_elenco(self, monkeypatch, tmp_path, caso):
+        """Alfa e Beta nella cartella del programma: mentre l'elenco aspetta
+        la scelta, il file di Beta diventa una lista, o un torneo con un
+        iscritto senza id. Scelto Beta, il messaggio, poi Errore nel
+        caricamento del torneo, e la console esce."""
+        import config
+        from controller import TournamentController
+
+        suonati = self._suoni(monkeypatch)
+        percorsi = {}
+        for nome in ("Alfa", "Beta"):
+            torneo = _torneo_al_primo_turno().to_dict()
+            torneo["name"] = nome
+            percorsi[nome] = config.user_data_path(f"Tornello - {nome}.json")
+            self._scrivi(percorsi[nome], torneo)
+        monkeypatch.chdir(tmp_path)
+        copione = Copione(monkeypatch, tasti=["2"])
+        adattatore = _adattatore(copione)
+        scelta = copione.input
+        cambiato = []
+
+        def input_che_cambia_beta(domanda=""):
+            cambiato.append(self._scrivi(percorsi["Beta"], self._contenuto(caso)))
+            return scelta(domanda)
+
+        monkeypatch.setattr("builtins.input", input_che_cambia_beta)
+        guida = TournamentController(adattatore)
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._select_or_create_tournament()
+
+        assert uscita.value.code == 1
+        assert copione.tasti == []
+        assert adattatore.messaggi[-3:] == ["Caricamento di 'Beta'...", self._messaggio(caso, percorsi["Beta"]), "Errore nel caricamento del torneo. Riprova."]
+        assert guida.tournament is None
+        assert suonati == ["chiusura"]
+        with open(percorsi["Beta"], "rb") as f:
+            assert f.read() == cambiato[0]

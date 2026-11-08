@@ -20,11 +20,13 @@ from config import ARCHIVED_TOURNAMENTS_DIR, user_data_path
 # omonimi.py dalla 10.19.13, senza wx: la finalizzazione li usa anche in
 # console (issue 66).
 from omonimi import (
+    FileNonTorneo,
     _cartella_nell_archivio,
     _chiave_del_percorso,
     _file_del_torneo_nuovo,
     _ha_la_forma_di_un_torneo,
     coincidenza_del_nome,
+    con_la_forma_di_un_torneo,
     edizione_con_l_identita,
     edizioni_nell_archivio,
     stesso_nome_di_file,
@@ -79,11 +81,6 @@ def _nella_cartella_del_programma(percorso):
     dove l'albero cerca i tornei, anche scritto con altre maiuscole."""
     cartella = os.path.dirname(os.path.abspath(percorso))
     return os.path.normcase(cartella) == os.path.normcase(_cartella_predefinita_tornei())
-
-
-class FileNonTorneo(ValueError):
-    """Un file JSON che non e' un torneo di Tornello, per esempio il database
-    dei giocatori o le impostazioni. Il messaggio e' la frase da mostrare."""
 
 
 def _dati_del_file_di_un_torneo(percorso):
@@ -1432,13 +1429,9 @@ class MainFrame(wx.Frame):
             )
         with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
-        if not _ha_la_forma_di_un_torneo(data):
-            raise FileNonTorneo(
-                _("Il file {name} non è un torneo di Tornello, e non si apre.").format(
-                    name=nome
-                )
-            )
-        return data
+        # La forma e la frase di Non è un torneo sono quelle della console,
+        # dalla 10.19.47: con_la_forma_di_un_torneo di omonimi.py.
+        return con_la_forma_di_un_torneo(data, filepath)
 
     def _conti_dell_apertura(self, data):
         """Correzione della 10.19.29. I conti che l'apertura fa sui dati del
