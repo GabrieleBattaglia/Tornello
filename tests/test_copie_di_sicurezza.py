@@ -2251,6 +2251,37 @@ class TestDettagliDeiTurniDopoIlRipristino:
         assert ambiente.cestino.ricevuti == [os.path.abspath(cartella)]
         assert self._dettagli_nella(ambiente.tmp) == allora
 
+    def test_il_turno_abbinato_senza_risultati_resta_com_e(self, tmp_path, monkeypatch, cestino_finto):
+        """La copia ha i turni 1 e 2 completi e il turno 3 abbinato, senza
+        risultati, e nella cartella dei report c'e' un file del turno 3 di
+        un'altra storia, per esempio quello di una conclusione che la Time
+        Machine ha poi annullato. Il turno 3 non e' completo: il suo file
+        resta com'e', byte per byte, come dice la voce 10.19.50 del
+        ChangeLog, e non si scrive niente, perche' i file dei turni 1 e 2
+        dicono gia' quello che dice il torneo (revisione del tredicesimo
+        giro)."""
+        from test_canc_sui_turni import _torneo_vero
+
+        from config import user_data_path
+        from copie_di_sicurezza import percorsi_del_programma, ripristina
+
+        torneo, _fotografie, _ritirato = _torneo_vero(abbinati=3, ultimo_completo=False)
+        assert [n.split(" - ")[-1] for n in self._dettagli_nella(tmp_path)] == ["Turno 1 Dettagli.txt", "Turno 2 Dettagli.txt"]
+        (tmp_path / "Tornello - Turni - Turno 3 Dettagli.txt").write_bytes(b"Il turno 3 di un'altra storia.\r\n")
+        prima = self._dettagli_nella(tmp_path)
+        dati = {k: v for k, v in torneo.items() if k != "players_dict"}
+        copia = user_data_path(os.path.join("backup", "2026", "11 Novembre", "Tornello - Turni_pre_rollback_20261108_100000.json"))
+        self._scrivi_il_torneo(copia, dati)
+        self._scrivi_il_torneo(user_data_path("Tornello - Turni.json"), dati)
+        scritti = self._scritti(monkeypatch)
+
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+        assert esito.riuscito, esito.righe
+        assert self._dettagli_nella(tmp_path) == prima
+        assert scritti == []
+        assert cestino_finto.ricevuti == []
+
     def test_la_cartella_dei_report_che_non_si_raggiunge(self, tmp_path, capsys, cestino_finto):
         """La cartella di lavoro scelta per il torneo sta su un'unita' che
         oggi non c'e', come la chiavetta staccata della sezione 4.1 del
