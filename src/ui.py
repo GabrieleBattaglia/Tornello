@@ -351,8 +351,17 @@ def input_schedule_details(existing_details=None):
 
 
 def get_input_with_default(prompt_message, default_value=None):
+    """La risposta a una domanda della console, senza gli spazi ai bordi. Con
+    un valore predefinito la domanda lo mostra fra parentesi quadre, e INVIO
+    lo tiene; senza, la domanda finisce con i due punti, e INVIO da' la
+    stringa vuota.
+    Senza valore predefinito, dalla 10.19.59: fino alla 10.19.58, e gia'
+    nella 10.0.0, la domanda mostrava le parentesi quadre vuote, per esempio
+    Nome del nuovo giocatore []: , e INVIO dava None, che fermava la console
+    con AttributeError al nome e al cognome di un giocatore nuovo, gli unici
+    a chiamarla cosi' (decisione di Gabriele dell'8 novembre 2026)."""
     default_display = str(default_value) if default_value is not None else ""
-    if default_display or default_value is None:
+    if default_display:
         user_input = input(f"{prompt_message} [{default_display}]: ").strip()
         return user_input if user_input else default_value
     return input(f"{prompt_message}: ").strip()
@@ -706,6 +715,11 @@ def input_players(
             # due punti due volte, prima e dopo le parentesi quadre vuote, e
             # quella della data di nascita mostrava %Y-%m-%d, il formato
             # grezzo di strftime (decisione di Gabriele dell'8 novembre 2026).
+            # Dalla 10.19.59 le due domande non hanno le parentesi quadre
+            # vuote, e INVIO, che get_input_with_default rende come stringa
+            # vuota, torna alla domanda Giocatore N senza creare niente e
+            # senza toccare il database: fino alla 10.19.58 fermava la console
+            # con AttributeError (decisione di Gabriele dell'8 novembre 2026).
             first_name_new_db = (
                 get_input_with_default(_("  Nome del nuovo giocatore"))
                 .strip()

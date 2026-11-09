@@ -12,6 +12,9 @@ pianificazione, il nome e il cognome di un giocatore nuovo. Fino alla
 formato grezzo di strftime, e quelle domande finivano con ": : ", o con
 ":  []: ". Le date che si accettano e quelle che si rifiutano sono le
 stesse di prima: le tabelle qui sotto sono quelle misurate sulla 10.19.55.
+Dalla 10.19.59 il nome e il cognome di un giocatore nuovo non mostrano le
+parentesi quadre vuote, e INVIO torna alla domanda Giocatore N invece di
+fermare la console.
 La console e' quella vera, con il controller e le risposte a copione di
 test_console, senza suoni; il giorno di oggi e' fisso, domenica 8 novembre
 2026. Tutto sta nella cartella temporanea della prova."""
@@ -31,6 +34,11 @@ DOMANDA_DI_INIZIO = "Inserisci data inizio (AAAA-MM-GG) [Default: Domenica 8 nov
 DOMANDA_DI_FINE = "Inserisci data fine (AAAA-MM-GG) [Default: Giovedì 7 gennaio 2027]: "
 DATA_DI_INIZIO_SBAGLIATA = "Formato data non valido. Usa AAAA-MM-GG o AAAAMMGG."
 DATA_DI_FINE_SBAGLIATA = "Formato data non valido. Usa AAAA-MM-GG."
+GIOCATORE_1 = "\nGiocatore 1 (o lascia vuoto per terminare): "
+PREMI_C_S_O_ESC = "Premi 'c' per concludere, 's' per sospendere, Esc per annullare: "
+# Senza le parentesi quadre vuote dalla 10.19.59.
+DOMANDA_DEL_NOME = "  Nome del nuovo giocatore: "
+DOMANDA_DEL_COGNOME = "  Cognome: "
 
 # Le date di inizio, con la data che ne nasce, o None per quelle che si
 # rifiutano. La vuota e' quella di oggi.
@@ -308,10 +316,10 @@ class TestIlGiocatoreNuovoInConsole:
         """Nella creazione di Libero si iscrive Zeta, che non c'e' in nessuno
         dei due database: la console chiede il nome, Mario, il cognome,
         Rossi, poi gli altri dati con INVIO, una data di nascita sbagliata,
-        x, e 19900501. Nome e cognome hanno i due punti una volta sola, e la
-        data di nascita dice AAAA-MM-GG; Mario Rossi entra nel database dei
-        giocatori, con la sua data di nascita, e nel torneo, che si sospende
-        con s."""
+        x, e 19900501. Nome e cognome hanno i due punti una volta sola, e
+        dalla 10.19.59 niente parentesi quadre vuote, e la data di nascita
+        dice AAAA-MM-GG; Mario Rossi entra nel database dei giocatori, con la
+        sua data di nascita, e nel torneo, che si sospende con s."""
         import config
         import ui
         from controller import TournamentController
@@ -335,10 +343,10 @@ class TestIlGiocatoreNuovoInConsole:
 
         assert uscita.value.code == 0
         assert copione.tasti == [] and copione.conferme == []
-        iscrizione = copione.domande.index("\nGiocatore 1 (o lascia vuoto per terminare): ")
+        iscrizione = copione.domande.index(GIOCATORE_1)
         assert copione.domande[iscrizione + 1 : iscrizione + 10] == [
-            "  Nome del nuovo giocatore []: ",
-            "  Cognome []: ",
+            DOMANDA_DEL_NOME,
+            DOMANDA_DEL_COGNOME,
             "  Titolo FIDE (es. FM, o vuoto): ",
             "  Sesso (m/w) [m]: ",
             "  Federazione (3 lettere, es. ITA) [ITA]: ",
@@ -349,10 +357,58 @@ class TestIlGiocatoreNuovoInConsole:
         ]
         assert elo == ["  Elo (default 1399)"]
         assert "Formato data non valido. Riprova." in stampato.splitlines()
-        assert not any("%" in d or ":  [" in d for d in copione.domande)
+        assert not any("%" in d or ":  [" in d or "[]" in d for d in copione.domande)
         database = _leggi(config.PLAYER_DB_FILE)
         schede = database["players"] if isinstance(database, dict) else database
         assert [(s["first_name"], s["last_name"], s["birth_date"]) for s in schede] == [("Mario", "Rossi", "1990-05-01")]
         libero = _leggi(config.user_data_path("Tornello - Libero.json"))
         assert [(p["first_name"], p["last_name"]) for p in libero["players"]] == [("Mario", "Rossi")]
+        assert cestino_finto.tentativi == []
+
+    @pytest.mark.parametrize("vuoto", ["nome", "cognome"])
+    def test_invio_vuoto_al_nome_o_al_cognome(self, monkeypatch, muto, oggi_fisso, cestino_finto, capsys, vuoto):
+        """Dalla 10.19.59 (decisione di Gabriele dell'8 novembre 2026). Il
+        database dei giocatori ha Anna Bianchi. Nella creazione di Libero si
+        iscrive Zeta, che non c'e' in nessuno dei due database, e si preme
+        INVIO alla domanda del nome, o a quella del cognome dopo Mario: la
+        console torna alla domanda Giocatore 1, senza errori, e le due
+        domande non hanno le parentesi quadre vuote. Poi INVIO e s: Libero
+        nasce sospeso, senza iscritti, e il database dei giocatori, il json e
+        il txt, resta uguale byte per byte. Fino alla 10.19.58 le domande
+        dicevano Nome del nuovo giocatore []: e Cognome []: , e INVIO
+        fermava la console con AttributeError, 'NoneType' object has no
+        attribute 'strip'."""
+        import config
+        import db_players
+        import ui
+        from controller import TournamentController
+
+        monkeypatch.setattr(ui, "_cerca_giocatore_nel_db_fide", lambda testo: [])
+        database = {}
+        db_players.crea_nuovo_giocatore_nel_db(database, "Anna", "Bianchi", 1500, "", "w", "ITA", "0", None, False, silent=True)
+        assert db_players.save_players_db(database)
+        prima = _contenuti()
+        assert {os.path.basename(config.PLAYER_DB_FILE), os.path.basename(config.PLAYER_DB_TXT_FILE)} <= set(prima)
+        risposte = [""] if vuoto == "nome" else ["Mario", ""]
+        tasti = ["Libero", "", "", "3", "", "", "", "", "", "Zeta", *risposte, "", "s"]
+        copione = Copione(monkeypatch, tasti=tasti, conferme=[True])
+        guida = TournamentController(_adattatore(copione))
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._create_new_tournament()
+        stampato = capsys.readouterr().out.splitlines()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        iscrizione = copione.domande.index(GIOCATORE_1)
+        chieste = [DOMANDA_DEL_NOME] if vuoto == "nome" else [DOMANDA_DEL_NOME, DOMANDA_DEL_COGNOME]
+        assert copione.domande[iscrizione:] == [GIOCATORE_1, *chieste, GIOCATORE_1, PREMI_C_S_O_ESC]
+        assert stampato.count("Nessuna corrispondenza trovata. Procedi con l'inserimento manuale.") == 1
+        assert not any("Errore" in r or "Traceback" in r for r in stampato)
+        dopo = _contenuti()
+        nati = ["Tornello - Libero.json", "Tornello - Libero_sospeso.txt"]
+        assert sorted(dopo) == sorted([*prima, *nati])
+        assert {n: b for n, b in dopo.items() if n not in nati} == prima
+        libero = _leggi(config.user_data_path("Tornello - Libero.json"))
+        assert (libero["players"], libero["creation_suspended"]) == ([], True)
         assert cestino_finto.tentativi == []
