@@ -62,6 +62,7 @@ from tournament import (
 from utils import (
     copia_di_sicurezza,
     create_backup,
+    elo_da_scrivere,
     enter_escape,
     file_del_torneo,
     format_date_locale,
@@ -114,9 +115,11 @@ def _conferma_lista_giocatori_torneo(torneo, players_db):
             player_id = player_data.get("id", "N/A")
             first_name = player_data.get("first_name", _("Nome?"))
             last_name = player_data.get("last_name", _("Cognome?"))
-            elo = player_data.get(
-                "initial_elo", "Elo?"
-            )  # In un nuovo torneo, sarà initial_elo
+            # In un nuovo torneo, sarà initial_elo. Intero, con
+            # elo_da_scrivere, dalla 10.19.63 (decisione di Gabriele del 9
+            # novembre 2026): fino alla 10.19.62 usciva con il punto zero,
+            # 1844.0, perche' la console tiene i giocatori in Player di models.
+            elo = elo_da_scrivere(player_data.get("initial_elo", "Elo?"))
             print(f"  {i + 1}. ID: {player_id} - {first_name} {last_name} (Elo: {elo})")
         choice = (
             input(
@@ -878,6 +881,19 @@ def input_players(
     return players_in_tournament
 
 
+def _elo_della_partita(players_dict, partita):
+    """L'Elo di partenza del Bianco e del Nero della partita, come lo
+    scrivono l'elenco delle partite da registrare e la ricerca per nome: con
+    elo_da_scrivere di utils, intero, e ? per un giocatore che non c'e'.
+    Dalla 10.19.63 (decisione di Gabriele del 9 novembre 2026): fino alla
+    10.19.62 l'Elo usciva com'era, con il punto zero, per esempio [1844.0],
+    perche' la console tiene i giocatori in Player di models."""
+    return tuple(
+        elo_da_scrivere(players_dict.get(partita[colore], {}).get("initial_elo", "?"))
+        for colore in ("white_player_id", "black_player_id")
+    )
+
+
 def update_match_result(torneo, percorso=None):
     """
     Gestisce l'interfaccia utente per l'inserimento dei risultati,
@@ -989,12 +1005,7 @@ def update_match_result(torneo, percorso=None):
                     w_name_disp,
                     b_name_disp,
                 ) in planned:
-                    wp_elo_disp = players_dict.get(
-                        match_dict_disp["white_player_id"], {}
-                    ).get("initial_elo", "?")
-                    bp_elo_disp = players_dict.get(
-                        match_dict_disp["black_player_id"], {}
-                    ).get("initial_elo", "?")
+                    wp_elo_disp, bp_elo_disp = _elo_della_partita(players_dict, match_dict_disp)
                     print(
                         _(
                             "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"
@@ -1035,12 +1046,7 @@ def update_match_result(torneo, percorso=None):
                     w_name_disp,
                     b_name_disp,
                 ) in unplanned:
-                    wp_elo_disp = players_dict.get(
-                        match_dict_disp["white_player_id"], {}
-                    ).get("initial_elo", "?")
-                    bp_elo_disp = players_dict.get(
-                        match_dict_disp["black_player_id"], {}
-                    ).get("initial_elo", "?")
+                    wp_elo_disp, bp_elo_disp = _elo_della_partita(players_dict, match_dict_disp)
                     print(
                         _(
                             "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"
@@ -1327,12 +1333,7 @@ def update_match_result(torneo, percorso=None):
                     w_n_multi,
                     b_n_multi,
                 ) in candidate_matches_info:
-                    wp_elo_m_disp = players_dict.get(
-                        match_d_multi["white_player_id"], {}
-                    ).get("initial_elo", "?")
-                    bp_elo_m_disp = players_dict.get(
-                        match_d_multi["black_player_id"], {}
-                    ).get("initial_elo", "?")
+                    wp_elo_m_disp, bp_elo_m_disp = _elo_della_partita(players_dict, match_d_multi)
                     print(
                         _(
                             "  Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} [{b_elo:>4}]"

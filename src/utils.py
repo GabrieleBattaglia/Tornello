@@ -474,6 +474,25 @@ def format_points(points):
         return str(points)
 
 
+def elo_da_scrivere(elo):
+    """L'Elo come lo scrivono i file dei dettagli dei turni, la versione a
+    riga di comando e i suoi file: intero, 1844, anche quando e' tenuto con
+    il punto zero, 1844.0, come lo tengono Player di models, e quindi la
+    console, e i tornei nati nella finestra, che lo prendono da
+    get_initial_elo_for_tournament. Un Elo con i decimali, che i file del
+    programma non hanno, e uno che non e' un numero, come il ? di un Elo che
+    manca, restano come sono, perche' non si perda niente.
+    Nata con la 10.19.57 per i file dei dettagli, come _elo_dei_dettagli di
+    reports; dalla 10.19.63 (decisione di Gabriele del 9 novembre 2026) sta
+    qui, e la usano anche l'elenco delle partite da registrare e la ricerca
+    per nome della console, la lista Riepilogo Giocatori Iscritti al Torneo e
+    il file del torneo sospeso, che fino alla 10.19.62 scrivevano l'Elo
+    com'era, per esempio 1844.0."""
+    if isinstance(elo, float) and elo.is_integer():
+        return int(elo)
+    return elo
+
+
 def sanitize_filename(name):
     """Rimuove/sostituisce caratteri problematici per i nomi dei file."""
     name = name.replace(" ", "_")

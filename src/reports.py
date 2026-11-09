@@ -25,6 +25,7 @@ from tiebreak_criteria import (
 )
 from utils import (
     _ensure_players_dict,
+    elo_da_scrivere,
     format_date_locale,
     format_points,
     sanitize_filename,
@@ -581,22 +582,6 @@ def _intestazione_dei_dettagli(torneo, sito=None):
     return nome, sito_e_data
 
 
-def _elo_dei_dettagli(giocatore):
-    """L'Elo di partenza del giocatore come lo scrive il file dei dettagli di
-    un turno concluso: intero, 1844, anche quando il torneo lo tiene con il
-    punto zero, 1844.0, come i tornei nati nella finestra, che lo prendono
-    da get_initial_elo_for_tournament; ? se il giocatore non lo ha. Un Elo
-    con i decimali, che i file del programma non hanno, e uno che non e' un
-    numero restano come sono, perche' non si perda niente. Nata con la
-    10.19.57 (decisione di Gabriele dell'8 novembre 2026): fino alla 10.19.56
-    l'Elo usciva com'era nel torneo, per esempio [1844.0] nel Turno 3 di
-    Autunneo2, e la colonna si allargava di due caratteri."""
-    elo = giocatore.get("initial_elo", "?")
-    if isinstance(elo, float) and elo.is_integer():
-        return int(elo)
-    return elo
-
-
 def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, partite):
     """Le righe del file dei dettagli del turno concluso round_data, una per
     una, senza la riga in fondo con la versione di Tornello, che cambia a
@@ -604,7 +589,12 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
     restituisce _partite_dei_dettagli. append_completed_round_to_history_file
     le scrive nel file man mano, come quando le scriveva lei, e dalla 10.19.50
     allinea_i_dettagli_dei_turni le confronta con il file che c'e' gia'.
-    Dalla 10.19.57 l'Elo dei giocatori lo da' _elo_dei_dettagli."""
+    Dalla 10.19.57 (decisione di Gabriele dell'8 novembre 2026) l'Elo dei
+    giocatori e' intero, e ? se il giocatore non lo ha: fino alla 10.19.56
+    usciva com'era nel torneo, per esempio [1844.0] nel Turno 3 di
+    Autunneo2, e la colonna si allargava di due caratteri. Lo da'
+    elo_da_scrivere di utils, che fino alla 10.19.62 si chiamava
+    _elo_dei_dettagli e stava qui."""
     players_dict, playable_matches, bye_match = partite
     # Scrivi sempre l'intestazione completa del torneo e del turno per questo file
     yield from _intestazione_dei_dettagli(torneo)
@@ -651,7 +641,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         w_pts = "?"
         if white_p:
             w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-            w_elo = _elo_dei_dettagli(white_p)
+            w_elo = elo_da_scrivere(white_p.get("initial_elo", "?"))
             # Recupera i punti che il giocatore aveva *alla fine di quel turno*
             # Questo è più complesso, per ora usiamo i punti correnti come approssimazione o li omettiamo se troppo difficile.
             # Per semplicità, usiamo i punti totali correnti dal dizionario principale.
@@ -661,7 +651,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         b_pts = "?"
         if black_p:
             b_name = f"{black_p.get('first_name', '?')} {black_p.get('last_name', '')}"
-            b_elo = _elo_dei_dettagli(black_p)
+            b_elo = elo_da_scrivere(black_p.get("initial_elo", "?"))
             b_pts = format_points(black_p.get("points", 0.0))
         line = (
             f"{board_num:<3}| "
@@ -677,7 +667,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         white_p = players_dict.get(white_p_id)
         if white_p:
             w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-            w_elo = _elo_dei_dettagli(white_p)
+            w_elo = elo_da_scrivere(white_p.get("initial_elo", "?"))
             w_pts = format_points(white_p.get("points", 0.0))
             line = (
                 f"{_('bye'):<3}| "
@@ -2042,7 +2032,12 @@ def save_suspended_tournament_summary(torneo_obj, filename_base):
                         f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
                     )
                     id_player = p.get("id", "")
-                    elo = p.get("initial_elo", p.get("elo_standard", 0))
+                    # Intero, con elo_da_scrivere, dalla 10.19.63 (decisione
+                    # di Gabriele del 9 novembre 2026): fino alla 10.19.62 i
+                    # giocatori iscritti in una sessione di prima, che la
+                    # console tiene in Player di models, avevano il punto
+                    # zero, 1844.0, e quelli iscritti nella sessione no.
+                    elo = elo_da_scrivere(p.get("initial_elo", p.get("elo_standard", 0)))
                     f.write(
                         _("{idx:02d}. {name} (ID: {id}, Elo: {elo})\n").format(
                             idx=idx, name=nome_cognome, id=id_player, elo=elo
