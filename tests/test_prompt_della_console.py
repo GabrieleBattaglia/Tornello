@@ -503,6 +503,12 @@ class TestLaPianificazioneInConsole:
         torneo["rounds"][0]["matches"][0].update(is_scheduled=True, schedule_info=dict(PIANIFICAZIONE))
         domande, percorso = self._risultati(monkeypatch, ["m", "2026-09-12", "21", "Chess.com", "Bianchi"], rounds=torneo["rounds"])
 
+        assert domande[4:8] == [
+            "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: Giovedì 10 settembre 2026]: ",
+            "Ora partita (formati: HH, HH:MM) [Attuale: 18:00]: ",
+            "Canale/Link partita [Attuale: Lichess]: ",
+            "Arbitro assegnato [Attuale: Verdi]: ",
+        ]
         assert "Nessun dettaglio della pianificazione è stato effettivamente modificato." not in capsys.readouterr().out.splitlines()
         partita = _leggi(percorso)["rounds"][0]["matches"][0]
         assert (partita["is_scheduled"], partita["schedule_info"]) == (True, {"date": "2026-09-12", "time": "21:00", "channel": "Chess.com", "arbiter": "Bianchi"})
