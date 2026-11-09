@@ -505,7 +505,6 @@ class TestLaPianificazioneInConsole:
         partita = _leggi(percorso)["rounds"][0]["matches"][0]
         assert (partita["is_scheduled"], partita["schedule_info"]) == (True, {"date": "2026-09-12", "time": "21:00", "channel": "Chess.com", "arbiter": "Bianchi"})
         assert cestino_finto.tentativi == []
-        assert cestino_finto.tentativi == []
 
 
 class TestIlGiocatoreNuovoInConsole:
