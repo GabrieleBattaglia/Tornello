@@ -50,6 +50,8 @@ PREMI_C_S_O_ESC = "Premi 'c' per concludere, 's' per sospendere, Esc per annulla
 # Senza le parentesi quadre vuote dalla 10.19.59.
 DOMANDA_DEL_NOME = "  Nome del nuovo giocatore: "
 DOMANDA_DEL_COGNOME = "  Cognome: "
+# Con i due punti dalla 10.19.62.
+DOMANDA_DELL_ELO = "  Elo (default 1399): "
 # Con il valore che INVIO tiene una volta sola dalla 10.19.60.
 DOMANDA_DEL_TEMPO = "Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]: "
 
@@ -551,7 +553,7 @@ class TestIlGiocatoreNuovoInConsole:
             "  Data Nascita (AAAA-MM-GG o vuoto o AAAAMMGG): ",
             " Esperienza pregressa significativa? (INVIO|ESCAPE)",
         ]
-        assert elo == ["  Elo (default 1399)"]
+        assert elo == [DOMANDA_DELL_ELO]
         assert "Formato data non valido. Riprova." in stampato.splitlines()
         assert not any("%" in d or ":  [" in d or "[]" in d for d in copione.domande)
         database = _leggi(config.PLAYER_DB_FILE)
@@ -607,4 +609,73 @@ class TestIlGiocatoreNuovoInConsole:
         assert {n: b for n, b in dopo.items() if n not in nati} == prima
         libero = _leggi(config.user_data_path("Tornello - Libero.json"))
         assert (libero["players"], libero["creation_suspended"]) == ([], True)
+        assert cestino_finto.tentativi == []
+
+    @staticmethod
+    def _iscrivi_zeta(monkeypatch, elo_scritto):
+        """Nella creazione di Libero si iscrive Zeta, che non c'e' in nessuno
+        dei due database: Mario Rossi, con l'Elo scritto alla domanda di
+        dgt, quello vero di GBUtils, e INVIO agli altri dati; poi INVIO e s.
+        Restituisce le domande dalla prima Giocatore 1."""
+        import ui
+        from controller import TournamentController
+
+        monkeypatch.setattr(ui, "_cerca_giocatore_nel_db_fide", lambda testo: [])
+        tasti = ["Libero", "", "", "3", "", "", "", "", "", "Zeta", "Mario", "Rossi", elo_scritto, "", "", "", "", "", "", "s"]
+        # Si' al Bianco alla prima scacchiera, No all'esperienza pregressa.
+        copione = Copione(monkeypatch, tasti=tasti, conferme=[True, False])
+
+        with pytest.raises(SystemExit) as uscita:
+            TournamentController(_adattatore(copione))._create_new_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        return copione.domande[copione.domande.index(GIOCATORE_1) :]
+
+    @pytest.mark.parametrize("scritto, atteso", [("", 1399), ("1650", 1650)])
+    def test_la_domanda_dell_elo(self, monkeypatch, muto, oggi_fisso, cestino_finto, scritto, atteso):
+        """Dalla 10.19.62 (decisione di Gabriele del 9 novembre 2026) la
+        domanda dell'Elo di un giocatore nuovo finisce con i due punti, come
+        le altre domande del giocatore nuovo, e il cursore non resta subito
+        dopo la parentesi. INVIO tiene 1399, come prima, e un Elo scritto
+        entra nel database dei giocatori e nel torneo. Fino alla 10.19.61 la
+        domanda era Elo (default 1399), senza i due punti."""
+        import config
+
+        domande = self._iscrivi_zeta(monkeypatch, scritto)
+
+        assert domande == [
+            GIOCATORE_1,
+            DOMANDA_DEL_NOME,
+            DOMANDA_DEL_COGNOME,
+            DOMANDA_DELL_ELO,
+            "  Titolo FIDE (es. FM, o vuoto): ",
+            "  Sesso (m/w) [m]: ",
+            "  Federazione (3 lettere, es. ITA) [ITA]: ",
+            "  ID FIDE Numerico ('0' se N/D) [0]: ",
+            "  Data Nascita (AAAA-MM-GG o vuoto o AAAAMMGG): ",
+            " Esperienza pregressa significativa? (INVIO|ESCAPE)",
+            "\nGiocatore 2 (o lascia vuoto per terminare): ",
+            PREMI_C_S_O_ESC,
+        ]
+        schede = _leggi(config.PLAYER_DB_FILE)["players"]
+        assert [(s["first_name"], s["last_name"], s["current_elo"]) for s in schede] == [("Mario", "Rossi", atteso)]
+        libero = _leggi(config.user_data_path("Tornello - Libero.json"))
+        assert [(p["first_name"], p["initial_elo"]) for p in libero["players"]] == [("Mario", atteso)]
+        assert cestino_finto.tentativi == []
+
+    def test_la_domanda_dell_elo_passa_dalla_traduzione(self, monkeypatch, muto, oggi_fisso, cestino_finto):
+        """Dalla 10.19.62 la domanda dell'Elo passa da _(), come le altre:
+        con una traduzione finta del suo testo la console mostra quella.
+        Fino alla 10.19.61 era scritta senza _(), e restava in italiano in
+        ogni lingua."""
+        import builtins
+
+        vera = builtins._
+        tradotta = "  Elo (predefinito {elo}): "
+        monkeypatch.setattr(builtins, "_", lambda testo: tradotta if testo == "  Elo (default {elo}): " else vera(testo))
+
+        domande = self._iscrivi_zeta(monkeypatch, "")
+
+        assert domande[3] == "  Elo (predefinito 1399): "
         assert cestino_finto.tentativi == []

@@ -743,8 +743,14 @@ def input_players(
             last_name_new_db = get_input_with_default(_("  Cognome")).strip().title()
             if not last_name_new_db:
                 continue
+            # La domanda dell'Elo finisce con i due punti, come le altre, che
+            # qui li aggiunge get_input_with_default e dgt no, e passa dalla
+            # traduzione, dalla 10.19.62: fino alla 10.19.61, e gia' nella
+            # 10.0.0, era Elo (default 1399), senza i due punti, con il
+            # cursore subito dopo la parentesi, e senza _() (decisione di
+            # Gabriele del 9 novembre 2026).
             elo_new_db = dgt(
-                f"  Elo (default {int(DEFAULT_ELO)})",
+                _("  Elo (default {elo}): ").format(elo=int(DEFAULT_ELO)),
                 kind="i",
                 imin=500,
                 imax=4000,
