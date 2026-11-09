@@ -715,13 +715,19 @@ class TournamentController:
             ).strip()
             or ""
         )
-        # Controllo del tempo
+        # Controllo del tempo. Il valore che INVIO tiene una volta sola, con
+        # la parola Default, come le domande qui sopra, dalla 10.19.60: fino
+        # alla 10.19.59, e gia' nella 10.0.0, input_text lo ripeteva fra
+        # parentesi quadre, [Default: 90+30] [90+30]: (decisione di Gabriele
+        # dell'8 novembre 2026). INVIO tiene 90+30, come prima.
         time_control_parsed = None
         while not time_control_parsed:
-            time_control_entered = self.ui.input_text(
-                _("Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]"),
-                default="90+30",
-            ).strip()
+            time_control_entered = (
+                self.ui.input_text(
+                    _("Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]")
+                ).strip()
+                or "90+30"
+            )
             time_control_parsed = parse_time_control(time_control_entered)
             if not time_control_parsed:
                 self.ui.show_error(

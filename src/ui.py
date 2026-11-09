@@ -216,6 +216,15 @@ def input_schedule_details(existing_details=None):
     # la domanda della data e il messaggio della data sbagliata mostravano
     # %Y-%m-%d, il formato grezzo di strftime, e le quattro domande finivano
     # con due volte i due punti (decisione di Gabriele dell'8 novembre 2026).
+    # Dalla 10.19.60 ogni domanda mostra il valore che INVIO tiene una volta
+    # sola, con la parola Attuale, e per la data nella forma a parole: le
+    # quattro domande chiamano get_input_with_default senza il valore, che
+    # non lo ripete fra parentesi quadre, e INVIO tiene lo stesso valore di
+    # prima. Il canale e l'arbitro senza un valore non dicono Attuale. Fino
+    # alla 10.19.59, e gia' nella 10.0.0, il valore era due volte, per
+    # esempio Canale/Link partita [Attuale: Lichess] [Lichess]: , e nella
+    # pianificazione nuova il canale e l'arbitro dicevano [Attuale: ] vuoto
+    # (decisione di Gabriele dell'8 novembre 2026).
     while True:
         prompt_date = _("Data partita (formati: GG, GG-MM, AAAA-MM-GG)")
         default_date_val_for_input = ""
@@ -224,8 +233,8 @@ def input_schedule_details(existing_details=None):
             default_date_val_for_input = existing_details["date"]
             current_display = format_date_locale(default_date_val_for_input)
         prompt_date += _(" [Attuale: {current}]").format(current=current_display)
-        date_input_str = get_input_with_default(
-            prompt_date, default_date_val_for_input
+        date_input_str = (
+            get_input_with_default(prompt_date, "") or default_date_val_for_input
         ).strip()
         if not date_input_str and is_modifying:
             details["date"] = default_date_val_for_input
@@ -279,8 +288,8 @@ def input_schedule_details(existing_details=None):
             default_time_val_for_input = existing_details["time"]
             current_display_time = default_time_val_for_input
         prompt_time += _(" [Attuale: {current}]").format(current=current_display_time)
-        time_input_str = get_input_with_default(
-            prompt_time, default_time_val_for_input
+        time_input_str = (
+            get_input_with_default(prompt_time, "") or default_time_val_for_input
         ).strip()
         if not time_input_str and is_modifying:
             details["time"] = default_time_val_for_input
@@ -309,20 +318,24 @@ def input_schedule_details(existing_details=None):
     default_channel_val = (
         "" if not is_modifying else existing_details.get("channel", "")
     )
-    details["channel"] = get_input_with_default(
-        _("Canale/Link partita [Attuale: {current}]").format(
+    prompt_channel = _("Canale/Link partita")
+    if default_channel_val:
+        prompt_channel += _(" [Attuale: {current}]").format(
             current=default_channel_val
-        ),
-        default_channel_val,
+        )
+    details["channel"] = (
+        get_input_with_default(prompt_channel, "") or default_channel_val
     ).strip()
     default_arbiter_val = (
         "" if not is_modifying else existing_details.get("arbiter", "")
     )
-    details["arbiter"] = get_input_with_default(
-        _("Arbitro assegnato [Attuale: {current}]").format(
+    prompt_arbiter = _("Arbitro assegnato")
+    if default_arbiter_val:
+        prompt_arbiter += _(" [Attuale: {current}]").format(
             current=default_arbiter_val
-        ),
-        default_arbiter_val,
+        )
+    details["arbiter"] = (
+        get_input_with_default(prompt_arbiter, "") or default_arbiter_val
     ).strip()
     if is_modifying:
         changed = False

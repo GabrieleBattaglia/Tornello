@@ -14,7 +14,10 @@ formato grezzo di strftime, e quelle domande finivano con ": : ", o con
 stesse di prima: le tabelle qui sotto sono quelle misurate sulla 10.19.55.
 Dalla 10.19.59 il nome e il cognome di un giocatore nuovo non mostrano le
 parentesi quadre vuote, e INVIO torna alla domanda Giocatore N invece di
-fermare la console.
+fermare la console. Dalla 10.19.60 il valore che INVIO tiene si mostra una
+volta sola, nelle quattro domande della pianificazione e in quella del
+controllo del tempo, e il canale e l'arbitro senza un valore non dicono
+[Attuale: ] vuoto; INVIO tiene gli stessi valori di prima.
 La console e' quella vera, con il controller e le risposte a copione di
 test_console, senza suoni; il giorno di oggi e' fisso, domenica 8 novembre
 2026. Tutto sta nella cartella temporanea della prova."""
@@ -39,6 +42,8 @@ PREMI_C_S_O_ESC = "Premi 'c' per concludere, 's' per sospendere, Esc per annulla
 # Senza le parentesi quadre vuote dalla 10.19.59.
 DOMANDA_DEL_NOME = "  Nome del nuovo giocatore: "
 DOMANDA_DEL_COGNOME = "  Cognome: "
+# Con il valore che INVIO tiene una volta sola dalla 10.19.60.
+DOMANDA_DEL_TEMPO = "Controllo del Tempo (es. 15+10, 90+30, 3+2) [Default: 90+30]: "
 
 # Le date di inizio, con la data che ne nasce, o None per quelle che si
 # rifiutano. La vuota e' quella di oggi.
@@ -172,6 +177,73 @@ class TestLeDateDelTorneoNuovo:
         assert (libero["name"], libero["start_date"], libero["end_date"], libero["creation_suspended"]) == ("Libero", "2026-11-08", "2027-01-07", True)
         assert cestino_finto.tentativi == []
 
+    def test_le_domande_della_creazione_con_invio(self, monkeypatch, muto, oggi_fisso, cestino_finto):
+        """Libero, poi INVIO a ogni domanda che ha un valore, tre turni,
+        nessun giocatore e s. Ogni domanda mostra il valore che INVIO tiene
+        una volta sola, con la parola Default; dalla 10.19.60 anche quella
+        del controllo del tempo, che fino alla 10.19.59 diceva [Default:
+        90+30] [90+30]: . INVIO tiene gli stessi valori di prima, e Libero
+        nasce sospeso con quelli."""
+        import config
+        from controller import TournamentController
+
+        copione = Copione(monkeypatch, tasti=["Libero", "", "", "3", "", "", "", "", "", "", "s"], conferme=[True])
+        guida = TournamentController(_adattatore(copione))
+
+        with pytest.raises(SystemExit) as uscita:
+            guida._create_new_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        assert copione.domande == [
+            "Inserisci il nome del nuovo torneo: ",
+            DOMANDA_DI_INIZIO,
+            DOMANDA_DI_FINE,
+            "Inserisci il numero totale dei turni: ",
+            "Luogo del torneo [Default: Luogo Sconosciuto]: ",
+            "Federazione organizzante (codice 3 lettere) [Default: ITA]: ",
+            "Arbitro Capo [Default: N/D]: ",
+            "Vice Arbitri (separati da virgola) [Default: nessuno]: ",
+            DOMANDA_DEL_TEMPO,
+            "Bianco alla prima scacchiera del Turno 1?",
+            GIOCATORE_1,
+            PREMI_C_S_O_ESC,
+        ]
+        libero = _leggi(config.user_data_path("Tornello - Libero.json"))
+        campi = ("start_date", "end_date", "total_rounds", "site", "federation_code", "chief_arbiter", "deputy_chief_arbiters", "time_control", "tournament_category")
+        assert {c: libero[c] for c in campi} == {
+            "start_date": "2026-11-08",
+            "end_date": "2027-01-07",
+            "total_rounds": 3,
+            "site": "Luogo Sconosciuto",
+            "federation_code": "ITA",
+            "chief_arbiter": "N/D",
+            "deputy_chief_arbiters": "",
+            "time_control": {"minutes": 90, "increment": 30, "pgn_value": "5400+30"},
+            "tournament_category": "standard",
+        }
+        assert cestino_finto.tentativi == []
+
+    def test_il_controllo_del_tempo_scritto(self, monkeypatch, muto, oggi_fisso, cestino_finto):
+        """Un controllo del tempo sbagliato, x, poi 15+10: la domanda torna,
+        con il valore una volta sola, dopo il messaggio Formato non valido,
+        e Libero nasce con 15+10."""
+        import config
+        from controller import TournamentController
+
+        copione = Copione(monkeypatch, tasti=["Libero", "", "", "3", "", "", "", "", "x", "15+10", "", "s"], conferme=[True])
+        adattatore = _adattatore(copione)
+
+        with pytest.raises(SystemExit):
+            TournamentController(adattatore)._create_new_tournament()
+
+        assert copione.tasti == [] and copione.conferme == []
+        assert [d for d in copione.domande if d.startswith("Controllo del Tempo")] == [DOMANDA_DEL_TEMPO, DOMANDA_DEL_TEMPO]
+        assert adattatore.messaggi == ["Creazione Nuovo Torneo", "Formato non valido. Usa minuti+incremento o solo minuti."]
+        libero = _leggi(config.user_data_path("Tornello - Libero.json"))
+        assert libero["time_control"] == {"minutes": 15, "increment": 10, "pgn_value": "900+10"}
+        assert cestino_finto.tentativi == []
+
     def test_la_domanda_vuoi_caricare_con_invio(self, monkeypatch, muto, cestino_finto):
         """Con INVIO alla domanda Vuoi caricare, Corona si apre; la domanda
         finisce con i due punti una volta sola, e il file resta com'era."""
@@ -239,6 +311,9 @@ class TestLeDateDelTorneoNuovo:
 # La pianificazione che la partita della scacchiera 1 di Corona ha gia', per
 # la prova del cambio.
 PIANIFICAZIONE = {"date": "2026-09-10", "time": "18:00", "channel": "Lichess", "arbiter": "Verdi"}
+# Le domande della data e dell'ora di una partita ancora da pianificare.
+DATA_DA_PIANIFICARE = "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: N/D]: "
+ORA_DA_PIANIFICARE = "Ora partita (formati: HH, HH:MM) [Attuale: N/O]: "
 
 
 class TestLaPianificazioneInConsole:
@@ -261,20 +336,20 @@ class TestLaPianificazioneInConsole:
         """Una data sbagliata, x, poi quella giusta; un'ora sbagliata, poi
         quella giusta; il canale e l'arbitro. La domanda della data e il suo
         messaggio dicono AAAA-MM-GG, le quattro domande finiscono con i due
-        punti una volta sola, e la pianificazione si scrive nel file."""
+        punti una volta sola, e la pianificazione si scrive nel file. Dalla
+        10.19.60 il canale e l'arbitro, che non hanno ancora un valore, non
+        dicono [Attuale: ] vuoto."""
         domande, percorso = self._risultati(monkeypatch, ["x", "2026-09-11", "25", "20:30", "Lichess", "Verdi"])
         uscita = capsys.readouterr().out
 
-        data = "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: N/D]: "
-        ora = "Ora partita (formati: HH, HH:MM) [Attuale: N/O]: "
         assert domande[2:9] == [
             "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: ",
-            data,
-            data,
-            ora,
-            ora,
-            "Canale/Link partita [Attuale: ]: ",
-            "Arbitro assegnato [Attuale: ]: ",
+            DATA_DA_PIANIFICARE,
+            DATA_DA_PIANIFICARE,
+            ORA_DA_PIANIFICARE,
+            ORA_DA_PIANIFICARE,
+            "Canale/Link partita: ",
+            "Arbitro assegnato: ",
         ]
         righe = uscita.splitlines()
         assert "Formato data 'x' non valido o data inesistente. Usa GG, GG-MM, AAAA-MM-GG o AAAAMMGG." in righe
@@ -285,11 +360,31 @@ class TestLaPianificazioneInConsole:
         assert (partita["is_scheduled"], partita["schedule_info"]) == (True, {"date": "2026-09-11", "time": "20:30", "channel": "Lichess", "arbiter": "Verdi"})
         assert cestino_finto.tentativi == []
 
+    def test_una_partita_da_pianificare_con_invio_al_canale_e_all_arbitro(self, monkeypatch, muto, cestino_finto, capsys):
+        """La data e l'ora, poi INVIO al canale e all'arbitro: le due domande
+        non dicono Attuale, dalla 10.19.60, e INVIO tiene il canale e
+        l'arbitro vuoti, come fino alla 10.19.59."""
+        domande, percorso = self._risultati(monkeypatch, ["2026-09-11", "20:30", "", ""])
+
+        assert domande[2:7] == [
+            "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: ",
+            DATA_DA_PIANIFICARE,
+            ORA_DA_PIANIFICARE,
+            "Canale/Link partita: ",
+            "Arbitro assegnato: ",
+        ]
+        assert "Partita pianificata con successo." in capsys.readouterr().out.splitlines()
+        partita = _leggi(percorso)["rounds"][0]["matches"][0]
+        assert (partita["is_scheduled"], partita["schedule_info"]) == (True, {"date": "2026-09-11", "time": "20:30", "channel": "", "arbiter": ""})
+        assert cestino_finto.tentativi == []
+
     def test_una_pianificazione_da_cambiare(self, monkeypatch, muto, cestino_finto, capsys):
         """La scacchiera 1 e' gia' pianificata: con m, e INVIO alle quattro
         domande, la pianificazione resta quella di prima. Ogni domanda
-        mostra il valore attuale e quello che INVIO tiene, con i due punti
-        una volta sola."""
+        mostra il valore che INVIO tiene una volta sola, dalla 10.19.60, con
+        la parola Attuale, e la data nella forma a parole, con i due punti
+        una volta sola. Fino alla 10.19.59 il valore era due volte, per
+        esempio Canale/Link partita [Attuale: Lichess] [Lichess]: ."""
         import config
 
         torneo = console._torneo_al_primo_turno().to_dict()
@@ -299,15 +394,50 @@ class TestLaPianificazioneInConsole:
 
         assert domande[3:8] == [
             "Questa partita è già pianificata. Vuoi (M)odificare o (R)imuovere la pianificazione? (Invio per annullare): ",
-            "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: Giovedì 10 settembre 2026] [2026-09-10]: ",
-            "Ora partita (formati: HH, HH:MM) [Attuale: 18:00] [18:00]: ",
-            "Canale/Link partita [Attuale: Lichess] [Lichess]: ",
-            "Arbitro assegnato [Attuale: Verdi] [Verdi]: ",
+            "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: Giovedì 10 settembre 2026]: ",
+            "Ora partita (formati: HH, HH:MM) [Attuale: 18:00]: ",
+            "Canale/Link partita [Attuale: Lichess]: ",
+            "Arbitro assegnato [Attuale: Verdi]: ",
         ]
         assert "Nessun dettaglio della pianificazione è stato effettivamente modificato." in uscita.splitlines()
         partita = _leggi(percorso)["rounds"][0]["matches"][0]
         assert (partita["is_scheduled"], partita["schedule_info"]) == (True, PIANIFICAZIONE)
         assert percorso == config.user_data_path("Tornello - Corona.json")
+        assert cestino_finto.tentativi == []
+
+    def test_una_pianificazione_senza_canale_e_arbitro_da_cambiare(self, monkeypatch, muto, cestino_finto, capsys):
+        """La scacchiera 1 e' gia' pianificata senza canale e senza arbitro:
+        con m e INVIO alle quattro domande la pianificazione resta quella di
+        prima, e dalla 10.19.60 il canale e l'arbitro non dicono [Attuale: ]
+        vuoto."""
+        esistente = {"date": "2026-09-10", "time": "18:00", "channel": "", "arbiter": ""}
+        torneo = console._torneo_al_primo_turno().to_dict()
+        torneo["rounds"][0]["matches"][0].update(is_scheduled=True, schedule_info=dict(esistente))
+        domande, percorso = self._risultati(monkeypatch, ["m", "", "", "", ""], rounds=torneo["rounds"])
+
+        assert domande[4:8] == [
+            "Data partita (formati: GG, GG-MM, AAAA-MM-GG) [Attuale: Giovedì 10 settembre 2026]: ",
+            "Ora partita (formati: HH, HH:MM) [Attuale: 18:00]: ",
+            "Canale/Link partita: ",
+            "Arbitro assegnato: ",
+        ]
+        assert "Nessun dettaglio della pianificazione è stato effettivamente modificato." in capsys.readouterr().out.splitlines()
+        partita = _leggi(percorso)["rounds"][0]["matches"][0]
+        assert (partita["is_scheduled"], partita["schedule_info"]) == (True, esistente)
+        assert cestino_finto.tentativi == []
+
+    def test_una_pianificazione_cambiata(self, monkeypatch, muto, cestino_finto, capsys):
+        """Con m e quattro valori nuovi la pianificazione diventa quella
+        scritta: il valore mostrato una volta sola non cambia quello che si
+        scrive al suo posto."""
+        torneo = console._torneo_al_primo_turno().to_dict()
+        torneo["rounds"][0]["matches"][0].update(is_scheduled=True, schedule_info=dict(PIANIFICAZIONE))
+        domande, percorso = self._risultati(monkeypatch, ["m", "2026-09-12", "21", "Chess.com", "Bianchi"], rounds=torneo["rounds"])
+
+        assert "Nessun dettaglio della pianificazione è stato effettivamente modificato." not in capsys.readouterr().out.splitlines()
+        partita = _leggi(percorso)["rounds"][0]["matches"][0]
+        assert (partita["is_scheduled"], partita["schedule_info"]) == (True, {"date": "2026-09-12", "time": "21:00", "channel": "Chess.com", "arbiter": "Bianchi"})
+        assert cestino_finto.tentativi == []
         assert cestino_finto.tentativi == []
 
 
