@@ -374,8 +374,18 @@ def get_input_with_default(prompt_message, default_value=None):
     Senza valore predefinito, dalla 10.19.59: fino alla 10.19.58, e gia'
     nella 10.0.0, la domanda mostrava le parentesi quadre vuote, per esempio
     Nome del nuovo giocatore []: , e INVIO dava None, che fermava la console
-    con AttributeError al nome e al cognome di un giocatore nuovo, gli unici
-    a chiamarla cosi' (decisione di Gabriele dell'8 novembre 2026)."""
+    con AttributeError al nome e al cognome di un giocatore nuovo, i soli
+    punti di Tornello che la chiamano cosi' (decisione di Gabriele dell'8
+    novembre 2026). La chiama cosi' anche Players_DB.py, il programma a parte
+    del database dei giocatori, che non e' nel pacchetto: al nome e al
+    cognome di un giocatore nuovo, a cinque domande dello storico dei tornei
+    e, nella modifica di una scheda, alle domande che prendono il valore da
+    un campo null, come la data di nascita che manca. Dalla 10.19.59 anche
+    li' niente parentesi quadre vuote, Nome: : invece di Nome:  []: , e
+    INVIO da' la stringa vuota: dove None fermava Players_DB.py con un
+    errore, al nome, al cognome, al numero dei partecipanti di un torneo
+    dello storico e al numero del torneo da cancellare, adesso escono i suoi
+    messaggi, o i partecipanti sono 0."""
     default_display = str(default_value) if default_value is not None else ""
     if default_display:
         user_input = input(f"{prompt_message} [{default_display}]: ").strip()

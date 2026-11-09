@@ -21,7 +21,9 @@ controllo del tempo, e il canale e l'arbitro senza un valore non dicono
 la data di fine accetta anche AAAAMMGG, come la data di inizio, con il suo
 stesso messaggio della data sbagliata, e si scrive sempre AAAA-MM-GG, con
 lo zero: la tabella delle date di fine ha l'esito di prima e quello di
-adesso.
+adesso. In fondo, le domande di Players_DB.py, il programma a parte del
+database dei giocatori, che usa la stessa funzione della console, e dalla
+10.19.59 cambia anche lui.
 La console e' quella vera, con il controller e le risposte a copione di
 test_console, senza suoni; il giorno di oggi e' fisso, domenica 8 novembre
 2026. Tutto sta nella cartella temporanea della prova."""
@@ -685,3 +687,127 @@ class TestIlGiocatoreNuovoInConsole:
 
         assert domande[3] == "  Elo (predefinito 1399): "
         assert cestino_finto.tentativi == []
+
+
+@pytest.fixture
+def players_db(monkeypatch):
+    """Players_DB.py, il programma a parte del database dei giocatori, che
+    non e' nel pacchetto, importato dalla radice del progetto: polipo di
+    GBUtils e' finto, perche' non chieda la lingua, e lascia il _ di
+    Tornello. Il sys.path e i moduli tornano come prima alla fine della
+    prova. Niente tocca il disco: le prove non arrivano ai salvataggi."""
+    import builtins
+    import importlib
+    import sys
+
+    import GBUtils
+
+    monkeypatch.setattr(GBUtils, "polipo", lambda **opzioni: ("it", builtins._))
+    monkeypatch.setattr(builtins, "_", builtins._)
+    monkeypatch.syspath_prepend(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    sys.modules.pop("Players_DB", None)
+    yield importlib.import_module("Players_DB")
+    sys.modules.pop("Players_DB", None)
+
+
+class TestPlayersDbConLaStessaFunzione:
+    """Dalla 10.19.59 get_input_with_default di ui, senza un valore
+    predefinito, non mostra le parentesi quadre vuote, e INVIO da' la
+    stringa vuota. La usa anche Players_DB.py, il programma a parte del
+    database dei giocatori, che resta com'e', con i suoi due punti doppi
+    (decisione di Gabriele del 9 novembre 2026), e la 10.19.59 lo cambia
+    anche li'. Fino alla 10.19.58 le sue domande senza un valore dicevano
+    per esempio Nome:  []: , e INVIO dava None, che fermava il programma con
+    un errore in inglese all'aggiunta di un giocatore, al numero dei
+    partecipanti di un torneo dello storico e al numero del torneo da
+    cancellare."""
+
+    @pytest.mark.parametrize("vuoto", ["nome", "cognome"])
+    def test_invio_al_nome_o_al_cognome_di_un_giocatore_nuovo(self, monkeypatch, capsys, players_db, vuoto):
+        """INVIO al nome, o al cognome dopo mario: Players_DB.py dice Nome
+        richiesto. o Cognome richiesto., e il giocatore non nasce. Fino alla
+        10.19.58 si fermava con AttributeError, 'NoneType' object has no
+        attribute 'title'."""
+        domande = []
+        risposte = [""] if vuoto == "nome" else ["mario", ""]
+
+        def risposta(domanda=""):
+            domande.append(domanda)
+            return risposte.pop(0)
+
+        monkeypatch.setattr("builtins.input", risposta)
+        database = {}
+
+        assert players_db.add_new_player(database) is False
+        stampato = capsys.readouterr().out.splitlines()
+
+        assert domande == (["Nome: : "] if vuoto == "nome" else ["Nome: : ", "Cognome: : "])
+        assert stampato == ["Aggiunta Nuovo Giocatore", "Nome richiesto." if vuoto == "nome" else "Cognome richiesto."]
+        assert risposte == [] and database == {}
+
+    def test_lo_storico_dei_tornei_e_la_data_di_nascita(self, monkeypatch, capsys, players_db):
+        """La modifica di Mario Rossi, che non ha la data di nascita, come 5
+        schede su 55 del database della cartella del programma: INVIO a
+        tutto, poi nello storico si aggiunge Torneo Prova, con INVIO alla
+        posizione e ai partecipanti e le due date scritte, e si prova a
+        cancellare un torneo con INVIO al numero. Nessuna domanda ha le
+        parentesi quadre vuote, la data di nascita resta vuota, il torneo
+        entra nello storico con la posizione vuota e 0 partecipanti, e la
+        cancellazione dice Errore cancellazione. Fino alla 10.19.58 INVIO ai
+        partecipanti fermava Players_DB.py con TypeError, prima che il torneo
+        entrasse nello storico."""
+        rossi = {
+            "id": "ROSMA001",
+            "first_name": "Mario",
+            "last_name": "Rossi",
+            "current_elo": 1500,
+            "elo_club": 0,
+            "fide_title": "",
+            "sex": "m",
+            "federation": "ITA",
+            "fide_id_num_str": "0",
+            "birth_date": None,
+            "experienced": False,
+            "tournaments_played": [],
+        }
+        database = {"ROSMA001": rossi}
+        monkeypatch.setattr(players_db, "dgt", lambda *argomenti, **opzioni: opzioni.get("default"))
+        operazioni = ["a", "c", "f"]
+        scritte = {
+            "  Nome torneo: : ": "Torneo Prova",
+            "  Data date_started (%Y-%m-%d): : ": "2026-10-01",
+            "  Data date_completed (%Y-%m-%d): : ": "2026-10-31",
+        }
+        domande = []
+
+        def risposta(domanda=""):
+            domande.append(domanda)
+            if "(A)ggiungi" in domanda:
+                return operazioni.pop(0)
+            return scritte.get(domanda, "")
+
+        monkeypatch.setattr("builtins.input", risposta)
+
+        assert players_db.edit_player_data("ROSMA001", database) == (True, "ROSMA001")
+        stampato = capsys.readouterr().out.splitlines()
+
+        assert operazioni == []
+        assert not any("[]" in d for d in domande)
+        assert [d for d in domande if not d.endswith("]: ")] == [
+            "Titolo FIDE (es. FM, '' per nessuno): ",
+            "Data di nascita (%Y-%m-%d o vuoto per cancellare): ",
+            "  Nome torneo: : ",
+            "  Posizione (es. 1, 2, o RIT): : ",
+            "  Numero totale partecipanti: : ",
+            "  Data date_started (%Y-%m-%d): : ",
+            "  Data date_completed (%Y-%m-%d): : ",
+            "  Numero torneo da cancellare: : ",
+        ]
+        assert rossi["birth_date"] is None
+        storico = rossi["tournaments_played"]
+        assert [{k: v for k, v in t.items() if k != "tournament_id"} for t in storico] == [
+            {"tournament_name": "Torneo Prova", "rank": "", "total_players": 0, "date_started": "2026-10-01", "date_completed": "2026-10-31"}
+        ]
+        assert storico[0]["tournament_id"].startswith("Torneo_Prova_")
+        assert "  Torneo aggiunto allo storico." in stampato
+        assert "  Errore cancellazione." in stampato
