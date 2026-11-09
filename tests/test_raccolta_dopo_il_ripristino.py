@@ -406,7 +406,10 @@ class TestIlTorneoInCorso:
         scriverà quella nuova. Quando la copia riesce, la frase e' vera: il
         prossimo salvataggio della finestra, quello di Alfa, non la scrive,
         e nemmeno l'apertura del torneo ripristinato; la scrive il suo primo
-        salvataggio, dopo la copia, senza altri messaggi."""
+        salvataggio, dopo la copia, senza altri messaggi. Dalla correzione
+        della 10.19.66 anche la frase prima dice il torneo: I salvataggi del
+        torneo Turni ci riprovano; nella prima stesura diceva I salvataggi ci
+        riprovano, ma con Alfa aperta i salvataggi di Alfa non ci riprovano."""
         import wx
         from test_comandi_delle_finestre import TestRaccoltaSenzaPartiteNelCestino
 
@@ -428,7 +431,7 @@ class TestIlTorneoInCorso:
             f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, ha partite che il torneo Turni non ha: "
             "prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. "
             "Resta com'è, e la raccolta nuova non è stata scritta.\n"
-            "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. "
+            "I salvataggi del torneo Turni ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. "
             "Se la raccolta di prima non ti serve più, spostala o cancellala tu, e la raccolta nuova del torneo Turni si scrive quando apri il torneo e lo salvi."
         )
         assert copie.proprietari == [("Raccolta delle partite non scritta", principale, wx.OK)]

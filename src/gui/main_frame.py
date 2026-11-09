@@ -4691,7 +4691,13 @@ class MainFrame(wx.Frame):
         sono. Fino alla 10.19.65 anche dopo il ripristino i due messaggi
         finivano con le frasi dei salvataggi, ma il prossimo salvataggio era
         quello del torneo aperto, e la raccolta la scriveva soltanto il primo
-        salvataggio del torneo ripristinato, dopo che lo si apriva."""
+        salvataggio del torneo ripristinato, dopo che lo si apriva.
+        Dalla correzione della 10.19.66 (decisione di Gabriele del 9
+        novembre 2026) la seconda frase di finali e' la coda intera del
+        messaggio della copia non riuscita, compresa la frase su quali
+        salvataggi ci riprovano: nella prima stesura restava I salvataggi ci
+        riprovano, ma con un altro torneo aperto i suoi salvataggi non ci
+        riprovano, ci riprova soltanto quello del torneo ripristinato."""
         from omonimi import aggiorna_la_raccolta_pgn, raccolta_rimasta
         from reports import file_della_raccolta_pgn
         from utils import play_sound
@@ -4787,15 +4793,17 @@ class MainFrame(wx.Frame):
                 )
         elif chiave not in self._copie_non_riuscite:
             self._copie_non_riuscite.add(chiave)
-            fine = finali[1] if finali else _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova.")
+            coda = (
+                finali[1]
+                if finali
+                else _("I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete.")
+                + " "
+                + _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova.")
+            )
             play_sound("errore")
             self._dialogo_informativo(
                 _("Raccolta delle partite non scritta"),
-                aggiornata.non_scritta
-                + "\n"
-                + _("I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete.")
-                + " "
-                + fine,
+                aggiornata.non_scritta + "\n" + coda,
             )
 
     def on_tree_key_down(self, event):
@@ -6620,7 +6628,11 @@ class MainFrame(wx.Frame):
         ripristinato la scrive. Le frasi le riceve _scrivi_la_raccolta, e i
         salvataggi tengono le loro. Fino alla 10.19.65 i due messaggi
         finivano con le frasi dei salvataggi, che promettevano il prossimo
-        salvataggio, e Il torneo e' salvato non diceva quale torneo."""
+        salvataggio, e Il torneo e' salvato non diceva quale torneo. Dalla
+        correzione della 10.19.66 anche la frase I salvataggi ci riprovano
+        del messaggio della copia dice il nome del torneo ripristinato: con
+        un altro torneo aperto ci riprovano soltanto i salvataggi del torneo
+        ripristinato."""
         from omonimi import raccolta_di_un_altra_edizione
         from reports import file_della_raccolta_pgn, save_current_tournament_round_file, save_standings_text
 
@@ -6644,7 +6656,9 @@ class MainFrame(wx.Frame):
             esito.destinazione,
             finali=(
                 _("Il torneo {nome} è salvato, e la raccolta si scrive quando apri il torneo e lo salvi.").format(nome=nome),
-                _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e la raccolta nuova del torneo {nome} si scrive quando apri il torneo e lo salvi.").format(
+                _("I salvataggi del torneo {nome} ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete.").format(nome=nome)
+                + " "
+                + _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e la raccolta nuova del torneo {nome} si scrive quando apri il torneo e lo salvi.").format(
                     nome=nome
                 ),
             ),
