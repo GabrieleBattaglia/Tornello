@@ -11,7 +11,7 @@ Prima: dal prompt dei comandi avvia Tornello del banco con: python E:\git\tmp\ba
 Prima: la console dice che tutto quello che fai resta in E:\git\tmp\banco-tornello; lascia aperto quel prompt, servirà alle prove dalla 16 alla 24.
 Prima: Tornello resta aperto fino alla prova 15. Nel banco il cestino è la cartella E:\git\tmp\banco-tornello\cestino, e Windows non chiede niente.
 Passo 1: con il fuoco nell'albero premi NVDA+T.
-Domanda 1: il titolo dice Tornello - Versione 10.19.58 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
+Domanda 1: il titolo dice Tornello - Versione 10.19.66 - Data Rilascio 2026.11.09 - [Nessun Torneo Caricato]?
 Passo 2: nell'albero scegli Prova canc, poi turni (2), Turno corrente (2/4), giocate (2/4, 50.0%).
 Passo 3: sulla Scacchiera 1, Esposito Ettore vs Alberti Anna [1-0], premi CANC.
 Domanda 2: NVDA legge per intero la domanda Cancellazione del risultato, con la programmazione di prima, il giorno e l'ora delle 18:00, e il PGN che resta con la partita?
@@ -184,7 +184,7 @@ Domanda 7: si sente l'errore, e il messaggio Nome del torneo mancante dice "Il n
 Passo 7: chiudi il messaggio.
 Domanda 8: il cursore è rimasto su Nome torneo: Prova voci, e NVDA te l'ha detta senza che ti muovessi?
 Passo 8: premi NVDA+T.
-Domanda 9: il titolo dice ancora Tornello - Versione 10.19.58 - Data Rilascio 2026.11.08 - [Prova voci]?
+Domanda 9: il titolo dice ancora Tornello - Versione 10.19.66 - Data Rilascio 2026.11.09 - [Prova voci]?
 Passo 9: nell'albero scegli Beta, apri Dati, premi INVIO su Nome torneo: Beta, scrivi Alfa al posto del nome e premi INVIO.
 Domanda 10: arriva la domanda Nuova edizione di un torneo concluso, che dice che i report e la raccolta delle partite si chiamerebbero come quelli di Alfa, nella cartella Closed Tournaments\2026\05 Maggio\Alfa?
 Domanda 11: verso la fine c'è la frase che comincia con "Se questo torneo è una nuova edizione dello stesso torneo, il nome si può usare", e la domanda finisce con "Vuoi che questo torneo diventi una nuova edizione di Alfa? Il pulsante predefinito è No."?
@@ -216,7 +216,7 @@ Domanda 9: il cursore è rimasto su quella voce, nel ramo Dati, e NVDA te l'ha d
 Passo 7: premi F7 e leggi la barra di stato, poi torna all'albero con F6.
 Domanda 10: la barra di stato dice "Nome del torneo cambiato in 'Corona'.", e non più "Torneo 'Prova stessa data' caricato con successo.", come prima del cambio?
 Passo 8: premi NVDA+T.
-Domanda 11: il titolo dice subito Tornello - Versione 10.19.58 - Data Rilascio 2026.11.08 - [Corona]?
+Domanda 11: il titolo dice subito Tornello - Versione 10.19.66 - Data Rilascio 2026.11.09 - [Corona]?
 Passo 9: premi due volte freccia su.
 Domanda 12: NVDA legge prima Dati, poi Corona, la voce del torneo, che prima diceva Prova stessa data?
 Passo 10: premi due volte freccia giù, per tornare su Nome torneo: Corona.
@@ -268,7 +268,7 @@ Passo 1: in Esplora risorse apri la cartella E:\git\tmp\banco-tornello, scegli i
 Passo 2: torna in Tornello e, con le frecce nell'albero, scegli Prova senza cartella, al primo livello.
 Domanda 1: appena il cursore arriva su Prova senza cartella si sente l'errore, ed esce il messaggio Apertura non riuscita, che dice "Il file E:\git\tmp\banco-tornello\Tornello - Prova_senza_cartella.json non si è potuto aprire: No such file or directory."?
 Passo 3: chiudi il messaggio con INVIO e premi NVDA+T.
-Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.58 - Data Rilascio 2026.11.08 - [Nessun Torneo Caricato]?
+Domanda 2: il cursore è ancora su Prova senza cartella, e il titolo dice Tornello - Versione 10.19.66 - Data Rilascio 2026.11.09 - [Nessun Torneo Caricato]?
 Passo 4: apri il ramo con freccia destra e scendi su Dati, poi apri Dati con freccia destra e scendi su Nome torneo: Prova senza cartella; ogni volta che arriva il messaggio Apertura non riuscita, chiudilo con INVIO.
 Domanda 3: lo stesso messaggio Apertura non riuscita, con il suono dell'errore, arriva sia su Dati sia su Nome torneo, e mai con la freccia destra?
 Passo 5: su Nome torneo: Prova senza cartella premi INVIO.
@@ -300,9 +300,9 @@ Domanda 5: appena scegli la voce si sente il suono della domanda, diverso dal ca
 Passo 7: se la finestra mostra la spiegazione, premi ALT+P, Passo per passo, e non INVIO, che lì sceglie Apri nel programma di posta; se mostra già il passo 1 di 4, vai avanti.
 Domanda 6: il passo 1 di 4 dice che l'indirizzo è gabriele.battaglia@gmail.com, il tuo Gmail?
 Passo 8: premi INVIO, per il passo 2 di 4.
-Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.58?
+Domanda 7: il passo 2 dice che l'oggetto è Chiedo per Tornello 10.19.66?
 Passo 9: aspetta un secondo e premi INVIO, per il passo 3 di 4.
-Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.58, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
+Domanda 8: nel testo del passo 3 ci sono Programma: Tornello 10.19.66, dai sorgenti, Motore degli abbinamenti: BBP Pairings 6.0.0 e Lingua di Tornello: it?
 Passo 10: premi ESC, senza spedire niente.
 Passo 11: chiudi Tornello con ALT+F4.
 Domanda 9: Tornello si chiude senza l'invito a offrire un caffè?
