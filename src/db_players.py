@@ -28,6 +28,7 @@ from fide_db import (
 )
 from stats import get_k_factor
 from utils import (
+    elo_da_scrivere,
     enter_escape,
     format_date_locale,
     format_rank_ordinal,
@@ -986,7 +987,12 @@ def save_players_db_txt(players_db, percorso=None):
                 player_id_display = player.get("id", "N/D")
                 first_name_display = player.get("first_name", "N/D")
                 last_name_display = player.get("last_name", "N/D")
-                elo_display = player.get("current_elo", "N/D")
+                # I tre Elo interi, con elo_da_scrivere, dalla 10.19.64
+                # (decisione di Gabriele del 9 novembre 2026): fino alla
+                # 10.19.63 uscivano come li tiene il database, che ha l'Elo
+                # rapid e l'Elo blitz quasi sempre con il punto zero, per
+                # esempio Elo Rapid: 0.0.
+                elo_display = elo_da_scrivere(player.get("current_elo", "N/D"))
                 f.write(
                     f"ID: {player_id_display}, {titolo_prefix}{first_name_display} {last_name_display}\n"
                 )
@@ -1015,10 +1021,10 @@ def save_players_db_txt(players_db, percorso=None):
                     f"\tElo Standard: {elo_display} (Partite FIDE: {player.get('fide_standard_games', 'N/D')})\n"
                 )
                 f.write(
-                    f"\tElo Rapid: {player.get('elo_rapid', 'N/D')} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n"
+                    f"\tElo Rapid: {elo_da_scrivere(player.get('elo_rapid', 'N/D'))} (Partite FIDE: {player.get('fide_rapid_games', 'N/D')}, K: {player.get('fide_rapid_k', 'N/D')})\n"
                 )
                 f.write(
-                    f"\tElo Blitz: {player.get('elo_blitz', 'N/D')} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n"
+                    f"\tElo Blitz: {elo_da_scrivere(player.get('elo_blitz', 'N/D'))} (Partite FIDE: {player.get('fide_blitz_games', 'N/D')}, K: {player.get('fide_blitz_k', 'N/D')})\n"
                 )
 
                 games_played_total = player.get("games_played", 0)

@@ -487,7 +487,12 @@ def elo_da_scrivere(elo):
     qui, e la usano anche l'elenco delle partite da registrare e la ricerca
     per nome della console, la lista Riepilogo Giocatori Iscritti al Torneo e
     il file del torneo sospeso, che fino alla 10.19.62 scrivevano l'Elo
-    com'era, per esempio 1844.0."""
+    com'era, per esempio 1844.0. Dalla 10.19.64 (decisione di Gabriele del 9
+    novembre 2026) la usano anche le voci dell'elenco della finestra Gestione
+    database, per l'Elo standard e l'Elo rapid, e il file Tornello -
+    Players_DB.txt, per l'Elo standard, l'Elo rapid e l'Elo blitz di ogni
+    scheda, che fino alla 10.19.63 li scrivevano come li tiene il database,
+    per esempio Rap: 0.0 ed Elo Rapid: 0.0."""
     if isinstance(elo, float) and elo.is_integer():
         return int(elo)
     return elo

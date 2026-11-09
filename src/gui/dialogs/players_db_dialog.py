@@ -12,9 +12,23 @@ from db_players import (
 from gui.accessibility import NomeAccessibile
 from gui.dialogs.accessible_msg_dialog import AccessibleMsgDialog
 from gui.settings import apply_visual_settings
-from utils import play_sound
+from utils import elo_da_scrivere, play_sound
 
 _ = getattr(builtins, "_", lambda s: s)
+
+
+def _voce_dell_elenco(p_id, p):
+    """La voce del giocatore p, con l'identificativo p_id, nell'elenco dei
+    giocatori: cognome e nome, Elo standard e rapid, identificativo. La
+    scrivono il riempimento dell'elenco e la modifica di un campo. Dalla
+    10.19.64 (decisione di Gabriele del 9 novembre 2026) i due Elo passano da
+    elo_da_scrivere di utils, e sono interi: fino alla 10.19.63 uscivano come
+    li tiene il database, che ha l'Elo rapid quasi sempre con il punto zero,
+    per esempio Rap: 0.0, mentre la finestra dell'iscrizione scrive Rap: 0."""
+    nome = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
+    elo_std = elo_da_scrivere(p.get("current_elo", 1399))
+    elo_rap = elo_da_scrivere(p.get("elo_rapid", 0))
+    return f"{nome} (Std: {elo_std}, Rap: {elo_rap} - ID: {p_id})"
 
 
 class PlayersDbDialog(wx.Dialog):
@@ -123,11 +137,7 @@ class PlayersDbDialog(wx.Dialog):
         )
 
         for p_id, p in matching_sorted:
-            name = f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-            elo_std = p.get("current_elo", 1399)
-            elo_rap = p.get("elo_rapid", 0)
-            label = f"{name} (Std: {elo_std}, Rap: {elo_rap} - ID: {p_id})"
-            self.list_players.Append(label)
+            self.list_players.Append(_voce_dell_elenco(p_id, p))
             self.players_map.append(p_id)
 
         if self.players_map:
@@ -577,15 +587,7 @@ class PlayersDbDialog(wx.Dialog):
 
                 sel = self.list_players.GetSelection()
                 if sel != wx.NOT_FOUND:
-                    p_id = self.players_map[sel]
-                    name_lbl = (
-                        f"{p.get('last_name', '')} {p.get('first_name', '')}".strip()
-                    )
-                    elo_std = p.get("current_elo", 1399)
-                    elo_rap = p.get("elo_rapid", 0)
-                    self.list_players.SetString(
-                        sel, f"{name_lbl} (Std: {elo_std}, Rap: {elo_rap} - ID: {p_id})"
-                    )
+                    self.list_players.SetString(sel, _voce_dell_elenco(self.players_map[sel], p))
 
         dlg.Destroy()
 
