@@ -14,6 +14,13 @@ del programma non hanno, resta com'e', perche' non si perda niente. Il
 ripristino di una copia di sicurezza, che dalla 10.19.50 riscrive i file
 dei dettagli che dicono altro, riscrive anche quelli scritti con il punto
 zero.
+Dalla 10.19.65 (decisione di Gabriele del 9 novembre 2026) anche un Elo
+null, che i file del programma non hanno ma un json scritto a mano puo'
+avere, si scrive ?, come un Elo che manca, e il file si scrive intero:
+fino alla 10.19.64 si fermava all'intestazione delle colonne, alla quinta
+riga, con il messaggio Errore inatteso durante il salvataggio del file del
+turno: unsupported format string passed to NoneType.__format__. Succedeva
+alla conclusione del turno e al ripristino di una copia del torneo.
 Le prove della finestra girano sulla finestra principale vera, mai
 mostrata, con i suoni annotati e la finestra del risultato finta di
 test_scacchiere_nei_dettagli; quelle della console con il controller vero e
@@ -166,6 +173,89 @@ def test_l_elo_che_manca_quello_con_i_decimali_e_quello_intero(tmp_path):
             "\tbye| 3   | Filippa Tolaro           [1515] (0.5 ) - BYE                             | BYE\n",
         ]
     ) + _versione()
+
+
+# Il file del turno 1 con l'Elo null di Davanzo, che si scrive ?: le righe
+# della 10.19.65, e quelle che restavano fino alla 10.19.64.
+RIGHE_DEL_TURNO_1_CON_L_ELO_NULL = [
+    *RIGHE_DEL_TURNO_1[:5],
+    "\t1  | 1   | Claudio Gasperoni        [1844] (1   ) - Luca Davanzo             [   ?] (0   ) | 1-0\n",
+    *RIGHE_DEL_TURNO_1[6:],
+]
+
+
+def _torneo_con_l_elo_null(cartella):
+    """Il torneo Elo intero, con l'Elo di Davanzo null, come in un json
+    scritto a mano."""
+    torneo = _torneo_dalla_finestra(cartella)
+    davanzo = next(g for g in torneo["players"] if g["id"] == "DAV")
+    davanzo["initial_elo"] = None
+    return torneo
+
+
+def test_la_funzione_che_scrive_l_elo():
+    """elo_da_scrivere di utils, la funzione di tutti i posti che scrivono
+    l'Elo dalla 10.19.63: intero se e' un numero intero, ? se manca o e'
+    null, com'e' se ha i decimali o e' un testo."""
+    from utils import elo_da_scrivere
+
+    casi = [(1844.0, 1844), (1844, 1844), (0.0, 0), (1844.5, 1844.5), ("1844", "1844"), ("?", "?"), ("Elo?", "Elo?"), ("N/D", "N/D"), (None, "?")]
+    assert [(elo, elo_da_scrivere(elo)) for elo, _atteso in casi] == casi
+    assert [type(elo_da_scrivere(elo)) for elo, _atteso in casi] == [type(atteso) for _elo, atteso in casi]
+
+
+def test_l_elo_null_si_scrive_con_il_punto_interrogativo(tmp_path, cestino_finto):
+    """La conclusione del turno 1 con l'Elo di Davanzo null: il file e'
+    intero, con [   ?] per lui, e nessun messaggio d'errore."""
+    from reports import append_completed_round_to_history_file, file_dei_dettagli_del_turno
+
+    cartella = tmp_path / "report"
+    torneo = _torneo_con_l_elo_null(cartella)
+
+    with redirect_stdout(io.StringIO()) as uscita:
+        append_completed_round_to_history_file(torneo, 1)
+
+    percorso = file_dei_dettagli_del_turno(torneo, 1)
+    assert uscita.getvalue().splitlines() == [f"Dettaglio Turno Concluso 1 salvato nel file separato '{percorso}'"]
+    assert os.listdir(cartella) == ["Tornello - Elo_intero - Turno 1 Dettagli.txt"]
+    assert _leggi(percorso) == "".join(RIGHE_DEL_TURNO_1_CON_L_ELO_NULL) + _versione()
+    assert cestino_finto.tentativi == []
+
+
+def test_il_ripristino_di_una_copia_con_l_elo_null(tmp_path, cestino_finto):
+    """Il ripristino della copia di sicurezza di un torneo con l'Elo di
+    Davanzo null, come quando la finestra Copie di sicurezza ripristina la
+    copia: il ripristino riesce, e il file dei dettagli del turno 1, che
+    mancava, si scrive intero, senza messaggi d'errore."""
+    import json
+
+    import config
+    from copie_di_sicurezza import percorsi_del_programma, ripristina
+    from reports import file_dei_dettagli_del_turno
+    from utils import copia_di_sicurezza
+
+    cartella = tmp_path / "report"
+    torneo = _torneo_con_l_elo_null(cartella)
+    torneo["schema_version"] = 2
+    file_del_torneo = config.user_data_path("Tornello - Elo_intero.json")
+    with open(file_del_torneo, "w", encoding="utf-8") as f:
+        json.dump(torneo, f)
+    copia = copia_di_sicurezza(file_del_torneo, "turno_1", config.user_data_path("backup"))
+    assert copia and os.listdir(cartella) == []
+
+    with redirect_stdout(io.StringIO()) as uscita:
+        esito = ripristina(copia, percorsi_del_programma(), cestino=cestino_finto)
+
+    assert esito.riuscito, esito.righe
+    assert esito.righe[0] == "Ripristino riuscito: Tornello - Elo_intero.json è com'era nella copia."
+    percorso = file_dei_dettagli_del_turno(torneo, 1)
+    assert uscita.getvalue().splitlines() == [f"Dettaglio Turno Concluso 1 salvato nel file separato '{percorso}'"]
+    assert os.listdir(cartella) == ["Tornello - Elo_intero - Turno 1 Dettagli.txt"]
+    assert _leggi(percorso) == "".join(RIGHE_DEL_TURNO_1_CON_L_ELO_NULL) + _versione()
+    # Il torneo tiene l'Elo null com'era.
+    with open(file_del_torneo, encoding="utf-8") as f:
+        assert next(g for g in json.load(f)["players"] if g["id"] == "DAV")["initial_elo"] is None
+    assert cestino_finto.tentativi == []
 
 
 class TestDopoIlRipristino:

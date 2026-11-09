@@ -492,7 +492,15 @@ def elo_da_scrivere(elo):
     database, per l'Elo standard e l'Elo rapid, e il file Tornello -
     Players_DB.txt, per l'Elo standard, l'Elo rapid e l'Elo blitz di ogni
     scheda, che fino alla 10.19.63 li scrivevano come li tiene il database,
-    per esempio Rap: 0.0 ed Elo Rapid: 0.0."""
+    per esempio Rap: 0.0 ed Elo Rapid: 0.0.
+    Un Elo null, None, che i file del programma non hanno ma un json scritto
+    a mano puo' avere, si scrive ?, come un Elo che manca: dalla 10.19.65
+    (decisione di Gabriele del 9 novembre 2026). Fino alla 10.19.64 il file
+    dei dettagli di un turno si fermava all'intestazione delle colonne, con
+    l'errore unsupported format string passed to NoneType.__format__, e la
+    finestra Gestione database e il file txt del database scrivevano None."""
+    if elo is None:
+        return "?"
     if isinstance(elo, float) and elo.is_integer():
         return int(elo)
     return elo

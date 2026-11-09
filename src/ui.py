@@ -884,12 +884,13 @@ def input_players(
 def _elo_della_partita(players_dict, partita):
     """L'Elo di partenza del Bianco e del Nero della partita, come lo
     scrivono l'elenco delle partite da registrare e la ricerca per nome: con
-    elo_da_scrivere di utils, intero, e ? per un giocatore che non c'e'.
+    elo_da_scrivere di utils, intero, e ? per un giocatore che non c'e' o
+    che non ha l'Elo.
     Dalla 10.19.63 (decisione di Gabriele del 9 novembre 2026): fino alla
     10.19.62 l'Elo usciva com'era, con il punto zero, per esempio [1844.0],
     perche' la console tiene i giocatori in Player di models."""
     return tuple(
-        elo_da_scrivere(players_dict.get(partita[colore], {}).get("initial_elo", "?"))
+        elo_da_scrivere(players_dict.get(partita[colore], {}).get("initial_elo"))
         for colore in ("white_player_id", "black_player_id")
     )
 

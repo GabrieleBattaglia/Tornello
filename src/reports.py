@@ -594,7 +594,10 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
     usciva com'era nel torneo, per esempio [1844.0] nel Turno 3 di
     Autunneo2, e la colonna si allargava di due caratteri. Lo da'
     elo_da_scrivere di utils, che fino alla 10.19.62 si chiamava
-    _elo_dei_dettagli e stava qui."""
+    _elo_dei_dettagli e stava qui. Dalla 10.19.65 (decisione di Gabriele
+    del 9 novembre 2026) anche un Elo null, in un json scritto a mano, e' ?,
+    e il file si scrive intero: fino alla 10.19.64 si fermava
+    all'intestazione delle colonne."""
     players_dict, playable_matches, bye_match = partite
     # Scrivi sempre l'intestazione completa del torneo e del turno per questo file
     yield from _intestazione_dei_dettagli(torneo)
@@ -641,7 +644,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         w_pts = "?"
         if white_p:
             w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-            w_elo = elo_da_scrivere(white_p.get("initial_elo", "?"))
+            w_elo = elo_da_scrivere(white_p.get("initial_elo"))
             # Recupera i punti che il giocatore aveva *alla fine di quel turno*
             # Questo è più complesso, per ora usiamo i punti correnti come approssimazione o li omettiamo se troppo difficile.
             # Per semplicità, usiamo i punti totali correnti dal dizionario principale.
@@ -651,7 +654,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         b_pts = "?"
         if black_p:
             b_name = f"{black_p.get('first_name', '?')} {black_p.get('last_name', '')}"
-            b_elo = elo_da_scrivere(black_p.get("initial_elo", "?"))
+            b_elo = elo_da_scrivere(black_p.get("initial_elo"))
             b_pts = format_points(black_p.get("points", 0.0))
         line = (
             f"{board_num:<3}| "
@@ -667,7 +670,7 @@ def _righe_dei_dettagli_del_turno(torneo, round_data, completed_round_number, pa
         white_p = players_dict.get(white_p_id)
         if white_p:
             w_name = f"{white_p.get('first_name', '?')} {white_p.get('last_name', '')}"
-            w_elo = elo_da_scrivere(white_p.get("initial_elo", "?"))
+            w_elo = elo_da_scrivere(white_p.get("initial_elo"))
             w_pts = format_points(white_p.get("points", 0.0))
             line = (
                 f"{_('bye'):<3}| "
