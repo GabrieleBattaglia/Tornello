@@ -4669,7 +4669,7 @@ class MainFrame(wx.Frame):
             if self.active_filename:
                 self._scrivi_la_raccolta(self.current_tournament, self.active_filename, torneo_salvato)
 
-    def _scrivi_la_raccolta(self, torneo, file_del_torneo, torneo_salvato=True):
+    def _scrivi_la_raccolta(self, torneo, file_del_torneo, torneo_salvato=True, finali=None):
         """La raccolta delle partite in PGN del torneo, con il file
         file_del_torneo, come la scrive ogni salvataggio della finestra: la
         guardia della raccolta di un'altra edizione archiviata, poi
@@ -4680,7 +4680,18 @@ class MainFrame(wx.Frame):
         stava dentro _salva_i_report, per il solo torneo aperto; dalla
         10.19.58 la chiama anche _report_del_torneo_ripristinato, per il
         torneo ripristinato che la finestra non carica (decisione di
-        Gabriele dell'8 novembre 2026)."""
+        Gabriele dell'8 novembre 2026).
+        Dalla 10.19.66 (decisione di Gabriele del 9 novembre 2026) finali,
+        se c'e', e' la coppia delle frasi con cui finiscono i due messaggi
+        Raccolta delle partite non scritta: quello della raccolta che non si
+        e' potuta scrivere, e quello della copia nella cartella backup che
+        non e' riuscita. La passa soltanto _report_del_torneo_ripristinato,
+        con il nome del torneo ripristinato. Senza, le frasi sono quelle dei
+        salvataggi, che promettono il prossimo salvataggio, e restano come
+        sono. Fino alla 10.19.65 anche dopo il ripristino i due messaggi
+        finivano con le frasi dei salvataggi, ma il prossimo salvataggio era
+        quello del torneo aperto, e la raccolta la scriveva soltanto il primo
+        salvataggio del torneo ripristinato, dopo che lo si apriva."""
         from omonimi import aggiorna_la_raccolta_pgn, raccolta_rimasta
         from reports import file_della_raccolta_pgn
         from utils import play_sound
@@ -4764,23 +4775,27 @@ class MainFrame(wx.Frame):
             if aggiornata.errore is not None and torneo_salvato and chiave not in self._raccolte_non_scritte:
                 self._raccolte_non_scritte.add(chiave)
                 cartella, file = os.path.split(percorso_della_raccolta)
+                fine = finali[0] if finali else _("Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio.")
                 play_sound("errore")
                 self._dialogo_informativo(
                     _("Raccolta delle partite non scritta"),
-                    _(
-                        "La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
-                    ).format(file=file, cartella=cartella, errore=aggiornata.errore),
+                    _("La raccolta delle partite {file}, nella cartella {cartella}, non si è potuta scrivere: {errore}. Forse un altro programma la tiene aperta.").format(
+                        file=file, cartella=cartella, errore=aggiornata.errore
+                    )
+                    + " "
+                    + fine,
                 )
         elif chiave not in self._copie_non_riuscite:
             self._copie_non_riuscite.add(chiave)
+            fine = finali[1] if finali else _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova.")
             play_sound("errore")
             self._dialogo_informativo(
                 _("Raccolta delle partite non scritta"),
                 aggiornata.non_scritta
                 + "\n"
-                + _(
-                    "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova."
-                ),
+                + _("I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete.")
+                + " "
+                + fine,
             )
 
     def on_tree_key_down(self, event):
@@ -6594,7 +6609,18 @@ class MainFrame(wx.Frame):
         mandava subito nel cestino, dopo la copia nella cartella d'archivio
         di quell'edizione, con il messaggio Raccolta delle partite di un
         altro torneo (decisione di Gabriele dell'8 novembre 2026: mai toccare
-        la raccolta di un'altra edizione con lo stesso nome)."""
+        la raccolta di un'altra edizione con lo stesso nome).
+        Dalla 10.19.66 (decisione di Gabriele del 9 novembre 2026) i due
+        messaggi Raccolta delle partite non scritta, della raccolta che non si
+        e' potuta scrivere e della copia nella cartella backup che non e'
+        riuscita, finiscono con una frase propria, con il nome del torneo
+        ripristinato, che dice che la raccolta si scrive quando si apre il
+        torneo e lo si salva: il prossimo salvataggio della finestra e' quello
+        del torneo aperto, o non c'e', e nemmeno l'apertura del torneo
+        ripristinato la scrive. Le frasi le riceve _scrivi_la_raccolta, e i
+        salvataggi tengono le loro. Fino alla 10.19.65 i due messaggi
+        finivano con le frasi dei salvataggi, che promettevano il prossimo
+        salvataggio, e Il torneo e' salvato non diceva quale torneo."""
         from omonimi import raccolta_di_un_altra_edizione
         from reports import file_della_raccolta_pgn, save_current_tournament_round_file, save_standings_text
 
@@ -6612,7 +6638,17 @@ class MainFrame(wx.Frame):
         if raccolta_di_un_altra_edizione(torneo, esito.destinazione):
             return
         self._ricorda_la_raccolta_rimasta(torneo, esito.destinazione)
-        self._scrivi_la_raccolta(torneo, esito.destinazione)
+        nome = torneo.get("name", "")
+        self._scrivi_la_raccolta(
+            torneo,
+            esito.destinazione,
+            finali=(
+                _("Il torneo {nome} è salvato, e la raccolta si scrive quando apri il torneo e lo salvi.").format(nome=nome),
+                _("Se la raccolta di prima non ti serve più, spostala o cancellala tu, e la raccolta nuova del torneo {nome} si scrive quando apri il torneo e lo salvi.").format(
+                    nome=nome
+                ),
+            ),
+        )
 
     def _il_file_aperto_e_nel_cestino(self, esito):
         """Vero se il ripristino di esito ha mandato nel cestino il file del

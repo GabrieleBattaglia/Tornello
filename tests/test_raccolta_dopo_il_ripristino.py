@@ -19,6 +19,14 @@ archiviata con lo stesso nome, che mette in salvo il primo salvataggio del
 torneo ripristinato, quando lo si apre.
 Fino alla 10.19.57 la raccolta restava quella di prima del ripristino,
 finche' il torneo non si apriva e si salvava.
+Dalla 10.19.66 (decisione di Gabriele del 9 novembre 2026) i due messaggi
+Raccolta delle partite non scritta dopo il ripristino, della raccolta che
+non si scrive e della copia nella cartella backup che non riesce, finiscono
+con una frase propria, con il nome del torneo ripristinato: la raccolta si
+scrive quando si apre il torneo e lo si salva. Fino alla 10.19.65 finivano
+con le frasi dei salvataggi, che promettono il prossimo salvataggio, ma il
+prossimo salvataggio e' quello del torneo aperto, e non la scrive. Nei
+salvataggi le frasi restano quelle di prima, parola per parola.
 I tornei sono quelli delle prove della 10.19.52, in test_canc_sui_turni.py,
 con il PGN a ogni partita giocata dei turni scelti. Le prove girano sulla
 finestra principale vera, mai mostrata, con la finestra delle copie e le
@@ -83,15 +91,19 @@ def _raccolte_nel_cestino(cestino):
 def _messaggi_della_finestra(monkeypatch, copie):
     """Le finestre di messaggio della finestra principale, finte: annotano
     titolo e testo nello stesso elenco della finestra delle copie, cosi'
-    l'ordine si vede, e rispondono OK."""
+    l'ordine si vede, e rispondono OK. Dalla 10.19.66 annotano anche, in
+    copie.proprietari, il titolo, la finestra che le apre e lo stile."""
     import wx
 
     import gui.main_frame as mf
+
+    copie.proprietari = []
 
     class Messaggio:
         def __init__(self, genitore, titolo, testo, style=wx.OK, **opzioni):
             self.domanda = bool(style & wx.YES_NO)
             copie.finestre.append((titolo, testo))
+            copie.proprietari.append((titolo, genitore, style))
 
         def ShowModal(self):
             return wx.ID_YES if self.domanda else wx.ID_OK
@@ -151,6 +163,42 @@ def _apri_e_salva(principale, monkeypatch, ripristinato):
     principale.load_tournament(ripristinato)
     assert principale.current_tournament is not None
     principale._save_state()
+
+
+def _resta_il_torneo_di_prima(principale, situazione, alfa):
+    """Dopo il ripristino resta aperto il torneo di prima, Alfa, o nessuno,
+    e la procedura guidata resta com'era."""
+    assert principale.creation_mode is situazione.startswith("dentro")
+    if situazione == "dentro, senza un torneo aperto":
+        assert principale.current_tournament is None
+    else:
+        assert principale.current_tournament["name"] == "Alfa"
+        assert os.path.normcase(principale.active_filename) == os.path.normcase(alfa)
+
+
+def _la_scrive_il_salvataggio_del_ripristinato(principale, monkeypatch, ripristinato, raccolta, prima):
+    """La frase propria della 10.19.66 dei messaggi della raccolta non
+    scritta dopo il ripristino, Il torneo Turni e' salvato, e la raccolta si
+    scrive quando apri il torneo e lo salvi, e' vera: il prossimo
+    salvataggio della finestra, quello del torneo aperto, se c'e', non
+    scrive la raccolta del torneo ripristinato, e nemmeno la sua apertura;
+    la scrive il suo primo salvataggio, con le quattro partite del turno 1."""
+    from reports import byte_della_raccolta_pgn
+
+    if principale.current_tournament:
+        principale._save_state()
+    assert _byte(raccolta) == prima
+    if principale.creation_mode:
+        principale._chiudi_la_procedura_guidata()
+    monkeypatch.setattr(principale, "_si_puo_lasciare_il_torneo", lambda: True)
+    principale.load_tournament(ripristinato)
+    assert principale._e_il_torneo_aperto(ripristinato)
+    assert _byte(raccolta) == prima
+    principale._save_state()
+    with open(ripristinato, encoding="utf-8") as f:
+        propria = byte_della_raccolta_pgn(json.load(f))
+    assert propria.count(b"[Event ") == 4
+    assert _byte(raccolta) == propria
 
 
 def _torneo_in_corso_con_la_copia(principale, tmp_path, cartella, copia_con_pgn):
@@ -285,23 +333,30 @@ class TestIlTorneoInCorso:
         assert suoni == ["errore"]
 
     @pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")
-    def test_la_raccolta_che_non_si_scrive(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, capsys):
-        """Correzione della 10.19.58. Fuori dalla procedura guidata, con
-        Alfa aperta, la copia del turno 2 con i PGN del turno 1, e la
-        raccolta del torneo ripristinato che un altro programma tiene aperta,
-        e lascia leggere ma non scrivere, come un visualizzatore di PGN: la
-        raccolta di prima va nella cartella backup, resta com'era, e dopo il
-        suono del ripristino il messaggio Raccolta delle partite non scritta
-        lo dice, con il motivo che da' il sistema e con il suono dell'errore,
-        come a un salvataggio, prima del messaggio Ripristino riuscito. Tolto
-        il blocco, aprendo e salvando il torneo ripristinato la raccolta
-        diventa la sua, senza un'altra copia e senza altri messaggi."""
+    @pytest.mark.parametrize("situazione", SITUAZIONI)
+    def test_la_raccolta_che_non_si_scrive(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, capsys, situazione):
+        """Correzione della 10.19.58, e 10.19.66. Con la copia del turno 2
+        con i PGN del turno 1, e la raccolta del torneo ripristinato che un
+        altro programma tiene aperta, e lascia leggere ma non scrivere, come
+        un visualizzatore di PGN: la raccolta di prima va nella cartella
+        backup, resta com'era, e dopo il suono del ripristino il messaggio
+        Raccolta delle partite non scritta lo dice, con il motivo che da' il
+        sistema e con il suono dell'errore, come a un salvataggio, prima del
+        messaggio Ripristino riuscito. Dalla 10.19.66 il messaggio finisce
+        con la sua frase, con il nome del torneo ripristinato, anche con Alfa
+        aperta: Il torneo Turni e' salvato, e la raccolta si scrive quando
+        apri il torneo e lo salvi. Fino alla 10.19.65 finiva con la frase dei
+        salvataggi: Il torneo e' salvato, e la raccolta si riscrive al
+        prossimo salvataggio. Tolto il blocco, la frase e' vera: il prossimo
+        salvataggio della finestra, quello di Alfa, non la scrive, e
+        nemmeno l'apertura del torneo ripristinato; la scrive il suo primo
+        salvataggio, senza un'altra copia e senza altri messaggi."""
+        import wx
         from test_comandi_delle_finestre import TestRaccoltaSenzaPartiteNelCestino, _descrizione_dell_errore
 
-        from reports import byte_della_raccolta_pgn
-
         ripristinato, copia, raccolta, prima = _torneo_in_corso_con_la_copia(principale, tmp_path, "programma", True)
-        alfa = _prepara_la_situazione(principale, monkeypatch, SITUAZIONI[0])
+        alfa = _prepara_la_situazione(principale, monkeypatch, situazione)
+        procedura = situazione.startswith("dentro")
         suoni.clear()
         capsys.readouterr()
 
@@ -319,22 +374,164 @@ class TestIlTorneoInCorso:
         assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Raccolta delle partite non scritta", "Ripristino riuscito"]
         assert copie.finestre[1][1] == (
             f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, non si è potuta scrivere: "
-            f"{_descrizione_dell_errore(errore)}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
+            f"{_descrizione_dell_errore(errore)}. Forse un altro programma la tiene aperta. Il torneo Turni è salvato, e la raccolta si scrive quando apri il torneo e lo salvi."
         )
+        assert copie.proprietari == [("Raccolta delle partite non scritta", principale, wx.OK)]
         assert copie.suoni == ["ripristino"]
         assert suoni == ["errore"]
         assert scatole == []
-        assert registro.fuoco == ["tree_ctrl"]
-        assert principale._e_il_torneo_aperto(alfa)
+        assert registro.caricati == []
+        assert registro.fuoco == ([] if procedura else ["tree_ctrl"])
+        _resta_il_torneo_di_prima(principale, situazione, alfa)
 
-        _apri_e_salva(principale, monkeypatch, ripristinato)
+        _la_scrive_il_salvataggio_del_ripristinato(principale, monkeypatch, ripristinato, raccolta, prima)
+
+        assert list(_copie_della_raccolta().values()) == [prima]
+        assert len(copie.finestre) == 3
+        assert suoni == ["errore"]
+
+    @pytest.mark.parametrize("situazione", SITUAZIONI)
+    def test_la_copia_che_non_riesce(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, situazione):
+        """10.19.66. Con la copia del turno 2 con i PGN del turno 1, la
+        raccolta di prima, con le dieci partite dei turni da 1 a 3, ha
+        partite che il torneo ripristinato non ha, e la sua copia nella
+        cartella backup non riesce: la raccolta resta com'era, e dopo il
+        suono del ripristino il messaggio Raccolta delle partite non scritta
+        lo dice, con il suono dell'errore, prima del messaggio Ripristino
+        riuscito, e finisce con la sua frase, con il nome del torneo
+        ripristinato, anche con Alfa aperta: Se la raccolta di prima non ti
+        serve più, spostala o cancellala tu, e la raccolta nuova del torneo
+        Turni si scrive quando apri il torneo e lo salvi. Fino alla 10.19.65
+        finiva con la frase dei salvataggi: e il prossimo salvataggio
+        scriverà quella nuova. Quando la copia riesce, la frase e' vera: il
+        prossimo salvataggio della finestra, quello di Alfa, non la scrive,
+        e nemmeno l'apertura del torneo ripristinato; la scrive il suo primo
+        salvataggio, dopo la copia, senza altri messaggi."""
+        import wx
+        from test_comandi_delle_finestre import TestRaccoltaSenzaPartiteNelCestino
+
+        import utils
+
+        ripristinato, copia, raccolta, prima = _torneo_in_corso_con_la_copia(principale, tmp_path, "programma", True)
+        alfa = _prepara_la_situazione(principale, monkeypatch, situazione)
+        procedura = situazione.startswith("dentro")
+        vera = TestRaccoltaSenzaPartiteNelCestino._senza_copie_delle_raccolte(monkeypatch)
+        suoni.clear()
+
+        copie, scatole, registro = _ripristina(principale, monkeypatch, copia, cestino_finto)
+
+        assert _byte(raccolta) == prima
+        assert _copie_della_raccolta() == {}
+        assert _raccolte_nel_cestino(cestino_finto) == []
+        assert [titolo for titolo, _testo in copie.finestre] == ["Conferma ripristino", "Raccolta delle partite non scritta", "Ripristino riuscito"]
+        assert copie.finestre[1][1] == (
+            f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, ha partite che il torneo Turni non ha: "
+            "prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. "
+            "Resta com'è, e la raccolta nuova non è stata scritta.\n"
+            "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. "
+            "Se la raccolta di prima non ti serve più, spostala o cancellala tu, e la raccolta nuova del torneo Turni si scrive quando apri il torneo e lo salvi."
+        )
+        assert copie.proprietari == [("Raccolta delle partite non scritta", principale, wx.OK)]
+        assert copie.suoni == ["ripristino"]
+        assert suoni == ["errore"]
+        assert scatole == []
+        assert registro.caricati == []
+        assert registro.fuoco == ([] if procedura else ["tree_ctrl"])
+        _resta_il_torneo_di_prima(principale, situazione, alfa)
+
+        monkeypatch.setattr(utils, "copia_di_sicurezza", vera)
+        _la_scrive_il_salvataggio_del_ripristinato(principale, monkeypatch, ripristinato, raccolta, prima)
+
+        assert list(_copie_della_raccolta().values()) == [prima]
+        assert len(copie.finestre) == 3
+        assert suoni == ["errore"]
+
+    @pytest.mark.parametrize(
+        "caso",
+        [
+            pytest.param("scrittura", id="la raccolta che non si scrive", marks=pytest.mark.skipif(sys.platform != "win32", reason="il blocco di un altro programma e' quello di Windows")),
+            pytest.param("copia", id="la copia che non riesce"),
+        ],
+    )
+    @pytest.mark.parametrize("strada", ["ripristino del torneo aperto", "salvataggio"])
+    def test_nei_salvataggi_le_frasi_restano(self, principale, suoni, monkeypatch, cestino_finto, tmp_path, capsys, strada, caso):
+        """10.19.66. Nei salvataggi i due messaggi Raccolta delle partite
+        non scritta restano parola per parola quelli di prima, con le frasi
+        che promettono il prossimo salvataggio, che li' e' vero. Due strade:
+        il ripristino della copia del turno 2 di Turni aperto, che la
+        finestra carica e salva; e il salvataggio di Turni riaperto dal suo
+        file, che e' tornato com'era nella copia del turno 2, come dopo un
+        ripristino fatto con un altro torneo aperto. Con il suono
+        dell'errore, senza wx.MessageBox, e la finestra principale apre il
+        messaggio. Tolto il blocco, il prossimo salvataggio scrive la
+        raccolta del torneo, con le quattro partite del turno 1."""
+        import shutil
+        from types import SimpleNamespace
+
+        import wx
+        from test_comandi_delle_finestre import TestRaccoltaSenzaPartiteNelCestino, _descrizione_dell_errore
+
+        import utils
+        from reports import byte_della_raccolta_pgn
+
+        ripristinato, copia, raccolta, prima = _torneo_in_corso_con_la_copia(principale, tmp_path, "programma", True)
+        assert principale._e_il_torneo_aperto(ripristinato)
+        if caso == "copia":
+            vera = TestRaccoltaSenzaPartiteNelCestino._senza_copie_delle_raccolte(monkeypatch)
+        suoni.clear()
+        capsys.readouterr()
+        sblocca = TestRaccoltaSenzaPartiteNelCestino._bloccata(raccolta, TestRaccoltaSenzaPartiteNelCestino.FILE_SHARE_READ) if caso == "scrittura" else (lambda: None)
+        try:
+            if strada == "salvataggio":
+                shutil.copyfile(copia, ripristinato)
+                copie = SimpleNamespace(finestre=[])
+                _messaggi_della_finestra(monkeypatch, copie)
+                scatole = []
+                monkeypatch.setattr(wx, "MessageBox", lambda *a, **k: scatole.append(a))
+                principale.load_tournament(ripristinato)
+                principale._save_state()
+                titoli = ["Raccolta delle partite non scritta"]
+            else:
+                copie, scatole, registro = _ripristina(principale, monkeypatch, copia, cestino_finto)
+                assert registro.caricati == ["Tornello - Turni.json"]
+                assert copie.suoni == ["ripristino"]
+                titoli = ["Conferma ripristino", "Raccolta delle partite non scritta", "Ripristino riuscito"]
+        finally:
+            sblocca()
+
+        assert _byte(raccolta) == prima
+        assert [titolo for titolo, _testo in copie.finestre] == titoli
+        (testo,) = [testo for titolo, testo in copie.finestre if titolo == "Raccolta delle partite non scritta"]
+        if caso == "scrittura":
+            (errore,) = TestRaccoltaSenzaPartiteNelCestino._errori_in_console(capsys)
+            assert testo == (
+                f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, non si è potuta scrivere: "
+                f"{_descrizione_dell_errore(errore)}. Forse un altro programma la tiene aperta. Il torneo è salvato, e la raccolta si riscrive al prossimo salvataggio."
+            )
+            assert list(_copie_della_raccolta().values()) == [prima]
+        else:
+            assert testo == (
+                f"La raccolta delle partite Turni - raccolta partite.pgn, nella cartella {os.path.dirname(raccolta)}, ha partite che il torneo Turni non ha: "
+                "prima di sostituirla con la raccolta nuova Tornello doveva metterne una copia nella cartella backup, e la copia non è riuscita. "
+                "Resta com'è, e la raccolta nuova non è stata scritta.\n"
+                "I salvataggi ci riprovano, anche dopo una chiusura di Tornello, e fino alla chiusura questo messaggio non si ripete. "
+                "Se la raccolta di prima non ti serve più, spostala o cancellala tu, e il prossimo salvataggio scriverà quella nuova."
+            )
+            assert _copie_della_raccolta() == {}
+            monkeypatch.setattr(utils, "copia_di_sicurezza", vera)
+        assert copie.proprietari == [("Raccolta delle partite non scritta", principale, wx.OK)]
+        assert suoni == ["errore"]
+        assert scatole == []
+        assert principale._e_il_torneo_aperto(ripristinato)
+
+        principale._save_state()
 
         with open(ripristinato, encoding="utf-8") as f:
             propria = byte_della_raccolta_pgn(json.load(f))
         assert propria.count(b"[Event ") == 4
         assert _byte(raccolta) == propria
         assert list(_copie_della_raccolta().values()) == [prima]
-        assert len(copie.finestre) == 3
+        assert len(copie.finestre) == len(titoli)
         assert suoni == ["errore"]
 
 
