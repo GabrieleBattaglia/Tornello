@@ -656,8 +656,16 @@ class TournamentController:
         self.active_filename = user_data_path(f"Tornello - {sanitized}.json")
 
         # Date fine. Il formato a parole, come per la data di inizio, dalla
-        # 10.19.56; il messaggio della data sbagliata e' quello della
-        # finestra.
+        # 10.19.56. Dalla 10.19.61 la data di fine si legge come quella di
+        # inizio, con parse_flexible_date, che accetta anche AAAAMMGG, e si
+        # scrive sempre nella forma AAAA-MM-GG, per esempio 2026-12-05 anche
+        # per 2026-12-5; il messaggio della data sbagliata e' quello della
+        # data di inizio, con i due formati. Le date che si accettavano si
+        # accettano ancora, e la fine non puo' venire prima dell'inizio. Fino
+        # alla 10.19.60, e gia' nella 10.0.0, 20261231 si rifiutava con il
+        # messaggio della finestra, Formato data non valido. Usa AAAA-MM-GG.,
+        # e la data si scriveva nel torneo come la si digitava (decisione di
+        # Gabriele del 9 novembre 2026).
         end_date = ""
         while not end_date:
             start_dt = datetime.strptime(start_date, DATE_FORMAT_ISO)
@@ -672,7 +680,7 @@ class TournamentController:
             if not inp_date:
                 inp_date = default_end_iso
             try:
-                end_dt = datetime.strptime(inp_date, DATE_FORMAT_ISO)
+                end_dt = parse_flexible_date(inp_date)
                 if end_dt < start_dt:
                     self.ui.show_error(
                         _(
@@ -680,9 +688,11 @@ class TournamentController:
                         )
                     )
                     continue
-                end_date = inp_date
+                end_date = end_dt.strftime(DATE_FORMAT_ISO)
             except ValueError:
-                self.ui.show_error(_("Formato data non valido. Usa AAAA-MM-GG."))
+                self.ui.show_error(
+                    _("Formato data non valido. Usa AAAA-MM-GG o AAAAMMGG.")
+                )
             except OverflowError:
                 self.ui.show_error(
                     _("La data calcolata risulta troppo lontana nel futuro.")

@@ -17,7 +17,11 @@ parentesi quadre vuote, e INVIO torna alla domanda Giocatore N invece di
 fermare la console. Dalla 10.19.60 il valore che INVIO tiene si mostra una
 volta sola, nelle quattro domande della pianificazione e in quella del
 controllo del tempo, e il canale e l'arbitro senza un valore non dicono
-[Attuale: ] vuoto; INVIO tiene gli stessi valori di prima.
+[Attuale: ] vuoto; INVIO tiene gli stessi valori di prima. Dalla 10.19.61
+la data di fine accetta anche AAAAMMGG, come la data di inizio, con il suo
+stesso messaggio della data sbagliata, e si scrive sempre AAAA-MM-GG, con
+lo zero: la tabella delle date di fine ha l'esito di prima e quello di
+adesso.
 La console e' quella vera, con il controller e le risposte a copione di
 test_console, senza suoni; il giorno di oggi e' fisso, domenica 8 novembre
 2026. Tutto sta nella cartella temporanea della prova."""
@@ -36,7 +40,11 @@ DOMANDA_DI_CARICARE = "Vuoi caricare 'Corona'? (Premi INVIO per sì, o inserisci
 DOMANDA_DI_INIZIO = "Inserisci data inizio (AAAA-MM-GG) [Default: Domenica 8 novembre 2026]: "
 DOMANDA_DI_FINE = "Inserisci data fine (AAAA-MM-GG) [Default: Giovedì 7 gennaio 2027]: "
 DATA_DI_INIZIO_SBAGLIATA = "Formato data non valido. Usa AAAA-MM-GG o AAAAMMGG."
-DATA_DI_FINE_SBAGLIATA = "Formato data non valido. Usa AAAA-MM-GG."
+# Dalla 10.19.61 la data di fine sbagliata ha il messaggio della data di
+# inizio, con i due formati; fino alla 10.19.60 aveva quello della finestra.
+DATA_DI_FINE_SBAGLIATA = DATA_DI_INIZIO_SBAGLIATA
+FINE_SBAGLIATA_FINO_ALLA_10_19_60 = "Formato data non valido. Usa AAAA-MM-GG."
+FINE_PRIMA_DELL_INIZIO = "La data di fine non può essere precedente alla data di inizio."
 GIOCATORE_1 = "\nGiocatore 1 (o lascia vuoto per terminare): "
 PREMI_C_S_O_ESC = "Premi 'c' per concludere, 's' per sospendere, Esc per annullare: "
 # Senza le parentesi quadre vuote dalla 10.19.59.
@@ -62,20 +70,41 @@ DATE_DI_INIZIO = {
     "x": None,
     "2026-11-08x": None,
 }
-# Le date di fine, con l'inizio al 2026-11-08: vero per quelle che si
-# accettano, altrimenti il messaggio del rifiuto.
+# Le date di fine, con l'inizio al 2026-11-08: per ognuna l'esito fino alla
+# 10.19.60, misurato sulla 10.19.58, e quello dalla 10.19.61, cioe' la data
+# che si scrive nel file del torneo, o il messaggio del rifiuto. La vuota e'
+# quella proposta, sessanta giorni dopo l'inizio. Dalla 10.19.61 la data di
+# fine accetta anche AAAAMMGG, come quella di inizio, e si scrive sempre
+# AAAA-MM-GG, con lo zero; fino alla 10.19.60 si scriveva come la si
+# digitava (decisione di Gabriele del 9 novembre 2026).
+SBAGLIATA = (FINE_SBAGLIATA_FINO_ALLA_10_19_60, DATA_DI_FINE_SBAGLIATA)
 DATE_DI_FINE = {
-    "": True,
-    "2026-12-31": True,
-    "2026-12-5": True,
-    "9999-12-31": True,
-    "20261231": DATA_DI_FINE_SBAGLIATA,
-    "2026-02-30": DATA_DI_FINE_SBAGLIATA,
-    "31/12/2026": DATA_DI_FINE_SBAGLIATA,
-    "2026/12/31": DATA_DI_FINE_SBAGLIATA,
-    "x": DATA_DI_FINE_SBAGLIATA,
-    "2026-11-01": "La data di fine non può essere precedente alla data di inizio.",
+    "": ("2027-01-07", "2027-01-07"),
+    "2026-12-31": ("2026-12-31", "2026-12-31"),
+    "2026-12-05": ("2026-12-05", "2026-12-05"),
+    "2026-12-5": ("2026-12-5", "2026-12-05"),
+    "2027-1-1": ("2027-1-1", "2027-01-01"),
+    " 2026-12-31 ": ("2026-12-31", "2026-12-31"),
+    "2026-11-08": ("2026-11-08", "2026-11-08"),
+    "9999-12-31": ("9999-12-31", "9999-12-31"),
+    "20261231": (FINE_SBAGLIATA_FINO_ALLA_10_19_60, "2026-12-31"),
+    "20261205": (FINE_SBAGLIATA_FINO_ALLA_10_19_60, "2026-12-05"),
+    "20261108": (FINE_SBAGLIATA_FINO_ALLA_10_19_60, "2026-11-08"),
+    "99991231": (FINE_SBAGLIATA_FINO_ALLA_10_19_60, "9999-12-31"),
+    "20261107": (FINE_SBAGLIATA_FINO_ALLA_10_19_60, FINE_PRIMA_DELL_INIZIO),
+    "2026-11-01": (FINE_PRIMA_DELL_INIZIO, FINE_PRIMA_DELL_INIZIO),
+    "20261301": SBAGLIATA,
+    "261231": SBAGLIATA,
+    "2026123": SBAGLIATA,
+    "2026-02-30": SBAGLIATA,
+    "31/12/2026": SBAGLIATA,
+    "2026/12/31": SBAGLIATA,
+    "2026.12.31": SBAGLIATA,
+    "+2026-12-31": SBAGLIATA,
+    "2026-12-31x": SBAGLIATA,
+    "x": SBAGLIATA,
 }
+MESSAGGI_DELLA_FINE = (FINE_SBAGLIATA_FINO_ALLA_10_19_60, DATA_DI_FINE_SBAGLIATA, FINE_PRIMA_DELL_INIZIO)
 
 
 class Oggi(datetime):
@@ -283,8 +312,9 @@ class TestLeDateDelTorneoNuovo:
     @pytest.mark.parametrize("scritta", list(DATE_DI_FINE))
     def test_le_date_di_fine_che_si_accettano(self, monkeypatch, muto, oggi_fisso, scritta):
         """Ogni data di fine, con l'inizio al 2026-11-08, si accetta o si
-        rifiuta come nella 10.19.55. La creazione si ferma alla domanda dei
-        turni, che viene subito dopo la data di fine."""
+        rifiuta come dice la tabella dalla 10.19.61: una data rifiutata ha il
+        suo messaggio, e la domanda torna. La creazione si ferma alla domanda
+        dei turni, che viene subito dopo la data di fine."""
         from controller import TournamentController
 
         class AiTurni(Exception):
@@ -300,12 +330,49 @@ class TestLeDateDelTorneoNuovo:
         with pytest.raises(AiTurni):
             TournamentController(adattatore)._create_new_tournament()
 
-        attesa = DATE_DI_FINE[scritta]
+        attesa = DATE_DI_FINE[scritta][1]
         fine = [d for d in copione.domande if d.startswith("Inserisci data fine")]
-        if attesa is True:
+        if attesa not in MESSAGGI_DELLA_FINE:
             assert (fine, copione.tasti, adattatore.messaggi) == ([DOMANDA_DI_FINE], ["2027-01-01"], ["Creazione Nuovo Torneo"])
         else:
             assert (fine, copione.tasti, adattatore.messaggi) == ([DOMANDA_DI_FINE] * 2, [], ["Creazione Nuovo Torneo", attesa])
+
+    @pytest.mark.parametrize(
+        "scritta",
+        [s for s, (_prima, dopo) in DATE_DI_FINE.items() if dopo not in MESSAGGI_DELLA_FINE and not dopo.startswith("9999")],
+    )
+    def test_la_data_di_fine_nel_file_del_torneo(self, monkeypatch, muto, oggi_fisso, cestino_finto, scritta):
+        """Ogni data di fine accettata, poi un turno, INVIO alle altre
+        domande, nessun giocatore e s: nel file di Libero, sospeso, la data
+        di fine e' quella della tabella, sempre AAAA-MM-GG, con lo zero, come
+        la fine del turno 1 nel calendario dei turni. Fino alla 10.19.60 si
+        scriveva come la si digitava, per esempio 2026-12-5. L'anno 9999 non
+        c'e': il calendario dei turni non si sa calcolare fino a quella
+        data."""
+        import config
+        from controller import TournamentController
+
+        copione = Copione(monkeypatch, tasti=["Libero", "2026-11-08", scritta, "1", "", "", "", "", "", "", "s"], conferme=[True])
+
+        with pytest.raises(SystemExit) as uscita:
+            TournamentController(_adattatore(copione))._create_new_tournament()
+
+        assert uscita.value.code == 0
+        assert copione.tasti == [] and copione.conferme == []
+        libero = _leggi(config.user_data_path("Tornello - Libero.json"))
+        attesa = DATE_DI_FINE[scritta][1]
+        assert (libero["start_date"], libero["end_date"], libero["round_dates"][0]["end_date"]) == ("2026-11-08", attesa, attesa)
+        assert cestino_finto.tentativi == []
+
+    def test_le_date_che_si_accettavano_si_accettano_ancora(self):
+        """La tabella: ogni data di fine che fino alla 10.19.60 si
+        accettava si accetta ancora, nella forma AAAA-MM-GG; quelle che si
+        rifiutavano per la data prima dell'inizio si rifiutano ancora."""
+        for scritta, (prima, dopo) in DATE_DI_FINE.items():
+            if prima == FINE_PRIMA_DELL_INIZIO:
+                assert dopo == FINE_PRIMA_DELL_INIZIO, scritta
+            elif prima != FINE_SBAGLIATA_FINO_ALLA_10_19_60:
+                assert dopo == datetime.strptime(prima, "%Y-%m-%d").strftime("%Y-%m-%d"), scritta
 
 
 # La pianificazione che la partita della scacchiera 1 di Corona ha gia', per
