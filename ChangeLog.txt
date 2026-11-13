@@ -1,6 +1,6 @@
 CHANGELOG DI TORNELLO
 
-10.19.67 (2026.11.13)
+10.19.67 (2026.11.13), pubblicata su GitHub il 13 novembre 2026
 	+ Fix: Nelle traduzioni in inglese, spagnolo, francese e portoghese le frasi hanno di nuovo gli a capo, le tabulazioni e gli spazi all'inizio e alla fine delle frasi italiane. Fino alla 10.19.66 li avevano persi da 124 a 191 traduzioni per lingua, fin dalla traduzione automatica del luglio 2026: per esempio gli abbinamenti del turno corrente nell'area centrale finivano tutti su una riga, e i titoli dei report si attaccavano alla riga prima. Sono tradotte di nuovo anche le tre frasi che avevano a capo diversi dall'italiano: quelle che dicono che il manuale o il changelog non si trovano, che chiamavano Tornello Turnstile, Torniques, Tourniquet e Catraca e il manuale MANUAL.txt al posto di MANUALE.txt, e quella del fallimento degli abbinamenti automatici, che attaccava il numero del turno alla parola e l'errore ai due punti.
 
 10.19.66 (2026.11.13)
