@@ -18,6 +18,7 @@ Esito:
 
 PROVA 19: Il torneo che Tornello non riesce a salvare
 Prima: Tornello del banco chiuso, e il prompt dei comandi della prova 2 ancora aperto: finita la prova 11, chiudi Tornello con ALT+F4.
+Prima: a quella chiusura le ultime righe del prompt dei comandi dicono "Banco di collaudo chiuso. Attenzione, i dati vivi sono cambiati mentre il banco era aperto:" ed elencano i file: dall'11 novembre, quando hai avviato il banco, sono cambiati per esempio i file di Autunneo2, nella cartella del Tornello vero e in Dropbox, e quelli di GBUtils. Non dipende dalle prove.
 Prima: in Prova ritiri il Turno 1 è completo, e nel Turno corrente (2/5) le Scacchiere 1 e 2 sono da giocare.
 Prima: in questa prova il banco tiene aperto il file del torneo, Tornello - Prova_ritiri.json, come un altro programma, che lo lascia leggere ma non scrivere: lo accende l'argomento --torneo-bloccato di banco.py, soltanto per quell'avvio del banco e fino alla chiusura di Tornello. Ogni risultato salva il torneo, e il salvataggio non riesce.
 Prima: quando si lascia un torneo che non si è salvato, con le frecce su un altro torneo, con Apri Torneo, con Nuovo Torneo o con la chiusura, Tornello riprova a salvarlo, e se non ci riesce chiede se lasciarlo lo stesso.
