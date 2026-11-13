@@ -243,8 +243,9 @@ class TestSuoniDelPub:
         with open(percorso, encoding="utf-8") as f:
             dati = json.load(f).get(preset)
         assert dati is not None and dati.get("score")
-        firme = dati["descrizione"].split("Usato da:")[-1]
-        assert "tornello" in [nome.strip(" .") for nome in firme.split(",")]
+        # Da Acusticator 8.9.0 le firme stanno nel campo usato_da, non piu'
+        # in coda alla descrizione (issue 60 di GBUtils).
+        assert "tornello" in dati.get("usato_da", [])
 
 
 def principale_testo(testo):

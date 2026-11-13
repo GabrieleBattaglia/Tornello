@@ -269,8 +269,9 @@ class TestSuonoDellInvito:
         with open(percorso, encoding="utf-8") as f:
             preset = json.load(f).get("donazione")
         assert preset is not None and preset.get("score")
-        firme = preset["descrizione"].split("Usato da:")[-1]
-        assert "tornello" in [nome.strip(" .") for nome in firme.split(",")]
+        # Da Acusticator 8.9.0 le firme stanno nel campo usato_da, non piu'
+        # in coda alla descrizione (issue 60 di GBUtils).
+        assert "tornello" in preset.get("usato_da", [])
 
 
 class TestFinestraDellInvito:
