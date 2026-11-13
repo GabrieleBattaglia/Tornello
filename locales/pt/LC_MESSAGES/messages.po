@@ -56,8 +56,8 @@ msgid ""
 "\tSesso: {sesso}, Federazione: {federazione}, ID FIDE: {fide_id}, Flag: "
 "{flag}{extra}\n"
 msgstr ""
-"Gênero:{sesso}, Federação:{federazione}, ID FIDE:{fide_id}, "
-"Bandeira:{flag}{extra}"
+"\tGênero:{sesso}, Federação:{federazione}, ID FIDE:{fide_id}, "
+"Bandeira:{flag}{extra}\n"
 
 msgid "\t[SC] il numero della scacchiera;"
 msgstr "\t[TB]  o número do tabuleiro;"
@@ -132,24 +132,32 @@ msgstr ""
 msgid ""
 "\n"
 "  Ancora non pianificate:"
-msgstr "Ainda não planejado:"
+msgstr ""
+"\n"
+"  Ainda não planejado:"
 
 #, python-brace-format
 msgid ""
 "\n"
 "  Partite già giocate o con risultato convalidato ({count}):\n"
-msgstr "Partidas já disputadas ou com resultado validado ({count}):"
+msgstr ""
+"\n"
+"  Partidas já disputadas ou com resultado validado ({count}):\n"
 
 msgid ""
 "\n"
 "  Partite già pianificate, da giocare:"
-msgstr "Jogos já agendados, a serem disputados:"
+msgstr ""
+"\n"
+"  Jogos já agendados, a serem disputados:"
 
 #, python-brace-format
 msgid ""
 "\n"
 "-> Nuova ricerca nel DB FIDE per '{term}'..."
-msgstr "-> Nova busca no banco de dados FIDE por '{term}'..."
+msgstr ""
+"\n"
+"-> Nova busca no banco de dados FIDE por '{term}'..."
 
 msgid ""
 "\n"
@@ -191,19 +199,23 @@ msgstr ""
 msgid ""
 "\n"
 "Azione: (M)odifica, (C)ancella, (S)eleziona altro/Fine"
-msgstr "Ação: (M)odificar, (C)excluir, (S)elecionar mais/Finalizar"
+msgstr ""
+"\n"
+"Ação: (M)odificar, (C)excluir, (S)elecionar mais/Finalizar"
 
 msgid ""
 "\n"
 "BENVENUTI! Sono Tornello V9"
-msgstr "BEM-VINDO! Eu sou a Tornello V9"
+msgstr ""
+"\n"
+"BEM-VINDO! Eu sou a Tornello V9"
 
 msgid ""
 "\n"
 "Cosa vuoi fare? (T)orna indietro con la Time Machine per correggere, (U)sci dal programma: "
 msgstr ""
-"O que você quer fazer? (T) volte com o Time Machine para corrigir, (U) saia "
-"do programa:"
+"\n"
+"O que você quer fazer? (T) volte com o Time Machine para corrigir, (U) saia do programa: "
 
 msgid ""
 "\n"
@@ -238,7 +250,9 @@ msgstr ""
 msgid ""
 "\n"
 "Gestione completata."
-msgstr "Gestão concluída."
+msgstr ""
+"\n"
+"Gestão concluída."
 
 #, python-brace-format
 msgid ""
@@ -253,8 +267,8 @@ msgid ""
 "\n"
 "Giocatore: {} {} (ID Locale: {}) ha {} omonimi nel DB FIDE. Risoluzione manuale richiesta."
 msgstr ""
-"Jogador: {} {} (ID local: {}) tem {} homônimos no banco de dados FIDE. É "
-"necessária resolução manual."
+"\n"
+"Jogador: {} {} (ID local: {}) tem {} homônimos no banco de dados FIDE. É necessária resolução manual."
 
 msgid ""
 "\n"
@@ -267,7 +281,9 @@ msgstr ""
 msgid ""
 "\n"
 "Il torneo '{name}' si è concluso."
-msgstr "O torneio '{name}' terminou."
+msgstr ""
+"\n"
+"O torneio '{name}' terminou."
 
 msgid ""
 "\n"
@@ -282,24 +298,25 @@ msgid ""
 "Puoi iscrivere altri giocatori premendo Ctrl+I (o dal menù Torneo -> Iscrizioni).\n"
 "Quando sei pronto ad iniziare il torneo, seleziona 'Inizia torneo' dall'albero a destra.\n"
 msgstr ""
+"\n"
 "O torneio está em fase de preparação.\n"
 "Você pode registrar outros jogadores pressionando Ctrl+I (ou no menu Torneio -> Inscrições).\n"
-"Quando estiver pronto para iniciar o torneio, selecione 'Iniciar Torneio' na árvore à direita."
+"Quando estiver pronto para iniciar o torneio, selecione 'Iniciar Torneio' na árvore à direita.\n"
 
 #, python-brace-format
 msgid ""
 "\n"
 "Info: I dati (Elo/Titoli) di {count} giocatore/i sono stati automaticamente allineati all'ultimo aggiornamento del Database."
 msgstr ""
-"Informação: Os dados (Elo/Títulos) do(s) jogador(es) {count} foram "
-"automaticamente alinhados com a última atualização do Banco de Dados."
+"\n"
+"Informação: Os dados (Elo/Títulos) do(s) jogador(es) {count} foram automaticamente alinhados com a última atualização do Banco de Dados."
 
 msgid ""
 "\n"
 "Info: Rilevato database giocatori in formato obsoleto. Avvio migrazione a schema v2..."
 msgstr ""
-"Informação: Detectado banco de dados de jogadores em formato obsoleto. "
-"Iniciando a migração para o esquema v2..."
+"\n"
+"Informação: Detectado banco de dados de jogadores em formato obsoleto. Iniciando a migração para o esquema v2..."
 
 #, python-brace-format
 msgid ""
@@ -319,12 +336,16 @@ msgstr ""
 msgid ""
 "\n"
 "Operazioni completate."
-msgstr "Operações concluídas."
+msgstr ""
+"\n"
+"Operações concluídas."
 
 msgid ""
 "\n"
 "Opzioni Storico Tornei:"
-msgstr "Opções de histórico de torneio:"
+msgstr ""
+"\n"
+"Opções de histórico de torneio:"
 
 #, python-brace-format
 msgid ""
@@ -354,17 +375,23 @@ msgstr ""
 msgid ""
 "\n"
 "Pianificata per: {date} alle {time}"
-msgstr "Programado para:{date}a{time}"
+msgstr ""
+"\n"
+"Programado para:{date}a{time}"
 
 msgid ""
 "\n"
 "Premi Invio per uscire..."
-msgstr "Pressione Enter para sair..."
+msgstr ""
+"\n"
+"Pressione Enter para sair..."
 
 msgid ""
 "\n"
 "Reindirizzamento all'inserimento giocatori..."
-msgstr "Redirecionar para inserção do player..."
+msgstr ""
+"\n"
+"Redirecionar para inserção do player..."
 
 msgid ""
 "\n"
@@ -377,28 +404,38 @@ msgstr ""
 msgid ""
 "\n"
 "Ripresa inserimento giocatori per '{name}'..."
-msgstr "Retomando a inserção do jogador para '{name}'..."
+msgstr ""
+"\n"
+"Retomando a inserção do jogador para '{name}'..."
 
 msgid ""
 "\n"
 "Risultato registrato con successo."
-msgstr "Resultado registrado com sucesso."
+msgstr ""
+"\n"
+"Resultado registrado com sucesso."
 
 #, python-brace-format
 msgid ""
 "\n"
 "R|T|SC|nome|cognome [{boards}]: "
-msgstr "R|T|SC|nome|sobrenome [{boards}]:"
+msgstr ""
+"\n"
+"R|T|SC|nome|sobrenome [{boards}]: "
 
 msgid ""
 "\n"
 "Salvataggio finale del database prima di uscire..."
-msgstr "Salvamento final do banco de dados antes de sair..."
+msgstr ""
+"\n"
+"Salvamento final do banco de dados antes de sair..."
 
 msgid ""
 "\n"
 "Sessione di inserimento/modifica risultati terminata."
-msgstr "Sessão de entrada/modificação de resultados encerrada."
+msgstr ""
+"\n"
+"Sessão de entrada/modificação de resultados encerrada."
 
 msgid ""
 "\n"
@@ -410,12 +447,16 @@ msgstr ""
 msgid ""
 "\n"
 "Sospensione inserimento. Salvataggio stato del torneo..."
-msgstr "Suspensão de armamento. Salvando o status do torneio..."
+msgstr ""
+"\n"
+"Suspensão de armamento. Salvando o status do torneio..."
 
 msgid ""
 "\n"
 "Storico Tornei Attuale:"
-msgstr "Histórico atual do torneio:"
+msgstr ""
+"\n"
+"Histórico atual do torneio:"
 
 #, python-brace-format
 msgid ""
@@ -429,7 +470,9 @@ msgstr ""
 msgid ""
 "\n"
 "Trovate {num} corrispondenze. Specifica meglio:"
-msgstr "Encontre correspondências {num}. Especifique melhor:"
+msgstr ""
+"\n"
+"Encontre correspondências {num}. Especifique melhor:"
 
 msgid ""
 "\n"
@@ -443,8 +486,8 @@ msgid ""
 "\n"
 "Trovati {count} giocatori nel tuo DB personale corrispondenti a '{term}':"
 msgstr ""
-"{count}jogadores encontrados em seu banco de dados pessoal correspondentes a"
-" '{term}':"
+"\n"
+"{count}jogadores encontrados em seu banco de dados pessoal correspondentes a '{term}':"
 
 #, python-brace-format
 msgid ""
@@ -488,7 +531,9 @@ msgstr ""
 msgid ""
 "\n"
 "Vuoi procedere e generare gli abbinamenti per il Turno {round_num}?"
-msgstr "Quer prosseguir e gerar os pareamentos para a rodada{round_num}?"
+msgstr ""
+"\n"
+"Quer prosseguir e gerar os pareamentos para a rodada{round_num}?"
 
 msgid ""
 "\n"
@@ -506,46 +551,46 @@ msgstr ""
 
 #, python-brace-format
 msgid "      Pianificata per: {date} alle {time}"
-msgstr "Programado para: {date} a {time}"
+msgstr "      Programado para: {date} a {time}"
 
 #, python-brace-format
 msgid ""
 "    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs "
 "{black:<20} [{b_elo:>4}]"
 msgstr ""
-"Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} "
-"[{b_elo:>4}]"
+"    Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs "
+"{black:<20} [{b_elo:>4}]"
 
 #, python-brace-format
 msgid ""
 "    {time} IDG:{match_id}, {white} vs {black}, Canale: {channel}, Arbitro: "
 "{arbiter}\n"
 msgstr ""
-"{time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
-"{arbiter}"
+"    {time} IDG:{match_id}, {white} vs {black}, Canal: {channel}, Árbitro: "
+"{arbiter}\n"
 
 msgid "   0. Nessuno di questi"
-msgstr "0. Nada disso"
+msgstr "   0. Nada disso"
 
 msgid "   0. Nessuno di questi / Inserimento manuale"
-msgstr "0. Nada disso / Entrada manual"
+msgstr "   0. Nada disso / Entrada manual"
 
 #, python-brace-format
 msgid ""
 "   Nome: {last_name}, {first_name} (ID FIDE: {fide_id}, FED: {fed}, Elo: "
 "{elo})"
 msgstr ""
-"Nome:{last_name},{first_name}(FIDE ID:{fide_id}, FED:{fed}, Elo:{elo})"
+"   Nome:{last_name},{first_name}(FIDE ID:{fide_id}, FED:{fed}, Elo:{elo})"
 
 msgid "   Non pianificate (con ritirati):\n"
 msgstr "   Não programadas (com retirados):\n"
 
 msgid "   Saltato."
-msgstr "Ignorado."
+msgstr "   Ignorado."
 
 #, python-brace-format
 msgid "   Scelta (0-{}): "
-msgstr "Escolha (0-{}):"
+msgstr "   Escolha (0-{}): "
 
 #, python-brace-format
 msgid ""
@@ -556,16 +601,16 @@ msgstr ""
 "{arbiter}\n"
 
 msgid "   È questo il giocatore corretto? (INVIO|ESCAPE)"
-msgstr "Este é o jogador correto? (ENTRAR | ESCAPAR)"
+msgstr "   Este é o jogador correto? (ENTRAR | ESCAPAR)"
 
 msgid "  (A)ggiungi, (C)ancella, (F)ine gestione storico: "
-msgstr "(A)adicionar, (C)excluir, (F)gerenciamento de histórico final:"
+msgstr "  (A)adicionar, (C)excluir, (F)gerenciamento de histórico final: "
 
 msgid "  -- Partite giocate con giocatori ritirati --\n"
 msgstr "  -- Partidas jogadas com jogadores retirados --\n"
 
 msgid "  0. Nessuno di questi, cerca nel DB FIDE"
-msgstr "0. Nada disso, pesquise no banco de dados FIDE"
+msgstr "  0. Nada disso, pesquise no banco de dados FIDE"
 
 msgid "  Ancora nessun risultato assegnato\n"
 msgstr "  Ainda nenhum resultado atribuído\n"
@@ -578,51 +623,51 @@ msgstr "  Data de nascimento (AAAA-MM-DD ou vazio ou AAAAMMDD)"
 
 #, python-brace-format
 msgid "  Data {field} ({format}): "
-msgstr "Data {field} ({format}):"
+msgstr "  Data {field} ({format}): "
 
 #, python-brace-format
 msgid "  Elo (default {elo}): "
 msgstr "  Elo (padrão {elo}): "
 
 msgid "  Errore cancellazione."
-msgstr "Erro de exclusão."
+msgstr "  Erro de exclusão."
 
 msgid "  Federazione (3 lettere, es. ITA)"
-msgstr "Federação (3 letras, por exemplo, ITA)"
+msgstr "  Federação (3 letras, por exemplo, ITA)"
 
 msgid "  Formato data non valido."
-msgstr "Formato de data inválido."
+msgstr "  Formato de data inválido."
 
 msgid "  ID FIDE Numerico ('0' se N/D)"
-msgstr "FIDE ID Numérico ('0' se N/A)"
+msgstr "  FIDE ID Numérico ('0' se N/A)"
 
 msgid "  ID Torneo (default: generato in automatico): "
-msgstr "ID do torneio (padrão: gerado automaticamente):"
+msgstr "  ID do torneio (padrão: gerado automaticamente): "
 
 msgid "  Nessun torneo registrato nello storico."
-msgstr "Nenhum torneio registrado na história."
+msgstr "  Nenhum torneio registrado na história."
 
 msgid "  Nome del nuovo giocatore"
 msgstr "  Nome do novo jogador"
 
 msgid "  Nome torneo: "
-msgstr "Nome do Torneio:"
+msgstr "  Nome do Torneio: "
 
 msgid "  Numero torneo da cancellare: "
 msgstr "  Número do torneio a eliminar: "
 
 msgid "  Numero totale partecipanti: "
-msgstr "Número total de participantes:"
+msgstr "  Número total de participantes: "
 
 msgid "  Posizione (es. 1, 2, o RIT): "
-msgstr "Posição (por exemplo, 1, 2 ou RIT):"
+msgstr "  Posição (por exemplo, 1, 2 ou RIT): "
 
 #, python-brace-format
 msgid ""
 "  Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} "
 "[{b_elo:>4}]"
 msgstr ""
-"Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} "
+"  Sc. {board:<2} (IDG:{match_id}) - {white:<20} [{w_elo:>4}] vs {black:<20} "
 "[{b_elo:>4}]"
 
 #, python-brace-format
@@ -633,16 +678,16 @@ msgstr ""
 "{result}"
 
 msgid "  Sesso (m/w)"
-msgstr "Sexo (m/s)"
+msgstr "  Sexo (m/s)"
 
 msgid "  Titolo FIDE (es. FM, o vuoto)"
-msgstr "Título FIDE (por exemplo, FM ou em branco)"
+msgstr "  Título FIDE (por exemplo, FM ou em branco)"
 
 msgid "  Torneo aggiunto allo storico."
-msgstr "Torneio adicionado à história."
+msgstr "  Torneio adicionado à história."
 
 msgid "  Torneo rimosso."
-msgstr "Torneio removido."
+msgstr "  Torneio removido."
 
 #, python-brace-format
 msgid ""
@@ -691,27 +736,27 @@ msgstr "  {name}: BYE ({punti})\n"
 
 #, python-brace-format
 msgid "  {white} vs {black}{result}\n"
-msgstr "{white} vs {black}{result}"
+msgstr "  {white} vs {black}{result}\n"
 
 msgid " (ESCAPE per No | INVIO per Sì): "
-msgstr "(ESCAPE para Não | ENTER para Sim):"
+msgstr " (ESCAPE para Não | ENTER para Sim): "
 
 msgid " (GIÀ NEL TORNEO)"
-msgstr "(JÁ ESTÁ NO TORNEIO)"
+msgstr " (JÁ ESTÁ NO TORNEIO)"
 
 msgid " (INVIO per Sì | ESCAPE per No): "
-msgstr "(ENTER para Sim | ESCAPE para Não):"
+msgstr " (ENTER para Sim | ESCAPE para Não): "
 
 msgid " (Nessuna partita ancora definita o caricata per questo turno)\n"
 msgstr " (Nenhuma partida definida ou carregada para esta rodada ainda)\n"
 
 #, python-brace-format
 msgid " - '{name}' (File: {filename})"
-msgstr "- '{name}' (Arquivo:{filename})"
+msgstr " - '{name}' (Arquivo:{filename})"
 
 #, python-brace-format
 msgid " - Associazione ID FIDE: {id_val}"
-msgstr "- Associação de ID FIDE:{id_val}"
+msgstr " - Associação de ID FIDE:{id_val}"
 
 msgid ""
 " - Canc: nell'albero, elimina o annulla la voce scelta (torneo, giocatore, "
@@ -722,36 +767,36 @@ msgstr ""
 
 #, python-brace-format
 msgid " - {num} aggiornamenti Elo"
-msgstr "- Atualizações {num} Elo"
+msgstr " - Atualizações {num} Elo"
 
 #, python-brace-format
 msgid " - {num} aggiornamenti K-Factor"
-msgstr "- Atualizações do Fator K {num}"
+msgstr " - Atualizações do Fator K {num}"
 
 #, python-brace-format
 msgid " - {num} aggiornamenti anno di nascita"
-msgstr "- Atualizações do ano de nascimento {num}"
+msgstr " - Atualizações do ano de nascimento {num}"
 
 #, python-brace-format
 msgid " - {num} aggiornamenti titoli FIDE"
-msgstr "- {num} atualiza títulos FIDE"
+msgstr " - {num} atualiza títulos FIDE"
 
 #, python-brace-format
 msgid ""
 " - {num} giocatori con omonimi multipli (richiedono risoluzione manuale)"
-msgstr "- Jogadores {num} com vários homônimos (requer resolução manual)"
+msgstr " - Jogadores {num} com vários homônimos (requer resolução manual)"
 
 #, python-brace-format
 msgid " - {num} nuovi ID FIDE da associare"
-msgstr "- {num} novos IDs FIDE para associar"
+msgstr " - {num} novos IDs FIDE para associar"
 
 #, python-brace-format
 msgid " -> Aggiorna {}: da '{}' a '{}'"
-msgstr "-> Atualizar {}: de '{}' para '{}'"
+msgstr " -> Atualizar {}: de '{}' para '{}'"
 
 #, python-brace-format
 msgid " -> Associa nuovo ID FIDE: {}"
-msgstr "-> Associar novo ID FIDE: {}"
+msgstr " -> Associar novo ID FIDE: {}"
 
 #, python-brace-format
 msgid " -> Giorni rimanenti per il turno: {days}"
@@ -769,11 +814,11 @@ msgid ""
 " > Giocatore {name} (ID: {id}) ha ricevuto un BYE. Punti e storico "
 "aggiornati."
 msgstr ""
-"> O jogador {name} (ID: {id}) recebeu um BYE. Pontos e histórico "
+" > O jogador {name} (ID: {id}) recebeu um BYE. Pontos e histórico "
 "atualizados."
 
 msgid " ARO"
-msgstr "ARO"
+msgstr " ARO"
 
 msgid " Abbinamenti composti a mano dall'arbitro\n"
 msgstr " Emparceiramentos montados manualmente pelo árbitro\n"
@@ -785,7 +830,7 @@ msgid ""
 msgstr " Erro ao ler os metadados de {filename}: {error} (arquivo ignorado)"
 
 msgid " Esperienza pregressa significativa? (INVIO|ESCAPE)"
-msgstr "Experiência anterior significativa? (ENTRAR | ESCAPAR)"
+msgstr " Experiência anterior significativa? (ENTRAR | ESCAPAR)"
 
 #, python-brace-format
 msgid ""
@@ -801,7 +846,7 @@ msgstr ""
 
 #, python-brace-format
 msgid " Partite già pianificate, da giocare ({count}):\n"
-msgstr "Jogos já agendados, a serem disputados ({count}):"
+msgstr " Jogos já agendados, a serem disputados ({count}):\n"
 
 #, python-brace-format
 msgid " Periodo Turno: {start} - {end}\n"
@@ -809,14 +854,14 @@ msgstr " Período da Rodada: {start} - {end}\n"
 
 #, python-brace-format
 msgid " Periodo Turno: {} - {}\n"
-msgstr "Período de mudança: {} - {}"
+msgstr " Período de mudança: {} - {}\n"
 
 #, python-brace-format
 msgid ""
 " Warning: File JSON principale del torneo ('{current_filename}') non trovato"
 " per l'archiviazione."
 msgstr ""
-"Aviso: arquivo JSON principal do torneio ('{current_filename}') não "
+" Aviso: arquivo JSON principal do torneio ('{current_filename}') não "
 "encontrado para arquivamento."
 
 #, python-brace-format
@@ -833,7 +878,7 @@ msgstr " [Atual: {current}]"
 
 #, python-brace-format
 msgid " {first_name} {last_name} ({elo}) ha il BYE"
-msgstr "{first_name}{last_name}({elo}) tem BYE"
+msgstr " {first_name}{last_name}({elo}) tem BYE"
 
 #, python-brace-format
 msgid " {num}. {name} (dal {start_date} al {end_date}) - File: {filename}"
@@ -841,7 +886,7 @@ msgstr " {num}. {name} (de {start_date} a {end_date}) - Arquivo: {filename}"
 
 #, python-brace-format
 msgid " {rank:>2}. {name:<30} Punti: {pts:.1f}\n"
-msgstr "{rank:>2}. Pontos {name:<30}: {pts:.1f}"
+msgstr " {rank:>2}. Pontos {name:<30}: {pts:.1f}\n"
 
 #, python-brace-format
 msgid " {}. FIDE ID: {}, FED: {}, Elo: {}, Anno Nascita: {}"
@@ -1266,7 +1311,7 @@ msgid "Anno Nascita"
 msgstr "Ano de nascimento"
 
 msgid "Anno Nascita: "
-msgstr "Ano de Nascimento:"
+msgstr "Ano de Nascimento: "
 
 #, python-brace-format
 msgid "Anno Nascita: {}"
@@ -1289,7 +1334,7 @@ msgid "Apertura non riuscita"
 msgstr "Falha ao abrir"
 
 msgid "Applicare queste modifiche? (INVIO per Sì | ESCAPE per No): "
-msgstr "Aplicar essas alterações? (ENTER para Sim | ESCAPE para Não):"
+msgstr "Aplicar essas alterações? (ENTER para Sim | ESCAPE para Não): "
 
 msgid "Apri Torneo"
 msgstr "Torneio Aberto"
@@ -1347,7 +1392,7 @@ msgid "Argenti (Argento)"
 msgstr "Pratas (prata)"
 
 msgid "Argenti (Argento): "
-msgstr "Argenti (Prata):"
+msgstr "Argenti (Prata): "
 
 #, python-brace-format
 msgid "Argenti (Argento): {}"
@@ -1501,7 +1546,7 @@ msgid "Bronzi (Bronzo)"
 msgstr "Bronzes (Bronze)"
 
 msgid "Bronzi (Bronzo): "
-msgstr "Bronzes (Bronze):"
+msgstr "Bronzes (Bronze): "
 
 #, python-brace-format
 msgid "Bronzi (Bronzo): {}"
@@ -1637,14 +1682,14 @@ msgstr "Centro de Comando"
 
 #, python-brace-format
 msgid "Cerca (ID prec: {id}), (L)ista, (A)ggiungi, (S)alva e esci: "
-msgstr "Pesquise (ID anterior: {id}), (L)ist, (A)dd, (S)ave e saia:"
+msgstr "Pesquise (ID anterior: {id}), (L)ist, (A)dd, (S)ave e saia: "
 
 msgid ""
 "Cerca giocatore (ID, nome/cognome), (L)ista tutti, (A)ggiungi nuovo, (S)alva"
 " e esci: "
 msgstr ""
 "Procure pelo jogador (ID, nome/sobrenome), (L)ist all, (A)dd new, (S)ave e "
-"saia:"
+"saia: "
 
 msgid "Cerca per Cognome/Nome o ID FIDE:"
 msgstr "Pesquise por Sobrenome/Nome ou ID FIDE:"
@@ -1653,9 +1698,7 @@ msgid ""
 "Changelog di Tornello\n"
 "File ChangeLog.txt non trovato. Consultare la guida online o ripristinare il file."
 msgstr ""
-"REGISTRO DE MUDANÇAS DA Tornello\n"
-"\n"
-"\n"
+"Registro de alterações do Tornello\n"
 "Arquivo ChangeLog.txt não encontrado. Consulte a ajuda on-line ou restaure o arquivo."
 
 msgid "Chiedi &aiuto al PUB..."
@@ -1812,7 +1855,7 @@ msgid "Cognome richiesto."
 msgstr "Sobrenome obrigatório."
 
 msgid "Cognome: "
-msgstr "Sobrenome:"
+msgstr "Sobrenome: "
 
 #, python-brace-format
 msgid "Cognome: {last_name}"
@@ -1975,24 +2018,24 @@ msgstr "Confirmar restauração"
 #, python-brace-format
 msgid "Confermi che {player1} e {player2} pattano? (INVIO|ESCAPE): "
 msgstr ""
-"Você confirma que{player1}e{player2}estão empatados? (ENTRAR | ESCAPAR):"
+"Você confirma que{player1}e{player2}estão empatados? (ENTRAR | ESCAPAR): "
 
 #, python-brace-format
 msgid "Confermi che {winner} vince contro {loser}? (INVIO|ESCAPE): "
-msgstr "Você confirma que{winner}vence{loser}? (ENTRAR | ESCAPAR):"
+msgstr "Você confirma que{winner}vence{loser}? (ENTRAR | ESCAPAR): "
 
 #, python-brace-format
 msgid ""
 "Confermi che {winner} vince per forfait contro {loser}? (INVIO|ESCAPE): "
 msgstr ""
 "Você confirma que{winner}vence por desistência contra{loser}? (ENTRAR | "
-"ESCAPAR):"
+"ESCAPAR): "
 
 #, python-brace-format
 msgid "Confermi doppio forfait tra {player1} e {player2}? (INVIO|ESCAPE): "
 msgstr ""
 "Você confirma a taxa fixa dupla entre{player1}e{player2}? (ENTRAR | "
-"ESCAPAR):"
+"ESCAPAR): "
 
 msgid "Confermi il ripristino? Il pulsante predefinito è No."
 msgstr "Confirma a restauração? O botão padrão é Não."
@@ -2006,7 +2049,7 @@ msgstr ""
 msgid ""
 "Confermi la CANCELLAZIONE del risultato per {w} vs {b}? (INVIO|ESCAPE): "
 msgstr ""
-"Você confirma a EXCLUSÃO do resultado para{w}vs{b}? (ENTRAR | ESCAPAR):"
+"Você confirma a EXCLUSÃO do resultado para{w}vs{b}? (ENTRAR | ESCAPAR): "
 
 msgid "Confermi rimozione pianificazione? (INVIO|ESCAPE)"
 msgstr "Você confirma a remoção do agendamento? (ENTRAR | ESCAPAR)"
@@ -2143,7 +2186,7 @@ msgstr ""
 
 #, python-brace-format
 msgid "Criteri di Spareggio: {tiebreaks}\n"
-msgstr "Critérios de empate:{tiebreaks}"
+msgstr "Critérios de empate:{tiebreaks}\n"
 
 msgid "Criterio non riconosciuto."
 msgstr "Critério não reconhecido."
@@ -2319,7 +2362,7 @@ msgstr "Datas: {start_date} - {end_date}\n"
 
 #, python-brace-format
 msgid "Date: {} - {}\n"
-msgstr "Datas: {} - {}"
+msgstr "Datas: {} - {}\n"
 
 msgid "Dati"
 msgstr "Dados"
@@ -2429,7 +2472,7 @@ msgid "ELO Blitz"
 msgstr "ELO Blitz"
 
 msgid "ELO Blitz: "
-msgstr "ELO Blitz:"
+msgstr "ELO Blitz: "
 
 #, python-brace-format
 msgid "ELO Blitz: {}"
@@ -2443,7 +2486,7 @@ msgid "ELO Rapid"
 msgstr "ELO rápido"
 
 msgid "ELO Rapid: "
-msgstr "ELO Rápido:"
+msgstr "ELO Rápido: "
 
 #, python-brace-format
 msgid "ELO Rapid: {}"
@@ -2453,7 +2496,7 @@ msgid "ELO Standard"
 msgstr "Padrão ELO"
 
 msgid "ELO Standard: "
-msgstr "Padrões ELO:"
+msgstr "Padrões ELO: "
 
 #, python-brace-format
 msgid "ELO Standard: {}"
@@ -2548,7 +2591,9 @@ msgstr "Processamento de dados..."
 msgid ""
 "Elenco Giocatori Iscritti:\n"
 "\n"
-msgstr "Lista de jogadores registrados:"
+msgstr ""
+"Lista de jogadores registrados:\n"
+"\n"
 
 msgid "Elenco Iniziale Partecipanti (Prima del Turno 1)"
 msgstr "Lista Inicial de Participantes (Antes da Rodada 1)"
@@ -2921,7 +2966,8 @@ msgid ""
 "Fallimento generazione abbinamenti automatici (Turno {round_num}):\n"
 "{error}"
 msgstr ""
-"Falha na geração de emparceiramento automático (Rodada{round_num}):{error}"
+"Falha na geração automática dos emparceiramentos (Rodada {round_num}):\n"
+"{error}"
 
 msgid "Febbraio"
 msgstr "Fevereiro"
@@ -3367,7 +3413,7 @@ msgid "ID FIDE Numerico (cifre, '0' se N/D):"
 msgstr "FIDE ID Numérico (dígitos, '0' se N/A):"
 
 msgid "ID FIDE: "
-msgstr "ID FIDE:"
+msgstr "ID FIDE: "
 
 #, python-brace-format
 msgid "ID FIDE: {}"
@@ -3386,7 +3432,7 @@ msgstr "ID do jogador atualizado de '{old}' para '{new}'."
 
 #, python-brace-format
 msgid "ID: {id} | Sesso: {sex} | Nazione: {fed}\n"
-msgstr "ID: {id} | Gênero: {sex} | País: {fed}"
+msgstr "ID: {id} | Gênero: {sex} | País: {fed}\n"
 
 msgid "INFORMAZIONI DETTAGLIATE DEL TORNEO"
 msgstr "INFORMAÇÕES DETALHADAS DO TORNEIO"
@@ -3436,7 +3482,9 @@ msgstr "O banco de dados FIDE local ({}) não está presente."
 msgid ""
 "Il database FIDE locale corrente è stato aggiornato {days} giorni fa.\n"
 "\n"
-msgstr "O banco de dados FIDE local atual foi atualizado{days}dias atrás."
+msgstr ""
+"O banco de dados FIDE local atual foi atualizado{days}dias atrás.\n"
+"\n"
 
 msgid ""
 "Il database FIDE locale non è presente.\n"
@@ -4938,7 +4986,7 @@ msgid "Legni (Medaglia di legno)"
 msgstr "Madeiras (medalha de madeira)"
 
 msgid "Legni (Medaglia di legno): "
-msgstr "Madeiras (Medalha de Madeira):"
+msgstr "Madeiras (Medalha de Madeira): "
 
 #, python-brace-format
 msgid "Legni (Medaglia di legno): {}"
@@ -5006,7 +5054,7 @@ msgstr "Local: {site}\n"
 
 #, python-brace-format
 msgid "Luogo: {}\n"
-msgstr "Localização: {}"
+msgstr "Localização: {}\n"
 
 msgid "Maggio"
 msgstr "Poderia"
@@ -5018,9 +5066,8 @@ msgid ""
 "Manuale guida di Tornello\n"
 "File MANUALE.txt non trovato. Consultare la guida online o ripristinare il file."
 msgstr ""
-"MANUAL DO GUIA DA CATRACA v9.3.0\n"
-"\n"
-"Arquivo MANUAL.txt não encontrado. Consulte a ajuda on-line ou restaure o arquivo."
+"Manual do Tornello\n"
+"Arquivo MANUALE.txt não encontrado. Consulte a ajuda on-line ou restaure o arquivo."
 
 msgid "Marzo"
 msgstr "Marchar"
@@ -5196,7 +5243,7 @@ msgid "Nazione (FED)"
 msgstr "Nação (FED)"
 
 msgid "Nazione (FED): "
-msgstr "País (FED):"
+msgstr "País (FED): "
 
 #, python-brace-format
 msgid "Nazione (FED): {}"
@@ -5325,7 +5372,7 @@ msgid "Nessun PGN disponibile per questa partita."
 msgstr "Nenhum NPC disponível para esta partida."
 
 msgid "Nessun abbinamento generato per questo turno.\n"
-msgstr "Nenhuma partida gerada para esta rodada."
+msgstr "Nenhuma partida gerada para esta rodada.\n"
 
 msgid "Nessun abbinamento valido"
 msgstr "Nenhum emparceiramento válido"
@@ -5345,7 +5392,9 @@ msgstr "Nenhum aviso."
 msgid ""
 "Nessun database FIDE locale trovato.\n"
 "\n"
-msgstr "Nenhum banco de dados FIDE local encontrado."
+msgstr ""
+"Nenhum banco de dados FIDE local encontrado.\n"
+"\n"
 
 msgid ""
 "Nessun dettaglio della pianificazione è stato effettivamente modificato."
@@ -5378,7 +5427,7 @@ msgid "Nessun giocatore da abbinare"
 msgstr "Nenhum jogador a emparceirar"
 
 msgid "Nessun giocatore inserito finora.\n"
-msgstr "Nenhum jogador inscrito até agora."
+msgstr "Nenhum jogador inscrito até agora.\n"
 
 msgid "Nessun giocatore nel torneo, impossibile finalizzare."
 msgstr "Nenhum jogador no torneio, impossível finalizar."
@@ -5507,7 +5556,7 @@ msgstr "Nome do Torneio: {name} - "
 
 #, python-brace-format
 msgid "Nome Torneo: {} - "
-msgstr "Nome do Torneio: {} -"
+msgstr "Nome do Torneio: {} - "
 
 #, python-brace-format
 msgid "Nome del torneo cambiato in '{name}'."
@@ -5548,7 +5597,7 @@ msgid "Nome torneo: {}"
 msgstr "Nome do torneio: {}"
 
 msgid "Nome: "
-msgstr "Nome:"
+msgstr "Nome: "
 
 #, python-brace-format
 msgid "Nome: {first_name}"
@@ -5872,13 +5921,13 @@ msgstr ""
 "a mais baixa (Artigo 10.6)."
 
 msgid "Ordine di priorità dei criteri di spareggio attivi:\n"
-msgstr "Ordem de prioridade dos critérios de desempate ativos:"
+msgstr "Ordem de prioridade dos critérios de desempate ativos:\n"
 
 msgid "Ori (Oro)"
 msgstr "Ouros (ouro)"
 
 msgid "Ori (Oro): "
-msgstr "Ori (ouro):"
+msgstr "Ori (ouro): "
 
 #, python-brace-format
 msgid "Ori (Oro): {}"
@@ -6225,7 +6274,7 @@ msgid "Pos. (Tab)   Titolo Nome Cognome               [EloIni] Punti"
 msgstr "Pos. (Aba) Título Nome Sobrenome [EloIni] Pontos"
 
 msgid "Premi 'c' per concludere, 's' per sospendere, Esc per annullare: "
-msgstr "Pressione 'c' para finalizar, 's' para suspender, Esc para cancelar:"
+msgstr "Pressione 'c' para finalizar, 's' para suspender, Esc para cancelar: "
 
 msgid "Premi ESCAPE per aggiornare in massa tutti i giocatori in automatico."
 msgstr ""
@@ -6400,7 +6449,7 @@ msgid ""
 "pianificazione? (Invio per annullare): "
 msgstr ""
 "Esta partida já está planejada. Deseja (M)odificar ou (R)remover o "
-"cronograma? (Entre para cancelar):"
+"cronograma? (Entre para cancelar): "
 
 msgid "Questo criterio non supporta modificatori."
 msgstr "Esta política não oferece suporte a modificadores."
@@ -6540,7 +6589,7 @@ msgstr "Remoção não concluída"
 
 #, python-brace-format
 msgid "Rimuovere '{first_name} {last_name}'? (INVIO|ESCAPE): "
-msgstr "Remover '{first_name}{last_name}'? (ENTRAR | ESCAPAR):"
+msgstr "Remover '{first_name}{last_name}'? (ENTRAR | ESCAPAR): "
 
 msgid "Rimuovi regola selezionata"
 msgstr "Remover regra selecionada"
@@ -6605,7 +6654,7 @@ msgid "Risultati che tornerebbero: {numero}"
 msgstr "Resultados que voltariam: {numero}"
 
 msgid "Risultati: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p per pianificare]: "
-msgstr "Resultados: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p conforme planejado]:"
+msgstr "Resultados: [1-0, 0-1, 1/2, 0-0F, 1-F, F-1, p conforme planejado]: "
 
 #, python-brace-format
 msgid "Risultati: {risultati} su {partite}"
@@ -6841,7 +6890,7 @@ msgstr "Baixando a atualização."
 msgid ""
 "Scegli la modalità (INVIO = Conferma singola | ESCAPE = Aggiorna in massa): "
 msgstr ""
-"Escolha o modo (ENTER = Confirmação Única | ESCAPE = Atualização em Massa):"
+"Escolha o modo (ENTER = Confirmação Única | ESCAPE = Atualização em Massa): "
 
 msgid ""
 "Scegli se aggiornare tutto in massa (gli omonimi multipli andranno risolti singolarmente)\n"
@@ -6851,20 +6900,20 @@ msgstr ""
 "ou avalie cada jogador individual passo a passo."
 
 msgid "Scegli un numero (o Invio per annullare e cercare un altro nome): "
-msgstr "Escolha um número (ou Enter para cancelar e procurar outro nome):"
+msgstr "Escolha um número (ou Enter para cancelar e procurar outro nome): "
 
 msgid "Scegli un torneo da caricare o creane uno nuovo"
 msgstr "Escolha um torneio para fazer upload ou crie um novo"
 
 msgid "Scelta (Numero o 0 per manuale, +testo/-testo/testo per affinare): "
-msgstr "Escolha (Número ou 0 para manual, +texto/-texto/texto para refinar):"
+msgstr "Escolha (Número ou 0 para manual, +texto/-texto/texto para refinar): "
 
 msgid ""
 "Scelta (Numero, 0 per manuale, Invio per successivi, +testo/-testo/testo per"
 " affinare): "
 msgstr ""
 "Escolha (Número, 0 para manual, Enter para próximo, +texto/-texto/texto para"
-" refinar):"
+" refinar): "
 
 msgid "Scelta non valida."
 msgstr "Escolha inválida."
@@ -6880,7 +6929,7 @@ msgstr "Folha detalhada do jogador"
 
 #, python-brace-format
 msgid "Scheda Giocatore: {name}\n"
-msgstr "Cartão de Jogador: {name}"
+msgstr "Cartão de Jogador: {name}\n"
 
 msgid "Scheda ed Albero Dati (Invio = Modifica | Canc = Elimina):"
 msgstr "Árvore de cartão e dados (Enter = Modificar | Del = Excluir):"
@@ -7086,7 +7135,7 @@ msgid "Sesso (m/w):"
 msgstr "Gênero (m/s):"
 
 msgid "Sesso: "
-msgstr "Sexo:"
+msgstr "Sexo: "
 
 #, python-brace-format
 msgid "Sesso: {gender}"
@@ -7287,7 +7336,7 @@ msgid "Stato ricerca locale"
 msgstr "Estado da busca local"
 
 msgid "Stato: RITIRATO DAL TORNEO\n"
-msgstr "Status: RETIRADO DO TORNEIO"
+msgstr "Status: RETIRADO DO TORNEIO\n"
 
 #, python-brace-format
 msgid "Stato: {stato}"
@@ -7314,7 +7363,7 @@ msgstr ""
 "{}"
 
 msgid "Storico Partite nel Torneo:\n"
-msgstr "Histórico de partidas no Torneio:"
+msgstr "Histórico de partidas no Torneio:\n"
 
 msgid "Storico Tornei"
 msgstr "Histórico de torneios"
@@ -7370,7 +7419,9 @@ msgstr "Hora de reflexão"
 msgid ""
 "Tempo di riflessione: {}\n"
 "\n"
-msgstr "Tempo de reflexão: {}"
+msgstr ""
+"Tempo de reflexão: {}\n"
+"\n"
 
 msgid ""
 "Tempo riflessione\n"
@@ -7425,7 +7476,7 @@ msgid "Titolo FIDE (es. FM, o vuoto per nessuno):"
 msgstr "Título FIDE (por exemplo, FM ou em branco para nenhum):"
 
 msgid "Titolo FIDE: "
-msgstr "Título da FIDE:"
+msgstr "Título da FIDE: "
 
 #, python-brace-format
 msgid "Titolo FIDE: {title}"
@@ -7680,7 +7731,7 @@ msgstr ""
 
 #, python-brace-format
 msgid "Trovate modifiche disponibili per {num} giocatori:\n"
-msgstr "Encontre mods disponíveis para jogadores {num}:"
+msgstr "Encontre mods disponíveis para jogadores {num}:\n"
 
 #, python-brace-format
 msgid "Trovate {count} corrispondenze."
@@ -7721,7 +7772,7 @@ msgstr "Rodadas recomendadas"
 
 #, python-brace-format
 msgid "Turni previsti: {}\n"
-msgstr "Turnos programados: {}"
+msgstr "Turnos programados: {}\n"
 
 msgid ""
 "Turni, risultati, PGN, programmazioni, iscritti e ritiri restano gli stessi:"
@@ -7784,7 +7835,7 @@ msgstr "Rodada: {round_num}\n"
 
 #, python-brace-format
 msgid "Turno: {}\n"
-msgstr "Rodada: {}"
+msgstr "Rodada: {}\n"
 
 #, python-brace-format
 msgid "Tutte ({numero})"
@@ -8046,7 +8097,7 @@ msgid "Vuoi aggiornare adesso?"
 msgstr "Quer atualizar agora?"
 
 msgid "Vuoi aggiungere un nuovo giocatore? (S/n) "
-msgstr "Quer adicionar um novo jogador? (S/n)"
+msgstr "Quer adicionar um novo jogador? (S/n) "
 
 msgid ""
 "Vuoi allora mandare nel cestino di Windows il torneo e tutti i suoi file? Se"
@@ -8245,10 +8296,12 @@ msgstr ""
 msgid ""
 "aggiornamenti di dati anagrafici/titoli\n"
 "\n"
-msgstr "atualizações de dados/títulos pessoais"
+msgstr ""
+"atualizações de dados/títulos pessoais\n"
+"\n"
 
 msgid "aggiornamenti di punteggio Elo\n"
-msgstr "Atualizações de pontuação Elo"
+msgstr "Atualizações de pontuação Elo\n"
 
 msgid "aggiungi giocatore"
 msgstr "adicionar jogador"
@@ -8337,7 +8390,7 @@ msgstr "como outro arquivo do programa, que já existe na pasta dele"
 
 msgid "con l'ultimo database FIDE scaricato e propone aggiornamenti.\n"
 msgstr ""
-"com o banco de dados FIDE mais recente baixado e oferece atualizações."
+"com o banco de dados FIDE mais recente baixado e oferece atualizações.\n"
 
 msgid "concluso"
 msgstr "concluído"
@@ -8542,7 +8595,7 @@ msgid "novembre"
 msgstr "novembro"
 
 msgid "nuovi ID FIDE da associare\n"
-msgstr "novos IDs FIDE para associar"
+msgstr "novos IDs FIDE para associar\n"
 
 msgid "oro"
 msgstr "ouro"
@@ -8648,7 +8701,7 @@ msgstr "{giorni} dias"
 
 #, python-brace-format
 msgid "{idx:02d}. {name} (ID: {id}, Elo: {elo})\n"
-msgstr "{idx:02d}. {name} (ID: {id}, Elo: {elo})"
+msgstr "{idx:02d}. {name} (ID: {id}, Elo: {elo})\n"
 
 #, python-brace-format
 msgid "{last} {first} (Elo: {elo}, Naz: {fed})"
