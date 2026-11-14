@@ -9063,7 +9063,7 @@ msgstr "{partita} : {oggi} devient {copia}"
 
 #, python-brace-format
 msgid "{percento}%, {fatti} MB su {tutti}."
-msgstr "{percento} %, {fatti} Mo sur {tutti}."
+msgstr "{percento}%, {fatti} Mo sur {tutti}."
 
 #, python-brace-format
 msgid "{percento}%, {preso} MB su {totale} MB."
