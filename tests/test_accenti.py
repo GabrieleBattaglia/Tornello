@@ -134,7 +134,7 @@ class TestAccentiVeri:
         assert "Cartella non scrivibile" in [t for r, _riga, t in stringhe_in_traduzione() if r == "tornello.py"]
 
     def test_le_frasi_di_gbutils_sono_le_sole_lasciate_fuori(self):
-        """Le frasi saltate sono le quattordici della tupla, e fra loro
+        """Le frasi saltate sono le quindici della tupla, e fra loro
         quelle con l'apostrofo restano come le scrive GBUtils."""
         tutte = []
         with open(os.path.join(CARTELLA_SRC, "aggiornamenti.py"), encoding="utf-8") as f:
@@ -144,7 +144,7 @@ class TestAccentiVeri:
                 tutte.append(nodo.args[0].value)
         controllate = [t for r, _riga, t in stringhe_in_traduzione() if r == os.path.join("src", "aggiornamenti.py")]
         saltate = [t for t in tutte if t not in controllate]
-        assert len(saltate) == 14
+        assert len(saltate) == 15
         assert [t for t in saltate if apostrofi_al_posto_degli_accenti(t)] == [
             "Hai gia' l'ultima versione,",
             "ma il pacchetto non e' ancora pronto.",

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: gabriele.battaglia@gmail.com\n"
-"POT-Creation-Date: 2026-11-13 21:07+0100\n"
+"POT-Creation-Date: 2026-11-14 11:33+0100\n"
 "PO-Revision-Date: 2025-06-27 22:45+0200\n"
 "Last-Translator: Gabriele Battaglia <gabriele.battaglia@gmail.com>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -8992,6 +8992,10 @@ msgstr "{num}. {last} {first} (Elo: {elo}, Fed: {fed}){withdrawn}"
 #, python-brace-format
 msgid "{partita}: {oggi} diventa {copia}"
 msgstr "{partita}: {oggi} pasa a {copia}"
+
+#, python-brace-format
+msgid "{percento}%, {fatti} MB su {tutti}."
+msgstr "{percento}%, {fatti} MB de {tutti}."
 
 #, python-brace-format
 msgid "{percento}%, {preso} MB su {totale} MB."

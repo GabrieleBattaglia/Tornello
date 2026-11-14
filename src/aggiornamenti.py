@@ -33,6 +33,8 @@ NOME_APP = "tornello"
 # la dice quando la sua domanda scade senza risposta: Tornello la domanda la
 # fa sempre con la sua conferma o con la sua finestra, quindi oggi non la
 # sente mai, ma la tupla resta completa.
+# La riga dell'avanzamento, con la parola su, passa da traduci dalla V1.3.2 di
+# gestisci_aggiornamento, GBUtils V294: prima restava in italiano.
 FRASI_AGGIORNAMENTO_GBUTILS = (
     _("Controllo aggiornamenti."),
     _("Hai gia' l'ultima versione,"),
@@ -46,6 +48,7 @@ FRASI_AGGIORNAMENTO_GBUTILS = (
     _("Nessuna risposta."),
     _("Aggiornamento rimandato."),
     _("Scarico l'aggiornamento."),
+    _("{percento}%, {fatti} MB su {tutti}."),
     _("Aggiornamento pronto, il programma si chiude per applicarlo."),
     _("Aggiornamento non riuscito, si prosegue con questa versione."),
 )
