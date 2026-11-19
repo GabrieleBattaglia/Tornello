@@ -1,37 +1,39 @@
 
-ID	Pts	----	Pref	C2	C14	C16	  Cur		R1	R2	R3	
+ID	Pts	-----	Pref	C2	C14	C16	  Cur		R1	R2	R3	R4	
 
- 1	3.0	 WBW	 (B)	 Y	   	   	 (9B)		14	12	13	
- 9	3.0	 WBW	 (B)	 Y	   	   	 (1W)		22	19	20	
+ 1	4.0	 WBWB	  w 	 Y	   	   	 (5W)		14	12	13	 9	
 
- 5	2.5	 WBW	 (B)	 Y	   	   	 (4B)		18	15	 8	
-15	2.5	 WWB	 (B)	 Y	   	   	 (6B)		 2	 5	21	
+ 5	3.5	 WBWB	  w 	 Y	  D	   	 (1B)		18	15	 8	 4	
+15	3.5	 WWBB	  W 	 Y	  D	   	 (9W)		 2	 5	21	 6	
 
- 3	2.0	 WBW	 (B)	 Y	   	  D	(13B)		16	 2	12	
- 4	2.0	 BWB	 (W)	 Y	   	   	 (5W)		17	13	11	
- 6	2.0	 BWB	 (W)	 Y	   	   	(15W)		19	18	23	
-10	2.0	 BWW	  B 	 Y	   	   	(14B)		23	24	19	
-13	2.0	 WBB	  W 	 Y	   	   	 (3W)		26	 4	 1	
-14	2.0	 BWB	 (W)	 Y	   	   	(10W)		 1	25	 7	
-20	2.0	 BWB	 (W)	 Y	   	   	(21W)		 7	11	 9	
+ 3	3.0	 WBWB	  w 	 Y	   	   	(14W)		16	 2	12	13	
+ 9	3.0	 WBWW	  B 	 Y	   	   	(15B)		22	19	20	 1	
+14	3.0	 BWBW	  b 	 Y	   	   	 (3B)		 1	25	 7	10	
 
- 2	1.5	 BWB	 (W)	 Y	  D	  U	(16W)		15	 3	17	
- 8	1.5	 BWB	 (W)	 Y	   	  U	 (7W)		21	23	 5	
-16	1.5	 BWW	  B 	 Y	  U	   	 (2B)		 3	21	26	
-21	1.5	 WBW	 (B)	 Y	   	   	(20B)		 8	16	15	
+ 2	2.5	 BWBW	  b 	 Y	   	  D	(20B)		15	 3	17	16	
+20	2.5	 BWBW	  b 	 Y	  D	   	 (2W)		 7	11	 9	21	
 
- 7	1.0	 WBW	 (B)	 Y	   	   	 (8B)		20	22	14	
-11	1.0	 WBW	 (B)	 Y	   	   	(26B)		24	20	 4	
-12	1.0	 BWB	 (W)	 Y	   	   	(19W)		25	 1	 3	
-18	1.0	  BB	  W 	 N	  D	   	(23W)		 5	 6	  	
-19	1.0	 WWB	 (B)	 Y	   	   	(12B)		 6	 9	10	
-23	1.0	 WBW	 (B)	 Y	   	  D	(18B)		10	 8	 6	
-24	1.0	 BBW	 (W)	 Y	   	   	(25W)		11	10	22	
-26	1.0	 BWB	 (W)	 Y	  D	   	(11W)		13	17	16	
+ 4	2.0	 BWBW	  b 	 Y	  U	   	(21B)		17	13	11	 5	
+ 6	2.0	 BWBW	  b 	 Y	  U	   	(13B)		19	18	23	15	
+ 8	2.0	 BWBW	  b 	 Y	  D	   	(24W)		21	23	 5	 7	
+10	2.0	 BWWB	  w 	 Y	   	   	(26W)		23	24	19	14	
+12	2.0	 BWBW	  b 	 Y	   	   	(23B)		25	 1	 3	19	
+13	2.0	 WBBW	  b 	 Y	   	   	 (6W)		26	 4	 1	 3	
+21	2.0	 WBWB	  w 	 Y	  U	   	 (4W)		 8	16	15	20	
+23	2.0	 WBWB	  w 	 Y	   	   	(12W)		10	 8	 6	18	
+24	2.0	 BBWW	  B 	 Y	  D	   	 (8B)		11	10	22	25	
+26	2.0	 BWBW	  b 	 Y	   	  D	(10B)		13	17	16	11	
 
-17	0.0	 WBW	 (B)	 Y	  U	   	(22B)		 4	26	 2	
-22	0.0	 BWB	 (W)	 Y	   	   	(17W)		 9	 7	24	
-25	0.0	  WB	  w 	 Y	   	   	(24B)		12	14	  	
+ 7	1.5	 WBWB	  w 	 Y	  U	   	(16W)		20	22	14	 8	
+16	1.5	 BWWB	  w 	 Y	   	  U	 (7B)		 3	21	26	 2	
+
+11	1.0	 WBWB	  w 	 Y	   	   	(19B)		24	20	 4	26	
+18	1.0	  BBW	 (W)	 N	   	  D	(22W)		 5	 6	  	23	
+19	1.0	 WWBB	  W 	 Y	   	   	(11W)		 6	 9	10	12	
+22	1.0	 BWBW	  b 	 Y	   	   	(18B)		 9	 7	24	17	
+
+17	0.0	 WBWB	  w 	 Y	   	  U	(25B)		 4	26	 2	22	
+25	0.0	  WBB	  W 	 Y	  U	   	(17W)		12	14	  	24	
 
 
 BBP Pairings (https://github.com/BieremaBoyzProgramming/bbpPairings) - v6.0.0 (Built Feb  1 2026 17:49:01)
